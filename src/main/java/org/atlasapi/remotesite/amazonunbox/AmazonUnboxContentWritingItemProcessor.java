@@ -38,7 +38,34 @@ import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 
 
-public class AmazonUnboxProcessingItemProcessor implements AmazonUnboxItemProcessor {
+public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemProcessor {
+    
+    private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = new Ordering<Content>() {
+        @Override
+        public int compare(Content left, Content right) {
+            if (left instanceof Item) {
+                if (right instanceof Item) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            } else if (left instanceof Series) {
+                if (right instanceof Item) {
+                    return 1;
+                } else if (right instanceof Series) {
+                    return 0;
+                } else {
+                    return -1;
+                }
+            } else {
+                if (right instanceof Brand) {
+                    return 0;
+                } else {
+                    return 1;
+                }
+            }
+        }
+    };
     
     private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = new Ordering<Content>() {
         @Override
@@ -80,7 +107,7 @@ public class AmazonUnboxProcessingItemProcessor implements AmazonUnboxItemProces
         }
     };
     
-    private final Logger log = LoggerFactory.getLogger(AmazonUnboxProcessingItemProcessor.class);
+    private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
     private final Map<String, Container> seen = Maps.newHashMap();
     private final SetMultimap<String, Content> cached = HashMultimap.create();
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
@@ -95,7 +122,7 @@ public class AmazonUnboxProcessingItemProcessor implements AmazonUnboxItemProces
     private final AmazonUnboxBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
 
-    public AmazonUnboxProcessingItemProcessor(ContentExtractor<AmazonUnboxItem, Optional<Content>> extractor, ContentResolver resolver, 
+    public AmazonUnboxContentWritingItemProcessor(ContentExtractor<AmazonUnboxItem, Optional<Content>> extractor, ContentResolver resolver, 
             ContentWriter writer, ContentLister lister, int missingContentPercentage, AmazonUnboxBrandProcessor brandProcessor) {
         this.extractor = extractor;
         this.resolver = resolver;

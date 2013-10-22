@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.CrewMember.Role;
+import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
@@ -34,8 +35,11 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.metabroadcast.common.collect.ImmutableOptionalMap;
+import com.metabroadcast.common.collect.OptionalMap;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
@@ -52,6 +56,18 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String FILM_URI_VERSION = "http://unbox.amazon.co.uk/movies/%s";
     private static final String VERSION_URI_PATTERN = "http://unbox.amazon.co.uk/versions/%s";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
+    private static final OptionalMap<String, Certificate> certificateMap = ImmutableOptionalMap.fromMap(
+            ImmutableMap.<String,Certificate>builder()
+                // tba/NR temporarily set to '18' to prevent unsuitable material from being misclassified.
+                .put("NR",new Certificate("18", Countries.GB))
+                .put("to_be_announced",new Certificate("18", Countries.GB))
+                .put("universal",new Certificate("U", Countries.GB))
+                .put("parental_guidance",new Certificate("PG", Countries.GB))
+                .put("ages_12_and_over",new Certificate("12", Countries.GB))
+                .put("ages_15_and_over",new Certificate("15", Countries.GB))
+                .put("ages_18_and_over",new Certificate("18", Countries.GB))
+            .build()
+        );
     
     public static final String createBrandUri(String asin) { 
         return String.format(URI_VERSION, asin);
@@ -185,7 +201,6 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
 
     private void setCommonFields(Content content, AmazonUnboxItem source) {
         content.setGenres(generateGenres(source));
-        // TODO ratings
         content.setLanguages(generateLanguages(source));
         content.setActivelyPublished(true);
         content.setMediaType(MediaType.VIDEO);
@@ -197,6 +212,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         if (source.getReleaseDate() != null) {
             content.setYear(source.getReleaseDate().getYear());
         }
+        content.setCertificates(generateCertificates(source));
         content.setAliases(generateAliases(source));
         content.setAliasUrls(generateAliasUrls(source));
         content.setPeople(generatePeople(source));
@@ -262,12 +278,15 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private List<Image> generateImages(AmazonUnboxItem item) {
         Image image = new Image(item.getLargeImageUrl());
         image.setType(ImageType.PRIMARY);
-        image.setWidth(180);
-        image.setHeight(240);
+        image.setWidth(240);
+        image.setHeight(320);
         image.setAspectRatio(ImageAspectRatio.FOUR_BY_THREE);
         image.setColor(ImageColor.COLOR);
         image.setMimeType(MimeType.IMAGE_JPG);
         return ImmutableList.of(image);
     }
 
+    private Iterable<Certificate> generateCertificates(AmazonUnboxItem item) {
+        return certificateMap.get(item.getRating()).asSet();
+    }
 }

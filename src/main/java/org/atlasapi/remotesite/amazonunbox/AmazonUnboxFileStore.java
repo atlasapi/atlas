@@ -5,7 +5,7 @@ import java.io.InputStream;
 
 public interface AmazonUnboxFileStore {
     
-    void save(InputStream dataStream) throws IOException;
+    void save(String fileName, InputStream dataStream) throws IOException;
     
-    InputStream getLatestData() throws NoDataException;
+    InputStream getLatestData() throws NoDataException, IOException;
 }

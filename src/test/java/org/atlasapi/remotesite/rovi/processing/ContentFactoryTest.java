@@ -54,6 +54,9 @@ public class ContentFactoryTest {
         
         content = new Episode();
         assertFalse(ContentFactory.hasCorrectType(content, RoviShowType.OTHER));
+
+        content = new Item();
+        assertFalse(ContentFactory.hasCorrectType(content, RoviShowType.MOVIE));
     }
     
     @Test

@@ -43,11 +43,9 @@ public abstract class RoviActionLineIngestor<T extends KeyedActionLine<?>, CONTE
     }
 
     private void handleInsert(T parsedLine) throws IndexAccessException {
-        Optional<CONTENT> resolved = resolveContent(parsedLine);
-        CONTENT content = resolved.isPresent() ? resolved.get() : createContent(parsedLine);
-
-        populateContent(content, parsedLine);
-        contentWriter.writeContent(content);
+        CONTENT content;
+        content = createContent(parsedLine);
+        contentWriter.writeContent(populateContent(content, parsedLine));
     }
     
     private void handleUpdate(T parsedLine) throws IndexAccessException {
@@ -61,8 +59,7 @@ public abstract class RoviActionLineIngestor<T extends KeyedActionLine<?>, CONTE
         }
         
         CONTENT content = resolved.get();
-        populateContent(content, parsedLine);
-        contentWriter.writeContent(content);
+        contentWriter.writeContent(populateContent(content, parsedLine));
     }
     
     private void handleDelete(T parsedLine) {
@@ -80,7 +77,7 @@ public abstract class RoviActionLineIngestor<T extends KeyedActionLine<?>, CONTE
         contentWriter.writeContent(content);
     }
     
-    protected abstract void populateContent(CONTENT content, T parsedLine) throws IndexAccessException;
+    protected abstract CONTENT populateContent(CONTENT content, T parsedLine) throws IndexAccessException;
     protected abstract Optional<CONTENT> resolveContent(T parsedLine);
     protected abstract CONTENT createContent(T parsedLine);
     

@@ -82,6 +82,4 @@ public class RoviProgramLineIngestorTest {
         assertThat(Iterables.getOnlyElement(created.getVersions()).getBroadcasts(), hasItem(broadcast));
     }
     
-    
-    
 }

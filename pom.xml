@@ -543,7 +543,7 @@
        <dependency>
           <groupId>com.metabroadcast.atlas.glycerin</groupId>
           <artifactId>glycerin</artifactId>
-          <version>0.1.11</version>
+          <version>0.1.12</version>
        </dependency>
        <dependency>
            <groupId>com.google.http-client</groupId>

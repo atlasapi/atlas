@@ -40,6 +40,11 @@ public class NitroBrandExtractor
     }
 
     @Override
+    protected Brand.People extractPeople(Brand brand) {
+        return brand.getPeople();
+    }
+
+    @Override
     protected Image extractImage(Brand source) {
         return source.getImage();
     }

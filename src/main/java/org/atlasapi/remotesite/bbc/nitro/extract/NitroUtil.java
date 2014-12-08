@@ -14,6 +14,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.AvailabilityOf;
+import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Version;
@@ -24,6 +25,9 @@ import com.metabroadcast.common.time.DateTimeZones;
  *
  */
 public final class NitroUtil {
+
+    private static final String PERSON_URI_PREFIX = "http://nitro.bbc.co.uk/people/";
+    private static final String PERSON_CURIE_PREFIX = "nitro:bbc:person_";
 
     private NitroUtil() {}
     
@@ -135,6 +139,14 @@ public final class NitroUtil {
                 return input.getPid();
             }
         });
+    }
+
+    public static String uriFor(Brand.People.Contribution contribution) {
+        return PERSON_URI_PREFIX + contribution.getContributionBy();
+    }
+
+    public static String curieFor(Brand.People.Contribution contribution) {
+        return PERSON_CURIE_PREFIX + contribution.getContributionBy();
     }
     
 }

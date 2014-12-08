@@ -19,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Series;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
@@ -137,14 +138,25 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
     protected abstract @Nullable Synopses extractSynopses(SOURCE source);
     
     /**
-     * Projects the {@link com.metabroadcast.atlas.glycerin.model.Image Image}
+     * Projects the {@link com.metabroadcast.atlas.glycerin.model.Brand.People}
      * of the source data.
      * 
      * @param source
      *            - the source data
+     * @return - the people of the source data, or {@code null} if there is none.
+     */
+
+    protected abstract @Nullable Brand.People extractPeople(SOURCE source);
+
+    /**
+     * Projects the {@link com.metabroadcast.atlas.glycerin.model.Image Image}
+     * of the source data.
+     *
+     * @param source
+     *            - the source data
      * @return - the image of the source data, or {@code null} if there is none.
      */
-    protected abstract @Nullable com.metabroadcast.atlas.glycerin.model.Brand.Image extractImage(SOURCE source);
+    protected abstract @Nullable Brand.Image extractImage(SOURCE source);
     
     /**
      * Concrete implementations can override this method to perform additional

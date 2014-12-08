@@ -14,6 +14,7 @@ import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
+import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.bbc.nitro.v1.HttpNitroClient;
@@ -68,6 +69,7 @@ public class BbcNitroModule {
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ChannelResolver channelResolver;
+    private @Autowired QueuingPersonWriter peopleWriter;
     
     private final ThreadFactory nitroThreadFactory
         = new ThreadFactoryBuilder().setNameFormat("nitro %s").build();
@@ -150,7 +152,7 @@ public class BbcNitroModule {
     
 
     GlycerinNitroContentAdapter nitroContentAdapter(Glycerin glycerin) {
-        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), new SystemClock(), nitroRequestPageSize);
+        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), peopleWriter, new SystemClock(), nitroRequestPageSize);
     }
 
     private Supplier<Range<LocalDate>> dayRangeSupplier(int back, int forward) {

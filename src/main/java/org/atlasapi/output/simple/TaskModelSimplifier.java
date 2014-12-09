@@ -8,6 +8,7 @@ import java.util.Set;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.feeds.youview.tasks.Response;
 import org.atlasapi.feeds.youview.tasks.Task;
+import org.atlasapi.feeds.youview.tasks.simple.Payload;
 import org.atlasapi.output.Annotation;
 
 import com.google.common.base.Function;
@@ -46,6 +47,9 @@ public class TaskModelSimplifier implements ModelSimplifier<Task, org.atlasapi.f
         if (annotations.contains(Annotation.REMOTE_RESPONSES)) {
             task.setRemoteResponses(simplifyResponses(model.remoteResponses(), annotations, config));
         }
+        if (annotations.contains(Annotation.PAYLOAD)) {
+            task.setPayload(simplifyPayload(model.payload()));
+        }
         
         return task;
     }
@@ -66,5 +70,14 @@ public class TaskModelSimplifier implements ModelSimplifier<Task, org.atlasapi.f
                 return responseSimplifier.simplify(input, annotations, config);
             }
         };
+    }
+    
+    private Payload simplifyPayload(org.atlasapi.feeds.youview.tasks.Payload payload) {
+        Payload simplePayload = new Payload();
+        
+        simplePayload.setCreated(payload.created().toDate());
+        simplePayload.setPayload(payload.payload());
+        
+        return simplePayload;
     }
 }

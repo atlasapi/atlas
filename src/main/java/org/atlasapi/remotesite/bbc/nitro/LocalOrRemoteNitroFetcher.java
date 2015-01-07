@@ -289,7 +289,7 @@ public class LocalOrRemoteNitroFetcher {
         if (item instanceof Episode) {
             Episode ep = (Episode)item;
             return ep.getSeriesRef() != null 
-                && ep.getContainer().equals(ep.getSeriesRef());
+                && ep.getSeriesRef().equals(ep.getContainer());
         }
         return false;
     }

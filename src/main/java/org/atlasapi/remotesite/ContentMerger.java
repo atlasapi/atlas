@@ -191,12 +191,14 @@ public class ContentMerger {
                 if (mergedVersions.containsKey(version.getCanonicalUri())) {
                     Version mergedVersion = mergedVersions.get(version.getCanonicalUri());
                     mergedVersion.setBroadcasts(Sets.union(version.getBroadcasts(), mergedVersion.getBroadcasts()));
-                    if (version.getDuration() != null) {
-                        mergedVersion.setDuration(Duration.standardSeconds(version.getDuration()));
-                    }
                     mergedVersion.setManifestedAs(version.getManifestedAs());
                     mergedVersion.setRestriction(version.getRestriction());
-                    mergedVersion.setDuration(Duration.standardSeconds(version.getDuration()));
+                    if (version.getDuration() == null) {
+                        mergedVersion.setDuration(null);
+                    } else {
+                        mergedVersion.setDuration(Duration.standardSeconds(version.getDuration()));
+                    }
+
                     mergedVersions.put(version.getCanonicalUri(), mergedVersion);
                 } else {
                     mergedVersions.put(version.getCanonicalUri(), version);

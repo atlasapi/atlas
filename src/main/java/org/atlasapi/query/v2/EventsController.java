@@ -3,7 +3,6 @@ package org.atlasapi.query.v2;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
-import java.math.BigInteger;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -112,7 +111,7 @@ public class EventsController extends BaseController<Iterable<Event>> {
             }
             
             Predicate<Event> eventFilter = isEnabled(appConfig);
-            if (Boolean.TRUE.equals(noWhitelist)) {
+            if (!Boolean.TRUE.equals(noWhitelist)) {
                 eventFilter = Predicates.and(eventFilter, filterNonWhitelistedEvents); 
             }
             events = selection.apply(Iterables.filter(eventResolver.fetch(eventGroup, from), eventFilter));

@@ -85,19 +85,11 @@ public class EventsController extends BaseController<Iterable<Event>> {
         };
     }
 
-    private Function<Long, String> encodeIds(final NumberToShortStringCodec idCodec) {
-        return new Function<Long, String>() {
-            @Override
-            public String apply(Long input) {
-                return idCodec.encode(BigInteger.valueOf(input));
-            }
-        };
-    }
-
     @RequestMapping(value={"/3.0/events.*", "/events.*"})
     public void allEvents(HttpServletRequest request, HttpServletResponse response,
             @RequestParam(value = "event_group", required = false) String eventGroupId,
-            @RequestParam(value = "from", required = false) String fromStr) throws IOException {
+            @RequestParam(value = "from", required = false) String fromStr,
+            @RequestParam(value = "no_whitelist", required = false) Boolean noWhitelist) throws IOException {
         try {
             final ApplicationConfiguration appConfig = appConfig(request);
             
@@ -119,7 +111,11 @@ public class EventsController extends BaseController<Iterable<Event>> {
                 from = Optional.fromNullable(dateTimeInQueryParser.parse(fromStr));
             }
             
-            events = selection.apply(Iterables.filter(eventResolver.fetch(eventGroup, from), Predicates.and(isEnabled(appConfig), filterNonWhitelistedEvents)));
+            Predicate<Event> eventFilter = isEnabled(appConfig);
+            if (Boolean.TRUE.equals(noWhitelist)) {
+                eventFilter = Predicates.and(eventFilter, filterNonWhitelistedEvents); 
+            }
+            events = selection.apply(Iterables.filter(eventResolver.fetch(eventGroup, from), eventFilter));
 
             modelAndViewFor(request, response, events, appConfig);
         } catch (Exception e) {

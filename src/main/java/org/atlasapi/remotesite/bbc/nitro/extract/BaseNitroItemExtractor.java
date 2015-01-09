@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
@@ -100,6 +101,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             com.metabroadcast.atlas.glycerin.model.Version nitroVersion) {
         Version version = new Version();
 
+        version.addAlias(new Alias(PID_NAMESPACE, nitroVersion.getPid()));
         version.setDuration(convertDuration(nitroVersion.getDuration()));
         version.setLastUpdated(now);
         version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));

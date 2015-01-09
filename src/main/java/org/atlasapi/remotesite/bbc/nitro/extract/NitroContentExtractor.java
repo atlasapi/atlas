@@ -35,7 +35,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
 
     private static final Logger log = LoggerFactory.getLogger(NitroContentExtractor.class);
     
-    private static final String PID_NAMESPACE = "gb:bbc:pid";
+    protected static final String PID_NAMESPACE = "gb:bbc:pid";
     private static final String URI_NAMESPACE = "uri";
     
     private final Clock clock;

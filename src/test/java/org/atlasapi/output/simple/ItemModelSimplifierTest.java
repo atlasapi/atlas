@@ -155,8 +155,8 @@ public class ItemModelSimplifierTest {
         assertThat(simpleLocation.getAvailableCountries().size(), is(1));
         assertThat(simpleLocation.getAvailableCountries().iterator().next(), is("GB"));
         assertThat(simpleLocation.getAudioDescribed(), is(true));
-        assertThat(Iterables.getOnlyElement(simpleLocation.getAliases()).getNamespace(), is(VERSION_ALIAS_NAMESPACE));
-        assertThat(Iterables.getOnlyElement(simpleLocation.getAliases()).getValue(), is(VERSION_ALIAS_VALUE));
+        assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getNamespace(), is(VERSION_ALIAS_NAMESPACE));
+        assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getValue(), is(VERSION_ALIAS_VALUE));
         
         org.atlasapi.media.entity.simple.Location simpleEmbed = Iterables.getLast(simpleLocations, null);
         assertThat(simpleEmbed.getEmbedId(), is("embedId"));

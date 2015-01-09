@@ -476,7 +476,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         simpleItem.addLocation(simpleLocation);
         
         if (annotations.contains(Annotation.V4_ALIASES)) {
-            simpleLocation.setAliases(ImmutableSet.copyOf(Iterables.transform(version.getAliases(), 
+            simpleLocation.setV4Aliases(ImmutableSet.copyOf(Iterables.transform(version.getAliases(), 
                     TO_SIMPLE_ALIAS)));
         }
     }

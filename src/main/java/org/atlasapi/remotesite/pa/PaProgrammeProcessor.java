@@ -148,11 +148,11 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
             brandSummary = new Brand();
             brandSummary.setCanonicalUri(uri);
             brandSummary.setPublisher(Publisher.PA_SERIES_SUMMARIES);
+            brandSummary.setEquivalentTo(ImmutableSet.of(LookupRef.from(brand)));
         } else {
             brandSummary = (Brand) maybeBrandSummary.requireValue();
         }
         
-        brandSummary.setEquivalentTo(ImmutableSet.of(LookupRef.from(brand)));
         brandSummary.setLongDescription(progData.getSeriesSummary());
         brandSummary.setLastUpdated(updatedAt.toDateTimeUTC());
         
@@ -168,11 +168,11 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
             seriesSummary = new Series();
             seriesSummary.setCanonicalUri(uri);
             seriesSummary.setPublisher(Publisher.PA_SERIES_SUMMARIES);
+            seriesSummary.setEquivalentTo(ImmutableSet.of(LookupRef.from(series)));
         } else {
             seriesSummary = (Series) maybeSeriesSummary.requireValue();
         }
        
-        seriesSummary.setEquivalentTo(ImmutableSet.of(LookupRef.from(series)));
         seriesSummary.setLongDescription(progData.getSeason().getSeasonSummary());
         seriesSummary.setLastUpdated(updatedAt.toDateTimeUTC());
         

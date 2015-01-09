@@ -15,6 +15,7 @@ import java.util.Set;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
@@ -59,9 +60,7 @@ public class NitroEpisodeExtractorTest {
     @Test
     public void testParentRefsForExtractedTopLevelItemAreEmpty() {
         
-        Episode tli = new Episode();
-        tli.setPid("p01mv8m3");
-        tli.setTitle("Pantocracy");
+        Episode tli = topLevelItem();
         
         Item extracted = extractor.extract(NitroItemSource.valueOf(tli, noAvailability));
         
@@ -151,6 +150,19 @@ public class NitroEpisodeExtractorTest {
         assertThat(episode.getTitle(), is("Fear Part 2"));
     }
 
+    @Test
+    public void testPidAliasOnVersion() throws DatatypeConfigurationException {
+        Item extractedWithVersionPid = extractor.extract(NitroItemSource.valueOf(topLevelItem(),
+                ImmutableList.of(availability(AUDIO_DESCRIBED_VERSION_PID)),
+                ImmutableList.<Broadcast>of(),
+                ImmutableList.<NitroGenreGroup>of(),
+                ImmutableList.of(version("b12345"))));
+        
+        Alias alias = Iterables.getOnlyElement(
+                Iterables.getOnlyElement(extractedWithVersionPid.getVersions()).getAliases());
+        assertThat(alias.getValue(), is("b12345"));
+    }
+    
     @Test
     public void testParentRefsForExtractedSeriesSeriesEpisodeAreBothHigherLevelSeries() {
         
@@ -455,6 +467,13 @@ public class NitroEpisodeExtractorTest {
         version.setWarnings(warnings);
 
         return version;
+    }
+    
+    private Episode topLevelItem() {
+        Episode tli = new Episode();
+        tli.setPid("p01mv8m3");
+        tli.setTitle("Pantocracy");
+        return tli;
     }
 
 }

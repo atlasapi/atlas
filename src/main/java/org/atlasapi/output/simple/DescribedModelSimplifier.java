@@ -1,6 +1,5 @@
 package org.atlasapi.output.simple;
 
-import java.math.BigDecimal;
 import java.math.BigInteger;
 import java.util.Set;
 
@@ -12,11 +11,7 @@ import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.simple.AudienceStatistics;
-import org.atlasapi.media.entity.simple.Demographic;
-import org.atlasapi.media.entity.simple.DemographicSegment;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.LocalizedDescription;
@@ -43,7 +38,6 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     private final ImageSimplifier imageSimplifier;
     private final DescriptionWatermarker descriptionWatermarker;
     private final DescribedImageExtractor imageExtractor = new DescribedImageExtractor();
-    private final PublisherSimplifier publisherSimplifier = new PublisherSimplifier();
     private final RatingModelSimplifier ratingModelSimplifier = new RatingModelSimplifier();
     private final AudienceStatisticsModelSimplifier audienceStatsModelSimplifier = new AudienceStatisticsModelSimplifier();
     

@@ -5,22 +5,23 @@ import java.io.InputStreamReader;
 
 import org.atlasapi.remotesite.opta.events.OptaDataTransformer;
 import org.atlasapi.remotesite.opta.events.OptaEventsData;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaFixture;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsFeed;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsTeam;
+import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsEventsFeed;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
 
-public final class OptaSportsDataTransformer implements OptaDataTransformer<OptaSportsTeam, OptaFixture> {
+public final class OptaSportsDataTransformer implements OptaDataTransformer<SportsTeam, SportsMatchData> {
 
-    private final Gson gson = new GsonBuilder().create();
+    private final Gson gson = new GsonBuilder()
+            .create();
 
     @Override
-    public OptaEventsData<OptaSportsTeam, OptaFixture> transform(InputStream input) {
-        OptaSportsFeed eventsFeed = gson.fromJson(new InputStreamReader(input), OptaSportsFeed.class);
-        return new OptaSportsEventsData(eventsFeed.fixtures().fixtures(), eventsFeed.fixtures().teams().teams());
+    public OptaEventsData<SportsTeam, SportsMatchData> transform(InputStream input) {
+        OptaSportsEventsFeed eventsFeed = gson.fromJson(new InputStreamReader(input), OptaSportsEventsFeed.class);
+        return new OptaSportsEventsData(eventsFeed.feed().document().matchData(), eventsFeed.feed().document().teams());
     }
     
     

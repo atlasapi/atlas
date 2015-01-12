@@ -50,7 +50,7 @@ public class EventsUtilityTest {
 
     @Test
     public void testResolvesLocationUriThenEventGroups() {
-        OptaSportType sport = OptaSportType.RUGBY;
+        OptaSportType sport = OptaSportType.RUGBY_AVIVA_PREMIERSHIP;
         Mockito.when(topicStore.topicFor("dbpedia", "sport uri")).thenReturn(Maybe.just(testTopic));
         
         Optional<Set<Topic>> resolved = eventsUtil.parseEventGroups(sport);
@@ -75,7 +75,7 @@ public class EventsUtilityTest {
         return new EventsUtility<OptaSportType>(topicStore) {
             
             Map<OptaSportType, Map<String, String>> groupMapping = ImmutableMap.of(
-                    OptaSportType.RUGBY, (Map<String, String>)ImmutableMap.of("Sport", "sport uri")
+                    OptaSportType.RUGBY_AVIVA_PREMIERSHIP, (Map<String, String>)ImmutableMap.of("Sport", "sport uri")
             );
             
             @Override

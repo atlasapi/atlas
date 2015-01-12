@@ -73,6 +73,10 @@ public class OptaEventsModule {
         return new OptaSoccerDataTransformer();
     }
 
+    // Opta Sports are configured through three parameters: feed type, a competition id, and a season. Each sport is
+    // held in an environment param suffixed with the sport's enum value, and the three parameters are joined with the | character.
+    // This method reads any environment params with the supplied suffix and splits out the three config params into a special
+    // holding type, and returns a map of sport -> configuration
     private Map<OptaSportType, OptaSportConfiguration> sportConfig(String sportPrefix) {
         Builder<OptaSportType, OptaSportConfiguration> configMapping = ImmutableMap.<OptaSportType, OptaSportConfiguration>builder();
         for (Entry<String, Parameter> property : Configurer.getParamsWithKeyMatching(Predicates.containsPattern(sportPrefix))) {

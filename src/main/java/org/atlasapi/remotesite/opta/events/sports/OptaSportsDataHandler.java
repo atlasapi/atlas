@@ -140,12 +140,6 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
     }
     
     private String getVenueData(SportsStats stats) {
-//        return Iterables.getOnlyElement(Iterables.filter(stats, new Predicate<SportsStats>() {
-//            @Override
-//            public boolean apply(SportsStats input) {
-//                return VENUE_TYPE.equals(input.attributes().type());
-//            }
-//        })).value(); 
         if (!VENUE_TYPE.equals(stats.attributes().type())) {
             throw new RuntimeException("No venue Stat element found");
         }

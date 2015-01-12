@@ -128,9 +128,9 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         String ssTitle = Iterables.getLast(series).getTitle();
         String suffix = "";
         if (episode.getPresentationTitle() != null) {
-            suffix = " " + episode.getPresentationTitle();
+            suffix = " - " + episode.getPresentationTitle();
         } else if (episode.getTitle() != null) {
-            suffix = " " + episode.getTitle();
+            suffix = " - " + episode.getTitle();
         }
         return ssTitle + suffix;
     }

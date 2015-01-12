@@ -20,7 +20,7 @@ public class OptaEventsUtilityTest {
 
     @Test
     public void testTimeZoneMapping() {
-        Optional<DateTimeZone> fetched = utility.fetchTimeZone(OptaSportType.RUGBY);
+        Optional<DateTimeZone> fetched = utility.fetchTimeZone(OptaSportType.RUGBY_AVIVA_PREMIERSHIP);
         
         assertEquals(DateTimeZone.forID("Europe/London"), fetched.get());
     }

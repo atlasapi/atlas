@@ -1,60 +1,71 @@
 {
-    "fixtures": {
-        "fixture": [
-            {
-                "@attributes": {
-                    "comp_id": "201",
-                    "comp_name": "Aviva Premiership",
-                    "game_date": "20140905",
-                    "group": "1",
-                    "group_name": "1",
-                    "id": "115014",
-                    "leg": "1",
-                    "live_scores": "11",
-                    "public": "1",
-                    "round": "1",
-                    "round_type_id": "1",
-                    "season_id": "2015",
-                    "stage": "1",
-                    "time": "19:45:00",
-                    "venue": "Franklin's Gardens",
-                    "venue_id": "28"
-                },
-                "team": [
-                    {
+    "OptaDocument": {
+        "OptaDocument": {
+            "MatchData": [
+                {
+                    "MatchInfo": {
+                        "Date": "2014-09-05 19:45:00",
+                        "TZ": "BST",
                         "@attributes": {
-                            "home_or_away": "home",
-                            "team_id": "1400"
-                        },
-                        "@value": ""
+                            "GroupName": "1",
+                            "Period": "FullTime",
+                            "RoundNumber": "1",
+                            "RoundType": "1",
+                            "Venue_id": "28"
+                        }
                     },
-                    {
+                    "Stat": {
+                        "@value": "Franklin's Gardens",
                         "@attributes": {
-                            "home_or_away": "away",
-                            "team_id": "1100"
+                            "Type": "Venue"
+                        }
+                    },
+                    "TeamData": [
+                        {
+                            "@value": "",
+                            "@attributes": {
+                                "Score": "53",
+                                "Side": "Home",
+                                "TeamRef": "t1400"
+                            }
                         },
-                        "@value": ""
+                        {
+                            "@value": "",
+                            "@attributes": {
+                                "Score": "6",
+                                "Side": "Away",
+                                "TeamRef": "t1100"
+                            }
+                        }
+                    ],
+                    "@attributes": {
+                        "uID": "g115014"
                     }
-                ]
-            }
-        ],
-        "teams": {
-            "team": [
+                }
+            ],
+            "Team": [
                 {
+                    "Name": "Gloucester",
                     "@attributes": {
-                        "id": "1100",
-                        "name": "Gloucester"
-                    },
-                    "@value": ""
+                        "uID": "t1100"
+                    }
                 },
                 {
+                    "Name": "Northampton",
                     "@attributes": {
-                        "id": "1400",
-                        "name": "Northampton"
-                    },
-                    "@value": ""
+                        "uID": "t1400"
+                    }
                 }
-            ]
+            ],
+            "@attributes": {
+                "Type": "RESULTS Latest",
+                "competition_code": "Latest",
+                "competition_id": "201",
+                "competition_name": "Aviva Premiership",
+                "season_id": "2015",
+                "season_name": "Season 2014/2015",
+                "timestamp": "2015-01-12 07-00-16"
+            }
         }
     }
 }

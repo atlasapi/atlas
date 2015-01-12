@@ -60,10 +60,12 @@ public class LocalOrRemoteNitroFetcher {
                         // radio are more likely to publish clips after a show has been broadcast
                         // so with a limited ingest window it is more important to go back as far as possible for radio
                         // to ensure that clips are not missed
+                        // tv has a longer forward interval, to ensure for repeated shows that we refetch everything, to make sure
+                        // we pull in all changes on a given programme even for later repeats of something broadcast earlier.
                         final Interval fetchForBroadcastsWithin = 
                                 MediaType.AUDIO.equals(input.getMediaType()) 
                                     ? broadcastInterval(today.minusDays(5), today.plusDays(1)) 
-                                    : broadcastInterval(today.minusDays(3), today.plusDays(3));
+                                    : broadcastInterval(today.minusDays(3), today.plusDays(10));
                         
                         return Iterables.any(input.flattenBroadcasts(), new Predicate<org.atlasapi.media.entity.Broadcast>() {
 

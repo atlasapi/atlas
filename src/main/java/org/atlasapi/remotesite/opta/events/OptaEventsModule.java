@@ -54,20 +54,36 @@ public class OptaEventsModule {
     
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(soccerIngestTask().withName("Opta Football Events Updater"), RepetitionRules.NEVER);
-        scheduler.schedule(sportsIngestTask().withName("Opta (Non Football) Sports Events Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(ingestTask(soccerFetcher()).withName("Opta Football Events Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(ingestTask(sportsFetcher()).withName("Opta (Non Football) Sports Events Updater"), RepetitionRules.NEVER);
     }
 
-    private OptaEventsIngestTask<SportsTeam, SportsMatchData> soccerIngestTask() {
-        return new OptaEventsIngestTask<SportsTeam, SportsMatchData>(soccerFetcher(), dataHandler());
+    private OptaEventsIngestTask<SportsTeam, SportsMatchData> ingestTask(OptaEventsFetcher<SportsTeam, SportsMatchData> fetcher) {
+        return new OptaEventsIngestTask<SportsTeam, SportsMatchData>(fetcher, dataHandler());
     }
 
     private OptaEventsFetcher<SportsTeam, SportsMatchData> soccerFetcher() {
-        return new HttpOptaEventsFetcher<>(sportConfig(OPTA_HTTP_SOCCER_CONFIG_PREFIX), HttpClients.webserviceClient(), soccerTransformer(), new UsernameAndPassword(username, password), baseUrl);
+        return httpEventsFetcher(OPTA_HTTP_SOCCER_CONFIG_PREFIX, soccerTransformer());
     }
     
     private OptaDataTransformer<SportsTeam, SportsMatchData> soccerTransformer() {
         return new OptaSoccerDataTransformer();
+    }
+
+    private OptaEventsFetcher<SportsTeam, SportsMatchData> sportsFetcher() {
+        return httpEventsFetcher(OPTA_HTTP_RUGBY_CONFIG_PREFIX, sportsTransformer());
+    }
+    
+    private OptaDataTransformer<SportsTeam, SportsMatchData> sportsTransformer() {
+        return new OptaSportsDataTransformer();
+    }
+
+    private OptaEventsFetcher<SportsTeam, SportsMatchData> httpEventsFetcher(String sportPrefix, OptaDataTransformer<SportsTeam, SportsMatchData> dataTransformer) {
+        return new HttpOptaEventsFetcher<>(sportConfig(sportPrefix), HttpClients.webserviceClient(), dataTransformer, new UsernameAndPassword(username, password), baseUrl);
+    }
+
+    private OptaSportsDataHandler dataHandler() {
+        return new OptaSportsDataHandler(organisationStore, eventStore, utility());
     }
 
     /**
@@ -114,21 +130,5 @@ public class OptaEventsModule {
     @Bean
     private OptaEventsUtility utility() {
         return new OptaEventsUtility(topicStore);
-    }
-
-    private OptaEventsIngestTask<SportsTeam, SportsMatchData> sportsIngestTask() {
-        return new OptaEventsIngestTask<>(sportsFetcher(), dataHandler());
-    }
-
-    private OptaEventsFetcher<SportsTeam, SportsMatchData> sportsFetcher() {
-        return new HttpOptaEventsFetcher<>(sportConfig(OPTA_HTTP_RUGBY_CONFIG_PREFIX), HttpClients.webserviceClient(), sportsTransformer(), new UsernameAndPassword(username, password), baseUrl);
-    }
-    
-    private OptaDataTransformer<SportsTeam, SportsMatchData> sportsTransformer() {
-        return new OptaSportsDataTransformer();
-    }
-
-    private OptaSportsDataHandler dataHandler() {
-        return new OptaSportsDataHandler(organisationStore, eventStore, utility());
     }
 }

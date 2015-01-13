@@ -27,7 +27,7 @@ public class OptaSportsDataTransformerTest {
         
         SportsMatchData match = Iterables.getOnlyElement(data.matches());
         
-        assertEquals("Franklin's Gardens", match.stats().value());
+        assertEquals("Franklin's Gardens", Iterables.getOnlyElement(match.stats()).value());
     }
     
     private InputStream streamFromFile(String filename) throws IOException {

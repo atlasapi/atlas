@@ -1,26 +1,29 @@
 package org.atlasapi.remotesite.opta.events.sports.model;
 
-import com.google.gson.annotations.SerializedName;
+import static com.google.api.client.util.Preconditions.checkNotNull;
+
 
 
 public class OptaSportsEventsFeed {
 
-    @SerializedName("OptaDocument")
-    private OptaDocument feed;
+    private final OptaDocument feed;
     
-    public OptaSportsEventsFeed() { }
-    
+    public OptaSportsEventsFeed(OptaDocument feed) {
+        this.feed = checkNotNull(feed);
+    }
+
     public OptaDocument feed() {
         return feed;
     }
     
     public static class OptaDocument {
         
-        @SerializedName("OptaDocument")
-        private OptaSportsDocument document;
+        private final OptaSportsDocument document;
         
-        public OptaDocument() { }
-        
+        public OptaDocument(OptaSportsDocument document) {
+            this.document = checkNotNull(document);
+        }
+
         public OptaSportsDocument document() {
             return document;
         }

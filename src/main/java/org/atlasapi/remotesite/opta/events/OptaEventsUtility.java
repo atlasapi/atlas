@@ -95,7 +95,8 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
             .put("Turf Moor", "http://dbpedia.org/resources/Turf_Moor") 
             .put("Villa Park", "http://dbpedia.org/resources/Villa_Park") 
             .put("White Hart Lane", "http://dbpedia.org/resources/White_Hart_Lane") 
-            .put("Ricoh Arena", "http://en.wikipedia.org/wiki/Ricoh_Arena")
+            .put("Ricoh Arena", "http://dbpedia.org/wiki/Ricoh_Arena")
+            .put("Schwarzwald-Stadion", "http://dbpedia.org/wiki/Dreisamstadion")
             .build();
     private static final Map<OptaSportType, Map<String, String>> EVENT_GROUPS_LOOKUP = ImmutableMap.<OptaSportType, Map<String, String>>builder()
             .put(OptaSportType.RUGBY_AVIVA_PREMIERSHIP, ImmutableMap.of(

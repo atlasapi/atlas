@@ -170,7 +170,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             return MediaType.VIDEO;
         }
 
-        return RadioPlayerServices.ionIdToService.containsKey(masterBrand.getMid()) ?
+        return RadioPlayerServices.masterBrandIdToService.containsKey(masterBrand.getMid()) ?
                MediaType.AUDIO :
                MediaType.VIDEO;
     }

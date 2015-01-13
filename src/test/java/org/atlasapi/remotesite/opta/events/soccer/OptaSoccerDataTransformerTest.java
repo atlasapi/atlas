@@ -6,7 +6,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.atlasapi.remotesite.opta.events.soccer.model.SoccerMatchData;
+import org.atlasapi.remotesite.opta.events.sports.OptaSportsEventsData;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
 import org.junit.Test;
 
 import com.google.common.collect.Iterables;
@@ -20,12 +21,12 @@ public class OptaSoccerDataTransformerTest {
     @Test
     public void testConversionToOptaSportsFormat() throws IOException {
         InputStream stream = streamFromFile("bundesliga_feed.json");
-        OptaSoccerEventsData data = (OptaSoccerEventsData) transformer.transform(stream);
+        OptaSportsEventsData data = (OptaSportsEventsData) transformer.transform(stream);
         
         assertEquals(2, Iterables.size(data.teams()));
         assertEquals(1, Iterables.size(data.matches()));
         
-        SoccerMatchData match = Iterables.getOnlyElement(data.matches());
+        SportsMatchData match = Iterables.getOnlyElement(data.matches());
         
         assertEquals("g758690", match.attributes().uId());
     }

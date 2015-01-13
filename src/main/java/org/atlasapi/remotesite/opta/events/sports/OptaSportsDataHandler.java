@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.opta.events.sports;
 
 import static com.google.api.client.util.Preconditions.checkNotNull;
 
+import java.util.List;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Event;
@@ -26,6 +27,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -35,8 +37,6 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
     
     private static final String VENUE_TYPE = "Venue";
     private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-    // This is required as the original ids for the rugby teams were ingested without the leading 't' found in the new feed format
-    private static final String TEAM_UID_PREFIX = "t";
     
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final OptaEventsUtility utility;
@@ -50,15 +50,11 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
     public Optional<Organisation> parseOrganisation(SportsTeam team) {
         Organisation organisation = new Organisation();
 
-        organisation.setCanonicalUri(utility.createTeamUri(parseTeamIdFrom(team.attributes().uId())));
+        organisation.setCanonicalUri(utility.createTeamUri(team.attributes().uId()));
         organisation.setPublisher(Publisher.OPTA);
         organisation.setTitle(team.name());
 
         return Optional.of(organisation);
-    }
-
-    private String parseTeamIdFrom(String uId) {
-        return uId.replaceFirst(TEAM_UID_PREFIX, "");
     }
 
     @Override
@@ -107,7 +103,7 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
     }
     
     private Optional<String> fetchTeamName(SportsTeamData teamData) {
-        String teamId = parseTeamIdFrom(teamData.attributes().teamRef());
+        String teamId = teamData.attributes().teamRef();
         Optional<Organisation> team = getTeamByUri(utility.createTeamUri(teamId));
         if (!team.isPresent()) {
             log.error("team {} not present in teams list", teamId);
@@ -117,7 +113,7 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
     }
     
     private Optional<DateTime> parseStartTime(SportsMatchData match, OptaSportType sport) {
-        String dateStr = match.matchInformation().date();
+        String dateStr = match.matchInformation().date().date();
         Optional<DateTimeZone> timeZone = utility.fetchTimeZone(sport);
         if (!timeZone.isPresent()) {
             log.error("No time zone mapping found for sport {}", sport);
@@ -139,18 +135,20 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
         return value;
     }
     
-    private String getVenueData(SportsStats stats) {
-        if (!VENUE_TYPE.equals(stats.attributes().type())) {
-            throw new RuntimeException("No venue Stat element found");
-        }
-        return stats.value();
+    private String getVenueData(List<SportsStats> stats) {
+        return Iterables.getOnlyElement(Iterables.filter(stats, new Predicate<SportsStats>() {
+            @Override
+            public boolean apply(SportsStats input) {
+                return VENUE_TYPE.equals(input.attributes().type());
+            }
+        })).value();
     }
     
     private Iterable<Organisation> parseOrganisations(SportsMatchData match) {
         Iterable<Organisation> organisations = Iterables.transform(match.teamData(), new Function<SportsTeamData, Organisation>() {
             @Override
             public Organisation apply(SportsTeamData input) {
-                return getTeamByUri(utility.createTeamUri(parseTeamIdFrom(input.attributes().teamRef()))).orNull();
+                return getTeamByUri(utility.createTeamUri(input.attributes().teamRef())).orNull();
             }
         });
         return Iterables.filter(organisations, Predicates.notNull());

@@ -1,12 +1,14 @@
 package org.atlasapi.remotesite.opta.events.sports.model;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import com.google.gson.annotations.SerializedName;
 
 
 public class SportsMatchInfo {
 
     @SerializedName("Date")
-    private String date;
+    private MatchDate date;
     @SerializedName("TZ")
     private String timeZone;
     @SerializedName("@attributes")
@@ -14,7 +16,7 @@ public class SportsMatchInfo {
     
     public SportsMatchInfo() { }
     
-    public String date() {
+    public MatchDate date() {
         return date;
     }
     
@@ -28,16 +30,26 @@ public class SportsMatchInfo {
 
     public static class MatchInfoAttributes {
         
+        @SerializedName("GroupName")
+        private String groupName;
         @SerializedName("MatchDay")
         private String matchDay;
         @SerializedName("MatchType")
         private String matchType;
         @SerializedName("Period")
         private String period;
+        @SerializedName("RoundNumber")
+        private String roundNumber;
+        @SerializedName("RoundType")
+        private String roundType;
         @SerializedName("Venue_id")
         private String venueId;
         
         public MatchInfoAttributes() { }
+        
+        public String groupName() {
+            return groupName;
+        }
         
         public String matchDay() {
             return matchDay;
@@ -51,8 +63,29 @@ public class SportsMatchInfo {
             return period;
         }
 
+        public String roundNumber() {
+            return roundNumber;
+        }
+
+        public String roundType() {
+            return roundType;
+        }
+
         public String venueId() {
             return venueId;
+        }
+    }
+    
+    public static class MatchDate {
+        
+        private String date;
+        
+        public MatchDate(String date) { 
+            this.date = checkNotNull(date);
+        }
+        
+        public String date() {
+            return date;
         }
     }
 }

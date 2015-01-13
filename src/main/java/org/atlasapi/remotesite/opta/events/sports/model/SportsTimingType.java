@@ -1,11 +1,11 @@
-package org.atlasapi.remotesite.opta.events.soccer.model;
+package org.atlasapi.remotesite.opta.events.sports.model;
 
 import java.util.List;
 
 import com.google.gson.annotations.SerializedName;
 
 
-public class SoccerTimingType {
+public class SportsTimingType {
     
     @SerializedName("DetailTypes")
     private DetailTypes detailTypes;
@@ -14,7 +14,7 @@ public class SoccerTimingType {
     @SerializedName("TimingType")
     private TimingType timingType;
     
-    public SoccerTimingType() { }
+    public SportsTimingType() { }
     
     public DetailTypes detailTypes() {
         return detailTypes;
@@ -52,7 +52,7 @@ public class SoccerTimingType {
         }
     }
     
-public static class TimingType {
+    public static class TimingType {
         
         @SerializedName("TimingType")
         private List<InnerTimingType> timingTypes;

@@ -1,8 +1,8 @@
-package org.atlasapi.remotesite.opta.events.soccer.model;
+package org.atlasapi.remotesite.opta.events.sports.model;
 
 import java.lang.reflect.Type;
 
-import org.atlasapi.remotesite.opta.events.soccer.model.SoccerMatchInfo.MatchDate;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchInfo.MatchDate;
 
 import com.google.gson.JsonDeserializationContext;
 import com.google.gson.JsonDeserializer;

@@ -18,9 +18,17 @@ import org.atlasapi.persistence.event.EventStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.opta.events.OptaEventsUtility;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
+import org.atlasapi.remotesite.opta.events.sports.model.MatchDateDeserializer;
+import org.atlasapi.remotesite.opta.events.sports.model.OptaDocumentDeserializer;
 import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsEventsFeed;
+import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsEventsFeed.OptaDocument;
+import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsEventsFeedDeserializer;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchDataDeserializer;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchInfo.MatchDate;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeamData;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeamDataDeserializer;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
@@ -44,7 +52,13 @@ import com.metabroadcast.common.base.Maybe;
 public class OptaSportsDataHandlerTest {
 
     private static final OptaSportType SPORT = OptaSportType.RUGBY_AVIVA_PREMIERSHIP;
-    private Gson gson = new GsonBuilder().create();
+    private Gson gson = new GsonBuilder()
+            .registerTypeAdapter(OptaSportsEventsFeed.class, new OptaSportsEventsFeedDeserializer("OptaDocument"))
+            .registerTypeAdapter(OptaDocument.class, new OptaDocumentDeserializer("OptaDocument"))
+            .registerTypeAdapter(SportsMatchData.class, new SportsMatchDataDeserializer())
+            .registerTypeAdapter(SportsTeamData.class, new SportsTeamDataDeserializer())
+            .registerTypeAdapter(MatchDate.class, new MatchDateDeserializer())
+            .create();
     private OrganisationStore organisationStore = Mockito.mock(OrganisationStore.class);
     private EventStore eventStore = Mockito.mock(EventStore.class);
     private TopicStore topicStore = Mockito.mock(TopicStore.class);
@@ -78,7 +92,7 @@ public class OptaSportsDataHandlerTest {
         
         Organisation parsedTeam = parsed.get();
         
-        assertEquals("http://optasports.com/teams/" + team.attributes().uId().replace("t", ""), parsedTeam.getCanonicalUri());
+        assertEquals("http://optasports.com/teams/" + team.attributes().uId(), parsedTeam.getCanonicalUri());
         assertEquals(Publisher.OPTA, parsedTeam.getPublisher());
         assertEquals(team.name(), parsedTeam.getTitle());
     }
@@ -94,13 +108,13 @@ public class OptaSportsDataHandlerTest {
         Event parsedEvent = parsed.get();
 
         DateTime startTime = new DateTime(2014, 9, 5, 19, 45, 0, DateTimeZone.forID("Europe/London"));
-        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/1100", "http://optasports.com/teams/1400");
+        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/t1100", "http://optasports.com/teams/t1400");
         
         assertEquals("http://optasports.com/events/" + match.attributes().uId(), parsedEvent.getCanonicalUri());
         assertEquals("Northampton vs Gloucester", parsedEvent.title());
         assertEquals(Publisher.OPTA, parsedEvent.publisher());
         
-        String location = match.stats().value();
+        String location = Iterables.getOnlyElement(match.stats()).value();
         assertEquals(utility.createOrResolveVenue(location).get().getValue(), parsedEvent.venue().getValue());
         
         assertEquals(startTime, parsedEvent.startTime());

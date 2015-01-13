@@ -1,16 +1,16 @@
-package org.atlasapi.remotesite.opta.events.soccer.model;
+package org.atlasapi.remotesite.opta.events.sports.model;
 
 import com.google.gson.annotations.SerializedName;
 
 
-public class SoccerGoal {
-    
+public class Goal {
+
     @SerializedName("@value")
     private String value;
     @SerializedName("@attributes")
     private GoalAttributes attributes;
 
-    public SoccerGoal() { }
+    public Goal() { }
     
     public String value() {
         return value;

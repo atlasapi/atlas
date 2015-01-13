@@ -12,10 +12,7 @@ import org.atlasapi.persistence.event.EventStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.HttpClients;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
-import org.atlasapi.remotesite.opta.events.soccer.OptaSoccerDataHandler;
 import org.atlasapi.remotesite.opta.events.soccer.OptaSoccerDataTransformer;
-import org.atlasapi.remotesite.opta.events.soccer.model.SoccerMatchData;
-import org.atlasapi.remotesite.opta.events.soccer.model.SoccerTeam;
 import org.atlasapi.remotesite.opta.events.sports.OptaSportsDataHandler;
 import org.atlasapi.remotesite.opta.events.sports.OptaSportsDataTransformer;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
@@ -57,26 +54,31 @@ public class OptaEventsModule {
     
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(soccerIngestTask().withName("Opta Soccer Events Updater"), RepetitionRules.NEVER);
-        scheduler.schedule(sportsIngestTask().withName("Opta Sports Events Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(soccerIngestTask().withName("Opta Football Events Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(sportsIngestTask().withName("Opta (Non Football) Sports Events Updater"), RepetitionRules.NEVER);
     }
 
-    private OptaEventsIngestTask<SoccerTeam, SoccerMatchData> soccerIngestTask() {
-        return new OptaEventsIngestTask<SoccerTeam, SoccerMatchData>(soccerFetcher(), soccerDataHandler());
+    private OptaEventsIngestTask<SportsTeam, SportsMatchData> soccerIngestTask() {
+        return new OptaEventsIngestTask<SportsTeam, SportsMatchData>(soccerFetcher(), dataHandler());
     }
 
-    private OptaEventsFetcher<SoccerTeam, SoccerMatchData> soccerFetcher() {
+    private OptaEventsFetcher<SportsTeam, SportsMatchData> soccerFetcher() {
         return new HttpOptaEventsFetcher<>(sportConfig(OPTA_HTTP_SOCCER_CONFIG_PREFIX), HttpClients.webserviceClient(), soccerTransformer(), new UsernameAndPassword(username, password), baseUrl);
     }
     
-    private OptaDataTransformer<SoccerTeam, SoccerMatchData> soccerTransformer() {
+    private OptaDataTransformer<SportsTeam, SportsMatchData> soccerTransformer() {
         return new OptaSoccerDataTransformer();
     }
 
-    // Opta Sports are configured through three parameters: feed type, a competition id, and a season. Each sport is
-    // held in an environment param suffixed with the sport's enum value, and the three parameters are joined with the | character.
-    // This method reads any environment params with the supplied suffix and splits out the three config params into a special
-    // holding type, and returns a map of sport -> configuration
+    /**
+     * Opta Sports are configured through three parameters: feed type, a competition id, and a season. Each sport is
+     * held in an environment param suffixed with the sport's enum value, and the three parameters are joined with the | character.
+     * This method reads any environment params with the supplied suffix and splits out the three config params into a special
+     * holding type, and returns a map of sport -> configuration
+     * 
+     * @param sportPrefix the environment parameter prefix for the sport subset desired
+     * @return
+     */
     private Map<OptaSportType, OptaSportConfiguration> sportConfig(String sportPrefix) {
         Builder<OptaSportType, OptaSportConfiguration> configMapping = ImmutableMap.<OptaSportType, OptaSportConfiguration>builder();
         for (Entry<String, Parameter> property : Configurer.getParamsWithKeyMatching(Predicates.containsPattern(sportPrefix))) {
@@ -110,17 +112,12 @@ public class OptaEventsModule {
     }
 
     @Bean
-    private OptaSoccerDataHandler soccerDataHandler() {
-        return new OptaSoccerDataHandler(organisationStore, eventStore, utility());
-    }
-
-    @Bean
     private OptaEventsUtility utility() {
         return new OptaEventsUtility(topicStore);
     }
 
     private OptaEventsIngestTask<SportsTeam, SportsMatchData> sportsIngestTask() {
-        return new OptaEventsIngestTask<>(sportsFetcher(), sportsDataHandler());
+        return new OptaEventsIngestTask<>(sportsFetcher(), dataHandler());
     }
 
     private OptaEventsFetcher<SportsTeam, SportsMatchData> sportsFetcher() {
@@ -131,7 +128,7 @@ public class OptaEventsModule {
         return new OptaSportsDataTransformer();
     }
 
-    private OptaSportsDataHandler sportsDataHandler() {
+    private OptaSportsDataHandler dataHandler() {
         return new OptaSportsDataHandler(organisationStore, eventStore, utility());
     }
 }

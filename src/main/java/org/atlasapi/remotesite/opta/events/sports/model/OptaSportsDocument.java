@@ -9,6 +9,8 @@ public class OptaSportsDocument {
 
     @SerializedName("MatchData")
     private List<SportsMatchData> matchData;
+    @SerializedName("TimingTypes")
+    private SportsTimingType timingType;
     @SerializedName("Team")
     private List<SportsTeam> teams;
     @SerializedName("@attributes")
@@ -18,6 +20,10 @@ public class OptaSportsDocument {
     
     public List<SportsMatchData> matchData() {
         return matchData;
+    }
+    
+    public SportsTimingType timingType() {
+        return timingType;
     }
     
     public List<SportsTeam> teams() {

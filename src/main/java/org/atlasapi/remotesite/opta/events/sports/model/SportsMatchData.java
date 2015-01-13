@@ -3,29 +3,28 @@ package org.atlasapi.remotesite.opta.events.sports.model;
 import java.util.List;
 
 import org.atlasapi.remotesite.opta.events.model.OptaMatch;
-import org.atlasapi.remotesite.opta.events.soccer.model.MatchDataAttributes;
-
-import com.google.gson.annotations.SerializedName;
 
 
 public class SportsMatchData implements OptaMatch {
 
-    @SerializedName("MatchInfo")
     private SportsMatchInfo matchInformation;
-    @SerializedName("Stat")
-    private SportsStats stats;
-    @SerializedName("TeamData")
+    private List<SportsStats> stats;
     private List<SportsTeamData> teamData;
-    @SerializedName("@attributes")
     private MatchDataAttributes attributes;
     
-    public SportsMatchData() { }
-    
+    public SportsMatchData(SportsMatchInfo matchInformation, List<SportsStats> stats,
+            List<SportsTeamData> teamData, MatchDataAttributes attributes) {
+        this.matchInformation = matchInformation;
+        this.stats = stats;
+        this.teamData = teamData;
+        this.attributes = attributes;
+    }
+
     public SportsMatchInfo matchInformation() {
         return matchInformation;
     }
     
-    public SportsStats stats() {
+    public List<SportsStats> stats() {
         return stats;
     }
     

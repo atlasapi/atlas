@@ -1,9 +1,9 @@
-package org.atlasapi.remotesite.opta.events.soccer;
+package org.atlasapi.remotesite.opta.events.sports;
 
 import static org.junit.Assert.*;
 
-import org.atlasapi.remotesite.opta.events.soccer.model.MatchDateDeserializer;
-import org.atlasapi.remotesite.opta.events.soccer.model.SoccerMatchInfo.MatchDate;
+import org.atlasapi.remotesite.opta.events.sports.model.MatchDateDeserializer;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchInfo.MatchDate;
 import org.junit.Test;
 
 import com.google.gson.Gson;

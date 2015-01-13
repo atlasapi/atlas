@@ -69,5 +69,5 @@ public class NitroSeriesExtractor
     protected MasterBrand extractMasterBrand(Series source) {
         return source.getMasterBrand();
     }
-    
+
 }

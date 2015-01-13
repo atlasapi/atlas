@@ -1,9 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.Image;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
-import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.common.time.Clock;
 
 /**

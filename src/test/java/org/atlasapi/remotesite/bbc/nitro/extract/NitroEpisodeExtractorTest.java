@@ -19,10 +19,12 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
 import org.hamcrest.Matchers;
 import org.joda.time.Duration;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.base.Strings;
@@ -328,6 +330,35 @@ public class NitroEpisodeExtractorTest {
 
         assertEquals(1280, (int) encoding.getVideoHorizontalSize());
         assertEquals(720, (int) encoding.getVideoVerticalSize());
+    }
+
+    @Test
+    public void testMediaTypeIsProperlySet() {
+        Episode audioEpisode = new Episode();
+        audioEpisode.setPid("b012cl84");
+        audioEpisode.setTitle("Destiny");
+        audioEpisode.setMediaType("Audio");
+
+        Item audioExtracted = extractor.extract(NitroItemSource.valueOf(audioEpisode,
+                ImmutableList.<Availability>of(),
+                ImmutableList.<Broadcast>of(),
+                ImmutableList.<NitroGenreGroup>of(),
+                ImmutableList.<Version>of()));
+
+        Assert.assertEquals(MediaType.AUDIO, audioExtracted.getMediaType());
+
+        Episode videoEpisode = new Episode();
+        videoEpisode.setPid("b012cl84");
+        videoEpisode.setTitle("Destiny");
+        videoEpisode.setMediaType("Video");
+
+        Item videoExtracted = extractor.extract(NitroItemSource.valueOf(videoEpisode,
+                ImmutableList.<Availability>of(),
+                ImmutableList.<Broadcast>of(),
+                ImmutableList.<NitroGenreGroup>of(),
+                ImmutableList.<Version>of()));
+
+        Assert.assertEquals(MediaType.VIDEO, videoExtracted.getMediaType());
     }
 
     private FormatsType filmFormatsType() {

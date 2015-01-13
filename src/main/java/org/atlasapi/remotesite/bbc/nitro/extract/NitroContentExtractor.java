@@ -3,9 +3,11 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
@@ -18,6 +20,7 @@ import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
+import com.metabroadcast.atlas.glycerin.model.Series;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
 
@@ -73,6 +76,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             content.setImages(ImmutableSet.of(image));
         }
         MasterBrand masterBrand = extractMasterBrand(source);
+        content.setMediaType(computeMediaType(masterBrand));
         if (masterBrand != null) {
             String masterBrandChannel = BbcIonServices.getMasterBrand(masterBrand.getMid());
             content.setPresentationChannel(masterBrandChannel);
@@ -159,6 +163,16 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             Objects.firstNonNull(synopses.getLong(), 
                 Objects.firstNonNull(synopses.getMedium(), 
                     Objects.firstNonNull(synopses.getShort(), ""))));
+    }
+
+    private MediaType computeMediaType(MasterBrand masterBrand) {
+        if (masterBrand == null) {
+            return MediaType.VIDEO;
+        }
+
+        return RadioPlayerServices.ionIdToService.containsKey(masterBrand.getMid()) ?
+               MediaType.AUDIO :
+               MediaType.VIDEO;
     }
 
 }

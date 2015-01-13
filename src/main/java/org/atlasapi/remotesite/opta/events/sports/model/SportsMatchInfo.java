@@ -76,6 +76,14 @@ public class SportsMatchInfo {
         }
     }
     
+    /**
+     * This class wraps a date string, and simply allows use of a custom deserializer
+     * for dates that can deal with Opta formatting dates either as plain strings or 
+     * within JSON objects depending upon which record/feed is being parsed.
+     *  
+     * @author Oliver Hall (oli@metabroadcast.com)
+     *
+     */
     public static class MatchDate {
         
         private String date;

@@ -54,8 +54,8 @@ public class OptaEventsModule {
     
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(ingestTask(soccerFetcher()).withName("Opta Football Events Updater"), RepetitionRules.NEVER);
-        scheduler.schedule(ingestTask(sportsFetcher()).withName("Opta (Non Football) Sports Events Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(ingestTask(soccerFetcher()).withName("Opta Events (Football) Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(ingestTask(sportsFetcher()).withName("Opta Events (Non Football) Updater"), RepetitionRules.NEVER);
     }
 
     private OptaEventsIngestTask<SportsTeam, SportsMatchData> ingestTask(OptaEventsFetcher<SportsTeam, SportsMatchData> fetcher) {

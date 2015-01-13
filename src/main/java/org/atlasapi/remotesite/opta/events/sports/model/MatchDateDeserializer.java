@@ -10,7 +10,14 @@ import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParseException;
 
-
+/**
+ * This deserializer attempts to deal with the various ways in which dates are formatted in
+ * Opta's event feed output. Depending upon the feed/record being parsed, the date string may
+ * either be a string value or nested within another JSON object.
+ * 
+ * @author Oliver Hall (oli@metabroadcast.com)
+ *
+ */
 public class MatchDateDeserializer implements JsonDeserializer<MatchDate> {
 
     @Override

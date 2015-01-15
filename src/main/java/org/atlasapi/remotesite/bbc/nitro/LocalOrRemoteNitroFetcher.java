@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.ContentMerger;
@@ -55,6 +56,10 @@ public class LocalOrRemoteNitroFetcher {
 
                     @Override
                     public boolean apply(Item input) {
+                        if (hasVersionsWithNoDurations(input)) {                        
+                            return true;
+                        }
+                        
                         LocalDate today = clock.now().toLocalDate();
                         
                         // radio are more likely to publish clips after a show has been broadcast
@@ -73,6 +78,20 @@ public class LocalOrRemoteNitroFetcher {
                             public boolean apply(org.atlasapi.media.entity.Broadcast input) {
                                 return fetchForBroadcastsWithin.contains(input.getTransmissionTime());
                             }});
+                    }
+
+                    /**
+                     * Forces a full fetch from nitro if an item with no durations is encountered
+                     * @param input
+                     * @return
+                     */
+                    private boolean hasVersionsWithNoDurations(Item input) {
+                        return Iterables.any(input.getVersions(), new Predicate<Version>() {
+                            @Override
+                            public boolean apply(Version input) {
+                                return input.getDuration() == null;
+                            }
+                        });
                     }
             
                     }

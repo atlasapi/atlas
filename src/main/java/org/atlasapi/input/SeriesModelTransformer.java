@@ -1,0 +1,42 @@
+package org.atlasapi.input;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.simple.Playlist;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.persistence.topic.TopicStore;
+import org.joda.time.DateTime;
+
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.time.Clock;
+
+public class SeriesModelTransformer extends ContentModelTransformer<Playlist, Series> {
+
+    public SeriesModelTransformer(LookupEntryStore lookupStore,
+            TopicStore topicStore,
+            NumberToShortStringCodec idCodec,
+            ClipModelTransformer clipsModelTransformer, Clock clock) {
+        super(lookupStore, topicStore, idCodec, clipsModelTransformer, clock);
+    }
+
+    @Override protected Series createContentOutput(Playlist simple, DateTime now) {
+        checkNotNull(simple.getUri(),
+                "Cannot create a Series from simple Playlist without URI");
+        checkNotNull(simple.getPublisher(),
+                "Cannot create a Series from simple Playlist without a Publisher");
+        checkNotNull(simple.getPublisher().getKey(),
+                "Cannot create a Series from simple Playlist without a Publisher key");
+
+        Series series = new Series(
+                simple.getUri(),
+                simple.getCurie(),
+                Publisher.fromKey(simple.getPublisher().getKey()).requireValue()
+        );
+        series.setTotalEpisodes(simple.getTotalEpisodes());
+        series.withSeriesNumber(simple.getSeriesNumber());
+        return series;
+    }
+}

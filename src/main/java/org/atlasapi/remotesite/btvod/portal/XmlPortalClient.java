@@ -15,11 +15,14 @@ import nu.xom.Elements;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.http.HttpException;
 import com.metabroadcast.common.http.HttpResponsePrologue;
 import com.metabroadcast.common.http.HttpResponseTransformer;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.http.HttpStatusCodeException;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.http.SimpleHttpRequest;
 
@@ -39,13 +42,18 @@ public class XmlPortalClient implements PortalClient {
         this.uriBase = checkNotNull(uriBase);
     }
     
-    public Set<String> getProductIdsForGroup(String groupId) {
+    public Optional<Set<String>> getProductIdsForGroup(String groupId) {
         int pageNumber = 1;
         PageData pageData = null;
         ImmutableSet.Builder<String> ids = ImmutableSet.builder();
         do {
             try {
                 pageData = getProductIdsForGroupPage(groupId, pageNumber);
+            } catch (HttpStatusCodeException e) {
+                if (HttpStatusCode.NOT_FOUND.is(e.getStatusCode())) {
+                    return Optional.absent();
+                }
+                throw Throwables.propagate(e);
             } catch (Exception e) {
                 throw Throwables.propagate(e);
             }
@@ -56,7 +64,7 @@ public class XmlPortalClient implements PortalClient {
             }
         } while (pageData.end < pageData.total);
                 
-        return ids.build();
+        return Optional.of((Set<String>) ids.build());
     }
     
     private PageData getProductIdsForGroupPage(String groupId, int pageNumber) throws HttpException, Exception {

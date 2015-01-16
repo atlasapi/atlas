@@ -12,13 +12,13 @@ import org.atlasapi.media.entity.simple.Playlist;
 public class DelegatingModelTransformer implements ModelTransformer<Description, Content> {
 
     private final ModelTransformer<Item, org.atlasapi.media.entity.Item> itemTransformer;
-    private final ModelTransformer<Item, Series> seriesModelTransformer;
-    private final ModelTransformer<org.atlasapi.media.entity.simple.Playlist, Brand> brandTransformer;
+    private final ModelTransformer<Playlist, Series> seriesModelTransformer;
+    private final ModelTransformer<Playlist, Brand> brandTransformer;
 
     public DelegatingModelTransformer(
             ModelTransformer<org.atlasapi.media.entity.simple.Playlist, Brand> brandTransformer,
             ModelTransformer<Item, org.atlasapi.media.entity.Item> itemTransformer,
-            ModelTransformer<Item, Series> seriesModelTransformer) {
+            ModelTransformer<Playlist, Series> seriesModelTransformer) {
         this.brandTransformer = checkNotNull(brandTransformer);
         this.itemTransformer = checkNotNull(itemTransformer);
         this.seriesModelTransformer = checkNotNull(seriesModelTransformer);
@@ -27,7 +27,7 @@ public class DelegatingModelTransformer implements ModelTransformer<Description,
     @Override
     public Content transform(Description simple) {
         if (simple instanceof Playlist && simple.getType().equalsIgnoreCase("series")) {
-            return seriesModelTransformer.transform((Item) simple);
+            return seriesModelTransformer.transform((Playlist) simple);
         } else if (simple instanceof Playlist && simple.getType().equalsIgnoreCase("brand")) {
             return brandTransformer.transform((Playlist) simple);
         } else if (simple instanceof Item) {

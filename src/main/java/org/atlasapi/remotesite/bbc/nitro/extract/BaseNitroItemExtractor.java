@@ -73,7 +73,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     @Override
     protected final void extractAdditionalFields(NitroItemSource<SOURCE> source, ITEM item, DateTime now) {
         ImmutableSetMultimap<String, Broadcast> broadcasts = extractBroadcasts(source.getBroadcasts(), now);
-        OptionalMap<String, Set<Encoding>> encodings = extractEncodings(source.getAvailabilities(), now);
+        OptionalMap<String, Set<Encoding>> encodings = extractEncodings(source.getAvailabilities(), now, extractMediaType(source));
 
         ImmutableSet.Builder<Version> versions = ImmutableSet.builder();
 
@@ -195,11 +195,12 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         
     }
 
-    private OptionalMap<String, Set<Encoding>> extractEncodings(List<Availability> availabilities, DateTime now) {
+    private OptionalMap<String, Set<Encoding>> extractEncodings(List<Availability> availabilities, DateTime now,
+            String mediaType) {
         Map<String, Collection<Availability>> byVersion = indexByVersion(availabilities);
         ImmutableMap.Builder<String, Set<Encoding>> results = ImmutableMap.builder();
         for (Entry<String, Collection<Availability>> availability : byVersion.entrySet()) {
-            Set<Encoding> extracted = availabilityExtractor.extract(availability.getValue());
+            Set<Encoding> extracted = availabilityExtractor.extract(availability.getValue(), mediaType);
             if (!extracted.isEmpty()) {
                 results.put(availability.getKey(), setLastUpdated(extracted, now));
             }

@@ -6,7 +6,9 @@ import static org.junit.Assert.assertTrue;
 import java.util.List;
 
 import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
@@ -24,6 +26,8 @@ import com.metabroadcast.common.time.DateTimeZones;
 
 public class ContentMergerTest {
     
+    private static final Publisher PUBLISHER = Publisher.METABROADCAST;
+
     @Test
     public void testVersionMerger() {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
@@ -115,4 +119,78 @@ public class ContentMergerTest {
         assertTrue(mergedRefs.contains(n2));
     }
 
+    @Test
+    public void testItemItemMergingProducesItem() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        
+        Item current = createItem("old title", PUBLISHER);
+        Item extracted = createItem("new title", PUBLISHER);
+        
+        Item merged = contentMerger.merge(current, extracted);
+        
+        assertTrue("Merged object should be of same type as extracted object", !(merged instanceof Episode));
+        assertEquals("new title", merged.getTitle());
+    }
+    
+    @Test
+    public void testEpisodeItemMergingProducesItem() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        
+        Episode current = createEpisode("old title", PUBLISHER, 3);
+        Item extracted = createItem("new title", PUBLISHER);
+        
+        Item merged = contentMerger.merge(current, extracted);
+        
+        assertTrue("Merged object should be of same type as extracted object", !(merged instanceof Episode));
+        assertEquals("new title", merged.getTitle());
+    }
+    
+    @Test
+    public void testItemEpisodeMergingProducesEpisode() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        
+        String extractedTitle = "new title";
+        Integer extractedEpisodeNum = 5;
+        
+        Item current = createItem("old title", PUBLISHER);
+        Episode extracted = createEpisode(extractedTitle, PUBLISHER, extractedEpisodeNum);
+        
+        Episode merged = (Episode) contentMerger.merge(current, extracted);
+        
+        assertEquals(extractedTitle, merged.getTitle());
+        assertEquals(extractedEpisodeNum, merged.getEpisodeNumber());
+    }
+    
+    @Test
+    public void testEpisodeEpisodeMergingProducesEpisode() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        
+        String extractedTitle = "new title";
+        Integer extractedEpisodeNum = 5;
+        
+        Episode current = createEpisode("old title", PUBLISHER, 3);
+        Episode extracted = createEpisode(extractedTitle, PUBLISHER, extractedEpisodeNum);
+        
+        Episode merged = (Episode) contentMerger.merge(current, extracted);
+        
+        assertEquals(extractedTitle, merged.getTitle());
+        assertEquals(extractedEpisodeNum, merged.getEpisodeNumber());
+    }
+
+    private Item createItem(String title, Publisher publisher) {
+        Item item = new Item("item", "curie", publisher);
+        
+        item.setTitle(title);
+        
+        return item;
+    }
+
+    private Episode createEpisode(String title, Publisher publisher, Integer episodeNum) {
+        Episode ep = new Episode("episode", "curie", publisher);
+        
+        ep.setTitle(title);
+        ep.setEpisodeNumber(episodeNum);
+        
+        return ep;
+    }
 }

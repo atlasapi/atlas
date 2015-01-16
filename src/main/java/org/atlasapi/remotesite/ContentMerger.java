@@ -64,16 +64,21 @@ public class ContentMerger {
                 || !current.getContainer().getUri().equals(extracted.getContainer().getUri())) {
             current.setParentRef(extracted.getContainer());
         }
-
-        if (current instanceof Episode && extracted instanceof Episode) {
-            Episode currentEp = (Episode) current;
-            Episode extractedEp = (Episode) extracted;
-            currentEp.setEpisodeNumber(extractedEp.getEpisodeNumber());
-
-            if ( currentEp.getSeriesRef() == null
-                    || extractedEp.getSeriesRef() == null
-                    || !currentEp.getSeriesRef().getUri().equals(extractedEp.getSeriesRef().getUri())) {
-                currentEp.setSeriesRef(extractedEp.getSeriesRef());
+        
+        if (current instanceof Episode) {
+            if (extracted instanceof Episode) {
+                current = mergeEpisodeSpecificFields((Episode) current, (Episode) extracted);
+            } else if (extracted instanceof Item) {
+                Item newItem = new Item();
+                Item.copyTo(current, newItem);
+                current = newItem;
+            }
+        } else if (current instanceof Item) {
+            if (extracted instanceof Episode) {
+                Episode newEp = new Episode();
+                Item.copyTo(current, newEp);
+                
+                current = mergeEpisodeSpecificFields(newEp, (Episode) extracted);
             }
         }
 
@@ -83,6 +88,17 @@ public class ContentMerger {
             currentFilm.setYear(extractedFilm.getYear());
         }
 
+        return current;
+    }
+
+    private Episode mergeEpisodeSpecificFields(Episode current, Episode extracted) {
+        current.setEpisodeNumber(extracted.getEpisodeNumber());
+
+        if ( current.getSeriesRef() == null
+                || extracted.getSeriesRef() == null
+                || !current.getSeriesRef().getUri().equals(extracted.getSeriesRef().getUri())) {
+            current.setSeriesRef(extracted.getSeriesRef());
+        }
         return current;
     }
 

@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Set;
 
 import nu.xom.Attribute;
@@ -18,6 +19,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.io.CharStreams;
 import com.metabroadcast.common.http.HttpException;
 import com.metabroadcast.common.http.HttpResponsePrologue;
 import com.metabroadcast.common.http.HttpResponseTransformer;
@@ -79,6 +81,13 @@ public class XmlPortalClient implements PortalClient {
     private final HttpResponseTransformer<Document> TRANSFORMER = new HttpResponseTransformer<Document>() {
         @Override
         public Document transform(HttpResponsePrologue response, InputStream in) throws HttpException, IOException {
+            if (!HttpStatusCode.OK.is(response.statusCode())) {
+                InputStreamReader reader = new InputStreamReader(in);
+                String responseBody = CharStreams.toString(reader);
+                
+                throw new HttpStatusCodeException(response, responseBody);
+            }
+                
             try {
                 return parser.build(in);
             } catch (Exception e) {

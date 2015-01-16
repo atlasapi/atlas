@@ -474,6 +474,11 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         copyProperties(location, simpleLocation, annotations, config);
 
         simpleItem.addLocation(simpleLocation);
+        
+        if (annotations.contains(Annotation.V4_ALIASES)) {
+            simpleLocation.setV4Aliases(ImmutableSet.copyOf(Iterables.transform(version.getAliases(), 
+                    TO_SIMPLE_ALIAS)));
+        }
     }
 
     private SeriesSummary seriesSummaryFromResolved(ParentRef seriesRef, Set<Annotation> annotations) {
@@ -521,6 +526,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         }
 
         simpleLocation.setAudioDescribed(encoding.getAudioDescribed());
+        simpleLocation.setSigned(encoding.getSigned());
         simpleLocation.setVideoFrameRate(encoding.getVideoFrameRate());
         simpleLocation.setVideoHorizontalSize(encoding.getVideoHorizontalSize());
         simpleLocation.setVideoProgressiveScan(encoding.getVideoProgressiveScan());

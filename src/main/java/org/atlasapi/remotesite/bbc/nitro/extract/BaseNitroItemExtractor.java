@@ -8,6 +8,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
@@ -51,19 +52,13 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     extends NitroContentExtractor<NitroItemSource<SOURCE>, ITEM> {
 
     private static final String AUDIO_DESCRIBED_VERSION_TYPE = "DubbedAudioDescribed";
+    private static final String SIGNED_VERSION_TYPE = "Signed";
     private static final String WARNING_TEXT_LONG_LENGTH = "long";
 
     private final Predicate<WarningText> IS_LONG_WARNING = new Predicate<WarningText>() {
         @Override
         public boolean apply(WarningText input) {
             return WARNING_TEXT_LONG_LENGTH.equals(input.getLength());
-        }
-    };
-
-    private static final Predicate<VersionType> IS_AUDIO_DESCRIBED = new Predicate<VersionType>() {
-        @Override
-        public boolean apply(VersionType input) {
-            return AUDIO_DESCRIBED_VERSION_TYPE.equals(input.getId());
         }
     };
 
@@ -82,41 +77,62 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         OptionalMap<String, Set<Encoding>> encodings = extractEncodings(source.getAvailabilities(), now);
 
         ImmutableSet.Builder<Version> versions = ImmutableSet.builder();
+
         for (com.metabroadcast.atlas.glycerin.model.Version nitroVersion : source.getVersions()) {
-            Version version = new Version();
-
-            if (nitroVersion.getDuration() != null) {
-                version.setDuration(convertDuration(nitroVersion.getDuration()));
-            }
-
-            version.setLastUpdated(now);
-            version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));
-            version.setBroadcasts(broadcasts.get(nitroVersion.getPid()));
-            Optional<Set<Encoding>> optEncodings = encodings.get(nitroVersion.getPid());
-
-            if (optEncodings.isPresent()) {
-                Set<Encoding> versionEncodings = optEncodings.get();
-
-                for (Encoding encoding: versionEncodings) {
-                    encoding.setVideoAspectRatio(nitroVersion.getAspectRatio());
-                    encoding.setAudioDescribed(isAudioDescribed(nitroVersion));
-                    version.setManifestedAs(versionEncodings);
-                }
-            }
-
-            Optional<WarningText> warningText = warningTextFrom(nitroVersion);
-            version.setRestriction(generateRestriction(warningText));
-
+            Version version = generateVersion(now, broadcasts, encodings, nitroVersion);
             versions.add(version);
         }
+
         item.setVersions(versions.build());
+
         if (item instanceof Film) {
             item.setMediaType(MediaType.VIDEO);
             item.setSpecialization(Specialization.FILM);
         } else {
             extractMediaTypeAndSpecialization(source, item);
         }
+
         extractAdditionalItemFields(source, item, now);
+    }
+
+    private Version generateVersion(DateTime now,
+            ImmutableSetMultimap<String, Broadcast> broadcasts,
+            OptionalMap<String, Set<Encoding>> encodings,
+            com.metabroadcast.atlas.glycerin.model.Version nitroVersion) {
+        Version version = new Version();
+
+        version.addAlias(new Alias(PID_NAMESPACE, nitroVersion.getPid()));
+        version.setDuration(convertDuration(nitroVersion.getDuration()));
+        version.setLastUpdated(now);
+        version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));
+        version.setBroadcasts(broadcasts.get(nitroVersion.getPid()));
+
+        Optional<Set<Encoding>> optEncodings = encodings.get(nitroVersion.getPid());
+
+        if (optEncodings.isPresent()) {
+            Set<Encoding> versionEncodings = optEncodings.get();
+            setEncodingDetails(nitroVersion, versionEncodings);
+            version.setManifestedAs(versionEncodings);
+        }
+
+        Optional<WarningText> warningText = warningTextFrom(nitroVersion);
+        version.setRestriction(generateRestriction(warningText));
+        return version;
+    }
+
+    private void setEncodingDetails(
+            com.metabroadcast.atlas.glycerin.model.Version nitroVersion,
+            Set<Encoding> encodings) {
+
+        /**
+         * Even if aspect ratio and the audio described and signed flags are on Version in the Nitro model,
+         * in Atlas they naturally belong to Encoding
+         */
+        for (Encoding encoding: encodings) {
+            encoding.setVideoAspectRatio(nitroVersion.getAspectRatio());
+            encoding.setAudioDescribed(isVersionOfType(nitroVersion, AUDIO_DESCRIBED_VERSION_TYPE));
+            encoding.setSigned(isVersionOfType(nitroVersion, SIGNED_VERSION_TYPE));
+        }
     }
 
     private Restriction generateRestriction(Optional<WarningText> warningText) {
@@ -131,14 +147,23 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         return restriction;
     }
 
-    private boolean isAudioDescribed(com.metabroadcast.atlas.glycerin.model.Version nitroVersion) {
+    private boolean isVersionOfType(com.metabroadcast.atlas.glycerin.model.Version nitroVersion, String versionType) {
         VersionTypes versionTypes = nitroVersion.getVersionTypes();
 
         if (versionTypes == null) {
             return false;
         }
 
-        return Iterables.any(versionTypes.getVersionType(), IS_AUDIO_DESCRIBED);
+        return Iterables.any(versionTypes.getVersionType(), isOfType(versionType));
+    }
+
+    private Predicate<VersionType> isOfType(final String versionType) {
+        return new Predicate<VersionType>() {
+            @Override
+            public boolean apply(VersionType input) {
+                return versionType.equals(input.getId());
+            }
+        };
     }
 
     private void extractMediaTypeAndSpecialization(NitroItemSource<SOURCE> source, ITEM item) {

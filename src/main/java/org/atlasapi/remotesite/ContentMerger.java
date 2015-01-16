@@ -89,8 +89,17 @@ public class ContentMerger {
     public Container merge(Container current, Container extracted) {
         current = mergeContents(current, extracted);
         if (current instanceof Series && extracted instanceof Series) {
-            ((Series) current).withSeriesNumber(((Series) extracted).getSeriesNumber());
-            ((Series) current).setParentRef(((Series) extracted).getParent());
+            Series currentSeries = (Series) current;
+            Series extractedSeries = (Series) extracted;
+            
+            currentSeries.withSeriesNumber(extractedSeries.getSeriesNumber());
+            
+            if (currentSeries.getParent() == null
+                    || extractedSeries.getParent() == null
+                    || !currentSeries.getParent().equals(extractedSeries.getParent())) {
+                currentSeries.setParentRef(extractedSeries.getParent());
+            }
+            
         }
         return current;
     }
@@ -120,6 +129,8 @@ public class ContentMerger {
         current.setEquivalentTo(extracted.getEquivalentTo());
         current.setRelatedLinks(extracted.getRelatedLinks());
         current.setPresentationChannel(extracted.getPresentationChannel());
+        current.setMediaType(extracted.getMediaType());
+        current.setSpecialization(extracted.getSpecialization());
         
         return current;
     }
@@ -180,10 +191,14 @@ public class ContentMerger {
                 if (mergedVersions.containsKey(version.getCanonicalUri())) {
                     Version mergedVersion = mergedVersions.get(version.getCanonicalUri());
                     mergedVersion.setBroadcasts(Sets.union(version.getBroadcasts(), mergedVersion.getBroadcasts()));
-                    if (version.getDuration() != null) {
+                    mergedVersion.setManifestedAs(version.getManifestedAs());
+                    mergedVersion.setRestriction(version.getRestriction());
+                    if (version.getDuration() == null) {
+                        mergedVersion.setDuration(null);
+                    } else {
                         mergedVersion.setDuration(Duration.standardSeconds(version.getDuration()));
                     }
-                    mergedVersion.setManifestedAs(version.getManifestedAs());
+
                     mergedVersions.put(version.getCanonicalUri(), mergedVersion);
                 } else {
                     mergedVersions.put(version.getCanonicalUri(), version);

@@ -18,6 +18,7 @@ import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.hierarchy.ItemAndVersion;
 import org.atlasapi.feeds.youview.hierarchy.ItemBroadcastHierarchy;
 import org.atlasapi.feeds.youview.hierarchy.ItemOnDemandHierarchy;
+import org.atlasapi.feeds.youview.upload.granular.FilterFactory;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -27,6 +28,7 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -36,8 +38,10 @@ import org.springframework.web.bind.annotation.RequestParam;
 import tva.metadata._2010.TVAMainType;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.metabroadcast.common.http.HttpStatusCode;
 
 /**
@@ -120,8 +124,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             if (content.get() instanceof Item) {
                 Item item = (Item) content.get();
                 
+                Predicate<ItemBroadcastHierarchy> broadcastFilter = FilterFactory.broadcastFilter(Optional.<DateTime>absent());
+                
                 Map<String, ItemAndVersion> versions = hierarchyExpander.versionHierarchiesFor(item);
-                Map<String, ItemBroadcastHierarchy> broadcasts = hierarchyExpander.broadcastHierarchiesFor(item);
+                Map<String, ItemBroadcastHierarchy> broadcasts = Maps.filterValues(hierarchyExpander.broadcastHierarchiesFor(item), broadcastFilter);
                 Map<String, ItemOnDemandHierarchy> onDemands = hierarchyExpander.onDemandHierarchiesFor(item);
                 
                 JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get(), versions, broadcasts, onDemands);

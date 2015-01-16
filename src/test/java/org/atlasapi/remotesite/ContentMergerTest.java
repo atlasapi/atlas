@@ -7,6 +7,7 @@ import java.util.List;
 
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
@@ -59,14 +60,20 @@ public class ContentMergerTest {
         Version version1 = new Version();
         version1.setCanonicalUri("http://example.org/1");
         current.setVersions(ImmutableSet.of(version1));
-        
+
+        Restriction restriction = new Restriction();
+        restriction.setRestricted(true);
+
         Version version2 = new Version();
         version2.setCanonicalUri("http://example.org/2");
+        version2.setRestriction(restriction);
         
         extracted.setVersions(ImmutableSet.of(version2));
         Item merged = contentMerger.merge(current, extracted);
-        
-        assertEquals("http://example.org/2", Iterables.getOnlyElement(merged.getVersions()).getCanonicalUri());
+
+        Version mergedVersion = Iterables.getOnlyElement(merged.getVersions());
+        assertEquals("http://example.org/2", mergedVersion.getCanonicalUri());
+        assertTrue(mergedVersion.getRestriction().isRestricted());
     }
 
     @Test

@@ -255,7 +255,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         AvailabilityQuery query = AvailabilityQuery.builder()
                 .withDescendantsOf(toPids(episodes))
                 .withPageSize(pageSize)
-                // The "iptv-all" media-set is present just to check if an availability is HD/SD
                 .withMediaSet("apple-iphone4-ipad-hls-3g", "apple-iphone4-hls", "pc", "iptv-all")
                 .build();
         return Multimaps.index(exhaust(glycerin.execute(query)),

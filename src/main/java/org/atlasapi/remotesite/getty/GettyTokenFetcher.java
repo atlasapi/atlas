@@ -64,6 +64,9 @@ public class GettyTokenFetcher {
     private String parseToken(String content) {
         JsonObject parse = (JsonObject) new JsonParser().parse(content);
         JsonElement element = parse.get(ACCESS_TOKEN_KEY);
+        if (element == null) {
+            throw new RuntimeException("No token found in response:\n" + content);
+        }
         return element.getAsString();
     }
 

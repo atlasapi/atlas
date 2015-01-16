@@ -81,6 +81,7 @@ public class ReduxClientTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testGetsProgrammesForDay() throws HttpException, Exception {
 	    List<BaseReduxProgramme> programmes = reduxClient.programmesForDay(new LocalDate());
 	    

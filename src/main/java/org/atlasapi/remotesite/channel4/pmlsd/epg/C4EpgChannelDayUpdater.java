@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.channel4.pmlsd.epg;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.List;
 import java.util.Map;
 
@@ -12,6 +14,7 @@ import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.system.RemoteSiteClient;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.pmlsd.C4BrandUpdater;
@@ -43,18 +46,23 @@ public class C4EpgChannelDayUpdater {
     private final BroadcastTrimmer trimmer;
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final Optional<String> platform;
+    private final ScheduleWriter scheduleWriter;
+    private final Publisher publisher;
     
     public C4EpgChannelDayUpdater(RemoteSiteClient<List<C4EpgEntry>> scheduleClient, ContentWriter writer, 
-            ContentResolver resolver, C4BrandUpdater brandUpdater, BroadcastTrimmer trimmer, 
-            Publisher publisher, ContentFactory<C4EpgEntry, C4EpgEntry, C4EpgEntry> contentFactory, Optional<String> platform, 
+            ContentResolver resolver, C4BrandUpdater brandUpdater, BroadcastTrimmer trimmer,
+            ScheduleWriter scheduleWriter, Publisher publisher, 
+            ContentFactory<C4EpgEntry, C4EpgEntry, C4EpgEntry> contentFactory, Optional<String> platform, 
             C4LocationPolicyIds locationPolicyIds) {
         Preconditions.checkArgument(!platform.isPresent(), "If configuring the EPG updater for a platform, then modifications must be made to not write iOS app locations.");
-        this.scheduleClient = scheduleClient;
-        this.writer = writer;
-        this.platform = platform;
+        this.scheduleClient = checkNotNull(scheduleClient);
+        this.writer = checkNotNull(writer);
+        this.scheduleWriter = checkNotNull(scheduleWriter);
+        this.platform = checkNotNull(platform);
+        this.publisher = checkNotNull(publisher);
         this.epgEntryContentExtractor = new C4EpgEntryContentExtractor(resolver, brandUpdater, 
                 contentFactory, publisher, locationPolicyIds);
-        this.trimmer = trimmer;
+        this.trimmer = checkNotNull(trimmer);
     }
     
     public UpdateProgress update(String channelUriKey, Channel channel, LocalDate scheduleDay) {
@@ -70,7 +78,7 @@ public class C4EpgChannelDayUpdater {
             
             List<Optional<ItemRefAndBroadcast>> processedItems = process(entries, channel);
             Iterable<ItemRefAndBroadcast> successfullyProcessed = Optional.presentInstances(processedItems);
-            trim(scheduleDay, channel, successfullyProcessed);
+            maintainSchedule(scheduleDay, channel, successfullyProcessed);
             int successfullyProcessedCount = Iterables.size(successfullyProcessed);
             return new UpdateProgress(successfullyProcessedCount, processedItems.size()-successfullyProcessedCount);
         } catch (Exception e) {
@@ -96,10 +104,11 @@ public class C4EpgChannelDayUpdater {
         }
     }
 
-    private void trim(LocalDate scheduleDay, Channel channel, Iterable<ItemRefAndBroadcast> processedItems) {
+    private void maintainSchedule(LocalDate scheduleDay, Channel channel, Iterable<ItemRefAndBroadcast> processedItems) {
         DateTime scheduleStart = scheduleDay.toDateTime(new LocalTime(6,0,0), DateTimeZones.LONDON);
         Interval scheduleInterval = new Interval(scheduleStart, scheduleStart.plusDays(1));
         trimmer.trimBroadcasts(scheduleInterval, channel, broacastIdsFrom(processedItems));
+        scheduleWriter.replaceScheduleBlock(publisher, channel, processedItems);
     }
 
     private Map<String, String> broacastIdsFrom(Iterable<ItemRefAndBroadcast> processedItems) {

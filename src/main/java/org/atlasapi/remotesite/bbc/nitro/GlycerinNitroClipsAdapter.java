@@ -144,11 +144,23 @@ public class GlycerinNitroClipsAdapter {
     }
 
     private ImmutableList<Programme> getNitroClips(Iterable<PidReference> refs) throws GlycerinException {
-        return glycerin.execute(ProgrammesQuery.builder()
+        ProgrammesQuery query = ProgrammesQuery.builder()
                 .withEntityType(EntityTypeOption.CLIP)
                 .withChildrenOf(NitroUtil.toPids(refs))
                 .withPageSize(pageSize)
-                .build()).getResults();
+                .build();
+        return exhaust(glycerin.execute(query));
     }
+    
+    private <T> ImmutableList<T> exhaust(GlycerinResponse<T> resp) throws GlycerinException {
+        ImmutableList.Builder<T> programmes = ImmutableList.builder(); 
+        programmes.addAll(resp.getResults());
+        while(resp.hasNext()) {
+            resp = resp.getNext();
+            programmes.addAll(resp.getResults());
+        }
+        return programmes.build();
+    }
+
     
 }

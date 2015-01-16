@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.math.BigInteger;
 import java.util.Set;
 
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -20,6 +21,8 @@ import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.atlasapi.output.Annotation;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
@@ -51,7 +54,8 @@ public class ChannelSimplifier {
     }
 
     public org.atlasapi.media.entity.simple.Channel simplify(Channel input, final boolean showHistory, 
-            boolean showParent, final boolean showVariations, final boolean showGroupSummary) {
+            boolean showParent, final boolean showVariations, final boolean showGroupSummary,
+            final ApplicationConfiguration config) {
         
         org.atlasapi.media.entity.simple.Channel simple = new org.atlasapi.media.entity.simple.Channel();
         
@@ -104,7 +108,7 @@ public class ChannelSimplifier {
                 throw new RuntimeException("Could not resolve channel with id " +  input.getParent());
             }
             if (showParent) {
-                simple.setParent(simplify(channel.requireValue(), showHistory, false, false, showGroupSummary));
+                simple.setParent(simplify(channel.requireValue(), showHistory, false, false, showGroupSummary, config));
             } else {
                 simple.setParent(toSubChannel(channel.requireValue()));
             }
@@ -116,7 +120,7 @@ public class ChannelSimplifier {
                     @Override
                     public org.atlasapi.media.entity.simple.Channel apply(Channel input) {
                         if (showVariations) {
-                            return simplify(input, showHistory, false, false, showGroupSummary);
+                            return simplify(input, showHistory, false, false, showGroupSummary, config);
                         } else {
                             return toSubChannel(input);
                         }
@@ -131,11 +135,18 @@ public class ChannelSimplifier {
         
         
         if (showGroupSummary) {
+            Iterable<ChannelGroup> groups = channelGroupResolver.channelGroupsFor(Iterables.transform(input.getChannelNumbers(), ChannelNumbering.TO_CHANNEL_GROUP));
             simple.setGroups(
-                    Iterables.transform(
-                            channelGroupResolver.channelGroupsFor(
-                                    Iterables.transform(input.getChannelNumbers(), ChannelNumbering.TO_CHANNEL_GROUP)),
-                            TO_CHANNEL_GROUP_ALIAS));
+                    FluentIterable
+                            .from(groups)
+                            .filter(new Predicate<ChannelGroup>() {
+
+                                @Override
+                                public boolean apply(ChannelGroup input) {
+                                    return config.isEnabled(input.getPublisher());
+                                }})
+                                
+                            .transform(TO_CHANNEL_GROUP_ALIAS));
         }
 
         return simple;

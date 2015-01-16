@@ -9,6 +9,7 @@ import org.atlasapi.feeds.AtlasFeedsModule;
 import org.atlasapi.feeds.interlinking.delta.InterlinkingDeltaModule;
 import org.atlasapi.feeds.radioplayer.RadioPlayerModule;
 import org.atlasapi.feeds.xmltv.XmlTvModule;
+import org.atlasapi.feeds.youview.NitroYouViewResolutionModule;
 import org.atlasapi.feeds.youview.TVAnytimeFeedsModule;
 import org.atlasapi.feeds.youview.YouViewUploadModule;
 import org.atlasapi.googlespreadsheet.GoogleSpreadsheetModule;
@@ -71,7 +72,8 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
             RemoteSiteHealthModule.class, 
             EquivModule.class,
             CodecModule.class,
-            TVAnytimeFeedsModule.class
+            TVAnytimeFeedsModule.class,
+            NitroYouViewResolutionModule.class
         );
         
         if(runProcessingOnly()) {

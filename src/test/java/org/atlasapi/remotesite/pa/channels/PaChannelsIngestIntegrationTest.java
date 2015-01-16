@@ -4,6 +4,8 @@ import java.io.File;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import junit.framework.TestCase;
 
@@ -42,6 +44,7 @@ public class PaChannelsIngestIntegrationTest extends TestCase {
     private ChannelGroupStore channelGroupStore;
     private PaProgrammeDataStore store = new DummyPaProgrammeDataStore(file);
     private PaChannelsUpdater updater; 
+    private Lock lock = new ReentrantLock();
     
     @Override
     @Before
@@ -53,7 +56,7 @@ public class PaChannelsIngestIntegrationTest extends TestCase {
         channelsIngester = new PaChannelsIngester();
         channelGroupsIngester = new PaChannelGroupsIngester();
         dataHandler = new PaChannelDataHandler(channelsIngester, channelGroupsIngester, channelStore, channelStore, channelGroupStore, channelGroupStore);
-        updater = new PaChannelsUpdater(store, dataHandler);
+        updater = new PaChannelsUpdater(store, dataHandler, lock);
         updater.run();
     }
     

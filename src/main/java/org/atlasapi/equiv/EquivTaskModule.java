@@ -138,7 +138,9 @@ public class EquivTaskModule {
     private Set<String> RADIO_ALIASES = ImmutableSet.of("http://youview.com/service/37617", "http://youview.com/service/37897", "http://youview.com/service/38008", "http://youview.com/service/38270",
             "http://youview.com/service/39058", "http://youview.com/service/39248", "http://youview.com/service/39510", "http://youview.com/service/15193102", "http://youview.com/service/15193080",
             "http://youview.com/service/40643", "http://youview.com/service/40816", "http://youview.com/service/40985", "http://youview.com/service/41222", "http://youview.com/service/41463",
-            "http://youview.com/service/41596", "http://youview.com/service/1146", "http://youview.com/service/1147", "http://youview.com/service/1148", "http://youview.com/service/1149");
+            "http://youview.com/service/41596", "http://youview.com/service/1146", "http://youview.com/service/1147", "http://youview.com/service/1148", "http://youview.com/service/1149",
+            "http://overrides.youview.com/service/39390", "http://scotland.youview.com/service/39390" 
+            );
     private Predicate<Channel> RADIO_CHANNELS = new Predicate<Channel>() {
 
         @Override

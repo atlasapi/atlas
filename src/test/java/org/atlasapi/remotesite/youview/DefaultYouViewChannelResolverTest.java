@@ -24,7 +24,6 @@ public class DefaultYouViewChannelResolverTest {
     
     private static final Channel BBC_ONE = new Channel(Publisher.METABROADCAST, "BBC One", "bbcone", null, MediaType.VIDEO, "http://www.bbc.co.uk/bbcone");
     private final ChannelResolver channelResolver = mock(ChannelResolver.class);
-    private final DefaultYouViewChannelResolver yvChannelResolver = new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
     
     @Test
     public void testResolvesByServiceId() {
@@ -52,5 +51,15 @@ public class DefaultYouViewChannelResolverTest {
         
         assertThat(yvChannelResolver.getChannelServiceAlias(456), 
                 is("http://youview.com/service/456"));
+    }
+    
+    @Test
+    public void testOverridesWithoutPrimaryId() {
+        when(channelResolver.forAliases("http://overrides.youview.com/service/"))
+            .thenReturn(ImmutableMap.of("http://overrides.youview.com/service/456", BBC_ONE));
+
+        DefaultYouViewChannelResolver yvChannelResolver = new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
+    
+        assertThat(yvChannelResolver.getChannel(456).get(), is(BBC_ONE));
     }
 }

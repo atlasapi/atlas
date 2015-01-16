@@ -73,8 +73,8 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
             containerIds = topLevelContainerIds(items.getAll());
             lock.lock(containerIds);
             
-            ImmutableSet<Series> series = localOrRemoteFetcher.resolveOrFetchSeries(items.getFetched().values());
-            ImmutableSet<Brand> brands = localOrRemoteFetcher.resolveOrFetchBrand(items.getFetched().values());
+            ImmutableSet<Series> series = localOrRemoteFetcher.resolveOrFetchSeries(items.getAll());
+            ImmutableSet<Brand> brands = localOrRemoteFetcher.resolveOrFetchBrand(items.getAll());
             
             return writeContent(nitroBroadcasts, items, series, brands);
         } catch (InterruptedException ie) {

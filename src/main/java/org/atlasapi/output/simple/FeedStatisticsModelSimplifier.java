@@ -20,7 +20,6 @@ public class FeedStatisticsModelSimplifier implements ModelSimplifier<FeedStatis
         
         feedStats.setPublisher(model.publisher());
         feedStats.setQueueSize(model.queueSize());
-        feedStats.setLastOutage(model.lastOutage().toDate());
         feedStats.setUpdateLatency(model.updateLatency());
         
         return feedStats;

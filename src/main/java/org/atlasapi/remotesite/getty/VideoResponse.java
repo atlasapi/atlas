@@ -15,6 +15,10 @@ public class VideoResponse {
     private List<String> keywords;
     private List<String> aspectRatios;
 
+    private Integer expectedItemCount;  // TODO this obviously doesn't belong here. Hack due to lack of tuples.
+    public Integer getExpectedItemCount() { return expectedItemCount; }
+    public void setExpectedItemCount(Integer expectedItemCount) { this.expectedItemCount = expectedItemCount; }
+
     public String getAssetId() {
         return assetId;
     }

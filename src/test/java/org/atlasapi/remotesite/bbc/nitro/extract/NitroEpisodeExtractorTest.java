@@ -15,13 +15,16 @@ import java.util.Set;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
 import org.hamcrest.Matchers;
 import org.joda.time.Duration;
+import org.junit.Assert;
 import org.junit.Test;
 
 import com.google.common.base.Strings;
@@ -59,9 +62,7 @@ public class NitroEpisodeExtractorTest {
     @Test
     public void testParentRefsForExtractedTopLevelItemAreEmpty() {
         
-        Episode tli = new Episode();
-        tli.setPid("p01mv8m3");
-        tli.setTitle("Pantocracy");
+        Episode tli = topLevelItem();
         
         Item extracted = extractor.extract(NitroItemSource.valueOf(tli, noAvailability));
         
@@ -152,6 +153,19 @@ public class NitroEpisodeExtractorTest {
     }
 
     @Test
+    public void testPidAliasOnVersion() throws DatatypeConfigurationException {
+        Item extractedWithVersionPid = extractor.extract(NitroItemSource.valueOf(topLevelItem(),
+                ImmutableList.of(availability(AUDIO_DESCRIBED_VERSION_PID)),
+                ImmutableList.<Broadcast>of(),
+                ImmutableList.<NitroGenreGroup>of(),
+                ImmutableList.of(version("b12345"))));
+        
+        Alias alias = Iterables.getOnlyElement(
+                Iterables.getOnlyElement(extractedWithVersionPid.getVersions()).getAliases());
+        assertThat(alias.getValue(), is("b12345"));
+    }
+    
+    @Test
     public void testParentRefsForExtractedSeriesSeriesEpisodeAreBothHigherLevelSeries() {
         
         Episode seriesSeriesEpisode = new Episode();
@@ -222,7 +236,38 @@ public class NitroEpisodeExtractorTest {
     }
 
     @Test
-    public void testRestrictionIsProperlySet() {
+    public void testSignedFlagIsProperlySet() throws DatatypeConfigurationException {
+        Episode tli = new Episode();
+        tli.setPid("b012cl84");
+        tli.setTitle("Destiny");
+
+        String signedVersionPid = "p02ccx5g";
+        String notSignedVersionPid = "p02ccx6g";
+
+        Item extractedSigned = extractor.extract(NitroItemSource.valueOf(tli,
+                ImmutableList.of(availability(signedVersionPid)),
+                ImmutableList.<Broadcast>of(),
+                ImmutableList.<NitroGenreGroup>of(),
+                ImmutableList.of(signedVersion(signedVersionPid))));
+
+        org.atlasapi.media.entity.Version signedVersion = Iterables.getOnlyElement(extractedSigned.getVersions());
+        Encoding signedEncoding = Iterables.getOnlyElement(signedVersion.getManifestedAs());
+
+        Item extractedNonAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
+                ImmutableList.of(availability(notSignedVersionPid)),
+                ImmutableList.<Broadcast>of(),
+                ImmutableList.<NitroGenreGroup>of(),
+                ImmutableList.of(version(notSignedVersionPid))));
+
+        org.atlasapi.media.entity.Version nonSignedVersion = Iterables.getOnlyElement(extractedNonAudioDescribed.getVersions());
+        Encoding nonSignedEncoding = Iterables.getOnlyElement(nonSignedVersion.getManifestedAs());
+
+        assertTrue(signedEncoding.getSigned());
+        assertFalse(nonSignedEncoding.getSigned());
+    }
+
+    @Test
+    public void testRestrictionIsProperlySet() throws DatatypeConfigurationException {
         Episode tli = new Episode();
         tli.setPid("b012cl84");
         tli.setTitle("Destiny");
@@ -246,7 +291,7 @@ public class NitroEpisodeExtractorTest {
     }
 
     @Test
-    public void testVideoDimensionsAreNotHd() {
+    public void testVideoDimensionsAreNotHd() throws DatatypeConfigurationException {
         Episode tli = new Episode();
         tli.setPid("b012cl84");
         tli.setTitle("Destiny");
@@ -267,7 +312,7 @@ public class NitroEpisodeExtractorTest {
     }
 
     @Test
-    public void testVideoDimensionsAreHd() {
+    public void testVideoDimensionsAreHd() throws DatatypeConfigurationException {
         Episode tli = new Episode();
         tli.setPid("b012cl84");
         tli.setTitle("Destiny");
@@ -283,8 +328,37 @@ public class NitroEpisodeExtractorTest {
         Set<Encoding> encodings = version.getManifestedAs();
         Encoding encoding = Iterables.getOnlyElement(encodings);
 
-        assertEquals(1280, (int)encoding.getVideoHorizontalSize());
-        assertEquals(720, (int)encoding.getVideoVerticalSize());
+        assertEquals(1280, (int) encoding.getVideoHorizontalSize());
+        assertEquals(720, (int) encoding.getVideoVerticalSize());
+    }
+
+    @Test
+    public void testMediaTypeIsProperlySet() {
+        Episode audioEpisode = new Episode();
+        audioEpisode.setPid("b012cl84");
+        audioEpisode.setTitle("Destiny");
+        audioEpisode.setMediaType("Audio");
+
+        Item audioExtracted = extractor.extract(NitroItemSource.valueOf(audioEpisode,
+                ImmutableList.<Availability>of(),
+                ImmutableList.<Broadcast>of(),
+                ImmutableList.<NitroGenreGroup>of(),
+                ImmutableList.<Version>of()));
+
+        Assert.assertEquals(MediaType.AUDIO, audioExtracted.getMediaType());
+
+        Episode videoEpisode = new Episode();
+        videoEpisode.setPid("b012cl84");
+        videoEpisode.setTitle("Destiny");
+        videoEpisode.setMediaType("Video");
+
+        Item videoExtracted = extractor.extract(NitroItemSource.valueOf(videoEpisode,
+                ImmutableList.<Availability>of(),
+                ImmutableList.<Broadcast>of(),
+                ImmutableList.<NitroGenreGroup>of(),
+                ImmutableList.<Version>of()));
+
+        Assert.assertEquals(MediaType.VIDEO, videoExtracted.getMediaType());
     }
 
     private FormatsType filmFormatsType() {
@@ -365,9 +439,10 @@ public class NitroEpisodeExtractorTest {
         return availability;
     }
 
-    private Version version(String versionPid) {
+    private Version version(String versionPid) throws DatatypeConfigurationException {
         Version version = new Version();
         version.setPid(versionPid);
+        version.setDuration(DatatypeFactory.newInstance().newDuration(VERSION_DURATION.getMillis()));
 
         return version;
     }
@@ -388,6 +463,19 @@ public class NitroEpisodeExtractorTest {
         return version;
     }
 
+    private Version signedVersion(String versionPid) throws DatatypeConfigurationException {
+        Version version = version(versionPid);
+
+        VersionType type = new VersionType();
+        type.setId("Signed");
+
+        VersionTypes types = new VersionTypes();
+        types.getVersionType().add(type);
+        version.setVersionTypes(types);
+
+        return version;
+    }
+
     private Version nonAudioDescribedVersion() throws DatatypeConfigurationException {
         Version version = new Version();
         version.setPid(NON_AUDIO_DESCRIBED_VERSION_PID);
@@ -396,9 +484,9 @@ public class NitroEpisodeExtractorTest {
         return version;
     }
 
-    private Version versionWithWarning(String warningMessage) {
-        Version version = new Version();
-        version.setPid(WITH_WARNING_VERSION_PID);
+    private Version versionWithWarning(String warningMessage)
+            throws DatatypeConfigurationException {
+        Version version = version(WITH_WARNING_VERSION_PID);
 
         Warnings warnings = new Warnings();
 
@@ -410,6 +498,13 @@ public class NitroEpisodeExtractorTest {
         version.setWarnings(warnings);
 
         return version;
+    }
+    
+    private Episode topLevelItem() {
+        Episode tli = new Episode();
+        tli.setPid("p01mv8m3");
+        tli.setTitle("Pantocracy");
+        return tli;
     }
 
 }

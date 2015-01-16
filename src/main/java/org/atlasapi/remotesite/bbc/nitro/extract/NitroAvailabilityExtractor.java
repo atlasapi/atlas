@@ -17,9 +17,15 @@ import org.atlasapi.remotesite.ContentExtractor;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
 
+import com.google.common.base.Equivalence;
+import com.google.common.base.Equivalence.Wrapper;
+import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
 import com.metabroadcast.common.intl.Countries;
@@ -31,6 +37,24 @@ import com.metabroadcast.common.time.DateTimeZones;
  */
 public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Availability>, Set<Encoding>> {
 
+    private static final LocationEquivalence LOCATION_EQUIVALENCE = new LocationEquivalence();
+
+    private static final Function<Location, Equivalence.Wrapper<Location>> TO_WRAPPED_LOCATION 
+            = new Function<Location, Equivalence.Wrapper<Location>>() {
+                @Override
+                public Wrapper<Location> apply(Location input) {
+                    return LOCATION_EQUIVALENCE.wrap(input);
+                }
+            };
+            
+    private static final Function<Equivalence.Wrapper<Location>, Location> UNWRAP_LOCATION 
+            = new Function<Equivalence.Wrapper<Location>, Location>() {
+                @Override
+                public Location apply(Equivalence.Wrapper<Location> input) {
+                    return input.get();
+                }
+            };
+    
     private static final String IPLAYER_URL_BASE = "http://www.bbc.co.uk/iplayer/episode/";
     private static final String APPLE_IPHONE4_IPAD_HLS_3G = "apple-iphone4-ipad-hls-3g";
     private static final String APPLE_IPHONE4_HLS = "apple-iphone4-hls";
@@ -43,6 +67,9 @@ public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Ava
     private static final int SD_HORIZONTAL_SIZE = 640;
     private static final int SD_VERTICAL_SIZE = 360;
 
+    private static final int HD_BITRATE = 3_200_000;
+    private static final int SD_BITRATE = 1_500_000;
+
     private static final Predicate<Availability> IS_HD = new Predicate<Availability>() {
         @Override
         public boolean apply(Availability input) {
@@ -50,7 +77,13 @@ public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Ava
         }
     };
 
-    
+    private static final Predicate<Availability> IS_IPTV = new Predicate<Availability>() {
+        @Override
+        public boolean apply(Availability input) {
+            return input.getMediaSet().contains("iptv-all");
+        }
+    };
+
     private final Map<String, Platform> mediaSetPlatform = ImmutableMap.of(
         PC, Platform.PC,
         APPLE_IPHONE4_HLS, Platform.IOS,
@@ -63,22 +96,54 @@ public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Ava
         APPLE_IPHONE4_IPAD_HLS_3G, Network.THREE_G
     );
     
+    /**
+     * This simplifies the Availability extraction, by assuming that the only difference for an
+     * encoding is whether there are HD or SD availabilities. Thus, this creates a maximum of
+     * two Encodings, one for SD, one for HD, then maps and dedupes the Locations generated from
+     * the availabilities onto those Encodings.
+     */
     @Override
     public Set<Encoding> extract(Iterable<Availability> availabilities) {
-        ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
-
+        Set<Equivalence.Wrapper<Location>> hdLocations = Sets.newHashSet();
+        Set<Equivalence.Wrapper<Location>> sdLocations = Sets.newHashSet();
+        
         for (Availability availability : availabilities) {
-            Set<Location> locations = getLocationsFor(availability);
-
-            if (!locations.isEmpty()) {
-                Encoding encoding = new Encoding();
-                encoding.setAvailableAt(locations);
-                setHorizontalAndVerticalSize(encoding, IS_HD.apply(availability));
-                encodings.add(encoding);
+            ImmutableList<Wrapper<Location>> locations = FluentIterable.from(getLocationsFor(availability))
+                    .transform(TO_WRAPPED_LOCATION)
+                    .toList();
+            
+            if (IS_IPTV.apply(availability) && IS_HD.apply(availability)) {
+                hdLocations.addAll(locations);
+            } else {
+                sdLocations.addAll(locations);
             }
         }
+        // only create encodings if locations are present for HD/SD
+        if (hdLocations.isEmpty()) {
+            if (sdLocations.isEmpty()) {
+                return ImmutableSet.of();
+            }
+            return ImmutableSet.of(createEncoding(false, sdLocations));
+        } 
+        if (sdLocations.isEmpty()) {
+            return ImmutableSet.of(createEncoding(true, hdLocations));
+        }
+        return ImmutableSet.of(createEncoding(true, hdLocations), createEncoding(false, sdLocations));    
+    }
 
-        return encodings.build();
+    private Encoding createEncoding(boolean isHd, Set<Equivalence.Wrapper<Location>> wrappedLocations) {
+        Encoding encoding = new Encoding();
+        
+        setHorizontalAndVerticalSize(encoding, isHd);
+        encoding.setVideoBitRate(isHd ? HD_BITRATE : SD_BITRATE);
+        
+        ImmutableSet<Location> locations = FluentIterable.from(wrappedLocations)
+                .transform(UNWRAP_LOCATION)
+                .toSet();
+        
+        encoding.setAvailableAt(locations);
+        
+        return encoding;
     }
 
     private void setHorizontalAndVerticalSize(Encoding encoding, boolean isHD) {

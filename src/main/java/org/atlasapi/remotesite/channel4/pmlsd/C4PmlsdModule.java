@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
+import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.HttpClients;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgChannelDayUpdater;
@@ -57,6 +58,7 @@ public class C4PmlsdModule {
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
 	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
 	private @Autowired ScheduleResolver scheduleResolver;
+	private @Autowired ScheduleWriter scheduleWriter;
 	private @Autowired ChannelResolver channelResolver;
 	
 	private @Value("${updaters.c4pmlsd.enabled}") Boolean tasksEnabled;
@@ -110,7 +112,7 @@ public class C4PmlsdModule {
 	    ScheduleResolverBroadcastTrimmer trimmer = new ScheduleResolverBroadcastTrimmer(SOURCE, scheduleResolver, contentResolver, pmlsdLastUpdatedSettingContentWriter());
 	    return new C4EpgChannelDayUpdater(new C4EpgClient(c4HttpsClient()), pmlsdLastUpdatedSettingContentWriter(),
                 contentResolver, pcPmlsdBrandFetcher(Optional.<Platform>absent(),Optional.<String>absent()), trimmer, 
-                Publisher.C4_PMLSD, new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4EpgEntryUriExtractor()),
+                scheduleWriter, Publisher.C4_PMLSD, new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4EpgEntryUriExtractor()),
                 Optional.<String>absent(), c4PCLocationPolicyIds());
 	}
 	

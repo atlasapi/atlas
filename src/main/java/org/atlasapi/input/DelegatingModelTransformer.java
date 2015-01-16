@@ -26,7 +26,7 @@ public class DelegatingModelTransformer implements ModelTransformer<Description,
 
     @Override
     public Content transform(Description simple) {
-        if (simple instanceof Item && simple.getType().equalsIgnoreCase("series")) {
+        if (simple instanceof Playlist && simple.getType().equalsIgnoreCase("series")) {
             return seriesModelTransformer.transform((Item) simple);
         } else if (simple instanceof Playlist && simple.getType().equalsIgnoreCase("brand")) {
             return brandTransformer.transform((Playlist) simple);

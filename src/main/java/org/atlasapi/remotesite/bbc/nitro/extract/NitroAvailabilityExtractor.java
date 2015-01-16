@@ -13,7 +13,6 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Network;
 import org.atlasapi.media.entity.Policy.Platform;
-import org.atlasapi.remotesite.ContentExtractor;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
 
@@ -35,7 +34,7 @@ import com.metabroadcast.common.time.DateTimeZones;
  * Possibly extracts an {@link Encoding} and {@link Location}s for it from some
  * {@link Availability}s.
  */
-public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Availability>, Set<Encoding>> {
+public class NitroAvailabilityExtractor  {
 
     private static final LocationEquivalence LOCATION_EQUIVALENCE = new LocationEquivalence();
 
@@ -69,6 +68,8 @@ public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Ava
 
     private static final int HD_BITRATE = 3_200_000;
     private static final int SD_BITRATE = 1_500_000;
+    
+    private static final String VIDEO_MEDIA_TYPE = "Video";
 
     private static final Predicate<Availability> IS_HD = new Predicate<Availability>() {
         @Override
@@ -84,7 +85,6 @@ public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Ava
         }
     };
 
-    
     private final Map<String, Platform> mediaSetPlatform = ImmutableMap.of(
         PC, Platform.PC,
         APPLE_IPHONE4_HLS, Platform.IOS,
@@ -103,15 +103,15 @@ public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Ava
      * two Encodings, one for SD, one for HD, then maps and dedupes the Locations generated from
      * the availabilities onto those Encodings.
      */
-    @Override
-    public Set<Encoding> extract(Iterable<Availability> availabilities) {
+    public Set<Encoding> extract(Iterable<Availability> availabilities, String mediaType) {
         Set<Equivalence.Wrapper<Location>> hdLocations = Sets.newHashSet();
         Set<Equivalence.Wrapper<Location>> sdLocations = Sets.newHashSet();
         
         for (Availability availability : availabilities) {
-            ImmutableList<Wrapper<Location>> locations = FluentIterable.from(getLocationsFor(availability))
-                    .transform(TO_WRAPPED_LOCATION)
-                    .toList();
+            ImmutableList<Wrapper<Location>> locations = FluentIterable.
+                    from(getLocationsFor(availability, mediaType))
+                      .transform(TO_WRAPPED_LOCATION)
+                      .toList();
             
             if (IS_IPTV.apply(availability) && IS_HD.apply(availability)) {
                 hdLocations.addAll(locations);
@@ -152,47 +152,90 @@ public class NitroAvailabilityExtractor implements ContentExtractor<Iterable<Ava
         encoding.setVideoVerticalSize(isHD ? HD_VERTICAL_SIZE : SD_VERTICAL_SIZE);
     }
 
-    private Set<Location> getLocationsFor(Availability availability) {
+    private Set<Location> getLocationsFor(Availability availability, String mediaType) {
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
 
         for (String mediaSet : availability.getMediaSet()) {
             Platform platform = mediaSetPlatform.get(mediaSet);
             if (platform != null) {
-                locations.add(newLocation(availability, platform, mediaSetNetwork.get(mediaSet)));
+                locations.add(newLocation(availability, platform, 
+                        mediaSetNetwork.get(mediaSet), mediaType));
             }
         }
         return locations.build();
     }
 
-    private Location newLocation(Availability source, Platform platform, Network network) {
+    private Location newLocation(Availability source, Platform platform, Network network, 
+            String mediaType) {
         Location location = new Location();
         location.setUri(IPLAYER_URL_BASE + checkNotNull(NitroUtil.programmePid(source)));
         location.setTransportType(TransportType.LINK);
-        location.setPolicy(policy(source, platform, network));
+        location.setPolicy(policy(source, platform, network, mediaType));
         return location;
     }
 
-    private Policy policy(Availability source, Platform platform, Network network) {
+    private Policy policy(Availability source, Platform platform, Network network, String mediaType) {
         Policy policy = new Policy();
         ScheduledTime scheduledTime = source.getScheduledTime();
         if (scheduledTime != null) {
             policy.setAvailabilityStart(toDateTime(scheduledTime.getStart()));
             policy.setAvailabilityEnd(toDateTime(scheduledTime.getEnd()));
         }
-        // Even if ActualStart is set, the location may not be available. The Status field 
-        // must be referred to in order to confirm that it is.
-        //
-        // If we've passed the end of the availability window then ingest the actual availability
-        // start for reference, since there's the possibility of having missed it if we never
-        // ingested during the availability window.
-        if (AVAILABLE.equals(source.getStatus())
-                || (policy.getAvailabilityEnd() != null && policy.getAvailabilityEnd().isBeforeNow())) {
+        
+        if (shouldIngestActualAvailabilityStart(source, mediaType, policy)) {
             policy.setActualAvailabilityStart(toDateTime(source.getActualStart()));
         }
         policy.setPlatform(platform);
         policy.setNetwork(network);
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
         return policy;
+    }
+        
+    private boolean shouldIngestActualAvailabilityStart(Availability source, String mediaType,
+            Policy policy) {
+        DateTime actualStart = toDateTime(source.getActualStart());
+        
+        if (actualStart == null) {
+            // Ensures we remove it if not set in Nitro
+            return true;
+        }
+        
+        if (actualStart.isAfterNow()) {
+            // This is not an expected case on the Nitro API, and would cause 
+            // problems in output feeds that make relative date checks to set a 
+            // "media available" flag, since content would not change when
+            // the media becomes available
+            return false;
+        }
+        
+        if (policy.getAvailabilityEnd() != null 
+                && policy.getAvailabilityEnd().isBeforeNow()) {
+            // If we've passed the end of the availability window then ingest 
+            // the actual availability start for reference, since there's the 
+            // possibility of having missed it if we never ingested during the 
+            // availability window.
+            return true;
+        }
+        
+        if (!VIDEO_MEDIA_TYPE.equals(mediaType)) {
+            // Since media type is only reliably set on video, not audio, 
+            // our condition is inverted to check for this being a radio asset
+            
+            // Radio assets are delivered by a range of systems, which don't 
+            // reliably record an actual availability start time. However,
+            // Nitro synthesises it, and also has logic in the setting of
+            // the status field to determine if assets are actually available.
+            //
+            // Therefore radio actual availability start can only be trusted
+            // (and should only be ingested into Atlas) iff status == available
+            return AVAILABLE.equals(source.getStatus());
+        } else {
+            // Video assets' actual availability start time is reliably set
+            // in Nitro, since all assets are delivered by video factory which
+            // does so. Therefore actual availability start can always be trusted
+            // when on video content
+            return true;
+        }
     }
     
     private DateTime toDateTime(XMLGregorianCalendar start) {

@@ -20,6 +20,7 @@ import org.atlasapi.input.DelegatingModelTransformer;
 import org.atlasapi.input.ItemModelTransformer;
 import org.atlasapi.input.PersonModelTransformer;
 import org.atlasapi.input.SegmentModelTransformer;
+import org.atlasapi.input.SeriesModelTransformer;
 import org.atlasapi.input.TopicModelTransformer;
 import org.atlasapi.media.channel.CachingChannelGroupStore;
 import org.atlasapi.media.channel.Channel;
@@ -144,14 +145,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import tva.metadata._2010.TVAMainType;
-
 import com.google.common.base.Splitter;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.time.SystemClock;
+
+import tva.metadata._2010.TVAMainType;
 
 @Configuration
 @Import( { WatermarkModule.class } )
@@ -302,12 +303,16 @@ public class QueryWebModule {
         return new ItemModelTransformer(lookupStore, topicStore, channelResolver, idCodec(), clipTransformer(), new SystemClock(), segmentModelTransformer());
     }
 
+    SeriesModelTransformer seriesTransformer() {
+        return new SeriesModelTransformer(lookupStore, topicStore, idCodec(), clipTransformer(), new SystemClock());
+    }
+
     SegmentModelTransformer segmentModelTransformer() {
         return new SegmentModelTransformer(segmentWriter);
     }
     
     ContentWriteController contentWriteController() {
-        return new ContentWriteController(configFetcher, contentResolver, contentWriter, new DefaultGsonModelReader(), new DelegatingModelTransformer(brandTransformer(), itemTransformer()));
+        return new ContentWriteController(configFetcher, contentResolver, contentWriter, new DefaultGsonModelReader(), new DelegatingModelTransformer(brandTransformer(), itemTransformer(), seriesTransformer()));
     }
     
     TopicWriteController topicWriteController() {

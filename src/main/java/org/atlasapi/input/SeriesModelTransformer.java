@@ -40,5 +40,6 @@ public class SeriesModelTransformer extends ContentModelTransformer<Item, Series
         );
         series.setTotalEpisodes(summary.getTotalEpisodes());
         series.withSeriesNumber(summary.getSeriesNumber());
+        return series;
     }
 }

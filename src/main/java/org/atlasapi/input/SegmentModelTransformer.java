@@ -43,7 +43,7 @@ public class SegmentModelTransformer {
                 .build());
         complex.setPosition(simple.getPosition());
         if (simple.getOffset() != null) {
-            complex.setOffset(Duration.standardMinutes(simple.getOffset()));
+            complex.setOffset(Duration.standardSeconds(simple.getOffset()));
         }
         complex.setIsChapter(simple.getIsChapter());
         if (Strings.isNullOrEmpty(simple.getSegment().getId())) {
@@ -69,7 +69,7 @@ public class SegmentModelTransformer {
         Segment complex = new Segment();
         complex.setPublisher(Publisher.fromKey(publisher.getKey()).requireValue());
         complex.setType(SegmentType.valueOf(simple.getSegmentType()));
-        complex.setDuration(Duration.standardMinutes(simple.getDuration()));
+        complex.setDuration(Duration.standardSeconds(simple.getDuration()));
         complex.setDescription(simple.getDescription());
         complex.setRelatedLinks(relatedLinks(simple.getRelatedLinks()));
         complex.setTitle(simple.getTitle());

@@ -30,12 +30,13 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
         this.extractor = extractor;
         this.resolver = resolver;
         this.writer = writer;
-        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.MERGE);
     }
     
     @Override
     public ItemRefAndBroadcast process(Publisher targetPublisher, Element element) {
         Item item = extractor.extract(targetPublisher, element);
+        removeStaleScheduleEventOnOldItems();
         Maybe<Identified> existing = resolve(item.getCanonicalUri());
         if (existing.isNothing()) {
             write(item);
@@ -58,5 +59,9 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
 
     private void write(Content content) {
         writer.createOrUpdate((Item) content);
+    }
+    
+    private void removeStaleScheduleEventOnOldItems() {
+        //TODO
     }
 }

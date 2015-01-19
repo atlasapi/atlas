@@ -43,7 +43,7 @@ public class DefaultNetflixXmlElementHandler implements NetflixXmlElementHandler
         this.extractor = extractor;
         this.resolver = resolver;
         this.writer = writer;
-        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
 
     @Override

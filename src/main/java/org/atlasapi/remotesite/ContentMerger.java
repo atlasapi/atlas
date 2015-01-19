@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -31,6 +33,10 @@ public class ContentMerger {
     private static interface VersionMergeStrategy {
         Item mergeVersions(Item current, Item extracted);
     }
+    
+    static interface AliasMergeStrategy {
+        Item mergeAliases(Item current, Item extracted);
+    }
 
     public static abstract class MergeStrategy {
         private MergeStrategy(){}
@@ -47,16 +53,20 @@ public class ContentMerger {
 
     private final VersionMergeStrategy versionMergeStrategy;
     private final TopicMergeStrategy topicsMergeStrategy;
+    private final AliasMergeStrategy aliasMergeStrategy;
 
-    public ContentMerger(VersionMergeStrategy versionMergeStrategy, TopicMergeStrategy topicsMergeStrategy) {
-        this.versionMergeStrategy = versionMergeStrategy;
-        this.topicsMergeStrategy = topicsMergeStrategy;
+    public ContentMerger(VersionMergeStrategy versionMergeStrategy, TopicMergeStrategy topicsMergeStrategy, 
+            AliasMergeStrategy aliasMergeStrategy) {
+        this.versionMergeStrategy = checkNotNull(versionMergeStrategy);
+        this.topicsMergeStrategy = checkNotNull(topicsMergeStrategy);
+        this.aliasMergeStrategy = checkNotNull(aliasMergeStrategy);
     }
 
     public Item merge(Item current, Item extracted) {
 
         current = versionMergeStrategy.mergeVersions(current, extracted);
         current = topicsMergeStrategy.mergeTopics(current, extracted);
+        current = aliasMergeStrategy.mergeAliases(current, extracted);
         current = mergeContents(current, extracted);
 
         if ( current.getContainer() == null
@@ -106,8 +116,6 @@ public class ContentMerger {
 
     private <C extends Content> C mergeContents(C current, C extracted) {
         current.setActivelyPublished(extracted.isActivelyPublished());
-        current.setAliasUrls(extracted.getAliasUrls());
-        current.setAliases(extracted.getAliases());
         current.setTitle(extracted.getTitle());
         current.setDescription(extracted.getDescription());
         current.setShortDescription(extracted.getShortDescription());
@@ -154,7 +162,7 @@ public class ContentMerger {
         }
     }
 
-    private static class LeaveEverythingAlone extends MergeStrategy implements TopicMergeStrategy, VersionMergeStrategy {
+    private static class LeaveEverythingAlone extends MergeStrategy implements TopicMergeStrategy, VersionMergeStrategy, AliasMergeStrategy {
         @Override
         public Item mergeTopics(Item current, Item extracted) {
             return current;
@@ -164,9 +172,15 @@ public class ContentMerger {
         public Item mergeVersions(Item current, Item extracted) {
             return current;
         }
+
+        @Override
+        public Item mergeAliases(Item current, Item extracted) {
+            return current;
+        }
+        
     }
 
-    private static class ReplaceEverything extends MergeStrategy implements TopicMergeStrategy, VersionMergeStrategy {
+    private static class ReplaceEverything extends MergeStrategy implements TopicMergeStrategy, VersionMergeStrategy, AliasMergeStrategy {
         @Override
         public Item mergeTopics(Item current, Item extracted) {
             current.setTopicRefs(extracted.getTopicRefs());
@@ -178,9 +192,16 @@ public class ContentMerger {
             current.setVersions(extracted.getVersions());
             return current;
         }
+
+        @Override
+        public Item mergeAliases(Item current, Item extracted) {
+            current.setAliases(extracted.getAliases());
+            current.setAliasUrls(extracted.getAliasUrls());
+            return current;
+        }
     }
 
-    private static class StandardMerge extends MergeStrategy implements VersionMergeStrategy {
+    private static class StandardMerge extends MergeStrategy implements VersionMergeStrategy, AliasMergeStrategy {
         @Override
         public Item mergeVersions(Item current, Item extracted) {
             Map<String, Version> mergedVersions = Maps.newHashMap();
@@ -205,6 +226,13 @@ public class ContentMerger {
                 }
             }
             current.setVersions(Sets.newHashSet(mergedVersions.values()));
+            return current;
+        }
+
+        @Override
+        public Item mergeAliases(Item current, Item extracted) {
+            current.setAliases(Sets.union(current.getAliases(), extracted.getAliases()));
+            current.setAliasUrls(Sets.union(current.getAliasUrls(), extracted.getAliasUrls()));
             return current;
         }
     }

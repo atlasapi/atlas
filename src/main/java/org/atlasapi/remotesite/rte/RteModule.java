@@ -41,7 +41,7 @@ public class RteModule {
     @Bean
     public RteFeedProcessor feedProcessor() {
         return new RteFeedProcessor(contentWriter, contentResolver, new ContentMerger(
-                MergeStrategy.MERGE, MergeStrategy.KEEP), brandExtractor());
+                MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE), brandExtractor());
     }
     
     @Bean

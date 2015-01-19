@@ -112,7 +112,7 @@ public class DefaultLoveFilmDataRowHandler implements LoveFilmDataRowHandler {
         this.lister = lister;
         this.extractor = extractor;
         this.missingContentPercentage = missingContentPercentage;
-        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.MERGE);
     }
 
     @Override

@@ -75,7 +75,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         this.seriesExtractor = checkNotNull(seriesExtractor);
         this.publisher = checkNotNull(publisher);
         this.uriPrefix = checkNotNull(uriPrefix);
-        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
         
         FORMATTER.setTimeZone(TimeZone.getTimeZone("UTC"));

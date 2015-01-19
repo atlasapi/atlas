@@ -26,7 +26,7 @@ public class DefaultGettyDataHandler implements GettyDataHandler {
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(writer);
         this.extractor = checkNotNull(extractor);
-        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.REPLACE);
+        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.REPLACE, MergeStrategy.MERGE);
     }
 
     @Override

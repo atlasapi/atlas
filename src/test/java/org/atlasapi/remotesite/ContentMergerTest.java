@@ -10,7 +10,9 @@ import java.util.List;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
@@ -30,6 +32,8 @@ import com.metabroadcast.common.time.DateTimeZones;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentMergerTest {
+    
+    private static Publisher PUBLISHER = Publisher.METABROADCAST;
     
     @Test
     public void testVersionMerger() {

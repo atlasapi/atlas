@@ -78,8 +78,12 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         ImmutableSet.Builder<Version> versions = ImmutableSet.builder();
 
         for (com.metabroadcast.atlas.glycerin.model.Version nitroVersion : source.getVersions()) {
-            Version version = generateVersion(now, broadcasts, encodings, nitroVersion);
-            versions.add(version);
+            try {
+                Version version = generateVersion(now, broadcasts, encodings, nitroVersion);
+                versions.add(version);
+            } catch (Exception e) {
+                throw new RuntimeException("Exception processing version " + nitroVersion.getPid(), e);
+            }
         }
 
         item.setVersions(versions.build());

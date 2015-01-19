@@ -45,7 +45,7 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.resolver = checkNotNull(resolver);
         this.publisher = checkNotNull(publisher);
         this.uriPrefix = checkNotNull(uriPrefix);
-        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
     
     @Override

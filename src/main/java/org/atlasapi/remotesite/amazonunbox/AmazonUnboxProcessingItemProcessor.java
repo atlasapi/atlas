@@ -103,7 +103,7 @@ public class AmazonUnboxProcessingItemProcessor implements AmazonUnboxItemProces
         this.lister = lister;
         this.missingContentPercentage = missingContentPercentage;
         this.brandProcessor = brandProcessor;
-        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
 
     @Override

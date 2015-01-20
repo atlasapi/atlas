@@ -146,17 +146,17 @@ public class LocalOrRemoteNitroFetcher {
             T fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
                 if (fetched instanceof Brand) {
-                    contentMerger.merge((Brand) existing, (Brand) fetched);
+                    resolved.add((T) contentMerger.merge((Brand) existing, (Brand) fetched));
                 } else if (fetched instanceof Series) {
-                    contentMerger.merge((Series) existing, (Series) fetched);
+                    resolved.add((T) contentMerger.merge((Series) existing, (Series) fetched));
                 } else if (fetched instanceof Item) {
-                    contentMerger.merge((Item) existing, (Item) fetched);
+                    resolved.add((T) contentMerger.merge((Item) existing, (Item) fetched));
                 } else {
                     throw new IllegalArgumentException("Can't handle Content of type " + fetched.getClass().getCanonicalName());
                 }
                 
             }
-            resolved.add(existing);
+            
         }
         return new ResolveOrFetchResult<T>(resolved.build(), fetchedIndex.values());
     }

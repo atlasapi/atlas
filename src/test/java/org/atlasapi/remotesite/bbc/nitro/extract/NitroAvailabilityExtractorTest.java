@@ -91,7 +91,6 @@ public class NitroAvailabilityExtractorTest {
     @Test
     public void testDontIngestActualAvailabilityStartInTheFuture() {
         Availability availability = hdAvailability(EPISODE_PID, VERSION_PID);
-        availability.setStatus("available");
         DateTime actualStart = new DateTime().withZone(DateTimeZone.UTC).plusDays(1);
         XMLGregorianCalendar xmlStart = dataTypeFactory.newXMLGregorianCalendar(actualStart.toGregorianCalendar());
         availability.setActualStart(xmlStart);
@@ -100,6 +99,21 @@ public class NitroAvailabilityExtractorTest {
         Location location = getOnlyLocationFrom(extractor.extract(ImmutableSet.of(availability), VIDEO_MEDIA_TYPE));
         assertNull(location.getPolicy().getActualAvailabilityStart());
     }
+    
+    @Test
+    public void testDontIngestActualAvailabilityStartForRevokedAvailability() {
+        Availability availability = hdAvailability(EPISODE_PID, VERSION_PID);
+        
+        DateTime actualStart = new DateTime().withZone(DateTimeZone.UTC).minusDays(1);
+        XMLGregorianCalendar xmlStart = dataTypeFactory.newXMLGregorianCalendar(actualStart.toGregorianCalendar());
+        availability.setActualStart(xmlStart);
+        
+        availability.setRevocationStatus("revoked");
+        
+        Location location = getOnlyLocationFrom(extractor.extract(ImmutableSet.of(availability), VIDEO_MEDIA_TYPE));
+        assertNull(location.getPolicy().getActualAvailabilityStart());
+    }
+    
     private Location getOnlyLocationFrom(Set<Encoding> encodings) {
         return Iterables.getOnlyElement(Iterables.getOnlyElement(encodings).getAvailableAt());
         

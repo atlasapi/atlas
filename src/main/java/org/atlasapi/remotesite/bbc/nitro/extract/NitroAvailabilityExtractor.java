@@ -60,6 +60,7 @@ public class NitroAvailabilityExtractor  {
     private static final String PC = "pc";
     private static final String YOUVIEW = "iptv-all";
     private static final String AVAILABLE = "available";
+    private static final String REVOKED = "revoked";
     private static final int HD_HORIZONTAL_SIZE = 1280;
     private static final int HD_VERTICAL_SIZE = 720;
 
@@ -198,6 +199,11 @@ public class NitroAvailabilityExtractor  {
         if (actualStart == null) {
             // Ensures we remove it if not set in Nitro
             return true;
+        }
+        
+        if (REVOKED.equals(source.getRevocationStatus())) {
+            // A revoked availability isn't actually available
+            return false;
         }
         
         if (actualStart.isAfterNow()) {

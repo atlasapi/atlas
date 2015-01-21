@@ -8,6 +8,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.persistence.lookup.LookupWriter;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
 import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -17,6 +19,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import com.google.common.collect.ImmutableMap;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 
 @Configuration
@@ -33,6 +37,8 @@ public class YouViewModule {
     private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired YouViewChannelResolver youviewChannelResolver;
+    private @Autowired LookupEntryStore lookupEntryStore;
+    private @Autowired LookupWriter lookupWriter;
     
     private @Value("${youview.prod.url}") String youViewProductionUri;
     private @Value("${youview.stage.url}") String youViewStageUri;
@@ -60,6 +66,7 @@ public class YouViewModule {
     public void scheduleTasks() {
         youViewProductionIngester().startBackgroundTasks();
         youViewStageIngester().startBackgroundTasks();
+        scheduler.schedule(youViewEquivalenceBreaker(), RepetitionRules.NEVER);
     }
     
     private YouViewIngestConfiguration productionConfiguration() {
@@ -76,6 +83,11 @@ public class YouViewModule {
                         YouViewCoreModule.SCOTLAND_SERVICE_ALIAS_PREFIX, Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE,
                         PaChannelsIngester.BT_SERVICE_ID_ALIAS_PREFIX, Publisher.YOUVIEW_BT_STAGE),
                 YOUVIEW_STAGE_ALIAS_PREFIX);
+    }
+    
+    private YouViewEquivalenceBreaker youViewEquivalenceBreaker() {
+        return new YouViewEquivalenceBreaker(scheduleResolver, youviewChannelResolver, 
+                lookupEntryStore, contentResolver, lookupWriter);
     }
     
 }

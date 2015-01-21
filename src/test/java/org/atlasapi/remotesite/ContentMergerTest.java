@@ -2,9 +2,14 @@ package org.atlasapi.remotesite;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Set;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
@@ -12,25 +17,29 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.remotesite.ContentMerger.AliasMergeStrategy;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.joda.time.DateTime;
 import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Equivalence;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.metabroadcast.common.time.DateTimeZones;
 
-
+@RunWith(MockitoJUnitRunner.class)
 public class ContentMergerTest {
     
     private static final Publisher PUBLISHER = Publisher.METABROADCAST;
 
     @Test
     public void testVersionMerger() {
-        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         
         Item current = new Item();
         Item extracted = new Item();
@@ -56,7 +65,7 @@ public class ContentMergerTest {
     
     @Test
     public void testVersionMergeReplaceStrategy() {
-        ContentMerger contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP);
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         
         Item current = new Item();
         Item extracted = new Item();
@@ -92,7 +101,7 @@ public class ContentMergerTest {
             protected int doHash(TopicRef topicRef) {
                 return Objects.hashCode(topicRef.getOffset());
             }
-        }));
+        }), MergeStrategy.REPLACE);
 
         TopicRef a1 = new TopicRef(9000L, 0f, false, TopicRef.Relationship.ABOUT, 45);
         TopicRef a2 = new TopicRef(9001L, 0f, true, TopicRef.Relationship.TRANSCRIPTION, 45);
@@ -121,7 +130,7 @@ public class ContentMergerTest {
 
     @Test
     public void testItemItemMergingProducesItem() {
-        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         
         Item current = createItem("old title", PUBLISHER);
         Item extracted = createItem("new title", PUBLISHER);
@@ -134,7 +143,7 @@ public class ContentMergerTest {
     
     @Test
     public void testEpisodeItemMergingProducesItem() {
-        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         
         Episode current = createEpisode("old title", PUBLISHER, 3);
         Item extracted = createItem("new title", PUBLISHER);
@@ -147,7 +156,7 @@ public class ContentMergerTest {
     
     @Test
     public void testItemEpisodeMergingProducesEpisode() {
-        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         
         String extractedTitle = "new title";
         Integer extractedEpisodeNum = 5;
@@ -163,7 +172,7 @@ public class ContentMergerTest {
     
     @Test
     public void testEpisodeEpisodeMergingProducesEpisode() {
-        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         
         String extractedTitle = "new title";
         Integer extractedEpisodeNum = 5;
@@ -175,6 +184,73 @@ public class ContentMergerTest {
         
         assertEquals(extractedTitle, merged.getTitle());
         assertEquals(extractedEpisodeNum, merged.getEpisodeNumber());
+    }
+    
+    @Test
+    public void testAliasMergeStrategyInvoked() {
+        AliasMergeStrategy aliasMergeStrategy = mock(AliasMergeStrategy.class);
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, aliasMergeStrategy);
+        
+        Item current = createItem("title", Publisher.METABROADCAST);
+        Item extracted = createItem("title", Publisher.METABROADCAST);
+        when(aliasMergeStrategy.mergeAliases(current, extracted)).thenReturn(current);
+        
+        contentMerger.merge(current, extracted);
+        verify(aliasMergeStrategy).mergeAliases(current, extracted);
+    }
+    
+    @Test
+    public void testMergeAliasesMergeStrategy() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.MERGE);
+        Item current = createItem("title", Publisher.METABROADCAST);
+        Item extracted = createItem("title", Publisher.METABROADCAST);
+        
+        Set<Alias> currentAliases = ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3"));
+        Set<Alias> extractedAliases = ImmutableSet.of(new Alias("3", "4"));
+        current.setAliases(currentAliases);
+        extracted.setAliases(extractedAliases);
+        
+        current.setAliasUrls(ImmutableSet.of("http://a.com/b", "http://b.com/c"));
+        extracted.setAliasUrls(ImmutableSet.of("http://c.com/d"));
+        
+        Item merged = contentMerger.merge(current, extracted);
+        
+        assertEquals(Sets.union(currentAliases, extractedAliases), merged.getAliases());
+    }
+    
+    @Test
+    public void testReplaceAliasesMergeStrategy() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
+        Item current = createItem("title", Publisher.METABROADCAST);
+        Item extracted = createItem("title", Publisher.METABROADCAST);
+        Set<Alias> extractedAliases = ImmutableSet.of(new Alias("3", "4"));
+        
+        current.setAliases(ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3")));
+        extracted.setAliases(extractedAliases);
+        
+        current.setAliasUrls(ImmutableSet.of("http://a.com/b", "http://b.com/c"));
+        extracted.setAliasUrls(ImmutableSet.of("http://c.com/d"));
+        
+        Item merged = contentMerger.merge(current, extracted);
+        
+        assertEquals(extractedAliases, merged.getAliases());
+    }
+    
+    @Test
+    public void testKeepAliasesMergeStrategy() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.KEEP);
+        Item current = createItem("title", Publisher.METABROADCAST);
+        Item extracted = createItem("title", Publisher.METABROADCAST);
+        Set<Alias> currentAliases = ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3"));
+        current.setAliases(currentAliases);
+        extracted.setAliases(ImmutableSet.of(new Alias("3", "4")));
+        
+        current.setAliasUrls(ImmutableSet.of("http://a.com/b", "http://b.com/c"));
+        extracted.setAliasUrls(ImmutableSet.of("http://c.com/d"));
+        
+        Item merged = contentMerger.merge(current, extracted);
+        
+        assertEquals(currentAliases, merged.getAliases());
     }
 
     private Item createItem(String title, Publisher publisher) {

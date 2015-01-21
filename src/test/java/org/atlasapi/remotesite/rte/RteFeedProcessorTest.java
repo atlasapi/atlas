@@ -53,7 +53,7 @@ public class RteFeedProcessorTest {
         processor = new RteFeedProcessor(
                 contentWriter,
                 new DummyContentResolver(),
-                new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP),
+                new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE),
                 new RteBrandExtractor());
     }
     

@@ -69,7 +69,7 @@ public class BtFeaturedContentUpdater extends ScheduledTask {
         this.contentWriter = contentWriter;
         this.productBaseUri = productBaseUri;
         this.rootDocumentUri = rootDocumentUri;
-        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         
     }
     

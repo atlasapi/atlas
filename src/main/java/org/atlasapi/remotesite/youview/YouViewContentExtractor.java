@@ -18,7 +18,6 @@ import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.AttributeNotFoundException;
-import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.netflix.ElementNotFoundException;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
@@ -79,9 +78,8 @@ public class YouViewContentExtractor {
         Item item = new Item();
 
         String id = getId(source);
-        item.setCanonicalUri(scheduleEventUriFor(targetPublisher, id));
-        item.addAlias(new Alias(ingestConfiguration.getAliasNamespacePrefix()
-                + ":scheduleevent", id));
+        item.setCanonicalUri(canonicalUriFor(targetPublisher, source));
+        item.addAlias(new Alias(getScheduleEventAliasNamespace(), id));
         item.setTitle(getTitle(source));
         item.setMediaType(getMediaType(source));
         item.setPublisher(targetPublisher);
@@ -95,6 +93,35 @@ public class YouViewContentExtractor {
         
         item.addVersion(getVersion(source));
         return item;
+    }
+    
+    public String getScheduleEventAliasNamespace() {
+        return ingestConfiguration.getAliasNamespacePrefix() + ":scheduleevent";
+    }
+    
+    /**
+     * If there is a programmeCrid present, use that. We're as yet unsure
+     * whether programmeCrids are unique over all time, or a limited window
+     * so prefix with the tx date. If there's no programmeCrid we use the
+     * scheduleEvent id. We use programmeCrids where available to reduce
+     * the number of items in the Atlas where programmes are simultaneously
+     * broadcast on many regional variants.
+     */
+    private String canonicalUriFor(Publisher publisher, Element source) {
+        Optional<String> programmeCrid = getProgrammeCrid(source);
+        
+        if (programmeCrid.isPresent()) {
+            DateTime transmissionTime = getTransmissionTime(source);
+            
+            return String.format("http://%s/programmecrid/%d%02d%02d/%s", 
+                    publisher.key(), 
+                    transmissionTime.getYear(),
+                    transmissionTime.getMonthOfYear(),
+                    transmissionTime.getDayOfMonth(),
+                    programmeCrid.get().replace("crid://", ""));
+        } else {
+            return scheduleEventUriFor(publisher, getId(source));
+        }
     }
     
     private String scheduleEventUriFor(Publisher publisher, String scheduleEventId) {

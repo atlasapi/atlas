@@ -57,7 +57,7 @@ public class ContentUpdatingTalkTalkVodEntityProcessor implements
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(writer);
         this.itemExtractor = new TalkTalkItemDetailItemExtractor(resolver);
-        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
 
     private void logProcessing(VODEntityType entity) {

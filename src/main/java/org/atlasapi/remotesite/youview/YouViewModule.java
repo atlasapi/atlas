@@ -8,6 +8,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
 import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -33,6 +34,7 @@ public class YouViewModule {
     private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired YouViewChannelResolver youviewChannelResolver;
+    private @Autowired LookupEntryStore lookupEntryStore;
     
     private @Value("${youview.prod.url}") String youViewProductionUri;
     private @Value("${youview.stage.url}") String youViewStageUri;
@@ -44,7 +46,7 @@ public class YouViewModule {
                 Duration.standardSeconds(timeout), scheduler, 
                 channelResolver, contentResolver, contentWriter, 
                 scheduleWriter, scheduleResolver, youviewChannelResolver, 
-                productionConfiguration());
+                lookupEntryStore, productionConfiguration());
     }
     
     @Bean
@@ -53,7 +55,7 @@ public class YouViewModule {
                 Duration.standardSeconds(timeout), scheduler, 
                 channelResolver, contentResolver, contentWriter, 
                 scheduleWriter, scheduleResolver, youviewChannelResolver,
-                stageConfiguration());
+                lookupEntryStore, stageConfiguration());
     }
     
     @PostConstruct

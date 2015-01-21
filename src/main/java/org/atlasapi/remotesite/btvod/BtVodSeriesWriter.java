@@ -56,7 +56,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         this.publisher = checkNotNull(publisher);
         this.uriPrefix = checkNotNull(uriPrefix);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
-        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP);
+        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
     
     @Override

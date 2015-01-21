@@ -52,7 +52,7 @@ public class LocalOrRemoteNitroFetcher {
 
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, final Clock clock) {
         this(resolver, contentAdapter, 
-                new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP),
+                new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE),
                 new Predicate<Item>() {
 
                     @Override
@@ -105,7 +105,7 @@ public class LocalOrRemoteNitroFetcher {
     
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, 
             Predicate<Item> fullFetchPermitted) {
-        this(resolver, contentAdapter, new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP), fullFetchPermitted);
+        this(resolver, contentAdapter, new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE), fullFetchPermitted);
     }
     
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, 

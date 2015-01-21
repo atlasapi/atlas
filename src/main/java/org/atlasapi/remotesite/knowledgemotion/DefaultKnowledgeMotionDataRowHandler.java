@@ -27,7 +27,7 @@ public class DefaultKnowledgeMotionDataRowHandler implements KnowledgeMotionData
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(writer);
         this.extractor = checkNotNull(extractor);
-        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.REPLACE);
+        this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
     }
 
     @Override

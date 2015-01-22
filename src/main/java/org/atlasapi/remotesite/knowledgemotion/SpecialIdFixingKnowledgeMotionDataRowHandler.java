@@ -2,26 +2,24 @@ package org.atlasapi.remotesite.knowledgemotion;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.nio.channels.Pipe.SourceChannel;
-
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.ContentExtractor;
-import org.atlasapi.remotesite.ContentMerger;
-import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.metabroadcast.common.base.Maybe;
 
 public class SpecialIdFixingKnowledgeMotionDataRowHandler implements KnowledgeMotionDataRowHandler {
 
     private static final String CORRECTED_BLOOMBERG_ID_ALIAS_NAMESPACE = "knowledgemotion:correctedBloombergId";
+    private final Splitter idSplitter = Splitter.on(":").omitEmptyStrings();
 
     private final ContentResolver resolver;
     private final ContentWriter writer;
@@ -36,7 +34,13 @@ public class SpecialIdFixingKnowledgeMotionDataRowHandler implements KnowledgeMo
 
     @Override
     public Optional<Content> handle(KnowledgeMotionDataRow row) {
-        Maybe<Identified> existing = resolve(sourceConfig.uri(row.getId()));
+        if (!sourceConfig.rowHeader().equals(row.getSource())) {
+            return Optional.absent();
+        }
+
+        String id = Iterables.getLast(idSplitter.split(row.getId()));
+
+        Maybe<Identified> existing = resolve(sourceConfig.uri(id));
         if (existing.isNothing()) {
             return Optional.absent();
         }

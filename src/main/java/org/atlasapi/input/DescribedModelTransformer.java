@@ -1,10 +1,12 @@
 package org.atlasapi.input;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.RelatedLink;
@@ -13,6 +15,7 @@ import org.atlasapi.media.entity.RelatedLink.LinkType;
 import org.atlasapi.media.entity.Review;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.joda.time.DateTime;
 
@@ -41,6 +44,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         result.setImage(inputContent.getImage());
         result.setThumbnail(inputContent.getThumbnail());
         result.setRelatedLinks(relatedLinks(inputContent.getRelatedLinks()));
+        result.setImages(transformImages(inputContent.getImages()));
         if (inputContent.getSpecialization() != null) {
             result.setSpecialization(Specialization.fromKey(inputContent.getSpecialization()).valueOrNull());
         }
@@ -51,6 +55,30 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
             result.setReviews(reviews(result.getPublisher(), inputContent.getReviews()));
         }
         return result;
+    }
+
+    private Iterable<org.atlasapi.media.entity.Image> transformImages(Set<Image> images) {
+        Set<org.atlasapi.media.entity.Image> resultImages = new HashSet<>();
+        if (images == null) {
+            return resultImages;
+        }
+        for (Image image : images) {
+            org.atlasapi.media.entity.Image transformedImage = new org.atlasapi.media.entity.Image(
+                    image.getUri()
+            );
+            transformedImage.setHeight(image.getHeight());
+            transformedImage.setWidth(image.getWidth());
+            if (image.getType() != null) {
+                transformedImage.setType(ImageType.valueOf(image.getImageType().toUpperCase()));
+            }
+
+            resultImages.add(
+                    transformedImage
+            );
+        }
+
+
+        return resultImages;
     }
 
     private Iterable<RelatedLink> relatedLinks(

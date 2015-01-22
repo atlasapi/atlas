@@ -30,10 +30,10 @@ import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
-public class KnowledgeMotionUpdateTask extends ScheduledTask {
-    private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionUpdateTask.class);
+public class KnowledgeMotionSpecialIdFixingTask extends ScheduledTask {
+    private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionSpecialIdFixingTask.class);
 
-    private static final String JOB_KEY = "km-spreadsheet-ingest";
+    private static final String JOB_KEY = "km-spreadsheet-id-fixer";
 
     private final String spreadsheetTitle = Configurer.get("google.spreadsheet.title").get();
     private final SpreadsheetFetcher spreadsheetFetcher;
@@ -43,9 +43,9 @@ public class KnowledgeMotionUpdateTask extends ScheduledTask {
     private final ImmutableList<Publisher> allKmPublishers;
     private final ContentLister contentLister;
 
-    public KnowledgeMotionUpdateTask(Iterable<KnowledgeMotionSourceConfig> sources,
+    public KnowledgeMotionSpecialIdFixingTask(Iterable<KnowledgeMotionSourceConfig> sources,
             SpreadsheetFetcher spreadsheetFetcher,
-            DefaultKnowledgeMotionDataRowHandler dataHandler, KnowledgeMotionAdapter adapter,
+            SpecialIdFixingKnowledgeMotionDataRowHandler dataHandler, KnowledgeMotionAdapter adapter,
             ContentLister contentLister) {
         this.spreadsheetFetcher = checkNotNull(spreadsheetFetcher);
         this.dataHandler = checkNotNull(dataHandler);
@@ -66,19 +66,7 @@ public class KnowledgeMotionUpdateTask extends ScheduledTask {
             for (ListEntry row : data.getEntries()) {
                 processor.process(row.getCustomElements());
             }
-            reportStatus(processor.getResult().toString() + " – finished; now un-ActivelyPublisheding disappeared content.");
-
-            ImmutableSet<String> seenUris = processor.seenUris();
-            Iterator<Content> allStoredKmContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublishers(allKmPublishers).build());
-            while (allStoredKmContent.hasNext()) {
-                Content item = allStoredKmContent.next();
-                if (! seenUris.contains(item.getCanonicalUri())) {
-                    item.setActivelyPublished(false);
-                    dataHandler.write(item);
-                }
-            }
-
-
+            reportStatus(processor.getResult().toString() + " – finished.");
         } catch (Exception e) {
             reportStatus(e.getMessage());
             throw Throwables.propagate(e);
@@ -86,7 +74,6 @@ public class KnowledgeMotionUpdateTask extends ScheduledTask {
     }
 
     private ListFeed fetchData() {
-        
         SpreadsheetEntry spreadsheet = Iterables.getOnlyElement(spreadsheetFetcher.getSpreadsheetByTitle(getModifiedTitle()));
         WorksheetEntry worksheet = Iterables.getOnlyElement(spreadsheetFetcher.getWorksheetsFromSpreadsheet(spreadsheet));
         return spreadsheetFetcher.getDataFromWorksheet(worksheet);
@@ -96,22 +83,19 @@ public class KnowledgeMotionUpdateTask extends ScheduledTask {
     private String getModifiedTitle() {
         return spreadsheetTitle.replace("-", " ");
     }
-    
+
     private KnowledgeMotionDataProcessor<UpdateProgress> processor() {
         return new KnowledgeMotionDataProcessor<UpdateProgress>() {
 
             UpdateProgress progress = UpdateProgress.START;
 
-            Set<String> seenUris = Sets.newHashSet();
+//            Set<String> seenUris = Sets.newHashSet();
 
             @Override
             public boolean process(CustomElementCollection customElements) {
                 try {
                     KnowledgeMotionDataRow row = adapter.dataRow(customElements);
                     Optional<Content> written = dataHandler.handle(row);
-                    if (written.isPresent()) {
-                        seenUris.add(written.get().getCanonicalUri());
-                    }
                     progress = progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
                     log.warn("Row: " + customElements.getValue(KnowledgeMotionSpreadsheetColumn.ID.getValue()), e);
@@ -122,7 +106,7 @@ public class KnowledgeMotionUpdateTask extends ScheduledTask {
             }
 
             public ImmutableSet<String> seenUris() {
-                return ImmutableSet.copyOf(seenUris);
+                return null;  // TODO yayyy (get rid of this interface)
             }
 
             @Override

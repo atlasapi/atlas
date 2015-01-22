@@ -48,9 +48,14 @@ public class KnowledgeMotionModule {
             KnowledgeMotionSourceConfig.from("Bloomberg", Publisher.KM_BLOOMBERG, "bloomberg:%s", "http://bloomberg.com/%s")
     );
 
+    static final ImmutableList<KnowledgeMotionSourceConfig> FIX_SOURCES = ImmutableList.of(
+            KnowledgeMotionSourceConfig.from("Bloomberg", Publisher.KM_BLOOMBERG, "bloomberg:%s", "http://bloomberg.com/%s")
+    );
+
     @PostConstruct
     public void startBackgroundTasks() {
         scheduler.schedule(knowledgeMotionUpdater().withName("KnowledgeMotion Spreadsheet Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(knowledgeMotionBloombergIdFixer().withName("KnowledgeMotion Bloomberg ID Fixer"), RepetitionRules.NEVER);
     }
 
     @Bean
@@ -66,6 +71,14 @@ public class KnowledgeMotionModule {
         return new KnowledgeMotionUpdateTask(SOURCES,
                 spreadsheet.spreadsheetFetcher(), 
                 new DefaultKnowledgeMotionDataRowHandler(contentResolver, contentWriter, new KnowledgeMotionDataRowContentExtractor(SOURCES, topicGuesser())),
+                new KnowledgeMotionAdapter(),
+                contentLister);
+    }
+    
+    private KnowledgeMotionSpecialIdFixingTask knowledgeMotionBloombergIdFixer() {
+        return new KnowledgeMotionSpecialIdFixingTask(FIX_SOURCES,
+                spreadsheet.spreadsheetFetcher(), 
+                new SpecialIdFixingKnowledgeMotionDataRowHandler(contentResolver, contentWriter, FIX_SOURCES.get(0)),
                 new KnowledgeMotionAdapter(),
                 contentLister);
     }

@@ -21,10 +21,21 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.scheduling.ScheduledTask;
 
 
-public class YouViewEquivalenceBreaker extends ScheduledTask {
+/**
+ * Orphans items from the rest of their equivalent set, using the schedule
+ * of a provided publisher to identify candidates for being orphaned.
+ * 
+ * Candidates are considered if they are equivalent to items in the 
+ * schedule, and are items of the publishers in publishersToOrphan. They will
+ * be orphaned if their latest broadcast is more than 30 days in the past,
+ * or they don't have a scheduleevent {@link Alias}
+ * 
+ * @author tom
+ *
+ */
+public class YouViewEquivalenceBreaker {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(YouViewEquivalenceBreaker.class);
     
@@ -48,12 +59,15 @@ public class YouViewEquivalenceBreaker extends ScheduledTask {
         this.publishersToOrphan = ImmutableSet.copyOf(publishersToOrphan);
     }
     
+<<<<<<< HEAD
     @Override
     protected void runTask() {
         DateTime from = DateTime.now();
         DateTime to = DateTime.now().plusDays(1);
         orphanItems(from, to);
     }
+=======
+>>>>>>> b60b6e4... Orphan old, and no longer needed, schedule events
     
     public void orphanItems(DateTime from, DateTime to) {
         for (org.atlasapi.media.channel.Channel channel : youViewChannelResolver.getAllChannels()) {

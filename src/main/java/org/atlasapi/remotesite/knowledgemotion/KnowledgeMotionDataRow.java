@@ -16,13 +16,14 @@ public class KnowledgeMotionDataRow {
     private final String date;
     private final String duration;
     private final List<String> keywords;
+    private final String alternativeId;
     
     public static Builder builder() {
         return new Builder();
     }
     
     private KnowledgeMotionDataRow(String source, String id, String title, String description, 
-            String date, String duration, Iterable<String> keywords) {
+            String date, String duration, Iterable<String> keywords, String alternativeId) {
         this.source = checkNotNull(source);
         this.id = checkNotNull(id);
         this.title = checkNotNull(title);
@@ -30,6 +31,7 @@ public class KnowledgeMotionDataRow {
         this.date = checkNotNull(date);
         this.duration = checkNotNull(duration);
         this.keywords = ImmutableList.copyOf(keywords);
+        this.alternativeId = alternativeId;
     }
     
     public String getSource() {
@@ -60,6 +62,10 @@ public class KnowledgeMotionDataRow {
         return keywords;
     }
 
+    public String getAlternativeId() {
+        return alternativeId;
+    }
+
     @Override
     public String toString() {
         return Objects.toStringHelper(super.toString())
@@ -74,6 +80,8 @@ public class KnowledgeMotionDataRow {
     }
 
     
+   // TODO get rid of all this crap and just write a constructor that takes a CustomElementCollection
+    // no one will then forget to update the builder, call all the builder methods, etc etc
     public static class Builder {
         
         private String source;
@@ -83,9 +91,10 @@ public class KnowledgeMotionDataRow {
         private String date;
         private String duration;
         private List<String> keywords = ImmutableList.of();
+        private String alternativeId;
         
         public KnowledgeMotionDataRow build() {
-            return new KnowledgeMotionDataRow(source, id, title, description, date, duration, keywords);
+            return new KnowledgeMotionDataRow(source, id, title, description, date, duration, keywords, alternativeId);
         }
         
         private Builder() {}
@@ -119,9 +128,13 @@ public class KnowledgeMotionDataRow {
             return this;
         }
         
-        
         public Builder withKeywords(Iterable<String> keywords) {
             this.keywords = ImmutableList.copyOf(keywords);
+            return this;
+        }
+
+        public Builder withAlternativeId(String altId) {
+            this.alternativeId = altId;
             return this;
         }
         

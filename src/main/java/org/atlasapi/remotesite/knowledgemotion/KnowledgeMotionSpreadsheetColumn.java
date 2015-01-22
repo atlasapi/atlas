@@ -10,7 +10,8 @@ public enum KnowledgeMotionSpreadsheetColumn {
     DESCRIPTION("Description"),
     DATE("Date"),
     DURATION("Duration"),
-    KEYWORDS("Keywords")
+    KEYWORDS("Keywords"),
+    ALT_ID("AlternativeID")  // lack of space believed to be intentional (quirk of indexing into returned rows)
     ;
     
     private final String value;

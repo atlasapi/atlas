@@ -28,7 +28,7 @@ public class KnowledgeMotionUpdateTaskTest {
 
     private final SpreadsheetFetcher spreadsheetFetcher = mock(SpreadsheetFetcher.class);
     private final KnowledgeMotionAdapter adapter = mock(KnowledgeMotionAdapter.class);
-    private final KnowledgeMotionDataRowHandler dataHandler = mock(KnowledgeMotionDataRowHandler.class);
+    private final DefaultKnowledgeMotionDataRowHandler dataHandler = mock(DefaultKnowledgeMotionDataRowHandler.class);
     private final ContentLister contentLister = mock(ContentLister.class);
     private final ScheduledTask task = new KnowledgeMotionUpdateTask(KnowledgeMotionModule.SOURCES, spreadsheetFetcher, dataHandler, adapter, contentLister);
     

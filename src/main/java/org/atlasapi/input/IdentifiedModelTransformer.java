@@ -2,10 +2,13 @@ package org.atlasapi.input;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.media.entity.simple.Alias;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.SameAs;
 import org.joda.time.DateTime;
@@ -20,7 +23,7 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
     public IdentifiedModelTransformer(Clock clock) {
         this.clock = checkNotNull(clock);
     }
-    
+
     @Override
     public final T transform(F simple) {
         DateTime now = clock.now();
@@ -33,6 +36,9 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
         output.setCanonicalUri(simple.getUri());
         output.setCurie(simple.getCurie());
         setEquivalents(output, simple);
+        output.setAliases(
+                transformV4Aliases(simple.getV4Aliases())
+        );
         return output;
     }
 
@@ -42,6 +48,23 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
         } else if (!simple.getEquivalents().isEmpty()){
             output.setEquivalentTo(resolveSameAs(simple.getEquivalents()));
         }
+    }
+
+    private Iterable<org.atlasapi.media.entity.Alias> transformV4Aliases(Collection<Alias> v4Aliases) {
+        Set<org.atlasapi.media.entity.Alias> aliases = new HashSet<>();
+        if (v4Aliases == null) {
+            return aliases;
+        }
+        for (Alias v4Alias : v4Aliases) {
+            aliases.add(
+                    new org.atlasapi.media.entity.Alias(
+                            v4Alias.getNamespace(),
+                            v4Alias.getValue()
+                    )
+            );
+        }
+
+        return aliases;
     }
 
     protected abstract Set<LookupRef> resolveSameAs(Set<SameAs> equivalents);

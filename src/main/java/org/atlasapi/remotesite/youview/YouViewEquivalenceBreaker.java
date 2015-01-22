@@ -59,16 +59,6 @@ public class YouViewEquivalenceBreaker {
         this.publishersToOrphan = ImmutableSet.copyOf(publishersToOrphan);
     }
     
-<<<<<<< HEAD
-    @Override
-    protected void runTask() {
-        DateTime from = DateTime.now();
-        DateTime to = DateTime.now().plusDays(1);
-        orphanItems(from, to);
-    }
-=======
->>>>>>> b60b6e4... Orphan old, and no longer needed, schedule events
-    
     public void orphanItems(DateTime from, DateTime to) {
         for (org.atlasapi.media.channel.Channel channel : youViewChannelResolver.getAllChannels()) {
             process(scheduleResolver.unmergedSchedule(from, to, ImmutableSet.of(channel), ImmutableSet.of(referenceSchedulePublisher)));

@@ -3,6 +3,12 @@ package org.atlasapi.remotesite.youview;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.atlasapi.equiv.ContentRef;
+import java.util.Set;
+
+import org.apache.log4j.spi.LoggerFactory;
+import org.atlasapi.equiv.ContentRef;
+import org.atlasapi.equiv.EquivalenceBreaker;
+import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Identified;
@@ -33,22 +39,31 @@ public class YouViewEquivalenceBreaker extends ScheduledTask {
     private final LookupEntryStore lookupEntryStore;
     private final ContentResolver contentResolver;
     private final LookupWriter lookupWriter;
+    private final ImmutableSet<Publisher> publishersToOrphan;
+    private final Publisher referenceSchedulePublisher;
 
     public YouViewEquivalenceBreaker(ScheduleResolver scheduleResolver, YouViewChannelResolver youViewChannelResolver,
-            LookupEntryStore lookupEntryStore, ContentResolver contentResolver, LookupWriter lookupWriter) {
+            LookupEntryStore lookupEntryStore, ContentResolver contentResolver, LookupWriter lookupWriter,
+            Publisher referenceSchedulePublisher, Iterable<Publisher> publishersToOrphan) {
         this.youViewChannelResolver = checkNotNull(youViewChannelResolver);
         this.scheduleResolver = checkNotNull(scheduleResolver);
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
         this.contentResolver = checkNotNull(contentResolver);
         this.lookupWriter = checkNotNull(lookupWriter);
+        this.referenceSchedulePublisher = checkNotNull(referenceSchedulePublisher);
+        this.publishersToOrphan = ImmutableSet.copyOf(publishersToOrphan);
     }
     
     @Override
     protected void runTask() {
         DateTime from = DateTime.now();
         DateTime to = DateTime.now().plusDays(1);
+        orphanItems(from, to);
+    }
+    
+    public void orphanItems(DateTime from, DateTime to) {
         for (org.atlasapi.media.channel.Channel channel : youViewChannelResolver.getAllChannels()) {
-            process(scheduleResolver.unmergedSchedule(from, to, ImmutableSet.of(channel), ImmutableSet.of(Publisher.YOUVIEW)));
+            process(scheduleResolver.unmergedSchedule(from, to, ImmutableSet.of(channel), ImmutableSet.of(referenceSchedulePublisher)));
         }
     }
 
@@ -56,12 +71,12 @@ public class YouViewEquivalenceBreaker extends ScheduledTask {
         for (Item item : Iterables.getOnlyElement(schedule.scheduleChannels()).items()) {
             LookupEntry lookupEntry = Iterables.getOnlyElement(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(item.getCanonicalUri())));
             for (LookupRef lookupRef : lookupEntry.equivalents()) {
-                if (lookupRef.uri().contains("youview.com")
+                if (publishersToOrphan.contains(lookupRef.publisher())
                         && !lookupRef.uri().equals(item.getCanonicalUri())) {
                     Item equiv = (Item) contentResolver.findByCanonicalUris(ImmutableSet.of(lookupRef.uri())).getFirstValue().requireValue();
-                    if (shouldRemoveEquivalents(equiv)) {
+                    if (shouldOrphan(equiv)) {
                         log.trace("Orphaning item {}", equiv.getCanonicalUri());
-                        removeAllEquivalents(equiv);
+                        orphan(equiv);
                     } else {
                         log.trace("Not orphaning item {}", equiv.getCanonicalUri());
                     }
@@ -71,13 +86,13 @@ public class YouViewEquivalenceBreaker extends ScheduledTask {
         
     }
 
-    private void removeAllEquivalents(Item equiv) {
+    private void orphan(Item equiv) {
         lookupWriter.writeLookup(ContentRef.valueOf(equiv), 
                 Iterables.transform(ImmutableSet.of(equiv), ContentRef.FROM_CONTENT), Publisher.all());
         
     }
 
-    private boolean shouldRemoveEquivalents(Identified identified) {
+    private boolean shouldOrphan(Identified identified) {
         Item item = (Item) identified;
         Iterable<Broadcast> broadcasts = Iterables.concat(Iterables.transform(item.getVersions(), Version.TO_BROADCASTS));
         
@@ -90,7 +105,8 @@ public class YouViewEquivalenceBreaker extends ScheduledTask {
             }
         }
         
-        if (latestTxTime.isBefore(DateTime.now().minusDays(30))) {
+        if (latestTxTime != null 
+                && latestTxTime.isBefore(DateTime.now().minusDays(30))) {
             return true;
         }
         

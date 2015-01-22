@@ -19,6 +19,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -85,9 +86,17 @@ public class YouViewModule {
                 YOUVIEW_STAGE_ALIAS_PREFIX);
     }
     
+    @Bean
+    private YouViewEquivalanceBreakerController youViewEquivalenceBreakerController() {
+        return new YouViewEquivalanceBreakerController(youViewEquivalenceBreaker());
+    }
+    
     private YouViewEquivalenceBreaker youViewEquivalenceBreaker() {
         return new YouViewEquivalenceBreaker(scheduleResolver, youviewChannelResolver, 
-                lookupEntryStore, contentResolver, lookupWriter);
+                lookupEntryStore, contentResolver, lookupWriter, Publisher.PA, 
+                ImmutableSet.of(Publisher.YOUVIEW, Publisher.YOUVIEW_BT, 
+                                Publisher.YOUVIEW_STAGE, Publisher.YOUVIEW_BT_STAGE,
+                                Publisher.YOUVIEW_SCOTLAND_RADIO, Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE));
     }
     
 }

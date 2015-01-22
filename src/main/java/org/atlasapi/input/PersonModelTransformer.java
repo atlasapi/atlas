@@ -29,6 +29,7 @@ public class PersonModelTransformer extends DescribedModelTransformer<Person, or
         
         person.setGivenName(simple.getGivenName());
         person.setFamilyName(simple.getFamilyName());
+        person.withName(simple.getName());
         person.setGender(simple.getGender());
         person.setBirthDate(simple.getBirthDate());
         person.setBirthPlace(simple.getBirthPlace());

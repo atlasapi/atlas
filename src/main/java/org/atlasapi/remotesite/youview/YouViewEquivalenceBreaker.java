@@ -87,7 +87,6 @@ public class YouViewEquivalenceBreaker {
     private void orphan(Item equiv) {
         lookupWriter.writeLookup(ContentRef.valueOf(equiv), 
                 Iterables.transform(ImmutableSet.of(equiv), ContentRef.FROM_CONTENT), Publisher.all());
-        
     }
 
     private boolean shouldOrphan(Identified identified) {

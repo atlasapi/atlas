@@ -86,7 +86,7 @@ public class YouViewModule {
     }
     
     @Bean
-    private YouViewEquivalanceBreakerController youViewEquivalenceBreakerController() {
+    public YouViewEquivalanceBreakerController youViewEquivalenceBreakerController() {
         return new YouViewEquivalanceBreakerController(youViewEquivalenceBreaker());
     }
     

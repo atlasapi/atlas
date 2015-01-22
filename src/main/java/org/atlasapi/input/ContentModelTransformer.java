@@ -99,7 +99,13 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
     protected abstract T createContentOutput(F simple, DateTime now);
 
     private T setContentFields(T result, Description inputContent) {
-        result.setPeople(transformPeople(inputContent.getPeople(), result.getPublisher()));
+        result.setPeople(
+                transformPeople(
+                        inputContent.getPeople(),
+                        this.getPublisher(inputContent.getPublisher()
+                        )
+                )
+        );
         result.setTopicRefs(topicRefs(inputContent.getTopics()));
         result.setKeyPhrases(keyPhrases(inputContent.getKeyPhrases(), inputContent.getPublisher()));
         result.setGenres(inputContent.getGenres());

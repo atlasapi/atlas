@@ -3,12 +3,6 @@ package org.atlasapi.remotesite.youview;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.atlasapi.equiv.ContentRef;
-import java.util.Set;
-
-import org.apache.log4j.spi.LoggerFactory;
-import org.atlasapi.equiv.ContentRef;
-import org.atlasapi.equiv.EquivalenceBreaker;
-import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Identified;

@@ -67,7 +67,6 @@ public class YouViewModule {
     public void scheduleTasks() {
         youViewProductionIngester().startBackgroundTasks();
         youViewStageIngester().startBackgroundTasks();
-        scheduler.schedule(youViewEquivalenceBreaker(), RepetitionRules.NEVER);
     }
     
     private YouViewIngestConfiguration productionConfiguration() {

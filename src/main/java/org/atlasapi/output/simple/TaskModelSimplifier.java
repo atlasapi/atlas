@@ -6,8 +6,10 @@ import java.math.BigInteger;
 import java.util.Set;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.feeds.youview.tasks.Destination;
 import org.atlasapi.feeds.youview.tasks.Response;
 import org.atlasapi.feeds.youview.tasks.Task;
+import org.atlasapi.feeds.youview.tasks.YouViewDestination;
 import org.atlasapi.feeds.youview.tasks.simple.Payload;
 import org.atlasapi.output.Annotation;
 
@@ -39,19 +41,34 @@ public class TaskModelSimplifier implements ModelSimplifier<Task, org.atlasapi.f
             task.setUploadTime(model.uploadTime().get().toDate());
         }
         task.setRemoteId(model.remoteId().orNull());
-        task.setElementType(model.elementType());
-        task.setElementId(model.elementId());
-        task.setContent(model.content());
+        simplifyDestination(task, model.destination());
         task.setStatus(model.status());
         
         if (annotations.contains(Annotation.REMOTE_RESPONSES)) {
             task.setRemoteResponses(simplifyResponses(model.remoteResponses(), annotations, config));
         }
         if (annotations.contains(Annotation.PAYLOAD)) {
-            task.setPayload(simplifyPayload(model.payload()));
+            task.setPayload(simplifyPayload(model.payload().orNull()));
         }
         
         return task;
+    }
+
+    private void simplifyDestination(org.atlasapi.feeds.youview.tasks.simple.Task task,
+            Destination destination) {
+        task.setDestinationType(destination.type());
+        switch(destination.type()) {
+        case RADIOPLAYER:
+            break;
+        case YOUVIEW:
+            YouViewDestination yVDest = (YouViewDestination) destination;
+            task.setContentUri(yVDest.contentUri());        
+            task.setElementType(yVDest.elementType());
+            task.setElementId(yVDest.elementId());
+            break;
+        default:
+            break;
+        }
     }
 
     private Iterable<org.atlasapi.feeds.youview.tasks.simple.Response> simplifyResponses(
@@ -73,6 +90,10 @@ public class TaskModelSimplifier implements ModelSimplifier<Task, org.atlasapi.f
     }
     
     private Payload simplifyPayload(org.atlasapi.feeds.youview.tasks.Payload payload) {
+        if (payload == null) {
+            return null;
+        }
+        
         Payload simplePayload = new Payload();
         
         simplePayload.setCreated(payload.created().toDate());

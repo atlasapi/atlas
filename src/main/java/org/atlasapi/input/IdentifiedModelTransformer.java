@@ -53,11 +53,10 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
     }
 
     private Iterable<org.atlasapi.media.entity.Alias> transformV4Aliases(Collection<Alias> v4Aliases) {
-        Set<org.atlasapi.media.entity.Alias> aliases = new HashSet<>();
         if (v4Aliases == null) {
             return null;
         }
-        Collections2.transform(v4Aliases, new Function<Alias, org.atlasapi.media.entity.Alias>() {
+        return Collections2.transform(v4Aliases, new Function<Alias, org.atlasapi.media.entity.Alias>() {
             @Override
             public org.atlasapi.media.entity.Alias apply(Alias input) {
                 return new org.atlasapi.media.entity.Alias(
@@ -66,7 +65,6 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
                 );
             }
         });
-        return aliases;
     }
 
     protected abstract Set<LookupRef> resolveSameAs(Set<SameAs> equivalents);

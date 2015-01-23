@@ -6,6 +6,8 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
+import com.google.common.base.Function;
+import com.google.common.collect.Collections2;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.simple.Alias;
@@ -53,17 +55,17 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
     private Iterable<org.atlasapi.media.entity.Alias> transformV4Aliases(Collection<Alias> v4Aliases) {
         Set<org.atlasapi.media.entity.Alias> aliases = new HashSet<>();
         if (v4Aliases == null) {
-            return aliases;
+            return null;
         }
-        for (Alias v4Alias : v4Aliases) {
-            aliases.add(
-                    new org.atlasapi.media.entity.Alias(
-                            v4Alias.getNamespace(),
-                            v4Alias.getValue()
-                    )
-            );
-        }
-
+        Collections2.transform(v4Aliases, new Function<Alias, org.atlasapi.media.entity.Alias>() {
+            @Override
+            public org.atlasapi.media.entity.Alias apply(Alias input) {
+                return new org.atlasapi.media.entity.Alias(
+                        input.getNamespace(),
+                        input.getValue()
+                );
+            }
+        });
         return aliases;
     }
 

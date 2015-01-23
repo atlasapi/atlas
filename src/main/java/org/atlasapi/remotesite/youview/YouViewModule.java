@@ -92,7 +92,7 @@ public class YouViewModule {
     
     private YouViewEquivalenceBreaker youViewEquivalenceBreaker() {
         return new YouViewEquivalenceBreaker(scheduleResolver, youviewChannelResolver, 
-                lookupEntryStore, contentResolver, lookupWriter, Publisher.PA, 
+                lookupEntryStore, contentResolver, Publisher.PA, 
                 ImmutableSet.of(Publisher.YOUVIEW, Publisher.YOUVIEW_BT, 
                                 Publisher.YOUVIEW_STAGE, Publisher.YOUVIEW_BT_STAGE,
                                 Publisher.YOUVIEW_SCOTLAND_RADIO, Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE));

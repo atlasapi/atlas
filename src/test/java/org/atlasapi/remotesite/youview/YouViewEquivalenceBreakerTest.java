@@ -1,9 +1,11 @@
 package org.atlasapi.remotesite.youview;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.equiv.ContentRef;
@@ -18,7 +20,6 @@ import org.atlasapi.media.entity.testing.ComplexItemTestDataBuilder;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.joda.time.DateTime;
@@ -33,7 +34,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 
 
 @RunWith( MockitoJUnitRunner.class )
@@ -47,67 +48,118 @@ public class YouViewEquivalenceBreakerTest {
     private @Mock YouViewChannelResolver youViewChannelResolver;
     private @Mock ContentResolver contentResolver;
     private @Mock LookupEntryStore lookupEntryStore;
-    private @Mock LookupWriter lookupWriter;
     private @Captor ArgumentCaptor<Iterable<ContentRef>> equivRefsCaptor;
     private @Captor ArgumentCaptor<Set<Publisher>> publisherCaptor;
     private @Captor ArgumentCaptor<ContentRef> subjectCaptor;
     
     private YouViewEquivalenceBreaker equivalenceBreaker;
     
+    
+    
     @Before
     public void setUp() {
         equivalenceBreaker = new YouViewEquivalenceBreaker(scheduleResolver, 
-                youViewChannelResolver, lookupEntryStore, contentResolver, 
-                lookupWriter, REFERENCE_SCHEDULE_PUBLISHER, ImmutableSet.of(PUBLISHER_TO_ORPHAN));
+                youViewChannelResolver, lookupEntryStore, contentResolver, REFERENCE_SCHEDULE_PUBLISHER, 
+                ImmutableSet.of(PUBLISHER_TO_ORPHAN));
     }
     
     @Test
     public void testOrphansTargetEquivs() {
         DateTime from = DateTime.now();
         DateTime to = from.plusDays(1);
-        Item item = ComplexItemTestDataBuilder
-                        .complexItem()
-                        .withUri("http://example.org/a")
-                        .withPublisher(Publisher.METABROADCAST)
-                        .build();
         
         Item itemToOrphan = ComplexItemTestDataBuilder
                 .complexItem()
-                .withUri("http://example.org/b")
+                .withUri("http://example.org/orphan")
                 .withPublisher(PUBLISHER_TO_ORPHAN)
                 .build();
         
-        Item itemToNotOrphan = ComplexItemTestDataBuilder
+       Item itemToNotOrphan = ComplexItemTestDataBuilder
                 .complexItem()
-                .withUri("http://example.org/c")
+                .withUri("http://example.org/leave")
                 .withPublisher(Publisher.BBC)
                 .build();
         
-        LookupEntry lookupEntry = LookupEntry.lookupEntryFrom(item);
-        lookupEntry = lookupEntry.copyWithEquivalents(ImmutableSet.of(
-                LookupRef.from(itemToOrphan),
-                LookupRef.from(itemToNotOrphan)));
+        Item itemInSchedule = ComplexItemTestDataBuilder
+                .complexItem()
+                .withUri("http://example.org/scheduleitem")
+                .withPublisher(Publisher.METABROADCAST)
+                .build();
+
+        Set<LookupRef> equivalentSet = ImmutableSet.of(
+                LookupRef.from(itemInSchedule),
+                LookupRef.from(itemToNotOrphan),
+                LookupRef.from(itemToOrphan)
+                );
         
-        ScheduleChannel scheduleChannel = new ScheduleChannel(DUMMY_CHANNEL, ImmutableSet.of(item));
+        LookupEntry lookupEntryForItemToNotOrphan = 
+                LookupEntry.lookupEntryFrom(itemToNotOrphan)
+                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemInSchedule)))
+                    .copyWithEquivalents(equivalentSet);
+        
+        LookupEntry lookupEntryForItemInSchedule = 
+                LookupEntry.lookupEntryFrom(itemInSchedule)
+                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemToNotOrphan), LookupRef.from(itemToOrphan)))
+                    .copyWithEquivalents(equivalentSet);
+        
+        LookupEntry lookupEntryForItemToOrphan = 
+                LookupEntry.lookupEntryFrom(itemToOrphan)
+                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemInSchedule)))
+                    .copyWithEquivalents(equivalentSet);
+        
+        ScheduleChannel scheduleChannel = new ScheduleChannel(DUMMY_CHANNEL, ImmutableSet.of(itemInSchedule));
+        
         when(youViewChannelResolver.getAllChannels()).thenReturn(ImmutableSet.of(DUMMY_CHANNEL));
         when(scheduleResolver.unmergedSchedule(from, to, ImmutableSet.of(DUMMY_CHANNEL), ImmutableSet.of(REFERENCE_SCHEDULE_PUBLISHER)))
             .thenReturn(new Schedule(ImmutableList.of(scheduleChannel), new Interval(from, to)));
         
-        when(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(item.getCanonicalUri())))
-            .thenReturn(ImmutableSet.of(lookupEntry));
+        when(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(itemInSchedule.getCanonicalUri())))
+            .thenReturn(ImmutableSet.of(lookupEntryForItemInSchedule));
+        
+        when(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(itemToOrphan.getCanonicalUri())))
+            .thenReturn(ImmutableSet.of(lookupEntryForItemToOrphan));
+        
+        when(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(itemToNotOrphan.getCanonicalUri())))
+        .thenReturn(ImmutableSet.of(lookupEntryForItemToNotOrphan));
         
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemToOrphan.getCanonicalUri())))
             .thenReturn(ResolvedContent.builder().put(itemToOrphan.getCanonicalUri(), itemToOrphan).build());
         
         equivalenceBreaker.orphanItems(from, to);
         
-        verify(lookupWriter).writeLookup(subjectCaptor.capture(), 
-                equivRefsCaptor.capture(), publisherCaptor.capture());
+        LookupEntry expectedLookupEntryForItemToNotOrphanAfterDetaching = 
+                LookupEntry.lookupEntryFrom(itemToNotOrphan)
+                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemInSchedule)))
+                    .copyWithEquivalents(ImmutableSet.of(LookupRef.from(itemInSchedule)));
         
-        assertEquals(itemToOrphan.getCanonicalUri(), subjectCaptor.getValue().getCanonicalUri());
-        assertEquals(itemToOrphan.getCanonicalUri(), Iterables.getOnlyElement(equivRefsCaptor.getValue()).getCanonicalUri());
-        assertEquals(Publisher.all(), publisherCaptor.getValue());
+        LookupEntry expectedLookupEntryForItemInScheduleAfterDetaching = 
+                LookupEntry.lookupEntryFrom(itemInSchedule)
+                    .copyWithEquivalents(ImmutableSet.of(LookupRef.from(itemToNotOrphan)))
+                    .copyWithDirectEquivalents(ImmutableSet.of(LookupRef.from(itemToNotOrphan)));
         
+        LookupEntry expectedLookupEntryForOrphanAfterDetaching = 
+                LookupEntry.lookupEntryFrom(itemToOrphan);
+        
+        Set<LookupEntry> expectedLookupEntrySaves = ImmutableSet.of(expectedLookupEntryForItemToNotOrphanAfterDetaching, 
+                expectedLookupEntryForItemInScheduleAfterDetaching, expectedLookupEntryForOrphanAfterDetaching);
+        
+        ArgumentCaptor<LookupEntry> lookupEntryCaptor = ArgumentCaptor.forClass(LookupEntry.class);
+        
+        // We can't rely on object equality, since there are other fields, such as timestamps
+        // that are taken into account on LookupEntry.equals() which we will allow to differ
+        verify(lookupEntryStore, times(3)).store(lookupEntryCaptor.capture());
+        
+        Map<String, LookupEntry> savedEntries = Maps.uniqueIndex(lookupEntryCaptor.getAllValues(), LookupEntry.TO_ID);
+        
+        for (LookupEntry expectedLookupSave : expectedLookupEntrySaves) {
+            LookupEntry saved = savedEntries.get(expectedLookupSave.uri());
+            assertEquals("Problem with " + saved.uri(), expectedLookupSave.aliases(), saved.aliases());
+            assertEquals("Problem with " + saved.uri(), expectedLookupSave.directEquivalents(), saved.directEquivalents());
+            assertEquals("Problem with " + saved.uri(), expectedLookupSave.explicitEquivalents(), saved.explicitEquivalents());
+            assertEquals("Problem with " + saved.uri(), expectedLookupSave.equivalents(), saved.equivalents());
+        }
+        
+        assertEquals(expectedLookupEntrySaves.size(), savedEntries.size());
     }
     
 }

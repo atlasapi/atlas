@@ -2,6 +2,9 @@ package org.atlasapi.remotesite.youview;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
+import java.util.Set;
+
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
@@ -19,8 +22,11 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
+import com.google.api.client.util.Lists;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 
 /**
@@ -43,18 +49,16 @@ public class YouViewEquivalenceBreaker {
     private final YouViewChannelResolver youViewChannelResolver;
     private final LookupEntryStore lookupEntryStore;
     private final ContentResolver contentResolver;
-    private final LookupWriter lookupWriter;
     private final ImmutableSet<Publisher> publishersToOrphan;
     private final Publisher referenceSchedulePublisher;
 
     public YouViewEquivalenceBreaker(ScheduleResolver scheduleResolver, YouViewChannelResolver youViewChannelResolver,
-            LookupEntryStore lookupEntryStore, ContentResolver contentResolver, LookupWriter lookupWriter,
-            Publisher referenceSchedulePublisher, Iterable<Publisher> publishersToOrphan) {
+            LookupEntryStore lookupEntryStore, ContentResolver contentResolver, Publisher referenceSchedulePublisher, 
+            Iterable<Publisher> publishersToOrphan) {
         this.youViewChannelResolver = checkNotNull(youViewChannelResolver);
         this.scheduleResolver = checkNotNull(scheduleResolver);
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
         this.contentResolver = checkNotNull(contentResolver);
-        this.lookupWriter = checkNotNull(lookupWriter);
         this.referenceSchedulePublisher = checkNotNull(referenceSchedulePublisher);
         this.publishersToOrphan = ImmutableSet.copyOf(publishersToOrphan);
     }
@@ -68,25 +72,59 @@ public class YouViewEquivalenceBreaker {
     private void process(Schedule schedule) {
         for (Item item : Iterables.getOnlyElement(schedule.scheduleChannels()).items()) {
             LookupEntry lookupEntry = Iterables.getOnlyElement(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(item.getCanonicalUri())));
+            Set<String> toOrphan = Sets.newHashSet();
             for (LookupRef lookupRef : lookupEntry.equivalents()) {
                 if (publishersToOrphan.contains(lookupRef.publisher())
                         && !lookupRef.uri().equals(item.getCanonicalUri())) {
                     Item equiv = (Item) contentResolver.findByCanonicalUris(ImmutableSet.of(lookupRef.uri())).getFirstValue().requireValue();
                     if (shouldOrphan(equiv)) {
+                        toOrphan.add(equiv.getCanonicalUri());
                         log.trace("Orphaning item {}", equiv.getCanonicalUri());
-                        orphan(equiv);
                     } else {
                         log.trace("Not orphaning item {}", equiv.getCanonicalUri());
                     }
                 }
             }
+            if (!toOrphan.isEmpty()) {
+                orphanFromEquivalentSet(lookupEntry, toOrphan);
+            }
         }
         
     }
 
-    private void orphan(Item equiv) {
-        lookupWriter.writeLookup(ContentRef.valueOf(equiv), 
-                Iterables.transform(ImmutableSet.of(equiv), ContentRef.FROM_CONTENT), Publisher.all());
+    private void orphanFromEquivalentSet(LookupEntry lookupEntry, Set<String> toOrphan) {
+        Predicate<LookupRef> shouldRetainLookupRef = createShouldRetainLookupRefPredicate(toOrphan);
+        for (LookupRef equivalentLookupRef : Sets.union(lookupEntry.equivalents(), lookupEntry.directEquivalents())) {
+            LookupEntry entry = Iterables.getOnlyElement(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(equivalentLookupRef.uri())));
+            if (toOrphan.contains(entry.uri())) {
+                lookupEntryStore.store(createOrphanedLookupEntry(entry));
+            } else {
+                lookupEntryStore.store(createFilteredLookupEntry(entry, shouldRetainLookupRef));
+            }
+        }
+    }
+
+    private LookupEntry createOrphanedLookupEntry(LookupEntry entry) {
+        return entry.copyWithDirectEquivalents(ImmutableSet.<LookupRef>of())
+                    .copyWithEquivalents(ImmutableSet.<LookupRef>of())
+                    .copyWithExplicitEquivalents(ImmutableSet.<LookupRef>of());
+    }
+
+    private LookupEntry createFilteredLookupEntry(LookupEntry entry, Predicate<LookupRef> shouldRetainLookupRef) {
+        return entry.copyWithDirectEquivalents(Iterables.filter(entry.directEquivalents(), shouldRetainLookupRef))
+                    .copyWithEquivalents(Iterables.filter(entry.equivalents(), shouldRetainLookupRef))
+                    .copyWithExplicitEquivalents(Iterables.filter(entry.explicitEquivalents(), shouldRetainLookupRef));
+        
+    }
+
+    private Predicate<LookupRef> createShouldRetainLookupRefPredicate(final Set<String> toOrphan) {
+        return new Predicate<LookupRef>() {
+
+            @Override
+            public boolean apply(LookupRef input) {
+                return !toOrphan.contains(input.uri());
+            }
+        };
     }
 
     private boolean shouldOrphan(Identified identified) {

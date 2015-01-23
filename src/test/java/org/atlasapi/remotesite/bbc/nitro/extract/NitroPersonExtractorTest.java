@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 import org.atlasapi.media.entity.Person;
+import org.atlasapi.media.entity.Publisher;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
@@ -33,6 +34,7 @@ public class NitroPersonExtractorTest {
         assertEquals(name.getFamily(), person.getFamilyName());
         assertEquals("http://nitro.bbc.co.uk/people/p01fvgrh", person.getCanonicalUri());
         assertEquals("nitro:bbc:person_p01fvgrh", person.getCurie());
+        assertEquals(Publisher.BBC_NITRO, person.getPublisher());
     }
 
 }

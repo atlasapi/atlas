@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import org.atlasapi.media.entity.Person;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
 
 import com.google.common.base.Optional;
@@ -22,6 +23,7 @@ public class NitroPersonExtractor implements
         person.setCurie(NitroUtil.curieFor(contribution));
         person.setGivenName(contributorName.getGiven());
         person.setFamilyName(contributorName.getFamily());
+        person.setPublisher(Publisher.BBC_NITRO);
 
         return Optional.of(person);
     }

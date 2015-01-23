@@ -8,6 +8,7 @@ import java.util.Set;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.simple.Alias;
@@ -38,9 +39,7 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
         output.setCanonicalUri(simple.getUri());
         output.setCurie(simple.getCurie());
         setEquivalents(output, simple);
-        output.setAliases(
-                transformV4Aliases(simple.getV4Aliases())
-        );
+        output.setAliases(transformV4Aliases(simple.getV4Aliases()));
         return output;
     }
 
@@ -54,7 +53,7 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
 
     private Iterable<org.atlasapi.media.entity.Alias> transformV4Aliases(Collection<Alias> v4Aliases) {
         if (v4Aliases == null) {
-            return null;
+            return ImmutableList.of();
         }
         return Collections2.transform(v4Aliases, new Function<Alias, org.atlasapi.media.entity.Alias>() {
             @Override

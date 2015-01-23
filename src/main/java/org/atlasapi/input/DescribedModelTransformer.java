@@ -5,6 +5,7 @@ import java.util.Locale;
 import java.util.Set;
 
 import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
@@ -59,7 +60,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
 
     private Iterable<org.atlasapi.media.entity.Image> transformImages(Set<Image> images) {
         if (images == null) {
-            return null;
+            return ImmutableList.of();
         }
         return Collections2.transform(images, new Function<Image, org.atlasapi.media.entity.Image>() {
             @Override

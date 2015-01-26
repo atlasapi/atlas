@@ -17,9 +17,15 @@ public class ClipModelTransformer extends ItemModelTransformer  {
     }
 
     @Override
-    protected Item createContentOutput(org.atlasapi.media.entity.simple.Item inputItem, DateTime now) {
-        Item item = new Clip();
-        item.setLastUpdated(now);
-        return setItemFields(item, inputItem, now);
+    protected Item createOutput(org.atlasapi.media.entity.simple.Item inputItem) {
+        return new Clip();
+    }
+
+    @Override
+    protected Item setFields(Item result, org.atlasapi.media.entity.simple.Item inputItem) {
+        super.setFields(result, inputItem);
+        DateTime now = this.clock.now();
+        result.setLastUpdated(now);
+        return result;
     }
 }

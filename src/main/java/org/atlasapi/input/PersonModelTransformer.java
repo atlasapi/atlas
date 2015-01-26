@@ -6,7 +6,6 @@ import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.simple.Person;
 import org.atlasapi.media.entity.simple.SameAs;
 import org.atlasapi.persistence.content.PeopleResolver;
-import org.joda.time.DateTime;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -24,17 +23,26 @@ public class PersonModelTransformer extends DescribedModelTransformer<Person, or
     }
     
     @Override
-    protected org.atlasapi.media.entity.Person createDescribedOutput(Person simple, DateTime now) {
-        org.atlasapi.media.entity.Person person = new org.atlasapi.media.entity.Person();
+    protected org.atlasapi.media.entity.Person createOutput(Person simple) {
+        return new org.atlasapi.media.entity.Person();
         
+    }
+
+    @Override
+    protected org.atlasapi.media.entity.Person setFields(
+            org.atlasapi.media.entity.Person person,
+            Person simple
+    ) {
+        super.setFields(person, simple);
         person.setGivenName(simple.getGivenName());
         person.setFamilyName(simple.getFamilyName());
         person.withName(simple.getName());
         person.setGender(simple.getGender());
         person.setBirthDate(simple.getBirthDate());
         person.setBirthPlace(simple.getBirthPlace());
-        person.setQuotes(simple.getQuotes());
-        
+        if (simple.getQuotes() != null) {
+            person.setQuotes(simple.getQuotes());
+        }
         return person;
     }
     

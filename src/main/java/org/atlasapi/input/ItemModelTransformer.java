@@ -54,7 +54,8 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
     }
 
     @Override
-    protected Item createContentOutput(org.atlasapi.media.entity.simple.Item inputItem, DateTime now) {
+    protected Item createOutput(org.atlasapi.media.entity.simple.Item inputItem) {
+        DateTime now = this.clock.now();
         String type = inputItem.getType();
         Item item;
         if ("episode".equals(type)) {
@@ -70,7 +71,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             item = new Item();
         }
         item.setLastUpdated(now);
-        return setItemFields(item, inputItem, now);
+        return item;
     }
 
     private Item createBroadcast(org.atlasapi.media.entity.simple.Item inputItem) {
@@ -103,7 +104,10 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         return episode;
     }
 
-    protected Item setItemFields(Item item, org.atlasapi.media.entity.simple.Item inputItem, DateTime now) {
+    @Override
+    protected Item setFields(Item item, org.atlasapi.media.entity.simple.Item inputItem) {
+        super.setFields(item, inputItem);
+        DateTime now = this.clock.now();
         Set<Encoding> encodings = encodingsFrom(inputItem.getLocations(), now);
         if (!encodings.isEmpty()) {
             Version version = new Version();

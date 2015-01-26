@@ -4,7 +4,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Set;
 
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.RelatedLink;
@@ -13,6 +16,7 @@ import org.atlasapi.media.entity.RelatedLink.LinkType;
 import org.atlasapi.media.entity.Review;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.joda.time.DateTime;
 
@@ -27,7 +31,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
     public DescribedModelTransformer(Clock clock) {
         super(clock);
     }
-    
+
     @Override
     protected final T createIdentifiedOutput(F simple, DateTime now) {
         return setDescriptionFields(createDescribedOutput(simple, now), simple);
@@ -41,6 +45,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         result.setImage(inputContent.getImage());
         result.setThumbnail(inputContent.getThumbnail());
         result.setRelatedLinks(relatedLinks(inputContent.getRelatedLinks()));
+        result.setImages(transformImages(inputContent.getImages()));
         if (inputContent.getSpecialization() != null) {
             result.setSpecialization(Specialization.fromKey(inputContent.getSpecialization()).valueOrNull());
         }
@@ -51,6 +56,26 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
             result.setReviews(reviews(result.getPublisher(), inputContent.getReviews()));
         }
         return result;
+    }
+
+    private Iterable<org.atlasapi.media.entity.Image> transformImages(Set<Image> images) {
+        if (images == null) {
+            return ImmutableList.of();
+        }
+        return Collections2.transform(images, new Function<Image, org.atlasapi.media.entity.Image>() {
+            @Override
+            public org.atlasapi.media.entity.Image apply(Image input) {
+                org.atlasapi.media.entity.Image transformedImage = new org.atlasapi.media.entity.Image(
+                        input.getUri()
+                );
+                transformedImage.setHeight(input.getHeight());
+                transformedImage.setWidth(input.getWidth());
+                if (input.getType() != null) {
+                    transformedImage.setType(ImageType.valueOf(input.getImageType().toUpperCase()));
+                }
+                return transformedImage;
+            }
+        });
     }
 
     private Iterable<RelatedLink> relatedLinks(
@@ -72,20 +97,20 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
             }
         );
     }
-    
+
     private Iterable<Review> reviews(final Publisher contentPublisher, Set<org.atlasapi.media.entity.simple.Review> simpleReviews) {
         return Iterables.transform(simpleReviews, new Function<org.atlasapi.media.entity.simple.Review, Review>() {
 
             @Override
             public Review apply(org.atlasapi.media.entity.simple.Review simpleReview) {
-                if (simpleReview.getPublisherDetails() != null && 
+                if (simpleReview.getPublisherDetails() != null &&
                         !getPublisher(simpleReview.getPublisherDetails()).equals(contentPublisher)) {
                     throw new IllegalArgumentException("Review publisher must match content publisher");
                 }
                 return new Review(Locale.forLanguageTag(simpleReview.getLanguage()), simpleReview.getReview());
             }
-            
-                
+
+
         });
     }
 
@@ -99,7 +124,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         }
         return possiblePublisher.requireValue();
     }
-    
+
     protected abstract T createDescribedOutput(F simple, DateTime now);
-    
+
 }

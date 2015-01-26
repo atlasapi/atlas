@@ -34,10 +34,15 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
 
     @Override
     protected final T createIdentifiedOutput(F simple, DateTime now) {
-        return setDescriptionFields(createDescribedOutput(simple, now), simple);
+        T result = createOutput(simple);
+        return setFields(result, simple);
+
     }
 
-    private T setDescriptionFields(T result, F inputContent) {
+    protected abstract T createOutput(F simple);
+
+
+    protected T setFields(T result, F inputContent) {
         Publisher publisher = getPublisher(inputContent.getPublisher());
         result.setPublisher(publisher);
         result.setTitle(inputContent.getTitle());
@@ -124,7 +129,4 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         }
         return possiblePublisher.requireValue();
     }
-
-    protected abstract T createDescribedOutput(F simple, DateTime now);
-
 }

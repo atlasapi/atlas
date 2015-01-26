@@ -25,7 +25,6 @@ import org.atlasapi.media.entity.simple.SameAs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
-import org.joda.time.DateTime;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -90,22 +89,11 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         this.idCodec = idCodec;
         this.clock = clock;
     }
-    
-    @Override
-    protected final T createDescribedOutput(F simple, DateTime now) {
-        return setContentFields(createContentOutput(simple, now), simple);
-    }
-    
-    protected abstract T createContentOutput(F simple, DateTime now);
 
-    private T setContentFields(T result, Description inputContent) {
-        result.setPeople(
-                transformPeople(
-                        inputContent.getPeople(),
-                        this.getPublisher(inputContent.getPublisher()
-                        )
-                )
-        );
+    @Override
+    protected T setFields(T result, F inputContent) {
+        super.setFields(result, inputContent);
+        result.setPeople(transformPeople(inputContent.getPeople(), result.getPublisher()));
         result.setTopicRefs(topicRefs(inputContent.getTopics()));
         result.setKeyPhrases(keyPhrases(inputContent.getKeyPhrases(), inputContent.getPublisher()));
         result.setGenres(inputContent.getGenres());

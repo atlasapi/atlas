@@ -147,6 +147,8 @@ public class LocalOrRemoteNitroFetcher {
             Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
                 resolved.add(contentMerger.merge((Item) existing, (Item) fetched));
+            } else {
+                resolved.add(existing);
             }
             
         }
@@ -220,6 +222,8 @@ public class LocalOrRemoteNitroFetcher {
             Container fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
                 resolved.add(contentMerger.merge((Container) existing, (Container) fetched));
+            } else {
+                resolved.add(existing);
             }
             
         }

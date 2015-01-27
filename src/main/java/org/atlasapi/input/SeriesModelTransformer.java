@@ -21,7 +21,8 @@ public class SeriesModelTransformer extends ContentModelTransformer<Playlist, Se
         super(lookupStore, topicStore, idCodec, clipsModelTransformer, clock);
     }
 
-    @Override protected Series createContentOutput(Playlist simple, DateTime now) {
+    @Override
+    protected Series createOutput(Playlist simple) {
         checkNotNull(simple.getUri(),
                 "Cannot create a Series from simple Item without URI");
         checkNotNull(simple.getPublisher(),
@@ -34,8 +35,15 @@ public class SeriesModelTransformer extends ContentModelTransformer<Playlist, Se
                 simple.getCurie(),
                 Publisher.fromKey(simple.getPublisher().getKey()).requireValue()
         );
-        series.setTotalEpisodes(simple.getTotalEpisodes());
-        series.withSeriesNumber(simple.getSeriesNumber());
         return series;
+
+    }
+
+    @Override
+    protected Series setFields(Series result, Playlist simple) {
+        super.setFields(result, simple);
+        result.setTotalEpisodes(simple.getTotalEpisodes());
+        result.withSeriesNumber(simple.getSeriesNumber());
+        return result;
     }
 }

@@ -4,12 +4,11 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.simple.Playlist;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
-import org.joda.time.DateTime;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.time.Clock;
 
-public class BrandModelTransformer extends ContentModelTransformer<org.atlasapi.media.entity.simple.Playlist, Brand> {
+public class BrandModelTransformer extends ContentModelTransformer<Playlist, Brand> {
 
 	public BrandModelTransformer(LookupEntryStore lookupStore, 
 			TopicStore topicStore, NumberToShortStringCodec idCodec, 
@@ -18,8 +17,7 @@ public class BrandModelTransformer extends ContentModelTransformer<org.atlasapi.
 	}
 
 	@Override
-	protected Brand createContentOutput(Playlist input, DateTime now) {
+	protected Brand createOutput(Playlist simple) {
 		return new Brand();
 	}
-
 }

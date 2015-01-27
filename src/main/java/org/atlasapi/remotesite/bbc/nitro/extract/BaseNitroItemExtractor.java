@@ -104,7 +104,10 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             com.metabroadcast.atlas.glycerin.model.Version nitroVersion) {
         Version version = new Version();
 
-        version.setDuration(convertDuration(nitroVersion.getDuration()));
+        if (nitroVersion.getDuration() != null) {
+            version.setDuration(convertDuration(nitroVersion.getDuration()));
+        }
+
         version.setLastUpdated(now);
         version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));
         version.setBroadcasts(broadcasts.get(nitroVersion.getPid()));

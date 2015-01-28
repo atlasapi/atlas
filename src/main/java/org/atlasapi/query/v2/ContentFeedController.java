@@ -14,14 +14,14 @@ import javax.xml.bind.JAXBElement;
 
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.feeds.tasks.Destination.DestinationType;
+import org.atlasapi.feeds.tvanytime.TvAnytimeGenerator;
 import org.atlasapi.feeds.tvanytime.TvaGenerationException;
-import org.atlasapi.feeds.tvanytime.granular.GranularTvAnytimeGenerator;
+import org.atlasapi.feeds.youview.FilterFactory;
 import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.hierarchy.ItemAndVersion;
 import org.atlasapi.feeds.youview.hierarchy.ItemBroadcastHierarchy;
 import org.atlasapi.feeds.youview.hierarchy.ItemOnDemandHierarchy;
-import org.atlasapi.feeds.youview.tasks.Destination.DestinationType;
-import org.atlasapi.feeds.youview.upload.granular.FilterFactory;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -84,12 +84,12 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             .withStatusCode(HttpStatusCode.NOT_FOUND);
     private static final DateTime START_OF_TIME = new DateTime(2000, JANUARY, 0, 0, 0, 0, UTC);
     
-    private final GranularTvAnytimeGenerator feedGenerator;
+    private final TvAnytimeGenerator feedGenerator;
     private final ContentResolver contentResolver;
     private final ContentHierarchyExpander hierarchyExpander;
     
     public ContentFeedController(ApplicationConfigurationFetcher configFetcher, AdapterLog log, 
-            AtlasModelWriter<JAXBElement<TVAMainType>> outputter, GranularTvAnytimeGenerator feedGenerator, 
+            AtlasModelWriter<JAXBElement<TVAMainType>> outputter, TvAnytimeGenerator feedGenerator, 
             ContentResolver contentResolver, ContentHierarchyExpander hierarchyExpander) {
         super(configFetcher, log, outputter);
         this.feedGenerator = checkNotNull(feedGenerator);

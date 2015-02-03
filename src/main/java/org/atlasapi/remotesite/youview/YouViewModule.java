@@ -12,6 +12,7 @@ import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
 import org.joda.time.Duration;
+import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -30,6 +31,8 @@ public class YouViewModule {
 
     private static final String YOUVIEW_PRODUCTION_ALIAS_PREFIX = "youview";
     private static final String YOUVIEW_STAGE_ALIAS_PREFIX = "youview_stage";
+    
+    private static final RepetitionRule YOUVIEW_EQUIVALENCE_BREAKER_TASK_REPETITION = RepetitionRules.daily(new LocalTime(8, 0, 0));
     
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ChannelResolver channelResolver;
@@ -67,6 +70,7 @@ public class YouViewModule {
     public void scheduleTasks() {
         youViewProductionIngester().startBackgroundTasks();
         youViewStageIngester().startBackgroundTasks();
+        scheduler.schedule(youViewEquivalenceBreakerTask(), YOUVIEW_EQUIVALENCE_BREAKER_TASK_REPETITION);
     }
     
     private YouViewIngestConfiguration productionConfiguration() {
@@ -90,12 +94,17 @@ public class YouViewModule {
         return new YouViewEquivalanceBreakerController(youViewEquivalenceBreaker());
     }
     
-    private YouViewEquivalenceBreaker youViewEquivalenceBreaker() {
+    @Bean
+    public YouViewEquivalenceBreaker youViewEquivalenceBreaker() {
         return new YouViewEquivalenceBreaker(scheduleResolver, youviewChannelResolver, 
                 lookupEntryStore, contentResolver, Publisher.PA, 
                 ImmutableSet.of(Publisher.YOUVIEW, Publisher.YOUVIEW_BT, 
                                 Publisher.YOUVIEW_STAGE, Publisher.YOUVIEW_BT_STAGE,
                                 Publisher.YOUVIEW_SCOTLAND_RADIO, Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE));
+    }
+    
+    public YouViewEquivalenceBreakerTask youViewEquivalenceBreakerTask() {
+        return new YouViewEquivalenceBreakerTask(youViewEquivalenceBreaker());
     }
     
 }

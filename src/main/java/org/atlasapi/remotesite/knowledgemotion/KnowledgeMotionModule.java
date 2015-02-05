@@ -15,10 +15,14 @@ import org.atlasapi.remotesite.knowledgemotion.topics.spotlight.SpotlightKeyword
 import org.atlasapi.remotesite.knowledgemotion.topics.spotlight.SpotlightResourceParser;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.amazonaws.auth.AWSCredentials;
+import com.amazonaws.auth.BasicAWSCredentials;
 import com.google.common.collect.ImmutableList;
+import com.metabroadcast.common.ingest.MessageStreamer;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -33,6 +37,15 @@ public class KnowledgeMotionModule {
     private @Autowired GoogleSpreadsheetModule spreadsheet;
 
     private @Autowired DatabasedMongo mongo;
+
+    @Value("${km.contentdeals.aws.accessKey}")
+    private String awsAccessKey;
+    @Value("${km.contentdeals.aws.secretKey}")
+    private String awsSecretKey;
+    @Value("${km.contentdeals.aws.s3BucketName}")
+    private String awsS3BucketName;
+    @Value("${km.contentdeals.aws.sqsQueueName}")
+    private String awsSqsQueueName;
 
     /**
      * Here we wire what is in fact a {@link TopicCreatingTopicResolver}, so we may create new topics where necessary.
@@ -53,9 +66,14 @@ public class KnowledgeMotionModule {
     );
 
     @PostConstruct
-    public void startBackgroundTasks() {
+    public void start() {
+        AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
+        MessageStreamer messageStreamer = new MessageStreamer(awsSqsQueueName, awsCredentials);
+
         scheduler.schedule(knowledgeMotionUpdater().withName("KnowledgeMotion Spreadsheet Updater"), RepetitionRules.NEVER);
         scheduler.schedule(knowledgeMotionBloombergIdFixer().withName("KnowledgeMotion Bloomberg ID Fixer"), RepetitionRules.NEVER);
+
+        messageStreamer.start();
     }
 
     @Bean
@@ -75,6 +93,14 @@ public class KnowledgeMotionModule {
                 contentLister);
     }
     
+    private KnowledgeMotionSpecialIdFixingTask knowledgeMotionBloombergIdFixer() {
+        return new KnowledgeMotionSpecialIdFixingTask(FIX_SOURCES,
+                spreadsheet.spreadsheetFetcher(), 
+                new SpecialIdFixingKnowledgeMotionDataRowHandler(contentResolver, contentWriter, FIX_SOURCES.get(0)),
+                new KnowledgeMotionAdapter(),
+                contentLister);
+    }
+
     private KnowledgeMotionSpecialIdFixingTask knowledgeMotionBloombergIdFixer() {
         return new KnowledgeMotionSpecialIdFixingTask(FIX_SOURCES,
                 spreadsheet.spreadsheetFetcher(), 

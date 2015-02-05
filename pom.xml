@@ -359,6 +359,11 @@
             </exclusions>
         </dependency>
         <dependency>
+            <groupId>com.metabroadcast.common.ingest</groupId>
+            <artifactId>common-ingest</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
             <version>16.0.1</version>

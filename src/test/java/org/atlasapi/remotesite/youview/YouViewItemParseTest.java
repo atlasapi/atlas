@@ -59,7 +59,7 @@ public class YouViewItemParseTest {
 
         Item item = contentExtractor.extract(Publisher.YOUVIEW_STAGE, getContentElementFromFile("youview-item.xml"));
         
-        assertEquals("http://stage.youview.com/scheduleevent/7780297", item.getCanonicalUri());
+        assertEquals("http://stage.youview.com/programmecrid/20121118/www.five.tv/V65K2", item.getCanonicalUri());
         assertEquals("Hatfields & McCoys", item.getTitle());
         assertEquals(MediaType.VIDEO, item.getMediaType());
         assertEquals(ImmutableSet.of("http://stage.youview.com/programme/7655992"), item.getAliasUrls());

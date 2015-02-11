@@ -4,7 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public enum KnowledgeMotionSpreadsheetColumn {
 
-    SOURCE("source"),
+    SOURCE("Source"),
     ID("namespace"),
     TITLE("Title"),
     DESCRIPTION("Description"),
@@ -13,14 +13,14 @@ public enum KnowledgeMotionSpreadsheetColumn {
     KEYWORDS("Keywords")
     ;
     
-    private final String value;
+    private final String fieldName;
     
-    private KnowledgeMotionSpreadsheetColumn(String value) {
-        this.value = checkNotNull(value);
+    private KnowledgeMotionSpreadsheetColumn(String fieldName) {
+        this.fieldName = checkNotNull(fieldName);
     }
     
-    public String getValue() {
-        return value;
+    public String getFieldName() {
+        return fieldName;
     }
     
 }

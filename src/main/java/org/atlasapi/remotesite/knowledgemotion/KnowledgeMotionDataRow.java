@@ -16,13 +16,10 @@ public class KnowledgeMotionDataRow {
     private final String date;
     private final String duration;
     private final List<String> keywords;
-    
-    public static Builder builder() {
-        return new Builder();
-    }
-    
-    private KnowledgeMotionDataRow(String source, String id, String title, String description, 
-            String date, String duration, Iterable<String> keywords) {
+    private final String alternativeId;
+
+    public KnowledgeMotionDataRow(String source, String id, String title, String description,
+            String date, String duration, Iterable<String> keywords, String alternativeId) {
         this.source = checkNotNull(source);
         this.id = checkNotNull(id);
         this.title = checkNotNull(title);
@@ -71,60 +68,6 @@ public class KnowledgeMotionDataRow {
                 .add("duration", duration)
                 .add("keywords", keywords)
                 .toString();
-    }
-
-    
-    public static class Builder {
-        
-        private String source;
-        private String id;
-        private String title;
-        private String description;
-        private String date;
-        private String duration;
-        private List<String> keywords = ImmutableList.of();
-        
-        public KnowledgeMotionDataRow build() {
-            return new KnowledgeMotionDataRow(source, id, title, description, date, duration, keywords);
-        }
-        
-        private Builder() {}
-        
-        public Builder withSource(String source) {
-            this.source = source;
-            return this;
-        }
-        
-        public Builder withId(String id) {
-            this.id = id;
-            return this;
-        }
-        
-        public Builder withTitle(String title) {
-            this.title = title;
-            return this;
-        }
-        
-        public Builder withDescription(String description) {
-            this.description = description;
-            return this;
-        }
-        
-        public Builder withDate(String date) {
-            this.date = date;
-            return this;
-        }
-        public Builder withDuration(String duration) {
-            this.duration = duration;
-            return this;
-        }
-        
-        
-        public Builder withKeywords(Iterable<String> keywords) {
-            this.keywords = ImmutableList.copyOf(keywords);
-            return this;
-        }
-        
     }
     
 }

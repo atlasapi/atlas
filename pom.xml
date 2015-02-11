@@ -356,6 +356,10 @@
                     <groupId>javax.servlet</groupId>
                     <artifactId>servlet-api</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.servicemix.bundles</groupId>
+                    <artifactId>org.apache.servicemix.bundles.commons-csv</artifactId>
+                </exclusion>
             </exclusions>
         </dependency>
         <dependency>
@@ -545,7 +549,12 @@
 		  <artifactId>commons-compress</artifactId>
 		  <version>1.0</version>
 	   </dependency>
-       <dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.1</version>
+        </dependency>
+        <dependency>
           <groupId>com.metabroadcast.atlas.glycerin</groupId>
           <artifactId>glycerin</artifactId>
           <version>0.1.12</version>

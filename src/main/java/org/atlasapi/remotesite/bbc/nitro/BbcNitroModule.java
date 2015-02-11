@@ -57,8 +57,12 @@ public class BbcNitroModule {
     private @Value("${bbc.nitro.apiKey}") String nitroApiKey;
     private @Value("${bbc.nitro.requestsPerSecond.today}") Integer nitroTodayRateLimit;
     private @Value("${bbc.nitro.requestsPerSecond.fortnight}") Integer nitroFortnightRateLimit;
+    private @Value("${bbc.nitro.requestsPerSecond.threeweek}") Integer nitroThreeWeekRateLimit;
+    private @Value("${bbc.nitro.requestsPerSecond.aroundtoday}") Integer nitroAroundTodayRateLimit;
     private @Value("${bbc.nitro.threadCount.today}") Integer nitroTodayThreadCount;
     private @Value("${bbc.nitro.threadCount.fortnight}") Integer nitroFortnightThreadCount;
+    private @Value("${bbc.nitro.threadCount.threeweek}") Integer nitroThreeWeekThreadCount;
+    private @Value("${bbc.nitro.threadCount.aroundtoday}") Integer nitroAroundTodayThreadCount;
     private @Value("${bbc.nitro.requestPageSize}") Integer nitroRequestPageSize;
     private @Value("${bbc.nitro.jobFailureThresholdPercent}") Integer jobFailureThresholdPercent;
     
@@ -82,6 +86,10 @@ public class BbcNitroModule {
                 .withName("Nitro today updater"), RepetitionRules.every(Duration.standardMinutes(30)));
             scheduler.schedule(nitroScheduleUpdateTask(0, 0, nitroTodayThreadCount, nitroTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
                     .withName("Nitro full fetch 15 day updater"), RepetitionRules.NEVER);
+            scheduler.schedule(nitroScheduleUpdateTask(30, -8, nitroThreeWeekThreadCount, nitroThreeWeekRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
+                    .withName("Nitro full fetch -8 to -30 day updater"), RepetitionRules.NEVER);
+            scheduler.schedule(nitroScheduleUpdateTask(7, 3, nitroAroundTodayThreadCount, nitroAroundTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
+                    .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.NEVER);
         }
     }
 

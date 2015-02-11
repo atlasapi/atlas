@@ -24,8 +24,15 @@ import com.google.common.collect.Iterables;
 
 public class KnowledgeMotionDataRowContentExtractorTest {
 
+    private static final ImmutableList<KnowledgeMotionSourceConfig> SOURCES = ImmutableList.of(
+        KnowledgeMotionSourceConfig.from("GlobalImageworks", Publisher.KM_GLOBALIMAGEWORKS, "globalImageWorks:%s", "http://globalimageworks.com/%s"),
+        KnowledgeMotionSourceConfig.from("BBC Worldwide", Publisher.KM_BBC_WORLDWIDE, "km-bbcWorldwide:%s", "http://bbc.knowledgemotion.com/%s"),
+        KnowledgeMotionSourceConfig.from("British Movietone", Publisher.KM_MOVIETONE, "km-movietone:%s", "http://movietone.knowledgemotion.com/%s"),
+        KnowledgeMotionSourceConfig.from("Bloomberg", Publisher.KM_BLOOMBERG, "bloomberg:%s", "http://bloomberg.com/%s")
+    );
+
     private final TopicGuesser topicGuesser = Mockito.mock(TopicGuesser.class);
-    private final KnowledgeMotionDataRowContentExtractor extractor = new KnowledgeMotionDataRowContentExtractor(KnowledgeMotionModule.SOURCES, topicGuesser);
+    private final KnowledgeMotionDataRowContentExtractor extractor = new KnowledgeMotionDataRowContentExtractor(SOURCES, topicGuesser);
 
     @Test
     public void testExtractItem() {
@@ -33,27 +40,8 @@ public class KnowledgeMotionDataRowContentExtractorTest {
         ImmutableSet<TopicRef> topicRefs = ImmutableSet.of(new TopicRef(9000l, 1.0f, false, Relationship.ABOUT));
         Mockito.when(topicGuesser.guessTopics(Matchers.anyCollection())).thenReturn(topicRefs);
 
-        KnowledgeMotionDataRow row = KnowledgeMotionDataRow.builder()
-                .withDate("2014-01-01")
-                .withDescription("description")
-                .withDuration("0:01:01;10")
-                .withId("id")
-                .withKeywords(ImmutableList.of("key"))
-                .withSource("GlobalImageworks")
-                .withTitle("title")
-                .withKeywords(ImmutableList.of("key"))
-                .build();
-
-        KnowledgeMotionDataRow badRow = KnowledgeMotionDataRow.builder()
-                .withDate("2014-01-01")
-                .withDescription("description")
-                .withDuration("0:01:01;10")
-                .withId("id")
-                .withKeywords(ImmutableList.of("key"))
-                .withSource("GlobalInageworks")
-                .withTitle("title")
-                .withKeywords(ImmutableList.of("key"))
-                .build();
+        KnowledgeMotionDataRow row = new KnowledgeMotionDataRow("GlobalImageworks", "id", "title", "description", "2014-01-01", "0:01:01;10", ImmutableList.of("key"), null);
+        KnowledgeMotionDataRow badRow = new KnowledgeMotionDataRow("GlobalInageworks", "id", "title", "description", "2014-01-01", "0:01:01;10", ImmutableList.of("key"), null);
 
         Optional<? extends Content> content = extractor.extract(row);
         Item item = (Item) content.get();

@@ -17,12 +17,12 @@ public class KnowledgeMotionDataRow {
     private final String duration;
     private final List<String> keywords;
     private final String alternativeId;
-    
+
     public static Builder builder() {
         return new Builder();
     }
-    
-    private KnowledgeMotionDataRow(String source, String id, String title, String description, 
+
+    public KnowledgeMotionDataRow(String source, String id, String title, String description,
             String date, String duration, Iterable<String> keywords, String alternativeId) {
         this.source = checkNotNull(source);
         this.id = checkNotNull(id);
@@ -139,5 +139,5 @@ public class KnowledgeMotionDataRow {
         }
         
     }
-    
+
 }

@@ -15,15 +15,15 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.base.Maybe;
 
-public class DefaultKnowledgeMotionDataRowHandler implements KnowledgeMotionDataRowHandler {
+public class KnowledgeMotionContentMerger implements KnowledgeMotionDataRowHandler {
 
     private final ContentResolver resolver;
     private final ContentWriter writer;
     private final ContentExtractor<KnowledgeMotionDataRow, Optional<? extends Content>> extractor;
     private final ContentMerger contentMerger;
 
-    public DefaultKnowledgeMotionDataRowHandler(ContentResolver resolver, ContentWriter writer, 
-            ContentExtractor<KnowledgeMotionDataRow, Optional<? extends Content>> extractor) {
+    public KnowledgeMotionContentMerger(ContentResolver resolver, ContentWriter writer,
+        ContentExtractor<KnowledgeMotionDataRow, Optional<? extends Content>> extractor) {
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(writer);
         this.extractor = checkNotNull(extractor);

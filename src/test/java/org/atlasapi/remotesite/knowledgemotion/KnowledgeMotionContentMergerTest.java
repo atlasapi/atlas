@@ -20,7 +20,7 @@ import org.mockito.stubbing.OngoingStubbing;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-public class DefaultKnowledgeMotionDataRowHandlerTest {
+public class KnowledgeMotionContentMergerTest {
 
     private static final ResolvedContent NOTHING_RESOLVED = ResolvedContent.builder().build();
     private static final KnowledgeMotionDataRow EMPTY_ROW = emptyRow();
@@ -31,19 +31,12 @@ public class DefaultKnowledgeMotionDataRowHandlerTest {
     @SuppressWarnings("unchecked")
     private final ContentExtractor<KnowledgeMotionDataRow, Optional<? extends Content>> extractor = mock(ContentExtractor.class);
 
-    private final DefaultKnowledgeMotionDataRowHandler handler = new DefaultKnowledgeMotionDataRowHandler(resolver, writer, extractor);
+    private final KnowledgeMotionContentMerger handler = new KnowledgeMotionContentMerger(resolver, writer, extractor);
     
     private static KnowledgeMotionDataRow emptyRow() {
-        return KnowledgeMotionDataRow.builder()
-                .withDate("date")
-                .withDescription("description")
-                .withDuration("duration")
-                .withId("id")
-                .withSource("source")
-                .withTitle("title")
-                .build();
+        return new KnowledgeMotionDataRow("source", "id", "title", "description", "date", "duration", null, null);
     }
-    
+
     @Test
     public void testWritingContent() {
         Item item1 = new Item("item1", "i", Publisher.KM_GLOBALIMAGEWORKS);

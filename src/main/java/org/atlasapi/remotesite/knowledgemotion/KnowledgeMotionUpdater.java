@@ -41,6 +41,8 @@ public class KnowledgeMotionUpdater {
     }
 
     protected ProcessingResult process(List<KnowledgeMotionDataRow> rows, ProcessingResult processingResult) {
+        boolean allRowsSuccess = true;
+
         for (KnowledgeMotionDataRow row : rows) {
             try {
                 Optional<Content> written = dataHandler.handle(row);
@@ -48,17 +50,20 @@ public class KnowledgeMotionUpdater {
                     seenUris.add(written.get().getCanonicalUri());
                 }
             } catch (RuntimeException e) {
+                allRowsSuccess = false;
                 processingResult.error(row.getId(), e.getMessage());
             }
         }
 
-        // un-ActivelyPublisheding disappeared content
-        Iterator<Content> allStoredKmContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublishers(allKmPublishers).build());
-        while (allStoredKmContent.hasNext()) {
-            Content item = allStoredKmContent.next();
-            if (! seenUris.contains(item.getCanonicalUri())) {
-                item.setActivelyPublished(false);
-                dataHandler.write(item);
+        if (allRowsSuccess) {
+            // un-ActivelyPublisheding disappeared content
+            Iterator<Content> allStoredKmContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublishers(allKmPublishers).build());
+            while (allStoredKmContent.hasNext()) {
+                Content item = allStoredKmContent.next();
+                if (!seenUris.contains(item.getCanonicalUri())) {
+                    item.setActivelyPublished(false);
+                    dataHandler.write(item);
+                }
             }
         }
 

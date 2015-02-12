@@ -79,11 +79,10 @@ public class KnowledgeMotionDataRow {
                 .toString();
     }
 
-    
    // TODO get rid of all this crap and just write a constructor that takes a CustomElementCollection
     // no one will then forget to update the builder, call all the builder methods, etc etc
     public static class Builder {
-        
+
         private String source;
         private String id;
         private String title;
@@ -92,7 +91,7 @@ public class KnowledgeMotionDataRow {
         private String duration;
         private List<String> keywords = ImmutableList.of();
         private String alternativeId;
-        
+
         public KnowledgeMotionDataRow build() {
             return new KnowledgeMotionDataRow(source, id, title, description, date, duration, keywords, alternativeId);
         }
@@ -103,22 +102,22 @@ public class KnowledgeMotionDataRow {
             this.source = source;
             return this;
         }
-        
+
         public Builder withId(String id) {
             this.id = id;
             return this;
         }
-        
+
         public Builder withTitle(String title) {
             this.title = title;
             return this;
         }
-        
+
         public Builder withDescription(String description) {
             this.description = description;
             return this;
         }
-        
+
         public Builder withDate(String date) {
             this.date = date;
             return this;
@@ -127,7 +126,7 @@ public class KnowledgeMotionDataRow {
             this.duration = duration;
             return this;
         }
-        
+
         public Builder withKeywords(Iterable<String> keywords) {
             this.keywords = ImmutableList.copyOf(keywords);
             return this;
@@ -137,7 +136,6 @@ public class KnowledgeMotionDataRow {
             this.alternativeId = altId;
             return this;
         }
-        
     }
 
 }

@@ -18,6 +18,10 @@ public class KnowledgeMotionDataRow {
     private final List<String> keywords;
     private final String alternativeId;
 
+    public static Builder builder() {
+        return new Builder();
+    }
+
     public KnowledgeMotionDataRow(String source, String id, String title, String description,
             String date, String duration, Iterable<String> keywords, String alternativeId) {
         this.source = checkNotNull(source);
@@ -69,5 +73,63 @@ public class KnowledgeMotionDataRow {
                 .add("keywords", keywords)
                 .toString();
     }
-    
+
+    public static class Builder {
+
+        private String source;
+        private String id;
+        private String title;
+        private String description;
+        private String date;
+        private String duration;
+        private List<String> keywords = ImmutableList.of();
+        private String alternativeId;
+
+        public KnowledgeMotionDataRow build() {
+            return new KnowledgeMotionDataRow(source, id, title, description, date, duration, keywords, alternativeId);
+        }
+
+        private Builder() {}
+
+        public Builder withSource(String source) {
+            this.source = source;
+            return this;
+        }
+
+        public Builder withId(String id) {
+            this.id = id;
+            return this;
+        }
+
+        public Builder withTitle(String title) {
+            this.title = title;
+            return this;
+        }
+
+        public Builder withDescription(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public Builder withDate(String date) {
+            this.date = date;
+            return this;
+        }
+        public Builder withDuration(String duration) {
+            this.duration = duration;
+            return this;
+        }
+
+        public Builder withKeywords(Iterable<String> keywords) {
+            this.keywords = ImmutableList.copyOf(keywords);
+            return this;
+        }
+
+        public Builder withAlternativeId(String altId) {
+            this.alternativeId = altId;
+            return this;
+        }
+
+    }
+
 }

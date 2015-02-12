@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.knowledgemotion;
 
 import javax.annotation.PostConstruct;
 
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -19,7 +20,8 @@ import org.springframework.context.annotation.Configuration;
 
 import com.amazonaws.auth.AWSCredentials;
 import com.amazonaws.auth.BasicAWSCredentials;
-import com.metabroadcast.common.ingest.MessageStreamer;
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.common.ingest.IngestService;
 import com.metabroadcast.common.ingest.s3.process.FileProcessor;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 
@@ -37,8 +39,6 @@ public class KnowledgeMotionModule {
     private String awsSecretKey;
     @Value("${km.contentdeals.aws.s3BucketName}")
     private String awsS3BucketName;
-    @Value("${km.contentdeals.aws.sqsQueueName}")
-    private String awsSqsQueueName;
 
     /**
      * Here we wire what is in fact a {@link TopicCreatingTopicResolver}, so we may create new topics where necessary.
@@ -61,10 +61,10 @@ public class KnowledgeMotionModule {
     @PostConstruct
     public void start() {
         AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-        MessageStreamer messageStreamer = new MessageStreamer(awsSqsQueueName, awsCredentials);
+        IngestService ingestService = new IngestService(awsCredentials);
         FileProcessor fileProcessor = new KnowledgeMotionFileProcessor(contentResolver, contentWriter, contentLister, topicGuesser());
-        messageStreamer.registerFileProcessor(awsS3BucketName, fileProcessor);
-        messageStreamer.start();
+        ingestService.registerFileProcessor(awsS3BucketName, fileProcessor);
+        ingestService.start();
     }
 
     @Bean

@@ -62,7 +62,8 @@ public class KnowledgeMotionModule {
     public void start() {
         AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
         IngestService ingestService = new IngestService(awsCredentials);
-        FileProcessor fileProcessor = new KnowledgeMotionFileProcessor(contentResolver, contentWriter, contentLister, topicGuesser());
+        FileProcessor fileProcessor = new KnowledgeMotionFileProcessor(contentResolver,
+            contentWriter, contentLister, topicGuesser(), new KnowledgeMotionCsvTranslator());
         ingestService.registerFileProcessor(awsS3BucketName, fileProcessor);
         ingestService.start();
     }

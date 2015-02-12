@@ -10,6 +10,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.remotesite.knowledgemotion.topics.TopicGuesser;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.ingest.s3.process.FileProcessor;
 import com.metabroadcast.common.ingest.s3.process.ProcessingResult;
@@ -34,13 +35,18 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
     private final KnowledgeMotionCsvTranslator csvTranslator;
 
     public KnowledgeMotionFileProcessor(ContentResolver contentResolver, ContentWriter contentWriter,
-        ContentLister contentLister, TopicGuesser topicGuesser) {
+        ContentLister contentLister, TopicGuesser topicGuesser, KnowledgeMotionCsvTranslator csvTranslator) {
+        Preconditions.checkNotNull(contentResolver);
+        Preconditions.checkNotNull(contentWriter);
+        Preconditions.checkNotNull(contentLister);
+        Preconditions.checkNotNull(topicGuesser);
+        Preconditions.checkNotNull(csvTranslator);
+
         this.contentResolver = contentResolver;
         this.contentWriter = contentWriter;
         this.contentLister = contentLister;
         this.topicGuesser = topicGuesser;
-
-        csvTranslator = new KnowledgeMotionCsvTranslator();
+        this.csvTranslator = csvTranslator;
     }
 
     @Override

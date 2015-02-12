@@ -18,12 +18,12 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
+import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
 import org.atlasapi.persistence.audit.PersistenceAuditLog;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -51,25 +51,11 @@ import com.mongodb.ReadPreference;
 public class ChildRefUpdateTaskTest extends TestCase {
 
     DatabasedMongo mongo = MongoTestHelper.anEmptyTestDatabase();
-
+    PersistenceAuditLog persistenceAuditLog = new NoLoggingPersistenceAuditLog();
     ScheduleTaskProgressStore progressStore = new MongoScheduleTaskProgressStore(mongo);
-    MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"), ReadPreference.primary());
+    MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"), 
+            persistenceAuditLog, ReadPreference.primary());
     ContentResolver resolver = new LookupResolvingContentResolver(new MongoContentResolver(mongo, lookupStore), lookupStore);
-    
-    private final PersistenceAuditLog persistenceAuditLog = new PersistenceAuditLog() {
-
-        @Override
-        public void logWrite(Described described) {
-            
-        }
-
-        @Override
-        public void logNoWrite(Described described) {
-            
-        }
-        
-    
-    };
     
     private final ServiceResolver serviceResolver = mock(ServiceResolver.class);
     private final PlayerResolver playerResolver = mock(PlayerResolver.class);

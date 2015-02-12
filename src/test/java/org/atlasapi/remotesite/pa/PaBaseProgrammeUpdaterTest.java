@@ -24,6 +24,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.messaging.v3.ScheduleUpdateMessage;
+import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
 import org.atlasapi.persistence.audit.PersistenceAuditLog;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -84,22 +85,8 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 	
 	private final ServiceResolver serviceResolver = mock(ServiceResolver.class);
     private final PlayerResolver playerResolver = mock(PlayerResolver.class);
-	
-	private final PersistenceAuditLog persistenceAuditLog = new PersistenceAuditLog() {
-
-        @Override
-        public void logWrite(Described described) {
-            
-        }
-
-        @Override
-        public void logNoWrite(Described described) {
-            
-        }
-        
+    private final PersistenceAuditLog persistenceAuditLog = new NoLoggingPersistenceAuditLog();
     
-    };
-
 	private ChannelResolver channelResolver;
 	private ContentBuffer contentBuffer;
 	private MessageSender<ScheduleUpdateMessage> ms
@@ -118,7 +105,8 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
     public void setUp() throws Exception {
         super.setUp();
         DatabasedMongo db = MongoTestHelper.anEmptyTestDatabase();
-        MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(db.collection("lookup"), ReadPreference.primary());
+        MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(db.collection("lookup"),
+                persistenceAuditLog, ReadPreference.primary());
         resolver = new LookupResolvingContentResolver(new MongoContentResolver(db, lookupStore), lookupStore);
 
         channelResolver = new DummyChannelResolver();

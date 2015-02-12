@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.LookupEntryTranslator;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
@@ -56,7 +57,9 @@ public class LookupRefUpdateTask extends ScheduledTask {
     public LookupRefUpdateTask(DBCollection lookupCollection, DBCollection progressCollection) {
         this.lookupCollection = checkNotNull(lookupCollection);
         this.entryTranslator = new LookupEntryTranslator();
-        this.entryStore = new MongoLookupEntryStore(lookupCollection, ReadPreference.primary());
+        this.entryStore = new MongoLookupEntryStore(lookupCollection,
+                new NoLoggingPersistenceAuditLog(),
+                ReadPreference.primary());
         this.progressCollection = checkNotNull(progressCollection);
         this.scheduleKey = "lookuprefupdate";
     }

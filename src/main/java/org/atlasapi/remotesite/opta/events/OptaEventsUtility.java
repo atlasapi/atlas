@@ -131,7 +131,22 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
 
     @Override
     public String createTeamUri(String id) {
-        return TEAM_URI_BASE + id;
+        
+        return TEAM_URI_BASE + normalizeTeamId(id);
+    }
+    
+    /**
+     * Previously we received numeric IDs in the feed. However, when
+     * we switched to the opta API from a file, the IDs were prefixed
+     * with a leading "t". So as to reference the previously-created
+     * teams, we'll strip the leading "t", if present.
+     */
+    private String normalizeTeamId(String id) {
+        if (id.startsWith("t")) {
+            return id.substring(1);
+        } else {
+            return id;
+        }
     }
 
     @Override

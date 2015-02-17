@@ -31,4 +31,11 @@ public class OptaEventsUtilityTest {
         
         assertFalse(fetched.isPresent());
     }
+    
+    @Test
+    public void testRemovesLeadingTFromId() {
+        assertEquals("http://optasports.com/teams/12345", utility.createTeamUri("t12345"));
+        assertEquals("http://optasports.com/teams/r12345", utility.createTeamUri("r12345"));
+    }
+    
 }

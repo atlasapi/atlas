@@ -18,4 +18,5 @@ public class OptaEventsUtilityTest {
         
         assertEquals(DateTimeZone.forID("Europe/London"), fetched);
     }
+    
 }

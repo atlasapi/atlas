@@ -19,13 +19,13 @@ private final Splitter splitter = Splitter.on(",").omitEmptyStrings().trimResult
     public KnowledgeMotionDataRow dataRow(CustomElementCollection customElements) {
         KnowledgeMotionDataRow.Builder row = KnowledgeMotionDataRow.builder();
         
-        row.withDate(customElements.getValue(DATE.getValue()));
-        row.withDescription(customElements.getValue(DESCRIPTION.getValue()));
-        row.withDuration(customElements.getValue(DURATION.getValue()));
-        row.withId(customElements.getValue(ID.getValue()));
-        row.withKeywords(keywords(customElements.getValue(KEYWORDS.getValue())));
-        row.withSource(customElements.getValue(SOURCE.getValue()));
-        row.withTitle(customElements.getValue(TITLE.getValue()));
+        row.withDate(customElements.getValue(DATE.getFieldName()));
+        row.withDescription(customElements.getValue(DESCRIPTION.getFieldName()));
+        row.withDuration(customElements.getValue(DURATION.getFieldName()));
+        row.withId(customElements.getValue(ID.getFieldName()));
+        row.withKeywords(keywords(customElements.getValue(KEYWORDS.getFieldName())));
+        row.withSource(customElements.getValue(SOURCE.getFieldName()));
+        row.withTitle(customElements.getValue(TITLE.getFieldName()));
         
         return row.build();
     }

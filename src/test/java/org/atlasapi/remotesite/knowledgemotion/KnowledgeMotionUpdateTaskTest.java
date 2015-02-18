@@ -7,6 +7,7 @@ import static org.mockito.Mockito.when;
 
 import org.atlasapi.googlespreadsheet.SpreadsheetFetcher;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.junit.Test;
@@ -26,11 +27,18 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 @RunWith(MockitoJUnitRunner.class)
 public class KnowledgeMotionUpdateTaskTest {
 
+    private static final ImmutableList<KnowledgeMotionSourceConfig> SOURCES = ImmutableList.of(
+        KnowledgeMotionSourceConfig.from("GlobalImageworks", Publisher.KM_GLOBALIMAGEWORKS, "globalImageWorks:%s", "http://globalimageworks.com/%s"),
+        KnowledgeMotionSourceConfig.from("BBC Worldwide", Publisher.KM_BBC_WORLDWIDE, "km-bbcWorldwide:%s", "http://bbc.knowledgemotion.com/%s"),
+        KnowledgeMotionSourceConfig.from("British Movietone", Publisher.KM_MOVIETONE, "km-movietone:%s", "http://movietone.knowledgemotion.com/%s"),
+        KnowledgeMotionSourceConfig.from("Bloomberg", Publisher.KM_BLOOMBERG, "bloomberg:%s", "http://bloomberg.com/%s")
+    );
+
     private final SpreadsheetFetcher spreadsheetFetcher = mock(SpreadsheetFetcher.class);
     private final KnowledgeMotionAdapter adapter = mock(KnowledgeMotionAdapter.class);
     private final DefaultKnowledgeMotionDataRowHandler dataHandler = mock(DefaultKnowledgeMotionDataRowHandler.class);
     private final ContentLister contentLister = mock(ContentLister.class);
-    private final ScheduledTask task = new KnowledgeMotionUpdateTask(KnowledgeMotionModule.SOURCES, spreadsheetFetcher, dataHandler, adapter, contentLister);
+    private final ScheduledTask task = new KnowledgeMotionUpdateTask(SOURCES, spreadsheetFetcher, dataHandler, adapter, contentLister);
     
     @Test
     public void testTask() {
@@ -38,7 +46,7 @@ public class KnowledgeMotionUpdateTaskTest {
         WorksheetEntry worksheet = new WorksheetEntry();
         ListFeed feed = new ListFeed();
         ListEntry entry = new ListEntry();
-        entry.getCustomElements().setValueLocal(KnowledgeMotionSpreadsheetColumn.SOURCE.getValue(), "Arbitrary Source");
+        entry.getCustomElements().setValueLocal(KnowledgeMotionSpreadsheetColumn.SOURCE.getFieldName(), "Arbitrary Source");
         feed.setEntries(ImmutableList.of(entry));
         
         when(spreadsheetFetcher.getSpreadsheetByTitle(Matchers.anyString())).thenReturn(ImmutableList.of(spreadsheet));

@@ -11,6 +11,8 @@ import org.atlasapi.remotesite.knowledgemotion.topics.TopicGuesser;
 import org.atlasapi.remotesite.knowledgemotion.topics.cache.KeyphraseTopicCache;
 import org.atlasapi.remotesite.knowledgemotion.topics.spotlight.SpotlightKeywordsExtractor;
 import org.atlasapi.remotesite.knowledgemotion.topics.spotlight.SpotlightResourceParser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -25,6 +27,8 @@ import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 
 @Configuration
 public class KnowledgeMotionModule {
+
+    private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionModule.class);
 
     private @Autowired ContentResolver contentResolver;
     private @Autowired ContentWriter contentWriter;
@@ -47,6 +51,7 @@ public class KnowledgeMotionModule {
 
     @PostConstruct
     public void start() {
+        log.info("Initializing Knowledgemotion updater");
         AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
         IngestService ingestService = new IngestService(awsCredentials);
         FileProcessor fileProcessor = new KnowledgeMotionFileProcessor(contentResolver,

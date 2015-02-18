@@ -9,6 +9,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.remotesite.knowledgemotion.topics.TopicGuesser;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableList;
@@ -16,6 +18,8 @@ import com.metabroadcast.common.ingest.s3.process.FileProcessor;
 import com.metabroadcast.common.ingest.s3.process.ProcessingResult;
 
 public class KnowledgeMotionFileProcessor implements FileProcessor {
+
+    private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionFileProcessor.class);
 
     private static final ImmutableList<KnowledgeMotionSourceConfig> SOURCES = ImmutableList.of(
         KnowledgeMotionSourceConfig.from("GlobalImageworks", Publisher.KM_GLOBALIMAGEWORKS, "globalImageWorks:%s", "http://globalimageworks.com/%s"),
@@ -36,27 +40,24 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
 
     public KnowledgeMotionFileProcessor(ContentResolver contentResolver, ContentWriter contentWriter,
         ContentLister contentLister, TopicGuesser topicGuesser, KnowledgeMotionCsvTranslator csvTranslator) {
-        Preconditions.checkNotNull(contentResolver);
-        Preconditions.checkNotNull(contentWriter);
-        Preconditions.checkNotNull(contentLister);
-        Preconditions.checkNotNull(topicGuesser);
-        Preconditions.checkNotNull(csvTranslator);
-
-        this.contentResolver = contentResolver;
-        this.contentWriter = contentWriter;
-        this.contentLister = contentLister;
-        this.topicGuesser = topicGuesser;
-        this.csvTranslator = csvTranslator;
+        this.contentResolver = Preconditions.checkNotNull(contentResolver);
+        this.contentWriter = Preconditions.checkNotNull(contentWriter);
+        this.contentLister = Preconditions.checkNotNull(contentLister);
+        this.topicGuesser = Preconditions.checkNotNull(topicGuesser);
+        this.csvTranslator = Preconditions.checkNotNull(csvTranslator);
     }
 
     @Override
     public ProcessingResult process(String originalFilename, File file) {
+        log.info("Processing Knowledgemotion updater feed file");
+
         ProcessingResult processingResult = new ProcessingResult();
 
         List<KnowledgeMotionDataRow> rows;
         try {
             rows = csvTranslator.translate(file);
         } catch (IOException e) {
+            log.info("Unable to parse input file");
             processingResult.error("input file", "Unable to parse input file: " + e.getMessage());
             return processingResult;
         }

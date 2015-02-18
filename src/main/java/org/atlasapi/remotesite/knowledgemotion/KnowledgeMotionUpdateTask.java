@@ -114,7 +114,7 @@ public class KnowledgeMotionUpdateTask extends ScheduledTask {
                     }
                     progress = progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
-                    log.warn("Row: " + customElements.getValue(KnowledgeMotionSpreadsheetColumn.ID.getValue()), e);
+                    log.warn("Row: " + customElements.getValue(KnowledgeMotionSpreadsheetColumn.ID.getFieldName()), e);
                     progress = progress.reduce(UpdateProgress.FAILURE);
                 }
                 reportStatus(progress.toString());

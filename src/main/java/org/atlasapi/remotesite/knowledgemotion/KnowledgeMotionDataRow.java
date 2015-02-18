@@ -31,6 +31,7 @@ public class KnowledgeMotionDataRow {
         this.date = checkNotNull(date);
         this.duration = checkNotNull(duration);
         this.keywords = ImmutableList.copyOf(keywords);
+        this.alternativeId = alternativeId;
     }
     
     public String getSource() {
@@ -59,6 +60,10 @@ public class KnowledgeMotionDataRow {
 
     public List<String> getKeywords() {
         return keywords;
+    }
+
+    public String getAlternativeId() {
+        return alternativeId;
     }
 
     @Override

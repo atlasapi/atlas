@@ -51,7 +51,7 @@ public class KnowledgeMotionUpdater {
                 }
             } catch (RuntimeException e) {
                 allRowsSuccess = false;
-                processingResult.error(row.getId(), e.getMessage());
+                processingResult.error(row.getId(), "While merging content: " + e.getMessage());
             }
         }
 

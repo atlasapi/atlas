@@ -18,6 +18,7 @@ public class KnowledgeMotionSpecialIdFixer {
         for (KnowledgeMotionDataRow row : rows) {
             try {
                 dataHandler.handle(row);
+                processingResult.success();
             } catch (RuntimeException e) {
                 processingResult.error(row.getId(), "While fixing special ID: " + e.getMessage());
             }

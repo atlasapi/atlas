@@ -53,6 +53,7 @@ public class KnowledgeMotionUpdater {
                 if (written.isPresent()) {
                     seenUris.add(written.get().getCanonicalUri());
                 }
+                log.info("inserted item {}", written.get().getCanonicalUri());
                 processingResult.success();
             } catch (RuntimeException e) {
                 allRowsSuccess = false;

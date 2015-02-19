@@ -11,6 +11,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -20,6 +22,8 @@ import com.google.common.collect.Sets;
 import com.metabroadcast.common.ingest.s3.process.ProcessingResult;
 
 public class KnowledgeMotionUpdater {
+
+    private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionModule.class);
 
     private final KnowledgeMotionDataRowHandler dataHandler;
     private final ImmutableList<Publisher> allKmPublishers;
@@ -51,6 +55,7 @@ public class KnowledgeMotionUpdater {
                 }
             } catch (RuntimeException e) {
                 allRowsSuccess = false;
+                log.info("Failed to update", e);
                 processingResult.error(row.getId(), "While merging content: " + e.getMessage());
             }
         }

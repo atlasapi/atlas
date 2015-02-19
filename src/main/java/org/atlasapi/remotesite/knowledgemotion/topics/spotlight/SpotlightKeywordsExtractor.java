@@ -8,6 +8,8 @@ import java.util.List;
 
 import org.atlasapi.remotesite.knowledgemotion.topics.KeywordsExtractor;
 import org.atlasapi.remotesite.knowledgemotion.topics.WikipediaKeyword;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
@@ -21,6 +23,8 @@ import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.url.UrlEncoding;
 
 public class SpotlightKeywordsExtractor implements KeywordsExtractor {
+
+    private static final Logger log = LoggerFactory.getLogger(SpotlightKeywordsExtractor.class);
 
     private static final String DBPEDIA_CONFIDENCE = "0.01";
     private static final String DBPEDIA_SUPPORT = "2";
@@ -42,9 +46,16 @@ public class SpotlightKeywordsExtractor implements KeywordsExtractor {
         String url = String.format(DBPEDIA_SPOTLIGHT_URL_PATTERN, encodedText, DBPEDIA_CONFIDENCE, DBPEDIA_SUPPORT);
         String response;
         try {
+            log.info("text: {}", text);
+            log.info("encodedText: {}", encodedText);
+            log.info("url: {}", url);
             response = getResponse(url);
+            log.info("response: {}", response);
             String decodedText = UrlEncoding.decode(response);
-            return parser.parse(decodedText);
+            log.info("decodedText: {}", decodedText);
+            List<WikipediaKeyword> keywords = parser.parse(decodedText);
+            log.info("keywords: {}", keywords);
+            return keywords;
         } catch (Exception e) {
             throw new RuntimeException("Spotlight call failed.", e);
         }

@@ -8,6 +8,7 @@ import static org.mockito.Mockito.verify;
 import java.util.Set;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
@@ -15,12 +16,15 @@ import org.atlasapi.media.entity.simple.ContentQueryResult;
 import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.product.ProductResolver;
 import org.atlasapi.media.segment.SegmentResolver;
+import org.atlasapi.output.simple.ChannelGroupSummarySimplifier;
+import org.atlasapi.output.simple.ChannelSimplifier;
 import org.atlasapi.output.simple.ContainerModelSimplifier;
 import org.atlasapi.output.simple.EventRefModelSimplifier;
 import org.atlasapi.output.simple.ImageSimplifier;
 import org.atlasapi.output.simple.ItemModelSimplifier;
 import org.atlasapi.output.simple.PersonModelSimplifier;
 import org.atlasapi.output.simple.ProductModelSimplifier;
+import org.atlasapi.output.simple.PublisherSimplifier;
 import org.atlasapi.output.simple.TopicModelSimplifier;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
@@ -35,6 +39,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.ImmutableSet;
@@ -68,6 +73,9 @@ public class FullToSimpleModelTranslatorTest {
     private final PersonModelSimplifier personSimplifier = mock(PersonModelSimplifier.class);
     private EventRefModelSimplifier eventSimplifier = mock(EventRefModelSimplifier.class);
 
+    private final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
+    private final ChannelSimplifier channelSimplifier = new ChannelSimplifier(codec, codec, Mockito.mock(ChannelResolver.class), new PublisherSimplifier(), new ImageSimplifier(), new ChannelGroupSummarySimplifier(codec, Mockito.mock(ChannelGroupResolver.class)), Mockito.mock(ChannelGroupResolver.class));
+    
     private final ItemModelSimplifier itemSimplifier = new ItemModelSimplifier(
             "localhostName", 
             contentGroupResolver, 
@@ -85,6 +93,7 @@ public class FullToSimpleModelTranslatorTest {
             null,
             null,
             null,
+            channelSimplifier,
             null,
             null,
             eventSimplifier 

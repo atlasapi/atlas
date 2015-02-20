@@ -23,7 +23,7 @@ import com.metabroadcast.common.ingest.s3.process.ProcessingResult;
 
 public class KnowledgeMotionUpdater {
 
-    private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionModule.class);
+    private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionUpdater.class);
 
     private final KnowledgeMotionDataRowHandler dataHandler;
     private final ImmutableList<Publisher> allKmPublishers;
@@ -53,7 +53,8 @@ public class KnowledgeMotionUpdater {
                 if (written.isPresent()) {
                     seenUris.add(written.get().getCanonicalUri());
                 }
-                log.info("inserted item {}", written.get().getCanonicalUri());
+                String[] logItems = new String[] {written.get().getId().toString(), written.get().getCanonicalUri(), written.get().getCurie()};
+                log.info("inserted item {} {} {}", logItems);
                 processingResult.success();
             } catch (RuntimeException e) {
                 allRowsSuccess = false;

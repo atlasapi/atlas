@@ -3,6 +3,7 @@ package org.atlasapi.output.simple;
 import static org.junit.Assert.assertEquals;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
@@ -44,6 +45,8 @@ public class ContentModelSimplifierTest {
         Mockito.mock(EventRefModelSimplifier.class)
     );
     
+    private final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
+    private final ChannelSimplifier channelSimplifier = new ChannelSimplifier(codec, codec, Mockito.mock(ChannelResolver.class), new PublisherSimplifier(), new ImageSimplifier(), new ChannelGroupSummarySimplifier(codec, Mockito.mock(ChannelGroupResolver.class)), Mockito.mock(ChannelGroupResolver.class));
     private final ItemModelSimplifier itemSimplifier = new ItemModelSimplifier(
         "", 
         Mockito.mock(ContentGroupResolver.class), 
@@ -61,6 +64,7 @@ public class ContentModelSimplifierTest {
         null,
         null,
         null,
+        channelSimplifier,
         null,
         null,
         Mockito.mock(EventRefModelSimplifier.class)

@@ -458,7 +458,7 @@ public class QueryWebModule {
                 topicResolver, productResolver, segmentResolver, containerSummary, channelResolver, 
                 idCodec, channelIdCodec, imageSimplifier(),peopleQueryResolver, upcomingItemsResolver(), 
                 availableItemsResolver(), watermarker, playerResolver, playerSimplifier(),
-                serviceResolver, serviceSimplifier(), eventRefSimplifier());
+                channelSimplifier(), serviceResolver, serviceSimplifier(), eventRefSimplifier());
         itemSimplifier.exposeIds(Boolean.valueOf(exposeIds));
         return itemSimplifier;
     }

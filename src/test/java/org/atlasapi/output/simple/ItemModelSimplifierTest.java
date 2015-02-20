@@ -11,6 +11,7 @@ import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Actor;
@@ -60,6 +61,8 @@ public class ItemModelSimplifierTest {
     private static final String VERSION_ALIAS_NAMESPACE = "namespace";
     private static final long BBC_ONE_PARENT = 105256L;
     private static final long BBC_ONE_HD = 103828L;
+    
+    private final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     private final Mockery context = new Mockery();
     private final ContentGroupResolver contentGroupResolver = context.mock(ContentGroupResolver.class);
     private final TopicQueryResolver topicResolver = context.mock(TopicQueryResolver.class);
@@ -70,12 +73,14 @@ public class ItemModelSimplifierTest {
     private final PeopleQueryResolver peopleQueryResolver = context.mock(PeopleQueryResolver.class);
     private final UpcomingItemsResolver upcomingResolver = context.mock(UpcomingItemsResolver.class);
     private final AvailableItemsResolver availableResolver = context.mock(AvailableItemsResolver.class);
-    private final ItemModelSimplifier itemSimplifier = new ItemModelSimplifier("localHostName", contentGroupResolver, topicResolver, productResolver, segmentResolver, containerSummaryResolver, channelResolver, new SubstitutionTableNumberCodec(), new SubstitutionTableNumberCodec(), new ImageSimplifier(), peopleQueryResolver,upcomingResolver,availableResolver,null, null, null, null, null, null);
+    private final ChannelGroupResolver channelGroupResolver = context.mock(ChannelGroupResolver.class);
+    private final ChannelSimplifier channelSimplifier = new ChannelSimplifier(codec, codec, channelResolver, new PublisherSimplifier(), new ImageSimplifier(), new ChannelGroupSummarySimplifier(codec, channelGroupResolver), channelGroupResolver);
+    private final ItemModelSimplifier itemSimplifier = new ItemModelSimplifier("localHostName", contentGroupResolver, topicResolver, productResolver, segmentResolver, containerSummaryResolver, channelResolver, new SubstitutionTableNumberCodec(), new SubstitutionTableNumberCodec(), new ImageSimplifier(), peopleQueryResolver,upcomingResolver,availableResolver,null, null, null, channelSimplifier, null, null, null);
     
     @Test
     @SuppressWarnings("unchecked")
     public void testCanCreateSimpleItemFromFullItem() throws Exception {
-        
+        final ApplicationConfiguration config = ApplicationConfiguration.defaultConfiguration();
         Image channelImage = Image.builder("http://example.com/image").withTheme(ImageTheme.LIGHT_OPAQUE).build();
         
         final Channel channel = new Channel(Publisher.BBC, "test", "a", true, MediaType.VIDEO, "http://example.com/");
@@ -134,7 +139,7 @@ public class ItemModelSimplifierTest {
                                 fullItem, 
                                 Sets.union(Annotation.defaultAnnotations(), 
                                            ImmutableSet.of(Annotation.CHANNEL_SUMMARY, Annotation.V4_ALIASES)), 
-                                ApplicationConfiguration.defaultConfiguration()
+                                config
                               );
         
         List<org.atlasapi.media.entity.simple.Person> people = simpleItem.getPeople();

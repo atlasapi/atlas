@@ -46,16 +46,9 @@ public class SpotlightKeywordsExtractor implements KeywordsExtractor {
         String url = String.format(DBPEDIA_SPOTLIGHT_URL_PATTERN, encodedText, DBPEDIA_CONFIDENCE, DBPEDIA_SUPPORT);
         String response;
         try {
-            log.info("text: {}", text);
-            log.info("encodedText: {}", encodedText);
-            log.info("url: {}", url);
             response = getResponse(url);
-            log.info("response: {}", response);
             String decodedText = UrlEncoding.decode(response);
-            log.info("decodedText: {}", decodedText);
-            List<WikipediaKeyword> keywords = parser.parse(decodedText);
-            log.info("keywords: {}", keywords);
-            return keywords;
+            return parser.parse(decodedText);
         } catch (Exception e) {
             throw new RuntimeException("Spotlight call failed.", e);
         }

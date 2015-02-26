@@ -89,10 +89,11 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
                                                                                .put("cbj8", "cbhs") // Sky Sports 1 HD
                                                                                .put("cbj9", "cbht") // Sky Sports 2 HD
                                                                                .build();
-   
+
     private final NumberToShortStringCodec idCodec;
     private final ContainerSummaryResolver containerSummaryResolver;
     private final ChannelResolver channelResolver;
+    private final ChannelSimplifier channelSimplifier;
     private final Clock clock;
     private final SegmentModelSimplifier segmentSimplifier;
     private final NumberToShortStringCodec channelIdCodec;
@@ -109,12 +110,12 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
             NumberToShortStringCodec idCodec, NumberToShortStringCodec channelIdCodec, 
             ImageSimplifier imageSimplifier, PeopleQueryResolver personResolver, UpcomingItemsResolver upcomingResolver, 
             AvailableItemsResolver availableResolver, @Nullable DescriptionWatermarker descriptionWatermarker,
-            PlayerResolver playerResolver, PlayerModelSimplifier playerModelSimplifier, 
+            PlayerResolver playerResolver, PlayerModelSimplifier playerModelSimplifier, ChannelSimplifier channelSimplifier,
             ServiceResolver serviceResolver, ServiceModelSimplifier serviceModelSimplifier, EventRefModelSimplifier eventSimplifier) {
         this(localHostName, contentGroupResolver, topicResolver, productResolver, segmentResolver, 
                 containerSummaryResolver, channelResolver, idCodec, channelIdCodec, new SystemClock(), 
                 imageSimplifier, personResolver, upcomingResolver, availableResolver, descriptionWatermarker,
-                playerResolver, playerModelSimplifier, serviceResolver, serviceModelSimplifier, eventSimplifier);
+                playerResolver, playerModelSimplifier, channelSimplifier, serviceResolver, serviceModelSimplifier, eventSimplifier);
     }
 
     public ItemModelSimplifier(String localHostName, ContentGroupResolver contentGroupResolver, 
@@ -123,7 +124,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
             NumberToShortStringCodec idCodec, NumberToShortStringCodec channelIdCodec, Clock clock, 
             ImageSimplifier imageSimplifier, PeopleQueryResolver personResolver, UpcomingItemsResolver upcomingResolver, 
             AvailableItemsResolver availableResolver, @Nullable DescriptionWatermarker descriptionWatermarker,
-            PlayerResolver playerResolver, PlayerModelSimplifier playerModelSimplifier, 
+            PlayerResolver playerResolver, PlayerModelSimplifier playerModelSimplifier, ChannelSimplifier channelSimplifier,
             ServiceResolver serviceResolver, ServiceModelSimplifier serviceModelSimplifier, EventRefModelSimplifier eventSimplifier) {
         
         super(localHostName, contentGroupResolver, topicResolver, productResolver, imageSimplifier, 
@@ -134,6 +135,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         this.imageSimplifier = imageSimplifier;
         this.segmentSimplifier = segmentResolver != null ? new SegmentModelSimplifier(segmentResolver) : null;
         this.channelResolver = channelResolver;
+        this.channelSimplifier = channelSimplifier;
         this.idCodec = idCodec;
         this.channelIdCodec = channelIdCodec;
         this.serviceModelSimplifier = serviceModelSimplifier;
@@ -258,7 +260,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         }
         if (broadcasts != null) {
             for (Broadcast broadcast : broadcasts) {
-                org.atlasapi.media.entity.simple.Broadcast simpleBroadcast = simplify(broadcast, annotations);
+                org.atlasapi.media.entity.simple.Broadcast simpleBroadcast = simplify(broadcast, annotations, config);
                 copyProperties(version, simpleBroadcast, item);
                 simpleItem.addBroadcast(simpleBroadcast);
             }
@@ -306,17 +308,16 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         });
     }
 
-    private org.atlasapi.media.entity.simple.Broadcast simplify(Broadcast broadcast, Set<Annotation> annotations) {
+    private org.atlasapi.media.entity.simple.Broadcast simplify(Broadcast broadcast, Set<Annotation> annotations, ApplicationConfiguration config) {
         org.atlasapi.media.entity.simple.Broadcast simpleModel = new org.atlasapi.media.entity.simple.Broadcast(broadcast.getBroadcastOn(), broadcast.getTransmissionTime(),
                 broadcast.getTransmissionEndTime(), broadcast.getSourceId(), blackoutRestriction(broadcast));
         if (broadcast.getActualTransmissionTime() != null) {
             simpleModel.setActualTransmissionTime(broadcast.getActualTransmissionTime().toDate());
         }
-        
         if (broadcast.getActualTransmissionEndTime() != null) {
             simpleModel.setActualTransmissionEndTime(broadcast.getActualTransmissionEndTime().toDate());
         }
-        
+
         simpleModel.setRepeat(broadcast.getRepeat());
         simpleModel.setSubtitled(broadcast.getSubtitled());
         simpleModel.setSigned(broadcast.getSigned());
@@ -332,7 +333,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         Maybe<org.atlasapi.media.channel.Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
         if (channel.hasValue()) {
             simpleModel.setChannel(simplify(channel.requireValue(), annotations, 
-                    Optional.<Image>absent(), Optional.<Set<Image>>absent()));
+                    Optional.<Image>absent(), Optional.<Set<Image>>absent(), config));
         } else {
             log.error("Could not resolve channel " + broadcast.getBroadcastOn());
         }
@@ -350,11 +351,11 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
     }
     
     private Channel simplify(org.atlasapi.media.channel.Channel channel, Set<Annotation> annotations, 
-            Optional<Image> overrideImage, Optional<Set<Image>> overrideChannelImages) {
+            Optional<Image> overrideImage, Optional<Set<Image>> overrideChannelImages, ApplicationConfiguration config) {
         Channel simpleChannel = new Channel();
         simpleChannel.setId(channelIdCodec.encode(BigInteger.valueOf(channel.getId())));
         if(annotations.contains(Annotation.CHANNEL_SUMMARY)) {
-            simpleChannel.setTitle(channel.getTitle());
+            simpleChannel = channelSimplifier.simplify(channel, false, false, false, false, config);
             
             if (overrideImage.isPresent()) {
                 simpleChannel.setImage(overrideImage.get().getCanonicalUri());
@@ -362,27 +363,23 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
                 simpleChannel.setImage(channel.getImage().getCanonicalUri());
             }
             
-            simpleChannel.setHighDefinition(channel.getHighDefinition());
-            simpleChannel.setRegional(channel.getRegional());
-            if (channel.getTimeshift() != null) {
-                simpleChannel.setTimeshift(channel.getTimeshift().getStandardSeconds());
-            }
-            Set<Image> channelImages = overrideChannelImages.or(channel.getImages());
-            simpleChannel.setImages(Iterables.transform(
-                channelImages, 
-                new Function<Image, org.atlasapi.media.entity.simple.Image>() {
-                    @Override
-                    public org.atlasapi.media.entity.simple.Image apply(Image input) {
-                        return imageSimplifier.simplify(input, ImmutableSet.<Annotation>of(), null);
+            if (overrideChannelImages.isPresent()) {
+                simpleChannel.setImages(Iterables.transform(
+                        overrideChannelImages.get(), 
+                    new Function<Image, org.atlasapi.media.entity.simple.Image>() {
+                        @Override
+                        public org.atlasapi.media.entity.simple.Image apply(Image input) {
+                            return imageSimplifier.simplify(input, ImmutableSet.<Annotation>of(), null);
+                        }
                     }
-                }
-            ));
-            simpleChannel.setParent(simplifyParentChannel(channel.getParent(), annotations));
+                ));
+            }
+            simpleChannel.setParent(simplifyParentChannel(channel.getParent(), annotations, config));
         }
         return simpleChannel;
     }
 
-    private Channel simplifyParentChannel(Long parent, Set<Annotation> annotations) {
+    private Channel simplifyParentChannel(Long parent, Set<Annotation> annotations, ApplicationConfiguration config) {
         if (parent == null) {
             return null;
         }
@@ -403,10 +400,10 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
             if (channelForImages.hasValue()) {
                 return simplify(channel, annotations,
                         Optional.of(channelForImages.requireValue().getImage()), 
-                        Optional.of(channelForImages.requireValue().getImages()));
+                        Optional.of(channelForImages.requireValue().getImages()), config);
             }
         }
-        return simplify(channel, annotations, Optional.<Image>absent(), Optional.<Set<Image>>absent());
+        return simplify(channel, annotations, Optional.<Image>absent(), Optional.<Set<Image>>absent(), config);
     }
 
     private void copyProperties(Version version, org.atlasapi.media.entity.simple.Version simpleLocation, org.atlasapi.media.entity.Item item) {
@@ -475,6 +472,11 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         copyProperties(location, simpleLocation, annotations, config);
 
         simpleItem.addLocation(simpleLocation);
+        
+        if (annotations.contains(Annotation.V4_ALIASES)) {
+            simpleLocation.setV4Aliases(ImmutableSet.copyOf(Iterables.transform(version.getAliases(), 
+                    TO_SIMPLE_ALIAS)));
+        }
     }
 
     private SeriesSummary seriesSummaryFromResolved(ParentRef seriesRef, Set<Annotation> annotations) {
@@ -567,7 +569,6 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
                             annotations, config));
                 }
             }
-            
             if (policy.getPlayer() != null) {
                 Optional<Player> player = playerResolver.playerFor(policy.getPlayer());
                 if (player.isPresent()) {

@@ -11,9 +11,11 @@ import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Actor;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.Encoding;
@@ -55,8 +57,12 @@ import com.metabroadcast.common.media.MimeType;
 
 public class ItemModelSimplifierTest {
 
+    private static final String VERSION_ALIAS_VALUE = "value";
+    private static final String VERSION_ALIAS_NAMESPACE = "namespace";
     private static final long BBC_ONE_PARENT = 105256L;
     private static final long BBC_ONE_HD = 103828L;
+    
+    private final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     private final Mockery context = new Mockery();
     private final ContentGroupResolver contentGroupResolver = context.mock(ContentGroupResolver.class);
     private final TopicQueryResolver topicResolver = context.mock(TopicQueryResolver.class);
@@ -67,12 +73,14 @@ public class ItemModelSimplifierTest {
     private final PeopleQueryResolver peopleQueryResolver = context.mock(PeopleQueryResolver.class);
     private final UpcomingItemsResolver upcomingResolver = context.mock(UpcomingItemsResolver.class);
     private final AvailableItemsResolver availableResolver = context.mock(AvailableItemsResolver.class);
-    private final ItemModelSimplifier itemSimplifier = new ItemModelSimplifier("localHostName", contentGroupResolver, topicResolver, productResolver, segmentResolver, containerSummaryResolver, channelResolver, new SubstitutionTableNumberCodec(), new SubstitutionTableNumberCodec(), new ImageSimplifier(), peopleQueryResolver,upcomingResolver,availableResolver,null, null, null, null, null, null);
+    private final ChannelGroupResolver channelGroupResolver = context.mock(ChannelGroupResolver.class);
+    private final ChannelSimplifier channelSimplifier = new ChannelSimplifier(codec, codec, channelResolver, new PublisherSimplifier(), new ImageSimplifier(), new ChannelGroupSummarySimplifier(codec, channelGroupResolver), channelGroupResolver);
+    private final ItemModelSimplifier itemSimplifier = new ItemModelSimplifier("localHostName", contentGroupResolver, topicResolver, productResolver, segmentResolver, containerSummaryResolver, channelResolver, new SubstitutionTableNumberCodec(), new SubstitutionTableNumberCodec(), new ImageSimplifier(), peopleQueryResolver,upcomingResolver,availableResolver,null, null, null, channelSimplifier, null, null, null);
     
     @Test
     @SuppressWarnings("unchecked")
     public void testCanCreateSimpleItemFromFullItem() throws Exception {
-        
+        final ApplicationConfiguration config = ApplicationConfiguration.defaultConfiguration();
         Image channelImage = Image.builder("http://example.com/image").withTheme(ImageTheme.LIGHT_OPAQUE).build();
         
         final Channel channel = new Channel(Publisher.BBC, "test", "a", true, MediaType.VIDEO, "http://example.com/");
@@ -106,6 +114,7 @@ public class ItemModelSimplifierTest {
         Encoding encoding = new Encoding();
         encoding.setDataContainerFormat(MimeType.VIDEO_3GPP);
         version.addManifestedAs(encoding);
+        version.addAlias(new Alias(VERSION_ALIAS_NAMESPACE, VERSION_ALIAS_VALUE));
         
         Location location = new Location();
         location.setUri("http://example.com");
@@ -124,7 +133,15 @@ public class ItemModelSimplifierTest {
         CrewMember person = Actor.actor("hisID", "Andrew Collings", "Dirt-bag Humperdink", Publisher.BBC);
         fullItem.addPerson(person);
         
-        Item simpleItem = itemSimplifier.simplify(fullItem, Sets.union(Annotation.defaultAnnotations(), ImmutableSet.of(Annotation.CHANNEL_SUMMARY)), ApplicationConfiguration.defaultConfiguration());
+        Item simpleItem = itemSimplifier
+                            .simplify
+                              (
+                                fullItem, 
+                                Sets.union(Annotation.defaultAnnotations(), 
+                                           ImmutableSet.of(Annotation.CHANNEL_SUMMARY, Annotation.V4_ALIASES)), 
+                                config
+                              );
+        
         List<org.atlasapi.media.entity.simple.Person> people = simpleItem.getPeople();
         org.atlasapi.media.entity.simple.Person simpleActor = Iterables.getOnlyElement(people);
         assertThat(simpleActor.getCharacter(), is("Dirt-bag Humperdink"));
@@ -143,7 +160,9 @@ public class ItemModelSimplifierTest {
         assertThat(simpleLocation.getAvailableCountries().size(), is(1));
         assertThat(simpleLocation.getAvailableCountries().iterator().next(), is("GB"));
         assertThat(simpleLocation.getAudioDescribed(), is(true));
-
+        assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getNamespace(), is(VERSION_ALIAS_NAMESPACE));
+        assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getValue(), is(VERSION_ALIAS_VALUE));
+        
         org.atlasapi.media.entity.simple.Location simpleEmbed = Iterables.getLast(simpleLocations, null);
         assertThat(simpleEmbed.getEmbedId(), is("embedId"));
         assertThat(simpleEmbed.getTransportType(), is("embed"));

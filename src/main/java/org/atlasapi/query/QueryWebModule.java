@@ -352,7 +352,7 @@ public class QueryWebModule {
         Iterable<String> whitelistedIds = Splitter.on(',').split(eventsWhitelist);
         return new EventsController(configFetcher, log, eventModelOutputter(), idCodec(), eventResolver, topicResolver, whitelistedIds);
     }
-
+    
     @Bean
     TaskController taskController() {
         return new TaskController(configFetcher, log, taskModelOutputter(), taskStore, idCodec());
@@ -446,7 +446,7 @@ public class QueryWebModule {
                 topicResolver, productResolver, segmentResolver, containerSummary, channelResolver, 
                 idCodec, channelIdCodec, imageSimplifier(),peopleQueryResolver, upcomingItemsResolver(), 
                 availableItemsResolver(), watermarker, playerResolver, playerSimplifier(),
-                serviceResolver, serviceSimplifier(), eventRefSimplifier());
+                channelSimplifier(), serviceResolver, serviceSimplifier(), eventRefSimplifier());
         itemSimplifier.exposeIds(Boolean.valueOf(exposeIds));
         return itemSimplifier;
     }

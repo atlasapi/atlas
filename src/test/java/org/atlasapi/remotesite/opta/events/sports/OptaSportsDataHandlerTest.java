@@ -92,7 +92,7 @@ public class OptaSportsDataHandlerTest {
         
         Organisation parsedTeam = parsed.get();
         
-        assertEquals("http://optasports.com/teams/" + team.attributes().uId(), parsedTeam.getCanonicalUri());
+        assertEquals("http://optasports.com/teams/" + team.attributes().uId().replace("t",""), parsedTeam.getCanonicalUri());
         assertEquals(Publisher.OPTA, parsedTeam.getPublisher());
         assertEquals(team.name(), parsedTeam.getTitle());
     }
@@ -108,7 +108,7 @@ public class OptaSportsDataHandlerTest {
         Event parsedEvent = parsed.get();
 
         DateTime startTime = new DateTime(2014, 9, 5, 19, 45, 0, DateTimeZone.forID("Europe/London"));
-        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/t1100", "http://optasports.com/teams/t1400");
+        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/1100", "http://optasports.com/teams/1400");
         
         assertEquals("http://optasports.com/events/" + match.attributes().uId(), parsedEvent.getCanonicalUri());
         assertEquals("Northampton vs Gloucester", parsedEvent.title());

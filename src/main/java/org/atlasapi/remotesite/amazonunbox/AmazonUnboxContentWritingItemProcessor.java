@@ -67,33 +67,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         }
     };
     
-    private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = new Ordering<Content>() {
-        @Override
-        public int compare(Content left, Content right) {
-            if (left instanceof Item) {
-                if (right instanceof Item) {
-                    return 0;
-                } else {
-                    return -1;
-                }
-            } else if (left instanceof Series) {
-                if (right instanceof Item) {
-                    return 1;
-                } else if (right instanceof Series) {
-                    return 0;
-                } else {
-                    return -1;
-                }
-            } else {
-                if (right instanceof Brand) {
-                    return 0;
-                } else {
-                    return 1;
-                }
-            }
-        }
-    };
-    
     private static final Predicate<Content> IS_SERIES = new Predicate<Content>() {
         @Override
         public boolean apply(Content input) {

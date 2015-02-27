@@ -43,6 +43,8 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
             AmazonUnboxContentHandler xmlHandler = new AmazonUnboxContentHandler(processor);
             
             saxParser.parse(store.getLatestData(), xmlHandler);
+            
+            preHandler.finish();
             reportStatus("Preprocessor: " + processor.getResult().toString());
             
             reportStatus("Pre-processing complete.");
@@ -52,6 +54,7 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
             
             saxParser.parse(store.getLatestData(), xmlHandler);
             reportStatus(processor.getResult().toString());
+            handler.finish();
             
         } catch (Exception e) {
             reportStatus(e.getMessage());

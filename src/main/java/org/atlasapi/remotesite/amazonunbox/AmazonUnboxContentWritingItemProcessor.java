@@ -281,6 +281,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
     
     private void writeBrand(Brand brand) {
+    	log.trace("Writing brand " + brand.getCanonicalUri());
         writer.createOrUpdate(brand);
         String brandUri = brand.getCanonicalUri();
         seen.put(brandUri, brand);
@@ -292,8 +293,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void cacheOrWriteSeriesAndSubContents(Series series) {
         ParentRef parent = series.getParent();
         if (parent != null && !seen.containsKey(parent.getUri())) {
+        	log.trace("Caching series " + series.getCanonicalUri() + " parent: " + parent.getUri());
             cached.put(parent.getUri(), series);
         } else {
+        	log.trace("Writing series " + series.getCanonicalUri());
             writeSeries(series);
         }
     }
@@ -303,6 +306,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         writer.createOrUpdate(series);
         seen.put(seriesUri, series);
         for (Content episode : cached.removeAll(seriesUri)) {
+        	log.trace("Writing cached item " + episode.getCanonicalUri() + " with series parent " + seriesUri);
             write(episode);
         }
     }
@@ -311,8 +315,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         Item item = (Item) content;
         ParentRef parent = item.getContainer();
         if (parent != null && !seen.containsKey(parent.getUri())) {
+        	log.trace("Caching item " + content.getCanonicalUri() + " parent: " + parent.getUri());
             cached.put(parent.getUri(), item);
         } else {
+        	log.trace("Writing item " + content.getCanonicalUri());
             writer.createOrUpdate((Item) content);
         }
     }
@@ -321,6 +327,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         ParentRef parent = episode.getContainer();
         
         if (parent != null && !seen.containsKey(parent.getUri())) {
+        	log.trace("Caching episode " + episode.getCanonicalUri() + " parent brand: " + parent.getUri());
             cached.put(parent.getUri(), episode);
             return;
         } 
@@ -328,6 +335,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         String seriesUri = episode.getSeriesRef() != null ? episode.getSeriesRef().getUri() : null;
         if (seriesUri != null) {
             if (!seen.containsKey(seriesUri)) {
+            	log.trace("Caching episode " + episode.getCanonicalUri() + " parent series: " + seriesUri);
                 cached.put(seriesUri, episode);
                 return;
             }
@@ -335,6 +343,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             episode.setSeriesNumber(series.getSeriesNumber());
         }
         
+        log.trace("Writing episode " + episode.getCanonicalUri());
         writer.createOrUpdate(episode);
     }
 }

@@ -79,8 +79,7 @@ public class YouViewContentExtractor {
 
         String id = getId(source);
         item.setCanonicalUri(canonicalUriFor(targetPublisher, source));
-        item.addAlias(new Alias(ingestConfiguration.getAliasNamespacePrefix()
-                + ":scheduleevent", id));
+        item.addAlias(new Alias(getScheduleEventAliasNamespace(), id));
         item.setTitle(getTitle(source));
         item.setMediaType(getMediaType(source));
         item.setPublisher(targetPublisher);
@@ -94,6 +93,10 @@ public class YouViewContentExtractor {
         
         item.addVersion(getVersion(source));
         return item;
+    }
+    
+    public String getScheduleEventAliasNamespace() {
+        return ingestConfiguration.getAliasNamespacePrefix() + ":scheduleevent";
     }
     
     /**
@@ -115,9 +118,9 @@ public class YouViewContentExtractor {
                     transmissionTime.getYear(),
                     transmissionTime.getMonthOfYear(),
                     transmissionTime.getDayOfMonth(),
-                    programmeCrid.get());
+                    programmeCrid.get().replace("crid://", ""));
         } else {
-            return String.format("http://%s/scheduleevent/%s", publisher.key(), getId(source));
+            return scheduleEventUriFor(publisher, getId(source));
         }
     }
     

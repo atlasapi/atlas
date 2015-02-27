@@ -70,13 +70,15 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
 
     @Override
     protected Item createContent(NitroItemSource<Episode> source) {
+        if (isEpisode(source.getProgramme())) {
+            return new org.atlasapi.media.entity.Episode();
+        }
+
         if (isFilmFormat(source.getProgramme())) {
             return new Film();
         }
-        if (source.getProgramme().getEpisodeOf() == null) {
-            return new Item();
-        }
-        return new org.atlasapi.media.entity.Episode();
+
+        return new Item();
     }
 
     private boolean isFilmFormat(Episode episode) {
@@ -85,6 +87,10 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         }
 
         return Iterables.any(episode.getFormats().getFormat(), IS_FILM_FORMAT);
+    }
+
+    private boolean isEpisode(Episode episode) {
+        return episode.getEpisodeOf() != null;
     }
 
     @Override

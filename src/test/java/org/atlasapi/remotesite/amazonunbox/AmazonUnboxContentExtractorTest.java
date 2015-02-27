@@ -149,8 +149,8 @@ public class AmazonUnboxContentExtractorTest {
         Image image = Iterables.getOnlyElement(film.getImages());
         assertEquals("Large Image", image.getCanonicalUri());
         assertEquals(ImageType.PRIMARY, image.getType());
-        assertThat(image.getWidth(), is(equalTo(180)));
-        assertThat(image.getHeight(), is(equalTo(240)));
+        assertThat(image.getWidth(), is(equalTo(240)));
+        assertThat(image.getHeight(), is(equalTo(180)));
         assertEquals(MimeType.IMAGE_JPG, image.getMimeType());
         assertEquals(ImageAspectRatio.FOUR_BY_THREE, image.getAspectRatio());
         

@@ -30,8 +30,8 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 public class BtVodModule {
 
     private static final String PORTAL_BOXSET_GROUP = "03_tv/40_searcha-z/all";
-    private static final String PORTAL_BOXOFFICE_GROUP = "01_boxoffice/35_searcha-z/all";
-    private static final String PORTAL_BUY_TO_OWN_GROUP = "01_boxoffice/07_new_must_own_movies/all";
+    private static final String PORTAL_BOXOFFICE_GROUP = "01_boxoffice/05_new/all";
+    private static final String PORTAL_BUY_TO_OWN_GROUP = "01_boxoffice/Must_Own_Movies_Categories/New_To_Own";
     private static final String BOX_OFFICE_PICKS_GROUP = "50_misc_car_you/Misc_metabroadcast/Misc_metabroadcast_1";
     
     private static final String MUSIC_CATEGORY = "Music";

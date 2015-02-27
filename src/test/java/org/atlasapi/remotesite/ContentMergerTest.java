@@ -7,6 +7,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.List;
+import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
@@ -28,6 +29,7 @@ import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.metabroadcast.common.time.DateTimeZones;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -203,16 +205,17 @@ public class ContentMergerTest {
         Item current = createItem("title", Publisher.METABROADCAST);
         Item extracted = createItem("title", Publisher.METABROADCAST);
         
-        current.setAliases(ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3")));
-        extracted.setAliases(ImmutableSet.of(new Alias("3", "4")));
+        Set<Alias> currentAliases = ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3"));
+        Set<Alias> extractedAliases = ImmutableSet.of(new Alias("3", "4"));
+        current.setAliases(currentAliases);
+        extracted.setAliases(extractedAliases);
         
         current.setAliasUrls(ImmutableSet.of("http://a.com/b", "http://b.com/c"));
         extracted.setAliasUrls(ImmutableSet.of("http://c.com/d"));
         
         Item merged = contentMerger.merge(current, extracted);
         
-        assertEquals(3, merged.getAliases().size());
-        assertEquals(3, merged.getAliasUrls().size());
+        assertEquals(Sets.union(currentAliases, extractedAliases), merged.getAliases());
     }
     
     @Test
@@ -220,17 +223,17 @@ public class ContentMergerTest {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         Item current = createItem("title", Publisher.METABROADCAST);
         Item extracted = createItem("title", Publisher.METABROADCAST);
+        Set<Alias> extractedAliases = ImmutableSet.of(new Alias("3", "4"));
         
         current.setAliases(ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3")));
-        extracted.setAliases(ImmutableSet.of(new Alias("3", "4")));
+        extracted.setAliases(extractedAliases);
         
         current.setAliasUrls(ImmutableSet.of("http://a.com/b", "http://b.com/c"));
         extracted.setAliasUrls(ImmutableSet.of("http://c.com/d"));
         
         Item merged = contentMerger.merge(current, extracted);
         
-        assertEquals("3", Iterables.getOnlyElement(merged.getAliases()).getNamespace());
-        assertEquals("http://c.com/d", Iterables.getOnlyElement(merged.getAliasUrls()));
+        assertEquals(extractedAliases, merged.getAliases());
     }
     
     @Test
@@ -238,8 +241,8 @@ public class ContentMergerTest {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.KEEP);
         Item current = createItem("title", Publisher.METABROADCAST);
         Item extracted = createItem("title", Publisher.METABROADCAST);
-        
-        current.setAliases(ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3")));
+        Set<Alias> currentAliases = ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3"));
+        current.setAliases(currentAliases);
         extracted.setAliases(ImmutableSet.of(new Alias("3", "4")));
         
         current.setAliasUrls(ImmutableSet.of("http://a.com/b", "http://b.com/c"));
@@ -247,10 +250,7 @@ public class ContentMergerTest {
         
         Item merged = contentMerger.merge(current, extracted);
         
-        assertEquals(2, merged.getAliases().size());
-        assertEquals(2, merged.getAliasUrls().size());
-        assertEquals("1", Iterables.getFirst(merged.getAliases(), null).getNamespace());
-        assertEquals("http://a.com/b", Iterables.getFirst(merged.getAliasUrls(), null));
+        assertEquals(currentAliases, merged.getAliases());
     }
 
     private Item createItem(String title, Publisher publisher) {

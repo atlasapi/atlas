@@ -29,8 +29,7 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
         for (S sport : fetcher.sports()) {
             Optional<? extends EventsData<T, M>> data = fetcher.fetch(sport);
             if (!data.isPresent()) {
-                // fail the task if no data found for a sport
-                throw new RuntimeException("No data returned for " + sport.toString());
+                log.error("No data to fetch for sport {}", sport);
             } else {
                 overallProgress = overallProgress.reduce(processData(sport, data.get()));
             }
@@ -39,7 +38,7 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
     }
 
     private UpdateProgress processData(S sport, EventsData<T, M> data) {
-        DataProcessor<T> teamProcessor = teamProcessor(sport);
+        DataProcessor<T> teamProcessor = teamProcessor();
         for (T team : data.teams()) {
             teamProcessor.process(team);
         }
@@ -51,28 +50,13 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
         for (M match : data.matches()) {
             matchProcessor.process(match);
         }
-        if (failuresOccurred(matchProcessor.getResult(), teamProcessor.getResult())) {
-            failTask(matchProcessor.getResult(), teamProcessor.getResult());
-        }
+        
         String eventResult = "Events: " + matchProcessor.getResult().toString();
         reportStatus(sport.toString() + ": " + teamResult + " " + eventResult);
         return teamProcessor.getResult().reduce(matchProcessor.getResult());
     }
 
-    private void failTask(UpdateProgress eventResults, UpdateProgress teamResults) {
-        throw new RuntimeException(String.format("Failed to ingest %d teams, %d events", teamResults.getFailures(), eventResults.getFailures()));
-    }
-
-    private boolean failuresOccurred(UpdateProgress... results) {
-        for (UpdateProgress result : results) {
-            if (result.hasFailures()) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    private DataProcessor<T> teamProcessor(final S sport) {
+    private DataProcessor<T> teamProcessor() {
         return new DataProcessor<T>() {
             
             UpdateProgress progress = UpdateProgress.START;
@@ -80,7 +64,7 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
             @Override
             public boolean process(T team) {
                 try {
-                    dataHandler.handleTeam(team, sport);
+                    dataHandler.handle(team);
                     progress = progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
                     log.warn("Error processing team: " + team, e);
@@ -105,7 +89,7 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
             @Override
             public boolean process(M match) {
                 try {
-                    dataHandler.handleMatch(match, sport);
+                    dataHandler.handle(match, sport);
                     progress = progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
                     log.warn("Error processing team: " + match, e);

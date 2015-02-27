@@ -4,6 +4,7 @@ import javax.annotation.PostConstruct;
 
 import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.people.PersonStore;
@@ -56,7 +57,8 @@ public class OddJobRandomTaskModule {
     public PersonLookupPopulationTask personLookupPopulationTask() {
         return new PersonLookupPopulationTask(mongo.collection("people"), 
                 new MongoLookupEntryStore(mongo.collection("peopleLookup"), 
-                                          ReadPreference.primary()));
+                        new NoLoggingPersistenceAuditLog(),
+                        ReadPreference.primary()));
     }
     
     @Bean

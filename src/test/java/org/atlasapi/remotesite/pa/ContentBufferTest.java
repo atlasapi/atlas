@@ -1,9 +1,6 @@
 package org.atlasapi.remotesite.pa;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -12,10 +9,8 @@ import java.util.Map;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.testing.BrandTestDataBuilder;
 import org.atlasapi.media.entity.testing.BroadcastTestDataBuilder;
@@ -27,10 +22,8 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ContentHierarchyAndBroadcast;
-import org.hamcrest.Matcher;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
@@ -117,28 +110,6 @@ public class ContentBufferTest {
                                              .getAllResolvedResults());
         
         assertEquals(resolvedItem.requireValue(), queried);
-    }
-    
-    @Test
-    public void testEpsiodeConvertedToItemIfNoBrandOrSeries() {
-        Episode episode = new Episode("http://episode.com", null, Publisher.METABROADCAST);
-        Broadcast broadcast = ComplexBroadcastTestDataBuilder.broadcast().build();
-        
-        contentBuffer.add(new ContentHierarchyAndBroadcast(Optional.<Brand>absent(), Optional.<Series>absent(), episode, broadcast));
-        contentBuffer.flush();
-        
-        Map<String, Maybe<Identified>> resolved = ImmutableMap.of("http://brand.com/item", Maybe.just((Identified)episode));
-        when(contentResolver.findByCanonicalUris(ImmutableSet.of("http://episode.com")))
-            .thenReturn(new ResolvedContent(resolved));
-        
-        Identified queried = Iterables.getOnlyElement(
-                contentBuffer.findByCanonicalUris(ImmutableSet.of("http://episode.com"))
-                             .getAllResolvedResults());
-        
-        ArgumentCaptor<Item> captor = ArgumentCaptor.forClass(Item.class);
-        verify(contentWriter).createOrUpdate(captor.capture());
-        
-        assertEquals(Item.class, captor.getValue().getClass());
     }
     
 }

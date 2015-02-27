@@ -7,7 +7,6 @@ import static org.junit.Assert.assertTrue;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
-import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Event;
@@ -17,13 +16,8 @@ import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.content.organisation.OrganisationStore;
 import org.atlasapi.persistence.event.EventStore;
 import org.atlasapi.persistence.topic.TopicStore;
-import org.atlasapi.remotesite.bt.events.feedModel.BtEvent;
-import org.atlasapi.remotesite.bt.events.feedModel.BtEventsFeed;
-import org.atlasapi.remotesite.bt.events.feedModel.BtTeam;
-import org.atlasapi.remotesite.bt.events.model.BtEventsData;
-import org.atlasapi.remotesite.bt.events.model.BtSportType;
-import org.atlasapi.remotesite.events.EventTopicResolver;
-import org.atlasapi.remotesite.events.EventsUriCreator;
+import org.atlasapi.remotesite.bt.events.model.BtEvent;
+import org.atlasapi.remotesite.bt.events.model.BtEventsFeed;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
@@ -50,11 +44,8 @@ public class BtEventsDataHandlerTest {
     private OrganisationStore organisationStore = Mockito.mock(OrganisationStore.class);
     private EventStore eventStore = Mockito.mock(EventStore.class);
     private TopicStore topicStore = Mockito.mock(TopicStore.class);
-    private BtEventsFieldMapper mapper = new BtEventsFieldMapper();
-    private EventTopicResolver topicResolver = new EventTopicResolver(topicStore);
-    private EventsUriCreator uriCreator = new BtEventsUriCreator();
-    private final BtEventsDataHandler handler = new BtEventsDataHandler(
-            organisationStore, eventStore, topicResolver, mapper, uriCreator);
+    private BtEventsUtility utility = new BtEventsUtility(topicStore);
+    private final BtEventsDataHandler handler = new BtEventsDataHandler(organisationStore, eventStore, utility);
     private BtEventsData feedData;
     
     public BtEventsDataHandlerTest() throws JsonSyntaxException, JsonIOException, IOException {
@@ -77,7 +68,7 @@ public class BtEventsDataHandlerTest {
     
     @Test
     public void testTeamsIgnored() {
-        Optional<Organisation> parsed = handler.parseOrganisation(new BtTeam(), BtSportType.MOTO_GP);
+        Optional<Organisation> parsed = handler.parseOrganisation(new BtTeam());
         assertFalse(parsed.isPresent());
     }
     
@@ -91,14 +82,12 @@ public class BtEventsDataHandlerTest {
         assertEquals("http://bt.com/events/" + match.id(), parsedEvent.getCanonicalUri());
         assertEquals(match.name(), parsedEvent.title());
         assertEquals(Publisher.BT_EVENTS, parsedEvent.publisher());
-        assertEquals(mapper.fetchLocationUrl(match.location()).get(), parsedEvent.venue().getValue());
+        assertEquals(utility.fetchLocationUrl(match.location()).get(), parsedEvent.venue().getValue());
         assertEquals(new DateTime(2014, 3, 20, 0, 0, 0, 563, DateTimeZone.UTC), parsedEvent.startTime());
         assertEquals(new DateTime(2014, 03, 23, 11, 23, 17, 833, DateTimeZone.UTC), parsedEvent.endTime());
         assertTrue(parsedEvent.organisations().isEmpty());
         assertTrue(parsedEvent.participants().isEmpty());
-        Map<String, String> groupUrls = mapper.fetchEventGroupUrls(BtSportType.MOTO_GP);
-        Iterable<Topic> expectedEventGroups = topicResolver.createOrResolveEventGroups(groupUrls);
-        assertEquals(transformToValues(expectedEventGroups), transformToValues(parsedEvent.eventGroups()));
+        assertEquals(transformToValues(utility.parseEventGroups(BtSportType.MOTO_GP).get()), transformToValues(parsedEvent.eventGroups()));
         assertTrue(parsedEvent.content().isEmpty());
     }
 

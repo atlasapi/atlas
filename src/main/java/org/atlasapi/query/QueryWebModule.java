@@ -31,7 +31,6 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.ContentGroup;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.Identified;
-import org.atlasapi.media.entity.Organisation;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Topic;
@@ -40,7 +39,6 @@ import org.atlasapi.media.entity.simple.ChannelQueryResult;
 import org.atlasapi.media.entity.simple.ContentGroupQueryResult;
 import org.atlasapi.media.entity.simple.ContentQueryResult;
 import org.atlasapi.media.entity.simple.EventQueryResult;
-import org.atlasapi.media.entity.simple.OrganisationQueryResult;
 import org.atlasapi.media.entity.simple.PeopleQueryResult;
 import org.atlasapi.media.entity.simple.ProductQueryResult;
 import org.atlasapi.media.entity.simple.ScheduleQueryResult;
@@ -61,7 +59,6 @@ import org.atlasapi.output.SimpleContentGroupModelWriter;
 import org.atlasapi.output.SimpleContentModelWriter;
 import org.atlasapi.output.SimpleEventModelWriter;
 import org.atlasapi.output.SimpleFeedStatisticsModelWriter;
-import org.atlasapi.output.SimpleOrganisationModelWriter;
 import org.atlasapi.output.SimplePersonModelWriter;
 import org.atlasapi.output.SimpleProductModelWriter;
 import org.atlasapi.output.SimpleScheduleModelWriter;
@@ -128,7 +125,6 @@ import org.atlasapi.query.v2.ContentGroupController;
 import org.atlasapi.query.v2.ContentWriteController;
 import org.atlasapi.query.v2.EventsController;
 import org.atlasapi.query.v2.FeedStatsController;
-import org.atlasapi.query.v2.OrganisationController;
 import org.atlasapi.query.v2.PeopleController;
 import org.atlasapi.query.v2.PeopleWriteController;
 import org.atlasapi.query.v2.ProductController;
@@ -360,12 +356,6 @@ public class QueryWebModule {
     }
     
     @Bean
-    OrganisationController organisationController() {
-        // TODO
-        return new OrganisationController(configFetcher, log, organisationModelOutputter(), idCodec(), topicResolver, organisationResolver);
-    }
-
-    @Bean
     TaskController taskController() {
         return new TaskController(configFetcher, log, taskModelOutputter(), taskStore, idCodec());
     }
@@ -493,14 +483,6 @@ public class QueryWebModule {
         return this.<Iterable<Event>>standardWriter(
                 new SimpleEventModelWriter(new JsonTranslator<EventQueryResult>(), contentResolver, eventModelSimplifier),
                 new SimpleEventModelWriter(new JaxbXmlTranslator<EventQueryResult>(), contentResolver, eventModelSimplifier));
-    }
-
-    @Bean
-    AtlasModelWriter<Iterable<Organisation>> organisationModelOutputter() {
-        OrganisationModelSimplifier organisationModelSimplifier = organisationSimplifier();
-        return this.<Iterable<Organisation>>standardWriter(
-                new SimpleOrganisationModelWriter(new JsonTranslator<OrganisationQueryResult>(), contentResolver, organisationModelSimplifier),
-                new SimpleOrganisationModelWriter(new JaxbXmlTranslator<OrganisationQueryResult>(), contentResolver, organisationModelSimplifier));
     }
     
     @Bean

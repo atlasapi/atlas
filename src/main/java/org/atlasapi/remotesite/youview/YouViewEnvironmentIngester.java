@@ -10,6 +10,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
 import org.joda.time.Duration;
@@ -55,7 +56,8 @@ public class YouViewEnvironmentIngester {
     public YouViewEnvironmentIngester(String youViewUri, Duration timeout, 
             SimpleScheduler scheduler, ChannelResolver channelResolver, ContentResolver contentResolver, 
             ContentWriter contentWriter, ScheduleWriter scheduleWriter, ScheduleResolver scheduleResolver, 
-            YouViewChannelResolver youviewChannelResolver, YouViewIngestConfiguration ingestConfiguration) {
+            YouViewChannelResolver youviewChannelResolver, LookupEntryStore lookupEntryStore,
+            YouViewIngestConfiguration ingestConfiguration) {
         
         this.ingestConfiguration = checkNotNull(ingestConfiguration);
         this.scheduler = checkNotNull(scheduler);
@@ -63,7 +65,7 @@ public class YouViewEnvironmentIngester {
         this.youViewScheduleFetcher = new YouViewScheduleFetcher(youViewUri, Ints.saturatedCast(timeout.getStandardSeconds()));
         this.youViewElementProcessor = new DefaultYouViewElementProcessor(
                                                 new YouViewContentExtractor(youViewChannelResolver, ingestConfiguration), 
-                                                contentResolver, contentWriter
+                                                contentResolver, contentWriter, lookupEntryStore
                                        );
         this.youViewChannelProcessor = new DefaultYouViewChannelProcessor(scheduleWriter, youViewElementProcessor, new ScheduleResolverBroadcastTrimmer(scheduleResolver, contentResolver, contentWriter));
     }

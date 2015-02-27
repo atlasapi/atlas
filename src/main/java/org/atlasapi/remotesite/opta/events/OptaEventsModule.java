@@ -9,10 +9,9 @@ import joptsimple.internal.Strings;
 
 import org.atlasapi.persistence.content.organisation.OrganisationStore;
 import org.atlasapi.persistence.event.EventStore;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.HttpClients;
-import org.atlasapi.remotesite.events.EventTopicResolver;
 import org.atlasapi.remotesite.events.EventsUriCreator;
-import org.atlasapi.remotesite.events.S3FileFetcher;
 import org.atlasapi.remotesite.opta.events.model.OptaSportConfiguration;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
 import org.atlasapi.remotesite.opta.events.soccer.OptaSoccerDataTransformer;
@@ -23,10 +22,10 @@ import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 
-import com.google.api.client.util.Preconditions;
 import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableMap;

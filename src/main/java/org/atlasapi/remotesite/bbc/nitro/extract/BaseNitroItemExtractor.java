@@ -108,7 +108,10 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         Version version = new Version();
 
         version.addAlias(new Alias(PID_NAMESPACE, nitroVersion.getPid()));
-        version.setDuration(convertDuration(nitroVersion.getDuration()));
+        if (nitroVersion.getDuration() != null) {
+            version.setDuration(convertDuration(nitroVersion.getDuration()));
+        }
+
         version.setLastUpdated(now);
         version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));
         version.setBroadcasts(broadcasts.get(nitroVersion.getPid()));

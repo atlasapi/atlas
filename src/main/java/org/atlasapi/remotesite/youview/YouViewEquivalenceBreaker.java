@@ -2,10 +2,8 @@ package org.atlasapi.remotesite.youview;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
 import java.util.Set;
 
-import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Identified;
@@ -16,13 +14,11 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 
-import com.google.api.client.util.Lists;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -65,6 +61,8 @@ public class YouViewEquivalenceBreaker {
     
     public void orphanItems(DateTime from, DateTime to) {
         for (org.atlasapi.media.channel.Channel channel : youViewChannelResolver.getAllChannels()) {
+            log.debug("Searching for orphans on channel {} ({}) between {} and {}", 
+                    new String[] { String.valueOf(channel.getId()), channel.getTitle(), from.toString(), to.toString() });
             process(scheduleResolver.unmergedSchedule(from, to, ImmutableSet.of(channel), ImmutableSet.of(referenceSchedulePublisher)));
         }
     }
@@ -94,7 +92,7 @@ public class YouViewEquivalenceBreaker {
 
     private void orphanFromEquivalentSet(LookupEntry lookupEntry, Set<String> toOrphan) {
         Predicate<LookupRef> shouldRetainLookupRef = createShouldRetainLookupRefPredicate(toOrphan);
-        for (LookupRef equivalentLookupRef : Sets.union(lookupEntry.equivalents(), lookupEntry.directEquivalents())) {
+        for (LookupRef equivalentLookupRef : Sets.union(Sets.union(lookupEntry.equivalents(), lookupEntry.directEquivalents()), lookupEntry.explicitEquivalents())) {
             LookupEntry entry = Iterables.getOnlyElement(lookupEntryStore.entriesForCanonicalUris(ImmutableSet.of(equivalentLookupRef.uri())));
             if (toOrphan.contains(entry.uri())) {
                 lookupEntryStore.store(createOrphanedLookupEntry(entry));

@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.bt.events.model;
+package org.atlasapi.remotesite.bt.events;
 
 
 public enum BtSportType {

@@ -55,7 +55,7 @@ public class BtVodItemExtractorTest {
                                 PUBLISHER, URI_PREFIX,
                                 contentListener);
     
-    @Test
+    
     public void testExtractsEpisode() {
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());

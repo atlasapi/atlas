@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Event;
@@ -17,10 +16,7 @@ import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.content.organisation.OrganisationStore;
 import org.atlasapi.persistence.event.EventStore;
 import org.atlasapi.persistence.topic.TopicStore;
-import org.atlasapi.remotesite.events.EventTopicResolver;
-import org.atlasapi.remotesite.events.EventsUriCreator;
-import org.atlasapi.remotesite.opta.events.OptaEventsMapper;
-import org.atlasapi.remotesite.opta.events.OptaEventsUriCreator;
+import org.atlasapi.remotesite.opta.events.OptaEventsUtility;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
 import org.atlasapi.remotesite.opta.events.sports.model.MatchDateDeserializer;
 import org.atlasapi.remotesite.opta.events.sports.model.OptaDocumentDeserializer;
@@ -66,11 +62,8 @@ public class OptaSportsDataHandlerTest {
     private OrganisationStore organisationStore = Mockito.mock(OrganisationStore.class);
     private EventStore eventStore = Mockito.mock(EventStore.class);
     private TopicStore topicStore = Mockito.mock(TopicStore.class);
-    private OptaEventsMapper mapper = new OptaEventsMapper();
-    private EventTopicResolver topicResolver = new EventTopicResolver(topicStore);
-    private EventsUriCreator uriCreator = new OptaEventsUriCreator();
-    private final OptaSportsDataHandler handler = new OptaSportsDataHandler(
-            organisationStore, eventStore, topicResolver, mapper, uriCreator);
+    private OptaEventsUtility utility = new OptaEventsUtility(topicStore);
+    private final OptaSportsDataHandler handler = new OptaSportsDataHandler(organisationStore, eventStore, utility);
     private OptaSportsEventsData feedData;
     
     public OptaSportsDataHandlerTest() throws JsonSyntaxException, JsonIOException, IOException {
@@ -99,7 +92,7 @@ public class OptaSportsDataHandlerTest {
         
         Organisation parsedTeam = parsed.get();
         
-        assertEquals("http://optasports.com/teams/" + team.attributes().uId(), parsedTeam.getCanonicalUri());
+        assertEquals("http://optasports.com/teams/" + team.attributes().uId().replaceAll("t", ""), parsedTeam.getCanonicalUri());
         assertEquals(Publisher.OPTA, parsedTeam.getPublisher());
         assertEquals(team.name(), parsedTeam.getTitle());
     }
@@ -115,7 +108,7 @@ public class OptaSportsDataHandlerTest {
         Event parsedEvent = parsed.get();
 
         DateTime startTime = new DateTime(2014, 9, 5, 19, 45, 0, DateTimeZone.forID("Europe/London"));
-        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/t1100", "http://optasports.com/teams/t1400");
+        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/1100", "http://optasports.com/teams/1400");
         
         assertEquals("http://optasports.com/events/" + match.attributes().uId(), parsedEvent.getCanonicalUri());
         assertEquals("Northampton vs Gloucester", parsedEvent.title());
@@ -125,12 +118,10 @@ public class OptaSportsDataHandlerTest {
         assertEquals(utility.createOrResolveVenue(location).get().getValue(), parsedEvent.venue().getValue());
         
         assertEquals(startTime, parsedEvent.startTime());
-        assertEquals(startTime.plus(mapper.fetchDuration(SPORT)), parsedEvent.endTime());
+        assertEquals(utility.createEndTime(SPORT, startTime).get(), parsedEvent.endTime());
         assertEquals(expectedTeamUris, transformToUris(parsedEvent.organisations()));
         assertTrue(parsedEvent.participants().isEmpty());
-        Map<String, String> groupUrls = mapper.fetchEventGroupUrls(SPORT);
-        Iterable<Topic> expectedEventGroups = topicResolver.createOrResolveEventGroups(groupUrls);
-        assertEquals(transformToValues(expectedEventGroups), transformToValues(parsedEvent.eventGroups()));
+        assertEquals(transformToValues(utility.parseEventGroups(SPORT).get()), transformToValues(parsedEvent.eventGroups()));
         assertTrue(parsedEvent.content().isEmpty());
     }
 

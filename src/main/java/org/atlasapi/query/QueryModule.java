@@ -20,6 +20,7 @@ import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.query.MergeOnOutputQueryExecutor;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
 import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.cassandra.CassandraContentStore;
 import org.atlasapi.persistence.content.cassandra.CassandraKnownTypeContentResolver;
@@ -61,7 +62,8 @@ public class QueryModule {
 
 	@Bean KnownTypeQueryExecutor queryExecutor() {
 	    
-        MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"), readPreference);
+        MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"), 
+                new NoLoggingPersistenceAuditLog(), readPreference);
 	    KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
         KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
 		

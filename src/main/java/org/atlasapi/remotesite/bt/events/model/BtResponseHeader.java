@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.bt.events.feedModel;
+package org.atlasapi.remotesite.bt.events.model;
 
 import com.google.gson.annotations.SerializedName;
 

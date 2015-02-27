@@ -22,9 +22,17 @@ import org.atlasapi.remotesite.events.EventsUriCreator;
 import org.atlasapi.remotesite.opta.events.OptaEventsMapper;
 import org.atlasapi.remotesite.opta.events.OptaEventsUriCreator;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaFixture;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsFeed;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsTeam;
+import org.atlasapi.remotesite.opta.events.sports.model.MatchDateDeserializer;
+import org.atlasapi.remotesite.opta.events.sports.model.OptaDocumentDeserializer;
+import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsEventsFeed;
+import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsEventsFeed.OptaDocument;
+import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsEventsFeedDeserializer;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchDataDeserializer;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchInfo.MatchDate;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeamData;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeamDataDeserializer;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Before;
@@ -47,8 +55,14 @@ import com.metabroadcast.common.base.Maybe;
 
 public class OptaSportsDataHandlerTest {
 
-    private static final OptaSportType SPORT = OptaSportType.RUGBY;
-    private Gson gson = new GsonBuilder().create();
+    private static final OptaSportType SPORT = OptaSportType.RUGBY_AVIVA_PREMIERSHIP;
+    private Gson gson = new GsonBuilder()
+            .registerTypeAdapter(OptaSportsEventsFeed.class, new OptaSportsEventsFeedDeserializer("OptaDocument"))
+            .registerTypeAdapter(OptaDocument.class, new OptaDocumentDeserializer("OptaDocument"))
+            .registerTypeAdapter(SportsMatchData.class, new SportsMatchDataDeserializer())
+            .registerTypeAdapter(SportsTeamData.class, new SportsTeamDataDeserializer())
+            .registerTypeAdapter(MatchDate.class, new MatchDateDeserializer())
+            .create();
     private OrganisationStore organisationStore = Mockito.mock(OrganisationStore.class);
     private EventStore eventStore = Mockito.mock(EventStore.class);
     private TopicStore topicStore = Mockito.mock(TopicStore.class);
@@ -80,14 +94,14 @@ public class OptaSportsDataHandlerTest {
     
     @Test
     public void testTeamParsing() {
-        OptaSportsTeam team = Iterables.getFirst(feedData.teams(), null);
-        Optional<Organisation> parsed = handler.parseOrganisation(team, SPORT);
+        SportsTeam team = Iterables.getFirst(feedData.teams(), null);
+        Optional<Organisation> parsed = handler.parseOrganisation(team);
         
         Organisation parsedTeam = parsed.get();
         
-        assertEquals("http://optasports.com/teams/" + team.attributes().id(), parsedTeam.getCanonicalUri());
+        assertEquals("http://optasports.com/teams/" + team.attributes().uId(), parsedTeam.getCanonicalUri());
         assertEquals(Publisher.OPTA, parsedTeam.getPublisher());
-        assertEquals(team.attributes().name(), parsedTeam.getTitle());
+        assertEquals(team.name(), parsedTeam.getTitle());
     }
     
     @Test
@@ -95,18 +109,21 @@ public class OptaSportsDataHandlerTest {
         // This is necessary in order to populate the map of team uri -> Team held within the handler
         parseTeams();
         
-        OptaFixture match = Iterables.getFirst(feedData.matches(), null);
+        SportsMatchData match = Iterables.getFirst(feedData.matches(), null);
         Optional<Event> parsed = handler.parseEvent(match, SPORT);
         
         Event parsedEvent = parsed.get();
 
         DateTime startTime = new DateTime(2014, 9, 5, 19, 45, 0, DateTimeZone.forID("Europe/London"));
-        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/1100", "http://optasports.com/teams/1400");
+        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/t1100", "http://optasports.com/teams/t1400");
         
-        assertEquals("http://optasports.com/events/" + match.attributes().id(), parsedEvent.getCanonicalUri());
+        assertEquals("http://optasports.com/events/" + match.attributes().uId(), parsedEvent.getCanonicalUri());
         assertEquals("Northampton vs Gloucester", parsedEvent.title());
         assertEquals(Publisher.OPTA, parsedEvent.publisher());
-        assertEquals(mapper.fetchLocationUrl(match.attributes().venue()).get(), parsedEvent.venue().getValue());
+        
+        String location = Iterables.getOnlyElement(match.stats()).value();
+        assertEquals(utility.createOrResolveVenue(location).get().getValue(), parsedEvent.venue().getValue());
+        
         assertEquals(startTime, parsedEvent.startTime());
         assertEquals(startTime.plus(mapper.fetchDuration(SPORT)), parsedEvent.endTime());
         assertEquals(expectedTeamUris, transformToUris(parsedEvent.organisations()));
@@ -118,8 +135,8 @@ public class OptaSportsDataHandlerTest {
     }
 
     private void parseTeams() {
-        for (OptaSportsTeam team : feedData.teams()) {
-            handler.handleTeam(team, SPORT);
+        for (SportsTeam team : feedData.teams()) {
+            handler.handle(team);
         }
     }
 
@@ -142,8 +159,8 @@ public class OptaSportsDataHandlerTest {
 
     private OptaSportsEventsData readDataFromFile(String filename) throws JsonSyntaxException, JsonIOException, IOException {
         URL testFile = Resources.getResource(getClass(), filename);
-        OptaSportsFeed eventsFeed = gson.fromJson(new InputStreamReader(testFile.openStream()), OptaSportsFeed.class);
-        return new OptaSportsEventsData(eventsFeed.fixtures().fixtures(), eventsFeed.fixtures().teams().teams());
+        OptaSportsEventsFeed eventsFeed = gson.fromJson(new InputStreamReader(testFile.openStream()), OptaSportsEventsFeed.class);
+        return new OptaSportsEventsData(eventsFeed.feed().document().matchData(), eventsFeed.feed().document().teams());
     }
 
 }

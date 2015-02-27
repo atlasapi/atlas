@@ -1,12 +1,12 @@
-package org.atlasapi.remotesite.opta.events.soccer.model;
+package org.atlasapi.remotesite.opta.events.sports.model;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.gson.annotations.SerializedName;
 
 
-public class SoccerMatchInfo {
-    
+public class SportsMatchInfo {
+
     @SerializedName("Date")
     private MatchDate date;
     @SerializedName("TZ")
@@ -14,7 +14,7 @@ public class SoccerMatchInfo {
     @SerializedName("@attributes")
     private MatchInfoAttributes attributes;
     
-    public SoccerMatchInfo() { }
+    public SportsMatchInfo() { }
     
     public MatchDate date() {
         return date;
@@ -30,18 +30,26 @@ public class SoccerMatchInfo {
 
     public static class MatchInfoAttributes {
         
+        @SerializedName("GroupName")
+        private String groupName;
         @SerializedName("MatchDay")
         private String matchDay;
         @SerializedName("MatchType")
         private String matchType;
-        @SerializedName("MatchWinner")
-        private String matchWinner;
         @SerializedName("Period")
         private String period;
+        @SerializedName("RoundNumber")
+        private String roundNumber;
+        @SerializedName("RoundType")
+        private String roundType;
         @SerializedName("Venue_id")
         private String venueId;
         
         public MatchInfoAttributes() { }
+        
+        public String groupName() {
+            return groupName;
+        }
         
         public String matchDay() {
             return matchDay;
@@ -50,13 +58,17 @@ public class SoccerMatchInfo {
         public String matchType() {
             return matchType;
         }
-        
-        public String matchWinner() {
-            return matchWinner;
-        }
 
         public String period() {
             return period;
+        }
+
+        public String roundNumber() {
+            return roundNumber;
+        }
+
+        public String roundType() {
+            return roundType;
         }
 
         public String venueId() {
@@ -64,6 +76,14 @@ public class SoccerMatchInfo {
         }
     }
     
+    /**
+     * This class wraps a date string, and simply allows use of a custom deserializer
+     * for dates that can deal with Opta formatting dates either as plain strings or 
+     * within JSON objects depending upon which record/feed is being parsed.
+     *  
+     * @author Oliver Hall (oli@metabroadcast.com)
+     *
+     */
     public static class MatchDate {
         
         private String date;

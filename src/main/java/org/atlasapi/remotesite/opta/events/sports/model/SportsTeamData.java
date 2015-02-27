@@ -1,24 +1,28 @@
-package org.atlasapi.remotesite.opta.events.soccer.model;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+package org.atlasapi.remotesite.opta.events.sports.model;
 
 import java.util.List;
 
-import com.google.common.collect.ImmutableList;
 import com.google.gson.annotations.SerializedName;
 
 
-public class SoccerTeamData {
+public class SportsTeamData {
 
-    private List<SoccerGoal> goals;
+    private String value;
+    private List<Goal> goals;
     private TeamDataAttributes attributes;
 
-    public SoccerTeamData(Iterable<SoccerGoal> goals, TeamDataAttributes attributes) {
-        this.goals = ImmutableList.copyOf(goals);
-        this.attributes = checkNotNull(attributes);
+    public SportsTeamData(String value, List<Goal> goals, 
+            TeamDataAttributes attributes) {
+        this.value = value;
+        this.goals = goals;
+        this.attributes = attributes;
+    }
+
+    public String value() {
+        return value;
     }
     
-    public List<SoccerGoal> goals() {
+    public List<Goal> goals() {
         return goals;
     }
     

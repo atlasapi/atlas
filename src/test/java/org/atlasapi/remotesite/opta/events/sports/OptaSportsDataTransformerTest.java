@@ -6,7 +6,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
 
-import org.atlasapi.remotesite.opta.events.sports.model.OptaFixture;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
 import org.junit.Test;
 
 import com.google.common.collect.Iterables;
@@ -25,9 +25,9 @@ public class OptaSportsDataTransformerTest {
         assertEquals(2, Iterables.size(data.teams()));
         assertEquals(1, Iterables.size(data.matches()));
         
-        OptaFixture match = Iterables.getOnlyElement(data.matches());
+        SportsMatchData match = Iterables.getOnlyElement(data.matches());
         
-        assertEquals("Aviva Premiership", match.attributes().compName());
+        assertEquals("Franklin's Gardens", Iterables.getOnlyElement(match.stats()).value());
     }
     
     private InputStream streamFromFile(String filename) throws IOException {

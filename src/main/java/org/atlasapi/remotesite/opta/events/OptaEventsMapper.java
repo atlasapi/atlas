@@ -16,13 +16,13 @@ import com.google.common.collect.ImmutableSet;
 public class OptaEventsMapper implements EventsFieldMapper<OptaSportType> {
     
     private static final Map<OptaSportType, Duration> DURATION_MAPPING = ImmutableMap.of(
-            OptaSportType.RUGBY, Duration.standardMinutes(100),
+            OptaSportType.RUGBY_AVIVA_PREMIERSHIP, Duration.standardMinutes(100),
             OptaSportType.FOOTBALL_GERMAN_BUNDESLIGA, Duration.standardMinutes(110),
             OptaSportType.FOOTBALL_SCOTTISH_PREMIER_LEAGUE, Duration.standardMinutes(110),
             OptaSportType.FOOTBALL_PREMIER_LEAGUE, Duration.standardMinutes(110)
     );
     private static final Map<OptaSportType, DateTimeZone> TIMEZONE_MAPPING = ImmutableMap.of(
-            OptaSportType.RUGBY, DateTimeZone.forID("Europe/London"),
+            OptaSportType.RUGBY_AVIVA_PREMIERSHIP, DateTimeZone.forID("Europe/London"),
             OptaSportType.FOOTBALL_GERMAN_BUNDESLIGA, DateTimeZone.forID("Europe/Berlin"),
             OptaSportType.FOOTBALL_SCOTTISH_PREMIER_LEAGUE, DateTimeZone.forID("Europe/London"),
             OptaSportType.FOOTBALL_PREMIER_LEAGUE, DateTimeZone.forID("Europe/London")
@@ -93,9 +93,11 @@ public class OptaEventsMapper implements EventsFieldMapper<OptaSportType> {
             .put("Turf Moor", "http://dbpedia.org/resources/Turf_Moor") 
             .put("Villa Park", "http://dbpedia.org/resources/Villa_Park") 
             .put("White Hart Lane", "http://dbpedia.org/resources/White_Hart_Lane") 
+            .put("Ricoh Arena", "http://dbpedia.org/wiki/Ricoh_Arena")
+            .put("Schwarzwald-Stadion", "http://dbpedia.org/wiki/Dreisamstadion")
             .build();
     private static final Map<OptaSportType, Map<String, String>> EVENT_GROUPS_LOOKUP = ImmutableMap.<OptaSportType, Map<String, String>>builder()
-            .put(OptaSportType.RUGBY, ImmutableMap.of(
+            .put(OptaSportType.RUGBY_AVIVA_PREMIERSHIP, ImmutableMap.of(
                     "English Premiership (rugby union)", "http://dbpedia.org/resources/English_Premiership_(rugby_union)", 
                     "Rugby Football", "http://dbpedia.org/resources/Rugby_football"
             ))

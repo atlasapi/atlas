@@ -6,12 +6,14 @@ import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.ContentMerger;
@@ -55,15 +57,21 @@ public class LocalOrRemoteNitroFetcher {
 
                     @Override
                     public boolean apply(Item input) {
+                        if (hasVersionsWithNoDurations(input)) {                        
+                            return true;
+                        }
+                        
                         LocalDate today = clock.now().toLocalDate();
                         
                         // radio are more likely to publish clips after a show has been broadcast
                         // so with a limited ingest window it is more important to go back as far as possible for radio
                         // to ensure that clips are not missed
+                        // tv has a longer forward interval, to ensure for repeated shows that we refetch everything, to make sure
+                        // we pull in all changes on a given programme even for later repeats of something broadcast earlier.
                         final Interval fetchForBroadcastsWithin = 
                                 MediaType.AUDIO.equals(input.getMediaType()) 
                                     ? broadcastInterval(today.minusDays(5), today.plusDays(1)) 
-                                    : broadcastInterval(today.minusDays(3), today.plusDays(3));
+                                    : broadcastInterval(today.minusDays(3), today.plusDays(10));
                         
                         return Iterables.any(input.flattenBroadcasts(), new Predicate<org.atlasapi.media.entity.Broadcast>() {
 
@@ -71,6 +79,20 @@ public class LocalOrRemoteNitroFetcher {
                             public boolean apply(org.atlasapi.media.entity.Broadcast input) {
                                 return fetchForBroadcastsWithin.contains(input.getTransmissionTime());
                             }});
+                    }
+
+                    /**
+                     * Forces a full fetch from nitro if an item with no durations is encountered
+                     * @param input
+                     * @return
+                     */
+                    private boolean hasVersionsWithNoDurations(Item input) {
+                        return Iterables.any(input.getVersions(), new Predicate<Version>() {
+                            @Override
+                            public boolean apply(Version input) {
+                                return input.getDuration() == null;
+                            }
+                        });
                     }
             
                     }
@@ -114,31 +136,23 @@ public class LocalOrRemoteNitroFetcher {
         }
         
         ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
-        return mergeWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
+        return mergeItemsWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
     }
     
-    private <T extends Content> ResolveOrFetchResult<T> mergeWithExisting(ImmutableSet<T> fetchedItems,
-            Set<T> existingItems) {
-        Map<String, T> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedItems, Identified.TO_URI));
-        ImmutableSet.Builder<T> resolved = ImmutableSet.builder();
-        for (T existing : existingItems) {
-            T fetched = fetchedIndex.remove(existing.getCanonicalUri());
+    private ResolveOrFetchResult<Item> mergeItemsWithExisting(ImmutableSet<Item> fetchedItems,
+            Set<Item> existingItems) {
+        Map<String, Item> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedItems, Identified.TO_URI));
+        ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
+        for (Item existing : existingItems) {
+            Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
-                if (fetched instanceof Brand) {
-                    contentMerger.merge((Brand) existing, (Brand) fetched);
-                } else if (fetched instanceof Series) {
-                    contentMerger.merge((Series) existing, (Series) fetched);
-                } else if (fetched instanceof Item) {
-                    contentMerger.merge((Item) existing, (Item) fetched);
-                } else {
-                    throw new IllegalArgumentException("Can't handle Content of type " + fetched.getClass().getCanonicalName());
-                }
-                
+                resolved.add(contentMerger.merge((Item) existing, (Item) fetched));
             }
-            resolved.add(existing);
+            
         }
-        return new ResolveOrFetchResult<T>(resolved.build(), fetchedIndex.values());
+        return new ResolveOrFetchResult<>(resolved.build(), fetchedIndex.values());
     }
+
 
     private ResolvedContent resolve(Iterable<String> itemUris) {
         return resolver.findByCanonicalUris(itemUris);
@@ -171,7 +185,7 @@ public class LocalOrRemoteNitroFetcher {
         }), Predicates.notNull());
     }
     
-    public ImmutableSet<Series> resolveOrFetchSeries(Iterable<Item> items) throws NitroException {
+    public ImmutableSet<Container> resolveOrFetchSeries(Iterable<Item> items) throws NitroException {
         if (Iterables.isEmpty(items)) {
             return ImmutableSet.of();
         }
@@ -193,9 +207,23 @@ public class LocalOrRemoteNitroFetcher {
         
         ImmutableSet<Series> fetched = contentAdapter.fetchSeries(asSeriesPidRefs(toFetch));
         
-        return mergeWithExisting(
+        return mergeContainersWithExisting(
                     fetched, 
-                    ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Series.class))).getAll();
+                    ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Container.class))).getAll();
+    }
+    
+    private ResolveOrFetchResult<Container> mergeContainersWithExisting(ImmutableSet<? extends Container> fetchedContainers,
+            Set<? extends Container> existingContainers) {
+        Map<String, Container> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedContainers, Identified.TO_URI));
+        ImmutableSet.Builder<Container> resolved = ImmutableSet.builder();
+        for (Container existing : existingContainers) {
+            Container fetched = fetchedIndex.remove(existing.getCanonicalUri());
+            if (fetched != null) {
+                resolved.add(contentMerger.merge((Container) existing, (Container) fetched));
+            }
+            
+        }
+        return new ResolveOrFetchResult<>(resolved.build(), fetchedIndex.values());
     }
 
     private Iterable<PidReference> asSeriesPidRefs(Iterable<String> pids) {
@@ -234,7 +262,7 @@ public class LocalOrRemoteNitroFetcher {
         
     };
 
-    public ImmutableSet<Brand> resolveOrFetchBrand(Iterable<Item> items) throws NitroException {
+    public ImmutableSet<Container> resolveOrFetchBrand(Iterable<Item> items) throws NitroException {
         if (Iterables.isEmpty(items)) {
             return ImmutableSet.of();
         }
@@ -254,9 +282,9 @@ public class LocalOrRemoteNitroFetcher {
         }
         
         ImmutableSet<Brand> fetched = contentAdapter.fetchBrands(asBrandPidRefs(toFetch));
-        return mergeWithExisting(
+        return mergeContainersWithExisting(
                     fetched, 
-                    ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Brand.class))).getAll();
+                    ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Container.class))).getAll();
     }
     
     

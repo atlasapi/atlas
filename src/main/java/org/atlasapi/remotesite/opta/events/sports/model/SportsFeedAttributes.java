@@ -1,10 +1,10 @@
-package org.atlasapi.remotesite.opta.events.soccer.model;
+package org.atlasapi.remotesite.opta.events.sports.model;
 
 import com.google.gson.annotations.SerializedName;
 
 
-public class SoccerFeedAttributes {
-        
+public class SportsFeedAttributes {
+
     @SerializedName("Type")
     private String type;
     @SerializedName("competition_code")
@@ -13,15 +13,13 @@ public class SoccerFeedAttributes {
     private String competitionId;
     @SerializedName("competition_name")
     private String competitionName;
-    @SerializedName("game_system_id")
-    private String gameSystemId;
     @SerializedName("season_id")
     private String seasonId;
     @SerializedName("season_name")
     private String seasonName;
     private String timestamp;
 
-    public SoccerFeedAttributes() { }
+    public SportsFeedAttributes() { }
 
     public String type() {
         return type;
@@ -37,10 +35,6 @@ public class SoccerFeedAttributes {
 
     public String competitionName() {
         return competitionName;
-    }
-
-    public String gameSystemId() {
-        return gameSystemId;
     }
 
     public String seasonId() {

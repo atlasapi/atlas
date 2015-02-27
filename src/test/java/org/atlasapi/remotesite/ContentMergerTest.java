@@ -33,8 +33,8 @@ import com.metabroadcast.common.time.DateTimeZones;
 @RunWith(MockitoJUnitRunner.class)
 public class ContentMergerTest {
     
-    private static Publisher PUBLISHER = Publisher.METABROADCAST;
-    
+    private static final Publisher PUBLISHER = Publisher.METABROADCAST;
+
     @Test
     public void testVersionMerger() {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);

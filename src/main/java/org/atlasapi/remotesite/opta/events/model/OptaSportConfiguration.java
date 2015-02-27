@@ -3,6 +3,12 @@ package org.atlasapi.remotesite.opta.events.model;
 import static com.google.api.client.util.Preconditions.checkNotNull;
 
 
+/**
+ * Wraps the three parameters that uniquely define a sports feed from Opta.
+ * 
+ * @author Oliver Hall (oli@metabroadcast.com)
+ *
+ */
 public class OptaSportConfiguration {
     
     private final String feedType;

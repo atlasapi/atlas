@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.opta.events.soccer.model;
+package org.atlasapi.remotesite.opta.events.sports.model;
 
 import com.google.gson.annotations.SerializedName;
 

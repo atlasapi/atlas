@@ -1,18 +1,18 @@
-package org.atlasapi.remotesite.opta.events.soccer.model;
+package org.atlasapi.remotesite.opta.events.sports.model;
 
 import org.atlasapi.remotesite.opta.events.model.OptaTeam;
 
 import com.google.gson.annotations.SerializedName;
 
 
-public class SoccerTeam implements OptaTeam {
-    
+public class SportsTeam implements OptaTeam {
+
     @SerializedName("Name")
     private String name;
     @SerializedName("@attributes")
     private Attributes attributes;
     
-    public SoccerTeam() { }
+    public SportsTeam() { }
     
     public String name() {
         return name;

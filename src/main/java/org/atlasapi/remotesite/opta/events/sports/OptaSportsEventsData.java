@@ -3,27 +3,27 @@ package org.atlasapi.remotesite.opta.events.sports;
 import java.util.List;
 
 import org.atlasapi.remotesite.opta.events.OptaEventsData;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaFixture;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsTeam;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
 
 import com.google.common.collect.ImmutableList;
 
 
-public class OptaSportsEventsData implements OptaEventsData<OptaSportsTeam, OptaFixture> {
+public class OptaSportsEventsData implements OptaEventsData<SportsTeam, SportsMatchData> {
 
-    private final List<OptaFixture> fixtures;
-    private final List<OptaSportsTeam> teams;
+    private final List<SportsMatchData> fixtures;
+    private final List<SportsTeam> teams;
     
-    public OptaSportsEventsData(Iterable<OptaFixture> fixtures, Iterable<OptaSportsTeam> teams) {
+    public OptaSportsEventsData(Iterable<SportsMatchData> fixtures, Iterable<SportsTeam> teams) {
         this.fixtures = ImmutableList.copyOf(fixtures);
         this.teams = ImmutableList.copyOf(teams);
     }
     
-    public Iterable<OptaFixture> matches() {
+    public Iterable<SportsMatchData> matches() {
         return fixtures;
     }
     
-    public Iterable<OptaSportsTeam> teams() {
+    public Iterable<SportsTeam> teams() {
         return teams;
     }
 }

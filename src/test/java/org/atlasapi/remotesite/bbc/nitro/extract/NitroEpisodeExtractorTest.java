@@ -152,7 +152,7 @@ public class NitroEpisodeExtractorTest {
             = (org.atlasapi.media.entity.Episode) extracted;
         assertThat(episode.getContainer().getUri(), endsWith("b007y6k8"));
         assertThat(episode.getSeriesRef().getUri(), endsWith("b01fltqv"));
-        assertThat(episode.getTitle(), is("Fear Part 2"));
+        assertThat(episode.getTitle(), is("Fear - Part 2"));
     }
 
     @Test
@@ -186,7 +186,7 @@ public class NitroEpisodeExtractorTest {
             = (org.atlasapi.media.entity.Episode) extracted;
         assertThat(episode.getContainer().getUri(), endsWith("b011cdng"));
         assertThat(episode.getSeriesRef().getUri(), endsWith("b011cdng"));
-        assertThat(episode.getTitle(), is("Tinker, Tailor, Soldier, Spy Part 3"));
+        assertThat(episode.getTitle(), is("Tinker, Tailor, Soldier, Spy - Part 3"));
     }
 
     @Test

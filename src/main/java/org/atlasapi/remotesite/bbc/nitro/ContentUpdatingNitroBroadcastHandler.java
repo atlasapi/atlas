@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -35,7 +36,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.common.time.Clock;
 
 /**
  * {@link NitroBroadcastHandler} which fetches, updates and writes relevant
@@ -73,8 +73,11 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
             containerIds = topLevelContainerIds(items.getAll());
             lock.lock(containerIds);
             
-            ImmutableSet<Series> series = localOrRemoteFetcher.resolveOrFetchSeries(items.getAll());
-            ImmutableSet<Brand> brands = localOrRemoteFetcher.resolveOrFetchBrand(items.getAll());
+            ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(items.getAll());
+            ImmutableSet<Container> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(items.getAll());
+            
+            Iterable<Series> series = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Series.class);
+            Iterable<Brand> brands = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Brand.class);
             
             return writeContent(nitroBroadcasts, items, series, brands);
         } catch (InterruptedException ie) {
@@ -114,8 +117,8 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
 
     private ImmutableList<Optional<ItemRefAndBroadcast>> writeContent(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
-            ResolveOrFetchResult<Item> items, ImmutableSet<Series> series,
-            ImmutableSet<Brand> brands) {
+            ResolveOrFetchResult<Item> items, Iterable<Series> series,
+            Iterable<Brand> brands) {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
         ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
         

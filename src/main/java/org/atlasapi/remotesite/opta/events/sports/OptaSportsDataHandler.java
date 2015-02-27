@@ -2,6 +2,9 @@ package org.atlasapi.remotesite.opta.events.sports;
 
 import static com.google.api.client.util.Preconditions.checkNotNull;
 
+import java.util.List;
+import java.util.Set;
+
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.Organisation;
 import org.atlasapi.media.entity.Publisher;
@@ -13,9 +16,10 @@ import org.atlasapi.remotesite.events.EventsUriCreator;
 import org.atlasapi.remotesite.opta.events.OptaDataHandler;
 import org.atlasapi.remotesite.opta.events.OptaEventsMapper;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaFixture;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaFixtureTeam;
-import org.atlasapi.remotesite.opta.events.sports.model.OptaSportsTeam;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsStats;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
+import org.atlasapi.remotesite.opta.events.sports.model.SportsTeamData;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
@@ -26,13 +30,15 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.Iterables;
 
 
-public class OptaSportsDataHandler extends OptaDataHandler<OptaSportsTeam, OptaFixture> {
+public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMatchData> {
     
-    private static final DateTimeFormatter TIME_FORMATTER = DateTimeFormat.forPattern("yyyyMMdd HH:mm:ss");
+    private static final String VENUE_TYPE = "Venue";
+    private static final DateTimeFormatter DATE_TIME_FORMATTER = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
     
     private final Logger log = LoggerFactory.getLogger(getClass());
     private final OptaEventsMapper mapper;
@@ -46,23 +52,18 @@ public class OptaSportsDataHandler extends OptaDataHandler<OptaSportsTeam, OptaF
     }
 
     @Override
-    public Optional<Organisation> parseOrganisation(OptaSportsTeam team, OptaSportType sport) {
+    public Optional<Organisation> parseOrganisation(SportsTeam team) {
         Organisation organisation = new Organisation();
 
-        if (mapper.fetchIgnoredTeams().contains(team.attributes().name())) {
-            log.warn("Found team with ignored name {}", team.attributes().name());
-            return Optional.absent();
-        }
-        organisation.setCanonicalUri(uriCreator.createTeamUri(team.attributes().id()));
+        organisation.setCanonicalUri(utility.createTeamUri(team.attributes().uId()));
         organisation.setPublisher(Publisher.OPTA);
-        organisation.setTitle(team.attributes().name());
-        organisation.setEventGroups(resolveOrCreateEventGroups(sport));
+        organisation.setTitle(team.name());
 
         return Optional.of(organisation);
     }
 
     @Override
-    public Optional<Event> parseEvent(OptaFixture match, OptaSportType sport) {
+    public Optional<Event> parseEvent(SportsMatchData match, OptaSportType sport) {
         Optional<String> title = createTitle(match);
         if (!title.isPresent()) {
             return Optional.absent();
@@ -86,40 +87,67 @@ public class OptaSportsDataHandler extends OptaDataHandler<OptaSportsTeam, OptaF
                 .withEventGroups(resolveOrCreateEventGroups(sport))
                 .build();
 
-        event.setCanonicalUri(uriCreator.createEventUri(match.attributes().id()));
+        event.setCanonicalUri(utility.createEventUri(match.attributes().uId()));
         
         return Optional.of(event);
     }
     
-    private Optional<String> createTitle(OptaFixture match) {
-        Optional<String> team1 = fetchTeamName(match.teams().get(0));
-        Optional<String> team2 = fetchTeamName(match.teams().get(1));
+    private Optional<String> createTitle(SportsMatchData match) {
+        Optional<String> team1 = fetchTeamName(match.teamData().get(0));
+        Optional<String> team2 = fetchTeamName(match.teamData().get(1));
         if (!team1.isPresent() || !team2.isPresent()) {
             return Optional.absent();
         }
         return Optional.of(team1.get() + " vs " + team2.get());
     }
     
-    private Optional<String> fetchTeamName(OptaFixtureTeam teamData) {
-        Optional<Organisation> team = getTeamByUri(uriCreator.createTeamUri(teamData.attributes().teamId()));
+    private Optional<String> fetchTeamName(SportsTeamData teamData) {
+        String teamId = teamData.attributes().teamRef();
+        Optional<Organisation> team = getTeamByUri(utility.createTeamUri(teamId));
         if (!team.isPresent()) {
-            log.error("team {} not present in teams list", teamData.attributes().teamId());
+            log.error("team {} not present in teams list", teamId);
             return Optional.absent();
         }
         return Optional.of(team.get().getTitle());
     }
     
-    private DateTime parseStartTime(OptaFixture fixture, OptaSportType sport) {
-        DateTimeZone timeZone = mapper.fetchTimeZone(sport);
-        return TIME_FORMATTER.withZone(timeZone)
-                        .parseDateTime(fixture.attributes().gameDate() + " " + fixture.attributes().time());
+    private Optional<DateTime> parseStartTime(SportsMatchData match, OptaSportType sport) {
+        String dateStr = match.matchInformation().date().date();
+        Optional<DateTimeZone> timeZone = utility.fetchTimeZone(sport);
+        if (!timeZone.isPresent()) {
+            log.error("No time zone mapping found for sport {}", sport);
+            return Optional.absent();
+        }
+        
+        return Optional.of(
+                DATE_TIME_FORMATTER.withZone(timeZone.get())
+                        .parseDateTime(dateStr)
+        );
     }
     
-    private Iterable<Organisation> parseOrganisations(OptaFixture fixture) {
-        Iterable<Organisation> organisations = Iterables.transform(fixture.teams(), new Function<OptaFixtureTeam, Organisation>() {
+    private Optional<Topic> createOrResolveVenue(SportsMatchData match) {
+        String location = getVenueData(match.stats());
+        Optional<Topic> value = utility.createOrResolveVenue(location);
+        if (!value.isPresent()) {
+            log.error("Unable to resolve location: {}", location);
+        }
+        return value;
+    }
+    
+    private String getVenueData(List<SportsStats> stats) {
+        return Iterables.getOnlyElement(Iterables.filter(stats, new Predicate<SportsStats>() {
             @Override
-            public Organisation apply(OptaFixtureTeam input) {
-                return getTeamByUri(uriCreator.createTeamUri(input.attributes().teamId())).orNull();
+            public boolean apply(SportsStats input) {
+                return VENUE_TYPE.equals(input.attributes().type());
+            }
+        })).value();
+    }
+    
+    private Iterable<Organisation> parseOrganisations(SportsMatchData match) {
+        Iterable<Organisation> organisations = Iterables.transform(match.teamData(), new Function<SportsTeamData, Organisation>() {
+            @Override
+            public Organisation apply(SportsTeamData input) {
+                return getTeamByUri(utility.createTeamUri(input.attributes().teamRef())).orNull();
             }
         });
         return Iterables.filter(organisations, Predicates.notNull());

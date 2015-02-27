@@ -14,9 +14,16 @@ public class OptaEventsUtilityTest {
 
     @Test
     public void testTimeZoneMapping() {
-        DateTimeZone fetched = mapper.fetchTimeZone(OptaSportType.RUGBY);
+        Optional<DateTimeZone> fetched = utility.fetchTimeZone(OptaSportType.RUGBY_AVIVA_PREMIERSHIP);
         
-        assertEquals(DateTimeZone.forID("Europe/London"), fetched);
+        assertEquals(DateTimeZone.forID("Europe/London"), fetched.get());
+    }
+
+    @Test
+    public void testReturnsAbsentForUnmappedValue() {
+        Optional<DateTimeZone> fetched = utility.fetchTimeZone(null);
+        
+        assertFalse(fetched.isPresent());
     }
     
 }

@@ -204,7 +204,7 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
             
             @Override
             public void init() {
-                ids = portalClient.getProductIdsForGroup(groupId);
+                ids = portalClient.getProductIdsForGroup(groupId).or(ImmutableSet.<String>of());
             }
         };
     }

@@ -134,26 +134,6 @@ public class EquivTaskModule {
     private @Autowired RecentEquivalenceResultStore equivalenceResultStore;
     
     private @Autowired KafkaMessagingModule messaging;
-
-    private Set<String> RADIO_ALIASES = ImmutableSet.of("http://youview.com/service/37617", "http://youview.com/service/37897", "http://youview.com/service/38008", "http://youview.com/service/38270",
-            "http://youview.com/service/39058", "http://youview.com/service/39248", "http://youview.com/service/39510", "http://youview.com/service/15193102", "http://youview.com/service/15193080",
-            "http://youview.com/service/40643", "http://youview.com/service/40816", "http://youview.com/service/40985", "http://youview.com/service/41222", "http://youview.com/service/41463",
-            "http://youview.com/service/41596", "http://youview.com/service/1146", "http://youview.com/service/1147", "http://youview.com/service/1148", "http://youview.com/service/1149",
-            "http://overrides.youview.com/service/39390", "http://scotland.youview.com/service/39390" 
-            );
-    private Predicate<Channel> RADIO_CHANNELS = new Predicate<Channel>() {
-
-        @Override
-        public boolean apply(Channel input) {
-            for (String alias : input.getAliasUrls()) {
-                if (RADIO_ALIASES.contains(alias)) {
-                    return true;
-                }
-            }
-            return false;
-        }
-        
-    };
     
     @PostConstruct
     public void scheduleUpdater() {
@@ -181,12 +161,12 @@ public class EquivTaskModule {
 
             taskScheduler.schedule(taskBuilder(0, 7)
                     .withPublishers(YOUVIEW)
-                    .withChannels(Iterables.filter(youviewChannelResolver.getAllChannels(), RADIO_CHANNELS))
+                    .withChannels(youviewChannelResolver.getAllChannels())
                     .build().withName("YouView Schedule Equivalence (8 day) Updater"), 
                 YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(taskBuilder(0, 7)
                     .withPublishers(YOUVIEW_STAGE)
-                    .withChannels(Iterables.filter(youviewChannelResolver.getAllChannels(), RADIO_CHANNELS))
+                    .withChannels(youviewChannelResolver.getAllChannels())
                     .build().withName("YouView Stage Schedule Equivalence (8 day) Updater"), 
                 YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(taskBuilder(0, 7)

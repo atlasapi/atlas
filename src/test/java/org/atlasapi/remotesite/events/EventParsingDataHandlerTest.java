@@ -59,7 +59,7 @@ public class EventParsingDataHandlerTest {
         Mockito.when(testEvent.getCanonicalUri()).thenReturn("eventUri");
         Mockito.when(eventStore.fetch("eventUri")).thenReturn(Optional.<Event>absent());
         
-        handler.handleMatch(matchData, OptaSportType.RUGBY);
+        handler.handle(matchData, OptaSportType.RUGBY_AVIVA_PREMIERSHIP);
         
         Mockito.verify(eventStore).createOrUpdate(testEvent);
     }

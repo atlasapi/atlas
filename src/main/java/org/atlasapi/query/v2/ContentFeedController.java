@@ -82,7 +82,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             .withMessage("No Feed exists of the provided type")
             .withErrorCode("Feed Type not found")
             .withStatusCode(HttpStatusCode.NOT_FOUND);
-    private static final DateTime START_OF_TIME = new DateTime(2000, JANUARY, 0, 0, 0, 0, UTC);
+    private static final DateTime START_OF_TIME = new DateTime(2000, JANUARY, 1, 0, 0, 0, UTC);
     
     private final TvAnytimeGenerator feedGenerator;
     private final ContentResolver contentResolver;

@@ -63,7 +63,7 @@ public class MessageQueueingResultHandlerTest extends KafkaTestBase {
         Logger.getLogger("com.metabroadcast").setLevel(Level.TRACE);
         super.setup();
         EmbeddedZookeeper zkServer = super.zkServer();
-        mm = new KafkaMessagingModule(super.brokersString(), zkServer.connectString(), system);
+        mm = new KafkaMessagingModule(super.brokersString(), zkServer.connectString(), system, 100L, 1000L);
         serializer = JacksonMessageSerializer.forType(ContentEquivalenceAssertionMessage.class);
         
         MessageSender<ContentEquivalenceAssertionMessage> sender

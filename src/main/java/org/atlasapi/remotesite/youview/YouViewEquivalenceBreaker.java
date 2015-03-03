@@ -31,7 +31,7 @@ import com.google.common.collect.Sets;
  * 
  * Candidates are considered if they are equivalent to items in the 
  * schedule, and are items of the publishers in publishersToOrphan. They will
- * be orphaned if their latest broadcast is more than 30 days in the past,
+ * be orphaned if their latest broadcast is more than 21 days in the past,
  * or they don't have a scheduleevent {@link Alias}
  * 
  * @author tom
@@ -40,6 +40,7 @@ import com.google.common.collect.Sets;
 public class YouViewEquivalenceBreaker {
 
     private static final Logger log = org.slf4j.LoggerFactory.getLogger(YouViewEquivalenceBreaker.class);
+    private static final Integer EQUIVALENCE_DAYS_TO_KEEP = 21;
     
     private final ScheduleResolver scheduleResolver;
     private final YouViewChannelResolver youViewChannelResolver;
@@ -140,7 +141,7 @@ public class YouViewEquivalenceBreaker {
         }
         
         if (latestTxTime != null 
-                && latestTxTime.isBefore(DateTime.now().minusDays(30))) {
+                && latestTxTime.isBefore(DateTime.now().minusDays(EQUIVALENCE_DAYS_TO_KEEP))) {
             return true;
         }
         

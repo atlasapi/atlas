@@ -94,7 +94,7 @@ public class C4PmlsdModule {
         }
         try {
             URL jksFile = new File(keyStorePath).toURI().toURL();
-            return HttpClients.httpsClient(jksFile, keyStorePass);
+            return HttpClients.httpsClientThatDoesntCheckCerts(jksFile, keyStorePass);
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -64,4 +64,15 @@ public class HttpClients {
             .withSslSocketFactory(new SSLSocketFactory(ks, password, ks))
             .build();
     }
+
+    public static SimpleHttpClient httpsClientThatDoesntCheckCerts(URL keystore, String password) throws Exception {
+        KeyStore ks = KeyStore.getInstance("JKS", "SUN");
+        ks.load(keystore.openStream(), password.toCharArray());
+        return new SimpleHttpClientBuilder()
+                .withUserAgent(ATLAS_USER_AGENT)
+                .withSocketTimeout(30, TimeUnit.SECONDS)
+                .withSslSocketFactory(new SSLSocketFactory(ks, password, ks))
+                .withTrustUnverifiedCerts()
+                .build();
+    }
 }

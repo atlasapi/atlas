@@ -3,9 +3,12 @@ package org.atlasapi.remotesite.channel4.pmlsd;
 import java.io.File;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
+import com.metabroadcast.common.http.SimpleHttpClientBuilder;
+import org.apache.http.conn.ssl.SSLSocketFactory;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
@@ -37,6 +40,7 @@ import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.time.DayRangeGenerator;
+import sun.security.ssl.SSLSocketFactoryImpl;
 
 @Configuration
 public class C4PmlsdModule {
@@ -64,6 +68,9 @@ public class C4PmlsdModule {
 	private @Value("${updaters.c4pmlsd.enabled}") Boolean tasksEnabled;
 	private @Value("${c4.keystore.path}") String keyStorePath;
 	private @Value("${c4.keystore.password}") String keyStorePass;
+
+    private @Value("${c4.auth.key}") String authHeaderKey;
+    private @Value("${c4.auth.password}") String authHeaderValue;
 	
     private @Value("${service.web.id}") Long webServiceId;
     private @Value("${service.ios.id}") Long iOsServiceId;
@@ -93,8 +100,13 @@ public class C4PmlsdModule {
             }
         }
         try {
-            URL jksFile = new File(keyStorePath).toURI().toURL();
-            return HttpClients.httpsClient(jksFile, keyStorePass);
+            return new SimpleHttpClientBuilder()
+                    .withUserAgent(HttpClients.ATLAS_USER_AGENT)
+                    .withSocketTimeout(30, TimeUnit.SECONDS)
+                    .withSslSocketFactory(SSLSocketFactory.getSocketFactory())
+                    .withHeader(authHeaderKey, authHeaderValue)
+                    .withTrustUnverifiedCerts()
+                    .build();
         } catch (Exception e) {
             throw new RuntimeException(e);
         }

@@ -45,7 +45,7 @@ public class KnowledgeMotionUpdateTask extends ScheduledTask {
 
     public KnowledgeMotionUpdateTask(Iterable<KnowledgeMotionSourceConfig> sources,
             SpreadsheetFetcher spreadsheetFetcher,
-            DefaultKnowledgeMotionDataRowHandler dataHandler, KnowledgeMotionAdapter adapter,
+            KnowledgeMotionDataRowHandler dataHandler, KnowledgeMotionAdapter adapter,
             ContentLister contentLister) {
         this.spreadsheetFetcher = checkNotNull(spreadsheetFetcher);
         this.dataHandler = checkNotNull(dataHandler);

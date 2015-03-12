@@ -92,7 +92,7 @@ public class KnowledgeMotionSpecialIdFixingTask extends ScheduledTask {
                     Optional<Content> written = dataHandler.handle(row);
                     progress = progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
-                    log.warn("Row: " + customElements.getValue(KnowledgeMotionSpreadsheetColumn.ID.getValue()), e);
+                    log.warn("Row: " + customElements.getValue(KnowledgeMotionSpreadsheetColumn.ID.getFieldName()), e);
                     progress = progress.reduce(UpdateProgress.FAILURE);
                 }
                 reportStatus(progress.toString());

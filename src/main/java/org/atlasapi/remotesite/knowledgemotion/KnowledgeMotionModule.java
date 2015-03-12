@@ -82,28 +82,4 @@ public class KnowledgeMotionModule {
         );
     }
 
-    private KnowledgeMotionUpdateTask knowledgeMotionUpdater() {
-        return new KnowledgeMotionUpdateTask(SOURCES,
-                spreadsheet.spreadsheetFetcher(), 
-                new DefaultKnowledgeMotionDataRowHandler(contentResolver, contentWriter, new KnowledgeMotionDataRowContentExtractor(SOURCES, topicGuesser())),
-                new KnowledgeMotionAdapter(),
-                contentLister);
-    }
-    
-    private KnowledgeMotionSpecialIdFixingTask knowledgeMotionBloombergIdFixer() {
-        return new KnowledgeMotionSpecialIdFixingTask(FIX_SOURCES,
-                spreadsheet.spreadsheetFetcher(), 
-                new SpecialIdFixingKnowledgeMotionDataRowHandler(contentResolver, contentWriter, FIX_SOURCES.get(0)),
-                new KnowledgeMotionAdapter(),
-                contentLister);
-    }
-
-    private KnowledgeMotionSpecialIdFixingTask knowledgeMotionBloombergIdFixer() {
-        return new KnowledgeMotionSpecialIdFixingTask(FIX_SOURCES,
-                spreadsheet.spreadsheetFetcher(), 
-                new SpecialIdFixingKnowledgeMotionDataRowHandler(contentResolver, contentWriter, FIX_SOURCES.get(0)),
-                new KnowledgeMotionAdapter(),
-                contentLister);
-    }
-
 }

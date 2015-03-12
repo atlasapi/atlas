@@ -28,7 +28,7 @@ private final Splitter splitter = Splitter.on(",").omitEmptyStrings().trimResult
         row.withKeywords(keywords(customElements.getValue(KEYWORDS.getFieldName())));
         row.withSource(customElements.getValue(SOURCE.getFieldName()));
         row.withTitle(customElements.getValue(TITLE.getFieldName()));
-
+        
         return row.build();
     }
 

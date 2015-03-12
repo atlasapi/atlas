@@ -79,8 +79,6 @@ public class KnowledgeMotionDataRow {
                 .toString();
     }
 
-   // TODO get rid of all this crap and just write a constructor that takes a CustomElementCollection
-    // no one will then forget to update the builder, call all the builder methods, etc etc
     public static class Builder {
 
         private String source;
@@ -95,9 +93,9 @@ public class KnowledgeMotionDataRow {
         public KnowledgeMotionDataRow build() {
             return new KnowledgeMotionDataRow(source, id, title, description, date, duration, keywords, alternativeId);
         }
-        
+
         private Builder() {}
-        
+
         public Builder withSource(String source) {
             this.source = source;
             return this;
@@ -136,6 +134,7 @@ public class KnowledgeMotionDataRow {
             this.alternativeId = altId;
             return this;
         }
+
     }
 
 }

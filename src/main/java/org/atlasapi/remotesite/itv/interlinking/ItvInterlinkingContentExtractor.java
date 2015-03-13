@@ -60,7 +60,7 @@ public class ItvInterlinkingContentExtractor {
     public InterlinkingEntry<Brand> getBrand(Element brandElem) {
         
         String id = requireElemValue(brandElem, "id", ATOM_NS);
-        Brand brand = new Brand(id, getCurie(id), Publisher.ITV);
+        Brand brand = new Brand(id, getCurie(id), Publisher.ITV_INTERLINKING);
         brand.setTitle(requireElemValue(brandElem, "title", ATOM_NS));
         
         Element contentElem = brandElem.getFirstChildElement("content", ATOM_NS).getFirstChildElement("content", MEDIA_NS);
@@ -85,14 +85,14 @@ public class ItvInterlinkingContentExtractor {
     public InterlinkingEntry<Series> getSeries(Element seriesElem) {
         
         String id = requireElemValue(seriesElem, "id", ATOM_NS);
-        Series series = new Series(id, getCurie(id), Publisher.ITV);
+        Series series = new Series(id, getCurie(id), Publisher.ITV_INTERLINKING);
         
         Element contentElem = seriesElem.getFirstChildElement("content", ATOM_NS).getFirstChildElement("content", MEDIA_NS);
         Maybe<String> description = getElemValue(contentElem, "description", MEDIA_NS);
         if (description.hasValue()) {
             series.setDescription(description.requireValue());
         }
-        series.setPublisher(Publisher.ITV);
+        series.setPublisher(Publisher.ITV_INTERLINKING);
         Maybe<String> index = getElemValue(contentElem, "index", INTERLINKING_NS);
         Maybe<String> parentId = getElemValue(contentElem, "parent_id", INTERLINKING_NS);
         
@@ -148,7 +148,7 @@ public class ItvInterlinkingContentExtractor {
             }
         }
         if (parentId.hasValue()) {
-            Episode episode = new Episode(id, getCurie(id), Publisher.ITV);
+            Episode episode = new Episode(id, getCurie(id), Publisher.ITV_INTERLINKING);
             
             if (index.hasValue()) {
                 episode.setEpisodeNumber(Integer.parseInt(index.requireValue()));
@@ -156,7 +156,7 @@ public class ItvInterlinkingContentExtractor {
             
             item = episode;
         } else {
-            item = new Item(id, getCurie(id), Publisher.ITV);
+            item = new Item(id, getCurie(id), Publisher.ITV_INTERLINKING);
         }
         
         item.setTitle(title);
@@ -205,7 +205,7 @@ public class ItvInterlinkingContentExtractor {
         String parentId = requireElemValue(contentElem, "parent_id", INTERLINKING_NS);
         
         version.setDuration(periodFormatter.parsePeriod(requireElemValue(contentElem, "duration", INTERLINKING_NS)).toStandardDuration());
-        version.setProvider(Publisher.ITV);
+        version.setProvider(Publisher.ITV_INTERLINKING);
         
         Encoding encoding = new Encoding();
         Location location = new Location();

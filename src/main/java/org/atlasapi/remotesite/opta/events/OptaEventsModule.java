@@ -22,7 +22,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
 
 import com.google.common.base.Predicates;
 import com.google.common.base.Splitter;
@@ -147,7 +146,6 @@ public class OptaEventsModule {
         return config.build();
     }
 
-    @Bean
     private OptaEventsUtility utility(Map<OptaSportType, OptaSportConfiguration> config) {
         return new OptaEventsUtility(topicStore, config);
     }

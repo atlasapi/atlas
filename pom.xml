@@ -494,6 +494,11 @@
             <version>${common.version}</version>
         </dependency>
         <dependency>
+            <groupId>com.metabroadcast.common.ingest</groupId>
+            <artifactId>common-ingest</artifactId>
+            <version>${common.version}</version>
+        </dependency>
+        <dependency>
             <groupId>commons-net</groupId>
             <artifactId>commons-net</artifactId>
             <version>2.2</version>
@@ -604,6 +609,11 @@
            <artifactId>swc-parser-lazy</artifactId>
            <version>1.1.0</version>
        </dependency>
+        <dependency>
+                <groupId>org.apache.commons</groupId>
+                <artifactId>commons-csv</artifactId>
+                <version>1.1</version>
+        </dependency>
     </dependencies>
     <properties>
         <atlas.version>${project.version}</atlas.version>

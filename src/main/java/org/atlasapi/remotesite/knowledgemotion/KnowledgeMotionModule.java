@@ -24,12 +24,16 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.metabroadcast.common.ingest.IngestService;
 import com.metabroadcast.common.ingest.s3.process.FileProcessor;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
 
 @Configuration
 public class KnowledgeMotionModule {
 
     private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionModule.class);
 
+    private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ContentWriter contentWriter;
     private @Autowired ContentLister contentLister;
@@ -51,13 +55,19 @@ public class KnowledgeMotionModule {
 
     @PostConstruct
     public void start() {
-        log.info("Initializing Knowledgemotion updater");
+        log.info("Initializing Knowledgemotion Common Ingester");
         AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-        IngestService ingestService = new IngestService(awsCredentials);
+        final IngestService ingestService = new IngestService(awsCredentials);
         FileProcessor fileProcessor = new KnowledgeMotionFileProcessor(contentResolver,
             contentWriter, contentLister, topicGuesser(), new KnowledgeMotionCsvTranslator());
+
         ingestService.registerFileProcessor(awsS3BucketName, fileProcessor);
-        ingestService.start();
+        scheduler.schedule(new ScheduledTask() {
+            @Override
+            protected void runTask() {
+                ingestService.start();
+            }
+        }.withName("Knowledgemotion Common Ingest"), RepetitionRules.NEVER);
     }
 
     @Bean

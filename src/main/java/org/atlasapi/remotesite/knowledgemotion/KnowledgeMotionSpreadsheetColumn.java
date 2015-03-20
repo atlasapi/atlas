@@ -4,24 +4,29 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public enum KnowledgeMotionSpreadsheetColumn {
 
-    SOURCE("source"),
+    /*
+     * Knowledgemotion's CSVs contain two 'Source' columns. This is a problem.
+     * However, one of those columns is always the first column. Therefore,
+     * just get that field by index 0.
+     */
+    SOURCE("Source"),
     ID("namespace"),
     TITLE("Title"),
     DESCRIPTION("Description"),
     DATE("Date"),
     DURATION("Duration"),
     KEYWORDS("Keywords"),
-    ALT_ID("AlternativeID")  // lack of space believed to be intentional (quirk of indexing into returned rows)
+    ALT_ID("Alternative ID")
     ;
     
-    private final String value;
+    private final String fieldName;
     
-    private KnowledgeMotionSpreadsheetColumn(String value) {
-        this.value = checkNotNull(value);
+    private KnowledgeMotionSpreadsheetColumn(String fieldName) {
+        this.fieldName = checkNotNull(fieldName);
     }
     
-    public String getValue() {
-        return value;
+    public String getFieldName() {
+        return fieldName;
     }
     
 }

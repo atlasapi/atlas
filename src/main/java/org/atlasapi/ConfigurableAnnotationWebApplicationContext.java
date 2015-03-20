@@ -11,7 +11,6 @@ import org.atlasapi.feeds.xmltv.XmlTvModule;
 import org.atlasapi.feeds.youview.NitroYouViewResolutionModule;
 import org.atlasapi.feeds.youview.TVAnytimeFeedsModule;
 import org.atlasapi.feeds.youview.YouViewUploadModule;
-import org.atlasapi.googlespreadsheet.GoogleSpreadsheetModule;
 import org.atlasapi.logging.AtlasLoggingModule;
 import org.atlasapi.logging.HealthModule;
 import org.atlasapi.persistence.CassandraPersistenceModule;
@@ -25,6 +24,7 @@ import org.atlasapi.remotesite.RemoteSiteModule;
 import org.atlasapi.remotesite.RemoteSiteModuleConfigurer;
 import org.atlasapi.remotesite.bbc.nitro.BbcNitroModule;
 import org.atlasapi.remotesite.health.RemoteSiteHealthModule;
+import org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionModule;
 import org.atlasapi.remotesite.metabroadcast.picks.PicksModule;
 import org.atlasapi.remotesite.metabroadcast.similar.SimilarContentModule;
 import org.atlasapi.remotesite.wikipedia.WikipediaModule;
@@ -86,7 +86,7 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 SimilarContentModule.class,
                 CreateYouTubeContentGroupModule.class,
                 ContentPurgeWebModule.class,
-                GoogleSpreadsheetModule.class
+                KnowledgeMotionModule.class
             );
             if (youViewUploadEnabled()) {
                 builder.add(

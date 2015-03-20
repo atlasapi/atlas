@@ -20,13 +20,13 @@ private static final KnowledgeMotionAdapter adapter = new KnowledgeMotionAdapter
     
     private CustomElementCollection customElements() {
         CustomElementCollection customElements = new CustomElementCollection();
-        customElements.setValueLocal(DATE.getValue(), "date");
-        customElements.setValueLocal(DESCRIPTION.getValue(), "description");
-        customElements.setValueLocal(DURATION.getValue(), "duration");
-        customElements.setValueLocal(ID.getValue(), "id");
-        customElements.setValueLocal(KEYWORDS.getValue(), "keywords");
-        customElements.setValueLocal(SOURCE.getValue(), "source");
-        customElements.setValueLocal(TITLE.getValue(), "title");
+        customElements.setValueLocal(DATE.getFieldName(), "date");
+        customElements.setValueLocal(DESCRIPTION.getFieldName(), "description");
+        customElements.setValueLocal(DURATION.getFieldName(), "duration");
+        customElements.setValueLocal(ID.getFieldName(), "id");
+        customElements.setValueLocal(KEYWORDS.getFieldName(), "keywords");
+        customElements.setValueLocal(SOURCE.getFieldName(), "source");
+        customElements.setValueLocal(TITLE.getFieldName(), "title");
         return customElements;
     }
 

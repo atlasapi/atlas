@@ -23,7 +23,7 @@ public class EventParsingDataHandlerTest {
             new EventParsingDataHandler<OptaSportType, OptaTeam, OptaMatch>(organisationStore, eventStore) {
         
                 @Override
-                public Optional<Organisation> parseOrganisation(OptaTeam team) {
+                public Optional<Organisation> parseOrganisation(OptaTeam team, OptaSportType type) {
                     return Optional.of(testTeam);
                 }
                 @Override
@@ -38,7 +38,7 @@ public class EventParsingDataHandlerTest {
         Mockito.when(testTeam.getCanonicalUri()).thenReturn("teamUri");
         Mockito.when(organisationStore.organisation("teamUri")).thenReturn(Optional.<Organisation>absent());
         
-        handler.handleTeam(teamData);
+        handler.handleTeam(teamData, OptaSportType.RUGBY_AVIVA_PREMIERSHIP);
         
         Mockito.verify(organisationStore).createOrUpdateOrganisation(testTeam);
     }

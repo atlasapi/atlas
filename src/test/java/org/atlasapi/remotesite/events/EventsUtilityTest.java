@@ -83,7 +83,7 @@ public class EventsUtilityTest {
                 throw new UnsupportedOperationException();
             }
             @Override
-            public String createTeamUri(String id) {
+            public String createTeamUri(OptaSportType sportType, String id) {
                 throw new UnsupportedOperationException();
             }
             @Override

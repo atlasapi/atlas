@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Event;
@@ -17,6 +18,7 @@ import org.atlasapi.persistence.content.organisation.OrganisationStore;
 import org.atlasapi.persistence.event.EventStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.opta.events.OptaEventsUtility;
+import org.atlasapi.remotesite.opta.events.OptaSportConfiguration;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
 import org.atlasapi.remotesite.opta.events.sports.model.MatchDateDeserializer;
 import org.atlasapi.remotesite.opta.events.sports.model.OptaDocumentDeserializer;
@@ -39,6 +41,7 @@ import org.mockito.stubbing.Answer;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
@@ -52,6 +55,17 @@ import com.metabroadcast.common.base.Maybe;
 public class OptaSportsDataHandlerTest {
 
     private static final OptaSportType SPORT = OptaSportType.RUGBY_AVIVA_PREMIERSHIP;
+    
+    private final OptaSportConfiguration sportConfig = 
+            OptaSportConfiguration.builder()
+                                  .withCompetition("competition")
+                                  .withFeedType("feedType")
+                                  .withSeasonId("season")
+                                  .build();
+    
+    private final Map<OptaSportType, OptaSportConfiguration> config = 
+            ImmutableMap.of(SPORT, sportConfig);
+    
     private Gson gson = new GsonBuilder()
             .registerTypeAdapter(OptaSportsEventsFeed.class, new OptaSportsEventsFeedDeserializer("OptaDocument"))
             .registerTypeAdapter(OptaDocument.class, new OptaDocumentDeserializer("OptaDocument"))
@@ -62,7 +76,7 @@ public class OptaSportsDataHandlerTest {
     private OrganisationStore organisationStore = Mockito.mock(OrganisationStore.class);
     private EventStore eventStore = Mockito.mock(EventStore.class);
     private TopicStore topicStore = Mockito.mock(TopicStore.class);
-    private OptaEventsUtility utility = new OptaEventsUtility(topicStore);
+    private OptaEventsUtility utility = new OptaEventsUtility(topicStore, config);
     private final OptaSportsDataHandler handler = new OptaSportsDataHandler(organisationStore, eventStore, utility);
     private OptaSportsEventsData feedData;
     
@@ -88,11 +102,11 @@ public class OptaSportsDataHandlerTest {
     @Test
     public void testTeamParsing() {
         SportsTeam team = Iterables.getFirst(feedData.teams(), null);
-        Optional<Organisation> parsed = handler.parseOrganisation(team);
+        Optional<Organisation> parsed = handler.parseOrganisation(team, SPORT);
         
         Organisation parsedTeam = parsed.get();
         
-        assertEquals("http://optasports.com/teams/" + team.attributes().uId().replace("t",""), parsedTeam.getCanonicalUri());
+        assertEquals("http://optasports.com/teams/" + team.attributes().uId(), parsedTeam.getCanonicalUri());
         assertEquals(Publisher.OPTA, parsedTeam.getPublisher());
         assertEquals(team.name(), parsedTeam.getTitle());
     }
@@ -108,7 +122,7 @@ public class OptaSportsDataHandlerTest {
         Event parsedEvent = parsed.get();
 
         DateTime startTime = new DateTime(2014, 9, 5, 19, 45, 0, DateTimeZone.forID("Europe/London"));
-        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/1100", "http://optasports.com/teams/1400");
+        ImmutableSet<String> expectedTeamUris = ImmutableSet.of("http://optasports.com/teams/t1100", "http://optasports.com/teams/t1400");
         
         assertEquals("http://optasports.com/events/" + match.attributes().uId(), parsedEvent.getCanonicalUri());
         assertEquals("Northampton vs Gloucester", parsedEvent.title());
@@ -127,7 +141,7 @@ public class OptaSportsDataHandlerTest {
 
     private void parseTeams() {
         for (SportsTeam team : feedData.teams()) {
-            handler.handleTeam(team);
+            handler.handleTeam(team, SPORT);
         }
     }
 

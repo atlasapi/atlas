@@ -68,7 +68,7 @@ public class BtEventsDataHandlerTest {
     
     @Test
     public void testTeamsIgnored() {
-        Optional<Organisation> parsed = handler.parseOrganisation(new BtTeam());
+        Optional<Organisation> parsed = handler.parseOrganisation(new BtTeam(), BtSportType.UFC);
         assertFalse(parsed.isPresent());
     }
     

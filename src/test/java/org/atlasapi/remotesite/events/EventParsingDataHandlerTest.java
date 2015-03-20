@@ -38,7 +38,7 @@ public class EventParsingDataHandlerTest {
         Mockito.when(testTeam.getCanonicalUri()).thenReturn("teamUri");
         Mockito.when(organisationStore.organisation("teamUri")).thenReturn(Optional.<Organisation>absent());
         
-        handler.handle(teamData);
+        handler.handleTeam(teamData);
         
         Mockito.verify(organisationStore).createOrUpdateOrganisation(testTeam);
     }
@@ -49,7 +49,7 @@ public class EventParsingDataHandlerTest {
         Mockito.when(testEvent.getCanonicalUri()).thenReturn("eventUri");
         Mockito.when(eventStore.fetch("eventUri")).thenReturn(Optional.<Event>absent());
         
-        handler.handle(matchData, OptaSportType.RUGBY_AVIVA_PREMIERSHIP);
+        handler.handleMatch(matchData, OptaSportType.RUGBY_AVIVA_PREMIERSHIP);
         
         Mockito.verify(eventStore).createOrUpdate(testEvent);
     }

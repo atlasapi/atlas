@@ -119,9 +119,11 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                     "Premier League", "http://dbpedia.org/resources/Premier_League"
             ))
             .build();
+    private final ImmutableMap<OptaSportType, OptaSportConfiguration> config;
     
-    public OptaEventsUtility(TopicStore topicStore) {
+    public OptaEventsUtility(TopicStore topicStore, Map<OptaSportType, OptaSportConfiguration> config) {
         super(topicStore);
+        this.config = ImmutableMap.copyOf(config);
     }
 
     @Override
@@ -130,20 +132,27 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
     }
 
     @Override
-    public String createTeamUri(String id) {
-        
-        return TEAM_URI_BASE + normalizeTeamId(id);
+    public String createTeamUri(OptaSportType sportType, String id) {
+        OptaSportConfiguration sportConfig = config.get(sportType);
+        if (sportConfig == null) {
+            throw new IllegalArgumentException("Sport type " + sportType.name() + " not configured");
+        }
+        return TEAM_URI_BASE + normalizeTeamId(id, sportConfig.prefixToStripFromId());
     }
     
     /**
      * Previously we received numeric IDs in the feed. However, when
-     * we switched to the opta API from a file, the IDs were prefixed
-     * with a leading "t". So as to reference the previously-created
-     * teams, we'll strip the leading "t", if present.
+     * we switched to the opta API from a file, some IDs were prefixed
+     * with a value, and others weren't. So as to reference the 
+     * previously-created teams, we'll strip the prefix. This is configured
+     * on a sport-by-sport basis; see {@link OptaEventsModule}.
+     * 
+     * @param prefixToStripFromId 
      */
-    private String normalizeTeamId(String id) {
-        if (id.startsWith("t")) {
-            return id.substring(1);
+    private String normalizeTeamId(String id, Optional<String> prefixToStrip) {
+        if (prefixToStrip.isPresent()
+                && id.startsWith(prefixToStrip.get())) {
+            return id.substring(prefixToStrip.get().length());
         } else {
             return id;
         }

@@ -38,7 +38,7 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
     }
 
     private UpdateProgress processData(S sport, EventsData<T, M> data) {
-        DataProcessor<T> teamProcessor = teamProcessor();
+        DataProcessor<T> teamProcessor = teamProcessor(sport);
         for (T team : data.teams()) {
             teamProcessor.process(team);
         }
@@ -56,7 +56,7 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
         return teamProcessor.getResult().reduce(matchProcessor.getResult());
     }
 
-    private DataProcessor<T> teamProcessor() {
+    private DataProcessor<T> teamProcessor(final S sport) {
         return new DataProcessor<T>() {
             
             UpdateProgress progress = UpdateProgress.START;
@@ -64,7 +64,7 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
             @Override
             public boolean process(T team) {
                 try {
-                    dataHandler.handle(team);
+                    dataHandler.handleTeam(team, sport);
                     progress = progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
                     log.warn("Error processing team: " + team, e);
@@ -89,7 +89,7 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
             @Override
             public boolean process(M match) {
                 try {
-                    dataHandler.handle(match, sport);
+                    dataHandler.handleMatch(match, sport);
                     progress = progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
                     log.warn("Error processing team: " + match, e);

@@ -127,7 +127,7 @@ public class OptaSportsDataHandlerTest {
 
     private void parseTeams() {
         for (SportsTeam team : feedData.teams()) {
-            handler.handle(team);
+            handler.handleTeam(team);
         }
     }
 

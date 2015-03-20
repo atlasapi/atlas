@@ -54,43 +54,57 @@ public class OptaEventsModule {
     
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(ingestTask(soccerFetcher()).withName("Opta Events (Football) Updater"), RepetitionRules.NEVER);
-        scheduler.schedule(ingestTask(sportsFetcher()).withName("Opta Events (Non Football) Updater"), RepetitionRules.NEVER);
-    }
-
-    private OptaEventsIngestTask<SportsTeam, SportsMatchData> ingestTask(OptaEventsFetcher<SportsTeam, SportsMatchData> fetcher) {
-        return new OptaEventsIngestTask<SportsTeam, SportsMatchData>(fetcher, dataHandler());
-    }
-
-    private OptaEventsFetcher<SportsTeam, SportsMatchData> soccerFetcher() {
-        return httpEventsFetcher(OPTA_HTTP_SOCCER_CONFIG_PREFIX, soccerTransformer());
+        
+        scheduler.schedule(soccerIngestTask().withName("Opta Events (Football) Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(nonFootballIngestTask().withName("Opta Events (Non Football) Updater"), RepetitionRules.NEVER);
     }
     
+    private OptaEventsIngestTask<SportsTeam, SportsMatchData> soccerIngestTask() {
+        Map<OptaSportType, OptaSportConfiguration> sportConfig = sportConfig(OPTA_HTTP_SOCCER_CONFIG_PREFIX);
+        return new OptaEventsIngestTask<SportsTeam, SportsMatchData>(httpEventsFetcher(sportConfig, soccerTransformer()), dataHandler(sportConfig));
+    }
+
+    private OptaEventsIngestTask<SportsTeam, SportsMatchData> nonFootballIngestTask() {
+        Map<OptaSportType, OptaSportConfiguration> sportConfig = sportConfig(OPTA_HTTP_RUGBY_CONFIG_PREFIX);
+        return new OptaEventsIngestTask<SportsTeam, SportsMatchData>(sportsFetcher(sportConfig), dataHandler(sportConfig));
+    }
+
     private OptaDataTransformer<SportsTeam, SportsMatchData> soccerTransformer() {
         return new OptaSoccerDataTransformer();
     }
 
-    private OptaEventsFetcher<SportsTeam, SportsMatchData> sportsFetcher() {
-        return httpEventsFetcher(OPTA_HTTP_RUGBY_CONFIG_PREFIX, sportsTransformer());
+    private OptaEventsFetcher<SportsTeam, SportsMatchData> sportsFetcher(Map<OptaSportType, OptaSportConfiguration> sportConfig) {
+        return httpEventsFetcher(sportConfig, sportsTransformer());
     }
     
     private OptaDataTransformer<SportsTeam, SportsMatchData> sportsTransformer() {
         return new OptaSportsDataTransformer();
     }
 
-    private OptaEventsFetcher<SportsTeam, SportsMatchData> httpEventsFetcher(String sportPrefix, OptaDataTransformer<SportsTeam, SportsMatchData> dataTransformer) {
-        return new HttpOptaEventsFetcher<>(sportConfig(sportPrefix), HttpClients.webserviceClient(), dataTransformer, new UsernameAndPassword(username, password), baseUrl);
+    private OptaEventsFetcher<SportsTeam, SportsMatchData> httpEventsFetcher(
+            Map<OptaSportType, OptaSportConfiguration> sportConfig, 
+            OptaDataTransformer<SportsTeam, SportsMatchData> dataTransformer) {
+        
+        return new HttpOptaEventsFetcher<>(sportConfig, HttpClients.webserviceClient(), dataTransformer, new UsernameAndPassword(username, password), baseUrl);
     }
 
-    private OptaSportsDataHandler dataHandler() {
-        return new OptaSportsDataHandler(organisationStore, eventStore, utility());
+    private OptaSportsDataHandler dataHandler(Map<OptaSportType, OptaSportConfiguration> config) {
+        return new OptaSportsDataHandler(organisationStore, eventStore, utility(config));
     }
 
     /**
-     * Opta Sports are configured through three parameters: feed type, a competition id, and a season. Each sport is
-     * held in an environment param suffixed with the sport's enum value, and the three parameters are joined with the | character.
-     * This method reads any environment params with the supplied suffix and splits out the three config params into a special
-     * holding type, and returns a map of sport -> configuration
+     * Opta Sports are configured through three parameters:-
+     * <ul>
+     *  <li>feed type
+     *  <li>competition id
+     *  <li>season
+     *  <li>(Optional)prefix to remove from the ID supplied by Opta 
+     * <p>
+     * Each sport is held in an environment param suffixed with the 
+     * sport's enum value, and the three parameters are pipe delimited. 
+     * This method reads any environment params with the supplied suffix 
+     * and splits out the three config params into a {@link OptaSportConfiguration} 
+     * object, and returns a map of sport to configuration.
      * 
      * @param sportPrefix the environment parameter prefix for the sport subset desired
      * @return
@@ -120,15 +134,21 @@ public class OptaEventsModule {
      */
     private OptaSportConfiguration parseConfig(String sportConfig) {
         Iterable<String> configItems = Splitter.on('|').split(sportConfig);
-        return OptaSportConfiguration.builder()
+        OptaSportConfiguration.Builder config 
+            = OptaSportConfiguration.builder()
                 .withFeedType(Iterables.get(configItems, 0))
                 .withCompetition(Iterables.get(configItems, 1))
-                .withSeasonId(Iterables.get(configItems, 2))
-                .build();
+                .withSeasonId(Iterables.get(configItems, 2));
+        
+        if (Iterables.size(configItems) == 4) {
+            config.withPrefixToStripFromId(Iterables.get(configItems, 3));
+        }
+        
+        return config.build();
     }
 
     @Bean
-    private OptaEventsUtility utility() {
-        return new OptaEventsUtility(topicStore);
+    private OptaEventsUtility utility(Map<OptaSportType, OptaSportConfiguration> config) {
+        return new OptaEventsUtility(topicStore, config);
     }
 }

@@ -8,6 +8,7 @@ import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.Organisation;
 import org.atlasapi.persistence.content.organisation.OrganisationStore;
 import org.atlasapi.persistence.event.EventStore;
+import org.atlasapi.remotesite.opta.events.model.OptaSportType;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Maps;
@@ -26,22 +27,22 @@ public abstract class EventParsingDataHandler<S, T, M> implements DataHandler<S,
     }
     
     @Override
-    public void handle(T team) {
-        Optional<Organisation> organisation = parseOrganisation(team);
+    public void handleTeam(T team, S sport) {
+        Optional<Organisation> organisation = parseOrganisation(team, sport);
         if (organisation.isPresent()) {
             createOrMerge(organisation.get());
         }
     }
 
     @Override
-    public void handle(M match, S sport) {
+    public void handleMatch(M match, S sport) {
         Optional<Event> event = parseEvent(match, sport);
         if (event.isPresent()) {
             createOrMerge(event.get());
         }
     }
 
-    public abstract Optional<Organisation> parseOrganisation(T team);
+    public abstract Optional<Organisation> parseOrganisation(T team, S sport);
     
     public abstract Optional<Event> parseEvent(M match, S sport);
 

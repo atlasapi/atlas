@@ -9,6 +9,7 @@ import java.util.Set;
 
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.topic.TopicStore;
+import org.atlasapi.remotesite.opta.events.model.OptaSportType;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Function;
@@ -36,7 +37,7 @@ public abstract class EventsUtility<S> {
     
     public abstract String createEventUri(String id);
     
-    public abstract String createTeamUri(String id);
+    public abstract String createTeamUri(OptaSportType sportType, String id);
     
     /**
      * Where an end time has not been provided for an {@link org.atlasapi.media.entity.Event},
@@ -103,4 +104,5 @@ public abstract class EventsUtility<S> {
                 value
         ));
     }
+
 }

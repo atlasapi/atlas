@@ -4,6 +4,7 @@ import java.util.Map;
 
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.events.EventsUtility;
+import org.atlasapi.remotesite.opta.events.model.OptaSportType;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Optional;
@@ -75,7 +76,7 @@ public final class BtEventsUtility extends EventsUtility<BtSportType> {
      * BT currently don't provide Team information
      */
     @Override
-    public String createTeamUri(String id) {
+    public String createTeamUri(OptaSportType sportType, String id) {
         throw new UnsupportedOperationException();
     }
 

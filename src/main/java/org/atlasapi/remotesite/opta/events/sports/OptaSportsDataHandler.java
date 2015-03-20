@@ -47,10 +47,11 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
     }
 
     @Override
-    public Optional<Organisation> parseOrganisation(SportsTeam team) {
+    public Optional<Organisation> parseOrganisation(SportsTeam team, OptaSportType sport) {
         Organisation organisation = new Organisation();
 
-        organisation.setCanonicalUri(utility.createTeamUri(team.attributes().uId()));
+        organisation.setCanonicalUri(utility.createTeamUri(sport, 
+                team.attributes().uId()));
         organisation.setPublisher(Publisher.OPTA);
         organisation.setTitle(team.name());
 
@@ -59,7 +60,7 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
 
     @Override
     public Optional<Event> parseEvent(SportsMatchData match, OptaSportType sport) {
-        Optional<String> title = createTitle(match);
+        Optional<String> title = createTitle(match, sport);
         if (!title.isPresent()) {
             return Optional.absent();
         }
@@ -84,7 +85,7 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
                 .withVenue(venue.get())
                 .withStartTime(startTime.get())
                 .withEndTime(endTime.get())
-                .withOrganisations(parseOrganisations(match))
+                .withOrganisations(parseOrganisations(match, sport))
                 .withEventGroups(parseEventGroups(sport))
                 .build();
 
@@ -93,18 +94,19 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
         return Optional.of(event);
     }
     
-    private Optional<String> createTitle(SportsMatchData match) {
-        Optional<String> team1 = fetchTeamName(match.teamData().get(0));
-        Optional<String> team2 = fetchTeamName(match.teamData().get(1));
+    private Optional<String> createTitle(SportsMatchData match, OptaSportType sportType) {
+        
+        Optional<String> team1 = fetchTeamName(match.teamData().get(0), sportType);
+        Optional<String> team2 = fetchTeamName(match.teamData().get(1), sportType);
         if (!team1.isPresent() || !team2.isPresent()) {
             return Optional.absent();
         }
         return Optional.of(team1.get() + " vs " + team2.get());
     }
     
-    private Optional<String> fetchTeamName(SportsTeamData teamData) {
+    private Optional<String> fetchTeamName(SportsTeamData teamData, OptaSportType sportType) {
         String teamId = teamData.attributes().teamRef();
-        Optional<Organisation> team = getTeamByUri(utility.createTeamUri(teamId));
+        Optional<Organisation> team = getTeamByUri(utility.createTeamUri(sportType, teamId));
         if (!team.isPresent()) {
             log.error("team {} not present in teams list", teamId);
             return Optional.absent();
@@ -144,11 +146,11 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
         })).value();
     }
     
-    private Iterable<Organisation> parseOrganisations(SportsMatchData match) {
+    private Iterable<Organisation> parseOrganisations(SportsMatchData match, final OptaSportType sportType) {
         Iterable<Organisation> organisations = Iterables.transform(match.teamData(), new Function<SportsTeamData, Organisation>() {
             @Override
             public Organisation apply(SportsTeamData input) {
-                return getTeamByUri(utility.createTeamUri(input.attributes().teamRef())).orNull();
+                return getTeamByUri(utility.createTeamUri(sportType, input.attributes().teamRef())).orNull();
             }
         });
         return Iterables.filter(organisations, Predicates.notNull());

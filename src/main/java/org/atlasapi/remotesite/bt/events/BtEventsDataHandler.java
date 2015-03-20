@@ -17,6 +17,7 @@ import org.atlasapi.persistence.content.organisation.OrganisationStore;
 import org.atlasapi.persistence.event.EventStore;
 import org.atlasapi.remotesite.bt.events.model.BtEvent;
 import org.atlasapi.remotesite.events.EventParsingDataHandler;
+import org.atlasapi.remotesite.opta.events.model.OptaSportType;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeFieldType;
 import org.joda.time.DateTimeZone;
@@ -62,7 +63,7 @@ public final class BtEventsDataHandler extends EventParsingDataHandler<BtSportTy
     }
 
     @Override
-    public Optional<Organisation> parseOrganisation(BtTeam team) {
+    public Optional<Organisation> parseOrganisation(BtTeam team, OptaSportType sportType) {
         // no-op: BT has no event modelling currently
         return Optional.absent();
     }

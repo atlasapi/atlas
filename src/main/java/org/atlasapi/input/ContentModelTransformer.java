@@ -98,6 +98,7 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         result.setKeyPhrases(keyPhrases(inputContent.getKeyPhrases(), inputContent.getPublisher()));
         result.setGenres(inputContent.getGenres());
         result.setClips(transformClips(inputContent));
+        result.setTermsOfUse(inputContent.getTermsOfUse());
         return result;
     }
 

@@ -160,6 +160,7 @@ public abstract class ContentModelSimplifier<F extends Content, T extends Descri
                 return eventRefSimplifier.simplify(input, annotations, config); 
             }
         }));
+        simpleDescription.setTermsOfUse(content.getTermsOfUse());
         
     }
     

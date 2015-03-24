@@ -576,6 +576,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
                             annotations, config));
                 }
             }
+            simpleLocation.setTermsOfUse(policy.getTermsOfUse());
         }
 
         simpleLocation.setTransportIsLive(location.getTransportIsLive());

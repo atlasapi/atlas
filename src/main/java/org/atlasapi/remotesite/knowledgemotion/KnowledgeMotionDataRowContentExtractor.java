@@ -2,15 +2,19 @@ package org.atlasapi.remotesite.knowledgemotion;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.base.Function;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.KeyPhrase;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
@@ -30,8 +34,32 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<KnowledgeMotionDataRow, Optional<? extends Content>> {
+
+    private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionDataRowContentExtractor.class);
+    private static final Function<String, String> PRICE_CATEGORY_TO_GENRE = new Function<String, String>() {
+        @Override
+        public String apply(String priceCategory) {
+            try {
+                return String.format(
+                        "%s%s",
+                        KNOWLEDGEMOTION_GENRE_PREFIX,
+                        URLEncoder.encode(priceCategory, "UTF-8")
+                );
+            } catch (UnsupportedEncodingException e) {
+                //this should never happen
+                log.error("Error encoding price category", e);
+                return null;
+            }
+        }
+    };
+
+    private static final String KNOWLEDGEMOTION_GENRE_PREFIX = "http://knowledgemotion.com/";
 
     private final Splitter idSplitter = Splitter.on(":").omitEmptyStrings();
     private final PeriodFormatter durationFormatter = new PeriodFormatterBuilder()
@@ -73,7 +101,7 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
         String id = Iterables.getLast(idSplitter.split(dataRow.getId()));
         Publisher publisher = sourceConfig.publisher();
 
-        item.setVersions(extractVersions(dataRow.getDuration()));
+        item.setVersions(extractVersions(dataRow.getDuration(), dataRow.getTermsOfUse()));
         item.setFirstSeen(extractDate(dataRow.getDate()));
         item.setDescription(dataRow.getDescription());
         item.setTitle(dataRow.getTitle());
@@ -82,6 +110,7 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
         item.setCurie(sourceConfig.curie(id));
         item.setLastUpdated(new DateTime(DateTimeZone.UTC));
         item.setMediaType(MediaType.VIDEO);
+        item.setGenres(Iterables.transform(dataRow.getPriceCategories(), PRICE_CATEGORY_TO_GENRE));
 
         List<String> keyPhrases = dataRow.getKeywords();
         item.setKeyPhrases(keyphrases(keyPhrases, publisher));
@@ -98,10 +127,16 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
         return keyphrases.build();
     }
 
-    private Set<Version> extractVersions(String duration) {
+    private Set<Version> extractVersions(String duration, Optional<String> termsOfUse) {
         Version version = new Version();
         Encoding encoding = new Encoding();
-        encoding.setAvailableAt(ImmutableSet.of(new Location()));
+        Location location = new Location();
+        if(termsOfUse.isPresent()) {
+            Policy policy = new Policy();
+            policy.setTermsOfUse(termsOfUse.get());
+            location.setPolicy(policy);
+        }
+        encoding.setAvailableAt(ImmutableSet.of(location));
         version.addManifestedAs(encoding);
         version.setDuration(extractDuration(duration));
         return ImmutableSet.of(version);
@@ -115,5 +150,6 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
     private DateTime extractDate(String date) {
         return dateTimeFormatter.parseDateTime(date).withZone(DateTimeZone.UTC);
     }
+
 
 }

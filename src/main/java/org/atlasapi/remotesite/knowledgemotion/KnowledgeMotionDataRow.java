@@ -4,7 +4,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.api.client.util.Lists;
 import com.google.common.base.Objects;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
 public class KnowledgeMotionDataRow {
@@ -16,14 +19,26 @@ public class KnowledgeMotionDataRow {
     private final String date;
     private final String duration;
     private final List<String> keywords;
+    private final List<String> priceCategories;
     private final String alternativeId;
+    private final Optional<String> termsOfUse;
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public KnowledgeMotionDataRow(String source, String id, String title, String description,
-            String date, String duration, Iterable<String> keywords, String alternativeId) {
+    public KnowledgeMotionDataRow(
+            String source,
+            String id,
+            String title,
+            String description,
+            String date,
+            String duration,
+            Iterable<String> keywords,
+            Iterable<String> priceCategories,
+            String alternativeId,
+            String termsOfUse
+    ) {
         this.source = checkNotNull(source);
         this.id = checkNotNull(id);
         this.title = checkNotNull(title);
@@ -31,7 +46,9 @@ public class KnowledgeMotionDataRow {
         this.date = checkNotNull(date);
         this.duration = checkNotNull(duration);
         this.keywords = ImmutableList.copyOf(keywords);
+        this.priceCategories = ImmutableList.copyOf(priceCategories);
         this.alternativeId = alternativeId;
+        this.termsOfUse = Optional.fromNullable(Strings.emptyToNull(termsOfUse));
     }
     
     public String getSource() {
@@ -79,6 +96,14 @@ public class KnowledgeMotionDataRow {
                 .toString();
     }
 
+    public List<String> getPriceCategories() {
+        return priceCategories;
+    }
+
+    public Optional<String> getTermsOfUse() {
+        return termsOfUse;
+    }
+
     public static class Builder {
 
         private String source;
@@ -88,10 +113,23 @@ public class KnowledgeMotionDataRow {
         private String date;
         private String duration;
         private List<String> keywords = ImmutableList.of();
+        private List<String> priceCategories = Lists.newArrayList();
         private String alternativeId;
+        private String termsOfUse;
 
         public KnowledgeMotionDataRow build() {
-            return new KnowledgeMotionDataRow(source, id, title, description, date, duration, keywords, alternativeId);
+            return new KnowledgeMotionDataRow(
+                    source,
+                    id,
+                    title,
+                    description,
+                    date,
+                    duration,
+                    keywords,
+                    priceCategories,
+                    alternativeId,
+                    termsOfUse
+            );
         }
 
         private Builder() {}
@@ -130,8 +168,18 @@ public class KnowledgeMotionDataRow {
             return this;
         }
 
+        public Builder withPriceCategories(List<String> priceCategories) {
+            this.priceCategories.addAll(priceCategories);
+            return this;
+        }
+
         public Builder withAlternativeId(String altId) {
             this.alternativeId = altId;
+            return this;
+        }
+
+        public Builder withTermsOfUse(String termsOfUse) {
+            this.termsOfUse = termsOfUse;
             return this;
         }
 

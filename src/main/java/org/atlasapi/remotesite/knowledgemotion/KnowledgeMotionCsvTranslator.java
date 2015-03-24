@@ -10,10 +10,21 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Splitter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
 import com.google.common.collect.ImmutableList;
+
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.ALT_ID;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DATE;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DESCRIPTION;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DURATION;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.ID;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.PRICE_CATEGORY;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.SOURCE;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.TERMS_OF_USE;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.TITLE;
 
 /**
  * Translates Knowledgemotion's CSVs into KnowledgeMotionDataRows.
@@ -21,15 +32,15 @@ import com.google.common.collect.ImmutableList;
 public class KnowledgeMotionCsvTranslator {
 
     private static final String[] HEADER = new String[] {
-        "Source",
+        SOURCE.getFieldName(),
         "Unique ID",
-        "namespace",
-        "Title",
-        "Description",
-        "Date",
-        "Duration",
-        "Keywords",
-        "Price category (1= stock, 2=news, 3=brand)",
+        ID.getFieldName(),
+        TITLE.getFieldName(),
+        DESCRIPTION.getFieldName(),
+        DATE.getFieldName(),
+        DURATION.getFieldName(),
+        KnowledgeMotionSpreadsheetColumn.KEYWORDS.getFieldName(),
+        PRICE_CATEGORY.getFieldName(),
         "Sounds",
         "Color",
         "Location",
@@ -37,7 +48,9 @@ public class KnowledgeMotionCsvTranslator {
         "State",
         "City",
         "Region",
-        "Alternative ID" };
+        ALT_ID.getFieldName(),
+        TERMS_OF_USE.getFieldName()
+    };
     private static final Pattern KEYWORDS = Pattern.compile("([^,]+)(, )?");
 
     /**
@@ -55,14 +68,18 @@ public class KnowledgeMotionCsvTranslator {
         while (records.hasNext()) {
             CSVRecord record = records.next();
 
-            String source = record.get(KnowledgeMotionSpreadsheetColumn.SOURCE.getFieldName());
-            String id = record.get(KnowledgeMotionSpreadsheetColumn.ID.getFieldName());
-            String title = record.get(KnowledgeMotionSpreadsheetColumn.TITLE.getFieldName());
-            String description = record.get(KnowledgeMotionSpreadsheetColumn.DESCRIPTION.getFieldName());
-            String date = record.get(KnowledgeMotionSpreadsheetColumn.DATE.getFieldName());
-            String duration = record.get(KnowledgeMotionSpreadsheetColumn.DURATION.getFieldName());
+            String source = record.get(SOURCE.getFieldName());
+            String id = record.get(ID.getFieldName());
+            String title = record.get(TITLE.getFieldName());
+            String description = record.get(DESCRIPTION.getFieldName());
+            String date = record.get(DATE.getFieldName());
+            String duration = record.get(DURATION.getFieldName());
             String keywordsString = record.get(KnowledgeMotionSpreadsheetColumn.KEYWORDS.getFieldName());
-            String altId = record.get(KnowledgeMotionSpreadsheetColumn.ALT_ID.getFieldName());
+            Iterable<String> priceCategories = Splitter.on(",")
+                    .omitEmptyStrings()
+                    .split(record.get(PRICE_CATEGORY.getFieldName()));
+            String altId = record.get(ALT_ID.getFieldName());
+            String termsOfUse = record.get(TERMS_OF_USE.getFieldName());
 
             List<String> keywords = new ArrayList<>();
             Matcher keywordMatcher = KEYWORDS.matcher(keywordsString);
@@ -70,7 +87,20 @@ public class KnowledgeMotionCsvTranslator {
                 keywords.add(keywordMatcher.group(1));
             }
 
-            resultBuilder.add(new KnowledgeMotionDataRow(source, id, title, description, date, duration, keywords, altId));
+            resultBuilder.add(
+                    new KnowledgeMotionDataRow(
+                            source,
+                            id,
+                            title,
+                            description,
+                            date,
+                            duration,
+                            keywords,
+                            priceCategories,
+                            altId,
+                            termsOfUse
+                    )
+            );
         }
 
         return resultBuilder.build();

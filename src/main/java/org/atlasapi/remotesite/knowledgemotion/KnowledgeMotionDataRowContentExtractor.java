@@ -7,7 +7,6 @@ import java.net.URLEncoder;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.base.Function;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Item;
@@ -16,6 +15,7 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.knowledgemotion.topics.TopicGuesser;
@@ -26,7 +26,10 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.PeriodFormatter;
 import org.joda.time.format.PeriodFormatterBuilder;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -34,10 +37,8 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.intl.Countries;
 
 public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<KnowledgeMotionDataRow, Optional<? extends Content>> {
 
@@ -101,8 +102,11 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
         String id = Iterables.getLast(idSplitter.split(dataRow.getId()));
         Publisher publisher = sourceConfig.publisher();
 
+        ReleaseDate releaseDate = new ReleaseDate(extractDate(dataRow.getDate()).toLocalDate(),
+            Countries.ALL, ReleaseDate.ReleaseType.valueOf("created"));
+
         item.setVersions(extractVersions(dataRow.getDuration(), dataRow.getTermsOfUse()));
-        item.setFirstSeen(extractDate(dataRow.getDate()));
+        item.setReleaseDates(Lists.newArrayList(releaseDate));
         item.setDescription(dataRow.getDescription());
         item.setTitle(dataRow.getTitle());
         item.setPublisher(publisher);

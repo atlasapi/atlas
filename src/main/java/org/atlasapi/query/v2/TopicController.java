@@ -119,12 +119,10 @@ public class TopicController extends BaseController<Iterable<Topic>> {
         try {
             Selection selection = query.getSelection();
             QueryResult<Identified, Topic> result = QueryResult.of(
-                query.getSelection().apply(
                     Iterables.filter(
                             Iterables.filter(iterable(contentLister.contentForTopic(decodedId, query)), Identified.class),
                             FilterActivelyPublishedOnlyQueryExecutor.IS_ACTIVELY_PUBLISHED
-                    )
-                ), topic);
+                    ), topic);
             queryController.modelAndViewFor(req, resp, result.withSelection(selection), query.getConfiguration());
         } catch (Exception e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));

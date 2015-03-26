@@ -34,7 +34,18 @@ public class KnowledgeMotionContentMergerTest {
     private final KnowledgeMotionContentMerger handler = new KnowledgeMotionContentMerger(resolver, writer, extractor);
     
     private static KnowledgeMotionDataRow emptyRow() {
-        return new KnowledgeMotionDataRow("source", "id", "title", "description", "date", "duration", ImmutableList.<String>of(), null);
+        return new KnowledgeMotionDataRow(
+                "source",
+                "id",
+                "title",
+                "description",
+                "date",
+                "duration",
+                ImmutableList.<String>of(),
+                ImmutableList.<String>of(),
+                null,
+                null
+        );
     }
 
     @Test

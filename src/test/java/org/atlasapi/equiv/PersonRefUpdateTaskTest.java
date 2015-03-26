@@ -11,7 +11,6 @@ import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.CrewMember;
-import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
@@ -22,6 +21,7 @@ import org.atlasapi.persistence.audit.PersistenceAuditLog;
 import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.LookupResolvingContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -60,7 +60,8 @@ public class PersonRefUpdateTaskTest {
     private final ScheduleTaskProgressStore progressStore = new MongoScheduleTaskProgressStore(mongo);
     private final MongoLookupEntryStore contentLookup = new MongoLookupEntryStore(mongo.collection("lookup"), 
             persistenceAuditLog, ReadPreference.primary());
-    private final ContentLister lister = new MongoContentLister(mongo);
+    private final KnownTypeContentResolver knownTypeContentResolver = new MongoContentResolver(mongo, contentLookup);
+    private final ContentLister lister = new MongoContentLister(mongo, knownTypeContentResolver);
 
     private final ServiceResolver serviceResolver = mock(ServiceResolver.class);
     private final PlayerResolver playerResolver = mock(PlayerResolver.class);

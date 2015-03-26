@@ -27,6 +27,7 @@ import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
 import org.atlasapi.persistence.audit.PersistenceAuditLog;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.LookupResolvingContentResolver;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.mongo.MongoContentLister;
@@ -61,7 +62,8 @@ public class ChildRefUpdateTaskTest extends TestCase {
     private final PlayerResolver playerResolver = mock(PlayerResolver.class);
     
     ContentWriter writer = new MongoContentWriter(mongo, lookupStore, persistenceAuditLog, playerResolver, serviceResolver, new SystemClock());
-    ContentLister lister = new MongoContentLister(mongo);
+    private final KnownTypeContentResolver knownTypeContentResolver = new MongoContentResolver(mongo, lookupStore);
+    ContentLister lister = new MongoContentLister(mongo, knownTypeContentResolver);
     
     ChildRefUpdateTask task = new ChildRefUpdateTask(lister, resolver, mongo, progressStore).forPublishers(BBC);
     

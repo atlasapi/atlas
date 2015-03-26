@@ -14,10 +14,7 @@ import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.ingest.s3.process.ProcessingResult;
 
@@ -26,7 +23,7 @@ public class KnowledgeMotionUpdater {
     private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionUpdater.class);
 
     private final KnowledgeMotionDataRowHandler dataHandler;
-    private final ImmutableList<Publisher> allKmPublishers;
+    private final Iterable<KnowledgeMotionSourceConfig> allKmPublishers;
     private final ContentLister contentLister;
 
     private Set<String> seenUris;
@@ -35,10 +32,7 @@ public class KnowledgeMotionUpdater {
         KnowledgeMotionContentMerger dataHandler,
         ContentLister contentLister) {
         this.dataHandler = checkNotNull(dataHandler);
-        this.allKmPublishers = ImmutableList.copyOf(Iterables.transform(sources, new Function<KnowledgeMotionSourceConfig, Publisher>(){
-            @Override public Publisher apply(KnowledgeMotionSourceConfig input) {
-                return input.publisher();
-            }}));
+        this.allKmPublishers = checkNotNull(sources);
         this.contentLister = checkNotNull(contentLister);
 
         seenUris = Sets.newHashSet();
@@ -46,6 +40,25 @@ public class KnowledgeMotionUpdater {
 
     protected ProcessingResult process(List<KnowledgeMotionDataRow> rows, ProcessingResult processingResult) {
         boolean allRowsSuccess = true;
+
+        String publisherRowHeader = rows.get(0).getSource();
+        Publisher publisher = null;
+        for (KnowledgeMotionSourceConfig config : allKmPublishers) {
+            if (publisherRowHeader.equals(config.rowHeader())) {
+                publisher = config.publisher();
+            }
+        }
+        if (publisher == null) {
+            StringBuilder errorText = new StringBuilder();
+            errorText.append("First row did not contain a recognised publisher in the 'Source' column.").append("\n");
+            errorText.append("Found: " + publisherRowHeader).append("\n");
+            errorText.append("Valid publishers are: ").append("\n");
+            for (KnowledgeMotionSourceConfig config : allKmPublishers) {
+                errorText.append(config.rowHeader()).append("\n");
+            }
+
+            processingResult.error("input file", errorText.toString());
+        }
 
         for (KnowledgeMotionDataRow row : rows) {
             try {
@@ -61,9 +74,12 @@ public class KnowledgeMotionUpdater {
             }
         }
 
-        if (allRowsSuccess) {
-            // un-ActivelyPublisheding disappeared content
-            Iterator<Content> allStoredKmContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublishers(allKmPublishers).build());
+        /*
+         * If all rows of this processing run completed successfully,
+         * unpublish everything else by this publisher
+         */
+        if (allRowsSuccess && rows.size() > 0) {
+            Iterator<Content> allStoredKmContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublisher(publisher).build());
             while (allStoredKmContent.hasNext()) {
                 Content item = allStoredKmContent.next();
                 if (!seenUris.contains(item.getCanonicalUri())) {

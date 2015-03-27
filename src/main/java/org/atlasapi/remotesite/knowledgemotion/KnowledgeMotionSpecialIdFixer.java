@@ -24,8 +24,10 @@ public class KnowledgeMotionSpecialIdFixer {
             log.info("Processing row {}", row.getId());
             try {
                 dataHandler.handle(row);
+                log.debug("Successfully fixed special ID for row {}", row.getId());
                 processingResult.success();
             } catch (RuntimeException e) {
+                log.debug("Failed to fix special ID for row {}", row.getId());
                 processingResult.error(row.getId(), "While fixing special ID: " + e.getMessage());
             }
         }

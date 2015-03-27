@@ -103,7 +103,7 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
         Publisher publisher = sourceConfig.publisher();
 
         ReleaseDate releaseDate = new ReleaseDate(extractDate(dataRow.getDate()).toLocalDate(),
-            Countries.ALL, ReleaseDate.ReleaseType.valueOf("created"));
+            Countries.ALL, ReleaseDate.ReleaseType.GENERAL);
 
         item.setVersions(extractVersions(dataRow.getDuration(), dataRow.getTermsOfUse()));
         item.setReleaseDates(Lists.newArrayList(releaseDate));

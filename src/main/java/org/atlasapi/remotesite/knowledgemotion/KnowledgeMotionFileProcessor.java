@@ -66,7 +66,7 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
         KnowledgeMotionUpdater updater = new KnowledgeMotionUpdater(SOURCES,
             new KnowledgeMotionContentMerger(contentResolver, contentWriter,
                 new KnowledgeMotionDataRowContentExtractor(SOURCES, topicGuesser)), contentLister);
-        processingResult = updater.process(rows, processingResult);
+        updater.process(rows, processingResult);
 
         KnowledgeMotionSpecialIdFixer specialIdFixer = new KnowledgeMotionSpecialIdFixer(new SpecialIdFixingKnowledgeMotionDataRowHandler(contentResolver, contentWriter, FIX_SOURCES.get(0)));
         specialIdFixer.process(rows, processingResult);

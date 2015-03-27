@@ -66,10 +66,11 @@ public class KnowledgeMotionUpdater {
                 if (written.isPresent()) {
                     seenUris.add(written.get().getCanonicalUri());
                 }
+                log.debug("Successfully updated row {}", row.getId());
                 processingResult.success();
             } catch (RuntimeException e) {
                 allRowsSuccess = false;
-                log.info("Failed to update", e);
+                log.debug("Failed to update", e);
                 processingResult.error(row.getId(), "While merging content: " + e.getMessage());
             }
         }

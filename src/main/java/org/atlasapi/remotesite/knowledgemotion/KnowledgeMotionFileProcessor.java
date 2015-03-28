@@ -2,7 +2,7 @@ package org.atlasapi.remotesite.knowledgemotion;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
+import java.util.Iterator;
 
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -53,9 +53,9 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
 
         ProcessingResult processingResult = new ProcessingResult();
 
-        List<KnowledgeMotionDataRow> rows;
+        Iterator<KnowledgeMotionDataRow> rowIterator;
         try {
-            rows = csvTranslator.translate(file);
+            rowIterator = csvTranslator.translate(file);
         } catch (IOException e) {
             log.info("Unable to parse input file");
             processingResult.error("input file", "Unable to parse input file: " + e.getMessage());
@@ -65,10 +65,18 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
         KnowledgeMotionUpdater updater = new KnowledgeMotionUpdater(SOURCES,
             new KnowledgeMotionContentMerger(contentResolver, contentWriter,
                 new KnowledgeMotionDataRowContentExtractor(SOURCES, topicGuesser)), contentLister);
-        updater.process(rows, processingResult);
+        updater.process(rowIterator, processingResult);
+
+        try {
+            rowIterator = csvTranslator.translate(file);
+        } catch (IOException e) {
+            log.info("Unable to parse input file");
+            processingResult.error("input file", "Unable to parse input file: " + e.getMessage());
+            return processingResult;
+        }
 
         KnowledgeMotionSpecialIdFixer specialIdFixer = new KnowledgeMotionSpecialIdFixer(new SpecialIdFixingKnowledgeMotionDataRowHandler(contentResolver, contentWriter, FIX_SOURCES.get(0)));
-        specialIdFixer.process(rows, processingResult);
+        specialIdFixer.process(rowIterator, processingResult);
 
         return processingResult;
     }

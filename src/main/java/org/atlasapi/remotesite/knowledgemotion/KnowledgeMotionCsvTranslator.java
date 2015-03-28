@@ -1,5 +1,15 @@
 package org.atlasapi.remotesite.knowledgemotion;
 
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.ALT_ID;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DATE;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DESCRIPTION;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DURATION;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.ID;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.PRICE_CATEGORY;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.SOURCE;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.TERMS_OF_USE;
+import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.TITLE;
+
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
@@ -10,21 +20,11 @@ import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.base.Splitter;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVRecord;
 
-import com.google.common.collect.ImmutableList;
-
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.ALT_ID;
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DATE;
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DESCRIPTION;
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.DURATION;
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.ID;
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.PRICE_CATEGORY;
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.SOURCE;
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.TERMS_OF_USE;
-import static org.atlasapi.remotesite.knowledgemotion.KnowledgeMotionSpreadsheetColumn.TITLE;
+import com.google.common.base.Splitter;
+import com.google.common.collect.AbstractIterator;
 
 /**
  * Translates Knowledgemotion's CSVs into KnowledgeMotionDataRows.
@@ -60,50 +60,55 @@ public class KnowledgeMotionCsvTranslator {
      * the last column to be ignored. This method will continue to work in the same way if the
      * second column is removed.
      */
-    public List<KnowledgeMotionDataRow> translate(File file) throws IOException {
+    public Iterator<KnowledgeMotionDataRow> translate(File file) throws IOException {
         Reader reader = new FileReader(file);
-        Iterator<CSVRecord> records = CSVFormat.RFC4180.withHeader(HEADER).parse(reader).iterator();
+        final Iterator<CSVRecord> records = CSVFormat.RFC4180.withHeader(HEADER).parse(reader).iterator();
         records.next();
-        ImmutableList.Builder<KnowledgeMotionDataRow> resultBuilder = ImmutableList.builder();
-        while (records.hasNext()) {
-            CSVRecord record = records.next();
 
-            String source = record.get(SOURCE.getFieldName());
-            String id = record.get(ID.getFieldName());
-            String title = record.get(TITLE.getFieldName());
-            String description = record.get(DESCRIPTION.getFieldName());
-            String date = record.get(DATE.getFieldName());
-            String duration = record.get(DURATION.getFieldName());
-            String keywordsString = record.get(KnowledgeMotionSpreadsheetColumn.KEYWORDS.getFieldName());
-            Iterable<String> priceCategories = Splitter.on(",")
+        return new AbstractIterator<KnowledgeMotionDataRow>() {
+
+            @Override
+            protected KnowledgeMotionDataRow computeNext() {
+                if (!records.hasNext()) {
+                    return endOfData();
+                }
+
+                CSVRecord record = records.next();
+
+                String source = record.get(SOURCE.getFieldName());
+                String id = record.get(ID.getFieldName());
+                String title = record.get(TITLE.getFieldName());
+                String description = record.get(DESCRIPTION.getFieldName());
+                String date = record.get(DATE.getFieldName());
+                String duration = record.get(DURATION.getFieldName());
+                String keywordsString = record.get(KnowledgeMotionSpreadsheetColumn.KEYWORDS.getFieldName());
+                Iterable<String> priceCategories = Splitter.on(",")
                     .omitEmptyStrings()
                     .split(record.get(PRICE_CATEGORY.getFieldName()));
-            String altId = record.get(ALT_ID.getFieldName());
-            String termsOfUse = record.get(TERMS_OF_USE.getFieldName());
+                String altId = record.get(ALT_ID.getFieldName());
+                String termsOfUse = record.get(TERMS_OF_USE.getFieldName());
 
-            List<String> keywords = new ArrayList<>();
-            Matcher keywordMatcher = KEYWORDS.matcher(keywordsString);
-            while (keywordMatcher.find()) {
-                keywords.add(keywordMatcher.group(1));
+                List<String> keywords = new ArrayList<>();
+                Matcher keywordMatcher = KEYWORDS.matcher(keywordsString);
+                while (keywordMatcher.find()) {
+                    keywords.add(keywordMatcher.group(1));
+                }
+
+                return new KnowledgeMotionDataRow(
+                    source,
+                    id,
+                    title,
+                    description,
+                    date,
+                    duration,
+                    keywords,
+                    priceCategories,
+                    altId,
+                    termsOfUse
+                );
             }
 
-            resultBuilder.add(
-                    new KnowledgeMotionDataRow(
-                            source,
-                            id,
-                            title,
-                            description,
-                            date,
-                            duration,
-                            keywords,
-                            priceCategories,
-                            altId,
-                            termsOfUse
-                    )
-            );
-        }
-
-        return resultBuilder.build();
+        };
     }
 
 }

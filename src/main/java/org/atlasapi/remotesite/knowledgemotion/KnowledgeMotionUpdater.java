@@ -3,7 +3,6 @@ package org.atlasapi.remotesite.knowledgemotion;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Iterator;
-import java.util.List;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Content;
@@ -38,10 +37,14 @@ public class KnowledgeMotionUpdater {
         seenUris = Sets.newHashSet();
     }
 
-    protected ProcessingResult process(List<KnowledgeMotionDataRow> rows, ProcessingResult processingResult) {
-        boolean allRowsSuccess = true;
+    protected ProcessingResult process(Iterator<KnowledgeMotionDataRow> rows, ProcessingResult processingResult) {
+        if (!rows.hasNext()) {
+            log.info("Knowledgemotion Common Ingest received an empty file");
+            processingResult.error("input file", "Empty file");
+        }
 
-        String publisherRowHeader = rows.get(0).getSource();
+        KnowledgeMotionDataRow firstRow = rows.next();
+        String publisherRowHeader = firstRow.getSource();
         Publisher publisher = null;
         for (KnowledgeMotionSourceConfig config : allKmPublishers) {
             if (publisherRowHeader.equals(config.rowHeader())) {
@@ -60,18 +63,13 @@ public class KnowledgeMotionUpdater {
             processingResult.error("input file", errorText.toString());
         }
 
-        for (KnowledgeMotionDataRow row : rows) {
-            try {
-                Optional<Content> written = dataHandler.handle(row);
-                if (written.isPresent()) {
-                    seenUris.add(written.get().getCanonicalUri());
-                }
-                log.debug("Successfully updated row {}", row.getId());
-                processingResult.success();
-            } catch (RuntimeException e) {
+        boolean allRowsSuccess = true;
+        if (!writeRow(firstRow, processingResult)) {
+            allRowsSuccess = false;
+        }
+        while (rows.hasNext()) {
+            if (!writeRow(rows.next(), processingResult)) {
                 allRowsSuccess = false;
-                log.debug("Failed to update", e);
-                processingResult.error(row.getId(), "While merging content: " + e.getMessage());
             }
         }
 
@@ -79,7 +77,7 @@ public class KnowledgeMotionUpdater {
          * If all rows of this processing run completed successfully,
          * unpublish everything else by this publisher
          */
-        if (allRowsSuccess && rows.size() > 0) {
+        if (allRowsSuccess) {
             Iterator<Content> allStoredKmContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublisher(publisher).build());
             while (allStoredKmContent.hasNext()) {
                 Content item = allStoredKmContent.next();
@@ -91,6 +89,25 @@ public class KnowledgeMotionUpdater {
         }
 
         return processingResult;
+    }
+
+    /**
+     * @return success
+     */
+    private boolean writeRow(KnowledgeMotionDataRow row, ProcessingResult processingResult) {
+        try {
+            Optional<Content> written = dataHandler.handle(row);
+            if (written.isPresent()) {
+                seenUris.add(written.get().getCanonicalUri());
+            }
+            log.debug("Successfully updated row {}", row.getId());
+            processingResult.success();
+            return true;
+        } catch (RuntimeException e) {
+            log.debug("Failed to update row {}", row.getId(), e);
+            processingResult.error(row.getId(), "While merging content: " + e.getMessage());
+            return false;
+        }
     }
 
 }

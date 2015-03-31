@@ -13,6 +13,7 @@ import org.atlasapi.media.entity.KeyPhrase;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.TopicRef.Relationship;
 import org.atlasapi.media.entity.Version;
@@ -77,6 +78,9 @@ public class KnowledgeMotionDataRowContentExtractorTest {
         assertThat(item.getDescription(), is("description"));
         assertThat(item.getTitle(), is("title"));
         assertThat(item.getMediaType(), is(MediaType.VIDEO));
+
+        ReleaseDate releaseDate = Iterables.getOnlyElement(item.getReleaseDates());
+        assertThat(releaseDate.date().toString(), is("2014-01-01"));
 
         Version version = Iterables.getOnlyElement(item.getVersions());
         assertThat(version.getDuration(), is(Integer.valueOf(61)));

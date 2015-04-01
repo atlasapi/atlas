@@ -10,10 +10,10 @@ import java.io.IOException;
 import java.net.URISyntaxException;
 import java.util.List;
 
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
+import com.google.api.client.util.Lists;
 import com.google.common.io.Resources;
 
 import scala.actors.threadpool.Arrays;
@@ -48,7 +48,7 @@ public class KnowledgeMotionCsvTranslatorTest {
             "Bloomberg Vid",
             "U.S. TV Source" });
 
-        List<KnowledgeMotionDataRow> rows = csvTranslator.translate(testCsv);
+        List<KnowledgeMotionDataRow> rows = Lists.newArrayList(csvTranslator.translate(testCsv));
 
         assertEquals(2, rows.size());
 

@@ -16,7 +16,9 @@ public enum KnowledgeMotionSpreadsheetColumn {
     DATE("Date"),
     DURATION("Duration"),
     KEYWORDS("Keywords"),
-    ALT_ID("Alternative ID")
+    PRICE_CATEGORY("Price category (1= stock, 2=news, 3=brand)"),
+    ALT_ID("Alternative ID"),
+    TERMS_OF_USE("Terms of Use")
     ;
     
     private final String fieldName;

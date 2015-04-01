@@ -1,17 +1,21 @@
 package org.atlasapi.remotesite.knowledgemotion;
 
 import static org.hamcrest.Matchers.endsWith;
-import static org.junit.Assert.assertEquals;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.KeyPhrase;
+import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.TopicRef.Relationship;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.knowledgemotion.topics.TopicGuesser;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -40,20 +44,53 @@ public class KnowledgeMotionDataRowContentExtractorTest {
         ImmutableSet<TopicRef> topicRefs = ImmutableSet.of(new TopicRef(9000l, 1.0f, false, Relationship.ABOUT));
         Mockito.when(topicGuesser.guessTopics(Matchers.anyCollection())).thenReturn(topicRefs);
 
-        KnowledgeMotionDataRow row = new KnowledgeMotionDataRow("GlobalImageworks", "id", "title", "description", "2014-01-01", "0:01:01;10", ImmutableList.of("key"), null);
-        KnowledgeMotionDataRow badRow = new KnowledgeMotionDataRow("GlobalInageworks", "id", "title", "description", "2014-01-01", "0:01:01;10", ImmutableList.of("key"), null);
+        KnowledgeMotionDataRow row = new KnowledgeMotionDataRow(
+                "GlobalImageworks",
+                "id",
+                "title",
+                "description",
+                "2014-01-01",
+                "0:01:01;10",
+                ImmutableList.of("key"),
+                ImmutableList.of("stock","news"),
+                null,
+                "Terms of Use"
+        );
+
+        KnowledgeMotionDataRow badRow = new KnowledgeMotionDataRow(
+                "GlobalInageworks",
+                "id",
+                "title",
+                "description",
+                "2014-01-01",
+                "0:01:01;10",
+                ImmutableList.of("key"),
+                ImmutableList.<String>of(),
+                null,
+                null
+        );
 
         Optional<? extends Content> content = extractor.extract(row);
         Item item = (Item) content.get();
         assertThat(item.getCanonicalUri(), endsWith("id"));
-        assertEquals(item.getPublisher(), Publisher.KM_GLOBALIMAGEWORKS);
-        assertEquals("description", item.getDescription());
-        assertEquals("title", item.getTitle());
-        assertEquals(MediaType.VIDEO, item.getMediaType());
-        assertEquals(Integer.valueOf(61), Iterables.getOnlyElement(item.getVersions()).getDuration());
-        assertEquals(new KeyPhrase("key", Publisher.KM_GLOBALIMAGEWORKS), Iterables.getOnlyElement(item.getKeyPhrases()));
-        assertEquals(topicRefs, ImmutableSet.copyOf(item.getTopicRefs()));
+        assertThat(item.getPublisher(), is(Publisher.KM_GLOBALIMAGEWORKS));
+        assertThat(item.getDescription(), is("description"));
+        assertThat(item.getTitle(), is("title"));
+        assertThat(item.getMediaType(), is(MediaType.VIDEO));
 
+        Version version = Iterables.getOnlyElement(item.getVersions());
+        assertThat(version.getDuration(), is(Integer.valueOf(61)));
+        assertThat(Iterables.getOnlyElement(item.getKeyPhrases()), is(new KeyPhrase("key", Publisher.KM_GLOBALIMAGEWORKS)));
+        assertThat(ImmutableSet.copyOf(item.getTopicRefs()), is(topicRefs));
+
+        Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
+        Location location = Iterables.getOnlyElement(encoding.getAvailableAt());
+
+        assertThat(location.getPolicy().getTermsOfUse(), is("Terms of Use"));
+
+        assertThat(item.getGenres(), hasItems("http://knowledgemotion.com/stock", "http://knowledgemotion.com/news"));
         assertFalse(extractor.extract(badRow).isPresent());  // Because it has an incorrect source!
     }
+
+
 }

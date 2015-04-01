@@ -160,7 +160,6 @@ public abstract class ContentModelSimplifier<F extends Content, T extends Descri
                 return eventRefSimplifier.simplify(input, annotations, config); 
             }
         }));
-        
     }
     
     private List<CrewMemberAndPerson> resolve(List<CrewMember> crews, ApplicationConfiguration config) {

@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import javax.servlet.http.HttpServletResponse;
 
 import org.atlasapi.media.entity.Publisher;
+import org.springframework.stereotype.Controller;
 import org.atlasapi.persistence.content.ContentPurger;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;

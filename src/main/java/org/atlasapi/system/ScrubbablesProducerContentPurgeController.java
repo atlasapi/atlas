@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.http.HttpStatusCode;
 
 
 public class ScrubbablesProducerContentPurgeController {

@@ -29,6 +29,11 @@ public class ContentPurgeWebModule {
     }
     
     @Bean
+    public ScrubbablesProducerContentPurgeController scrubbablesProducerContentPurgeController() {
+        return new ScrubbablesProducerContentPurgeController(contentPurger);
+    }
+    
+    @Bean
     public BtVodContentPurgeController btVodContentPurgeController() {
         return new BtVodContentPurgeController(contentPurger);
     }

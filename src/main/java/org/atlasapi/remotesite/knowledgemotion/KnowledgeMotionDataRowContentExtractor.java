@@ -29,7 +29,6 @@ import org.joda.time.format.PeriodFormatterBuilder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
@@ -47,11 +46,17 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
     private static final Function<String, String> PRICE_CATEGORY_TO_GENRE = new Function<String, String>() {
         @Override
         public String apply(String priceCategory) {
-            return String.format(
-                    "%s%s",
-                    KNOWLEDGEMOTION_GENRE_PREFIX,
-                    Charsets.UTF_8
-            );
+            try {
+                return String.format(
+                        "%s%s",
+                        KNOWLEDGEMOTION_GENRE_PREFIX,
+                        URLEncoder.encode(priceCategory, "UTF-8")
+                );
+            } catch (UnsupportedEncodingException e) {
+                //this should never happen
+                log.error("Error encoding price category", e);
+                return null;
+            }
         }
     };
 

@@ -174,6 +174,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         simpleItem.setType(EntityType.from(fullItem).toString());
 
         if (annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
+            simpleItem.setReleaseDates(simpleReleaseDate(fullItem.getReleaseDates()));
             simpleItem.setBlackAndWhite(fullItem.getBlackAndWhite());
             simpleItem.setCountriesOfOrigin(fullItem.getCountriesOfOrigin());
             simpleItem.setScheduleOnly(fullItem.isScheduleOnly());
@@ -192,11 +193,11 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
                     simpleItem.setSeriesSummary(seriesSummaryFromResolved(series, annotations));
                 }
             }
-            
+
             if (annotations.contains(Annotation.DESCRIPTION)) {
                 simpleItem.setSpecial(episode.getSpecial());
             }
-            
+
             if (annotations.contains(Annotation.DESCRIPTION) || annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
                 simpleItem.setEpisodeNumber(episode.getEpisodeNumber());
             }
@@ -208,7 +209,6 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         } else if (fullItem instanceof Film && annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
             Film film = (Film) fullItem;
             simpleItem.setSubtitles(simpleSubtitlesFrom(film.getSubtitles()));
-            simpleItem.setReleaseDates(simpleReleaseDate(film.getReleaseDates()));
         } else if (fullItem instanceof Song) {
             Song song = (Song) fullItem;
             simpleItem.setIsrc(song.getIsrc());

@@ -13,6 +13,7 @@ import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.http.HttpStatusCode;
 
 
+@Controller
 public class ScrubbablesProducerContentPurgeController {
 
  private final ContentPurger contentPurger;

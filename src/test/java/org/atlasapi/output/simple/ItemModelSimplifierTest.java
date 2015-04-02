@@ -26,6 +26,7 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.simple.Item;
@@ -41,6 +42,7 @@ import org.atlasapi.persistence.output.UpcomingItemsResolver;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
@@ -48,6 +50,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.currency.Price;
@@ -102,7 +105,11 @@ public class ItemModelSimplifierTest {
         
         org.atlasapi.media.entity.Item fullItem = new org.atlasapi.media.entity.Item();
         Broadcast broadcast = ComplexBroadcastTestDataBuilder.broadcast().withChannel(channel.getCanonicalUri()).build();
-        
+
+        LocalDate releaseDateDate = new LocalDate(DateTimeZone.UTC);
+        ReleaseDate releaseDate = new ReleaseDate(releaseDateDate, Countries.ALL, ReleaseDate.ReleaseType.GENERAL);
+        fullItem.setReleaseDates(Lists.newArrayList(releaseDate));
+
         Version version = new Version();
         version.addBroadcast(broadcast);
         
@@ -169,6 +176,7 @@ public class ItemModelSimplifierTest {
         assertThat(simpleEmbed.getTransportSubType(), is("brightcove"));
         
         assertThat(simpleItem.getTitle(), is("Collings and Herrin"));
+        assertThat(Iterables.getOnlyElement(simpleItem.getReleaseDates()).getDate().getDay(), is(releaseDateDate.toDate().getDay()));
         
         org.atlasapi.media.entity.simple.Channel broadcastChannel = Iterables.getOnlyElement(simpleItem.getBroadcasts()).getChannel();
         

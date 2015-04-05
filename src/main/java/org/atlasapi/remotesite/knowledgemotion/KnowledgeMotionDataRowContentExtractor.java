@@ -59,8 +59,8 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
             }
         }
     };
-
     private static final String KNOWLEDGEMOTION_GENRE_PREFIX = "http://knowledgemotion.com/";
+    private static final int SPOTLIGHT_CALL_RETRY_COUNT = 10;
 
     private final Splitter idSplitter = Splitter.on(":").omitEmptyStrings();
     private final PeriodFormatter durationFormatter = new PeriodFormatterBuilder()
@@ -118,7 +118,15 @@ public class KnowledgeMotionDataRowContentExtractor implements ContentExtractor<
 
         List<String> keyPhrases = dataRow.getKeywords();
         item.setKeyPhrases(keyphrases(keyPhrases, publisher));
-        item.setTopicRefs(topicGuesser.guessTopics(keyPhrases));
+        for (int i = 0; i < SPOTLIGHT_CALL_RETRY_COUNT; i++) {
+            try {
+                item.setTopicRefs(topicGuesser.guessTopics(keyPhrases));
+                log.debug("Retry " + i + " to guess topics succeeded for row " + dataRow.getId());
+                break;
+            } catch (RuntimeException e) {
+                log.warn("Retry " + i + " to guess topics failed for row " + dataRow.getId(), e);
+            }
+        }
 
         return Optional.of(item);
     }

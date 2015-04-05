@@ -3,6 +3,8 @@ package org.atlasapi.remotesite.knowledgemotion.topics.spotlight;
 import java.util.List;
 
 import org.atlasapi.remotesite.knowledgemotion.topics.WikipediaKeyword;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
@@ -11,8 +13,11 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
+import com.google.gson.JsonSyntaxException;
 
 public class SpotlightResourceParser {
+
+    private static final Logger log = LoggerFactory.getLogger(SpotlightResourceParser.class);
 
     /**
      *  from dbpedia: DBpedia data set is denoted by a URI-based reference of the form http://dbpedia.org/resource/Name, 
@@ -24,7 +29,12 @@ public class SpotlightResourceParser {
 
     public List<WikipediaKeyword> parse(String content) {
         ImmutableList.Builder<WikipediaKeyword> keywords = new ImmutableList.Builder<WikipediaKeyword>();
-        JsonObject parse = (JsonObject) new JsonParser().parse(content);
+        JsonObject parse = null;
+        try {
+            parse = (JsonObject) new JsonParser().parse(content);
+        } catch (JsonSyntaxException e) {
+            log.warn("Unable to parse content {}", content, e);
+        }
 
         JsonArray resources = (JsonArray) parse.get("Resources");
         if (resources == null) {

@@ -88,8 +88,9 @@ public class AbstractRoviIngestProcessorTest {
         }
 
         @Override
-        public void createOrUpdate(Item item) {
+        public Item createOrUpdate(Item item) {
             contents.put(item.getCanonicalUri(), item);
+            return item;
         }
 
         @Override

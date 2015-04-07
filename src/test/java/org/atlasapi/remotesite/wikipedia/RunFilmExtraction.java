@@ -19,8 +19,9 @@ public class RunFilmExtraction {
                         System.out.println(container);
                     }
                     @Override
-                    public void createOrUpdate(Item item) {
+                    public Item createOrUpdate(Item item) {
                         System.out.println(item);
+                        return item;
                     }
                 },
                 5,

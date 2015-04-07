@@ -15,8 +15,9 @@ public class RunTvExtraction {
                 new TvBrandHierarchyExtractor(),
                 new ContentWriter() {
                     @Override
-                    public void createOrUpdate(Item item) {
+                    public Item createOrUpdate(Item item) {
                         System.out.println(item.toString());
+                        return item;
                     }
 
                     @Override

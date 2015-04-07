@@ -44,7 +44,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     }
     
     @Override
-    public void createOrUpdate(Item item) {
+    public Item createOrUpdate(Item item) {
         Maybe<Identified> previously = resolver.findByCanonicalUris(ImmutableList.of(item.getCanonicalUri())).get(item.getCanonicalUri());
         
         DateTime now = clock.now();
@@ -63,7 +63,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             item.setLastUpdated(clock.now());
         }
         
-        writer.createOrUpdate(item);
+        return writer.createOrUpdate(item);
     }
 
     private void setUpdatedVersions(Set<Version> prevVersions, Set<Version> versions, DateTime now) {

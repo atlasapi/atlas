@@ -67,7 +67,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     }
 
     @Override
-    public void createOrUpdate(Item item) {
+    public Item createOrUpdate(Item item) {
         Maybe<Identified> previously = resolver.findByCanonicalUris(ImmutableList.of(item.getCanonicalUri())).get(item.getCanonicalUri());
 
         DateTime now = clock.now();
@@ -87,7 +87,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             setUpdatedClips(Lists.<Clip>newArrayList(), item.getClips(), now);
         }
 
-        writer.createOrUpdate(item);
+        return writer.createOrUpdate(item);
     }
 
     private void setUpdatedClips(List<Clip> clips, List<Clip> prevClips, DateTime now) {

@@ -45,8 +45,8 @@ public class TvExtractionTests {
                 }
                 
                 @Override
-                public void createOrUpdate(Item item) {
-                    // TODO mock
+                public Item createOrUpdate(Item item) {
+                    return item;
                 }
             },
             5,

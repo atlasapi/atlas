@@ -18,8 +18,9 @@ public final class RecordingContentWriter implements ContentWriter {
 	public final List<Series> updatedSeries = Lists.newArrayList();
 
 	@Override
-	public void createOrUpdate(Item item) {
+	public Item createOrUpdate(Item item) {
 		updatedItems.add(item);
+        return item;
 	}
 
 	@Override

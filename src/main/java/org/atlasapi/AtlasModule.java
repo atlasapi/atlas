@@ -36,6 +36,7 @@ import com.metabroadcast.common.webapp.properties.ContextConfigurer;
 import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
 import com.mongodb.Mongo;
+import com.mongodb.MongoOptions;
 import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
@@ -45,6 +46,7 @@ public class AtlasModule {
     
 	private final String mongoHost = Configurer.get("mongo.host").get();
 	private final String dbName = Configurer.get("mongo.dbName").get();
+	private static final int mongoMaxConnections = Configurer.get("mongo.maxConnections").toInt();
 	private final String mongoTag = Strings.emptyToNull(Configurer.get("mongo.db.tag").get());
 	private final String mongoFallbackTag = Strings.emptyToNull(Configurer.get("mongo.db.tag.fallback").get());
 	private final Parameter processingConfig = Configurer.get("processing.config");
@@ -56,7 +58,9 @@ public class AtlasModule {
 	}
 
     public @Bean Mongo mongo() {
-        Mongo mongo = new Mongo(mongoHosts());
+        MongoOptions options = new MongoOptions();
+        options.setConnectionsPerHost(mongoMaxConnections);
+        Mongo mongo = new Mongo(mongoHosts(), options);
         mongo.setReadPreference(readPreference());
         if(isProcessing() 
                 && processingWriteConcern != null 

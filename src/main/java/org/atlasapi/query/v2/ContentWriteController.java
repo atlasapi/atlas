@@ -10,9 +10,11 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.properties.Configurer;
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
@@ -121,7 +123,11 @@ public class ContentWriteController {
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
         }
 
-        resp.setHeader("X-Content-ID", codec.encode(BigInteger.valueOf(content.getId())));
+        String hostName = Configurer.get("local.host.name").get();
+        resp.setHeader(
+                HttpHeaders.LOCATION,
+                hostName + "/3.0/content.json?id=" + codec.encode(BigInteger.valueOf(content.getId()))
+        );
         resp.setStatus(HttpStatusCode.OK.code());
         resp.setContentLength(0);
         return null;

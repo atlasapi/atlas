@@ -21,7 +21,8 @@ public class EmiPubProcessorTest {
         ContentWriter contentWriter = mock(ContentWriter.class);
         
         CapturingMatcher<Song> capture = new CapturingMatcher<Song>();
-        doNothing().when(contentWriter).createOrUpdate(argThat(capture));
+
+        doReturn(null).when(contentWriter).createOrUpdate(argThat(capture));
 
         EmiPubProcessor processor = new EmiPubProcessor();
         processor.process(data, log, contentWriter);

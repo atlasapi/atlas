@@ -4,12 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
@@ -47,6 +50,7 @@ public class ContentWriteController {
     private static final boolean OVERWRITE = false;
 
     private static final Logger log = LoggerFactory.getLogger(ContentWriteController.class);
+    private static final NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private final ApplicationConfigurationFetcher appConfigFetcher;
     private final ContentResolver resolver;
@@ -116,7 +120,8 @@ public class ContentWriteController {
             log.error("Error reading input for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
         }
-        
+
+        resp.setHeader("X-Content-ID", codec.encode(BigInteger.valueOf(content.getId())));
         resp.setStatus(HttpStatusCode.OK.code());
         resp.setContentLength(0);
         return null;

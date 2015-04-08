@@ -23,8 +23,8 @@ public class LastUpdatedCheckingContentWriter implements ContentWriter {
     }
     
     @Override
-    public void createOrUpdate(Item item) {
-        contentWriter.createOrUpdate(checkLastUpdated(item));
+    public Item createOrUpdate(Item item) {
+        return contentWriter.createOrUpdate(checkLastUpdated(item));
     }
 
     private <T extends Content> T checkLastUpdated(T content) {

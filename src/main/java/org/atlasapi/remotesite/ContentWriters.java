@@ -27,10 +27,11 @@ public class ContentWriters implements ContentWriter {
 	private Set<ContentWriter> writers = Sets.newHashSet();
 	
 	@Override
-	public void createOrUpdate(Item item) {
+	public Item createOrUpdate(Item item) {
 		for (ContentWriter writer : writers) {
 			writer.createOrUpdate(item);
 		}
+        return item;
 	}
 	
 	public void add(ContentWriter writer) {

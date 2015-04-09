@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.knowledgemotion;
 
+import java.io.File;
+
 import javax.annotation.PostConstruct;
 
 import org.atlasapi.persistence.content.ContentResolver;
@@ -46,6 +48,8 @@ public class KnowledgeMotionModule {
     private String awsSecretKey;
     @Value("${km.contentdeals.aws.s3BucketName}")
     private String awsS3BucketName;
+    @Value("${km.contentdeals.ingest.temporaryFileDirectory}")
+    private String temporaryFileDirectoryPath;
 
     /**
      * Here we wire what is in fact a {@link TopicCreatingTopicResolver}, so we may create new topics where necessary.
@@ -57,8 +61,9 @@ public class KnowledgeMotionModule {
     @PostConstruct
     public void start() {
         log.info("Initializing Knowledgemotion Common Ingester");
+        File ingestTemporaryFileDirectory = new File(temporaryFileDirectoryPath);
         AWSCredentials awsCredentials = new BasicAWSCredentials(awsAccessKey, awsSecretKey);
-        final IngestService ingestService = new IngestService(awsCredentials);
+        final IngestService ingestService = new IngestService(awsCredentials, ingestTemporaryFileDirectory);
         FileProcessor fileProcessor = new KnowledgeMotionFileProcessor(contentResolver,
             contentWriter, contentLister, topicGuesser(), new KnowledgeMotionCsvTranslator());
 

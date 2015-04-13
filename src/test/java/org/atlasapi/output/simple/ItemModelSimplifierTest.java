@@ -113,6 +113,7 @@ public class ItemModelSimplifierTest {
         
         Encoding encoding = new Encoding();
         encoding.setDataContainerFormat(MimeType.VIDEO_3GPP);
+        encoding.setSubtitled(true);
         version.addManifestedAs(encoding);
         version.addAlias(new Alias(VERSION_ALIAS_NAMESPACE, VERSION_ALIAS_VALUE));
         
@@ -160,6 +161,7 @@ public class ItemModelSimplifierTest {
         assertThat(simpleLocation.getAvailableCountries().size(), is(1));
         assertThat(simpleLocation.getAvailableCountries().iterator().next(), is("GB"));
         assertThat(simpleLocation.getAudioDescribed(), is(true));
+        assertThat(simpleLocation.getSubtitled(), is(true));
         assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getNamespace(), is(VERSION_ALIAS_NAMESPACE));
         assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getValue(), is(VERSION_ALIAS_VALUE));
         

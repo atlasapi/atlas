@@ -20,10 +20,12 @@ import com.google.common.base.Equivalence;
 import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
@@ -78,6 +80,22 @@ public class NitroAvailabilityExtractor  {
             return !input.getMediaSet().contains("iptv-sd");
         }
     };
+    
+    private static final Predicate<Availability> IS_SUBTITLED = new Predicate<Availability>() {
+        @Override
+        public boolean apply(Availability input) {
+            return input.getMediaSet().contains("captions");
+        }
+    };
+    
+    private static final Predicate<Availability> IS_AVAILABLE = new Predicate<Availability>() {
+
+        @Override
+        public boolean apply(Availability input) {
+            return AVAILABLE.equals(input.getStatus());
+        }
+        
+    };
 
     private static final Predicate<Availability> IS_IPTV = new Predicate<Availability>() {
         @Override
@@ -103,10 +121,16 @@ public class NitroAvailabilityExtractor  {
      * encoding is whether there are HD or SD availabilities. Thus, this creates a maximum of
      * two Encodings, one for SD, one for HD, then maps and dedupes the Locations generated from
      * the availabilities onto those Encodings.
+     * 
+     * The provided collection of {@link Availability} must all be from the same version.
+     * 
      */
     public Set<Encoding> extract(Iterable<Availability> availabilities, String mediaType) {
         Set<Equivalence.Wrapper<Location>> hdLocations = Sets.newHashSet();
         Set<Equivalence.Wrapper<Location>> sdLocations = Sets.newHashSet();
+        
+        boolean isSubtitled = Iterables.any(availabilities, 
+                Predicates.and(IS_SUBTITLED, IS_AVAILABLE));
         
         for (Availability availability : availabilities) {
             ImmutableList<Wrapper<Location>> locations = FluentIterable.
@@ -125,15 +149,16 @@ public class NitroAvailabilityExtractor  {
             if (sdLocations.isEmpty()) {
                 return ImmutableSet.of();
             }
-            return ImmutableSet.of(createEncoding(false, sdLocations));
+            return ImmutableSet.of(createEncoding(false, isSubtitled, sdLocations));
         } 
         if (sdLocations.isEmpty()) {
-            return ImmutableSet.of(createEncoding(true, hdLocations));
+            return ImmutableSet.of(createEncoding(true, isSubtitled, hdLocations));
         }
-        return ImmutableSet.of(createEncoding(true, hdLocations), createEncoding(false, sdLocations));    
+        return ImmutableSet.of(createEncoding(true, isSubtitled, hdLocations), createEncoding(false, isSubtitled, sdLocations));    
     }
 
-    private Encoding createEncoding(boolean isHd, Set<Equivalence.Wrapper<Location>> wrappedLocations) {
+    private Encoding createEncoding(boolean isHd, boolean isSubtitled, 
+            Set<Equivalence.Wrapper<Location>> wrappedLocations) {
         Encoding encoding = new Encoding();
         
         setHorizontalAndVerticalSize(encoding, isHd);
@@ -144,6 +169,7 @@ public class NitroAvailabilityExtractor  {
                 .toSet();
         
         encoding.setAvailableAt(locations);
+        encoding.setSubtitled(isSubtitled);
         
         return encoding;
     }

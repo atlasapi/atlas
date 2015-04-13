@@ -1,7 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
@@ -36,6 +38,7 @@ public class NitroAvailabilityExtractorTest {
     public void setUp() throws DatatypeConfigurationException {
         dataTypeFactory = DatatypeFactory.newInstance();
     }
+    
     @Test
     public void testAvailabilityExtraction() {
         Availability hdAvailability = hdAvailability(EPISODE_PID, VERSION_PID);
@@ -51,8 +54,16 @@ public class NitroAvailabilityExtractorTest {
         assertEquals(1500000, (int) sdEncoding.getVideoBitRate());
         assertEquals(640, (int) sdEncoding.getVideoHorizontalSize());
         assertEquals(360, (int) sdEncoding.getVideoVerticalSize());
+        assertFalse(sdEncoding.getSubtitled());
     }
     
+    @Test
+    public void testSubtitledFlagExtraction() {
+        Set<Availability> availabilities = ImmutableSet.of(sdAvailability(EPISODE_PID, VERSION_PID), captionsAvailability(null, null));
+        Encoding encoding = Iterables.getOnlyElement(extractor.extract(availabilities, VIDEO_MEDIA_TYPE));
+        assertTrue(encoding.getSubtitled());
+    }
+
     @Test
     public void testRadioActualAvailabilityExtraction() throws DatatypeConfigurationException {
         Availability availability = hdAvailability(EPISODE_PID, VERSION_PID);
@@ -147,6 +158,14 @@ public class NitroAvailabilityExtractorTest {
         availability.getMediaSet().add("iptv-all");
         availability.getMediaSet().add("iptv-sd");
 
+        return availability;
+    }
+    
+    
+    private Availability captionsAvailability(String episodePid, String versionPid) {
+        Availability availability = baseAvailability(episodePid, versionPid);
+        availability.getMediaSet().add("captions");
+        availability.setStatus("available");
         return availability;
     }
 

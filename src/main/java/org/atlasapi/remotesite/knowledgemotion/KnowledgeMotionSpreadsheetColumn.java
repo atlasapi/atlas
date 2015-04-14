@@ -16,7 +16,7 @@ public enum KnowledgeMotionSpreadsheetColumn {
     DATE("Date"),
     DURATION("Duration"),
     KEYWORDS("Keywords"),
-    PRICE_CATEGORY("Price category (1= stock, 2=news, 3=brand)"),
+    PRICE_CATEGORY("Price category"),
     ALT_ID("Alternative ID"),
     TERMS_OF_USE("Terms of Use")
     ;

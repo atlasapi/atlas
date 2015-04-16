@@ -44,9 +44,9 @@ public class DefaultGettyDataHandlerTest {
     
     @Test
     public void testWritingContent() {
-        Item item1 = new Item("item1", "i", Publisher.GETTY);
+        Item item1 = new Item("item1", "i", Publisher.KM_GETTY);
         item1.setTitle("title1");
-        Item item2 = new Item("item2", "i", Publisher.GETTY);
+        Item item2 = new Item("item2", "i", Publisher.KM_GETTY);
         item2.setTitle("title2");
         
         for(Content content : ImmutableList.<Content>of(item1, item2)) {

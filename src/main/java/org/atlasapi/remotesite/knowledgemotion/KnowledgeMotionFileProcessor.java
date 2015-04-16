@@ -27,7 +27,7 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
         KnowledgeMotionSourceConfig.from("British Movietone", Publisher.KM_MOVIETONE, "km-movietone:%s", "http://movietone.knowledgemotion.com/%s"),
         KnowledgeMotionSourceConfig.from("Bloomberg", Publisher.KM_BLOOMBERG, "bloomberg:%s", "http://bloomberg.com/%s"),
         KnowledgeMotionSourceConfig.from("AP", Publisher.KM_AP, "ap:%s", "http://ap.knowledgemotion.com/%s"),
-        KnowledgeMotionSourceConfig.from("Getty", Publisher.GETTY, "getty:%s", "http://gettyimages.co.uk/%s")
+        KnowledgeMotionSourceConfig.from("Getty", Publisher.KM_GETTY, "getty:%s", "http://gettyimages.co.uk/%s")
         );
 
     private static final ImmutableList<KnowledgeMotionSourceConfig> FIX_SOURCES = ImmutableList.of(

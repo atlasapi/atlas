@@ -43,12 +43,12 @@ public class GettyContentExtractorTest {
         Content content = extractor.extract(video);
         Item item = (Item) content;
         assertThat(item.getCanonicalUri(), endsWith("id"));
-        assertEquals(item.getPublisher(), Publisher.GETTY);
+        assertEquals(item.getPublisher(), Publisher.KM_GETTY);
         assertEquals("description", item.getDescription());
         assertEquals("title", item.getTitle());
         assertEquals("title", item.getTitle());
         assertEquals(MediaType.VIDEO, content.getMediaType());
-        assertEquals(new KeyPhrase("key", Publisher.GETTY), Iterables.getOnlyElement(content.getKeyPhrases()));
+        assertEquals(new KeyPhrase("key", Publisher.KM_GETTY), Iterables.getOnlyElement(content.getKeyPhrases()));
         assertEquals("thumb", content.getThumbnail());
         assertEquals("thumb", content.getImage());
         assertEquals(Integer.valueOf(61), Iterables.getOnlyElement(item.getVersions()).getDuration());

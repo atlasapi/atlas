@@ -30,10 +30,11 @@ public class KnowledgeMotionSpecialIdFixer {
             try {
                 dataHandler.handle(row);
                 log.debug("Successfully fixed special ID for row {}", row.getId());
-                processingResult.success();
+                // these lines cause double reporting for rows
+//                processingResult.success();
             } catch (RuntimeException e) {
                 log.debug("Failed to fix special ID for row {}", row.getId(), e);
-                processingResult.error(row.getId(), "While fixing special ID: " + e.getMessage());
+//                processingResult.error(row.getId(), "While fixing special ID: " + e.getMessage());
             }
         }
 

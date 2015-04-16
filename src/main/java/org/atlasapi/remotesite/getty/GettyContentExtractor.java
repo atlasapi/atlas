@@ -1,7 +1,7 @@
 package org.atlasapi.remotesite.getty;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.atlasapi.media.entity.Publisher.GETTY;
+import static org.atlasapi.media.entity.Publisher.KM_GETTY;
 import static org.joda.time.DateTimeConstants.SECONDS_PER_HOUR;
 import static org.joda.time.DateTimeConstants.SECONDS_PER_MINUTE;
 
@@ -52,7 +52,7 @@ public class GettyContentExtractor implements ContentExtractor<VideoResponse, Co
         item.setFirstSeen(extractDate(source.getDateCreated()));
         item.setDescription(source.getDescription());
         item.setTitle(source.getTitle());
-        item.setPublisher(GETTY);
+        item.setPublisher(KM_GETTY);
         item.setCanonicalUri(uri(source.getAssetId()));
         item.setCurie(curie(source.getAssetId()));
         item.setLastUpdated(new DateTime(DateTimeZone.UTC));
@@ -66,9 +66,9 @@ public class GettyContentExtractor implements ContentExtractor<VideoResponse, Co
     }
 
     private Iterable<KeyPhrase> keyphrases(List<String> keywords) {
-        Builder<KeyPhrase> keyphrases = new ImmutableList.Builder<KeyPhrase>();
+        Builder<KeyPhrase> keyphrases = new Builder<KeyPhrase>();
         for (String keyword : keywords) {
-            keyphrases.add(new KeyPhrase(keyword, GETTY));
+            keyphrases.add(new KeyPhrase(keyword, KM_GETTY));
         }
         return keyphrases.build();
     }

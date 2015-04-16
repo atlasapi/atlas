@@ -78,7 +78,7 @@ public class GettyUpdateTask extends ScheduledTask {
             }));
 
             reportStatus("File contains " + gettyIds.size() + " IDs. Now unpublishing disappeared content.");
-            Iterator<Content> allStoredGettyContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublishers(Publisher.GETTY).build());
+            Iterator<Content> allStoredGettyContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublishers(Publisher.KM_GETTY).build());
             while (allStoredGettyContent.hasNext()) {
                 Content item = allStoredGettyContent.next();
                 if (! expectedGettyUris.contains(item.getCanonicalUri())) {

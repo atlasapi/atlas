@@ -167,7 +167,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
         }
         ImmutableSet<LookupRef> refs = ImmutableSet.of(ref);
         lookupCollection.save(entryTranslator.toDbo(
-            new LookupEntry(e.uri(), e.id(), ref, e.aliasUrls(), e.aliases(), refs, refs, refs, e.created(), e.updated())
+            new LookupEntry(e.uri(), e.id(), ref, e.aliasUrls(), e.aliases(), refs, refs, refs, e.created(), e.updated(), e.activelyPublished())
         ));
     }
 

@@ -145,7 +145,7 @@ public class LookupRefUpdateTask extends ScheduledTask {
         Set<LookupRef> direct = updateIds(e.directEquivalents(), entryIndex);
         Set<LookupRef> explicit = updateIds(e.explicitEquivalents(), entryIndex);
         Set<LookupRef> equivs = updateIds(e.equivalents(), entryIndex);
-        return new LookupEntry(e.uri(),e.id(),e.lookupRef(),e.aliasUrls(),e.aliases(),direct,explicit,equivs,e.created(),e.updated());
+        return new LookupEntry(e.uri(),e.id(),e.lookupRef(),e.aliasUrls(),e.aliases(),direct,explicit,equivs,e.created(),e.updated(),e.activelyPublished());
     }
 
     private Set<LookupRef> updateIds(Set<LookupRef> refs,

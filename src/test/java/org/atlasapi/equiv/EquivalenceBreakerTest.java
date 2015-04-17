@@ -52,7 +52,7 @@ public class EquivalenceBreakerTest {
             ImmutableSet.of(LookupRef.from(ITEM_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)), 
             ImmutableSet.<LookupRef>of(), 
             ImmutableSet.of(LookupRef.from(ITEM_TO_REMOVE), LookupRef.from(ITEM_TO_KEEP)), 
-            new DateTime(), new DateTime());
+            new DateTime(), new DateTime(), true);
     
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final LookupWriter lookupWriter = mock(LookupWriter.class);

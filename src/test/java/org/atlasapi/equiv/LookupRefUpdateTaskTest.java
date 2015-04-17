@@ -98,7 +98,7 @@ public class LookupRefUpdateTaskTest {
         
         ImmutableSet<LookupRef> refs = ImmutableSet.of(new LookupRef(uri, null, source, cat));
         
-        LookupEntry entry = new LookupEntry(uri, id, self, ImmutableSet.of("alias"), ImmutableSet.of(new Alias("namespace","value")), refs, refs, refs, new DateTime(DateTimeZones.UTC), new DateTime(DateTimeZones.UTC));
+        LookupEntry entry = new LookupEntry(uri, id, self, ImmutableSet.of("alias"), ImmutableSet.of(new Alias("namespace","value")), refs, refs, refs, new DateTime(DateTimeZones.UTC), new DateTime(DateTimeZones.UTC), true);
         return entry;
     }
 

@@ -40,7 +40,7 @@ public class TargetUserGroupChannelGroupSaver extends AbstractBtChannelGroupSave
             ChannelGroupWriter channelGroupWriter, BtMpxClient btMpxClient,
             ChannelResolver channelResolver, ChannelWriter channelWriter) {
         super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, channelWriter,
-                LoggerFactory.getLogger(TargetUserGroupChannelGroupSaver.class));
+                false, LoggerFactory.getLogger(TargetUserGroupChannelGroupSaver.class));
         
         this.aliasUriPrefix = checkNotNull(aliasUriPrefix);
         this.aliasNamespace = checkNotNull(aliasNamespace) + ":tug";

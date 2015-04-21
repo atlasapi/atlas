@@ -26,7 +26,7 @@ public class OutputProtectionChannelGroupSaver extends AbstractBtChannelGroupSav
             ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
             ChannelWriter channelWriter) {
         super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, channelWriter,
-                LoggerFactory.getLogger(OutputProtectionChannelGroupSaver.class));
+                false, LoggerFactory.getLogger(OutputProtectionChannelGroupSaver.class));
         
         this.aliasUriPrefix = checkNotNull(aliasUriPrefix);
     }

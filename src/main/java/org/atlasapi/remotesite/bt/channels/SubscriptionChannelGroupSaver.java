@@ -28,7 +28,7 @@ public class SubscriptionChannelGroupSaver extends AbstractBtChannelGroupSaver {
             ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
             ChannelWriter channelWriter) {
         super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, channelWriter,
-                LoggerFactory.getLogger(SubscriptionChannelGroupSaver.class));
+                false, LoggerFactory.getLogger(SubscriptionChannelGroupSaver.class));
         
         this.aliasUriPrefix = checkNotNull(aliasUriPrefix);
         this.aliasNamespace = checkNotNull(aliasNamespace) + ":subscription-code";

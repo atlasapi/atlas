@@ -27,7 +27,7 @@ public class AllBtChannelsChannelGroupSaver extends AbstractBtChannelGroupSaver 
             ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
             ChannelWriter channelWriter) {
         super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, 
-                channelWriter, LoggerFactory.getLogger(AllBtChannelsChannelGroupSaver.class));
+                channelWriter, true, LoggerFactory.getLogger(AllBtChannelsChannelGroupSaver.class));
         
         this.aliasUriPrefix = checkNotNull(aliasUriPrefix);
     }

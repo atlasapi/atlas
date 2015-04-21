@@ -17,7 +17,7 @@ public class Entry {
     @VisibleForTesting
     public Entry(String guid, long updated, String title, Iterable<Category> categories, 
             Iterable<Content> content, boolean approved, String label, String scheme, 
-            boolean isStreamable, boolean hasOutputProtection) {
+            boolean isStreamable, boolean hasOutputProtection, String linearChannelNumber) {
         this.guid = guid;
         this.updated = updated;
         this.title = title;
@@ -28,6 +28,7 @@ public class Entry {
         this.scheme = scheme;
         this.hasOutputProtection = hasOutputProtection;
         this.isStreamable = isStreamable;
+        this.linearChannelNumber = linearChannelNumber;
     }
     
     private String guid;

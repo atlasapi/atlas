@@ -12,6 +12,7 @@ import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelNumbering;
+import org.atlasapi.media.channel.ChannelNumbering.Builder;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.channel.Region;
@@ -44,10 +45,12 @@ public abstract class AbstractBtChannelGroupSaver {
     private final ChannelWriter channelWriter;
     private final Publisher publisher;
     private final Logger log;
+    private final boolean saveLogicalChannelNumbers;
     
     public AbstractBtChannelGroupSaver(Publisher publisher, ChannelGroupResolver channelGroupResolver,
             ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, ChannelWriter channelWriter, 
-            Logger log) {
+            boolean saveLogicalChannelNumbers, Logger log) {
+        this.saveLogicalChannelNumbers = saveLogicalChannelNumbers;
         this.publisher = checkNotNull(publisher);
         this.channelGroupResolver = checkNotNull(channelGroupResolver);
         this.channelGroupWriter = checkNotNull(channelGroupWriter);
@@ -65,20 +68,20 @@ public abstract class AbstractBtChannelGroupSaver {
     
     public Set<String> update(Iterable<Entry> channels) {
         start();
-        ImmutableMultimap.Builder<String, String> builder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<String, Entry> builder = ImmutableMultimap.builder();
         for (Entry channel : channels) {
             List<String> keys = keysFor(channel);
             
             for (String key : keys) {
-                builder.put(key, channel.getGuid());
+                builder.put(key, channel);
             }
         }
         return updateChannelGroups(builder.build());
     }
 
-    private Set<String> updateChannelGroups(ImmutableMultimap<String, String> keys) {
+    private Set<String> updateChannelGroups(ImmutableMultimap<String, Entry> keys) {
         ImmutableSet.Builder<String> channelGroupUris = ImmutableSet.builder();
-        for (Map.Entry<String, Collection<String>> entry : keys.asMap().entrySet()) {
+        for (Map.Entry<String, Collection<Entry>> entry : keys.asMap().entrySet()) {
             String aliasUri = aliasUriFor(entry.getKey());
             Optional<Alias> alias = aliasFor(entry.getKey());
             
@@ -87,15 +90,16 @@ public abstract class AbstractBtChannelGroupSaver {
             channelGroup.addTitle(titleFor(entry.getKey()));
             
             Set<Long> currentChannels = Sets.newHashSet();
-            for (String channelId : entry.getValue()) {
-                Long numericId = TO_NUMERIC_ID.apply(channelId);
+            for (Entry mpxChannelEntry : entry.getValue()) {
+                Long numericId = TO_NUMERIC_ID.apply(mpxChannelEntry.getGuid());
                 currentChannels.add(numericId);
                 Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(numericId)), null);
                 if (channel != null) {
-                    channel.addChannelNumber(ChannelNumbering.builder().withChannelGroup(channelGroup).build());
+                    channelNumberFrom(mpxChannelEntry, channelGroup);
+                    channel.addChannelNumber(channelNumberFrom(mpxChannelEntry, channelGroup));
                     channelWriter.createOrUpdate(channel);
                 } else {
-                    log.warn("Could not resolve channel with ID " + channelId);
+                    log.warn("Could not resolve channel with ID " + mpxChannelEntry);
                 }
             }
             removeOldChannelsInGroup(channelGroup, currentChannels);
@@ -105,6 +109,18 @@ public abstract class AbstractBtChannelGroupSaver {
         return channelGroupUris.build();
     }
     
+    private ChannelNumbering channelNumberFrom(Entry mpxChannelEntry, ChannelGroup channelGroup) {
+        Builder numbering = ChannelNumbering
+                                .builder()
+                                .withChannelGroup(channelGroup);
+        
+        if (saveLogicalChannelNumbers) {
+            numbering.withChannelNumber(mpxChannelEntry.getLinearChannelNumber());
+        }
+        
+        return numbering.build();
+    }
+
     private void removeOldChannelsInGroup(final ChannelGroup channelGroup, Set<Long> currentChannels) {
         Set<Long> removedChannels = 
                 Sets.difference(

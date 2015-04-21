@@ -84,7 +84,7 @@ public class WatchableChannelGroupSaverTest {
         return new Entry(channelId, 0, "Title", 
                     ImmutableList.<Category>of(), 
                     ImmutableList.<Content>of(), 
-                    true, null, null, isWatchable, false);
+                    true, null, null, isWatchable, false, null);
     }
     
     private ChannelGroup watchableChannelGroup() {

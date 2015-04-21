@@ -24,7 +24,7 @@ public class WatchableChannelGroupSaver extends AbstractBtChannelGroupSaver {
             ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
             ChannelWriter channelWriter) {
         super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, 
-                channelWriter, LoggerFactory.getLogger(WatchableChannelGroupSaver.class));
+                channelWriter, false, LoggerFactory.getLogger(WatchableChannelGroupSaver.class));
         
         this.aliasUriPrefix = aliasUriPrefix;
     }

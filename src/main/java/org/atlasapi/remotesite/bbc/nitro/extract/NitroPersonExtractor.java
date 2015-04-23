@@ -4,6 +4,7 @@ import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
 
+import com.google.api.client.util.Strings;
 import com.google.common.base.Optional;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 
@@ -21,10 +22,14 @@ public class NitroPersonExtractor implements
         Person person = new Person();
         person.setCanonicalUri(NitroUtil.uriFor(contribution));
         person.setCurie(NitroUtil.curieFor(contribution));
-        person.setGivenName(contributorName.getGiven());
-        person.setFamilyName(contributorName.getFamily());
         person.setPublisher(Publisher.BBC_NITRO);
-
+        
+        if (!Strings.isNullOrEmpty(contributorName.getPresentation())) {
+            person.setGivenName(contributorName.getPresentation());
+        } else {
+            person.setGivenName(contributorName.getGiven());
+            person.setFamilyName(contributorName.getFamily());
+        }
         return Optional.of(person);
     }
 }

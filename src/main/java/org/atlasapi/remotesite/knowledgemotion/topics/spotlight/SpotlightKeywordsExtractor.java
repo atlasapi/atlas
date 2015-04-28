@@ -28,7 +28,7 @@ public class SpotlightKeywordsExtractor implements KeywordsExtractor {
 
     private static final String DBPEDIA_CONFIDENCE = "0.01";
     private static final String DBPEDIA_SUPPORT = "2";
-    private static final String DBPEDIA_SPOTLIGHT_URL_PATTERN = "http://spotlight.dbpedia.org/rest/annotate?text=%s&confidence=%s&support=%s";
+    private static final String DBPEDIA_SPOTLIGHT_URL_PATTERN = "http://spotlight.sztaki.hu:2222/rest/annotate?text=%s&confidence=%s&support=%s";
 
     private final SpotlightResourceParser parser;
     private final SimpleHttpClient httpClient;

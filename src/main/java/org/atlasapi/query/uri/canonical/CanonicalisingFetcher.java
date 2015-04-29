@@ -95,7 +95,7 @@ public class CanonicalisingFetcher implements Fetcher<Identified>, ContentResolv
 	}
 
 	@Override
-	public ResolvedContent findByCanonicalUris(Iterable<String> uris) {
+	public ResolvedContent findByCanonicalUris(Iterable<? extends String> uris) {
 	    ResolvedContentBuilder builder = ResolvedContent.builder();
 	    for (String uri : uris) {
             builder.put(uri, fetch(uri));

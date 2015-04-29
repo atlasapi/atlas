@@ -96,7 +96,7 @@ public class RteFeedProcessorTest {
     private class DummyContentResolver implements ContentResolver {
         
         @Override
-        public ResolvedContent findByCanonicalUris(Iterable<String> canonicalUris) {
+        public ResolvedContent findByCanonicalUris(Iterable<? extends String> canonicalUris) {
             return new ResolvedContent(Maps.<String, Maybe<Identified>>newHashMap());
         }
 

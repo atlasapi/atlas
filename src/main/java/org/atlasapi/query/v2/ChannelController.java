@@ -144,6 +144,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                 ApplicationConfiguration appConfig = appConfig(request);
                 if (!appConfig.isEnabled(possibleChannel.requireValue().getSource())) {
                     outputter.writeError(request, response, FORBIDDEN.withMessage("Channel " + id + " not available"));
+                    return;
                 }
 
                 Optional<Set<Annotation>> annotations = annotationExtractor.extract(request);

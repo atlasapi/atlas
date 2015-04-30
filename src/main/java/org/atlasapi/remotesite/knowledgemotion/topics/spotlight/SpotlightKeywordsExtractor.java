@@ -57,11 +57,7 @@ public class SpotlightKeywordsExtractor implements KeywordsExtractor {
     @Override
     public Optional<WikipediaKeyword> tryGuessSingleKeywordFromText(String text) {
         List<WikipediaKeyword> keywords = extractKeywordsFromText(text);
-        try {
-            return Optional.of(Iterables.getOnlyElement(keywords));
-        } catch (Exception e) {
-            return Optional.absent();  // If there is not only one match, we must quietly fail :(
-        }
+        return Optional.fromNullable(Iterables.getFirst(keywords, null));
     }
 
     private String getResponse(String url) throws Exception {

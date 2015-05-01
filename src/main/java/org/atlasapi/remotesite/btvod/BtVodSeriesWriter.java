@@ -3,9 +3,11 @@ package org.atlasapi.remotesite.btvod;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
+import com.google.common.primitives.Ints;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.ParentRef;
@@ -15,7 +17,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
-import org.atlasapi.remotesite.btvod.BtVodData.BtVodDataRow;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,12 +31,13 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
 public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
 
     private static final Logger log = LoggerFactory.getLogger(BtVodSeriesWriter.class);
+    private static final Pattern SERIES_NUMBER_PATTERN = Pattern.compile("S([0-9]+)\\-E[0-9]+");
+
 
     private final ContentWriter writer;
     private final ContentResolver resolver;
     private final BtVodBrandWriter brandExtractor;
     private final Publisher publisher;
-    private final String uriPrefix;
     private final ContentMerger contentMerger;
     private final Map<String, ParentRef> processedSeries = Maps.newHashMap();
     private final BtVodContentListener listener;
@@ -43,39 +46,42 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     private UpdateProgress progress = UpdateProgress.START;
 
 
-    public BtVodSeriesWriter(ContentWriter writer, ContentResolver resolver,
-            BtVodBrandWriter brandExtractor, 
-            BtVodDescribedFieldsExtractor describedFieldsExtractor, Publisher publisher, 
-            String uriPrefix, BtVodContentListener listener, 
-            Set<String> processedRows) {
+    public BtVodSeriesWriter(
+            ContentWriter writer,
+            ContentResolver resolver,
+            BtVodBrandWriter brandExtractor,
+            BtVodDescribedFieldsExtractor describedFieldsExtractor,
+            Publisher publisher,
+            BtVodContentListener listener,
+            Set<String> processedRows
+    ) {
         this.processedRows = checkNotNull(processedRows);
         this.listener = checkNotNull(listener);
         this.writer = checkNotNull(writer);
         this.resolver = checkNotNull(resolver);
         this.brandExtractor = checkNotNull(brandExtractor);
         this.publisher = checkNotNull(publisher);
-        this.uriPrefix = checkNotNull(uriPrefix);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
     
     @Override
-    public boolean process(BtVodDataRow row) {
+    public boolean process(BtVodEntry row) {
         UpdateProgress thisProgress = UpdateProgress.FAILURE;
         try {
-            if (!"Y".equals(row.getColumnValue(BtVodFileColumn.IS_SERIES))
-                    || processedRows.contains(row.getColumnValue(BtVodFileColumn.PRODUCT_ID))) {
+            if (!isPartOfSeries(row)
+                    || processedRows.contains(uriFor(row))) {
                 thisProgress = UpdateProgress.SUCCESS;
                 return true;
             }
-            
+
             Series series = seriesFrom(row);
             write(series);
 
             // This allows a lookup by series title. Note that the only reference from an episode to a series is the series title.
             // Consequently this map will be used to lookup SeriesRef when processing episodes
             // TODO: is there a better approach than this ^?
-            processedSeries.put(series.getTitle(), ParentRef.parentRefFrom(series));
+            processedSeries.put(uriFor(row), ParentRef.parentRefFrom(series));
             listener.onContent(series, row);
             thisProgress = UpdateProgress.SUCCESS;
         } catch (Exception e) {
@@ -84,6 +90,11 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
             progress = progress.reduce(thisProgress);
         }
         return true;
+    }
+
+    private boolean isPartOfSeries(BtVodEntry row) {
+        //TODO implement
+        return extractSeriesNumber(row.getTitle()) == null;
     }
 
     private void write(Series extracted) {
@@ -100,22 +111,32 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         }
     }
 
-    private Series seriesFrom(BtVodDataRow row) {
+    private Series seriesFrom(BtVodEntry row) {
         Series series = new Series(uriFor(row), null, publisher);
-        series.setTitle(row.getColumnValue(BtVodFileColumn.SERIES_TITLE));
         //TODO more fields
-        Integer seriesNumber = 
-                Integer.parseInt(row.getColumnValue(BtVodFileColumn.SERIES_NUMBER));
-        series.withSeriesNumber(seriesNumber);
-        series.setTitle(row.getColumnValue(BtVodFileColumn.PRODUCT_TITLE));
+        series.withSeriesNumber(extractSeriesNumber(row.getTitle()));
         describedFieldsExtractor.setDescribedFieldsFrom(row, series);
         series.setParentRef(brandExtractor.getBrandRefFor(row).orNull());
         return series;
     }
-    
-    private String uriFor(BtVodDataRow row) {
-        String seriesId = row.getColumnValue(BtVodFileColumn.PRODUCT_ID);
-        return uriPrefix + "series/" + seriesId;
+
+    public Integer extractSeriesNumber(String title) {
+        if (title == null) {
+            return null;
+        }
+
+        Matcher matcher = SERIES_NUMBER_PATTERN.matcher(title);
+
+        if (matcher.find()) {
+            return Ints.tryParse(matcher.group(1));
+        }
+
+        return null;
+    }
+
+    public String uriFor(BtVodEntry row) {
+        Integer seriesNumber = extractSeriesNumber(row.getTitle());
+        return brandExtractor.uriFor(row) +  "/series/" + seriesNumber;
     }
     
     @Override
@@ -123,8 +144,8 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         return progress;
     }
 
-    public Optional<ParentRef> getSeriesRefFor(String seriesTitle) {
-        return Optional.fromNullable(processedSeries.get(seriesTitle));
+    public Optional<ParentRef> getSeriesRefFor(BtVodEntry row) {
+        return Optional.fromNullable(processedSeries.get(uriFor(row)));
     }
 
 }

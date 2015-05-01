@@ -18,7 +18,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
-import org.atlasapi.remotesite.btvod.BtVodData.BtVodDataRow;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
 
 import com.google.common.base.Predicate;
@@ -57,11 +57,11 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
     }
     
     @Override
-    public void onContent(Content content, BtVodDataRow vodData) {
-        VodDataAndContent vodDataAndContent = new VodDataAndContent(vodData, content);
+    public void onContent(Content content, BtVodEntry vodData) {
+        VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(vodData, content);
         for (Entry<String, BtVodContentGroupPredicate> entry : 
                 contentGroupsAndCriteria.entrySet()) {
-            if (entry.getValue().apply(vodDataAndContent)) {
+            if (entry.getValue().apply(vodEntryAndContent)) {
                 contents.put(entry.getKey(), content.childRef());
             }
         }
@@ -98,32 +98,33 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
     }
     
     public static BtVodContentGroupPredicate categoryPredicate(final String category) {
-        
+
         return new BtVodContentGroupPredicate() {
-            
+
             @Override
-            public boolean apply(VodDataAndContent input) {
+            public boolean apply(VodEntryAndContent input) {
                 return category.equals(
-                        input.getBtVodDataRow()
-                             .getColumnValue(BtVodFileColumn.CATEGORY));
+                        input.getBtVodEntry().getBtproduct$productType()
+                );
             }
-            
+
             @Override
             public void init() {
-                
+
             }
-        }; 
+        };
     }
-    
+
     public static BtVodContentGroupPredicate contentProviderPredicate(final String providerId) {
         
         return new BtVodContentGroupPredicate() {
 
             @Override
-            public boolean apply(VodDataAndContent input) {
+            public boolean apply(VodEntryAndContent input) {
                 return providerId.equals(
-                                    input.getBtVodDataRow()
-                                         .getColumnValue(BtVodFileColumn.CONTENT_PROVIDER_ID));
+                                    input.getBtVodEntry()
+                                         .getContentProviderId()
+                );
             }
             
             @Override
@@ -138,14 +139,14 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
         
         return new BtVodContentGroupPredicate() {
             
-            private final Predicate<VodDataAndContent> delegate = 
-                    Predicates.<VodDataAndContent>or(
-                            contentProviderPredicate(FOX_PROVIDER_ID), 
-                            contentProviderPredicate(SONY_PROVIDER_ID), 
+            private final Predicate<VodEntryAndContent> delegate =
+                    Predicates.or(
+                            contentProviderPredicate(FOX_PROVIDER_ID),
+                            contentProviderPredicate(SONY_PROVIDER_ID),
                             contentProviderPredicate(EONE_PROVIDER_ID));
             
             @Override
-            public boolean apply(VodDataAndContent input) {
+            public boolean apply(VodEntryAndContent input) {
                 return delegate.apply(input);
             }
             
@@ -161,7 +162,7 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
         return new BtVodContentGroupPredicate() {
             
             @SuppressWarnings("unchecked")
-            private final Predicate<VodDataAndContent> delegate = 
+            private final Predicate<VodEntryAndContent> delegate =
                     Predicates.and(
                             BtVodContentGroupUpdater.categoryPredicate(FILM_CATEGORY),
                             Predicates.not(BtVodContentGroupUpdater.buyToOwnPredicate()),
@@ -169,7 +170,7 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
                     );
             
             @Override
-            public boolean apply(VodDataAndContent input) {
+            public boolean apply(VodEntryAndContent input) {
                 return delegate.apply(input);
             }
             
@@ -192,12 +193,11 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
             private Set<String> ids = null;
             
             @Override
-            public boolean apply(VodDataAndContent input) {
+            public boolean apply(VodEntryAndContent input) {
                 if (ids == null) {
                     throw new IllegalStateException("Must call init() first");
                 }
-                return ids.contains(input.getBtVodDataRow()
-                                .getColumnValue(BtVodFileColumn.PRODUCT_ID))
+                return ids.contains(input.getBtVodEntry().getGuid())
                        && (typeFilter == null
                                || typeFilter.isAssignableFrom(input.getContent().getClass()));
             }
@@ -210,15 +210,15 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
     }
     
     @SuppressWarnings("unchecked")
-    public static Predicate<VodDataAndContent> boxOfficePredicate() {
+    public static Predicate<VodEntryAndContent> boxOfficePredicate() {
         
         return Predicates.and(
                 Predicates.not(buyToOwnPredicate()),
                 Predicates.not(cznPredicate()), 
-                new Predicate<VodDataAndContent>() {
+                new Predicate<VodEntryAndContent>() {
 
                     @Override
-                    public boolean apply(VodDataAndContent input) {
+                    public boolean apply(VodEntryAndContent input) {
                         return input.getContent() instanceof Film;
                     }
         });

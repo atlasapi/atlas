@@ -32,7 +32,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
 
     private static final Logger log = LoggerFactory.getLogger(BtVodSeriesWriter.class);
     private static final Pattern SERIES_NUMBER_PATTERN = Pattern.compile("S([0-9]+)\\-E[0-9]+");
-
+    private static final String HELP_TYPE = "help";
 
     private final ContentWriter writer;
     private final ContentResolver resolver;
@@ -93,8 +93,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     }
 
     private boolean isPartOfSeries(BtVodEntry row) {
-        //TODO implement
-        return extractSeriesNumber(row.getTitle()) == null;
+        return !HELP_TYPE.equals(row.getBtproduct$productType()) && extractSeriesNumber(row.getTitle()) == null;
     }
 
     private void write(Series extracted) {

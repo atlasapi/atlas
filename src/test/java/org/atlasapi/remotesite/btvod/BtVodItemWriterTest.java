@@ -14,6 +14,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingPlan;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
@@ -112,6 +113,8 @@ public class BtVodItemWriterTest {
         entry.setPlproduct$offerEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         entry.setDescription(SYNOPSIS);
         entry.setBtproduct$productType("episode");
+        entry.setPlproduct$pricingPlan(new BtVodPlproduct$pricingPlan());
+
         return entry;
     }
     

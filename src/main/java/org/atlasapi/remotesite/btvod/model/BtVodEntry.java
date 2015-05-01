@@ -14,6 +14,8 @@ public class BtVodEntry {
     private List<BtVodPlproduct$productTag> plproduct$productTags;
     private Long plproduct$offerStartDate;
     private Long plproduct$offerEndDate;
+    private BtVodPlproduct$pricingPlan plproduct$pricingPlan;
+    private Integer btproduct$priority;
 
     public BtVodEntry() {}
 
@@ -93,5 +95,21 @@ public class BtVodEntry {
 
     public void setPlproduct$offerEndDate(Long plproduct$offerEndDate) {
         this.plproduct$offerEndDate = plproduct$offerEndDate;
+    }
+
+    public BtVodPlproduct$pricingPlan getPlproduct$pricingPlan() {
+        return plproduct$pricingPlan;
+    }
+
+    public void setPlproduct$pricingPlan(BtVodPlproduct$pricingPlan plproduct$pricingPlan) {
+        this.plproduct$pricingPlan = plproduct$pricingPlan;
+    }
+
+    public Integer getBtproduct$priority() {
+        return btproduct$priority;
+    }
+
+    public void setBtproduct$priority(Integer btproduct$priority) {
+        this.btproduct$priority = btproduct$priority;
     }
 }

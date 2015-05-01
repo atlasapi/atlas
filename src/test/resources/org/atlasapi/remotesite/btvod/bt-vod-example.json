@@ -62,6 +62,7 @@
             "plproduct$productTags": [
             ],
             "plproduct$amounts": {
+              "GBP": 0.5
             },
             "plproduct$isBlackout": false,
             "plproduct$isActive": true
@@ -95,7 +96,8 @@
       "btproduct$structureType": "single",
       "btproduct$titleSort": "I am not seeing the correct regional channels e.g local news",
       "btproduct$validForStorefront": true,
-      "btproduct$zeroTouch": false
+      "btproduct$zeroTouch": false,
+      "btproduct$priority": 3
     },
     {
       "$xmlns": {

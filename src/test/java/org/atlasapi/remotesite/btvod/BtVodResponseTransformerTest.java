@@ -1,7 +1,9 @@
 package org.atlasapi.remotesite.btvod;
 
+import com.google.common.collect.Iterables;
 import com.metabroadcast.common.http.HttpResponsePrologue;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingTier;
 import org.atlasapi.remotesite.btvod.model.BtVodResponse;
 import org.junit.Test;
 
@@ -33,7 +35,16 @@ public class BtVodResponseTransformerTest {
                 entry1.getPlproduct$longDescription(),
                 is("Go to Settings > channel scan<br><br>You will be offered a choice of region > select your correct region and channels should appear.")
         );
+        assertThat(
+                entry1.getPlproduct$pricingPlan().getPlproduct$pricingTiers().size(), is(1)
+        );
+        assertThat(entry1.getBtproduct$priority(), is(3));
 
+        BtVodPlproduct$pricingTier entry1PricingTier = Iterables.getOnlyElement(entry1.getPlproduct$pricingPlan().getPlproduct$pricingTiers());
+
+        assertThat(entry1PricingTier.getPlproduct$absoluteStart(), is(1401631320000L));
+        assertThat(entry1PricingTier.getPlproduct$absoluteEnd(), is(1767139200000L));
+        assertThat(entry1PricingTier.getPlproduct$amounts().getGBP(), is(0.5));
     }
 
 

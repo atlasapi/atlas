@@ -38,6 +38,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private static final Pattern BRAND_TITLE_FROM_EPISODE_PATTERN = Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*");
     private static final Pattern BRAND_TITLE_FROM_SERIES_PATTERN = Pattern.compile("^(.*) Series [0-9]+");
+    private static final String HELP_TYPE = "help";
 
     private static final Logger log = LoggerFactory.getLogger(BtVodBrandWriter.class);
     private static final boolean CONTINUE = true;
@@ -127,7 +128,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private boolean shouldSynthesizeBrand(BtVodEntry row) {
-        return canParseBrandFromEpisode(row);
+        return !HELP_TYPE.equals(row.getBtproduct$productType()) && canParseBrandFromEpisode(row);
     }
 
     private boolean canParseBrandFromEpisode(BtVodEntry row) {

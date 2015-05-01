@@ -2,11 +2,14 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Currency;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.metabroadcast.common.currency.Price;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
@@ -18,11 +21,13 @@ import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.simple.Pricing;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingTier;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -42,6 +47,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private static final String MUSIC_TYPE = "music";
     private static final String EPISODE_TYPE = "episode";
     private static final String COLLECTION_TYPE = "collection";
+    private static final String HELP_TYPE = "help";
     private static final Pattern EPISODE_HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
     private static final Pattern EPISODE_TITLE_PATTERN = Pattern.compile("^.* S[0-9]+\\-E[0-9]+ (.*)");
     private static final Pattern EPISODE_NUMBER_PATTERN = Pattern.compile("S[0-9]+\\-E([0-9]+)");
@@ -116,7 +122,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private boolean shouldProcess(BtVodEntry row) {
-        return !COLLECTION_TYPE.equals(row.getBtproduct$productType());
+        return !COLLECTION_TYPE.equals(row.getBtproduct$productType()) && !HELP_TYPE.equals(row.getBtproduct$productType());
     }
 
     // Ignore top-level series, these aren't really, but they're duff data
@@ -201,9 +207,10 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         if (matcher.matches()) {
             String episodeTitle =  matcher.group(1);
             Matcher hdMatcher = EPISODE_HD_PATTERN.matcher(episodeTitle);
-            if (matcher.matches()) {
+            if (hdMatcher.matches()) {
                 return hdMatcher.group(1);
             }
+            return episodeTitle;
         }
 
         return title;
@@ -231,6 +238,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         describedFieldsExtractor.setDescribedFieldsFrom(row, item);
         item.setVersions(createVersions(row));
+        item.setEditorialPriority(row.getBtproduct$priority());
     }
     
     private String titleForNonEpisode(BtVodEntry row) {
@@ -259,7 +267,22 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         Policy policy = new Policy();
         policy.setAvailabilityStart(availabilityStart);
         policy.setAvailabilityEnd(availabilityEnd);
-        
+        ImmutableList.Builder<Pricing> pricings = ImmutableList.builder();
+        for (BtVodPlproduct$pricingTier pricingTier : row.getPlproduct$pricingPlan().getPlproduct$pricingTiers()) {
+            DateTime startDate = new DateTime(pricingTier.getPlproduct$absoluteStart(), DateTimeZone.UTC);
+            DateTime endDate = new DateTime(pricingTier.getPlproduct$absoluteEnd(), DateTimeZone.UTC);
+            Double amount;
+            if (pricingTier.getPlproduct$amounts().getGBP() == null) {
+                amount = 0D;
+            } else {
+                amount = pricingTier.getPlproduct$amounts().getGBP() * 100F;
+            }
+            Price price = new Price(Currency.getInstance("GBP"), amount);
+            pricings.add(new Pricing(startDate, endDate, price));
+        }
+        policy.setPricing(pricings.build());
+
+
         Location location = new Location();
         location.setPolicy(policy);
         

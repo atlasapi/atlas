@@ -8,4 +8,11 @@ public class BtVodPlproduct$productTag {
 
     public BtVodPlproduct$productTag() {}
 
+    public String getPlproduct$scheme() {
+        return plproduct$scheme;
+    }
+
+    public String getPlproduct$title() {
+        return plproduct$title;
+    }
 }

@@ -16,29 +16,27 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
-import org.atlasapi.remotesite.btvod.BtVodData.BtVodDataRow;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.google.common.primitives.Ints;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 /**
- * Create a {@link Brand} from a {@link BtVodDataRow}. This may either be
- * from brand information contained explicitly in a row, or synthesized 
+ * Create a {@link Brand} from a {@link BtVodEntry}. This may either be
+ * from brand information contained explicitly in a row, or synthesized
  * from episode data
- * 
+ *
  * @author tom
  *
  */
 public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
-    private static final Pattern BRAND_TITLE_FROM_EPISODE_PATTERN = Pattern.compile("^(.*)\\ S[0-9]+\\-E.*");
+    private static final Pattern BRAND_TITLE_FROM_EPISODE_PATTERN = Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*");
     private static final Pattern BRAND_TITLE_FROM_SERIES_PATTERN = Pattern.compile("^(.*) Series [0-9]+");
 
     private static final Logger log = LoggerFactory.getLogger(BtVodBrandWriter.class);
@@ -69,14 +67,10 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     }
     
     @Override
-    public boolean process(BtVodDataRow row) {
+    public boolean process(BtVodEntry row) {
         UpdateProgress thisProgress = UpdateProgress.FAILURE;
         try {
-            /**
-             * TODO: In the current data file the column BrandIA_ID is always empty
-             * Should we keep checking it or just ignore it?
-            */
-            if ( (!isBrand(row) && !shouldSynthesizeBrand(row))
+            if ( (!shouldSynthesizeBrand(row))
                     || isBrandAlreadyProcessed(row)
                     || processedRows.contains(getKey(row))) {
                 thisProgress = UpdateProgress.SUCCESS;
@@ -96,17 +90,13 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return CONTINUE;
     }
 
-    private boolean isBrandAlreadyProcessed(BtVodDataRow row) {
+    private boolean isBrandAlreadyProcessed(BtVodEntry row) {
         Optional<String> optionalUri = uriFor(row);
         return optionalUri.isPresent() && processedBrands.containsKey(optionalUri.get());
     }
 
-    private Optional<String> getSynthesizedKey(BtVodDataRow row) {
-        String title = row.getColumnValue(BtVodFileColumn.PRODUCT_TITLE);
-
-        if (canParseBrandFromSeries(row)) {
-            return Optional.of(Sanitizer.sanitize(brandTitleFromSeriesTitle(title)));
-        }
+    public Optional<String> getSynthesizedKey(BtVodEntry row) {
+        String title = row.getTitle();
 
         if (canParseBrandFromEpisode(row)) {
             return Optional.of(Sanitizer.sanitize(brandTitleFromEpisodeTitle(title)));
@@ -115,8 +105,8 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return Optional.absent();
     }
 
-    private String getKey(BtVodDataRow row) {
-        String productId = row.getColumnValue(BtVodFileColumn.PRODUCT_ID);
+    private String getKey(BtVodEntry row) {
+        String productId = row.getGuid();
         return getSynthesizedKey(row).or(productId);
     }
 
@@ -136,27 +126,12 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return null;
     }
 
-    private boolean shouldSynthesizeBrand(BtVodDataRow row) {
-        return !isBrand(row) && (canParseBrandFromEpisode(row) || canParseBrandFromSeries(row));
+    private boolean shouldSynthesizeBrand(BtVodEntry row) {
+        return canParseBrandFromEpisode(row);
     }
 
-    private boolean isBrand(BtVodDataRow row) {
-        return !Strings.isNullOrEmpty(getBrandId(row));
-    }
-
-    private boolean canParseBrandFromEpisode(BtVodDataRow row) {
-        String seriesNumber = row.getColumnValue(BtVodFileColumn.SERIES_NUMBER);
-        String isSeries = row.getColumnValue(BtVodFileColumn.IS_SERIES);
-        return seriesNumber != null
-                && Ints.tryParse(seriesNumber) != null
-                && !"Y".equals(isSeries)
-                && isTitleSyntesizableFromEpisode(row.getColumnValue(BtVodFileColumn.PRODUCT_TITLE));
-    }
-
-    private boolean canParseBrandFromSeries(BtVodDataRow row) {
-        String isSeries = row.getColumnValue(BtVodFileColumn.IS_SERIES);
-        return "Y".equals(isSeries)
-                && isTitleSynthesizableFromSeries(row.getColumnValue(BtVodFileColumn.PRODUCT_TITLE));
+    private boolean canParseBrandFromEpisode(BtVodEntry row) {
+        return isTitleSyntesizableFromEpisode(row.getTitle());
     }
 
     private boolean isTitleSynthesizableFromSeries(String title) {
@@ -183,18 +158,13 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         }
     }
 
-    private Brand brandFrom(BtVodDataRow row) {
+    private Brand brandFrom(BtVodEntry row) {
         Brand brand = new Brand(uriFor(row).get(), null, publisher);
-        String productTitle = row.getColumnValue(BtVodFileColumn.PRODUCT_TITLE);
 
-        if (isBrand(row)) {
-            brand.setTitle(row.getColumnValue(BtVodFileColumn.BRAND_TITLE));
-        } else if (canParseBrandFromEpisode(row)) {
-            brand.setTitle(brandTitleFromEpisodeTitle(productTitle));
-        } else if (canParseBrandFromSeries(row)) {
-            brand.setTitle(brandTitleFromSeriesTitle(productTitle));
+        if (canParseBrandFromEpisode(row)) {
+            brand.setTitle(brandTitleFromEpisodeTitle(row.getTitle()));
         } else {
-            String productId = row.getColumnValue(BtVodFileColumn.PRODUCT_ID);
+            String productId = row.getGuid();
             throw new RuntimeException("Unexpected state - row with product_id: " + productId + " is not a brand nor is possible to parse a brand from it");
         }
 
@@ -202,27 +172,20 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return brand;
     }
     
-    private Optional<String> uriFor(BtVodDataRow row) {
-        if (!shouldSynthesizeBrand(row) && !isBrand(row)) {
+    public Optional<String> uriFor(BtVodEntry row) {
+        if (!shouldSynthesizeBrand(row)) {
             return Optional.absent();
         } else if (shouldSynthesizeBrand(row)) {
             return Optional.of(uriPrefix + "synthesized/brands/" + ensureSynthesizedKey(row));
-        } else if (isBrand(row)) {
-            return Optional.of(uriPrefix + "brands/" + getBrandId(row));
         }
-
         return Optional.absent();
     }
 
-    private String getBrandId(BtVodDataRow row) {
-        return row.getColumnValue(BtVodFileColumn.BRANDIA_ID);
-    }
-
-    private String ensureSynthesizedKey(BtVodDataRow row) {
+    private String ensureSynthesizedKey(BtVodEntry row) {
         Optional<String> synthesizedKey = getSynthesizedKey(row);
 
         if (!synthesizedKey.isPresent()) {
-            String productId = row.getColumnValue(BtVodFileColumn.PRODUCT_ID);
+            String productId = row.getGuid();
             throw new RuntimeException("Not able to generate a synthesized key for a synthesizable brand from row: [PRODUCT_ID="+productId+"]");
         }
 
@@ -234,7 +197,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return progress;
     }
 
-    public Optional<ParentRef> getBrandRefFor(BtVodDataRow row) {
+    public Optional<ParentRef> getBrandRefFor(BtVodEntry row) {
         Optional<String> optionalUri = uriFor(row);
 
         if (!optionalUri.isPresent()) {

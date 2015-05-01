@@ -51,7 +51,7 @@ public class BtVodUpdater extends ScheduledTask {
         BtVodBrandWriter brandExtractor = new BtVodBrandWriter(writer, resolver, publisher, 
                 uriPrefix, contentGroupUpdater, describedFieldsExtractor, processedRows);
         BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(writer, resolver, brandExtractor, 
-                describedFieldsExtractor, publisher, uriPrefix, contentGroupUpdater, processedRows);
+                describedFieldsExtractor, publisher, contentGroupUpdater, processedRows);
         BtVodItemWriter itemExtractor = new BtVodItemWriter(writer, resolver, brandExtractor, 
                 seriesExtractor, publisher, uriPrefix, contentGroupUpdater, describedFieldsExtractor, 
                 processedRows);

@@ -1,10 +1,10 @@
 package org.atlasapi.remotesite.btvod;
 
-import org.atlasapi.remotesite.btvod.BtVodData.BtVodDataRow;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 public interface BtVodDataProcessor<T> {
 
-    boolean process(BtVodDataRow row);
+    boolean process(BtVodEntry row);
     
     T getResult();
     

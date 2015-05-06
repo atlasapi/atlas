@@ -48,7 +48,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private static final String EPISODE_TYPE = "episode";
     private static final String COLLECTION_TYPE = "collection";
     private static final String HELP_TYPE = "help";
-    private static final Pattern EPISODE_HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
+    private static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
     private static final Pattern EPISODE_TITLE_PATTERN = Pattern.compile("^.* S[0-9]+\\-E[0-9]+ (.*)");
     private static final Pattern EPISODE_NUMBER_PATTERN = Pattern.compile("S[0-9]+\\-E([0-9]+)");
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
@@ -194,7 +194,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     /**
      * An episode title has usually the form of "Scrubs S4-E18 My Roommates"
      * In this case we want to extract the real episode title "My Roommates"
-     * We also string " - HD" suffix
+     * We also remove string " - HD" suffix
      * Otherwise we leave the title untouched
      */
     private String extractEpisodeTitle(String title) {
@@ -205,14 +205,18 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         Matcher matcher = EPISODE_TITLE_PATTERN.matcher(title);
 
         if (matcher.matches()) {
-            String episodeTitle =  matcher.group(1);
-            Matcher hdMatcher = EPISODE_HD_PATTERN.matcher(episodeTitle);
-            if (hdMatcher.matches()) {
-                return hdMatcher.group(1);
-            }
-            return episodeTitle;
+            return stripHDSuffix(matcher.group(1));
+
         }
 
+        return title;
+    }
+
+    private String stripHDSuffix(String title) {
+        Matcher hdMatcher = HD_PATTERN.matcher(title);
+        if (hdMatcher.matches()) {
+            return hdMatcher.group(1);
+        }
         return title;
     }
 
@@ -242,7 +246,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
     
     private String titleForNonEpisode(BtVodEntry row) {
-        return row.getTitle();
+        return stripHDSuffix(row.getTitle());
     }
 
     private String uriFor(BtVodEntry row) {
@@ -275,7 +279,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             if (pricingTier.getPlproduct$amounts().getGBP() == null) {
                 amount = 0D;
             } else {
-                amount = pricingTier.getPlproduct$amounts().getGBP() * 100F;
+                amount = pricingTier.getPlproduct$amounts().getGBP();
             }
             Price price = new Price(Currency.getInstance("GBP"), amount);
             pricings.add(new Pricing(startDate, endDate, price));

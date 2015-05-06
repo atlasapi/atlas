@@ -93,7 +93,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     }
 
     private boolean isPartOfSeries(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getBtproduct$productType()) && extractSeriesNumber(row.getTitle()) == null;
+        return !HELP_TYPE.equals(row.getBtproduct$productType()) && extractSeriesNumber(row.getTitle()) != null;
     }
 
     private void write(Series extracted) {
@@ -135,7 +135,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
 
     public String uriFor(BtVodEntry row) {
         Integer seriesNumber = extractSeriesNumber(row.getTitle());
-        return brandExtractor.uriFor(row) +  "/series/" + seriesNumber;
+        return brandExtractor.uriFor(row).get() +  "/series/" + seriesNumber;
     }
     
     @Override

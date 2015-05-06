@@ -2,16 +2,30 @@ package org.atlasapi.remotesite.btvod;
 
 
 import com.google.api.client.util.Sets;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Test;
+import org.mockito.ArgumentCaptor;
 
-import static org.junit.Assert.fail;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class BtVodSeriesWriterTest {
 
+    private static final String BRAND_TITLE = "Brand Title";
+    private static final String PRODUCT_ID = "1234";
+    private static final String REAL_EPISODE_TITLE = "Real Title";
+    private static final String FULL_EPISODE_TITLE = BRAND_TITLE + ": S1 S1-E9 " + REAL_EPISODE_TITLE;
     private static final Publisher PUBLISHER = Publisher.BT_VOD;
 
     private final ContentWriter contentWriter = mock(ContentWriter.class);
@@ -35,12 +49,37 @@ public class BtVodSeriesWriterTest {
 
     @Test
     public void testExtractsSeriesFromEpisode() {
-        fail();
+        BtVodEntry entry = row();
+
+        String brandUri = "http://brand-uri.com";
+        ParentRef brandRef = mock(ParentRef.class);
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(brandUri + "/series/1")))
+                .thenReturn(ResolvedContent.builder().build());
+
+        when(brandExtractor.uriFor(entry)).thenReturn(Optional.of(brandUri));
+        when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
+
+
+        ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
+
+        seriesExtractor.process(entry);
+
+        verify(contentWriter).createOrUpdate(captor.capture());
+        Series series = captor.getValue();
+        verify(extractor).setDescribedFieldsFrom(entry, series);
+        assertThat(series.getCanonicalUri(), is(brandUri + "/series/1"));
+        assertThat(series.getSeriesNumber(), is(1));
+        assertThat(series.getParent(), is(brandRef));
     }
 
-    @Test
-    public void testExtractsSeriesFromSeriesCollection() {
-        fail();
-    }
 
+    private BtVodEntry row() {
+        BtVodEntry entry = new BtVodEntry();
+        entry.setGuid(PRODUCT_ID);
+        entry.setTitle(FULL_EPISODE_TITLE);
+        entry.setPlproduct$offerStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
+        entry.setPlproduct$offerEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
+        return entry;
+    }
 }

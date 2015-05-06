@@ -65,11 +65,6 @@ public class BtVodBrandWriterTest {
         assertThat(saved.getTitle(), is(BRAND_TITLE));
     }
 
-    @Test
-    public void testCreatesSyntheticBrandFromSeriesData() {
-        fail();
-    }
-
     private BtVodEntry row() {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);

@@ -16,6 +16,7 @@ public class BtVodEntry {
     private Long plproduct$offerEndDate;
     private BtVodPlproduct$pricingPlan plproduct$pricingPlan;
     private Integer btproduct$priority;
+    private String btproduct$targetBandwidth;
 
     public BtVodEntry() {}
 
@@ -111,5 +112,13 @@ public class BtVodEntry {
 
     public void setBtproduct$priority(Integer btproduct$priority) {
         this.btproduct$priority = btproduct$priority;
+    }
+
+    public String getBtproduct$targetBandwidth() {
+        return btproduct$targetBandwidth;
+    }
+
+    public void setBtproduct$targetBandwidth(String btproduct$targetBandwidth) {
+        this.btproduct$targetBandwidth = btproduct$targetBandwidth;
     }
 }

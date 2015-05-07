@@ -186,7 +186,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         Optional<ParentRef> seriesRef = seriesExtractor.getSeriesRefFor(row);
         if (!seriesRef.isPresent()) {
-            log.warn("Episode without series %s", row);
+            log.warn("Episode without series {}", row);
         }
         return seriesRef.orNull();
     }
@@ -194,7 +194,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private ParentRef getBrandRefOrNull(BtVodEntry row) {
         Optional<ParentRef> brandRef = brandExtractor.getBrandRefFor(row);
         if (!brandRef.isPresent()) {
-            log.warn("Episode without brand %s", row);
+            log.warn("Episode without brand {}", row);
         }
         return brandRef.orNull();
     }

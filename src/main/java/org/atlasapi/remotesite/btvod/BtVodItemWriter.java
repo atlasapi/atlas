@@ -179,7 +179,13 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
 
     private Integer extractEpisodeNumber(BtVodEntry row) {
-        return Ints.tryParse(Iterables.getOnlyElement(row.getPlproduct$scopes()).getPlproduct$productMetadata().getEpisodeNumber());
+        String episodeNumber = Iterables.getOnlyElement(
+                row.getPlproduct$scopes()
+        ).getPlproduct$productMetadata().getEpisodeNumber();
+        if (episodeNumber == null) {
+            return null;
+        }
+        return Ints.tryParse(episodeNumber);
     }
 
     private ParentRef getSeriesRefOrNull(BtVodEntry row) {

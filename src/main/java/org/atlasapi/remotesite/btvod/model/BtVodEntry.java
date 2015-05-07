@@ -16,6 +16,25 @@ public class BtVodEntry {
     private Long plproduct$offerEndDate;
     private BtVodPlproduct$pricingPlan plproduct$pricingPlan;
     private Integer btproduct$priority;
+
+    @Override
+    public String toString() {
+        return "BtVodEntry{" +
+                "guid='" + guid + '\'' +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", plproduct$longDescription='" + plproduct$longDescription + '\'' +
+                ", btproduct$productType='" + btproduct$productType + '\'' +
+                ", plproduct$scopes=" + plproduct$scopes +
+                ", plproduct$productTags=" + plproduct$productTags +
+                ", plproduct$offerStartDate=" + plproduct$offerStartDate +
+                ", plproduct$offerEndDate=" + plproduct$offerEndDate +
+                ", plproduct$pricingPlan=" + plproduct$pricingPlan +
+                ", btproduct$priority=" + btproduct$priority +
+                ", btproduct$targetBandwidth='" + btproduct$targetBandwidth + '\'' +
+                '}';
+    }
+
     private String btproduct$targetBandwidth;
 
     public BtVodEntry() {}

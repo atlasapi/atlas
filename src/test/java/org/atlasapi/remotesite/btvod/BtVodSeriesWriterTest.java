@@ -11,6 +11,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -71,6 +72,25 @@ public class BtVodSeriesWriterTest {
         assertThat(series.getCanonicalUri(), is(brandUri + "/series/1"));
         assertThat(series.getSeriesNumber(), is(1));
         assertThat(series.getParent(), is(brandRef));
+    }
+
+    @Test
+    public void testCanExtractSeriesUrlFromEpisode() {
+        BtVodEntry row1 = new BtVodEntry();
+        row1.setTitle("Cashmere Mafia S2-E2 Conference Call");
+
+        BtVodEntry row2 = new BtVodEntry();
+        row2.setTitle(FULL_EPISODE_TITLE);
+
+        String brandUri = "http://brand-uri.com";
+        String brandUri2 = "http://brand-uri2.com";
+
+        when(brandExtractor.uriFor(row1)).thenReturn(Optional.of(brandUri));
+        when(brandExtractor.uriFor(row2)).thenReturn(Optional.of(brandUri2));
+
+
+        assertThat(seriesExtractor.uriFor(row1), Matchers.is(brandUri + "/series/2"));
+        assertThat(seriesExtractor.uriFor(row2), Matchers.is(brandUri2 + "/series/1"));
     }
 
 

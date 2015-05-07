@@ -2,11 +2,13 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
@@ -36,7 +38,10 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
  */
 public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
-    private static final Pattern BRAND_TITLE_FROM_EPISODE_PATTERN = Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*");
+    private static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
+            Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*"),
+            Pattern.compile("^(.*).*S[0-9]+\\-E.*")
+    );
     private static final Pattern BRAND_TITLE_FROM_SERIES_PATTERN = Pattern.compile("^(.*) Series [0-9]+");
     private static final String HELP_TYPE = "help";
 
@@ -112,9 +117,12 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private String brandTitleFromEpisodeTitle(String title) {
-        Matcher matcher = BRAND_TITLE_FROM_EPISODE_PATTERN.matcher(title);
-        if (matcher.matches()) {
-            return matcher.group(1);
+        for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
+            Matcher matcher = brandPattern.matcher(title);
+            if (matcher.matches()) {
+                return matcher.group(1);
+            }
+
         }
         return null;
     }
@@ -141,8 +149,13 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private boolean isTitleSyntesizableFromEpisode(String title) {
-        Matcher matcher = BRAND_TITLE_FROM_EPISODE_PATTERN.matcher(title);
-        return matcher.matches();
+        for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
+            if (brandPattern.matcher(title).matches()) {
+                return true;
+            }
+
+        }
+        return false;
     }
 
     private void write(Brand extracted) {
@@ -176,10 +189,9 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     public Optional<String> uriFor(BtVodEntry row) {
         if (!shouldSynthesizeBrand(row)) {
             return Optional.absent();
-        } else if (shouldSynthesizeBrand(row)) {
+        } else {
             return Optional.of(uriPrefix + "synthesized/brands/" + ensureSynthesizedKey(row));
         }
-        return Optional.absent();
     }
 
     private String ensureSynthesizedKey(BtVodEntry row) {

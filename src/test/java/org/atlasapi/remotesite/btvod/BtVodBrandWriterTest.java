@@ -65,6 +65,18 @@ public class BtVodBrandWriterTest {
         assertThat(saved.getTitle(), is(BRAND_TITLE));
     }
 
+    @Test
+    public void testCanParseBrandFromEpisodeTitles() {
+        BtVodEntry row1 = new BtVodEntry();
+        row1.setTitle("Cashmere Mafia S1-E2 Conference Call");
+
+        BtVodEntry row2 = new BtVodEntry();
+        row2.setTitle(FULL_EPISODE_TITLE);
+
+        assertThat(brandExtractor.uriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
+        assertThat(brandExtractor.uriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
+    }
+
     private BtVodEntry row() {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);

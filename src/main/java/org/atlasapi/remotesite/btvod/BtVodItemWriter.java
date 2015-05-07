@@ -125,9 +125,8 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         return !COLLECTION_TYPE.equals(row.getBtproduct$productType()) && !HELP_TYPE.equals(row.getBtproduct$productType());
     }
 
-    // Ignore top-level series, these aren't really, but they're duff data
     private boolean isValidHierarchy(BtVodEntry row) {
-        return seriesExtractor.getSeriesRefFor(row).isPresent()
+        return EPISODE_TYPE.equals(row.getBtproduct$productType()) && seriesExtractor.getSeriesRefFor(row).isPresent()
                         && brandExtractor.getBrandRefFor(row).isPresent();
     }
     

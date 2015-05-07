@@ -76,7 +76,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         UpdateProgress thisProgress = UpdateProgress.FAILURE;
         try {
             if (!isPartOfSeries(row)
-                    || processedRows.contains(uriFor(row))) {
+                    || processedRows.contains(uriFor(row).get())) {
                 thisProgress = UpdateProgress.SUCCESS;
                 return true;
             }
@@ -99,7 +99,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     }
 
     private boolean isPartOfSeries(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getBtproduct$productType()) && extractSeriesNumber(row.getTitle()) != null;
+        return !HELP_TYPE.equals(row.getBtproduct$productType()) && extractSeriesNumber(row.getTitle()).isPresent();
     }
 
     private void write(Series extracted) {

@@ -167,10 +167,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Episode createEpisode(BtVodEntry row) {
         Episode episode = new Episode(uriFor(row), null, publisher);
-        Optional<Integer> seriesNumber = seriesExtractor.extractSeriesNumber(row.getTitle());
-        if(seriesNumber.isPresent()) {
-            episode.setSeriesNumber(seriesNumber.get());
-        }
+        episode.setSeriesNumber(seriesExtractor.extractSeriesNumber(row.getTitle()).orNull());
         episode.setEpisodeNumber(extractEpisodeNumber(row));
         episode.setTitle(extractEpisodeTitle(row.getTitle()));
         episode.setSeriesRef(getSeriesRefOrNull(row));
@@ -186,13 +183,20 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private ParentRef getSeriesRefOrNull(BtVodEntry row) {
-        return seriesExtractor.getSeriesRefFor(row)
-                .orNull();
+
+        Optional<ParentRef> seriesRef = seriesExtractor.getSeriesRefFor(row);
+        if (!seriesRef.isPresent()) {
+            log.warn("Episode without series %s", row);
+        }
+        return seriesRef.orNull();
     }
 
     private ParentRef getBrandRefOrNull(BtVodEntry row) {
-        return brandExtractor.getBrandRefFor(row)
-                .orNull();
+        Optional<ParentRef> brandRef = brandExtractor.getBrandRefFor(row);
+        if (!brandRef.isPresent()) {
+            log.warn("Episode without brand %s", row);
+        }
+        return brandRef.orNull();
     }
 
     /**

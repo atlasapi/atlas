@@ -52,4 +52,8 @@ public class BtVodPlproduct$productMetadata {
     public String getPlproduct$description() {
         return plproduct$description;
     }
+
+    public void setEpisodeNumber(String episodeNumber) {
+        this.episodeNumber = episodeNumber;
+    }
 }

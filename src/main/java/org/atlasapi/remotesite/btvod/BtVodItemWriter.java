@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.btvod;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Currency;
+import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -49,7 +50,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private static final String COLLECTION_TYPE = "collection";
     private static final String HELP_TYPE = "help";
     private static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
-    private static final Pattern EPISODE_TITLE_PATTERN = Pattern.compile("^.* S[0-9]+\\-E[0-9]+ (.*)");
+    private static final List<Pattern> EPISODE_TITLE_PATTERNS = ImmutableList.of(
+            Pattern.compile("^.* S[0-9]+\\-E[0-9]+\\s(.*)"),
+            Pattern.compile("^.*Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\s(Episode\\s[0-9]+.*)"),
+            Pattern.compile("^.*?\\-\\s(.*)")
+    );
     private static final Pattern EPISODE_NUMBER_PATTERN = Pattern.compile("S[0-9]+\\-E([0-9]+)");
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
     private static final String COMING_SOON_SUFFIX = ": Coming Soon";
@@ -125,14 +130,13 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         return !COLLECTION_TYPE.equals(row.getBtproduct$productType()) && !HELP_TYPE.equals(row.getBtproduct$productType());
     }
 
-    private boolean isValidHierarchy(BtVodEntry row) {
-        return EPISODE_TYPE.equals(row.getBtproduct$productType()) && seriesExtractor.getSeriesRefFor(row).isPresent()
-                        && brandExtractor.getBrandRefFor(row).isPresent();
+    private boolean isEpisode(BtVodEntry row) {
+        return EPISODE_TYPE.equals(row.getBtproduct$productType());
     }
     
     private Item itemFrom(BtVodEntry row) {
         Item item;
-        if (isValidHierarchy(row)) {
+        if (isEpisode(row)) {
             item = createEpisode(row);
         } else if (FILM_TYPE.equals(row.getBtproduct$productType())) {
             item = createFilm(row);
@@ -163,30 +167,31 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Episode createEpisode(BtVodEntry row) {
         Episode episode = new Episode(uriFor(row), null, publisher);
-        episode.setSeriesNumber(seriesExtractor.extractSeriesNumber(row.getTitle()));
-        episode.setEpisodeNumber(extractEpisodeNumber(row.getTitle()));
+        Optional<Integer> seriesNumber = seriesExtractor.extractSeriesNumber(row.getTitle());
+        if(seriesNumber.isPresent()) {
+            episode.setSeriesNumber(seriesNumber.get());
+        }
+        episode.setEpisodeNumber(extractEpisodeNumber(row));
         episode.setTitle(extractEpisodeTitle(row.getTitle()));
         episode.setSeriesRef(getSeriesRefOrNull(row));
+        episode.setParentRef(getBrandRefOrNull(row));
         
         return episode;
     }
 
-    private Integer extractEpisodeNumber(String title) {
-        if (title == null) {
-            return null;
-        }
 
-        Matcher matcher = EPISODE_NUMBER_PATTERN.matcher(title);
 
-        if (matcher.find()) {
-            return Ints.tryParse(matcher.group(1));
-        }
-
-        return null;
+    private Integer extractEpisodeNumber(BtVodEntry row) {
+        return Ints.tryParse(Iterables.getOnlyElement(row.getPlproduct$scopes()).getPlproduct$productMetadata().getEpisodeNumber());
     }
 
     private ParentRef getSeriesRefOrNull(BtVodEntry row) {
         return seriesExtractor.getSeriesRefFor(row)
+                .orNull();
+    }
+
+    private ParentRef getBrandRefOrNull(BtVodEntry row) {
+        return brandExtractor.getBrandRefFor(row)
                 .orNull();
     }
 
@@ -196,25 +201,26 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
      * We also remove string " - HD" suffix
      * Otherwise we leave the title untouched
      */
-    private String extractEpisodeTitle(String title) {
+    public String extractEpisodeTitle(String title) {
         if (title == null) {
             return null;
         }
 
-        Matcher matcher = EPISODE_TITLE_PATTERN.matcher(title);
+        for (Pattern titlePattern : EPISODE_TITLE_PATTERNS) {
+            Matcher matcher = titlePattern.matcher(title);
+            if (matcher.matches()) {
+                return stripHDSuffix(matcher.group(1));
 
-        if (matcher.matches()) {
-            return stripHDSuffix(matcher.group(1));
+            }
 
         }
-
         return title;
     }
 
     private String stripHDSuffix(String title) {
         Matcher hdMatcher = HD_PATTERN.matcher(title);
         if (hdMatcher.matches()) {
-            return hdMatcher.group(1);
+            return hdMatcher.group(1).trim();
         }
         return title;
     }

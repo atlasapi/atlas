@@ -6,6 +6,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
@@ -15,6 +16,8 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingPlan;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productMetadata;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$scopes;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
@@ -68,6 +71,7 @@ public class BtVodItemWriterTest {
                 .thenReturn(ResolvedContent.builder().build());
         when(imageUriProvider.imageUriFor(PRODUCT_ID)).thenReturn(Optional.<String>of(IMAGE_URI));
         when(seriesExtractor.getSeriesRefFor(btVodEntry)).thenReturn(Optional.of(seriesRef));
+        when(seriesExtractor.extractSeriesNumber(btVodEntry.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntry);
@@ -94,6 +98,35 @@ public class BtVodItemWriterTest {
         //assertThat(Iterables.getOnlyElement(location.getPolicy().getAvailableCountries()).code(), is("GB"));
         //assertThat(location.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_RENT));
     }
+
+    @Test
+    public void testExtractsEpisodeTitles() {
+        BtVodEntry btVodEntry1 = episodeRow();
+        btVodEntry1.setTitle(FULL_EPISODE_TITLE);
+
+        BtVodEntry btVodEntry2 = episodeRow();
+        btVodEntry2.setTitle("Cashmere Mafia S1-E2 Conference Call");
+
+        BtVodEntry btVodEntry3 = episodeRow();
+        btVodEntry3.setTitle("Classic Premiership Rugby - Saracens v Leicester Tigers 2010/11");
+
+        BtVodEntry btVodEntry4 = episodeRow();
+        btVodEntry4.setTitle("FIFA Films - 1958 Sweden - Hinein! - HD");
+
+        BtVodEntry btVodEntry5 = episodeRow();
+        btVodEntry5.setTitle("FIFA Films - 1958 Sweden - Hinein! - HD");
+
+        BtVodEntry btVodEntry6 = episodeRow();
+        btVodEntry6.setTitle("UFC: The Ultimate Fighter Season 19 - Season 19 Episode 2");
+
+
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry1.getTitle()), is(REAL_EPISODE_TITLE));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry2.getTitle()), is("Conference Call"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry3.getTitle()), is("Saracens v Leicester Tigers 2010/11"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry4.getTitle()), is("1958 Sweden - Hinein!"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry5.getTitle()), is("1958 Sweden - Hinein!"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry6.getTitle()), is("Episode 2"));
+    }
     
     @Test
     public void testExtractsFilm() {
@@ -114,6 +147,11 @@ public class BtVodItemWriterTest {
         entry.setDescription(SYNOPSIS);
         entry.setBtproduct$productType("episode");
         entry.setPlproduct$pricingPlan(new BtVodPlproduct$pricingPlan());
+        BtVodPlproduct$scopes productScope = new BtVodPlproduct$scopes();
+        BtVodPlproduct$productMetadata productMetadata = new BtVodPlproduct$productMetadata();
+        productMetadata.setEpisodeNumber("1");
+        productScope.setPlproduct$productMetadata(productMetadata);
+        entry.setPlproduct$scopes(ImmutableList.of(productScope));
 
         return entry;
     }

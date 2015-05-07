@@ -34,4 +34,8 @@ public class BtVodPlproduct$scopes {
     public BtVodPlproduct$productMetadata getPlproduct$productMetadata() {
         return plproduct$productMetadata;
     }
+
+    public void setPlproduct$productMetadata(BtVodPlproduct$productMetadata plproduct$productMetadata) {
+        this.plproduct$productMetadata = plproduct$productMetadata;
+    }
 }

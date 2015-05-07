@@ -40,7 +40,9 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
             Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*"),
-            Pattern.compile("^(.*).*S[0-9]+\\-E.*")
+            Pattern.compile("^(.*).*S[0-9]+\\-E.*"),
+            Pattern.compile("^(.*)Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*"),
+            Pattern.compile("^(.*)\\-.*")
     );
     private static final Pattern BRAND_TITLE_FROM_SERIES_PATTERN = Pattern.compile("^(.*) Series [0-9]+");
     private static final String HELP_TYPE = "help";

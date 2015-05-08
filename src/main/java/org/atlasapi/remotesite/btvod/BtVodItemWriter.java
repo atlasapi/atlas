@@ -323,7 +323,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         BtVodPlproduct$ratings rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
-            version.setRestriction(Restriction.from(rating.getPlproduct$rating(),rating.getPlproduct$scheme()));
+            Integer ageRating = rating.getPlproduct$rating();
+            if (ageRating != null) {
+                version.setRestriction(Restriction.from(ageRating,rating.getPlproduct$scheme()));
+            } else {
+                version.setRestriction(Restriction.from(rating.getPlproduct$scheme()));
+            }
         }
 
         return ImmutableSet.of(version);

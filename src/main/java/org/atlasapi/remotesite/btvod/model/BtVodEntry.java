@@ -32,6 +32,7 @@ public class BtVodEntry {
                 ", plproduct$offerEndDate=" + plproduct$offerEndDate +
                 ", plproduct$pricingPlan=" + plproduct$pricingPlan +
                 ", btproduct$priority=" + btproduct$priority +
+                ", plproduct$ratings=" + plproduct$ratings +
                 ", btproduct$targetBandwidth='" + btproduct$targetBandwidth + '\'' +
                 '}';
     }

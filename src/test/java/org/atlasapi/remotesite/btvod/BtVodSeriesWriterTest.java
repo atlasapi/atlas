@@ -72,6 +72,7 @@ public class BtVodSeriesWriterTest {
         assertThat(series.getCanonicalUri(), is(brandUri + "/series/1"));
         assertThat(series.getSeriesNumber(), is(1));
         assertThat(series.getParent(), is(brandRef));
+        assertThat(seriesExtractor.getSeriesRefFor(entry).get().getUri(), is(brandUri + "/series/1"));
     }
 
     @Test
@@ -88,22 +89,27 @@ public class BtVodSeriesWriterTest {
         BtVodEntry row4 = new BtVodEntry();
         row4.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
 
+        BtVodEntry row5 = new BtVodEntry();
+        row5.setTitle("Being Human (USA) S2-E7 The Ties That Blind");
 
         String brandUri = "http://brand-uri.com";
         String brandUri2 = "http://brand-uri2.com";
         String brandUri3 = "http://brand-uri3.com";
         String brandUri4 = "http://brand-uri4.com";
+        String brandUri5 = "http://brand-uri5.com";
 
         when(brandExtractor.uriFor(row1)).thenReturn(Optional.of(brandUri));
         when(brandExtractor.uriFor(row2)).thenReturn(Optional.of(brandUri2));
         when(brandExtractor.uriFor(row3)).thenReturn(Optional.of(brandUri3));
         when(brandExtractor.uriFor(row4)).thenReturn(Optional.of(brandUri4));
+        when(brandExtractor.uriFor(row5)).thenReturn(Optional.of(brandUri5));
 
 
         assertThat(seriesExtractor.uriFor(row1).get(), Matchers.is(brandUri + "/series/2"));
         assertThat(seriesExtractor.uriFor(row2).get(), Matchers.is(brandUri2 + "/series/1"));
         assertThat(seriesExtractor.uriFor(row3).get(), Matchers.is(brandUri3 + "/series/19"));
         assertThat(seriesExtractor.uriFor(row4).get(), Matchers.is(brandUri4 + "/series/3"));
+        assertThat(seriesExtractor.uriFor(row5).get(), Matchers.is(brandUri5 + "/series/2"));
     }
 
 

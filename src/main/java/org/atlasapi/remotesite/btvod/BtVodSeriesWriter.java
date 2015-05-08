@@ -162,7 +162,11 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     }
 
     public Optional<ParentRef> getSeriesRefFor(BtVodEntry row) {
-        return Optional.fromNullable(processedSeries.get(uriFor(row)));
+        Optional<String> seriesUri = uriFor(row);
+        if(seriesUri.isPresent()) {
+            return Optional.fromNullable(processedSeries.get(seriesUri.get()));
+        }
+        return Optional.absent();
     }
 
 }

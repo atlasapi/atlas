@@ -312,7 +312,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         Location location = new Location();
         location.setPolicy(policy);
-        
+
         Encoding encoding = new Encoding();
         encoding.setAvailableAt(ImmutableSet.of(location));
         

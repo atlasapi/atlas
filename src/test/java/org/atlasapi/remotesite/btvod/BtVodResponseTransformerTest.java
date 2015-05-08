@@ -52,6 +52,8 @@ public class BtVodResponseTransformerTest {
         assertThat(restriction.getPlproduct$rating(), is(12));
         assertThat(restriction.getPlproduct$scheme(), is("urn:www.bbfc.co.uk"));
 
+        assertThat(entry2.getGenre(), is("Junior Girl and Boy"));
+
     }
 
 

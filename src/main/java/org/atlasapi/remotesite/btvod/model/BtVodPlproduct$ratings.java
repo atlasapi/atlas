@@ -29,6 +29,10 @@ public class BtVodPlproduct$ratings {
         }
     }
 
+    public String getPlproduct$ratingString() {
+       return plproduct$rating;
+    }
+
     public void setPlproduct$rating(String plproduct$rating) {
         this.plproduct$rating = plproduct$rating;
     }

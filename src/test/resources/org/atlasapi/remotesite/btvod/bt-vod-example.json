@@ -83,6 +83,11 @@
       "plproduct$baseProductId": null,
       "plproduct$isSubscription": false,
       "plproduct$ratings": [
+        {
+          "plproduct$scheme": "urn:www.bbfc.co.uk",
+          "plproduct$rating": "12",
+          "plproduct$subRatings": []
+        }
       ],
       "plproduct$titleLocalized": {
       },
@@ -252,13 +257,7 @@
       "plproduct$isApproved": true,
       "plproduct$baseProductId": null,
       "plproduct$isSubscription": false,
-      "plproduct$ratings": [
-        {
-          "plproduct$scheme": "urn:www.bbfc.co.uk",
-          "plproduct$rating": "u",
-          "plproduct$subRatings": []
-        }
-      ],
+      "plproduct$ratings": [],
       "plproduct$titleLocalized": {},
       "plproduct$descriptionLocalized": {},
       "plproduct$dynamicallyUpdatePricingPlan": true,

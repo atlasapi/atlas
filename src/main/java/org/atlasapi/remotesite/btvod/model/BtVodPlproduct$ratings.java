@@ -32,4 +32,12 @@ public class BtVodPlproduct$ratings {
     public void setPlproduct$rating(String plproduct$rating) {
         this.plproduct$rating = plproduct$rating;
     }
+
+    @Override
+    public String toString() {
+        return "BtVodPlproduct$ratings{" +
+                "plproduct$scheme='" + plproduct$scheme + '\'' +
+                ", plproduct$rating='" + plproduct$rating + '\'' +
+                '}';
+    }
 }

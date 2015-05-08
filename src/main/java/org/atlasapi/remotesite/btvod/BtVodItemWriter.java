@@ -22,6 +22,7 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.simple.Pricing;
@@ -31,6 +32,7 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingTier;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$ratings;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.slf4j.Logger;
@@ -312,13 +314,19 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         Location location = new Location();
         location.setPolicy(policy);
+        location.setCanonicalUri(uriFor(row));
 
         Encoding encoding = new Encoding();
         encoding.setAvailableAt(ImmutableSet.of(location));
         
         Version version = new Version();
         version.setManifestedAs(ImmutableSet.of(encoding));
-        
+
+        BtVodPlproduct$ratings rating = Iterables.getFirst(row.getplproduct$ratings(), null);
+        if (rating != null) {
+            version.setRestriction(Restriction.from(rating.getPlproduct$rating(),rating.getPlproduct$scheme()));
+        }
+
         return ImmutableSet.of(version);
     }
 }

@@ -16,6 +16,7 @@ public class BtVodEntry {
     private Long plproduct$offerEndDate;
     private BtVodPlproduct$pricingPlan plproduct$pricingPlan;
     private Integer btproduct$priority;
+    private List<BtVodPlproduct$ratings> plproduct$ratings;
 
     @Override
     public String toString() {
@@ -139,5 +140,13 @@ public class BtVodEntry {
 
     public void setBtproduct$targetBandwidth(String btproduct$targetBandwidth) {
         this.btproduct$targetBandwidth = btproduct$targetBandwidth;
+    }
+
+    public List<BtVodPlproduct$ratings> getplproduct$ratings() {
+        return plproduct$ratings;
+    }
+
+    public void setPlproduct$ratings(List<BtVodPlproduct$ratings> plproduct$ratings) {
+        this.plproduct$ratings = plproduct$ratings;
     }
 }

@@ -4,6 +4,7 @@ import com.google.common.collect.Iterables;
 import com.metabroadcast.common.http.HttpResponsePrologue;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingTier;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$ratings;
 import org.atlasapi.remotesite.btvod.model.BtVodResponse;
 import org.junit.Test;
 
@@ -45,6 +46,12 @@ public class BtVodResponseTransformerTest {
         assertThat(entry1PricingTier.getPlproduct$absoluteStart(), is(1401631320000L));
         assertThat(entry1PricingTier.getPlproduct$absoluteEnd(), is(1767139200000L));
         assertThat(entry1PricingTier.getPlproduct$amounts().getGBP(), is(0.5));
+
+        BtVodPlproduct$ratings restriction = Iterables.getOnlyElement(entry1.getplproduct$ratings());
+
+        assertThat(restriction.getPlproduct$rating(), is(12));
+        assertThat(restriction.getPlproduct$scheme(), is("urn:www.bbfc.co.uk"));
+
     }
 
 

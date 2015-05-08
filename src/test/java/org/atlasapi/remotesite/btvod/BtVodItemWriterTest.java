@@ -18,6 +18,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingPlan;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productMetadata;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$ratings;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$scopes;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
@@ -224,6 +225,8 @@ public class BtVodItemWriterTest {
         productMetadata.setEpisodeNumber("1");
         productScope.setPlproduct$productMetadata(productMetadata);
         entry.setPlproduct$scopes(ImmutableList.of(productScope));
+        entry.setPlproduct$ratings(ImmutableList.<BtVodPlproduct$ratings>of() );
+
 
         return entry;
     }

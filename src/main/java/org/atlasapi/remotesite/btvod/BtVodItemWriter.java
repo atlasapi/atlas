@@ -265,7 +265,6 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             item.setParentRef(brandRefFor.get());
         }
 
-        describedFieldsExtractor.setDescribedFieldsFrom(row, item);
         item.setVersions(createVersions(row));
         item.setEditorialPriority(row.getBtproduct$priority());
     }

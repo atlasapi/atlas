@@ -82,11 +82,15 @@ public class BtVodBrandWriterTest {
         BtVodEntry row5 = new BtVodEntry();
         row5.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
 
+        BtVodEntry row6 = new BtVodEntry();
+        row6.setTitle("Being Human (USA) S2-E7 The Ties That Blind");
+
         assertThat(brandExtractor.uriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandExtractor.uriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
         assertThat(brandExtractor.uriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
         assertThat(brandExtractor.uriFor(row4).get(), is(URI_PREFIX + "synthesized/brands/ufc-the-ultimate-fighter"));
         assertThat(brandExtractor.uriFor(row5).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
+        assertThat(brandExtractor.uriFor(row6).get(), is(URI_PREFIX + "synthesized/brands/being-human-usa"));
     }
 
     private BtVodEntry row() {

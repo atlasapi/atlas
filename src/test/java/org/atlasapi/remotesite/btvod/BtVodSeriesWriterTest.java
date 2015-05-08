@@ -68,7 +68,6 @@ public class BtVodSeriesWriterTest {
 
         verify(contentWriter).createOrUpdate(captor.capture());
         Series series = captor.getValue();
-        verify(extractor).setDescribedFieldsFrom(entry, series);
         assertThat(series.getCanonicalUri(), is(brandUri + "/series/1"));
         assertThat(series.getSeriesNumber(), is(1));
         assertThat(series.getParent(), is(brandRef));

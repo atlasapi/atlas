@@ -120,7 +120,6 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         Series series = new Series(uriFor(row).get(), null, publisher);
         //TODO more fields
         series.withSeriesNumber(extractSeriesNumber(row.getTitle()).get());
-        describedFieldsExtractor.setDescribedFieldsFrom(row, series);
         series.setParentRef(brandExtractor.getBrandRefFor(row).orNull());
         return series;
     }

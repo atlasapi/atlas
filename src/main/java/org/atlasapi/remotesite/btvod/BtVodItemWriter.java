@@ -265,6 +265,8 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             item.setParentRef(brandRefFor.get());
         }
 
+        describedFieldsExtractor.setDescribedFieldsFrom(row, item);
+
         item.setVersions(createVersions(row));
         item.setEditorialPriority(row.getBtproduct$priority());
     }
@@ -320,6 +322,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         
         Version version = new Version();
         version.setManifestedAs(ImmutableSet.of(encoding));
+        version.setCanonicalUri(uriFor(row));
 
         BtVodPlproduct$ratings rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
@@ -327,7 +330,15 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             if (ageRating != null) {
                 version.setRestriction(Restriction.from(ageRating,rating.getPlproduct$scheme()));
             } else {
-                version.setRestriction(Restriction.from(rating.getPlproduct$scheme()));
+                version.setRestriction(
+                        Restriction.from(
+                                String.format(
+                                        "%s:%s",
+                                        rating.getPlproduct$scheme(),
+                                        rating.getPlproduct$ratingString()
+                                )
+                        )
+                );
             }
         }
 

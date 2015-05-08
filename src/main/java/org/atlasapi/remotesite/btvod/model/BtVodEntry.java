@@ -5,6 +5,7 @@ import java.util.List;
 public class BtVodEntry {
 
     private static final String CONTENT_PROVIDER = "contentProvider";
+    private static final String GENRE = "genre";
     private String guid;
     private String title;
     private String description;
@@ -64,6 +65,15 @@ public class BtVodEntry {
     public String getContentProviderId() {
         for (BtVodPlproduct$productTag plproduct$productTag : plproduct$productTags) {
             if (plproduct$productTag.getPlproduct$scheme().equals(CONTENT_PROVIDER)) {
+                return plproduct$productTag.getPlproduct$title();
+            }
+        }
+
+        return null;
+    }
+    public String getGenre() {
+        for (BtVodPlproduct$productTag plproduct$productTag : plproduct$productTags) {
+            if (plproduct$productTag.getPlproduct$scheme().equals(GENRE)) {
                 return plproduct$productTag.getPlproduct$title();
             }
         }

@@ -85,18 +85,25 @@ public class BtVodSeriesWriterTest {
         BtVodEntry row3 = new BtVodEntry();
         row3.setTitle("UFC: The Ultimate Fighter Season 19 - Season 19 Episode 2");
 
+        BtVodEntry row4 = new BtVodEntry();
+        row4.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
+
+
         String brandUri = "http://brand-uri.com";
         String brandUri2 = "http://brand-uri2.com";
         String brandUri3 = "http://brand-uri3.com";
+        String brandUri4 = "http://brand-uri4.com";
 
         when(brandExtractor.uriFor(row1)).thenReturn(Optional.of(brandUri));
         when(brandExtractor.uriFor(row2)).thenReturn(Optional.of(brandUri2));
         when(brandExtractor.uriFor(row3)).thenReturn(Optional.of(brandUri3));
+        when(brandExtractor.uriFor(row4)).thenReturn(Optional.of(brandUri4));
 
 
         assertThat(seriesExtractor.uriFor(row1).get(), Matchers.is(brandUri + "/series/2"));
         assertThat(seriesExtractor.uriFor(row2).get(), Matchers.is(brandUri2 + "/series/1"));
         assertThat(seriesExtractor.uriFor(row3).get(), Matchers.is(brandUri3 + "/series/19"));
+        assertThat(seriesExtractor.uriFor(row4).get(), Matchers.is(brandUri4 + "/series/3"));
     }
 
 

@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.btvod;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -33,7 +34,6 @@ import com.google.common.collect.Sets;
 public class BtVodItemWriterTest {
 
     private static final String IMAGE_URI = "http://example.org/123.png";
-    private static final String IMAGE_FILENAME = "image.png";
     private static final String PRODUCT_ID = "1234";
     private static final String SERIES_TITLE = "Series Title";
     private static final String REAL_EPISODE_TITLE = "Real Title";
@@ -100,6 +100,74 @@ public class BtVodItemWriterTest {
     }
 
     @Test
+    public void testMergesVersionsForHDandSD() {
+        BtVodEntry btVodEntrySD = episodeRow();
+        ParentRef parentRef = new ParentRef(BRAND_URI);
+        ParentRef seriesRef = new ParentRef("seriesUri");
+
+        BtVodEntry btVodEntryHD = episodeRow();
+        btVodEntryHD.setTitle(FULL_EPISODE_TITLE + " - HD");
+        btVodEntryHD.setGuid(PRODUCT_ID + "_HD");
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
+                .thenReturn(ResolvedContent.builder().build());
+        when(imageUriProvider.imageUriFor(PRODUCT_ID)).thenReturn(Optional.<String>of(IMAGE_URI));
+        when(seriesExtractor.getSeriesRefFor(btVodEntrySD)).thenReturn(Optional.of(seriesRef));
+        when(seriesExtractor.extractSeriesNumber(btVodEntrySD.getTitle())).thenReturn(Optional.of(1));
+        when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
+
+        itemExtractor.process(btVodEntrySD);
+        itemExtractor.process(btVodEntryHD);
+
+        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
+        verify(contentWriter, times(2)).createOrUpdate(itemCaptor.capture());
+
+
+        Item writtenItem = Iterables.getOnlyElement(ImmutableSet.copyOf(itemCaptor.getAllValues()));
+
+        assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
+        assertThat(writtenItem.getDescription(), is(SYNOPSIS));
+        assertThat(writtenItem.getContainer(), is(parentRef));
+
+        assertThat(writtenItem.getVersions().size(), is(2));
+
+    }
+
+    @Test
+    public void testMergesVersionsForHDandSDForEpisodes() {
+        BtVodEntry btVodEntrySD = episodeRow();
+        ParentRef parentRef = new ParentRef(BRAND_URI);
+        ParentRef seriesRef = new ParentRef("seriesUri");
+
+        BtVodEntry btVodEntryHD = episodeRow();
+        btVodEntryHD.setTitle(SERIES_TITLE + ": - HD S1 S1-E9 " + REAL_EPISODE_TITLE + " - HD");
+        btVodEntryHD.setGuid(PRODUCT_ID + "_HD");
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
+                .thenReturn(ResolvedContent.builder().build());
+        when(imageUriProvider.imageUriFor(PRODUCT_ID)).thenReturn(Optional.<String>of(IMAGE_URI));
+        when(seriesExtractor.getSeriesRefFor(btVodEntrySD)).thenReturn(Optional.of(seriesRef));
+        when(seriesExtractor.extractSeriesNumber(btVodEntrySD.getTitle())).thenReturn(Optional.of(1));
+        when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
+
+        itemExtractor.process(btVodEntrySD);
+        itemExtractor.process(btVodEntryHD);
+
+        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
+        verify(contentWriter, times(2)).createOrUpdate(itemCaptor.capture());
+
+
+        Item writtenItem = Iterables.getOnlyElement(ImmutableSet.copyOf(itemCaptor.getAllValues()));
+
+        assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
+        assertThat(writtenItem.getDescription(), is(SYNOPSIS));
+        assertThat(writtenItem.getContainer(), is(parentRef));
+
+        assertThat(writtenItem.getVersions().size(), is(2));
+
+    }
+
+    @Test
     public void testExtractsEpisodeTitles() {
         BtVodEntry btVodEntry1 = episodeRow();
         btVodEntry1.setTitle(FULL_EPISODE_TITLE);
@@ -114,10 +182,13 @@ public class BtVodItemWriterTest {
         btVodEntry4.setTitle("FIFA Films - 1958 Sweden - Hinein! - HD");
 
         BtVodEntry btVodEntry5 = episodeRow();
-        btVodEntry5.setTitle("FIFA Films - 1958 Sweden - Hinein! - HD");
+        btVodEntry5.setTitle("FIFA Films - 1958 Sweden - Hinein!");
 
         BtVodEntry btVodEntry6 = episodeRow();
         btVodEntry6.setTitle("UFC: The Ultimate Fighter Season 19 - Season 19 Episode 2");
+
+        BtVodEntry btVodEntry7 = new BtVodEntry();
+        btVodEntry7.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
 
 
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry1.getTitle()), is(REAL_EPISODE_TITLE));
@@ -126,6 +197,7 @@ public class BtVodItemWriterTest {
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry4.getTitle()), is("1958 Sweden - Hinein!"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry5.getTitle()), is("1958 Sweden - Hinein!"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry6.getTitle()), is("Episode 2"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry7.getTitle()), is("Truth Be Told"));
     }
     
     @Test

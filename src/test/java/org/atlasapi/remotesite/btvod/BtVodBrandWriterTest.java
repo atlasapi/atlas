@@ -79,10 +79,14 @@ public class BtVodBrandWriterTest {
         BtVodEntry row4 = new BtVodEntry();
         row4.setTitle("UFC: The Ultimate Fighter Season 19 - Season 19 Episode 2");
 
+        BtVodEntry row5 = new BtVodEntry();
+        row5.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
+
         assertThat(brandExtractor.uriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandExtractor.uriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
         assertThat(brandExtractor.uriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
         assertThat(brandExtractor.uriFor(row4).get(), is(URI_PREFIX + "synthesized/brands/ufc-the-ultimate-fighter"));
+        assertThat(brandExtractor.uriFor(row5).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
     }
 
     private BtVodEntry row() {

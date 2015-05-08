@@ -4,12 +4,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Currency;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.metabroadcast.common.currency.Price;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
@@ -55,7 +57,6 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             Pattern.compile("^.*Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\s(Episode\\s[0-9]+.*)"),
             Pattern.compile("^.*?\\-\\s(.*)")
     );
-    private static final Pattern EPISODE_NUMBER_PATTERN = Pattern.compile("S[0-9]+\\-E([0-9]+)");
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
     private static final String COMING_SOON_SUFFIX = ": Coming Soon";
 
@@ -68,6 +69,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private final ContentMerger contentMerger;
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
+    private final Map<String, Item> processedItems;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private UpdateProgress progress = UpdateProgress.START;
 
@@ -86,7 +88,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         this.uriPrefix = checkNotNull(uriPrefix);
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
-        
+        this.processedItems = Maps.newHashMap();
     }
     
     @Override
@@ -100,6 +102,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             }
             
             Item item = itemFrom(row);
+            processedItems.put(stripHDSuffix(row.getTitle()), item);
             write(item);
             processedRows.add(row.getGuid());
             listener.onContent(item, row);
@@ -136,6 +139,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     
     private Item itemFrom(BtVodEntry row) {
         Item item;
+        if (processedItems.containsKey(stripHDSuffix(row.getTitle()))) {
+            item = processedItems.get(stripHDSuffix(row.getTitle()));
+            item.addVersions(createVersions(row));
+            return item;
+        }
         if (isEpisode(row)) {
             item = createEpisode(row);
         } else if (FILM_TYPE.equals(row.getBtproduct$productType())) {
@@ -192,7 +200,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         Optional<ParentRef> seriesRef = seriesExtractor.getSeriesRefFor(row);
         if (!seriesRef.isPresent()) {
-            log.warn("Episode without series {}", row);
+            log.warn("Episode without series {}", row.getTitle());
         }
         return seriesRef.orNull();
     }
@@ -200,7 +208,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private ParentRef getBrandRefOrNull(BtVodEntry row) {
         Optional<ParentRef> brandRef = brandExtractor.getBrandRefFor(row);
         if (!brandRef.isPresent()) {
-            log.warn("Episode without brand {}", row);
+            log.warn("Episode without brand {}", row.getTitle());
         }
         return brandRef.orNull();
     }
@@ -230,7 +238,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private String stripHDSuffix(String title) {
         Matcher hdMatcher = HD_PATTERN.matcher(title);
         if (hdMatcher.matches()) {
-            return hdMatcher.group(1).trim();
+            return hdMatcher.group(1).trim().replace("- HD ", "");
         }
         return title;
     }

@@ -206,7 +206,7 @@ public class BtVodItemWriterTest {
         btVodEntry7.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
 
         BtVodEntry btVodEntry8 = new BtVodEntry();
-        btVodEntry8.setTitle("ZQWModern_Family: S01 S1-E4 ZQWThe Incident");
+        btVodEntry8.setTitle("ZQWModern_Family: S01 S1-E4 ZQWThe_Incident");
 
         BtVodEntry btVodEntry9 = new BtVodEntry();
         btVodEntry9.setTitle("ZQZPeppa_Pig: S01 S1-E4 ZQZSchool Play");

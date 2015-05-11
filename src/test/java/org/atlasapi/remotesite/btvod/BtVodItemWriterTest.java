@@ -177,8 +177,8 @@ public class BtVodItemWriterTest {
 
         Version hdVersion = Iterables.get(writtenItem.getVersions(), 0);
         Version sdVersion = Iterables.get(writtenItem.getVersions(), 1);
-        assertThat(Iterables.getOnlyElement(sdVersion.getManifestedAs()).getHd(), is(false));
-        assertThat(Iterables.getOnlyElement(hdVersion.getManifestedAs()).getHd(), is(true));
+        assertThat(Iterables.getOnlyElement(sdVersion.getManifestedAs()).getHighDefinition(), is(false));
+        assertThat(Iterables.getOnlyElement(hdVersion.getManifestedAs()).getHighDefinition(), is(true));
 
     }
 

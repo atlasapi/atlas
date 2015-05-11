@@ -272,12 +272,16 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void cacheOrWriteBrandAndCachedSubContents(Brand brand) {
         String brandUri = brand.getCanonicalUri();
         BrandType brandType = brandProcessor.getBrandType(brandUri);
-        
-        if (brandType.equals(BrandType.TOP_LEVEL_SERIES)) {
+        switch (brandType) {
+        case TOP_LEVEL_SERIES:
+            log.trace("Caching top-level series " + brandUri);
             topLevelSeries.put(brandUri, brand);
-        } else if (brandType.equals(BrandType.STAND_ALONE_EPISODE)) {
+            break;
+        case STAND_ALONE_EPISODE:
+            log.trace("Caching stand-alone episode " + brandUri);
             standAloneEpisodes.put(brandUri, brand);
-        } else {
+            break;
+        default:
             writeBrand(brand);
         }
     }

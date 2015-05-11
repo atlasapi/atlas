@@ -62,7 +62,7 @@ public class BtVodItemWriterTest {
                                 PUBLISHER, URI_PREFIX,
                                 contentListener,
                                 new BtVodDescribedFieldsExtractor(imageUriProvider),
-                                Sets.<String>newHashSet());
+                                Sets.<String>newHashSet(), new TitleSanitiser());
     
     @Test
     public void testExtractsEpisode() {
@@ -200,6 +200,11 @@ public class BtVodItemWriterTest {
         BtVodEntry btVodEntry7 = new BtVodEntry();
         btVodEntry7.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
 
+        BtVodEntry btVodEntry8 = new BtVodEntry();
+        btVodEntry8.setTitle("ZQWModern_Family: S01 S1-E4 ZQWThe Incident");
+
+        BtVodEntry btVodEntry9 = new BtVodEntry();
+        btVodEntry9.setTitle("ZQZPeppa_Pig: S01 S1-E4 ZQZSchool Play");
 
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry1.getTitle()), is(REAL_EPISODE_TITLE));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry2.getTitle()), is("Conference Call"));
@@ -208,6 +213,8 @@ public class BtVodItemWriterTest {
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry5.getTitle()), is("1958 Sweden - Hinein!"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry6.getTitle()), is("Episode 2"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry7.getTitle()), is("Truth Be Told"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry8.getTitle()), is("The Incident"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry9.getTitle()), is("School Play"));
     }
     
     @Test

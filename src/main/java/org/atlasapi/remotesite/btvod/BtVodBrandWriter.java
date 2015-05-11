@@ -58,13 +58,17 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     private final ContentMerger contentMerger;
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
-    private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
+    private final TitleSanitiser titleSanitiser;
     private UpdateProgress progress = UpdateProgress.START;
     
-    public BtVodBrandWriter(ContentWriter writer, ContentResolver resolver,
-            Publisher publisher, String uriPrefix, BtVodContentListener listener, 
-            BtVodDescribedFieldsExtractor describedFieldsExtractor, Set<String> processedRows) {
-        this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
+    public BtVodBrandWriter(
+            ContentWriter writer,
+            ContentResolver resolver,
+            Publisher publisher,
+            String uriPrefix,
+            BtVodContentListener listener,
+            Set<String> processedRows,
+            TitleSanitiser titleSanitiser) {
         this.listener = checkNotNull(listener);
         this.writer = checkNotNull(writer);
         this.resolver = checkNotNull(resolver);
@@ -72,6 +76,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         this.uriPrefix = checkNotNull(uriPrefix);
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
+        this.titleSanitiser = checkNotNull(titleSanitiser);
     }
     
     @Override
@@ -122,7 +127,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
             Matcher matcher = brandPattern.matcher(title);
             if (matcher.matches()) {
-                return matcher.group(1);
+                return titleSanitiser.sanitiseTitle(matcher.group(1));
             }
 
         }

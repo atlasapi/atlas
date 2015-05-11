@@ -1,6 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import java.io.File;
 import java.util.Map;
 
 import javax.annotation.PostConstruct;
@@ -19,9 +18,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.io.Files;
 import com.metabroadcast.common.http.SimpleHttpClientBuilder;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -75,18 +72,13 @@ public class BtVodModule {
     
     @Bean
     public BtVodDescribedFieldsExtractor describedFieldsExtractor() {
-        return new BtVodDescribedFieldsExtractor(btPortalImageUriProvider());
+        return new BtVodDescribedFieldsExtractor(new BtVodMpxImageExtractor(btPortalBaseUri));
     }
     
     @Bean
     public BtVodContentGroupUpdater btVodContentGroupUpdater() {
         return new BtVodContentGroupUpdater(contentGroupResolver, contentGroupWriter, 
                 contentGroupsAndCriteria(), URI_PREFIX, Publisher.BT_VOD);
-    }
-    
-    @Bean
-    public BtPortalImageUriProvider btPortalImageUriProvider() {
-        return new BtPortalImageUriProvider(new SimpleHttpClientBuilder().build(), btPortalBaseUri);
     }
     
     private BtVodData btVodData() {

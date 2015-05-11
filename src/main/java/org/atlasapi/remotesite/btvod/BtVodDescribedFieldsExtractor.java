@@ -19,9 +19,8 @@ import java.util.Map;
 
 public class BtVodDescribedFieldsExtractor {
 
-    private static final String MUSIC_CATEGORY = "Music";
 
-    private final ImageUriProvider imageUriProvider;
+    private final ImageExtractor imageExtractor;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -109,8 +108,10 @@ public class BtVodDescribedFieldsExtractor {
     .put("Drama", ":ContentCS:2010:3.4")
             .build();
     
-    public BtVodDescribedFieldsExtractor(ImageUriProvider imageUriProvider) {
-        this.imageUriProvider = checkNotNull(imageUriProvider);
+    public BtVodDescribedFieldsExtractor(
+            ImageExtractor imageExtractor
+    ) {
+        this.imageExtractor = checkNotNull(imageExtractor);
     }
     
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
@@ -134,19 +135,6 @@ public class BtVodDescribedFieldsExtractor {
     }
     
     private Iterable<Image> createImages(BtVodEntry row) {
-        
-        if (!MUSIC_CATEGORY.equals(row.getBtproduct$productType())) {
-            return ImmutableSet.of();
-        }
-
-        Optional<String> imageUri = imageUriProvider.imageUriFor(row.getGuid());
-        
-        if (!imageUri.isPresent() || Strings.isNullOrEmpty(imageUri.get())) {
-            return ImmutableSet.of();
-        }
-        
-        Image image = new Image(imageUri.get());
-        image.setType(ImageType.PRIMARY);
-        return ImmutableSet.of(image);
+        return imageExtractor.extractImages(row.getPlproduct$images());
     }
 }

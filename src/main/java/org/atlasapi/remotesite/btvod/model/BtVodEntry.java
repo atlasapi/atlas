@@ -18,25 +18,7 @@ public class BtVodEntry {
     private BtVodPlproduct$pricingPlan plproduct$pricingPlan;
     private Integer btproduct$priority;
     private List<BtVodPlproduct$ratings> plproduct$ratings;
-
-    @Override
-    public String toString() {
-        return "BtVodEntry{" +
-                "guid='" + guid + '\'' +
-                ", title='" + title + '\'' +
-                ", description='" + description + '\'' +
-                ", plproduct$longDescription='" + plproduct$longDescription + '\'' +
-                ", btproduct$productType='" + btproduct$productType + '\'' +
-                ", plproduct$scopes=" + plproduct$scopes +
-                ", plproduct$productTags=" + plproduct$productTags +
-                ", plproduct$offerStartDate=" + plproduct$offerStartDate +
-                ", plproduct$offerEndDate=" + plproduct$offerEndDate +
-                ", plproduct$pricingPlan=" + plproduct$pricingPlan +
-                ", btproduct$priority=" + btproduct$priority +
-                ", plproduct$ratings=" + plproduct$ratings +
-                ", btproduct$targetBandwidth='" + btproduct$targetBandwidth + '\'' +
-                '}';
-    }
+    private BtVodPlproduct$images plproduct$images;
 
     private String btproduct$targetBandwidth;
 
@@ -159,5 +141,33 @@ public class BtVodEntry {
 
     public void setPlproduct$ratings(List<BtVodPlproduct$ratings> plproduct$ratings) {
         this.plproduct$ratings = plproduct$ratings;
+    }
+
+    public BtVodPlproduct$images getPlproduct$images() {
+        return plproduct$images;
+    }
+
+    public void setPlproduct$images(BtVodPlproduct$images plproduct$images) {
+        this.plproduct$images = plproduct$images;
+    }
+
+    @Override
+    public String toString() {
+        return "BtVodEntry{" +
+                "guid='" + guid + '\'' +
+                ", title='" + title + '\'' +
+                ", description='" + description + '\'' +
+                ", plproduct$longDescription='" + plproduct$longDescription + '\'' +
+                ", btproduct$productType='" + btproduct$productType + '\'' +
+                ", plproduct$scopes=" + plproduct$scopes +
+                ", plproduct$productTags=" + plproduct$productTags +
+                ", plproduct$offerStartDate=" + plproduct$offerStartDate +
+                ", plproduct$offerEndDate=" + plproduct$offerEndDate +
+                ", plproduct$pricingPlan=" + plproduct$pricingPlan +
+                ", btproduct$priority=" + btproduct$priority +
+                ", plproduct$ratings=" + plproduct$ratings +
+                ", plproduct$images=" + plproduct$images +
+                ", btproduct$targetBandwidth='" + btproduct$targetBandwidth + '\'' +
+                '}';
     }
 }

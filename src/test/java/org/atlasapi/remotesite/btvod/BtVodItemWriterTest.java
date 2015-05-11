@@ -2,12 +2,14 @@ package org.atlasapi.remotesite.btvod;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
@@ -17,6 +19,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodImage;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$images;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingPlan;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productMetadata;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
@@ -32,6 +36,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.mockito.Matchers;
 
 
 public class BtVodItemWriterTest {
@@ -51,7 +56,7 @@ public class BtVodItemWriterTest {
     private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
     private final BtVodSeriesWriter seriesExtractor = mock(BtVodSeriesWriter.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
-    private final ImageUriProvider imageUriProvider = mock(ImageUriProvider.class);
+    private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
     
     private final BtVodItemWriter itemExtractor 
                     = new BtVodItemWriter(
@@ -61,7 +66,7 @@ public class BtVodItemWriterTest {
                                 seriesExtractor,
                                 PUBLISHER, URI_PREFIX,
                                 contentListener,
-                                new BtVodDescribedFieldsExtractor(imageUriProvider),
+                                new BtVodDescribedFieldsExtractor(imageExtractor),
                                 Sets.<String>newHashSet(), new TitleSanitiser());
     
     @Test
@@ -72,7 +77,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageUriProvider.imageUriFor(PRODUCT_ID)).thenReturn(Optional.<String>of(IMAGE_URI));
+        when(imageExtractor.extractImages(Matchers.<BtVodPlproduct$images>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntry)).thenReturn(Optional.of(seriesRef));
         when(seriesExtractor.extractSeriesNumber(btVodEntry.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
@@ -114,7 +119,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageUriProvider.imageUriFor(PRODUCT_ID)).thenReturn(Optional.<String>of(IMAGE_URI));
+        when(imageExtractor.extractImages(Matchers.<BtVodPlproduct$images>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntrySD)).thenReturn(Optional.of(seriesRef));
         when(seriesExtractor.extractSeriesNumber(btVodEntrySD.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
@@ -150,7 +155,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageUriProvider.imageUriFor(PRODUCT_ID)).thenReturn(Optional.<String>of(IMAGE_URI));
+        when(imageExtractor.extractImages(Matchers.<BtVodPlproduct$images>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntrySD)).thenReturn(Optional.of(seriesRef));
         when(seriesExtractor.extractSeriesNumber(btVodEntrySD.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));

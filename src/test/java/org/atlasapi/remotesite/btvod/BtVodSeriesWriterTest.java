@@ -33,7 +33,6 @@ public class BtVodSeriesWriterTest {
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
-    private final ImageUriProvider imageUriProvider = mock(ImageUriProvider.class);
 
 
     private final BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(

@@ -86,7 +86,7 @@ public class BtVodBrandWriterTest {
         row6.setTitle("Being Human (USA) S2-E7 The Ties That Blind");
 
         BtVodEntry row7 = new BtVodEntry();
-        row7.setTitle("ZQWModern Family: S01 S1-E4 ZQWThe Incident");
+        row7.setTitle("ZQWModern_Family: S01 S1-E4 ZQWThe Incident");
 
         BtVodEntry row8 = new BtVodEntry();
         row8.setTitle("ZQZPeppa Pig: S01 S1-E4 ZQZSchool Play");

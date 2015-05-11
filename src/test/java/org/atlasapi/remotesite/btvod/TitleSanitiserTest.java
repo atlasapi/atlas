@@ -16,8 +16,8 @@ public class TitleSanitiserTest {
         String titleWithGarbage1 = "ZQWModern_Family: S01 S1-E4 ZQWThe Incident";
         String titleWithGarbage2 = "ZQZPeppa_Pig: S01 S1-E4 ZQZSchool Play";
 
-        assertThat(titleSanitiser.sanitiseTitle(titleWithGarbage1), is("Modern_Family: S01 S1-E4 The Incident"));
-        assertThat(titleSanitiser.sanitiseTitle(titleWithGarbage2), is("Peppa_Pig: S01 S1-E4 School Play"));
+        assertThat(titleSanitiser.sanitiseTitle(titleWithGarbage1), is("Modern Family: S01 S1-E4 The Incident"));
+        assertThat(titleSanitiser.sanitiseTitle(titleWithGarbage2), is("Peppa Pig: S01 S1-E4 School Play"));
 
     }
 

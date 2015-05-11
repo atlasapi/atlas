@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.btvod.model;
 
+import com.google.common.collect.ImmutableList;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
@@ -16,6 +17,9 @@ public class BtVodPlproduct$images {
     }
 
     public List<BtVodImage> getBackgroundImages() {
+        if (backgroundImages == null) {
+            return ImmutableList.of();
+        }
         return backgroundImages;
     }
 
@@ -24,6 +28,9 @@ public class BtVodPlproduct$images {
     }
 
     public List<BtVodImage> getPackshotImages() {
+        if (packshotImages == null) {
+            return ImmutableList.of();
+        }
         return packshotImages;
     }
 

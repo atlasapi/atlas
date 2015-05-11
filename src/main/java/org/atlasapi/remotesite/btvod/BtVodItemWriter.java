@@ -13,6 +13,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.currency.Price;
+import com.metabroadcast.common.intl.Countries;
+import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
@@ -272,6 +274,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private void populateItemFields(Item item, BtVodEntry row) {
         Optional<ParentRef> brandRefFor = brandExtractor.getBrandRefFor(row);
 
+
         if (brandRefFor.isPresent()) {
             item.setParentRef(brandRefFor.get());
         }
@@ -280,6 +283,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         item.setVersions(createVersions(row));
         item.setEditorialPriority(row.getBtproduct$priority());
+
+        BtVodPlproduct$ratings rating = Iterables.getFirst(row.getplproduct$ratings(), null);
+        if (rating != null) {
+            item.setCertificates(ImmutableList.of(new Certificate(rating.getPlproduct$ratingString(), Countries.GB)));
+        }
     }
     
     private String titleForNonEpisode(BtVodEntry row) {

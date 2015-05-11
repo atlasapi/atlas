@@ -530,6 +530,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         simpleLocation.setVideoHorizontalSize(encoding.getVideoHorizontalSize());
         simpleLocation.setVideoProgressiveScan(encoding.getVideoProgressiveScan());
         simpleLocation.setVideoVerticalSize(encoding.getVideoVerticalSize());
+        simpleLocation.setHd(encoding.getHd());
     }
 
     private void copyProperties(Location location, org.atlasapi.media.entity.simple.Location simpleLocation, Set<Annotation> annotations, ApplicationConfiguration config) {

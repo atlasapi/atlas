@@ -54,6 +54,8 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private static final String COLLECTION_TYPE = "collection";
     private static final String HELP_TYPE = "help";
     private static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
+    private static final String HD_FLAG = "HD";
+    private static final String SD_FLAG = "SD";
     private static final List<Pattern> EPISODE_TITLE_PATTERNS = ImmutableList.of(
             Pattern.compile("^.* S[0-9]+\\-E[0-9]+\\s(.*)"),
             Pattern.compile("^.*Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\s(Episode\\s[0-9]+.*)"),
@@ -316,9 +318,15 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         Location location = new Location();
         location.setPolicy(policy);
         location.setCanonicalUri(uriFor(row));
+        location.setUri(uriFor(row));
 
         Encoding encoding = new Encoding();
         encoding.setAvailableAt(ImmutableSet.of(location));
+        if (HD_FLAG.equals(row.getBtproduct$targetBandwidth())) {
+            encoding.setHd(true);
+        } else if (SD_FLAG.equals(row.getBtproduct$targetBandwidth())) {
+            encoding.setHd(false);
+        }
         
         Version version = new Version();
         version.setManifestedAs(ImmutableSet.of(encoding));

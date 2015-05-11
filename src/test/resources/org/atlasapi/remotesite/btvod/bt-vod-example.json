@@ -21,6 +21,22 @@
       "plproduct$longDescriptionLocalized": {
       },
       "plproduct$images": {
+        "image-background": [
+          {
+            "plproduct$mediaFileId": "http://bt.data.media.theplatform.eu/media/data/MediaFile/4829253140",
+            "plproduct$height": 626,
+            "plproduct$width": 1159,
+            "plproduct$url": "content_providers/images/BBJ374303A_374303_WP.png"
+          }
+        ],
+        "image-single-packshot": [
+          {
+            "plproduct$mediaFileId": "http://bt.data.media.theplatform.eu/media/data/MediaFile/4828741146",
+            "plproduct$height": 120,
+            "plproduct$width": 214,
+            "plproduct$url": "content_providers/images/BBJ374303A_374303_SP.png"
+          }
+        ]
       },
       "plproduct$productTags": [
         {

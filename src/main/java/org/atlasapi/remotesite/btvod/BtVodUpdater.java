@@ -48,13 +48,35 @@ public class BtVodUpdater extends ScheduledTask {
     public void runTask() {
         contentGroupUpdater.start();
         Set<String> processedRows = Sets.newHashSet();
-        BtVodBrandWriter brandExtractor = new BtVodBrandWriter(writer, resolver, publisher, 
-                uriPrefix, contentGroupUpdater, describedFieldsExtractor, processedRows);
-        BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(writer, resolver, brandExtractor, 
-                describedFieldsExtractor, publisher, contentGroupUpdater, processedRows);
-        BtVodItemWriter itemExtractor = new BtVodItemWriter(writer, resolver, brandExtractor, 
-                seriesExtractor, publisher, uriPrefix, contentGroupUpdater, describedFieldsExtractor, 
-                processedRows);
+        BtVodBrandWriter brandExtractor = new BtVodBrandWriter(
+                writer,
+                resolver,
+                publisher,
+                uriPrefix,
+                contentGroupUpdater,
+                processedRows,
+                new TitleSanitiser()
+        );
+        BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(
+                writer,
+                resolver,
+                brandExtractor,
+                publisher,
+                contentGroupUpdater,
+                processedRows
+        );
+        BtVodItemWriter itemExtractor = new BtVodItemWriter(
+                writer,
+                resolver,
+                brandExtractor,
+                seriesExtractor,
+                publisher,
+                uriPrefix,
+                contentGroupUpdater,
+                describedFieldsExtractor,
+                processedRows,
+                new TitleSanitiser()
+        );
         try {
             reportStatus("Brand extract [IN PROGRESS]  Series extract [TODO]  Item extract [TODO]");
 

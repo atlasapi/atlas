@@ -32,7 +32,6 @@ public class BtVodSeriesWriterTest {
     private final ContentWriter contentWriter = mock(ContentWriter.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
-    private final BtVodDescribedFieldsExtractor extractor = mock(BtVodDescribedFieldsExtractor.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageUriProvider imageUriProvider = mock(ImageUriProvider.class);
 
@@ -41,7 +40,6 @@ public class BtVodSeriesWriterTest {
             contentWriter,
             contentResolver,
             brandExtractor,
-            extractor,
             PUBLISHER,
             contentListener,
             Sets.<String>newHashSet()

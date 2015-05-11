@@ -48,7 +48,6 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     private final Map<String, ParentRef> processedSeries = Maps.newHashMap();
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
-    private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private UpdateProgress progress = UpdateProgress.START;
 
 
@@ -56,7 +55,6 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
             ContentWriter writer,
             ContentResolver resolver,
             BtVodBrandWriter brandExtractor,
-            BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Publisher publisher,
             BtVodContentListener listener,
             Set<String> processedRows
@@ -67,7 +65,6 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         this.resolver = checkNotNull(resolver);
         this.brandExtractor = checkNotNull(brandExtractor);
         this.publisher = checkNotNull(publisher);
-        this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
     

@@ -75,13 +75,21 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private final Set<String> processedRows;
     private final Map<String, Item> processedItems;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
+    private final TitleSanitiser titleSanitiser;
     private UpdateProgress progress = UpdateProgress.START;
 
-    public BtVodItemWriter(ContentWriter writer, ContentResolver resolver,
-            BtVodBrandWriter brandExtractor, BtVodSeriesWriter seriesExtractor,
-            Publisher publisher, String uriPrefix, BtVodContentListener listener,
+    public BtVodItemWriter(
+            ContentWriter writer,
+            ContentResolver resolver,
+            BtVodBrandWriter brandExtractor,
+            BtVodSeriesWriter seriesExtractor,
+            Publisher publisher,
+            String uriPrefix,
+            BtVodContentListener listener,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
-            Set<String> processedRows) {
+            Set<String> processedRows,
+            TitleSanitiser titleSanitiser
+    ) {
         this.describedFieldsExtractor = describedFieldsExtractor;
         this.listener = checkNotNull(listener);
         this.writer = checkNotNull(writer);
@@ -92,6 +100,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         this.uriPrefix = checkNotNull(uriPrefix);
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
+        this.titleSanitiser = checkNotNull(titleSanitiser);
         this.processedItems = Maps.newHashMap();
     }
     
@@ -231,12 +240,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         for (Pattern titlePattern : EPISODE_TITLE_PATTERNS) {
             Matcher matcher = titlePattern.matcher(title);
             if (matcher.matches()) {
-                return stripHDSuffix(matcher.group(1));
+                return titleSanitiser.sanitiseTitle(stripHDSuffix(matcher.group(1)));
 
             }
 
         }
-        return title;
+        return titleSanitiser.sanitiseTitle(title);
     }
 
     private String stripHDSuffix(String title) {

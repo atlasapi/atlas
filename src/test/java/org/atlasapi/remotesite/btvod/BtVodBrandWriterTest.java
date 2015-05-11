@@ -38,16 +38,16 @@ public class BtVodBrandWriterTest {
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageUriProvider imageUriProvider = mock(ImageUriProvider.class);
-    private final BtVodDescribedFieldsExtractor extractor = mock(BtVodDescribedFieldsExtractor.class);
-    
-    private final BtVodBrandWriter brandExtractor 
+
+    private final BtVodBrandWriter brandExtractor
                     = new BtVodBrandWriter(
-                                contentWriter, 
-                                contentResolver, 
+                                contentWriter,
+                                contentResolver,
                                 PUBLISHER, URI_PREFIX,
                                 contentListener,
-                                extractor,
-                                Sets.<String>newHashSet());
+                                Sets.<String>newHashSet(),
+            new TitleSanitiser()
+    );
     
     @Test
     public void testCreatesSyntheticBrandFromEpisodeData() {
@@ -85,12 +85,20 @@ public class BtVodBrandWriterTest {
         BtVodEntry row6 = new BtVodEntry();
         row6.setTitle("Being Human (USA) S2-E7 The Ties That Blind");
 
+        BtVodEntry row7 = new BtVodEntry();
+        row7.setTitle("ZQWModern Family: S01 S1-E4 ZQWThe Incident");
+
+        BtVodEntry row8 = new BtVodEntry();
+        row8.setTitle("ZQZPeppa Pig: S01 S1-E4 ZQZSchool Play");
+
         assertThat(brandExtractor.uriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandExtractor.uriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
         assertThat(brandExtractor.uriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
         assertThat(brandExtractor.uriFor(row4).get(), is(URI_PREFIX + "synthesized/brands/ufc-the-ultimate-fighter"));
         assertThat(brandExtractor.uriFor(row5).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
         assertThat(brandExtractor.uriFor(row6).get(), is(URI_PREFIX + "synthesized/brands/being-human-usa"));
+        assertThat(brandExtractor.uriFor(row7).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
+        assertThat(brandExtractor.uriFor(row8).get(), is(URI_PREFIX + "synthesized/brands/peppa-pig"));
     }
 
     private BtVodEntry row() {

@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -140,10 +141,12 @@ public class BtVodItemWriterTest {
         BtVodEntry btVodEntrySD = episodeRow();
         ParentRef parentRef = new ParentRef(BRAND_URI);
         ParentRef seriesRef = new ParentRef("seriesUri");
+        btVodEntrySD.setBtproduct$targetBandwidth("SD");
 
         BtVodEntry btVodEntryHD = episodeRow();
         btVodEntryHD.setTitle(SERIES_TITLE + ": - HD S1 S1-E9 " + REAL_EPISODE_TITLE + " - HD");
         btVodEntryHD.setGuid(PRODUCT_ID + "_HD");
+        btVodEntryHD.setBtproduct$targetBandwidth("HD");
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
@@ -166,6 +169,11 @@ public class BtVodItemWriterTest {
         assertThat(writtenItem.getContainer(), is(parentRef));
 
         assertThat(writtenItem.getVersions().size(), is(2));
+
+        Version hdVersion = Iterables.get(writtenItem.getVersions(), 0);
+        Version sdVersion = Iterables.get(writtenItem.getVersions(), 1);
+        assertThat(Iterables.getOnlyElement(sdVersion.getManifestedAs()).getHd(), is(false));
+        assertThat(Iterables.getOnlyElement(hdVersion.getManifestedAs()).getHd(), is(true));
 
     }
 
@@ -228,7 +236,6 @@ public class BtVodItemWriterTest {
         entry.setPlproduct$scopes(ImmutableList.of(productScope));
         entry.setPlproduct$ratings(ImmutableList.<BtVodPlproduct$ratings>of());
         entry.setPlproduct$productTags(ImmutableList.<BtVodPlproduct$productTag>of());
-
 
         return entry;
     }

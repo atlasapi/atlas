@@ -134,6 +134,7 @@ public class ItemModelSimplifierTest {
         encoding.addAvailableAt(location);
         encoding.addAvailableAt(embed);
         encoding.setAudioDescribed(true);
+        encoding.setHd(true);
         fullItem.addVersion(version);
         fullItem.setTitle("Collings and Herrin");
         
@@ -174,7 +175,8 @@ public class ItemModelSimplifierTest {
         assertThat(simpleEmbed.getEmbedId(), is("embedId"));
         assertThat(simpleEmbed.getTransportType(), is("embed"));
         assertThat(simpleEmbed.getTransportSubType(), is("brightcove"));
-        
+        assertThat(simpleEmbed.getHd(), is(true));
+
         assertThat(simpleItem.getTitle(), is("Collings and Herrin"));
         assertThat(Iterables.getOnlyElement(simpleItem.getReleaseDates()).getDate().getDay(), is(releaseDateDate.toDate().getDay()));
         

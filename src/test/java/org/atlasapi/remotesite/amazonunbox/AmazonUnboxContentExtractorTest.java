@@ -35,7 +35,6 @@ import org.joda.time.Duration;
 import org.junit.Test;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -46,14 +45,14 @@ import com.metabroadcast.common.media.MimeType;
 
 public class AmazonUnboxContentExtractorTest {
 
-    private final ContentExtractor<AmazonUnboxItem, Optional<Content>> extractor = new AmazonUnboxContentExtractor();
+    private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor = new AmazonUnboxContentExtractor();
     
     public void testExtractionOfSdContent() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withQuality(Quality.SD)
                 .build();
         
-        Film film = (Film) extractor.extract(filmItem).get();
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
         Version version = Iterables.getOnlyElement(film.getVersions());
         Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
@@ -69,7 +68,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withQuality(Quality.HD)
                 .build();
 
-        Film film = (Film) extractor.extract(filmItem).get();
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
         Version version = Iterables.getOnlyElement(film.getVersions());
         Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
@@ -83,7 +82,7 @@ public class AmazonUnboxContentExtractorTest {
     public void testExtractionOfLanguages() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE).build();
 
-        Film film = (Film) extractor.extract(filmItem).get();
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
         assertEquals(ImmutableSet.of("en"), film.getLanguages());
     }
@@ -94,7 +93,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withGenres(ImmutableSet.of(AmazonUnboxGenre.ACTION, AmazonUnboxGenre.ADVENTURE))
                 .build();
         
-        Content extractedContent = extractor.extract(filmItem).get();
+        Content extractedContent = Iterables.getOnlyElement(extractor.extract(filmItem));
         Film film = (Film) extractedContent;
         
         assertEquals(ImmutableSet.of("http://unbox.amazon.co.uk/genres/action", "http://unbox.amazon.co.uk/genres/adventure"), film.getGenres());
@@ -109,7 +108,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withStarring("Cast 3")
                 .build();
         
-        Content extractedContent = extractor.extract(filmItem).get();
+        Content extractedContent = Iterables.getOnlyElement(extractor.extract(filmItem));
         Film film = (Film) extractedContent;
 
         List<CrewMember> people = film.getPeople();
@@ -137,7 +136,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withTConst("ImdbId")
                 .build();
         
-        Film film = (Film) extractor.extract(filmItem).get();
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
         assertEquals("Synopsis of the item", film.getDescription());
         assertEquals(Publisher.AMAZON_UNBOX, film.getPublisher());
@@ -149,8 +148,8 @@ public class AmazonUnboxContentExtractorTest {
         Image image = Iterables.getOnlyElement(film.getImages());
         assertEquals("Large Image", image.getCanonicalUri());
         assertEquals(ImageType.PRIMARY, image.getType());
-        assertThat(image.getWidth(), is(equalTo(240)));
-        assertThat(image.getHeight(), is(equalTo(180)));
+        assertThat(image.getWidth(), is(equalTo(320)));
+        assertThat(image.getHeight(), is(equalTo(240)));
         assertEquals(MimeType.IMAGE_JPG, image.getMimeType());
         assertEquals(ImageAspectRatio.FOUR_BY_THREE, image.getAspectRatio());
         
@@ -167,7 +166,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withDuration(Duration.standardMinutes(100))
                 .build();
 
-        Film film = (Film) extractor.extract(filmItem).get();
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
         Version version = Iterables.getOnlyElement(film.getVersions());
         assertEquals("http://unbox.amazon.co.uk/versions/filmAsin", version.getCanonicalUri());
@@ -179,7 +178,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withRental(true)
                 .build();
 
-        Film film = (Film) extractor.extract(filmItem).get();
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
         Version version = Iterables.getOnlyElement(film.getVersions());
         Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
@@ -197,7 +196,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withRental(false)
                 .build();
 
-        Film film = (Film) extractor.extract(filmItem).get();
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
         Version version = Iterables.getOnlyElement(film.getVersions());
         Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
@@ -213,9 +212,9 @@ public class AmazonUnboxContentExtractorTest {
                 .build();
         
         
-        Film film = (Film) extractor.extract(filmItem).get();
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
-        assertEquals("http://unbox.amazon.co.uk/movies/filmAsin", film.getCanonicalUri());
+        assertEquals("http://unbox.amazon.co.uk/filmAsin", film.getCanonicalUri());
     }
     
     //TODO hierarchied episodes?
@@ -228,10 +227,10 @@ public class AmazonUnboxContentExtractorTest {
                 .build();
         
         
-        Episode episode = (Episode) extractor.extract(episodeItem).get();
-        
-        assertEquals("http://unbox.amazon.co.uk/seasons/episodeAsin", episode.getCanonicalUri());
-        assertEquals("http://unbox.amazon.co.uk/seasons/seasonAsin", episode.getSeriesRef().getUri());
+        Episode episode = Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Episode.class));
+                
+        assertEquals("http://unbox.amazon.co.uk/episodeAsin", episode.getCanonicalUri());
+        assertEquals("http://unbox.amazon.co.uk/seasonAsin", episode.getSeriesRef().getUri());
         assertThat(episode.getEpisodeNumber(), is(equalTo(5)));
         assertThat(episode.getSeriesNumber(), is(equalTo(2)));
     }
@@ -244,10 +243,10 @@ public class AmazonUnboxContentExtractorTest {
                 .build();
         
         
-        Episode episode = (Episode) extractor.extract(episodeItem).get();
+        Episode episode = Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Episode.class));
         
-        assertEquals("http://unbox.amazon.co.uk/seasons/episodeAsin", episode.getCanonicalUri());
-        assertEquals("http://unbox.amazon.co.uk/seasons/seriesAsin", episode.getContainer().getUri());
+        assertEquals("http://unbox.amazon.co.uk/episodeAsin", episode.getCanonicalUri());
+        assertEquals("http://unbox.amazon.co.uk/seriesAsin", episode.getContainer().getUri());
         assertThat(episode.getEpisodeNumber(), is(equalTo(5)));
     }
     
@@ -258,25 +257,29 @@ public class AmazonUnboxContentExtractorTest {
                 .withSeasonAsin("seasonAsin")
                 .withSeasonNumber(2)
                 .withSeriesAsin("seriesAsin")
+                .withSeriesTitle("Series")
                 .build();
         
         
-        Episode episode = (Episode) extractor.extract(episodeItem).get();
-        
-        assertEquals("http://unbox.amazon.co.uk/seasons/episodeAsin", episode.getCanonicalUri());
-        assertEquals("http://unbox.amazon.co.uk/seasons/seasonAsin", episode.getSeriesRef().getUri());
-        assertEquals("http://unbox.amazon.co.uk/seasons/seriesAsin", episode.getContainer().getUri());
+        Episode episode = Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Episode.class));
+                
+        assertEquals("http://unbox.amazon.co.uk/episodeAsin", episode.getCanonicalUri());
+        assertEquals("http://unbox.amazon.co.uk/seasonAsin", episode.getSeriesRef().getUri());
+        assertEquals("http://unbox.amazon.co.uk/seriesAsin", episode.getContainer().getUri());
         assertThat(episode.getEpisodeNumber(), is(equalTo(5)));
         assertThat(episode.getSeriesNumber(), is(equalTo(2)));
+        
+        Brand brand = Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Brand.class));
+        assertThat(brand.getCanonicalUri(), is(equalTo("http://unbox.amazon.co.uk/seriesAsin")));
     }
     
     @Test
     public void testExtractionOfItem() {
         AmazonUnboxItem episodeItem = createAmazonUnboxItem("itemAsin", ContentType.TVEPISODE).build();
         
-        Item item = (Item) extractor.extract(episodeItem).get();
+        Item item = (Item) Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Item.class));
         
-        assertEquals("http://unbox.amazon.co.uk/seasons/itemAsin", item.getCanonicalUri());
+        assertEquals("http://unbox.amazon.co.uk/itemAsin", item.getCanonicalUri());
     }
     
     @Test
@@ -285,29 +288,20 @@ public class AmazonUnboxContentExtractorTest {
                 .withSeriesAsin("seriesAsin")
                 .build();
         
-        Series series = (Series) extractor.extract(episodeItem).get();
+        Series series = (Series) Iterables.getOnlyElement(extractor.extract(episodeItem));
         
-        assertEquals("http://unbox.amazon.co.uk/seasons/seasonAsin", series.getCanonicalUri());
-        assertEquals("http://unbox.amazon.co.uk/seasons/seriesAsin", series.getParent().getUri());
+        assertEquals("http://unbox.amazon.co.uk/seasonAsin", series.getCanonicalUri());
+        assertEquals("http://unbox.amazon.co.uk/seriesAsin", series.getParent().getUri());
     }
     
     @Test
     public void testExtractionOfTopLevelSeries() {
         AmazonUnboxItem episodeItem = createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON).build();
         
-        Series series = (Series) extractor.extract(episodeItem).get();
+        Series series = (Series) Iterables.getOnlyElement(extractor.extract(episodeItem));
         
-        assertEquals("http://unbox.amazon.co.uk/seasons/seasonAsin", series.getCanonicalUri());
+        assertEquals("http://unbox.amazon.co.uk/seasonAsin", series.getCanonicalUri());
         assertNull(series.getParent());
-    }
-    
-    @Test
-    public void testExtractionOfBrand() {
-        AmazonUnboxItem episodeItem = createAmazonUnboxItem("seriesAsin", ContentType.TVSERIES).build();
-        
-        Brand brand = (Brand) extractor.extract(episodeItem).get();
-        
-        assertEquals("http://unbox.amazon.co.uk/seasons/seriesAsin", brand.getCanonicalUri());
     }
 
     /**

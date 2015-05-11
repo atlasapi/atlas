@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.amazonunbox;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -26,7 +28,6 @@ import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -87,7 +88,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
     private final Set<Content> seenContent = Sets.newHashSet();
 
-    private final ContentExtractor<AmazonUnboxItem, Optional<Content>> extractor;
+    private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
     private final ContentWriter writer;
     private final ContentLister lister;
@@ -95,14 +96,14 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final AmazonUnboxBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
 
-    public AmazonUnboxContentWritingItemProcessor(ContentExtractor<AmazonUnboxItem, Optional<Content>> extractor, ContentResolver resolver, 
+    public AmazonUnboxContentWritingItemProcessor(ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor, ContentResolver resolver, 
             ContentWriter writer, ContentLister lister, int missingContentPercentage, AmazonUnboxBrandProcessor brandProcessor) {
-        this.extractor = extractor;
-        this.resolver = resolver;
-        this.writer = writer;
-        this.lister = lister;
-        this.missingContentPercentage = missingContentPercentage;
-        this.brandProcessor = brandProcessor;
+        this.extractor = checkNotNull(extractor);
+        this.resolver = checkNotNull(resolver);
+        this.writer = checkNotNull(writer);
+        this.lister = checkNotNull(lister);
+        this.missingContentPercentage = checkNotNull(missingContentPercentage);
+        this.brandProcessor = checkNotNull(brandProcessor);
         this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
 
@@ -117,21 +118,24 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     
     @Override
     public void process(AmazonUnboxItem item) {
-        Optional<Content> possibleContent = extract(item);
-        if (!possibleContent.isPresent()) {
-            return;
-        }
-        Content content = possibleContent.get();
-        seenContent.add(content);
-        Maybe<Identified> existing = resolve(content.getCanonicalUri());
-        if (existing.isNothing()) {
-            write(content);
-        } else {
-            Identified identified = existing.requireValue();
-            if (content instanceof Item) {
-                write(contentMerger.merge(ContentMerger.asItem(identified), (Item) content));
-            } else if (content instanceof Container) {
-                write(contentMerger.merge(ContentMerger.asContainer(identified), (Container) content));
+        for (Content content : extract(item)) {
+            // Brands are extracted for every episode, since they are synthesized from
+            // data in an episode row. We only need to process the first instance 
+            // of a brands
+            if (seenContent.contains(content)) {
+                continue;
+            }
+            seenContent.add(content);
+            Maybe<Identified> existing = resolve(content.getCanonicalUri());
+            if (existing.isNothing()) {
+                write(content);
+            } else {
+                Identified identified = existing.requireValue();
+                if (content instanceof Item) {
+                    write(contentMerger.merge(ContentMerger.asItem(identified), (Item) content));
+                } else if (content instanceof Container) {
+                    write(contentMerger.merge(ContentMerger.asContainer(identified), (Container) content));
+                }
             }
         }
     }
@@ -240,7 +244,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         return lister.listContent(criteria);
     }
     
-    public Optional<Content> extract(AmazonUnboxItem item) {
+    public Iterable<Content> extract(AmazonUnboxItem item) {
         return extractor.extract(item);
     }
     

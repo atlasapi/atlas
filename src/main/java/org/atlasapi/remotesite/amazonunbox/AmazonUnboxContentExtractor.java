@@ -32,7 +32,6 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
@@ -45,15 +44,14 @@ import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
 
 
-public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem, Optional<Content>> {
+public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem, Iterable<Content>> {
     
     private static final String LANGUAGE_ENGLISH = "en";
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
     private static final String ASIN_NAMESPACE = "gb:amazon:asin";
     private static final String IMDB_ALIAS_URL_PREFIX = "http://www.imdb.com/title/%s";
     private static final String AMAZON_ALIAS_URL_VERSION = "http://gb.amazon.com/asin/%s";
-    private static final String URI_VERSION = "http://unbox.amazon.co.uk/seasons/%s";
-    private static final String FILM_URI_VERSION = "http://unbox.amazon.co.uk/movies/%s";
+    private static final String URI_VERSION = "http://unbox.amazon.co.uk/%s";
     private static final String VERSION_URI_PATTERN = "http://unbox.amazon.co.uk/versions/%s";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
     private static final OptionalMap<String, Certificate> certificateMap = ImmutableOptionalMap.fromMap(
@@ -82,27 +80,29 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
     
     public static final String createFilmUri(String asin) {
-        return String.format(FILM_URI_VERSION, asin);
+        return String.format(URI_VERSION, asin);
     }
 
     @Override
-    public Optional<Content> extract(AmazonUnboxItem source) {
+    public Iterable<Content> extract(AmazonUnboxItem source) {
         if(ContentType.MOVIE.equals(source.getContentType())) {
-            return extractFilm(source);                
+            return ImmutableSet.of((Content)extractFilm(source));                
         }
         if (ContentType.TVSERIES.equals(source.getContentType())) {
-            return extractBrand(source);
+            return ImmutableSet.of(extractBrand(source));
         }
         if (ContentType.TVSEASON.equals(source.getContentType())) {
-            return extractSeries(source);
+            return ImmutableSet.of(extractSeries(source));
         }
         if (ContentType.TVEPISODE.equals(source.getContentType())) {
-            return extractEpisode(source);                
+            // Brands are not in the Unbox feed, so we must
+            // create them from the data we have for an episode
+            return ImmutableSet.of(extractEpisode(source), extractBrand(source));                
         }
-        return Optional.absent();
+        return ImmutableSet.of();
     }
 
-    private Optional<Content> extractEpisode(AmazonUnboxItem source) {
+    private Content extractEpisode(AmazonUnboxItem source) {
         Item item;
         if (source.getSeasonAsin() != null || source.getSeriesAsin() != null) {
             Episode episode = new Episode();
@@ -119,15 +119,13 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         } else {
             item = new Item();
         }
-        item.setCanonicalUri(createEpisodeUri(source.getAsin()));
-        setCommonFields(item, source);
         item.setSpecialization(Specialization.TV);
-        return Optional.<Content>of(item);
+        setFieldsForNonSynthesizedContent(item, source, createEpisodeUri(source.getAsin()));
+        return item;
     }
 
-    private Optional<Content> extractSeries(AmazonUnboxItem source) {
+    private Content extractSeries(AmazonUnboxItem source) {
         Series series = new Series();
-        series.setCanonicalUri(createSeriesUri(source.getAsin()));
         if (source.getSeasonNumber() != null) {
             series.withSeriesNumber(source.getSeasonNumber());
         }
@@ -135,25 +133,23 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             series.setParentRef(new ParentRef(createBrandUri(source.getSeriesAsin())));
         }
         series.setSpecialization(Specialization.TV);
-        setCommonFields(series, source);
-        return Optional.<Content>of(series);
+        setFieldsForNonSynthesizedContent(series, source, createSeriesUri(source.getAsin()));
+        return series;
     }
 
-    private Optional<Content> extractBrand(AmazonUnboxItem source) {
+    private Content extractBrand(AmazonUnboxItem source) {
         Brand brand = new Brand();
-        brand.setCanonicalUri(createBrandUri(source.getAsin()));
-        setCommonFields(brand, source);
+        setCommonFields(brand, source.getSeriesTitle(), createBrandUri(source.getSeriesAsin()));
         brand.setSpecialization(Specialization.TV);
-        return Optional.<Content>of(brand);
+        return brand;
     }
 
-    private Optional<Content> extractFilm(AmazonUnboxItem source) {
+    private Content extractFilm(AmazonUnboxItem source) {
         Film film = new Film();
-        film.setCanonicalUri(createFilmUri(source.getAsin()));
-        setCommonFields(film, source);
+        setFieldsForNonSynthesizedContent(film, source, createFilmUri(source.getAsin()));
         film.setSpecialization(Specialization.FILM);
         film.setVersions(generateVersions(source));
-        return Optional.<Content>of(film);
+        return film;
     }
     
     private Set<Version> generateVersions(AmazonUnboxItem source) {
@@ -198,14 +194,20 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
         return policy;
     }
-
-    private void setCommonFields(Content content, AmazonUnboxItem source) {
-        content.setGenres(generateGenres(source));
-        content.setLanguages(generateLanguages(source));
+    
+    private void setCommonFields(Content content, String title, String uri) {
+        content.setCanonicalUri(uri);
         content.setActivelyPublished(true);
         content.setMediaType(MediaType.VIDEO);
-        content.setTitle(source.getTitle());
         content.setPublisher(Publisher.AMAZON_UNBOX);
+        content.setTitle(title);
+    }
+
+    private void setFieldsForNonSynthesizedContent(Content content, AmazonUnboxItem source, String uri) {
+        setCommonFields(content, source.getTitle(), uri);
+        content.setGenres(generateGenres(source));
+        content.setLanguages(generateLanguages(source));
+        
         content.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
         content.setImage(source.getLargeImageUrl());
         content.setImages(generateImages(source));
@@ -278,8 +280,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private List<Image> generateImages(AmazonUnboxItem item) {
         Image image = new Image(item.getLargeImageUrl());
         image.setType(ImageType.PRIMARY);
-        image.setWidth(240);
-        image.setHeight(320);
+        image.setWidth(320);
+        image.setHeight(240);
         image.setAspectRatio(ImageAspectRatio.FOUR_BY_THREE);
         image.setColor(ImageColor.COLOR);
         image.setMimeType(MimeType.IMAGE_JPG);

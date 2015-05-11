@@ -332,9 +332,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         Encoding encoding = new Encoding();
         encoding.setAvailableAt(ImmutableSet.of(location));
         if (HD_FLAG.equals(row.getBtproduct$targetBandwidth())) {
-            encoding.setHd(true);
+            encoding.setHighDefinition(true);
         } else if (SD_FLAG.equals(row.getBtproduct$targetBandwidth())) {
-            encoding.setHd(false);
+            encoding.setHighDefinition(false);
         }
         
         Version version = new Version();

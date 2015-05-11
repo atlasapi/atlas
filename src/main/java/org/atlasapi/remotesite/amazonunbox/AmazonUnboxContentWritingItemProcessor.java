@@ -123,8 +123,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             // data in an episode row. We only need to process the first instance 
             // of a brands
             if (seenContent.contains(content)) {
+                log.trace("Skipping content as we have already seen " + content.getCanonicalUri());
                 continue;
             }
+            log.trace("Processing content " + content.getCanonicalUri());
             seenContent.add(content);
             Maybe<Identified> existing = resolve(content.getCanonicalUri());
             if (existing.isNothing()) {
@@ -276,8 +278,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         BrandType brandType = brandProcessor.getBrandType(brandUri);
         
         if (brandType.equals(BrandType.TOP_LEVEL_SERIES)) {
+            log.trace("Caching top-level series " + brandUri);
             topLevelSeries.put(brandUri, brand);
         } else if (brandType.equals(BrandType.STAND_ALONE_EPISODE)) {
+            log.trace("Caching stand-alone episode " + brandUri);
             standAloneEpisodes.put(brandUri, brand);
         } else {
             writeBrand(brand);

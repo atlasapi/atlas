@@ -69,7 +69,7 @@ public class AmazonUnboxModule {
 
         AmazonUnboxPreProcessingItemProcessor preProcessor = new AmazonUnboxPreProcessingItemProcessor();
         
-        ContentExtractor<AmazonUnboxItem,Optional<Content>> contentExtractor = new AmazonUnboxContentExtractor();
+        ContentExtractor<AmazonUnboxItem,Iterable<Content>> contentExtractor = new AmazonUnboxContentExtractor();
         AmazonUnboxItemProcessor processor = new AmazonUnboxContentWritingItemProcessor(contentExtractor, resolver, contentWriter, contentLister, missingContentPercentage, preProcessor);
         
         return new AmazonUnboxUpdateTask(updater, fileStore, preProcessor, processor);

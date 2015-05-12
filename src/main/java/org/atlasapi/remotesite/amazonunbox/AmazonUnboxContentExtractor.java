@@ -53,6 +53,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String AMAZON_ALIAS_URL_VERSION = "http://gb.amazon.com/asin/%s";
     private static final String URI_VERSION = "http://unbox.amazon.co.uk/%s";
     private static final String VERSION_URI_PATTERN = "http://unbox.amazon.co.uk/versions/%s";
+    private static final String LOCATION_URI_PATTERN = "http://www.amazon.co.uk/dp/%s/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
     private static final OptionalMap<String, Certificate> certificateMap = ImmutableOptionalMap.fromMap(
             ImmutableMap.<String,Certificate>builder()
@@ -120,6 +121,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             item = new Item();
         }
         item.setSpecialization(Specialization.TV);
+        item.setVersions(generateVersions(source));
         setFieldsForNonSynthesizedContent(item, source, createEpisodeUri(source.getAsin()));
         return item;
     }
@@ -162,6 +164,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         Location location = new Location();
         // TODO determine location links, if any
         location.setPolicy(generatePolicy(source));
+        location.setUri(String.format(LOCATION_URI_PATTERN, source.getAsin()));
         
         Encoding encoding = new Encoding();
         if (Quality.SD.equals(source.getQuality())) {

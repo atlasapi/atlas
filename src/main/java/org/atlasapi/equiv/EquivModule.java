@@ -18,6 +18,7 @@ import static com.google.common.base.Predicates.in;
 import static com.google.common.base.Predicates.not;
 import static org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator.aliasResolvingGenerator;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
+import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
@@ -387,6 +388,13 @@ public class EquivModule {
         updaters.register(NETFLIX, SourceSpecificEquivalenceUpdater.builder(NETFLIX)
                 .withItemUpdater(vodItemUpdater(netflixPublishers).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(netflixPublishers))
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .build());
+        
+        Set<Publisher> amazonUnboxPublishers = ImmutableSet.of(AMAZON_UNBOX, PA);
+        updaters.register(AMAZON_UNBOX, SourceSpecificEquivalenceUpdater.builder(AMAZON_UNBOX)
+                .withItemUpdater(vodItemUpdater(amazonUnboxPublishers).build())
+                .withTopLevelContainerUpdater(vodContainerUpdater(amazonUnboxPublishers))
                 .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
                 .build());
 

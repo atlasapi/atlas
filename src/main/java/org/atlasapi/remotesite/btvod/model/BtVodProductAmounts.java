@@ -1,10 +1,10 @@
 package org.atlasapi.remotesite.btvod.model;
 
-public class BtVodPlproduct$amounts {
+public class BtVodProductAmounts {
 
     private Double GBP;
 
-    public BtVodPlproduct$amounts() {
+    public BtVodProductAmounts() {
     }
 
     public Double getGBP() {

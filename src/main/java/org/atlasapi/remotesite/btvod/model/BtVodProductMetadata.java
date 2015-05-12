@@ -2,7 +2,7 @@ package org.atlasapi.remotesite.btvod.model;
 
 import com.google.gson.annotations.SerializedName;
 
-public class BtVodPlproduct$productMetadata {
+public class BtVodProductMetadata {
 
     private String episodeNumber;
     private String audioDescription;
@@ -12,10 +12,14 @@ public class BtVodPlproduct$productMetadata {
     private String assetColorTypeVideoCardinal;
     private String audioLanguage;
     private String clientAssetId;
-    private String plproduct$title;
-    private String plproduct$description;
 
-    public BtVodPlproduct$productMetadata() {}
+    @SerializedName("plproduct$title")
+    private String productTitle;
+
+    @SerializedName("plproduct$description")
+    private String productDescription;
+
+    public BtVodProductMetadata() {}
 
     public String getEpisodeNumber() {
         return episodeNumber;
@@ -45,12 +49,12 @@ public class BtVodPlproduct$productMetadata {
         return clientAssetId;
     }
 
-    public String getPlproduct$title() {
-        return plproduct$title;
+    public String getProductTitle() {
+        return productTitle;
     }
 
-    public String getPlproduct$description() {
-        return plproduct$description;
+    public String getProductDescription() {
+        return productDescription;
     }
 
     public void setEpisodeNumber(String episodeNumber) {

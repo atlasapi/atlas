@@ -19,13 +19,12 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.atlasapi.remotesite.btvod.model.BtVodImage;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$images;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingPlan;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productMetadata;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
+import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
+import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$ratings;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$scopes;
+import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
+import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
@@ -77,7 +76,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.extractImages(Matchers.<BtVodPlproduct$images>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.extractImages(Matchers.<BtVodPlproductImages>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntry)).thenReturn(Optional.of(seriesRef));
         when(seriesExtractor.extractSeriesNumber(btVodEntry.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
@@ -119,7 +118,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.extractImages(Matchers.<BtVodPlproduct$images>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.extractImages(Matchers.<BtVodPlproductImages>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntrySD)).thenReturn(Optional.of(seriesRef));
         when(seriesExtractor.extractSeriesNumber(btVodEntrySD.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
@@ -146,16 +145,16 @@ public class BtVodItemWriterTest {
         BtVodEntry btVodEntrySD = episodeRow();
         ParentRef parentRef = new ParentRef(BRAND_URI);
         ParentRef seriesRef = new ParentRef("seriesUri");
-        btVodEntrySD.setBtproduct$targetBandwidth("SD");
+        btVodEntrySD.setProductTargetBandwidth("SD");
 
         BtVodEntry btVodEntryHD = episodeRow();
         btVodEntryHD.setTitle(SERIES_TITLE + ": - HD S1 S1-E9 " + REAL_EPISODE_TITLE + " - HD");
         btVodEntryHD.setGuid(PRODUCT_ID + "_HD");
-        btVodEntryHD.setBtproduct$targetBandwidth("HD");
+        btVodEntryHD.setProductTargetBandwidth("HD");
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.extractImages(Matchers.<BtVodPlproduct$images>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.extractImages(Matchers.<BtVodPlproductImages>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntrySD)).thenReturn(Optional.of(seriesRef));
         when(seriesExtractor.extractSeriesNumber(btVodEntrySD.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
@@ -211,6 +210,9 @@ public class BtVodItemWriterTest {
         BtVodEntry btVodEntry9 = new BtVodEntry();
         btVodEntry9.setTitle("ZQZPeppa_Pig: S01 S1-E4 ZQZSchool Play");
 
+        BtVodEntry btVodEntry10 = new BtVodEntry();
+        btVodEntry10.setTitle("ZQWAmerican_Horror_Story: S01 S1-E11 ZQWBirth");
+
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry1.getTitle()), is(REAL_EPISODE_TITLE));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry2.getTitle()), is("Conference Call"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry3.getTitle()), is("Saracens v Leicester Tigers 2010/11"));
@@ -220,6 +222,7 @@ public class BtVodItemWriterTest {
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry7.getTitle()), is("Truth Be Told"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry8.getTitle()), is("The Incident"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry9.getTitle()), is("School Play"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry10.getTitle()), is("Birth"));
     }
     
     @Test
@@ -236,18 +239,18 @@ public class BtVodItemWriterTest {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);
         entry.setTitle(FULL_EPISODE_TITLE);
-        entry.setPlproduct$offerStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
-        entry.setPlproduct$offerEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
+        entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
+        entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         entry.setDescription(SYNOPSIS);
-        entry.setBtproduct$productType("episode");
-        entry.setPlproduct$pricingPlan(new BtVodPlproduct$pricingPlan());
-        BtVodPlproduct$scopes productScope = new BtVodPlproduct$scopes();
-        BtVodPlproduct$productMetadata productMetadata = new BtVodPlproduct$productMetadata();
+        entry.setProductType("episode");
+        entry.setProductPricingPlan(new BtVodProductPricingPlan());
+        BtVodProductScope productScope = new BtVodProductScope();
+        BtVodProductMetadata productMetadata = new BtVodProductMetadata();
         productMetadata.setEpisodeNumber("1");
-        productScope.setPlproduct$productMetadata(productMetadata);
-        entry.setPlproduct$scopes(ImmutableList.of(productScope));
-        entry.setPlproduct$ratings(ImmutableList.<BtVodPlproduct$ratings>of());
-        entry.setPlproduct$productTags(ImmutableList.<BtVodPlproduct$productTag>of());
+        productScope.setProductMetadata(productMetadata);
+        entry.setProductScopes(ImmutableList.of(productScope));
+        entry.setProductRatings(ImmutableList.<BtVodProductRating>of());
+        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
 
         return entry;
     }

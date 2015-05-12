@@ -6,7 +6,7 @@ import com.google.common.collect.Iterables;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.remotesite.btvod.model.BtVodImage;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$images;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 import org.junit.Test;
 
 import java.util.Set;
@@ -48,7 +48,7 @@ public class BtVodMpxImageExtractorTest {
         backgroundImage2.setPlproduct$url("imageUrl4");
 
 
-        BtVodPlproduct$images images = new BtVodPlproduct$images();
+        BtVodPlproductImages images = new BtVodPlproductImages();
         images.setPackshotImages(ImmutableList.of(packShotImage1, packShotImage2));
         images.setBackgroundImages(ImmutableList.of(backgroundImage1, backgroundImage2));
 

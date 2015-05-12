@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
 
-public class BtVodPlproduct$images {
+public class BtVodPlproductImages {
 
     @SerializedName("image-background")
     private List<BtVodImage> backgroundImages;
@@ -13,7 +13,7 @@ public class BtVodPlproduct$images {
     @SerializedName("image-single-packshot")
     private List<BtVodImage> packshotImages;
 
-    public BtVodPlproduct$images() {
+    public BtVodPlproductImages() {
     }
 
     public List<BtVodImage> getBackgroundImages() {

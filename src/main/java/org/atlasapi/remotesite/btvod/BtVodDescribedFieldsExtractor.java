@@ -6,15 +6,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.ImageType;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$ratings;
 
 import java.util.Map;
 
@@ -118,7 +112,7 @@ public class BtVodDescribedFieldsExtractor {
     
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
         described.setDescription(row.getDescription());
-        described.setLongDescription(row.getPlproduct$longDescription());
+        described.setLongDescription(row.getProductLongDescription());
         described.setImages(createImages(row));
 
         String btGenre = row.getGenre();
@@ -137,6 +131,6 @@ public class BtVodDescribedFieldsExtractor {
     }
     
     private Iterable<Image> createImages(BtVodEntry row) {
-        return imageExtractor.extractImages(row.getPlproduct$images());
+        return imageExtractor.extractImages(row.getProductImages());
     }
 }

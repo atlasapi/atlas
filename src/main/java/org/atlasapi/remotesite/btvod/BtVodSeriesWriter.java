@@ -20,7 +20,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.omg.PortableServer.POA;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -96,7 +95,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     }
 
     private boolean isPartOfSeries(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getBtproduct$productType()) && extractSeriesNumber(row.getTitle()).isPresent();
+        return !HELP_TYPE.equals(row.getProductType()) && extractSeriesNumber(row.getTitle()).isPresent();
     }
 
     private void write(Series extracted) {

@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.btvod.model;
 
+import com.google.gson.annotations.SerializedName;
+
 import java.util.List;
 
 public class BtVodEntry {
@@ -9,18 +11,39 @@ public class BtVodEntry {
     private String guid;
     private String title;
     private String description;
-    private String plproduct$longDescription;
-    private String btproduct$productType;
-    private List<BtVodPlproduct$scopes> plproduct$scopes;
-    private List<BtVodPlproduct$productTag> plproduct$productTags;
-    private Long plproduct$offerStartDate;
-    private Long plproduct$offerEndDate;
-    private BtVodPlproduct$pricingPlan plproduct$pricingPlan;
-    private Integer btproduct$priority;
-    private List<BtVodPlproduct$ratings> plproduct$ratings;
-    private BtVodPlproduct$images plproduct$images;
 
-    private String btproduct$targetBandwidth;
+    @SerializedName("plproduct$longDescription")
+    private String productLongDescription;
+
+    @SerializedName("btproduct$productType")
+    private String productType;
+
+    @SerializedName("plproduct$scopes")
+    private List<BtVodProductScope> productScopes;
+
+    @SerializedName("plproduct$productTags")
+    private List<BtVodPlproduct$productTag> productTags;
+
+    @SerializedName("plproduct$offerStartDate")
+    private Long productOfferStartDate;
+
+    @SerializedName("plproduct$offerEndDate")
+    private Long productOfferEndDate;
+
+    @SerializedName("plproduct$pricingPlan")
+    private BtVodProductPricingPlan productPricingPlan;
+
+    @SerializedName("btproduct$priority")
+    private Integer productPriority;
+
+    @SerializedName("plproduct$ratings")
+    private List<BtVodProductRating> productRatings;
+
+    @SerializedName("plproduct$images")
+    private BtVodPlproductImages productImages;
+
+    @SerializedName("btproduct$targetBandwidth")
+    private String productTargetBandwidth;
 
     public BtVodEntry() {}
 
@@ -36,16 +59,16 @@ public class BtVodEntry {
         return description;
     }
 
-    public String getPlproduct$longDescription() {
-        return plproduct$longDescription;
+    public String getProductLongDescription() {
+        return productLongDescription;
     }
 
-    public String getBtproduct$productType() {
-        return btproduct$productType;
+    public String getProductType() {
+        return productType;
     }
 
     public String getContentProviderId() {
-        for (BtVodPlproduct$productTag plproduct$productTag : plproduct$productTags) {
+        for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
             if (plproduct$productTag.getPlproduct$scheme().equals(CONTENT_PROVIDER)) {
                 return plproduct$productTag.getPlproduct$title();
             }
@@ -54,7 +77,7 @@ public class BtVodEntry {
         return null;
     }
     public String getGenre() {
-        for (BtVodPlproduct$productTag plproduct$productTag : plproduct$productTags) {
+        for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
             if (plproduct$productTag.getPlproduct$scheme().equals(GENRE)) {
                 return plproduct$productTag.getPlproduct$title();
             }
@@ -63,16 +86,16 @@ public class BtVodEntry {
         return null;
     }
 
-    public List<BtVodPlproduct$scopes> getPlproduct$scopes() {
-        return plproduct$scopes;
+    public List<BtVodProductScope> getProductScopes() {
+        return productScopes;
     }
 
-    public Long getPlproduct$offerStartDate() {
-        return plproduct$offerStartDate;
+    public Long getProductOfferStartDate() {
+        return productOfferStartDate;
     }
 
-    public Long getPlproduct$offerEndDate() {
-        return plproduct$offerEndDate;
+    public Long getProductOfferEndDate() {
+        return productOfferEndDate;
     }
 
     public void setGuid(String guid) {
@@ -87,68 +110,68 @@ public class BtVodEntry {
         this.description = description;
     }
 
-    public void setPlproduct$longDescription(String plproduct$longDescription) {
-        this.plproduct$longDescription = plproduct$longDescription;
+    public void setProductLongDescription(String productLongDescription) {
+        this.productLongDescription = productLongDescription;
     }
 
-    public void setBtproduct$productType(String btproduct$productType) {
-        this.btproduct$productType = btproduct$productType;
+    public void setProductType(String productType) {
+        this.productType = productType;
     }
 
-    public void setPlproduct$scopes(List<BtVodPlproduct$scopes> plproduct$scopes) {
-        this.plproduct$scopes = plproduct$scopes;
+    public void setProductScopes(List<BtVodProductScope> productScopes) {
+        this.productScopes = productScopes;
     }
 
-    public void setPlproduct$productTags(List<BtVodPlproduct$productTag> plproduct$productTags) {
-        this.plproduct$productTags = plproduct$productTags;
+    public void setProductTags(List<BtVodPlproduct$productTag> productTags) {
+        this.productTags = productTags;
     }
 
-    public void setPlproduct$offerStartDate(Long plproduct$offerStartDate) {
-        this.plproduct$offerStartDate = plproduct$offerStartDate;
+    public void setProductOfferStartDate(Long productOfferStartDate) {
+        this.productOfferStartDate = productOfferStartDate;
     }
 
-    public void setPlproduct$offerEndDate(Long plproduct$offerEndDate) {
-        this.plproduct$offerEndDate = plproduct$offerEndDate;
+    public void setProductOfferEndDate(Long productOfferEndDate) {
+        this.productOfferEndDate = productOfferEndDate;
     }
 
-    public BtVodPlproduct$pricingPlan getPlproduct$pricingPlan() {
-        return plproduct$pricingPlan;
+    public BtVodProductPricingPlan getProductPricingPlan() {
+        return productPricingPlan;
     }
 
-    public void setPlproduct$pricingPlan(BtVodPlproduct$pricingPlan plproduct$pricingPlan) {
-        this.plproduct$pricingPlan = plproduct$pricingPlan;
+    public void setProductPricingPlan(BtVodProductPricingPlan productPricingPlan) {
+        this.productPricingPlan = productPricingPlan;
     }
 
-    public Integer getBtproduct$priority() {
-        return btproduct$priority;
+    public Integer getProductPriority() {
+        return productPriority;
     }
 
-    public void setBtproduct$priority(Integer btproduct$priority) {
-        this.btproduct$priority = btproduct$priority;
+    public void setProductPriority(Integer productPriority) {
+        this.productPriority = productPriority;
     }
 
-    public String getBtproduct$targetBandwidth() {
-        return btproduct$targetBandwidth;
+    public String getProductTargetBandwidth() {
+        return productTargetBandwidth;
     }
 
-    public void setBtproduct$targetBandwidth(String btproduct$targetBandwidth) {
-        this.btproduct$targetBandwidth = btproduct$targetBandwidth;
+    public void setProductTargetBandwidth(String productTargetBandwidth) {
+        this.productTargetBandwidth = productTargetBandwidth;
     }
 
-    public List<BtVodPlproduct$ratings> getplproduct$ratings() {
-        return plproduct$ratings;
+    public List<BtVodProductRating> getplproduct$ratings() {
+        return productRatings;
     }
 
-    public void setPlproduct$ratings(List<BtVodPlproduct$ratings> plproduct$ratings) {
-        this.plproduct$ratings = plproduct$ratings;
+    public void setProductRatings(List<BtVodProductRating> productRatings) {
+        this.productRatings = productRatings;
     }
 
-    public BtVodPlproduct$images getPlproduct$images() {
-        return plproduct$images;
+    public BtVodPlproductImages getProductImages() {
+        return productImages;
     }
 
-    public void setPlproduct$images(BtVodPlproduct$images plproduct$images) {
-        this.plproduct$images = plproduct$images;
+    public void setProductImages(BtVodPlproductImages productImages) {
+        this.productImages = productImages;
     }
 
     @Override
@@ -157,17 +180,17 @@ public class BtVodEntry {
                 "guid='" + guid + '\'' +
                 ", title='" + title + '\'' +
                 ", description='" + description + '\'' +
-                ", plproduct$longDescription='" + plproduct$longDescription + '\'' +
-                ", btproduct$productType='" + btproduct$productType + '\'' +
-                ", plproduct$scopes=" + plproduct$scopes +
-                ", plproduct$productTags=" + plproduct$productTags +
-                ", plproduct$offerStartDate=" + plproduct$offerStartDate +
-                ", plproduct$offerEndDate=" + plproduct$offerEndDate +
-                ", plproduct$pricingPlan=" + plproduct$pricingPlan +
-                ", btproduct$priority=" + btproduct$priority +
-                ", plproduct$ratings=" + plproduct$ratings +
-                ", plproduct$images=" + plproduct$images +
-                ", btproduct$targetBandwidth='" + btproduct$targetBandwidth + '\'' +
+                ", plproduct$longDescription='" + productLongDescription + '\'' +
+                ", btproduct$productType='" + productType + '\'' +
+                ", plproduct$scopes=" + productScopes +
+                ", plproduct$productTags=" + productTags +
+                ", plproduct$offerStartDate=" + productOfferStartDate +
+                ", plproduct$offerEndDate=" + productOfferEndDate +
+                ", plproduct$pricingPlan=" + productPricingPlan +
+                ", btproduct$priority=" + productPriority +
+                ", plproduct$ratings=" + productRatings +
+                ", plproduct$images=" + productImages +
+                ", btproduct$targetBandwidth='" + productTargetBandwidth + '\'' +
                 '}';
     }
 }

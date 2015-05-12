@@ -4,12 +4,11 @@ import com.google.common.collect.Iterables;
 import com.metabroadcast.common.http.HttpResponsePrologue;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodImage;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$images;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$pricingTier;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$ratings;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
+import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
+import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.atlasapi.remotesite.btvod.model.BtVodResponse;
 import org.junit.Test;
-import org.openjena.atlas.iterator.Iter;
 
 import java.io.InputStream;
 
@@ -36,27 +35,27 @@ public class BtVodResponseTransformerTest {
         BtVodEntry entry2 = btVodResponse.getEntries().get(1);
 
         assertThat(
-                entry1.getPlproduct$longDescription(),
+                entry1.getProductLongDescription(),
                 is("Go to Settings > channel scan<br><br>You will be offered a choice of region > select your correct region and channels should appear.")
         );
         assertThat(
-                entry1.getPlproduct$pricingPlan().getPlproduct$pricingTiers().size(), is(1)
+                entry1.getProductPricingPlan().getProductPricingTiers().size(), is(1)
         );
-        assertThat(entry1.getBtproduct$priority(), is(3));
+        assertThat(entry1.getProductPriority(), is(3));
 
-        BtVodPlproduct$pricingTier entry1PricingTier = Iterables.getOnlyElement(entry1.getPlproduct$pricingPlan().getPlproduct$pricingTiers());
+        BtVodProductPricingTier entry1PricingTier = Iterables.getOnlyElement(entry1.getProductPricingPlan().getProductPricingTiers());
 
-        assertThat(entry1PricingTier.getPlproduct$absoluteStart(), is(1401631320000L));
-        assertThat(entry1PricingTier.getPlproduct$absoluteEnd(), is(1767139200000L));
-        assertThat(entry1PricingTier.getPlproduct$amounts().getGBP(), is(0.5));
+        assertThat(entry1PricingTier.getProductAbsoluteStart(), is(1401631320000L));
+        assertThat(entry1PricingTier.getProductAbsoluteEnd(), is(1767139200000L));
+        assertThat(entry1PricingTier.getProductAmounts().getGBP(), is(0.5));
 
 
-        BtVodPlproduct$ratings restriction = Iterables.getOnlyElement(entry1.getplproduct$ratings());
+        BtVodProductRating restriction = Iterables.getOnlyElement(entry1.getplproduct$ratings());
 
-        assertThat(restriction.getPlproduct$rating(), is(12));
-        assertThat(restriction.getPlproduct$scheme(), is("urn:www.bbfc.co.uk"));
+        assertThat(restriction.getProductRating(), is(12));
+        assertThat(restriction.getProductScheme(), is("urn:www.bbfc.co.uk"));
 
-        BtVodPlproduct$images images = entry1.getPlproduct$images();
+        BtVodPlproductImages images = entry1.getProductImages();
 
         BtVodImage packshotImage = Iterables.getOnlyElement(images.getPackshotImages());
         BtVodImage backgroundImage = Iterables.getOnlyElement(images.getBackgroundImages());

@@ -143,7 +143,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private boolean shouldSynthesizeBrand(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getBtproduct$productType()) && canParseBrandFromEpisode(row);
+        return !HELP_TYPE.equals(row.getProductType()) && canParseBrandFromEpisode(row);
     }
 
     private boolean canParseBrandFromEpisode(BtVodEntry row) {

@@ -90,6 +90,8 @@ public class BtVodBrandWriterTest {
 
         BtVodEntry row8 = new BtVodEntry();
         row8.setTitle("ZQZPeppa Pig: S01 S1-E4 ZQZSchool Play");
+        BtVodEntry row9 = new BtVodEntry();
+        row9.setTitle("ZQWAmerican_Horror_Story: S01 S1-E11 ZQWBirth");
 
         assertThat(brandExtractor.uriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandExtractor.uriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
@@ -99,14 +101,15 @@ public class BtVodBrandWriterTest {
         assertThat(brandExtractor.uriFor(row6).get(), is(URI_PREFIX + "synthesized/brands/being-human-usa"));
         assertThat(brandExtractor.uriFor(row7).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
         assertThat(brandExtractor.uriFor(row8).get(), is(URI_PREFIX + "synthesized/brands/peppa-pig"));
+        assertThat(brandExtractor.uriFor(row9).get(), is(URI_PREFIX + "synthesized/brands/american-horror-story"));
     }
 
     private BtVodEntry row() {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);
         entry.setTitle(FULL_EPISODE_TITLE);
-        entry.setPlproduct$offerStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
-        entry.setPlproduct$offerEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
+        entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
+        entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         return entry;
     }
     

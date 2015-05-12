@@ -104,7 +104,7 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
             @Override
             public boolean apply(VodEntryAndContent input) {
                 return category.equals(
-                        input.getBtVodEntry().getBtproduct$productType()
+                        input.getBtVodEntry().getProductType()
                 );
             }
 

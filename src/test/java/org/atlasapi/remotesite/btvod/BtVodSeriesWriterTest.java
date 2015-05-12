@@ -113,8 +113,8 @@ public class BtVodSeriesWriterTest {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);
         entry.setTitle(FULL_EPISODE_TITLE);
-        entry.setPlproduct$offerStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
-        entry.setPlproduct$offerEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
+        entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
+        entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         return entry;
     }
 }

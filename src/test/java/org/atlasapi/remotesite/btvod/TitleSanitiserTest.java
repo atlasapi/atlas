@@ -15,9 +15,11 @@ public class TitleSanitiserTest {
     public void testRemovesZQXFromTitles(){
         String titleWithGarbage1 = "ZQWModern_Family: S01 S1-E4 ZQWThe Incident";
         String titleWithGarbage2 = "ZQZPeppa_Pig: S01 S1-E4 ZQZSchool Play";
+        String titleWithGarbage3 = "ZQWAmerican_Horror_Story: S01 S1-E11 ZQWBirth";
 
         assertThat(titleSanitiser.sanitiseTitle(titleWithGarbage1), is("Modern Family: S01 S1-E4 The Incident"));
         assertThat(titleSanitiser.sanitiseTitle(titleWithGarbage2), is("Peppa Pig: S01 S1-E4 School Play"));
+        assertThat(titleSanitiser.sanitiseTitle(titleWithGarbage3), is("American Horror Story: S01 S1-E11 Birth"));
 
     }
 

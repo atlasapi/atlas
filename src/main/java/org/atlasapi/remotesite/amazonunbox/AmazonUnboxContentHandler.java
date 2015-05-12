@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.amazonunbox;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
@@ -28,7 +30,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     private StringBuffer buffer = null; 
 
     public AmazonUnboxContentHandler(AmazonUnboxProcessor<?> processor) {
-        this.processor = processor;
+        this.processor = checkNotNull(processor);
     }
     
     @Override

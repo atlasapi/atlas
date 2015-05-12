@@ -14,13 +14,12 @@ import org.atlasapi.media.entity.testing.ComplexItemTestDataBuilder;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ResolvedContent.ResolvedContentBuilder;
-import org.atlasapi.remotesite.btvod.BtVodData.BtVodDataRow;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -53,8 +52,7 @@ public class BtVodContentGroupUpdaterTest {
         when(contentGroupResolver.findByCanonicalUris(ImmutableSet.of(uriPrefix + key)))
             .thenReturn(new ResolvedContentBuilder().build());
         
-        BtVodDataRow dummyDataRow = new BtVodDataRow(ImmutableList.<String>of(), 
-                ImmutableList.<String>of());
+        BtVodEntry dummyDataRow = new BtVodEntry();
         
         updater.start();
         updater.onContent(item1, dummyDataRow);
@@ -73,7 +71,7 @@ public class BtVodContentGroupUpdaterTest {
             new BtVodContentGroupPredicate() {
 
                 @Override
-                public boolean apply(VodDataAndContent input) {
+                public boolean apply(VodEntryAndContent input) {
                     return item1.getCanonicalUri().equals(input.getContent().getCanonicalUri());
                 }
         

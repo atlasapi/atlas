@@ -1,0 +1,304 @@
+{
+  "$xmlns": {
+    "plproduct": "http://xml.theplatform.com/product/data/Product"
+  },
+  "startIndex": 1,
+  "itemsPerPage": 100,
+  "entryCount": 2,
+  "title": "YOU Product Search Feed",
+  "entries": [
+    {
+      "$xmlns": {
+        "btproduct": "http://bt.com/vosp/product"
+      },
+      "id": "http://data.product.theplatform.eu/product/data/Product/247726",
+      "guid": "I am not seeing the correct regional channels eg local news",
+      "title": "I am not seeing the correct regional channels e.g local news",
+      "description": "I am not seeing the correct regional channels e.g local news",
+      "added": 1401890619000,
+      "plproduct$disabled": false,
+      "plproduct$longDescription": "Go to Settings > channel scan<br><br>You will be offered a choice of region > select your correct region and channels should appear.",
+      "plproduct$longDescriptionLocalized": {
+      },
+      "plproduct$images": {
+        "image-background": [
+          {
+            "plproduct$mediaFileId": "http://bt.data.media.theplatform.eu/media/data/MediaFile/4829253140",
+            "plproduct$height": 626,
+            "plproduct$width": 1159,
+            "plproduct$url": "content_providers/images/BBJ374303A_374303_WP.png"
+          }
+        ],
+        "image-single-packshot": [
+          {
+            "plproduct$mediaFileId": "http://bt.data.media.theplatform.eu/media/data/MediaFile/4828741146",
+            "plproduct$height": 120,
+            "plproduct$width": 214,
+            "plproduct$url": "content_providers/images/BBJ374303A_374303_SP.png"
+          }
+        ]
+      },
+      "plproduct$productTags": [
+        {
+          "plproduct$scheme": "serviceType",
+          "plproduct$schemeLocalized": {
+          },
+          "plproduct$title": "YOU",
+          "plproduct$titleLocalized": {
+          }
+        },
+        {
+          "plproduct$scheme": "placement",
+          "plproduct$schemeLocalized": {
+          },
+          "plproduct$title": "a10ffd98-9e20-477e-a833-4d058e6a0552",
+          "plproduct$titleLocalized": {
+          }
+        }
+      ],
+      "plproduct$productTagIds": [
+        "http://data.product.theplatform.eu/product/data/ProductTag/213336",
+        "http://data.product.theplatform.eu/product/data/ProductTag/193356"
+      ],
+      "plproduct$pricingTemplateId": null,
+      "plproduct$pricingPlan": {
+        "plproduct$isTaxIncluded": false,
+        "plproduct$isRecurring": false,
+        "plproduct$pricingTiers": [
+          {
+            "plproduct$absoluteStart": 1401631320000,
+            "plproduct$absoluteEnd": 1767139200000,
+            "plproduct$rightsIds": [
+            ],
+            "plproduct$subscriptionUnits": "month",
+            "plproduct$billingFrequency": 0,
+            "plproduct$minimumSubscriptionPeriod": 0,
+            "plproduct$productTagIds": [
+            ],
+            "plproduct$productTags": [
+            ],
+            "plproduct$amounts": {
+              "GBP": 0.5
+            },
+            "plproduct$isBlackout": false,
+            "plproduct$isActive": true
+          }
+        ]
+      },
+      "plproduct$offerStartDate": 1401631320000,
+      "plproduct$offerEndDate": 1767139200000,
+      "plproduct$scopeIds": [
+      ],
+      "plproduct$scopes": [
+      ],
+      "plproduct$paymentTypes": [
+      ],
+      "plproduct$keywords": [
+      ],
+      "plproduct$isApproved": true,
+      "plproduct$baseProductId": null,
+      "plproduct$isSubscription": false,
+      "plproduct$ratings": [
+        {
+          "plproduct$scheme": "urn:www.bbfc.co.uk",
+          "plproduct$rating": "12",
+          "plproduct$subRatings": []
+        }
+      ],
+      "plproduct$titleLocalized": {
+      },
+      "plproduct$descriptionLocalized": {
+      },
+      "plproduct$dynamicallyUpdatePricingPlan": false,
+      "btproduct$inhibitProduct": false,
+      "btproduct$isPromotional": false,
+      "btproduct$listView": false,
+      "btproduct$productType": "help",
+      "btproduct$structureType": "single",
+      "btproduct$titleSort": "I am not seeing the correct regional channels e.g local news",
+      "btproduct$validForStorefront": true,
+      "btproduct$zeroTouch": false,
+      "btproduct$priority": 3
+    },
+    {
+      "$xmlns": {
+        "btproduct": "http://bt.com/vosp/product"
+      },
+      "id": "http://data.product.theplatform.eu/product/data/Product/268972",
+      "guid": "BBJ232423A_RL1",
+      "title": "Karaoke - Kids & Disney Tunes - Under The Sea (Karaoke Version)",
+      "description": "Here's a great Karaoke version of the famous song from Disney's The Little Mermaid to enjoy. Grab a hairbrush, turn up your telly and sing away to your heart's content. You might be a future star!",
+      "added": 1406289336000,
+      "plproduct$disabled": false,
+      "plproduct$longDescription": "Here's a great Karaoke version of the famous song from Disney's The Little Mermaid to enjoy. Grab a hairbrush, turn up your telly and sing away to your heart's content. You might be a future star!",
+      "plproduct$longDescriptionLocalized": {},
+      "plproduct$images": {},
+      "plproduct$productTags": [
+        {
+          "plproduct$scheme": "subscription",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "S0128048",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "serviceType",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "YOU",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "contentProvider",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "MCL",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "masterAgreementScodes",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "S0128048",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "masterAgreementServiceType",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "YOU",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "placement",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "77406fcd-e84e-415b-ba12-ee038c44db56",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "genre",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "Junior Girl and Boy",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "schedulerChannel",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "Kids",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "masterAgreementServiceType",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "CAR",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "masterAgreementDlpHD",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "true",
+          "plproduct$titleLocalized": {}
+        },
+        {
+          "plproduct$scheme": "serviceType",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "CAR",
+          "plproduct$titleLocalized": {}
+        }
+      ],
+      "plproduct$productTagIds": [
+        "http://data.product.theplatform.eu/product/data/ProductTag/193356",
+        "http://data.product.theplatform.eu/product/data/ProductTag/210392",
+        "http://data.product.theplatform.eu/product/data/ProductTag/215604",
+        "http://data.product.theplatform.eu/product/data/ProductTag/193355",
+        "http://data.product.theplatform.eu/product/data/ProductTag/220881",
+        "http://data.product.theplatform.eu/product/data/ProductTag/211944",
+        "http://data.product.theplatform.eu/product/data/ProductTag/208945",
+        "http://data.product.theplatform.eu/product/data/ProductTag/215498"
+      ],
+      "plproduct$pricingTemplateId": "http://data.product.theplatform.eu/product/data/PricingTemplate/255273",
+      "plproduct$pricingPlan": {
+        "plproduct$isTaxIncluded": false,
+        "plproduct$isRecurring": false,
+        "plproduct$pricingTiers": [
+          {
+            "plproduct$absoluteStart": 1406242800000,
+            "plproduct$absoluteEnd": 1437519540000,
+            "plproduct$rightsIds": [
+              "http://bt.data.entitlement.theplatform.eu/eds/data/Rights/5342651"
+            ],
+            "plproduct$subscriptionUnits": "month",
+            "plproduct$billingFrequency": 0,
+            "plproduct$minimumSubscriptionPeriod": 0,
+            "plproduct$productTagIds": [],
+            "plproduct$productTags": [],
+            "plproduct$amounts": {
+              "GBP": 0.5
+            },
+            "plproduct$isBlackout": false,
+            "plproduct$isActive": true
+          }
+        ]
+      },
+      "plproduct$offerStartDate": 1406242800000,
+      "plproduct$offerEndDate": 1437519540000,
+      "plproduct$scopeIds": [
+        "http://bt.data.media.theplatform.eu/media/data/Media/guid/2403658649/BBJ232423A_RL1"
+      ],
+      "plproduct$scopes": [
+        {
+          "plproduct$scopeId": "http://bt.data.media.theplatform.eu/media/data/Media/guid/2403658649/BBJ232423A_RL1",
+          "plproduct$id": "http://bt.data.media.theplatform.eu/media/data/Media/2705989433",
+          "plproduct$title": "Karaoke - Kids & Disney Tunes - Under The Sea (Karaoke Version)",
+          "plproduct$description": "Here's a great Karaoke version of the famous song from Disney's The Little Mermaid to enjoy. Grab a hairbrush, turn up your telly and sing away to your heart's content. You might be a future star!",
+          "plproduct$productMetadata": {
+            "assetColorType.video-youview": "color",
+            "targetBandwidth": "SD",
+            "assetDisplayAspectRatio.video-cardinal": "16:9",
+            "presentationWrapperGuid": "Kids",
+            "sourceSystemTimestamp": "1413475681",
+            "subGenres": "[\"Kids\"]",
+            "episodeNumber": "14",
+            "audioDescription": "false",
+            "mediaType": "Feature",
+            "releaseYear": "2013",
+            "assetColorType.video-cardinal": "color",
+            "parentGuid": "Kar_Kids_Disney_Tunes",
+            "audioLanguage": "English",
+            "longDescription": "Here's a great Karaoke version of the famous song from Disney's The Little Mermaid to enjoy. Grab a hairbrush, turn up your telly and sing away to your heart's content. You might be a future star!",
+            "clientAssetId": "BBJ232423A_RL1",
+            "structureType": "single",
+            "assetDisplayAspectRatio.video-youview": "16:9"
+          },
+          "plproduct$fulfillmentStatus": "fulfillable"
+        }
+      ],
+      "plproduct$paymentTypes": [],
+      "plproduct$keywords": [],
+      "plproduct$isApproved": true,
+      "plproduct$baseProductId": null,
+      "plproduct$isSubscription": false,
+      "plproduct$ratings": [],
+      "plproduct$titleLocalized": {},
+      "plproduct$descriptionLocalized": {},
+      "plproduct$dynamicallyUpdatePricingPlan": true,
+      "btproduct$assetTitleId": "232423",
+      "btproduct$audioLanguage": "English",
+      "btproduct$clientAssetId": "BBJ232423A_RL1",
+      "btproduct$inhibitProduct": false,
+      "btproduct$isPromotional": false,
+      "btproduct$listView": false,
+      "btproduct$parentGuid": "Kar_Kids_Disney_Tunes",
+      "btproduct$productOfferingType": "Feature",
+      "btproduct$productType": "episode",
+      "btproduct$sourceCorrelationId": "cd45e72ca4d644235ba2a73599202ffc",
+      "btproduct$structureType": "single",
+      "btproduct$targetBandwidth": "SD",
+      "btproduct$titleDefault": "Karaoke - Kids & Disney Tunes - Under The Sea (Karaoke Version)",
+      "btproduct$titleList": "Under The Sea (Karaoke Version)",
+      "btproduct$titleListExt": "Karaoke - Kids & Disney Tunes - Under The Sea (Karaoke Version)",
+      "btproduct$titlePackshot": "Under The Sea (Karaoke Version)",
+      "btproduct$titlePackshotExt": "Karaoke - Kids & Disney Tunes - Under The Sea (Karaoke Version)",
+      "btproduct$titleSearch": "Under The Sea (Karaoke Version)",
+      "btproduct$titleSort": "Karaoke - Kids & Disney Tunes - Under The Sea (Karaoke Version)",
+      "btproduct$validForStorefront": true,
+      "btproduct$xmlSource": "TV_BT_Scheduled",
+      "btproduct$zeroTouch": true
+    }
+  ]
+}

@@ -335,6 +335,11 @@
     <dependencies>
         <dependency>
             <groupId>org.atlasapi</groupId>
+            <artifactId>atlas-model</artifactId>
+            <version>${atlas.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.atlasapi</groupId>
             <artifactId>atlas-feeds</artifactId>
             <version>${atlas.version}</version>
         </dependency>

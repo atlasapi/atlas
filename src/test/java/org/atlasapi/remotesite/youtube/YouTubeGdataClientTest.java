@@ -15,12 +15,14 @@ permissions and limitations under the License. */
 
 package org.atlasapi.remotesite.youtube;
 
+import static junit.framework.TestCase.assertNotNull;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import junit.framework.TestCase;
 
 import org.atlasapi.remotesite.FetchException;
 import org.atlasapi.remotesite.youtube.YouTubeModel.VideoEntry;
+import org.junit.Ignore;
+import org.junit.Test;
 
 /**
  * Test of the behaviour of the third-party YouTube GData client from Google.
@@ -28,10 +30,12 @@ import org.atlasapi.remotesite.youtube.YouTubeModel.VideoEntry;
  *
  * @author Robert Chatley (robert@metabroadcast.com)
  */
-public class YouTubeGdataClientTest extends TestCase {
+public class YouTubeGdataClientTest  {
 
 	YouTubeGDataClient gdataClient = new YouTubeGDataClient();
 
+	@Ignore
+	@Test
 	public void testCanRetrieveDataRelatingToGivenYouTubePage() throws Exception {
 		VideoEntry entry = gdataClient.get("http://www.youtube.com/watch?v=pdyYe7sDlhA");
 		assertThat(entry.title, containsString("BBC News 24"));
@@ -43,7 +47,8 @@ public class YouTubeGdataClientTest extends TestCase {
 		assertNotNull(entry.category);
 		assertNotNull(entry.player.defaultUrl);
 	}
-	
+
+	@Test
 	public void testhrowsExceptionIfSubmittedUriDoesNotContainVideoId() throws Exception {
 		
 		try {

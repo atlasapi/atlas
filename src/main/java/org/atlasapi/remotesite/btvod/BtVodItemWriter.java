@@ -149,7 +149,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private boolean isEpisode(BtVodEntry row) {
-        return EPISODE_TYPE.equals(row.getProductType());
+        return EPISODE_TYPE.equals(row.getProductType()) && getBrandRefOrNull(row) != null;
     }
     
     private Item itemFrom(BtVodEntry row) {

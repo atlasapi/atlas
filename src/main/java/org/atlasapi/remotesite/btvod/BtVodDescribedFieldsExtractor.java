@@ -15,6 +15,7 @@ import java.util.Map;
 
 public class BtVodDescribedFieldsExtractor {
 
+    private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
 
     private final ImageExtractor imageExtractor;
 
@@ -118,7 +119,13 @@ public class BtVodDescribedFieldsExtractor {
         String btGenre = row.getGenre();
         ImmutableList.Builder<String> genres = ImmutableList.builder();
         if (btGenre != null) {
-            genres.add(btGenre);
+            genres.add(
+                    String.format(
+                            "%s/%s",
+                            BT_VOD_GENRE_PREFIX,
+                            btGenre
+                    )
+            );
             if (BT_TO_YOUVIEW_GENRE.containsKey(btGenre)) {
                 genres.add(BT_TO_YOUVIEW_GENRE.get(btGenre));
             }
@@ -126,7 +133,7 @@ public class BtVodDescribedFieldsExtractor {
         }
 
         if (!described.getImages().isEmpty()) {
-            described.setImage(Iterables.getOnlyElement(described.getImages()).getCanonicalUri());
+            described.setImage(Iterables.getFirst(described.getImages(), null).getCanonicalUri());
         }
     }
     

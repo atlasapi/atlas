@@ -44,6 +44,9 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
             Pattern.compile("^(.*)Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*"),
             Pattern.compile("^(.*)\\-.*")
     );
+
+    private static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
+
     private static final Pattern BRAND_TITLE_FROM_SERIES_PATTERN = Pattern.compile("^(.*) Series [0-9]+");
     private static final String HELP_TYPE = "help";
 
@@ -125,7 +128,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private String brandTitleFromEpisodeTitle(String title) {
         for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
-            Matcher matcher = brandPattern.matcher(title);
+            Matcher matcher = brandPattern.matcher(stripHDSuffix(title));
             if (matcher.matches()) {
                 return titleSanitiser.sanitiseTitle(matcher.group(1));
             }
@@ -157,7 +160,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private boolean isTitleSyntesizableFromEpisode(String title) {
         for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
-            if (brandPattern.matcher(title).matches()) {
+            if (brandPattern.matcher(stripHDSuffix(title)).matches()) {
                 return true;
             }
 
@@ -224,6 +227,14 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         }
 
         return Optional.fromNullable(processedBrands.get(optionalUri.get()));
+    }
+
+    private String stripHDSuffix(String title) {
+        Matcher hdMatcher = HD_PATTERN.matcher(title);
+        if (hdMatcher.matches()) {
+            return hdMatcher.group(1).trim().replace("- HD ", "");
+        }
+        return title;
     }
     
 }

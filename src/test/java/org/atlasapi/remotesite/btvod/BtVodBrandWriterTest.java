@@ -93,6 +93,13 @@ public class BtVodBrandWriterTest {
         BtVodEntry row9 = new BtVodEntry();
         row9.setTitle("ZQWAmerican_Horror_Story: S01 S1-E11 ZQWBirth");
 
+        BtVodEntry row10 = new BtVodEntry();
+        row10.setTitle("The Hunchback of Notre Dame II (Disney) - HD");
+
+        BtVodEntry row11 = new BtVodEntry();
+        row11.setTitle("Classic Premiership Rugby - Saracens v Leicester Tigers 2010/11 - HD");
+
+
         assertThat(brandExtractor.uriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandExtractor.uriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
         assertThat(brandExtractor.uriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
@@ -102,6 +109,8 @@ public class BtVodBrandWriterTest {
         assertThat(brandExtractor.uriFor(row7).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
         assertThat(brandExtractor.uriFor(row8).get(), is(URI_PREFIX + "synthesized/brands/peppa-pig"));
         assertThat(brandExtractor.uriFor(row9).get(), is(URI_PREFIX + "synthesized/brands/american-horror-story"));
+        assertThat(brandExtractor.uriFor(row10).isPresent(), is(false));
+        assertThat(brandExtractor.uriFor(row11).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
     }
 
     private BtVodEntry row() {

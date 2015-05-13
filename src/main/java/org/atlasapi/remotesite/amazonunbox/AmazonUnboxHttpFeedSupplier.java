@@ -50,7 +50,7 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
                 @Override
                 public ImmutableList<AmazonUnboxItem> transform(HttpResponsePrologue prologue, InputStream body)
                         throws HttpException, Exception {
-                    if (!HttpStatusCode.OK.equals(prologue.statusCode())) {
+                    if (HttpStatusCode.OK.code() != prologue.statusCode()) {
                         throw new RuntimeException("Response code " + prologue.statusCode() + " returned from " + uri);
                     }
                     

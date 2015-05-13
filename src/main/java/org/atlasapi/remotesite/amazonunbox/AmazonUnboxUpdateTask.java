@@ -1,12 +1,12 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import javax.xml.parsers.SAXParser;
-import javax.xml.parsers.SAXParserFactory;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
@@ -15,46 +15,42 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
 
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxUpdateTask.class);
     
-    private final AmazonUnboxFileUpdater fileUpdater;
-    private final AmazonUnboxFileStore store;
-    private final AmazonUnboxItemProcessor preHandler;
-    private final AmazonUnboxItemProcessor handler;
+    private final AmazonUnboxItemProcessor itemPreProcessor;
+    private final AmazonUnboxItemProcessor itemProcessor;
+    private final AmazonUnboxHttpFeedSupplier feedSupplier;
     
-    public AmazonUnboxUpdateTask(AmazonUnboxFileUpdater fileUpdater, AmazonUnboxFileStore store, AmazonUnboxItemProcessor preHandler, AmazonUnboxItemProcessor handler) {
-        this.fileUpdater = fileUpdater;
-        this.store = store;
-        this.preHandler = preHandler;
-        this.handler = handler;
+    public AmazonUnboxUpdateTask(AmazonUnboxItemProcessor preHandler, 
+                AmazonUnboxItemProcessor handler,
+                AmazonUnboxHttpFeedSupplier feedSupplier) {
+        this.itemPreProcessor = checkNotNull(preHandler);
+        this.itemProcessor = checkNotNull(handler);
+        this.feedSupplier = checkNotNull(feedSupplier);
     }
 
     @Override
     protected void runTask() {
         try  {
             
-            reportStatus("Updating File");
-            fileUpdater.update();
-            reportStatus("File updated");
+            AmazonUnboxProcessor<UpdateProgress> processor = processor(itemPreProcessor);
             
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            SAXParser saxParser = factory.newSAXParser();
+            ImmutableList<AmazonUnboxItem> items = feedSupplier.get();
             
-            AmazonUnboxProcessor<UpdateProgress> processor = processor(preHandler);
+            for (AmazonUnboxItem item : items) {
+                processor.process(item);
+            }
             
-            AmazonUnboxContentHandler xmlHandler = new AmazonUnboxContentHandler(processor);
+            itemPreProcessor.finish();
             
-            saxParser.parse(store.getLatestData(), xmlHandler);
-            
-            preHandler.finish();
             reportStatus("Preprocessor: " + processor.getResult().toString());
             
-            reportStatus("Pre-processing complete.");
+            processor = processor(itemProcessor);
             
-            processor = processor(handler);
-            xmlHandler = new AmazonUnboxContentHandler(processor);
+            for (AmazonUnboxItem item : items) {
+                processor.process(item);
+            }
             
-            saxParser.parse(store.getLatestData(), xmlHandler);
+            itemProcessor.finish();            
             reportStatus(processor.getResult().toString());
-            handler.finish();
             
         } catch (Exception e) {
             reportStatus(e.getMessage());

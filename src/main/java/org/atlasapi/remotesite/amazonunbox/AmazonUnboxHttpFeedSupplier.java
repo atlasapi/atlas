@@ -2,7 +2,10 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.io.FileInputStream;
 import java.io.InputStream;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipInputStream;
 
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
@@ -54,7 +57,10 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
                         throw new RuntimeException("Response code " + prologue.statusCode() + " returned from " + uri);
                     }
                     
-                    saxParser.parse(body, handler);
+                    ZipInputStream zis = new ZipInputStream(body);
+                    zis.getNextEntry();
+                    
+                    saxParser.parse(zis, handler);
                     return processor.getResult();
                 }
             }));

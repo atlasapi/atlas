@@ -158,26 +158,6 @@ public class ContentMerger {
         current.setMediaType(extracted.getMediaType());
         current.setSpecialization(extracted.getSpecialization());
 
-    public static Item mergeVersions(Item current, Item extracted) {
-        // need to merge broadcasts on versions with same uri
-        Map<String, Version> mergedVersions = Maps.newHashMap();
-        for (Version version : current.getVersions()) {
-            mergedVersions.put(version.getCanonicalUri(), version);
-        }
-        for (Version version : extracted.getVersions()) {
-            if (mergedVersions.containsKey(version.getCanonicalUri())) {
-                Version mergedVersion = mergedVersions.get(version.getCanonicalUri());
-                mergedVersion.setBroadcasts(Sets.union(version.getBroadcasts(), mergedVersion.getBroadcasts()));
-                if (version.getDuration() != null) {
-                    mergedVersion.setDuration(Duration.standardSeconds(version.getDuration()));
-                }
-                mergedVersion.setManifestedAs(version.getManifestedAs());
-                mergedVersions.put(version.getCanonicalUri(), mergedVersion);
-            } else {
-                mergedVersions.put(version.getCanonicalUri(), version);
-            }
-        }
-        current.setVersions(Sets.newHashSet(mergedVersions.values()));
         return current;
     }
 

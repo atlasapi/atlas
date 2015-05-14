@@ -339,11 +339,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         location.setPolicy(policy);
         location.setCanonicalUri(uriFor(row));
         location.setUri(uriFor(row));
+
         Alias btVodGuidAlias = new Alias(BT_VOD_GUID_NAMESPACE, row.getGuid());
         Alias btVodIdAlias = new Alias(BT_VOD_ID_NAMESPACE, row.getId());
         location.setAliases(ImmutableSet.of(btVodGuidAlias, btVodIdAlias));
-
         location.setAliasUrls(ImmutableSet.of(uriFor(row), row.getId()));
+
 
         Encoding encoding = new Encoding();
         encoding.setAvailableAt(ImmutableSet.of(location));
@@ -356,6 +357,8 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         Version version = new Version();
         version.setManifestedAs(ImmutableSet.of(encoding));
         version.setCanonicalUri(uriFor(row));
+        version.setAliasUrls(location.getAliasUrls());
+        version.setAliases(location.getAliases());
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {

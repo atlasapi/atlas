@@ -42,6 +42,8 @@ public class BtVodResponseTransformerTest {
                 entry1.getProductPricingPlan().getProductPricingTiers().size(), is(1)
         );
         assertThat(entry1.getProductPriority(), is(3));
+        assertThat(entry1.getGuid(), is("BBJ374300A"));
+        assertThat(entry1.getId(), is("http://data.product.theplatform.eu/product/data/Product/247726"));
 
         BtVodProductPricingTier entry1PricingTier = Iterables.getOnlyElement(entry1.getProductPricingPlan().getProductPricingTiers());
 

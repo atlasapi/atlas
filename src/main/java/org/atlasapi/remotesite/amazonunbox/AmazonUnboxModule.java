@@ -46,11 +46,11 @@ public class AmazonUnboxModule {
         ContentExtractor<AmazonUnboxItem,Iterable<Content>> contentExtractor = new AmazonUnboxContentExtractor();
         AmazonUnboxItemProcessor processor = new AmazonUnboxContentWritingItemProcessor(contentExtractor, resolver, contentWriter, contentLister, missingContentPercentage, preProcessor);
         
-        return new AmazonUnboxUpdateTask(preProcessor, processor, feedSupplier());
+        return new AmazonUnboxUpdateTask(preProcessor, processor, amazonUnboxFeedSupplier());
     }
     
     @Bean
-    public AmazonUnboxHttpFeedSupplier feedSupplier() {
+    public AmazonUnboxHttpFeedSupplier amazonUnboxFeedSupplier() {
         return new AmazonUnboxHttpFeedSupplier(HttpClients.webserviceClient(), unboxUrl);
     }
 }

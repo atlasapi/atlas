@@ -24,10 +24,10 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.ContentMerger;
+import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -94,6 +94,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final ContentLister lister;
     private final int missingContentPercentage;
     private final AmazonUnboxBrandProcessor brandProcessor;
+    private final ContentMerger contentMerger;
 
     public AmazonUnboxContentWritingItemProcessor(ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor, ContentResolver resolver, 
             ContentWriter writer, ContentLister lister, int missingContentPercentage, AmazonUnboxBrandProcessor brandProcessor) {
@@ -103,6 +104,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         this.lister = checkNotNull(lister);
         this.missingContentPercentage = checkNotNull(missingContentPercentage);
         this.brandProcessor = checkNotNull(brandProcessor);
+        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
     }
 
     @Override
@@ -130,9 +132,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             } else {
                 Identified identified = existing.requireValue();
                 if (content instanceof Item) {
-                    write(ContentMerger.merge(ContentMerger.asItem(identified), (Item) content));
+                    write(contentMerger.merge(ContentMerger.asItem(identified), (Item) content));
                 } else if (content instanceof Container) {
-                    write(ContentMerger.merge(ContentMerger.asContainer(identified), (Container) content));
+                    write(contentMerger.merge(ContentMerger.asContainer(identified), (Container) content));
                 }
             }
         }

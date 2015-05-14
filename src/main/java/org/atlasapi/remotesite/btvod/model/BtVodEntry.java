@@ -8,6 +8,7 @@ public class BtVodEntry {
 
     private static final String CONTENT_PROVIDER = "contentProvider";
     private static final String GENRE = "genre";
+    private String id;
     private String guid;
     private String title;
     private String description;
@@ -192,5 +193,13 @@ public class BtVodEntry {
                 ", plproduct$images=" + productImages +
                 ", btproduct$targetBandwidth='" + productTargetBandwidth + '\'' +
                 '}';
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 }

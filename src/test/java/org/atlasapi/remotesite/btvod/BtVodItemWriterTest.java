@@ -41,7 +41,8 @@ import org.mockito.Matchers;
 public class BtVodItemWriterTest {
 
     private static final String IMAGE_URI = "http://example.org/123.png";
-    private static final String PRODUCT_ID = "1234";
+    private static final String PRODUCT_GUID = "1234";
+    private static final String PRODUCT_ID = "http://example.org/content/1244";
     private static final String SERIES_TITLE = "Series Title";
     private static final String REAL_EPISODE_TITLE = "Real Title";
     private static final String FULL_EPISODE_TITLE = SERIES_TITLE + ": S1 S1-E9 " + REAL_EPISODE_TITLE;
@@ -114,7 +115,7 @@ public class BtVodItemWriterTest {
 
         BtVodEntry btVodEntryHD = episodeRow();
         btVodEntryHD.setTitle(FULL_EPISODE_TITLE + " - HD");
-        btVodEntryHD.setGuid(PRODUCT_ID + "_HD");
+        btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
@@ -149,7 +150,7 @@ public class BtVodItemWriterTest {
 
         BtVodEntry btVodEntryHD = episodeRow();
         btVodEntryHD.setTitle(SERIES_TITLE + ": - HD S1 S1-E9 " + REAL_EPISODE_TITLE + " - HD");
-        btVodEntryHD.setGuid(PRODUCT_ID + "_HD");
+        btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
         btVodEntryHD.setProductTargetBandwidth("HD");
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
@@ -237,7 +238,8 @@ public class BtVodItemWriterTest {
     
     private BtVodEntry episodeRow() {
         BtVodEntry entry = new BtVodEntry();
-        entry.setGuid(PRODUCT_ID);
+        entry.setGuid(PRODUCT_GUID);
+        entry.setId(PRODUCT_ID);
         entry.setTitle(FULL_EPISODE_TITLE);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
@@ -256,6 +258,6 @@ public class BtVodItemWriterTest {
     }
     
     private String itemUri() {
-        return URI_PREFIX + "items/" + PRODUCT_ID;
+        return URI_PREFIX + "items/" + PRODUCT_GUID;
     }
 }

@@ -14,6 +14,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
@@ -65,6 +66,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     );
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
     private static final String COMING_SOON_SUFFIX = ": Coming Soon";
+    private static final String BT_VOD_GUID_NAMESPACE = "bt:vod:guid";
+    private static final String BT_VOD_ID_NAMESPACE = "bt:vod:id";
+
 
     private final ContentWriter writer;
     private final ContentResolver resolver;
@@ -105,17 +109,17 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.processedItems = Maps.newHashMap();
     }
-    
+
     @Override
     public boolean process(BtVodEntry row) {
         UpdateProgress thisProgress = UpdateProgress.FAILURE;
         try {
-            if (!shouldProcess(row) 
+            if (!shouldProcess(row)
                     || processedRows.contains(row.getGuid())) {
                 thisProgress = UpdateProgress.SUCCESS;
                 return true;
             }
-            
+
             Item item = itemFrom(row);
             processedItems.put(stripHDSuffix(row.getTitle()), item);
             write(item);
@@ -134,10 +138,10 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         Maybe<Identified> existing = resolver
                 .findByCanonicalUris(ImmutableSet.of(extracted.getCanonicalUri()))
                 .getFirstValue();
-        
+
         if (existing.hasValue()) {
-            Item merged = contentMerger.merge((Item) existing.requireValue(), 
-                                                   extracted);
+            Item merged = contentMerger.merge((Item) existing.requireValue(),
+                    extracted);
             writer.createOrUpdate(merged);
         } else {
             writer.createOrUpdate(extracted);
@@ -151,7 +155,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private boolean isEpisode(BtVodEntry row) {
         return EPISODE_TYPE.equals(row.getProductType()) && getBrandRefOrNull(row) != null;
     }
-    
+
     private Item itemFrom(BtVodEntry row) {
         Item item;
         if (processedItems.containsKey(stripHDSuffix(row.getTitle()))) {
@@ -172,13 +176,13 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         sanitiseTitle(item);
         return item;
     }
-    
+
     private void sanitiseTitle(Item item) {
         String title = item.getTitle();
         if (title == null) {
             return;
         }
-        
+
         item.setTitle(title.replace(BEFORE_DVD_SUFFIX, "").replace(COMING_SOON_SUFFIX, ""));
     }
 
@@ -195,10 +199,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         episode.setTitle(extractEpisodeTitle(row.getTitle()));
         episode.setSeriesRef(getSeriesRefOrNull(row));
         episode.setParentRef(getBrandRefOrNull(row));
-        
+
         return episode;
     }
-
 
 
     private Integer extractEpisodeNumber(BtVodEntry row) {
@@ -263,14 +266,14 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         item.setTitle(titleForNonEpisode(row));
         return item;
     }
-    
+
     private Film createFilm(BtVodEntry row) {
         Film film = new Film(uriFor(row), null, publisher);
         film.setYear(Ints.tryParse(Iterables.getOnlyElement(row.getProductScopes()).getProductMetadata().getReleaseYear()));
         film.setTitle(titleForNonEpisode(row));
         return film;
     }
-    
+
     private void populateItemFields(Item item, BtVodEntry row) {
         Optional<ParentRef> brandRefFor = brandExtractor.getBrandRefFor(row);
 
@@ -289,7 +292,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             item.setCertificates(ImmutableList.of(new Certificate(rating.getPlproduct$ratingString(), Countries.GB)));
         }
     }
-    
+
     private String titleForNonEpisode(BtVodEntry row) {
         return stripHDSuffix(row.getTitle());
     }
@@ -298,21 +301,21 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         String id = row.getGuid();
         return uriPrefix + "items/" + id;
     }
-    
+
     @Override
     public UpdateProgress getResult() {
         return progress;
     }
-    
+
     private Set<Version> createVersions(BtVodEntry row) {
         if (row.getProductOfferStartDate() == null
                 || row.getProductOfferEndDate() == null) {
             return ImmutableSet.of();
         }
-        
+
         DateTime availabilityStart = new DateTime(row.getProductOfferStartDate(), DateTimeZone.UTC);
         DateTime availabilityEnd = new DateTime(row.getProductOfferEndDate(), DateTimeZone.UTC);
-        
+
         Policy policy = new Policy();
         policy.setAvailabilityStart(availabilityStart);
         policy.setAvailabilityEnd(availabilityEnd);
@@ -336,6 +339,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         location.setPolicy(policy);
         location.setCanonicalUri(uriFor(row));
         location.setUri(uriFor(row));
+        Alias btVodGuidAlias = new Alias(BT_VOD_GUID_NAMESPACE, row.getGuid());
+        Alias btVodIdAlias = new Alias(BT_VOD_ID_NAMESPACE, row.getId());
+        location.setAliases(ImmutableSet.of(btVodGuidAlias, btVodIdAlias));
+
+        location.setAliasUrls(ImmutableSet.of(uriFor(row), row.getId()));
 
         Encoding encoding = new Encoding();
         encoding.setAvailableAt(ImmutableSet.of(location));
@@ -344,7 +352,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         } else if (SD_FLAG.equals(row.getProductTargetBandwidth())) {
             encoding.setHighDefinition(false);
         }
-        
+
         Version version = new Version();
         version.setManifestedAs(ImmutableSet.of(encoding));
         version.setCanonicalUri(uriFor(row));
@@ -353,7 +361,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         if (rating != null) {
             Integer ageRating = rating.getProductRating();
             if (ageRating != null) {
-                version.setRestriction(Restriction.from(ageRating,rating.getProductScheme()));
+                version.setRestriction(Restriction.from(ageRating, rating.getProductScheme()));
             } else {
                 version.setRestriction(
                         Restriction.from(

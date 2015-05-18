@@ -17,6 +17,7 @@ import org.atlasapi.remotesite.opta.events.sports.OptaSportsDataHandler;
 import org.atlasapi.remotesite.opta.events.sports.OptaSportsDataTransformer;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
+import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -30,6 +31,7 @@ import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.properties.Parameter;
+import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.security.UsernameAndPassword;
@@ -39,6 +41,9 @@ public class OptaEventsModule {
 
     private static final String OPTA_HTTP_SOCCER_CONFIG_PREFIX = "opta.events.http.sports.soccer.";
     private static final String OPTA_HTTP_RUGBY_CONFIG_PREFIX = "opta.events.http.sports.rugby.";
+    
+    private static final RepetitionRule FOOTBALL_REPETITION_RULE = RepetitionRules.daily(new LocalTime(14, 0, 0));
+    private static final RepetitionRule OTHER_SPORTS_REPETITION_RULE = RepetitionRules.daily(new LocalTime(12, 0, 0));
     
     private final Logger log = LoggerFactory.getLogger(getClass());
     
@@ -54,8 +59,8 @@ public class OptaEventsModule {
     @PostConstruct
     public void startBackgroundTasks() {
         
-        scheduler.schedule(soccerIngestTask().withName("Opta Events (Football) Updater"), RepetitionRules.NEVER);
-        scheduler.schedule(nonFootballIngestTask().withName("Opta Events (Non Football) Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(soccerIngestTask().withName("Opta Events (Football) Updater"), FOOTBALL_REPETITION_RULE);
+        scheduler.schedule(nonFootballIngestTask().withName("Opta Events (Non Football) Updater"), OTHER_SPORTS_REPETITION_RULE);
     }
     
     private OptaEventsIngestTask<SportsTeam, SportsMatchData> soccerIngestTask() {

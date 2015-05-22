@@ -23,6 +23,11 @@ public class TitleSanitiserTest {
 
     }
 
+    @Test
+    public void testRemovesCurzonSuffixFromTitles() {
+        String titleWithCurzonSuffix = "Film (Curzon)";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithCurzonSuffix), is("Film"));
+    }
 
     @Test
     public void testDoesntMessUpCorrectTitles(){

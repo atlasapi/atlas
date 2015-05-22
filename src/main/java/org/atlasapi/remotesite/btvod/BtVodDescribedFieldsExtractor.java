@@ -4,10 +4,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
 
 import com.google.common.collect.Iterables;
+
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import java.util.Map;
@@ -145,6 +148,8 @@ public class BtVodDescribedFieldsExtractor {
     }
     
     private Iterable<Image> createImages(BtVodEntry row) {
-        return imageExtractor.extractImages(row.getProductImages());
+        // images are of poor quality, so not useful to save
+        // return imageExtractor.extractImages(row.getProductImages());
+        return ImmutableSet.of(); 
     }
 }

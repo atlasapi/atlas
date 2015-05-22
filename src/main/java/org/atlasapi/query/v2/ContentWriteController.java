@@ -1,5 +1,7 @@
 package org.atlasapi.query.v2;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
@@ -15,6 +17,7 @@ import javax.ws.rs.core.HttpHeaders;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.properties.Configurer;
+
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
@@ -23,16 +26,21 @@ import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -58,15 +66,22 @@ public class ContentWriteController {
     private final ContentResolver resolver;
     private final ContentWriter writer;
     private final ModelReader reader;
+    private final ScheduleWriter scheduleWriter;
+    private final ChannelResolver channelResolver;
 
     private ModelTransformer<Description, Content> transformer;
 
-    public ContentWriteController(ApplicationConfigurationFetcher appConfigFetcher, ContentResolver resolver, ContentWriter writer, ModelReader reader, ModelTransformer<Description, Content> transformer) {
-        this.appConfigFetcher = appConfigFetcher;
-        this.resolver = resolver;
-        this.writer = writer;
-        this.reader = reader;
-        this.transformer = transformer;
+    public ContentWriteController(ApplicationConfigurationFetcher appConfigFetcher,
+            ContentResolver resolver, ContentWriter writer, ModelReader reader, 
+            ModelTransformer<Description, Content> transformer, ScheduleWriter scheduleWriter,
+            ChannelResolver channelResolver) {
+        this.appConfigFetcher = checkNotNull(appConfigFetcher);
+        this.resolver = checkNotNull(resolver);
+        this.writer = checkNotNull(writer);
+        this.reader = checkNotNull(reader);
+        this.transformer = checkNotNull(transformer);
+        this.scheduleWriter = checkNotNull(scheduleWriter);
+        this.channelResolver = checkNotNull(channelResolver);
     }
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
@@ -114,7 +129,9 @@ public class ContentWriteController {
         try {
             content = merge(resolveExisting(content), content, merge);
             if (content instanceof Item) {
-                writer.createOrUpdate((Item) content);
+                Item item = (Item) content;
+                writer.createOrUpdate(item);
+                updateSchedule(item);
             } else {
                 writer.createOrUpdate((Container) content);
             }
@@ -133,6 +150,18 @@ public class ContentWriteController {
         return null;
     }
     
+    private void updateSchedule(Item item) {
+        Iterable<Broadcast> broadcasts = Iterables.concat(Iterables.transform(item.getVersions(), Version.TO_BROADCASTS));
+        for (Broadcast broadcast : broadcasts) {
+            Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
+            if (channel.hasValue()) {
+                scheduleWriter.replaceScheduleBlock(item.getPublisher(), 
+                                                    channel.requireValue(), 
+                                                    ImmutableSet.of(new ItemRefAndBroadcast(item, broadcast)));
+            }
+        }        
+    }
+
     private Content merge(Maybe<Identified> possibleExisting, Content update, boolean merge) {
         if (possibleExisting.isNothing()) {
             return update;

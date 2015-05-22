@@ -101,6 +101,7 @@ import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
 import org.atlasapi.persistence.content.people.PersonStore;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
+import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
@@ -161,6 +162,7 @@ public class QueryWebModule {
     private @Autowired ContentGroupWriter contentGroupWriter;
     private @Autowired ContentGroupResolver contentGroupResolver;
     private @Autowired ContentWriter contentWriter;
+    private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ChannelResolver channelResolver;
     private @Autowired ChannelGroupStore channelGroupStore;
@@ -306,7 +308,10 @@ public class QueryWebModule {
     }
     
     ContentWriteController contentWriteController() {
-        return new ContentWriteController(configFetcher, contentResolver, contentWriter, new DefaultGsonModelReader(), new DelegatingModelTransformer(brandTransformer(), itemTransformer(), seriesTransformer()));
+        return new ContentWriteController(configFetcher, contentResolver, contentWriter, 
+                new DefaultGsonModelReader(),
+                new DelegatingModelTransformer(brandTransformer(), itemTransformer(), seriesTransformer()), 
+                scheduleWriter, channelResolver);
     }
     
     TopicWriteController topicWriteController() {

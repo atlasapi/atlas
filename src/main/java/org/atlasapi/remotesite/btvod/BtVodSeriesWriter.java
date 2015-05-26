@@ -38,6 +38,8 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
             Pattern.compile("^.*Season\\s([0-9]+)\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*")
     );
     private static final String HELP_TYPE = "help";
+    private static final String EPISODE_TYPE = "episode";
+
 
     private final ContentWriter writer;
     private final ContentResolver resolver;
@@ -95,7 +97,9 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     }
 
     private boolean isPartOfSeries(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getProductType()) && extractSeriesNumber(row.getTitle()).isPresent();
+        return !HELP_TYPE.equals(row.getProductType())
+                && EPISODE_TYPE.equals(row.getProductType())
+                && extractSeriesNumber(row.getTitle()).isPresent();
     }
 
     private void write(Series extracted) {

@@ -14,10 +14,12 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mockito;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -108,6 +110,28 @@ public class BtVodSeriesWriterTest {
         assertThat(seriesExtractor.uriFor(row5).get(), Matchers.is(brandUri5 + "/series/2"));
     }
 
+    @Test
+    public void testDoesntExtractSeriesFromNonEpisode() {
+        BtVodEntry entry = row();
+        entry.setProductType("film");
+
+        String brandUri = "http://brand-uri.com";
+        ParentRef brandRef = mock(ParentRef.class);
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(brandUri + "/series/1")))
+                .thenReturn(ResolvedContent.builder().build());
+
+        when(brandExtractor.uriFor(entry)).thenReturn(Optional.of(brandUri));
+        when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
+
+
+        ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
+
+        seriesExtractor.process(entry);
+
+        verify(contentWriter, never()).createOrUpdate(Mockito.any(Series.class));
+    }
+
 
     private BtVodEntry row() {
         BtVodEntry entry = new BtVodEntry();
@@ -115,6 +139,7 @@ public class BtVodSeriesWriterTest {
         entry.setTitle(FULL_EPISODE_TITLE);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
+        entry.setProductType("episode");// "Apr 30 2014 12:00AM"
         return entry;
     }
 }

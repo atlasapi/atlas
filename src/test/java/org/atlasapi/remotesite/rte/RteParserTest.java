@@ -8,7 +8,7 @@ public class RteParserTest {
 
     @Test
     public void testCanonicalUriGeneration() {
-        Assert.assertEquals("http://rte.ie/shows/123456", RteParser.canonicalUriFrom("http://feedurl.com/?id=123456"));
+        Assert.assertEquals("http://rte.ie/shows/123456", RteParser.canonicalUriFrom("uri:avms:123456"));
     }
     
     @Test(expected=IllegalArgumentException.class) 

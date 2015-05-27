@@ -34,6 +34,23 @@ public class TitleSanitiserTest {
         String title = "Modern Family: S03 - HD S3-E17 Truth Be Told - HD";
 
         assertThat(titleSanitiser.sanitiseTitle(title), is(title));
-
+    }
+    
+    @Test
+    public void testRemovesComingSoonSuffix() {
+        String titleWithHdSuffix = "Film : Coming Soon";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithHdSuffix), is("Film"));
+    }
+    
+    @Test
+    public void testRemovesBeforeSuffix() {
+        String titleWithHdSuffix = "Film (Before DVD)";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithHdSuffix), is("Film"));
+    }
+    
+    @Test
+    public void testRemovesHdSuffix() {
+        String titleWithHdSuffix = "Film - HD";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithHdSuffix), is("Film"));
     }
 }

@@ -1,11 +1,9 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-
-import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
+
+import com.google.common.collect.ImmutableMap;
 
 public class TitleSanitiser {
 
@@ -13,6 +11,9 @@ public class TitleSanitiser {
             .put(Pattern.compile("ZQ[A-Z]{1}"), "")
             .put(Pattern.compile("_"), " ")
             .put(Pattern.compile(" \\(Curzon\\)$"), "")
+            .put(Pattern.compile("\\s\\-\\sHD"), "")
+            .put(Pattern.compile(" \\(Before DVD\\)$"), "")
+            .put(Pattern.compile(" : Coming Soon$"), "")
             .build()
     ;
 
@@ -24,6 +25,6 @@ public class TitleSanitiser {
             String replacement = patternAndReplacement.getValue();
             sanitisedTitle = pattern.matcher(sanitisedTitle).replaceAll(replacement);
         }
-        return sanitisedTitle;
+        return sanitisedTitle.trim();
     }
 }

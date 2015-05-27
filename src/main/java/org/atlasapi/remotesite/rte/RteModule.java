@@ -4,9 +4,9 @@ import javax.annotation.PostConstruct;
 
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
-import org.atlasapi.remotesite.support.atom.AtomClient;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +26,7 @@ public class RteModule {
     @Autowired private SimpleScheduler scheduler;
     @Autowired private ContentWriter contentWriter;
     @Autowired private ContentResolver contentResolver;
+    @Autowired private ContentLister contentLister;
 
     
     @Bean
@@ -35,13 +36,16 @@ public class RteModule {
     
     @Bean 
     public RteHttpFeedSupplier feedSupplier() {
-        return new RteHttpFeedSupplier(new AtomClient(), feedUrl);
+        return new RteHttpFeedSupplier(feedUrl);
     }
     
     @Bean
     public RteFeedProcessor feedProcessor() {
-        return new RteFeedProcessor(contentWriter, contentResolver, new ContentMerger(
-                MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE), brandExtractor());
+        return new RteFeedProcessor(contentWriter, 
+                                    contentResolver, 
+                                    new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE), 
+                                    contentLister, 
+                                    brandExtractor());
     }
     
     @Bean

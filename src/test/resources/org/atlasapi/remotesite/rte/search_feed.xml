@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<response>
+
+<lst name="responseHeader">
+  <int name="status">0</int>
+  <int name="QTime">30</int>
+</lst>
+<result name="response" numFound="1270" start="0">
+  <doc>
+    <str name="description">Documentary telling the story of the Swedish pop group during their 1970s heyday, as told via the memories and pictures of the photographers who documented their rise to fame.</str>
+    <str name="title">Abba in Pictures: The Photographer's Stories</str>
+    <str name="url">http://www.rte.ie/player/ie/show/10422941/</str>
+    <date name="expires">2015-05-30T18:04:24Z</date>
+    <int name="duration">2702265</int>
+    <date name="date">2015-05-23T19:05:00Z</date>
+    <str name="identifier">uri:avms:10422941</str>
+    <str name="channel">RTÉ 2</str>
+    <str name="programme">Abba in Pictures: The Photographer's Stories</str></doc>
+  <doc>
+    <str name="description">A look at where Iain Henderson fits into Joe Schmidt's plans after the weekend.</str>
+    <str name="title">Against The Head</str>
+    <str name="url">http://www.rte.ie/player/ie/show/10417945/</str>
+    <date name="expires">2015-06-01T18:02:08Z</date>
+    <int name="duration">3147100</int>
+    <date name="date">2015-05-11T19:00:00Z</date>
+    <str name="identifier">uri:avms:10417945</str>
+    <str name="channel">RTÉ 2</str>
+    <str name="programme">Against The Head</str></doc>
+</result>
+</response>

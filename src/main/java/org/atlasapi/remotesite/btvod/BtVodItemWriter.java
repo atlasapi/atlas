@@ -118,7 +118,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             }
 
             Item item = itemFrom(row);
-            processedItems.put(titleSanitiser.sanitiseTitle(row.getTitle()), item);
+            processedItems.put(itemKeyForDeduping(row), item);
             write(item);
             processedRows.add(row.getGuid());
             listener.onContent(item, row);
@@ -155,9 +155,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Item itemFrom(BtVodEntry row) {
         Item item;
-        String sanitisedTitle = titleSanitiser.sanitiseTitle(row.getTitle());
-        if (processedItems.containsKey(sanitisedTitle)) {
-            item = processedItems.get(sanitisedTitle);
+        String itemKeyForDeduping = itemKeyForDeduping(row);
+        if (processedItems.containsKey(itemKeyForDeduping)) {
+            item = processedItems.get(itemKeyForDeduping);
             item.addVersions(createVersions(row));
             return item;
         }
@@ -172,6 +172,10 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         }
         populateItemFields(item, row);
         return item;
+    }
+    
+    private String itemKeyForDeduping(BtVodEntry row) {
+        return row.getProductType() + ":" + titleSanitiser.sanitiseTitle(row.getTitle());
     }
 
     private Item createSong(BtVodEntry row) {

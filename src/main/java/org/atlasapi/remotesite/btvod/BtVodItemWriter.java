@@ -50,13 +50,11 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
 
 public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
-    private static final String BEFORE_DVD_SUFFIX = " (Before DVD)";
     private static final String FILM_TYPE = "film";
     private static final String MUSIC_TYPE = "music";
     private static final String EPISODE_TYPE = "episode";
     private static final String COLLECTION_TYPE = "collection";
     private static final String HELP_TYPE = "help";
-    private static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
     private static final String HD_FLAG = "HD";
     private static final String SD_FLAG = "SD";
     private static final List<Pattern> EPISODE_TITLE_PATTERNS = ImmutableList.of(
@@ -65,7 +63,6 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             Pattern.compile("^.*?\\-\\s(.*)")
     );
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
-    private static final String COMING_SOON_SUFFIX = ": Coming Soon";
     private static final String BT_VOD_GUID_NAMESPACE = "bt:vod:guid";
     private static final String BT_VOD_ID_NAMESPACE = "bt:vod:id";
 
@@ -121,7 +118,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             }
 
             Item item = itemFrom(row);
-            processedItems.put(stripHDSuffix(row.getTitle()), item);
+            processedItems.put(titleSanitiser.sanitiseTitle(row.getTitle()), item);
             write(item);
             processedRows.add(row.getGuid());
             listener.onContent(item, row);
@@ -158,8 +155,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Item itemFrom(BtVodEntry row) {
         Item item;
-        if (processedItems.containsKey(stripHDSuffix(row.getTitle()))) {
-            item = processedItems.get(stripHDSuffix(row.getTitle()));
+        String sanitisedTitle = titleSanitiser.sanitiseTitle(row.getTitle());
+        if (processedItems.containsKey(sanitisedTitle)) {
+            item = processedItems.get(sanitisedTitle);
             item.addVersions(createVersions(row));
             return item;
         }
@@ -173,17 +171,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             item = createItem(row);
         }
         populateItemFields(item, row);
-        sanitiseTitle(item);
         return item;
-    }
-
-    private void sanitiseTitle(Item item) {
-        String title = item.getTitle();
-        if (title == null) {
-            return;
-        }
-
-        item.setTitle(title.replace(BEFORE_DVD_SUFFIX, "").replace(COMING_SOON_SUFFIX, ""));
     }
 
     private Item createSong(BtVodEntry row) {
@@ -245,25 +233,14 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         for (Pattern titlePattern : EPISODE_TITLE_PATTERNS) {
             Matcher matcher = titlePattern.matcher(title);
             if (matcher.matches()) {
-                return titleSanitiser.sanitiseTitle(stripHDSuffix(matcher.group(1)));
-
+                return titleSanitiser.sanitiseTitle(matcher.group(1));
             }
-
         }
         return titleSanitiser.sanitiseTitle(title);
     }
 
-    private String stripHDSuffix(String title) {
-        Matcher hdMatcher = HD_PATTERN.matcher(title);
-        if (hdMatcher.matches()) {
-            return hdMatcher.group(1).trim().replace("- HD ", "");
-        }
-        return title;
-    }
-
     private Item createItem(BtVodEntry row) {
         Item item = new Item(uriFor(row), null, publisher);
-        item.setTitle(titleForNonEpisode(row));
         return item;
     }
 
@@ -294,7 +271,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private String titleForNonEpisode(BtVodEntry row) {
-        return stripHDSuffix(row.getTitle());
+        return titleSanitiser.sanitiseTitle(row.getTitle());
     }
 
     private String uriFor(BtVodEntry row) {

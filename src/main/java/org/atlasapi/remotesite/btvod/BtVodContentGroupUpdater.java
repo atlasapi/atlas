@@ -97,15 +97,15 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
         return new ContentGroup(canonicalUri, publisher);
     }
     
-    public static BtVodContentGroupPredicate categoryPredicate(final String category) {
+    public static BtVodContentGroupPredicate schedulerChannelPredicate(final String schedulerChannel) {
 
         return new BtVodContentGroupPredicate() {
 
             @Override
             public boolean apply(VodEntryAndContent input) {
-                return category.equals(
-                        input.getBtVodEntry().getProductType()
-                );
+                return schedulerChannel.equals(
+                        input.getBtVodEntry().getSchedulerChannel()
+                       );
             }
 
             @Override
@@ -164,7 +164,7 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
             @SuppressWarnings("unchecked")
             private final Predicate<VodEntryAndContent> delegate =
                     Predicates.and(
-                            BtVodContentGroupUpdater.categoryPredicate(FILM_CATEGORY),
+                            BtVodContentGroupUpdater.schedulerChannelPredicate(FILM_CATEGORY),
                             Predicates.not(BtVodContentGroupUpdater.buyToOwnPredicate()),
                             Predicates.not(BtVodContentGroupUpdater.cznPredicate())
                     );

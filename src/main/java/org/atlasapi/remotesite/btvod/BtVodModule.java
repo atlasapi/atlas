@@ -92,11 +92,11 @@ public class BtVodModule {
     
     private Map<String, BtVodContentGroupPredicate> contentGroupsAndCriteria() {
         return ImmutableMap.<String, BtVodContentGroupPredicate> builder()
-                .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.categoryPredicate(MUSIC_CATEGORY))
+                .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.schedulerChannelPredicate(MUSIC_CATEGORY))
                 .put(FILM_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.filmPredicate())
-                .put(TV_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.categoryPredicate(TV_CATEGORY))
-                .put(KIDS_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.categoryPredicate(KIDS_CATEGORY))
-                .put(SPORT_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.categoryPredicate(SPORT_CATEGORY))
+                .put(TV_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.schedulerChannelPredicate(TV_CATEGORY))
+                .put(KIDS_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.schedulerChannelPredicate(KIDS_CATEGORY))
+                .put(SPORT_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.schedulerChannelPredicate(SPORT_CATEGORY))
                 .put(CZN_CONTENT_PROVIDER_ID.toLowerCase(), BtVodContentGroupUpdater.cznPredicate())
                 .put(BUY_TO_OWN_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.portalContentGroupPredicate(portalClient(), PORTAL_BUY_TO_OWN_GROUP, null))
                 .put(BOX_OFFICE_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.portalContentGroupPredicate(portalClient(), PORTAL_BOXOFFICE_GROUP, null))

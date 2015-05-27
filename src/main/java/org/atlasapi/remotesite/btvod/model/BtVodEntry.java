@@ -8,6 +8,7 @@ public class BtVodEntry {
 
     private static final String CONTENT_PROVIDER = "contentProvider";
     private static final String GENRE = "genre";
+    private static final String SCHEDULER_CHANNEL = "schedulerChannel";
     private String id;
     private String guid;
     private String title;
@@ -84,6 +85,15 @@ public class BtVodEntry {
             }
         }
 
+        return null;
+    }
+    
+    public String getSchedulerChannel() {
+        for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
+            if (plproduct$productTag.getPlproduct$scheme().equals(SCHEDULER_CHANNEL)) {
+                return plproduct$productTag.getPlproduct$title();
+            }
+        }
         return null;
     }
 

@@ -30,8 +30,8 @@ public class TitleSanitiserTest {
     }
 
     @Test
-    public void testDoesntMessUpCorrectTitles(){
-        String title = "Modern Family: S03 - HD S3-E17 Truth Be Told - HD";
+    public void testRemovesHdFromWithinTitle(){
+        String title = "Modern Family: S03 S3-E17 Truth Be Told";
 
         assertThat(titleSanitiser.sanitiseTitle(title), is(title));
     }

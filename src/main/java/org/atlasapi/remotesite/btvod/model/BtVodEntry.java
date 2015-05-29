@@ -47,6 +47,9 @@ public class BtVodEntry {
     @SerializedName("btproduct$targetBandwidth")
     private String productTargetBandwidth;
 
+    @SerializedName("btproduct$trailerMediaId")
+    private String productTrailerMediaId;
+
     public BtVodEntry() {}
 
     public String getGuid() {
@@ -211,5 +214,13 @@ public class BtVodEntry {
 
     public void setId(String id) {
         this.id = id;
+    }
+
+    public String getProductTrailerMediaId() {
+        return productTrailerMediaId;
+    }
+
+    public void setProductTrailerMediaId(String productTrailerMediaId) {
+        this.productTrailerMediaId = productTrailerMediaId;
     }
 }

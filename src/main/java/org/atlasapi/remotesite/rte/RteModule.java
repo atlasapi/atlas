@@ -7,19 +7,21 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
+import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 
 @Configuration
 public class RteModule {
 
-    private final static LocalTime START_TIME = new LocalTime(21, 0);
+    private final static RepetitionRule INGEST_FREQUENCY = RepetitionRules.every(Duration.standardHours(3));
     
     @Value("${rte.feed.url}") private String feedUrl;
 
@@ -55,7 +57,7 @@ public class RteModule {
     
     @PostConstruct
     public void init() {
-        scheduler.schedule(feedUpdater().withName("RTE AZ Feed Ingest"), RepetitionRules.daily(START_TIME));
+        scheduler.schedule(feedUpdater().withName("RTE AZ Feed Ingest"), INGEST_FREQUENCY);
     }
     
 }

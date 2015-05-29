@@ -10,9 +10,11 @@ import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.remotesite.HttpClients;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
 import org.atlasapi.remotesite.btvod.portal.XmlPortalClient;
+import org.atlasapi.remotesite.util.OldContentDeactivator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -26,6 +28,7 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 @Configuration
 public class BtVodModule {
 
+    private static final int THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT = 75;
     private static final String PORTAL_BOXSET_GROUP = "03_tv/40_searcha-z/all";
     private static final String PORTAL_BOXOFFICE_GROUP = "01_boxoffice/05_new/all";
     private static final String PORTAL_BUY_TO_OWN_GROUP = "01_boxoffice/Must_Own_Movies_Categories/New_To_Own";
@@ -51,6 +54,8 @@ public class BtVodModule {
     @Autowired
     private ContentWriter contentWriter;
     @Autowired
+    private ContentLister contentLister;
+    @Autowired
     private ContentGroupResolver contentGroupResolver;
     @Autowired
     private ContentGroupWriter contentGroupWriter;
@@ -67,7 +72,14 @@ public class BtVodModule {
     public BtVodUpdater btVodUpdater() {
         return new BtVodUpdater(contentResolver, 
                 contentWriter, btVodData(), URI_PREFIX, btVodContentGroupUpdater(), 
-                describedFieldsExtractor(), Publisher.BT_VOD);
+                describedFieldsExtractor(), Publisher.BT_VOD, oldContentDeactivator());
+    }
+    
+    private BtVodOldContentDeactivator oldContentDeactivator() {
+        return new BtVodOldContentDeactivator(
+                        Publisher.BT_VOD, 
+                        new OldContentDeactivator(contentLister, contentWriter, contentResolver), 
+                        THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT);
     }
     
     @Bean

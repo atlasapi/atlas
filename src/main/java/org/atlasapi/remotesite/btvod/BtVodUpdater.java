@@ -12,6 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 
@@ -27,12 +28,13 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodData vodData;
     private final BtVodContentGroupUpdater contentGroupUpdater;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
+    private final BtVodOldContentDeactivator oldContentDeactivator;
     
     public BtVodUpdater(ContentResolver resolver, ContentWriter contentWriter,
             BtVodData vodData, String uriPrefix, 
             BtVodContentGroupUpdater contentGroupUpdater, 
             BtVodDescribedFieldsExtractor describedFieldsExtractor, 
-            Publisher publisher) {
+            Publisher publisher, BtVodOldContentDeactivator oldContentDeactivator) {
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(contentWriter);
@@ -40,6 +42,7 @@ public class BtVodUpdater extends ScheduledTask {
         this.uriPrefix = checkNotNull(uriPrefix);
         this.publisher = checkNotNull(publisher);
         this.contentGroupUpdater = checkNotNull(contentGroupUpdater);
+        this.oldContentDeactivator = checkNotNull(oldContentDeactivator);
         
         withName("BT VOD Catalogue Ingest");
     }
@@ -47,13 +50,18 @@ public class BtVodUpdater extends ScheduledTask {
     @Override
     public void runTask() {
         contentGroupUpdater.start();
+        oldContentDeactivator.start();
+
+        MultiplexingVodContentListener listeners 
+            = new MultiplexingVodContentListener(
+                    ImmutableList.of(oldContentDeactivator, contentGroupUpdater));
         Set<String> processedRows = Sets.newHashSet();
         BtVodBrandWriter brandExtractor = new BtVodBrandWriter(
                 writer,
                 resolver,
                 publisher,
                 uriPrefix,
-                contentGroupUpdater,
+                listeners,
                 processedRows,
                 new TitleSanitiser()
         );
@@ -62,7 +70,7 @@ public class BtVodUpdater extends ScheduledTask {
                 resolver,
                 brandExtractor,
                 publisher,
-                contentGroupUpdater,
+                listeners,
                 processedRows
         );
         BtVodItemWriter itemExtractor = new BtVodItemWriter(
@@ -72,11 +80,13 @@ public class BtVodUpdater extends ScheduledTask {
                 seriesExtractor,
                 publisher,
                 uriPrefix,
-                contentGroupUpdater,
+                listeners,
                 describedFieldsExtractor,
                 processedRows,
                 new TitleSanitiser()
         );
+        
+        
         try {
             reportStatus("Brand extract [IN PROGRESS]  Series extract [TODO]  Item extract [TODO]");
 
@@ -102,6 +112,7 @@ public class BtVodUpdater extends ScheduledTask {
                     itemExtractor.getResult().getFailures()));
             
             contentGroupUpdater.finish();
+            oldContentDeactivator.finish();
             
             if (brandExtractor.getResult().getFailures() > 0
                     || seriesExtractor.getResult().getFailures() > 0

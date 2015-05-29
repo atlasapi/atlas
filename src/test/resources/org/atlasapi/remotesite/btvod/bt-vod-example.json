@@ -118,7 +118,8 @@
       "btproduct$titleSort": "I am not seeing the correct regional channels e.g local news",
       "btproduct$validForStorefront": true,
       "btproduct$zeroTouch": false,
-      "btproduct$priority": 3
+      "btproduct$priority": 3,
+      "btproduct$trailerMediaId": "http://bt.data.media.theplatform.eu/media/data/Media/3510853473"
     },
     {
       "$xmlns": {

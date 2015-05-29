@@ -16,6 +16,7 @@ import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Certificate;
+import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
@@ -271,6 +272,13 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
             item.setCertificates(ImmutableList.of(new Certificate(rating.getPlproduct$ratingString(), Countries.GB)));
+        }
+        if (row.getProductTrailerMediaId() != null) {
+            item.setClips(
+                    ImmutableSet.of(
+                            new Clip(row.getProductTrailerMediaId(), row.getProductTrailerMediaId(), publisher)
+                    )
+            );
         }
     }
 

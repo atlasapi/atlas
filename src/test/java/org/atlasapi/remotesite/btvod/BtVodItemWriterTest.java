@@ -9,6 +9,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import com.google.common.collect.ImmutableList;
+import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
@@ -50,7 +51,8 @@ public class BtVodItemWriterTest {
     private static final String URI_PREFIX = "http://example.org/";
     private static final String SYNOPSIS = "Synopsis";
     private static final String BRAND_URI = URI_PREFIX + "brands/1234";
-    
+    private static final String TRAILER_URI = "http://vod.bt.com/trailer/1224";
+
     private final ContentWriter contentWriter = mock(ContentWriter.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
@@ -103,6 +105,10 @@ public class BtVodItemWriterTest {
         DateTime expectedAvailabilityEnd = new DateTime(2014, DateTimeConstants.APRIL, 30, 0, 0, 0, 0, DateTimeZone.UTC);
         assertThat(location.getPolicy().getAvailabilityStart(), is(expectedAvailabilityStart));
         assertThat(location.getPolicy().getAvailabilityEnd(), is(expectedAvailabilityEnd));
+        assertThat(
+                Iterables.getOnlyElement(writtenItem.getClips()),
+                is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
+        );
         //assertThat(Iterables.getOnlyElement(location.getPolicy().getAvailableCountries()).code(), is("GB"));
         //assertThat(location.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_RENT));
     }
@@ -138,6 +144,10 @@ public class BtVodItemWriterTest {
         assertThat(writtenItem.getContainer(), is(parentRef));
 
         assertThat(writtenItem.getVersions().size(), is(2));
+        assertThat(
+                Iterables.getOnlyElement(writtenItem.getClips()),
+                is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
+        );
 
     }
 
@@ -179,6 +189,10 @@ public class BtVodItemWriterTest {
         Version sdVersion = Iterables.get(writtenItem.getVersions(), 1);
         assertThat(Iterables.getOnlyElement(sdVersion.getManifestedAs()).getHighDefinition(), is(false));
         assertThat(Iterables.getOnlyElement(hdVersion.getManifestedAs()).getHighDefinition(), is(true));
+        assertThat(
+                Iterables.getOnlyElement(writtenItem.getClips()),
+                is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
+        );
 
     }
 
@@ -246,6 +260,7 @@ public class BtVodItemWriterTest {
         entry.setDescription(SYNOPSIS);
         entry.setProductType("episode");
         entry.setProductPricingPlan(new BtVodProductPricingPlan());
+        entry.setProductTrailerMediaId(TRAILER_URI);
         BtVodProductScope productScope = new BtVodProductScope();
         BtVodProductMetadata productMetadata = new BtVodProductMetadata();
         productMetadata.setEpisodeNumber("1");

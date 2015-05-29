@@ -86,9 +86,13 @@ public class RteFeedProcessor {
         
         while (allContent.hasNext()) {
             Brand brand = (Brand) allContent.next();
+            log.trace("Processing content for stale related link removal {}", brand.getCanonicalUri());
             if (!seenUris.contains(brand.getCanonicalUri())) {
+                log.trace("Removing related for {}, since we didn't see this content in the feed", brand.getCanonicalUri());
                 brand.setRelatedLinks(ImmutableSet.<RelatedLink>of());
                 contentWriter.createOrUpdate(brand);
+            } else {
+                log.trace("Not removing related links for {}, since we saw this content in the feed", brand.getCanonicalUri());
             }
         }
     }

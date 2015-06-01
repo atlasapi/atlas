@@ -1,6 +1,9 @@
 package org.atlasapi.remotesite.youview;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.regex.Pattern;
+
 import nu.xom.Attribute;
 import nu.xom.Element;
 import nu.xom.Elements;
@@ -32,6 +35,8 @@ import com.metabroadcast.common.intl.Countries;
 
 public class YouViewContentExtractor {
 
+    private static final Pattern NEW_PREFIX = Pattern.compile("^New: ");
+    
     private static final String ATOM_PREFIX = "atom";
     private static final String YV_PREFIX = "yv";
     private static final String MEDIA_PREFIX = "media";
@@ -298,7 +303,10 @@ public class YouViewContentExtractor {
         if (atomTitle == null) {
             throw new ElementNotFoundException(source, ATOM_PREFIX + ":" + TITLE_KEY);
         }
-        return StringEscapeUtils.unescapeHtml(atomTitle.getValue());
+        // Items in the schedule can be prefixed "New: " to highlight in the
+        // YV epg. There's no clean title field, so we have to remove the 
+        // prefix.
+        return NEW_PREFIX.matcher(StringEscapeUtils.unescapeHtml(atomTitle.getValue())).replaceAll("");
     }
 
     private String getId(Element source) {

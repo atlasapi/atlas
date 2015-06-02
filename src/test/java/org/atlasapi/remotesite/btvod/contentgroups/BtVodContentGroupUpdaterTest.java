@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.btvod;
+package org.atlasapi.remotesite.btvod.contentgroups;
 
 import static org.junit.Assert.assertEquals;
 import static org.mockito.Mockito.mock;
@@ -14,6 +14,9 @@ import org.atlasapi.media.entity.testing.ComplexItemTestDataBuilder;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ResolvedContent.ResolvedContentBuilder;
+import org.atlasapi.remotesite.btvod.BtVodContentGroupPredicate;
+import org.atlasapi.remotesite.btvod.VodEntryAndContent;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;

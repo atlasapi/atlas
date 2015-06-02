@@ -11,12 +11,12 @@ import static org.junit.Assert.assertThat;
 
 public class HttpBtMpxFeedRequestProviderTest {
 
-    HttpBtMpxFeedRequestProvider objectUnderTest = new HttpBtMpxFeedRequestProvider("https://feed.product.theplatform.eu/f/CiIRPC/btv-prd-search");
+    HttpBtMpxFeedRequestProvider objectUnderTest = new HttpBtMpxFeedRequestProvider("https://example.org/base/");
     @Test
     public void testBuildRequest() throws Exception {
-        SimpleHttpRequest<BtVodResponse> request = objectUnderTest.buildRequest(42);
+        SimpleHttpRequest<BtVodResponse> request = objectUnderTest.buildRequest("btv-prd-search", 42);
 
-        assertThat(request.getUrl(), is("https://feed.product.theplatform.eu/f/CiIRPC/btv-prd-search?startIndex=42"));
+        assertThat(request.getUrl(), is("https://example.org/base/btv-prd-search?startIndex=42"));
         assertThat(request.getTransformer(), instanceOf(BtVodResponseTransformer.class));
     }
 }

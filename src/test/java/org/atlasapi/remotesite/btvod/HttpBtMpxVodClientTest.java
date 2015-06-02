@@ -75,7 +75,7 @@ public class HttpBtMpxVodClientTest {
         when(httpClient.get(request3)).thenReturn(btVodResponse3);
 
 
-        Iterator<BtVodEntry> result = objectUnderTest.getBtMpxFeed();
+        Iterator<BtVodEntry> result = objectUnderTest.getFeed("TEST");
 
         assertThat(result.next(), is(btVodEntry1));
         assertThat(result.next(), is(btVodEntry2));

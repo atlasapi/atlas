@@ -7,5 +7,5 @@ import java.util.Iterator;
 
 public interface BtMpxVodClient {
 
-    Iterator<BtVodEntry> getBtMpxFeed() throws IOException;
+    Iterator<BtVodEntry> getFeed(String name) throws IOException;
 }

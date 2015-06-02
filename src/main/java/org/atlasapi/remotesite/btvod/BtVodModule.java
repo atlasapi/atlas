@@ -11,6 +11,8 @@ import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.HttpClients;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupPredicates;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
 import org.atlasapi.remotesite.btvod.portal.XmlPortalClient;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,6 +33,8 @@ public class BtVodModule {
     private static final String PORTAL_BUY_TO_OWN_GROUP = "01_boxoffice/Must_Own_Movies_Categories/New_To_Own";
     private static final String BOX_OFFICE_PICKS_GROUP = "50_misc_car_you/Misc_metabroadcast/Misc_metabroadcast_1";
     
+    private static final String NEW_CONTENT_MPX_FEED_NAME = "btv-prd-nav-new";
+    
     private static final String MUSIC_CATEGORY = "Music";
     private static final String FILM_CATEGORY = "Film";
     private static final String TV_CATEGORY = "TV";
@@ -41,6 +45,7 @@ public class BtVodModule {
     private static final String BOX_OFFICE_CATEGORY = "BoxOffice";
     private static final String CZN_CONTENT_PROVIDER_ID = "CHC";
     private static final String BOX_OFFICE_PICKS_CATEGORY = "BoxOfficePicks";
+    private static final String NEW_CATEGORY = "New";
     
     private static final String URI_PREFIX = "http://vod.bt.com/";
     
@@ -83,25 +88,31 @@ public class BtVodModule {
     
     private BtVodData btVodData() {
         return new BtVodData(
-                new HttpBtMpxVodClient(
-                        new SimpleHttpClientBuilder().withUserAgent(HttpClients.ATLAS_USER_AGENT).build(),
-                        new HttpBtMpxFeedRequestProvider(btVodMpxFeedBaseUrl)
-                )
+                mpxVodClient()
+        );
+    }
+
+    @Bean
+    public HttpBtMpxVodClient mpxVodClient() {
+        return new HttpBtMpxVodClient(
+                new SimpleHttpClientBuilder().withUserAgent(HttpClients.ATLAS_USER_AGENT).build(),
+                new HttpBtMpxFeedRequestProvider(btVodMpxFeedBaseUrl)
         );
     }
     
     private Map<String, BtVodContentGroupPredicate> contentGroupsAndCriteria() {
         return ImmutableMap.<String, BtVodContentGroupPredicate> builder()
-                .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.categoryPredicate(MUSIC_CATEGORY))
-                .put(FILM_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.filmPredicate())
-                .put(TV_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.categoryPredicate(TV_CATEGORY))
-                .put(KIDS_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.categoryPredicate(KIDS_CATEGORY))
-                .put(SPORT_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.categoryPredicate(SPORT_CATEGORY))
-                .put(CZN_CONTENT_PROVIDER_ID.toLowerCase(), BtVodContentGroupUpdater.cznPredicate())
-                .put(BUY_TO_OWN_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.portalContentGroupPredicate(portalClient(), PORTAL_BUY_TO_OWN_GROUP, null))
-                .put(BOX_OFFICE_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.portalContentGroupPredicate(portalClient(), PORTAL_BOXOFFICE_GROUP, null))
-                .put(TV_BOX_SETS_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.portalContentGroupPredicate(portalClient(), PORTAL_BOXSET_GROUP, Series.class))
-                .put(BOX_OFFICE_PICKS_CATEGORY.toLowerCase(), BtVodContentGroupUpdater.portalContentGroupPredicate(portalClient(), BOX_OFFICE_PICKS_GROUP, null))
+                .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.schedulerChannelPredicate(MUSIC_CATEGORY))
+                .put(FILM_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.filmPredicate())
+                .put(TV_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.schedulerChannelPredicate(TV_CATEGORY))
+                .put(KIDS_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.schedulerChannelPredicate(KIDS_CATEGORY))
+                .put(SPORT_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.schedulerChannelPredicate(SPORT_CATEGORY))
+                .put(CZN_CONTENT_PROVIDER_ID.toLowerCase(), BtVodContentGroupPredicates.cznPredicate())
+                .put(BUY_TO_OWN_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.portalContentGroupPredicate(portalClient(), PORTAL_BUY_TO_OWN_GROUP, null))
+                .put(BOX_OFFICE_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.portalContentGroupPredicate(portalClient(), PORTAL_BOXOFFICE_GROUP, null))
+                .put(TV_BOX_SETS_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.portalContentGroupPredicate(portalClient(), PORTAL_BOXSET_GROUP, Series.class))
+                .put(BOX_OFFICE_PICKS_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.portalContentGroupPredicate(portalClient(), BOX_OFFICE_PICKS_GROUP, null))
+                .put(NEW_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.mpxContentGroupPredicate(mpxVodClient(), NEW_CONTENT_MPX_FEED_NAME))
                 .build();
     }
     

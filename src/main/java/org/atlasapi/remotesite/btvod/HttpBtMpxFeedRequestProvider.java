@@ -14,9 +14,9 @@ public class HttpBtMpxFeedRequestProvider {
     }
 
 
-    public SimpleHttpRequest<BtVodResponse> buildRequest(Integer startIndex) {
+    public SimpleHttpRequest<BtVodResponse> buildRequest(String endpoint, Integer startIndex) {
         return new SimpleHttpRequest<>(
-                String.format("%s?startIndex=%s", urlBase, startIndex),
+                String.format("%s%s?startIndex=%s", urlBase, endpoint, startIndex),
                 new BtVodResponseTransformer()
         );
     }

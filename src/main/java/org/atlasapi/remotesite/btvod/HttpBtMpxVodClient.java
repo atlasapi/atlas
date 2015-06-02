@@ -23,7 +23,7 @@ public class HttpBtMpxVodClient implements BtMpxVodClient {
     }
 
     @Override
-    public Iterator<BtVodEntry> getBtMpxFeed() throws IOException {
+    public Iterator<BtVodEntry> getFeed(final String name) throws IOException {
 
         return new AbstractIterator<BtVodEntry>() {
             private Integer currentIndex = 1;
@@ -38,7 +38,7 @@ public class HttpBtMpxVodClient implements BtMpxVodClient {
                 if (!currentItems.hasNext() && moreData) {
                     BtVodResponse response;
                     try {
-                        response = httpClient.get(requestProvider.buildRequest(currentIndex));
+                        response = httpClient.get(requestProvider.buildRequest(name, currentIndex));
 
                     } catch (Exception e) {
                         throw new RuntimeException(e);

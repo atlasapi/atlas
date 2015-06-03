@@ -34,7 +34,7 @@ public class BtVodContentGroupPredicates {
 
             @Override
             public boolean apply(VodEntryAndContent input) {
-                return category.equals(
+                return schedulerChannel.equals(
                         input.getBtVodEntry().getProductType()
                 );
             }

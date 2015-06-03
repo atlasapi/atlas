@@ -27,6 +27,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -52,6 +53,7 @@ public class BbcSlashProgrammesEpisodeIntegrationTest {
     private final BbcExtendedDataContentAdapter extendedDataAdapter = new BbcExtendedDataContentAdapter(nullAdapter((List<RelatedLink>)ImmutableList.<RelatedLink>of()), topicsAdapter);
 
     @Test
+    @Ignore
     public void testClientGetsEpisode() throws Exception {
         
         RecordingContentWriter writer = new RecordingContentWriter();

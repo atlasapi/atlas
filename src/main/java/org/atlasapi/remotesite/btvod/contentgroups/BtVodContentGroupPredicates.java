@@ -13,6 +13,8 @@ import org.atlasapi.remotesite.btvod.BtVodContentGroupPredicate;
 import org.atlasapi.remotesite.btvod.VodEntryAndContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -22,6 +24,8 @@ import com.google.common.collect.ImmutableSet;
 
 public class BtVodContentGroupPredicates {
 
+    private static final Logger log = LoggerFactory.getLogger(BtVodContentGroupPredicates.class);
+    
     private static final String FOX_PROVIDER_ID = "XXA";
     private static final String SONY_PROVIDER_ID = "XXB";
     private static final String EONE_PROVIDER_ID = "XXC";
@@ -151,6 +155,7 @@ public class BtVodContentGroupPredicates {
                 if (ids == null) {
                     throw new IllegalStateException("Must call init() first");
                 }
+                log.debug("MPX content group predicate testing whether {} is in group", input.getBtVodEntry().getId());
                 return ids.contains(input.getBtVodEntry().getId());
             }
             
@@ -167,6 +172,7 @@ public class BtVodContentGroupPredicates {
                     builder.add(feed.next().getId());
                 };
                 ids = builder.build();
+                log.debug("MPX content group predicate initialized with IDs {}", ids);
             }
         };
     }

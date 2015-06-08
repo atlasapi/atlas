@@ -155,7 +155,7 @@ public class BtVodContentGroupPredicates {
                 if (ids == null) {
                     throw new IllegalStateException("Must call init() first");
                 }
-                log.debug("MPX content group predicate testing whether {} is in group");
+                log.debug("MPX content group predicate testing whether {} is in group", input.getBtVodEntry().getId());
                 return ids.contains(input.getBtVodEntry().getId());
             }
             

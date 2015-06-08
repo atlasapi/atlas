@@ -10,6 +10,7 @@ import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroClipExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -18,6 +19,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -27,12 +29,15 @@ import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
 import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Clip;
+import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
 import com.metabroadcast.common.time.Clock;
 
 /**
@@ -106,16 +111,41 @@ public class GlycerinNitroClipsAdapter {
 
     private Multimap<String, org.atlasapi.media.entity.Clip> extractClips(List<Clip> clipPart) throws GlycerinException {
         final ListMultimap<String, Availability> availabilities = getNitroAvailabilities(clipPart);
+        final ListMultimap<String, Version> versions = versions(clipPart);
         ImmutableListMultimap.Builder<String, org.atlasapi.media.entity.Clip> extracted
             = ImmutableListMultimap.builder();
         for (Clip clip : clipPart) {
             List<Availability> clipAvailabilities = availabilities.get(clip.getPid());
-            NitroItemSource<Clip> source = NitroItemSource.valueOf(clip, clipAvailabilities);
+            
+            NitroItemSource<Clip> source = NitroItemSource.valueOf(clip, clipAvailabilities,
+                    ImmutableList.<Broadcast>of(), ImmutableList.<NitroGenreGroup>of(), versions.get(clip.getPid()));
             extracted.put(BbcFeeds.nitroUriForPid(clip.getClipOf().getPid()), clipExtractor.extract(source));
         }
         return extracted.build();
     }
 
+    private ListMultimap<String, Version> versions(List<Clip> clips) throws GlycerinException {
+        VersionsQuery query = VersionsQuery.builder()
+                .withDescendantsOf(toPids(clips))
+                .withPageSize(pageSize)
+                .build();
+        return Multimaps.index(exhaust(glycerin.execute(query)), new Function<Version, String>() {
+            @Override
+            public String apply(Version input) {
+                return NitroUtil.programmePid(input).getPid();
+            }
+        });
+    }
+    
+    private Iterable<String> toPids(List<Clip> clips) {
+        return Iterables.transform(clips, new Function<Clip, String>() {
+            @Override
+            public String apply(Clip input) {
+                return input.getPid();
+            }
+        });
+    }
+    
     private ListMultimap<String, Availability> getNitroAvailabilities(List<Clip> clipPart) throws GlycerinException {
         if (clipPart.isEmpty()) {
             return ImmutableListMultimap.of();

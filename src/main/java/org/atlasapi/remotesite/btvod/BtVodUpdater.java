@@ -64,7 +64,8 @@ public class BtVodUpdater extends ScheduledTask {
                 uriPrefix,
                 listeners,
                 processedRows,
-                new TitleSanitiser()
+                new TitleSanitiser(), 
+                describedFieldsExtractor
         );
         BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(
                 writer,
@@ -72,6 +73,7 @@ public class BtVodUpdater extends ScheduledTask {
                 brandExtractor,
                 publisher,
                 listeners,
+                describedFieldsExtractor, 
                 processedRows
         );
         BtVodItemWriter itemExtractor = new BtVodItemWriter(

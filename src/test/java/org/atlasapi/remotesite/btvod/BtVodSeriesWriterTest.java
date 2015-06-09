@@ -4,6 +4,7 @@ package org.atlasapi.remotesite.btvod;
 import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -35,7 +36,8 @@ public class BtVodSeriesWriterTest {
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
-
+    private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor);
 
     private final BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(
             contentWriter,
@@ -43,6 +45,7 @@ public class BtVodSeriesWriterTest {
             brandExtractor,
             PUBLISHER,
             contentListener,
+            describedFieldsExtractor, 
             Sets.<String>newHashSet()
     );
 
@@ -136,6 +139,7 @@ public class BtVodSeriesWriterTest {
     private BtVodEntry row() {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);
+        entry.setId("12345");
         entry.setTitle(FULL_EPISODE_TITLE);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"

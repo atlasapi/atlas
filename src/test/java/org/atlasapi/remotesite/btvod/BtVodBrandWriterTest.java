@@ -7,7 +7,6 @@ import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -39,7 +38,8 @@ public class BtVodBrandWriterTest {
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageUriProvider imageUriProvider = mock(ImageUriProvider.class);
-
+    private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor);
     private final BtVodBrandWriter brandExtractor
                     = new BtVodBrandWriter(
                                 contentWriter,
@@ -47,7 +47,8 @@ public class BtVodBrandWriterTest {
                                 PUBLISHER, URI_PREFIX,
                                 contentListener,
                                 Sets.<String>newHashSet(),
-            new TitleSanitiser()
+                                new TitleSanitiser(), 
+                                describedFieldsExtractor
     );
     
     @Test
@@ -138,6 +139,7 @@ public class BtVodBrandWriterTest {
     private BtVodEntry row() {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);
+        entry.setId("12345");
         entry.setTitle(FULL_EPISODE_TITLE);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"

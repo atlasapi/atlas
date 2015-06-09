@@ -8,7 +8,11 @@ import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.Set;
+
 import com.google.common.collect.ImmutableList;
+
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
@@ -36,6 +40,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+
 import org.mockito.Matchers;
 
 
@@ -109,6 +114,13 @@ public class BtVodItemWriterTest {
                 Iterables.getOnlyElement(writtenItem.getClips()),
                 is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
         );
+        
+        Set<Alias> expectedAliases = 
+                ImmutableSet.of(new Alias(BtVodDescribedFieldsExtractor.GUID_ALIAS_NAMESPACE, btVodEntry.getGuid()),
+                                new Alias(BtVodDescribedFieldsExtractor.ID_ALIAS_NAMESPACE, btVodEntry.getId()));
+                    
+                    
+        assertThat(writtenItem.getAliases(), is(expectedAliases));
         //assertThat(Iterables.getOnlyElement(location.getPolicy().getAvailableCountries()).code(), is("GB"));
         //assertThat(location.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_RENT));
     }

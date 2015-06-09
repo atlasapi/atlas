@@ -56,7 +56,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
                     message.getEntitySource(), message.getEntityType(), eid});
             return;
         }
-        if (filter.apply(content) && noPreviousResult(content)) {
+        if (filter.apply(content)) {
             log.debug("{} updating equivalence: {} {} {}", 
                 new Object[]{message.getMessageId(), 
                     message.getEntitySource(), message.getEntityType(), eid});
@@ -66,10 +66,6 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
                 new Object[]{message.getMessageId(), 
                     message.getEntitySource(), message.getEntityType(), eid});
         }
-    }
-
-    private boolean noPreviousResult(Content content) {
-        return resultStore.forId(content.getCanonicalUri()) == null;
     }
 
     private Content resolveId(Long id) {

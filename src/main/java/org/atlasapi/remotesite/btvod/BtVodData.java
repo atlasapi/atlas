@@ -8,6 +8,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class BtVodData {
 
+    private static final String FEED_NAME = "btv-prd-search";
     private BtMpxVodClient vodClient;
     
     public BtVodData(BtMpxVodClient vodClient) {
@@ -15,7 +16,7 @@ public class BtVodData {
     }
     
     public <T> T processData(BtVodDataProcessor<T> processor) throws IOException {
-        Iterator<BtVodEntry> btMpxFeed = vodClient.getBtMpxFeed();
+        Iterator<BtVodEntry> btMpxFeed = vodClient.getFeed(FEED_NAME);
         while (btMpxFeed.hasNext()) {
             processor.process(btMpxFeed.next());
         }

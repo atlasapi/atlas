@@ -8,6 +8,7 @@ import java.util.Set;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

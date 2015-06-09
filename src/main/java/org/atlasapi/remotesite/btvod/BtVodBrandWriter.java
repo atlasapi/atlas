@@ -63,8 +63,9 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
     private final TitleSanitiser titleSanitiser;
+    private final BtVodDescribedFieldsExtractor describedFieldExtractor;
     private UpdateProgress progress = UpdateProgress.START;
-    
+
     public BtVodBrandWriter(
             ContentWriter writer,
             ContentResolver resolver,
@@ -72,7 +73,8 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
             String uriPrefix,
             BtVodContentListener listener,
             Set<String> processedRows,
-            TitleSanitiser titleSanitiser) {
+            TitleSanitiser titleSanitiser,
+            BtVodDescribedFieldsExtractor describedFieldExtractor) {
         this.listener = checkNotNull(listener);
         this.writer = checkNotNull(writer);
         this.resolver = checkNotNull(resolver);
@@ -81,6 +83,10 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
         this.titleSanitiser = checkNotNull(titleSanitiser);
+        //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
+        //      Added as a collaborator for Alias extraction, but should be used more 
+        //      widely
+        this.describedFieldExtractor = checkNotNull(describedFieldExtractor);
     }
     
     @Override
@@ -194,7 +200,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
             String productId = row.getGuid();
             throw new RuntimeException("Unexpected state - row with product_id: " + productId + " is not a brand nor is possible to parse a brand from it");
         }
-
+        brand.setAliases(describedFieldExtractor.aliasesFrom(row));
         return brand;
     }
     

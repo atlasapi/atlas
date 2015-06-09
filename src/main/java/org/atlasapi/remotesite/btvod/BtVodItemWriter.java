@@ -160,6 +160,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         if (processedItems.containsKey(itemKeyForDeduping)) {
             item = processedItems.get(itemKeyForDeduping);
             item.addVersions(createVersions(row));
+            item.addAliases(describedFieldsExtractor.aliasesFrom(row));
             return item;
         }
         if (isEpisode(row)) {

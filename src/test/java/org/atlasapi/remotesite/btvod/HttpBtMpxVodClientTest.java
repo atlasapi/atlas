@@ -4,6 +4,7 @@ package org.atlasapi.remotesite.btvod;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.http.SimpleHttpRequest;
+
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodResponse;
 import org.junit.Test;
@@ -22,6 +23,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class HttpBtMpxVodClientTest {
 
+
+    private static final String FEED_NAME = "TEST";
 
     @Mock
     private SimpleHttpClient httpClient;
@@ -66,16 +69,16 @@ public class HttpBtMpxVodClientTest {
         SimpleHttpRequest<BtVodResponse> request2 = mock(SimpleHttpRequest.class);
         SimpleHttpRequest<BtVodResponse> request3 = mock(SimpleHttpRequest.class);
 
-        when(requestProvider.buildRequest(1)).thenReturn(request1);
-        when(requestProvider.buildRequest(3)).thenReturn(request2);
-        when(requestProvider.buildRequest(5)).thenReturn(request3);
+        when(requestProvider.buildRequest(FEED_NAME, 1)).thenReturn(request1);
+        when(requestProvider.buildRequest(FEED_NAME, 3)).thenReturn(request2);
+        when(requestProvider.buildRequest(FEED_NAME, 5)).thenReturn(request3);
 
         when(httpClient.get(request1)).thenReturn(btVodResponse1);
         when(httpClient.get(request2)).thenReturn(btVodResponse2);
         when(httpClient.get(request3)).thenReturn(btVodResponse3);
 
 
-        Iterator<BtVodEntry> result = objectUnderTest.getFeed("TEST");
+        Iterator<BtVodEntry> result = objectUnderTest.getFeed(FEED_NAME);
 
         assertThat(result.next(), is(btVodEntry1));
         assertThat(result.next(), is(btVodEntry2));

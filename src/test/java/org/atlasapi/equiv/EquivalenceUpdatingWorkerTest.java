@@ -21,6 +21,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.joda.time.DateTime;
+import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -136,6 +137,9 @@ public class EquivalenceUpdatingWorkerTest {
     }
     
     @Test
+    @Ignore
+    // Changed functionality to always recompute equivalences. We're trialling for now
+    // so will leave this test but ignored until we decide it's a goer
     public void testWorkerDoesntUpdateItemWithAnEquivalenceResult() {
         
         String eid = "cyp";

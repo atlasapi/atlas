@@ -4,6 +4,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
 
@@ -15,6 +18,9 @@ import java.util.Map;
 
 public class BtVodDescribedFieldsExtractor {
 
+    static final String GUID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:guid";
+    static final String ID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:id";
+    
     private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
 
@@ -106,6 +112,7 @@ public class BtVodDescribedFieldsExtractor {
     .put("Drama", ":ContentCS:2010:3.4")
             .build();
     
+    
     public BtVodDescribedFieldsExtractor(
             ImageExtractor imageExtractor
     ) {
@@ -142,8 +149,16 @@ public class BtVodDescribedFieldsExtractor {
         if (!described.getImages().isEmpty()) {
             described.setImage(Iterables.getFirst(described.getImages(), null).getCanonicalUri());
         }
+        
+        described.setAliases(aliasesFrom(row));
     }
     
+    public Iterable<Alias> aliasesFrom(BtVodEntry row) {
+        return ImmutableSet.of(
+                    new Alias(GUID_ALIAS_NAMESPACE, row.getGuid()),
+                    new Alias(ID_ALIAS_NAMESPACE, row.getId()));
+    }
+
     private Iterable<Image> createImages(BtVodEntry row) {
         return imageExtractor.extractImages(row.getProductImages());
     }

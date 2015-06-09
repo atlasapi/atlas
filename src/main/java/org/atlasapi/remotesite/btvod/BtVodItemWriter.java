@@ -162,6 +162,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         if (processedItems.containsKey(stripHDSuffix(row.getTitle()))) {
             item = processedItems.get(stripHDSuffix(row.getTitle()));
             item.addVersions(createVersions(row));
+            item.addAliases(describedFieldsExtractor.aliasesFrom(row));
             return item;
         }
         if (isEpisode(row)) {

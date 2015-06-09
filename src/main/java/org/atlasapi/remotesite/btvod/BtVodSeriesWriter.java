@@ -49,6 +49,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
     private final Map<String, ParentRef> processedSeries = Maps.newHashMap();
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private UpdateProgress progress = UpdateProgress.START;
 
 
@@ -58,6 +59,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
             BtVodBrandWriter brandExtractor,
             Publisher publisher,
             BtVodContentListener listener,
+            BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows
     ) {
         this.processedRows = checkNotNull(processedRows);
@@ -66,6 +68,10 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         this.resolver = checkNotNull(resolver);
         this.brandExtractor = checkNotNull(brandExtractor);
         this.publisher = checkNotNull(publisher);
+        //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
+        //      Added as a collaborator for Alias extraction, but should be used more 
+        //      widely
+        this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
     }
     
@@ -121,6 +127,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         //TODO more fields
         series.withSeriesNumber(extractSeriesNumber(row.getTitle()).get());
         series.setParentRef(brandExtractor.getBrandRefFor(row).orNull());
+        series.setAliases(describedFieldsExtractor.aliasesFrom(row));
         return series;
     }
 

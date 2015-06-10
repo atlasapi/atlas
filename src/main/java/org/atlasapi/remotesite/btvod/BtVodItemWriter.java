@@ -323,7 +323,10 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             pricings.add(new Pricing(startDate, endDate, price));
         }
         policy.setPricing(pricings.build());
-
+        String subscriptionCode = row.getSubscriptionCode();
+        if (subscriptionCode != null) {
+            policy.setSubscriptionPackages(ImmutableSet.of(subscriptionCode));
+        }
 
         Location location = new Location();
         location.setPolicy(policy);

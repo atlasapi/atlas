@@ -124,7 +124,9 @@ public class BtVodDescribedFieldsExtractor {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());
         described.setImages(createImages(row));
-
+        if (row.getProductPriority() != null) {
+            described.setPriority(Double.valueOf(row.getProductPriority()));
+        }
         String btGenre = row.getGenre();
         ImmutableList.Builder<String> genres = ImmutableList.builder();
         if (btGenre != null) {

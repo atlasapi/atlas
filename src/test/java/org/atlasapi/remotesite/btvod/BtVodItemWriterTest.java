@@ -46,6 +46,7 @@ import org.mockito.Matchers;
 
 public class BtVodItemWriterTest {
 
+    private static final String SUBSCRIPTION_CODE = "S012345";
     private static final String IMAGE_URI = "http://example.org/123.png";
     private static final String PRODUCT_GUID = "1234";
     private static final String PRODUCT_ID = "http://example.org/content/1244";
@@ -110,6 +111,7 @@ public class BtVodItemWriterTest {
         DateTime expectedAvailabilityEnd = new DateTime(2014, DateTimeConstants.APRIL, 30, 0, 0, 0, 0, DateTimeZone.UTC);
         assertThat(location.getPolicy().getAvailabilityStart(), is(expectedAvailabilityStart));
         assertThat(location.getPolicy().getAvailabilityEnd(), is(expectedAvailabilityEnd));
+        assertThat(location.getPolicy().getSubscriptionPackages(), is((Set<String>)ImmutableSet.of(SUBSCRIPTION_CODE)));
         assertThat(
                 Iterables.getOnlyElement(writtenItem.getClips()),
                 is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
@@ -279,7 +281,10 @@ public class BtVodItemWriterTest {
         productScope.setProductMetadata(productMetadata);
         entry.setProductScopes(ImmutableList.of(productScope));
         entry.setProductRatings(ImmutableList.<BtVodProductRating>of());
-        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
+        BtVodPlproduct$productTag tag = new BtVodPlproduct$productTag();
+        tag.setPlproduct$scheme("subscription");
+        tag.setPlproduct$title(SUBSCRIPTION_CODE);
+        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of(tag));
 
         return entry;
     }

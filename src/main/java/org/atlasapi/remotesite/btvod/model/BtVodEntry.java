@@ -8,6 +8,7 @@ public class BtVodEntry {
 
     private static final String CONTENT_PROVIDER = "contentProvider";
     private static final String GENRE = "genre";
+    private static final String SUBSCRIPTION_PRODUCT_SCHEME = "subscription";
     private static final String SCHEDULER_CHANNEL = "schedulerChannel";
     private String id;
     private String guid;
@@ -73,23 +74,27 @@ public class BtVodEntry {
     }
 
     public String getContentProviderId() {
+        return productTag(CONTENT_PROVIDER);    
+    }
+    
+    private String productTag(String tag) {
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
-            if (plproduct$productTag.getPlproduct$scheme().equals(CONTENT_PROVIDER)) {
+            if (plproduct$productTag.getPlproduct$scheme().equals(tag)) {
                 return plproduct$productTag.getPlproduct$title();
             }
         }
 
         return null;
     }
+    
     public String getGenre() {
-        for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
-            if (plproduct$productTag.getPlproduct$scheme().equals(GENRE)) {
-                return plproduct$productTag.getPlproduct$title();
-            }
-        }
-
-        return null;
+        return productTag(GENRE);
+        
     }
+    
+    public String getSubscriptionCode() {
+        return productTag(SUBSCRIPTION_PRODUCT_SCHEME);
+            }
     
     public String getSchedulerChannel() {
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {

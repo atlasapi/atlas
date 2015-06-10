@@ -157,7 +157,7 @@ public class ContentMerger {
         current.setPresentationChannel(extracted.getPresentationChannel());
         current.setMediaType(extracted.getMediaType());
         current.setSpecialization(extracted.getSpecialization());
-
+        current.setPriority(extracted.getPriority());
         return current;
     }
 

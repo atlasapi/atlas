@@ -51,6 +51,9 @@ public class BtVodEntry {
     @SerializedName("btproduct$trailerMediaId")
     private String productTrailerMediaId;
 
+    @SerializedName("btproduct$duration")
+    private Long productDuration;
+    
     public BtVodEntry() {}
 
     public String getGuid() {
@@ -129,6 +132,14 @@ public class BtVodEntry {
         this.description = description;
     }
 
+    public void setProductDuration(Long productDuration) {
+        this.productDuration = productDuration;
+    }
+    
+    public Long getProductDuration() {
+        return productDuration;
+    }
+    
     public void setProductLongDescription(String productLongDescription) {
         this.productLongDescription = productLongDescription;
     }

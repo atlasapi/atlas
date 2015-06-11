@@ -14,6 +14,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
+
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Clip;
@@ -39,6 +40,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -332,7 +334,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         location.setPolicy(policy);
         location.setCanonicalUri(uriFor(row));
         location.setUri(uriFor(row));
-
+        
         Alias btVodGuidAlias = new Alias(BT_VOD_GUID_NAMESPACE, row.getGuid());
         Alias btVodIdAlias = new Alias(BT_VOD_ID_NAMESPACE, row.getId());
         location.setAliases(ImmutableSet.of(btVodGuidAlias, btVodIdAlias));
@@ -352,7 +354,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         version.setCanonicalUri(uriFor(row));
         version.setAliasUrls(location.getAliasUrls());
         version.setAliases(location.getAliases());
-
+        
+        if (row.getProductDuration() != null) {
+            version.setDuration(Duration.standardSeconds(row.getProductDuration()));
+        }
+        
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
             Integer ageRating = rating.getProductRating();

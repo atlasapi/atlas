@@ -308,7 +308,8 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
     
     private boolean isTrailerMediaAvailableOnCdn(BtVodEntry row) {
-        return row.getTrailerServiceTypes().contains(OTG_PLATFORM);
+        return true;
+        //return row.getTrailerServiceTypes().contains(OTG_PLATFORM);
     }
 
     private String titleForNonEpisode(BtVodEntry row) {
@@ -402,11 +403,13 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
     
     private boolean isItemMediaAvailableOnCdn(BtVodEntry row) {
-        return row.getServiceTypes().contains(OTG_PLATFORM);
+        return true;
+        //return row.getServiceTypes().contains(OTG_PLATFORM);
     }
 
     private boolean isItemTvodPlayoutAllowed(BtVodEntry row) {
-        return !FALSE.equals(row.getMasterAgreementOtgTvodPlay());
+        return true;
+        //return !FALSE.equals(row.getMasterAgreementOtgTvodPlay());
     }
 
     private void setQualityOn(Encoding encoding, BtVodEntry entry) {

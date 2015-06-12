@@ -95,6 +95,7 @@ public class BtVodItemWriterTest {
         assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
         assertThat(writtenItem.getContainer(), is(parentRef));
+        assertThat(writtenItem.getGenres().size(), is(4));
         
         Location location = Iterables.getOnlyElement(
                                 Iterables.getOnlyElement(
@@ -303,6 +304,7 @@ public class BtVodItemWriterTest {
         BtVodProductScope productScope = new BtVodProductScope();
         BtVodProductMetadata productMetadata = new BtVodProductMetadata();
         productMetadata.setEpisodeNumber("1");
+        productMetadata.setSubGenres("[\"00's\",\"Sad\",\"European\",\"Piano\"]");
         productScope.setProductMetadata(productMetadata);
         entry.setProductScopes(ImmutableList.of(productScope));
         entry.setProductRatings(ImmutableList.<BtVodProductRating>of());

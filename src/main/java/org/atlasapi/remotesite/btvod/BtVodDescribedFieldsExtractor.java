@@ -2,10 +2,15 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Splitter;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
@@ -13,8 +18,15 @@ import org.atlasapi.media.entity.Image;
 import com.google.common.collect.Iterables;
 
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 
+import java.io.IOException;
+import java.io.StringReader;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 
 public class BtVodDescribedFieldsExtractor {
@@ -24,6 +36,8 @@ public class BtVodDescribedFieldsExtractor {
     
     private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
+    private static final Pattern SUB_GENRE_ARRAYPATTERN = Pattern.compile("^\\[(.*)\\]$");
+    private static final CSVFormat SUB_GENRE_CSV_PARSER = CSVFormat.RFC4180;
 
     private final ImageExtractor imageExtractor;
 
@@ -127,9 +141,9 @@ public class BtVodDescribedFieldsExtractor {
         if (row.getProductPriority() != null) {
             described.setPriority(Double.valueOf(row.getProductPriority()));
         }
-        String btGenre = row.getGenre();
+        
         ImmutableList.Builder<String> genres = ImmutableList.builder();
-        if (btGenre != null) {
+        for (String btGenre : btGenresFrom(row)) {
             genres.add(
                     String.format(
                             "%s/%s",
@@ -154,6 +168,32 @@ public class BtVodDescribedFieldsExtractor {
         }
         
         described.setAliases(aliasesFrom(row));
+    }
+    
+    public Set<String> btGenresFrom(BtVodEntry row) {
+        ImmutableSet.Builder<String> genres = ImmutableSet.builder();
+        
+        if (!Strings.isNullOrEmpty(row.getGenre())) {
+            genres.add(row.getGenre());
+        }
+        
+        for (BtVodProductScope scope : row.getProductScopes()) {
+            if (scope.getProductMetadata() != null) {
+                String subGenres = scope.getProductMetadata().getSubGenres();
+                if (!Strings.isNullOrEmpty(subGenres)) {
+                    Matcher matcher = SUB_GENRE_ARRAYPATTERN.matcher(subGenres);
+                    if (matcher.matches()) {
+                        try {
+                            CSVParser parse = SUB_GENRE_CSV_PARSER.parse(new StringReader(matcher.group(1)));
+                            genres.addAll(parse.getRecords().get(0).iterator());
+                        } catch (IOException e) {
+                            throw Throwables.propagate(e);
+                        }
+                    }
+                }
+            }
+        }
+        return genres.build();
     }
     
     public Iterable<Alias> aliasesFrom(BtVodEntry row) {

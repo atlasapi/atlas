@@ -7,6 +7,7 @@ public class BtVodProductMetadata {
     private String episodeNumber;
     private String audioDescription;
     private String releaseYear;
+    private String subGenres;
 
     @SerializedName("assetColorType.video-cardinal")
     private String assetColorTypeVideoCardinal;
@@ -18,6 +19,7 @@ public class BtVodProductMetadata {
 
     @SerializedName("plproduct$description")
     private String productDescription;
+    
 
     public BtVodProductMetadata() {}
 
@@ -31,6 +33,14 @@ public class BtVodProductMetadata {
 
     public String getReleaseYear() {
         return releaseYear;
+    }
+    
+    public String getSubGenres() {
+        return subGenres;
+    }
+    
+    public void setSubGenres(String subGenres) {
+        this.subGenres = subGenres;
     }
 
     public String getAssetColorTypeVideoCardinal() {

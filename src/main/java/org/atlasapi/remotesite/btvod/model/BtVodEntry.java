@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.btvod.model;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
@@ -10,6 +11,10 @@ public class BtVodEntry {
     private static final String GENRE = "genre";
     private static final String SUBSCRIPTION_PRODUCT_SCHEME = "subscription";
     private static final String SCHEDULER_CHANNEL = "schedulerChannel";
+    private static final String TRAILER_SERVICE_TYPE_SCHEME = "trailerServiceType";
+    private static final String SERVICE_TYPE_SCHEME = "serviceType";
+    private static final String MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME = "masterAgreementOtgTvodPlay";
+    
     private String id;
     private String guid;
     private String title;
@@ -80,6 +85,20 @@ public class BtVodEntry {
         return productTag(CONTENT_PROVIDER);    
     }
     
+    /**
+     * Platforms the trailer media is available on
+     */
+    public ImmutableSet<String> getTrailerServiceTypes() {
+        return productTags(TRAILER_SERVICE_TYPE_SCHEME);
+    }
+    
+    /**
+     * Platforms the content media is available on
+     */
+    public ImmutableSet<String> getServiceTypes() {
+        return productTags(SERVICE_TYPE_SCHEME);
+    }
+    
     private String productTag(String tag) {
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
             if (plproduct$productTag.getPlproduct$scheme().equals(tag)) {
@@ -90,14 +109,27 @@ public class BtVodEntry {
         return null;
     }
     
-    public String getGenre() {
-        return productTag(GENRE);
-        
+    private ImmutableSet<String> productTags(String tag) {
+        ImmutableSet.Builder<String> tags = ImmutableSet.builder();
+        for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
+            if (plproduct$productTag.getPlproduct$scheme().equals(tag)) {
+                tags.add(plproduct$productTag.getPlproduct$title());
+            }
+        }
+        return tags.build();
     }
     
-    public String getSubscriptionCode() {
-        return productTag(SUBSCRIPTION_PRODUCT_SCHEME);
-            }
+    public String getGenre() {
+        return productTag(GENRE);
+    }
+    
+    public ImmutableSet<String> getSubscriptionCodes() {
+        return productTags(SUBSCRIPTION_PRODUCT_SCHEME);
+    }
+    
+    public String getMasterAgreementOtgTvodPlay() {
+        return productTag(MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME);
+    }
     
     public String getSchedulerChannel() {
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
@@ -239,4 +271,5 @@ public class BtVodEntry {
     public void setProductTrailerMediaId(String productTrailerMediaId) {
         this.productTrailerMediaId = productTrailerMediaId;
     }
+
 }

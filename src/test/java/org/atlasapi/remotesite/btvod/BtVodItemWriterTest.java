@@ -2,7 +2,7 @@ package org.atlasapi.remotesite.btvod;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -90,16 +90,12 @@ public class BtVodItemWriterTest {
         when(seriesExtractor.extractSeriesNumber(btVodEntry.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
 
-        itemExtractor.process(btVodEntry);
-        
-        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
-        verify(contentWriter).createOrUpdate(itemCaptor.capture());
-
-        Item writtenItem = itemCaptor.getValue();
+        Item writtenItem = extractAndCapture(btVodEntry);
         
         assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
         assertThat(writtenItem.getContainer(), is(parentRef));
+        assertThat(writtenItem.getGenres().size(), is(4));
         
         Location location = Iterables.getOnlyElement(
                                 Iterables.getOnlyElement(
@@ -126,6 +122,37 @@ public class BtVodItemWriterTest {
         //assertThat(Iterables.getOnlyElement(location.getPolicy().getAvailableCountries()).code(), is("GB"));
         //assertThat(location.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_RENT));
     }
+    
+    private Item extractAndCapture(BtVodEntry entry) {
+        itemExtractor.process(entry);
+        
+        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
+        verify(contentWriter).createOrUpdate(itemCaptor.capture());
+
+        return itemCaptor.getValue();
+    }
+    
+    @Test
+    public void testOnlyExtractsTrailerWhenMatchesCriteria() {
+        BtVodEntry btVodEntry = episodeRow();
+        ParentRef parentRef = new ParentRef(BRAND_URI);
+        ParentRef seriesRef = new ParentRef("seriesUri");
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
+                .thenReturn(ResolvedContent.builder().build());
+        when(imageExtractor.extractImages(Matchers.<BtVodPlproductImages>any())).thenReturn(ImmutableSet.<Image>of());
+        when(seriesExtractor.getSeriesRefFor(btVodEntry)).thenReturn(Optional.of(seriesRef));
+        when(seriesExtractor.extractSeriesNumber(btVodEntry.getTitle())).thenReturn(Optional.of(1));
+        when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
+
+        btVodEntry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
+        
+        Item writtenItem = extractAndCapture(btVodEntry);
+        
+        assertTrue(writtenItem.getClips().isEmpty());
+        
+    }
+   
 
     @Test
     public void testMergesVersionsForHDandSD() {
@@ -158,10 +185,9 @@ public class BtVodItemWriterTest {
         assertThat(writtenItem.getContainer(), is(parentRef));
 
         assertThat(writtenItem.getVersions().size(), is(2));
-        assertThat(
-                Iterables.getOnlyElement(writtenItem.getClips()),
-                is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
-        );
+        assertThat(writtenItem.getClips().size(), is(2));
+                
+        
 
     }
 
@@ -204,7 +230,7 @@ public class BtVodItemWriterTest {
         assertThat(Iterables.getOnlyElement(sdVersion.getManifestedAs()).getHighDefinition(), is(false));
         assertThat(Iterables.getOnlyElement(hdVersion.getManifestedAs()).getHighDefinition(), is(true));
         assertThat(
-                Iterables.getOnlyElement(writtenItem.getClips()),
+                Iterables.getFirst(writtenItem.getClips(), null),
                 is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
         );
 
@@ -278,13 +304,24 @@ public class BtVodItemWriterTest {
         BtVodProductScope productScope = new BtVodProductScope();
         BtVodProductMetadata productMetadata = new BtVodProductMetadata();
         productMetadata.setEpisodeNumber("1");
+        productMetadata.setSubGenres("[\"00's\",\"Sad\",\"European\",\"Piano\"]");
         productScope.setProductMetadata(productMetadata);
         entry.setProductScopes(ImmutableList.of(productScope));
         entry.setProductRatings(ImmutableList.<BtVodProductRating>of());
         BtVodPlproduct$productTag tag = new BtVodPlproduct$productTag();
         tag.setPlproduct$scheme("subscription");
         tag.setPlproduct$title(SUBSCRIPTION_CODE);
-        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of(tag));
+
+        BtVodPlproduct$productTag trailerCdnAvailabilityTag = new BtVodPlproduct$productTag();
+        trailerCdnAvailabilityTag.setPlproduct$scheme("trailerServiceType");
+        trailerCdnAvailabilityTag.setPlproduct$title("OTG");
+
+        BtVodPlproduct$productTag itemCdnAvailabilityTag = new BtVodPlproduct$productTag();
+        itemCdnAvailabilityTag.setPlproduct$scheme("serviceType");
+        itemCdnAvailabilityTag.setPlproduct$title("OTG");
+        
+        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of(tag, trailerCdnAvailabilityTag, itemCdnAvailabilityTag));
+        
 
         return entry;
     }

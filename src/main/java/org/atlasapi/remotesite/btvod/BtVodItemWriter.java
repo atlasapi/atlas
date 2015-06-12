@@ -27,6 +27,7 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
@@ -45,6 +46,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
 import com.metabroadcast.common.base.Maybe;
@@ -68,6 +70,8 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
     private static final String BT_VOD_GUID_NAMESPACE = "bt:vod:guid";
     private static final String BT_VOD_ID_NAMESPACE = "bt:vod:id";
+    private static final Object OTG_PLATFORM = "OTG";
+    private static final Object FALSE = "false";
 
 
     private final ContentWriter writer;
@@ -161,8 +165,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         String itemKeyForDeduping = itemKeyForDeduping(row);
         if (processedItems.containsKey(itemKeyForDeduping)) {
             item = processedItems.get(itemKeyForDeduping);
-            item.addVersions(createVersions(row));
-            item.addAliases(describedFieldsExtractor.aliasesFrom(row));
+            includeVersionsAndClipsOnAlreadyExtractedItem(item, row);
             return item;
         }
         if (isEpisode(row)) {
@@ -178,6 +181,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         return item;
     }
     
+    private void includeVersionsAndClipsOnAlreadyExtractedItem(Item item, BtVodEntry row) {
+        item.addVersions(createVersions(row));
+        item.addClips(extractTrailer(row));
+        item.addAliases(describedFieldsExtractor.aliasesFrom(row));        
+    }
+
     private String itemKeyForDeduping(BtVodEntry row) {
         return row.getProductType() + ":" + titleSanitiser.sanitiseTitle(row.getTitle());
     }
@@ -276,13 +285,30 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         if (rating != null) {
             item.setCertificates(ImmutableList.of(new Certificate(rating.getPlproduct$ratingString(), Countries.GB)));
         }
-        if (row.getProductTrailerMediaId() != null) {
-            item.setClips(
-                    ImmutableSet.of(
-                            new Clip(row.getProductTrailerMediaId(), row.getProductTrailerMediaId(), publisher)
-                    )
-            );
+        
+        item.setClips(extractTrailer(row));
+    }
+
+    private List<Clip> extractTrailer(BtVodEntry row) {
+        if (!isTrailerMediaAvailableOnCdn(row)
+                || Strings.isNullOrEmpty(row.getProductTrailerMediaId())) {
+            return ImmutableList.of(); 
         }
+        
+        Clip clip = new Clip(row.getProductTrailerMediaId(), 
+                             row.getProductTrailerMediaId(), 
+                             publisher);
+        
+        Version version = new Version();
+        Encoding encoding = new Encoding();
+        setQualityOn(encoding, row);
+        version.addManifestedAs(encoding);
+        clip.addVersion(version);
+        return ImmutableList.of(clip);
+    }
+    
+    private boolean isTrailerMediaAvailableOnCdn(BtVodEntry row) {
+        return row.getTrailerServiceTypes().contains(OTG_PLATFORM);
     }
 
     private String titleForNonEpisode(BtVodEntry row) {
@@ -301,7 +327,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Set<Version> createVersions(BtVodEntry row) {
         if (row.getProductOfferStartDate() == null
-                || row.getProductOfferEndDate() == null) {
+                || row.getProductOfferEndDate() == null
+                || !isItemTvodPlayoutAllowed(row)
+                || !isItemMediaAvailableOnCdn(row)) {
             return ImmutableSet.of();
         }
 
@@ -325,10 +353,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             pricings.add(new Pricing(startDate, endDate, price));
         }
         policy.setPricing(pricings.build());
-        String subscriptionCode = row.getSubscriptionCode();
-        if (subscriptionCode != null) {
-            policy.setSubscriptionPackages(ImmutableSet.of(subscriptionCode));
-        }
+        policy.setSubscriptionPackages(row.getSubscriptionCodes());
 
         Location location = new Location();
         location.setPolicy(policy);
@@ -343,11 +368,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         Encoding encoding = new Encoding();
         encoding.setAvailableAt(ImmutableSet.of(location));
-        if (HD_FLAG.equals(row.getProductTargetBandwidth())) {
-            encoding.setHighDefinition(true);
-        } else if (SD_FLAG.equals(row.getProductTargetBandwidth())) {
-            encoding.setHighDefinition(false);
-        }
+        setQualityOn(encoding, row);
 
         Version version = new Version();
         version.setManifestedAs(ImmutableSet.of(encoding));
@@ -378,5 +399,23 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         }
 
         return ImmutableSet.of(version);
+    }
+    
+    private boolean isItemMediaAvailableOnCdn(BtVodEntry row) {
+        return row.getServiceTypes().contains(OTG_PLATFORM);
+    }
+
+    private boolean isItemTvodPlayoutAllowed(BtVodEntry row) {
+        return !FALSE.equals(row.getMasterAgreementOtgTvodPlay());
+    }
+
+    private void setQualityOn(Encoding encoding, BtVodEntry entry) {
+        if (HD_FLAG.equals(entry.getProductTargetBandwidth())) {
+            encoding.setHighDefinition(true);
+            encoding.setQuality(Quality.HD);
+        } else if (SD_FLAG.equals(entry.getProductTargetBandwidth())) {
+            encoding.setHighDefinition(false);
+            encoding.setQuality(Quality.SD);
+        }
     }
 }

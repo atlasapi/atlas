@@ -35,23 +35,33 @@ public class BbcIonServices {
         .put("bbc_one_east_yorkshire",  "http://www.bbc.co.uk/services/bbcone/east_yorkshire")
         .put("bbc_one_northern_ireland",  "http://www.bbc.co.uk/services/bbcone/ni")
         .put("bbc_one_wales",  "http://www.bbc.co.uk/services/bbcone/wales")
-        .put("bbc_alba", "http://ref.atlasapi.org/channels/bbcalba")
+        .put("bbc_one_hd",  "http://www.bbc.co.uk/services/bbcone/hd")
+        .put("bbc_one_northern_ireland_hd",  "http://www.bbc.co.uk/services/bbcone/ni_hd")
+        .put("bbc_one_scotland_hd",  "http://www.bbc.co.uk/services/bbcone/scotland_hd")
+        .put("bbc_one_wales_hd",  "http://www.bbc.co.uk/services/bbcone/wales_hd")
         
 //        .put("bbc_two", "http://www.bbc.co.uk/services/bbctwo")
+        .put("bbc_two_hd",  "http://www.bbc.co.uk/services/bbctwo/hd")
         .put("bbc_two_england", "http://www.bbc.co.uk/services/bbctwo/england")
-        .put("bbc_two_wales", "http://www.bbc.co.uk/services/bbctwo/wales_analogue")
+//        .put("bbc_two_wales", "http://www.bbc.co.uk/services/bbctwo/wales_analogue")
         .put("bbc_two_wales_digital", "http://www.bbc.co.uk/services/bbctwo/wales")
-        .put("bbc_two_northern_ireland", "http://www.bbc.co.uk/services/bbctwo/ni_analogue")
+//        .put("bbc_two_northern_ireland", "http://www.bbc.co.uk/services/bbctwo/ni_analogue")
         .put("bbc_two_northern_ireland_digital", "http://www.bbc.co.uk/services/bbctwo/ni")
         
         .put("bbc_three",       "http://www.bbc.co.uk/services/bbcthree")
+        .put("bbc_three_hd",  "http://www.bbc.co.uk/services/bbcthree_hd")
         .put("bbc_four",        "http://www.bbc.co.uk/services/bbcfour")
+        .put("bbc_four_hd",  "http://www.bbc.co.uk/services/bbcfour_hd")
         
+        .put("bbc_alba", "http://ref.atlasapi.org/channels/bbcalba")
         .put("bbc_parliament",  "http://www.bbc.co.uk/services/parliament")
         .put("bbc_news24",  "http://www.bbc.co.uk/services/bbcnews")
-        .put("bbc_hd",          "http://www.bbc.co.uk/services/bbchd")
+        .put("bbc_news_channel_hd",  "http://www.bbc.co.uk/services/bbcnews_hd")
+//        .put("bbc_hd",          "http://www.bbc.co.uk/services/bbchd")
         .put("cbbc",          "http://www.bbc.co.uk/services/cbbc")
-        .put("cbeebies",          "http://www.bbc.co.uk/services/cbeebies").build();
+        .put("cbbc_hd",  "http://www.bbc.co.uk/services/cbbc_hd")
+        .put("cbeebies",          "http://www.bbc.co.uk/services/cbeebies")
+        .put("cbeebies_hd",  "http://www.bbc.co.uk/services/cbeebies_hd").build();
         
         
     public static BiMap<String, String> radioServices = ImmutableBiMap.<String, String>builder()

@@ -1,8 +1,12 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
 
 import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 import javax.annotation.Nullable;
 
@@ -14,6 +18,7 @@ import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -25,6 +30,10 @@ import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -69,10 +78,13 @@ public class GlycerinNitroClipsAdapter {
     private final NitroClipExtractor clipExtractor;
     private final int pageSize;
 
+    private final ListeningExecutorService executor;
+
     public GlycerinNitroClipsAdapter(Glycerin glycerin, Clock clock, int pageSize) {
         this.glycerin = glycerin;
         this.clipExtractor = new NitroClipExtractor(clock);
         this.pageSize = pageSize;
+        this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(15));
     }
     
     public Multimap<String, org.atlasapi.media.entity.Clip> clipsFor(Iterable<PidReference> refs) throws NitroException {
@@ -172,16 +184,44 @@ public class GlycerinNitroClipsAdapter {
             }
         });
     }
-
+    
     private ImmutableList<Programme> getNitroClips(Iterable<PidReference> refs) throws GlycerinException {
-        ProgrammesQuery query = ProgrammesQuery.builder()
-                .withEntityType(EntityTypeOption.CLIP)
-                .withChildrenOf(NitroUtil.toPids(refs))
-                .withPageSize(pageSize)
-                .build();
-        return exhaust(glycerin.execute(query));
+        
+        List<ListenableFuture<ImmutableList<Programme>>> futures = Lists.newArrayList();
+        
+        for (List<PidReference> ref : Iterables.partition(refs, 5)) {
+            ProgrammesQuery query = ProgrammesQuery.builder()
+                    .withEntityType(EntityTypeOption.CLIP)
+                    .withChildrenOf(NitroUtil.toPids(ref))
+                    .withPageSize(pageSize)
+                    .build();
+            
+            futures.add(executor.submit(exhaustingProgrammeCallable(query)));
+        }
+        
+        ListenableFuture<List<ImmutableList<Programme>>> all = Futures.allAsList(futures);
+        
+        try {
+            return ImmutableList.copyOf(Iterables.concat(all.get()));
+        } catch (InterruptedException | ExecutionException e) {
+            if (e.getCause() instanceof GlycerinException) {
+                throw (GlycerinException) e.getCause();
+            }
+            throw Throwables.propagate(e);
+        }
     }
     
+    private Callable<ImmutableList<Programme>> exhaustingProgrammeCallable(final ProgrammesQuery query) {
+        
+        return new Callable<ImmutableList<Programme>>() {
+
+            @Override
+            public ImmutableList<Programme> call() throws Exception {
+                return exhaust(glycerin.execute(query));
+            }
+        };
+    }
+
     private <T> ImmutableList<T> exhaust(GlycerinResponse<T> resp) throws GlycerinException {
         ImmutableList.Builder<T> programmes = ImmutableList.builder(); 
         programmes.addAll(resp.getResults());

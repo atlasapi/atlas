@@ -89,7 +89,7 @@ public class BbcNitroModule {
             scheduler.schedule(nitroScheduleUpdateTask(30, -8, nitroThreeWeekThreadCount, nitroThreeWeekRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
                     .withName("Nitro full fetch -8 to -30 day updater"), RepetitionRules.every(Duration.standardHours(12)));
             scheduler.schedule(nitroScheduleUpdateTask(7, 3, nitroAroundTodayThreadCount, nitroAroundTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
-                    .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.every(Duration.standardHours(4)));
+                    .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.every(Duration.standardHours(2)));
         }
     }
 

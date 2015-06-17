@@ -5,6 +5,8 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.apache.commons.lang.StringEscapeUtils;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -31,7 +33,9 @@ import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 
+import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
@@ -52,8 +56,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String IMDB_ALIAS_URL_PREFIX = "http://www.imdb.com/title/%s";
     private static final String AMAZON_ALIAS_URL_VERSION = "http://gb.amazon.com/asin/%s";
     private static final String URI_VERSION = "http://unbox.amazon.co.uk/%s";
-    private static final String VERSION_URI_PATTERN = "http://unbox.amazon.co.uk/versions/%s";
     private static final String LOCATION_URI_PATTERN = "http://www.amazon.co.uk/dp/%s/";
+    private static final String URL_SUFFIX_TO_REMOVE = "ref=atv_feed_catalog";
+    private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
     private static final OptionalMap<String, Certificate> certificateMap = ImmutableOptionalMap.fromMap(
             ImmutableMap.<String,Certificate>builder()
@@ -155,44 +160,102 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
     
     private Set<Version> generateVersions(AmazonUnboxItem source) {
+        Set<Location> hdLocations = Sets.newHashSet();
+        Set<Location> sdLocations = Sets.newHashSet();
+        
+        if (Boolean.TRUE.equals(source.isTrident())) {
+            if (isHd(source)) {
+                hdLocations.add(createLocation(source, RevenueContract.SUBSCRIPTION, null, source.getUrl()));
+            } else {
+                sdLocations.add(createLocation(source, RevenueContract.SUBSCRIPTION, null, source.getUrl()));
+            }
+        }
+        
+        if (!Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
+            hdLocations.add(createLocation(source, RevenueContract.PAY_TO_BUY, 
+                    source.getUnboxHdPurchasePrice(), source.getUnboxHdPurchaseUrl()));
+        }
+        
+        if (!Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
+            sdLocations.add(createLocation(source, RevenueContract.PAY_TO_BUY, 
+                    source.getUnboxSdPurchasePrice(), source.getUnboxSdPurchaseUrl()));
+        }
+        
+        if (!Strings.isNullOrEmpty(source.getUnboxSdRentalPrice())) {
+            sdLocations.add(createLocation(source, RevenueContract.PAY_TO_RENT, 
+                    source.getUnboxSdRentalPrice(), source.getUnboxSdRentalUrl()));
+        }
+        
+        if (!Strings.isNullOrEmpty(source.getUnboxHdRentalPrice())) {
+            hdLocations.add(createLocation(source, RevenueContract.PAY_TO_RENT, 
+                    source.getUnboxHdRentalPrice(), source.getUnboxHdRentalUrl()));
+        }
+        
+        ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
+        if (!hdLocations.isEmpty()) {
+            encodings.add(createEncoding(source, true, source.getUrl() + "hd", hdLocations));
+        }
+        
+        if (!sdLocations.isEmpty()) {
+            encodings.add(createEncoding(source, false, source.getUrl(), sdLocations));
+        }
+        
+        return ImmutableSet.of(createVersion(source, source.getUrl(), encodings.build()));
+    }
+    
+    private boolean isHd(AmazonUnboxItem source) {
+        return Quality.HD.equals(source.getQuality()); 
+    }
+    
+    private Version createVersion(AmazonUnboxItem source, String url, Set<Encoding> encodings) {
+        String cleanedUri = url.replaceAll(TAG_PLACEHOLDER, "").replaceAll(URL_SUFFIX_TO_REMOVE, "");
         Version version = new Version();
-        version.setCanonicalUri(String.format(VERSION_URI_PATTERN, source.getAsin()));
+        version.setCanonicalUri(cleanedUri);
         if (source.getDuration() != null) {
             version.setDuration(source.getDuration());
         }
-        
-        Location location = new Location();
-        // TODO determine location links, if any
-        location.setPolicy(generatePolicy(source));
-        location.setUri(String.format(LOCATION_URI_PATTERN, source.getAsin()));
+        version.setManifestedAs(encodings);
+        return version;
+    }
+    
+    private Encoding createEncoding(AmazonUnboxItem source, boolean isHd, String url, 
+            Set<Location> locations) {
         
         Encoding encoding = new Encoding();
-        if (Quality.SD.equals(source.getQuality())) {
-            encoding.setVideoHorizontalSize(720);
-            encoding.setVideoVerticalSize(576);
-            encoding.setVideoAspectRatio("16:9");
-            encoding.setBitRate(1600);
-        } else if (Quality.HD.equals(source.getQuality())) {
+        if (isHd) {
             encoding.setVideoHorizontalSize(1280);
             encoding.setVideoVerticalSize(720);
             encoding.setVideoAspectRatio("16:9");
             encoding.setBitRate(3308);
+            encoding.setHighDefinition(true);
+        } else {
+            encoding.setVideoHorizontalSize(720);
+            encoding.setVideoVerticalSize(576);
+            encoding.setVideoAspectRatio("16:9");
+            encoding.setBitRate(1600);
         }
-        encoding.setAvailableAt(ImmutableSet.of(location));
         
-        version.setManifestedAs(ImmutableSet.of(encoding));
-        return ImmutableSet.of(version);
+        encoding.setAvailableAt(locations);
+        return encoding;
     }
     
-    private Policy generatePolicy(AmazonUnboxItem source) {
+    private Location createLocation(AmazonUnboxItem source, RevenueContract revenueContract, 
+            @Nullable String price, String url) {
+        String cleanedUri = url.replaceAll(TAG_PLACEHOLDER, "").replaceAll(URL_SUFFIX_TO_REMOVE, "");
+        
+        Location location = new Location();
+        // TODO determine location links, if any
+        location.setPolicy(generatePolicy(source, revenueContract, price));
+        location.setUri(cleanedUri);
+        location.setCanonicalUri(cleanedUri);
+        return location;
+    }
+    
+    private Policy generatePolicy(AmazonUnboxItem source, RevenueContract revenueContract, @Nullable String price) {
         Policy policy = new Policy();
-        if (source.isRental()) {
-            policy.setRevenueContract(RevenueContract.PAY_TO_RENT);
-        } else {
-            policy.setRevenueContract(RevenueContract.SUBSCRIPTION);
-        }
-        if (source.getPrice() != null) {
-            policy.withPrice(new Price(Currency.getInstance("GBP"), Double.valueOf(source.getPrice())));
+        policy.setRevenueContract(revenueContract);
+        if (price != null) {
+            policy.withPrice(new Price(Currency.getInstance("GBP"), Double.valueOf(price)));
         }
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
         return policy;

@@ -180,6 +180,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withStreamable(parseBoolean(buffer.toString()));
                 break;
             case ISTRIDENT:
+                item.withIsTrident(parseBoolean(buffer.toString()));
                 break;
             case LONGSYNOPSIS:
                 break;
@@ -244,15 +245,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 break;
             case UNBOX_HD_PURCHASE_ASIN:
                 break;
-            case UNBOX_HD_PURCHASE_PRICE:
-                break;
-            case UNBOX_HD_PURCHASE_URL:
-                break;
             case UNBOX_HD_RENTAL_ASIN:
-                break;
-            case UNBOX_HD_RENTAL_PRICE:
-                break;
-            case UNBOX_HD_RENTAL_URL:
                 break;
             case UNBOX_PURCHASE_ASIN:
                 break;
@@ -269,14 +262,28 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
             case UNBOX_SD_PURCHASE_ASIN:
                 break;
             case UNBOX_SD_PURCHASE_PRICE:
+                item.withUnboxSdPurchasePrice(buffer.toString());
                 break;
             case UNBOX_SD_PURCHASE_URL:
-                break;
-            case UNBOX_SD_RENTAL_ASIN:
+                item.withUnboxSdPurchaseUrl(buffer.toString());
                 break;
             case UNBOX_SD_RENTAL_PRICE:
+                item.withUnboxSdRentalPrice(buffer.toString());
                 break;
             case UNBOX_SD_RENTAL_URL:
+                item.withUnboxSdRentalUrl(buffer.toString());
+                break;
+            case UNBOX_HD_RENTAL_PRICE:
+                item.withUnboxHdRentalPrice(buffer.toString());
+                break;
+            case UNBOX_HD_RENTAL_URL:
+                item.withUnboxHdRentalUrl(buffer.toString());
+                break;
+            case UNBOX_HD_PURCHASE_PRICE:
+                item.withUnboxHdPurchasePrice(buffer.toString());
+                break;
+            case UNBOX_HD_PURCHASE_URL:
+                item.withUnboxHdPurchaseUrl(buffer.toString());
                 break;
             case URL:
                 item.withUrl(buffer.toString());

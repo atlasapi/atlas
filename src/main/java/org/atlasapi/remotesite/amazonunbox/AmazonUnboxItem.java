@@ -16,6 +16,7 @@ public class AmazonUnboxItem {
     private final float amazonRating;
     private final Integer amazonRatingsCount;
     private final String asin;
+    private final Boolean isTrident;
     private final ContentType contentType;
     private final String director;
     private final Integer episodeNumber;
@@ -42,6 +43,14 @@ public class AmazonUnboxItem {
     private final String title;
     private final Boolean isTivoEnabled;
     private final String url;
+    private final String unboxSdPurchasePrice;
+    private final String unboxSdPurchaseUrl;
+    private final String unboxHdPurchasePrice;
+    private final String unboxHdPurchaseUrl;
+    private String unboxSdRentalPrice;
+    private String unboxSdRentalUrl;
+    private String unboxHdRentalPrice;
+    private String unboxHdRentalUrl;
     
     public static Builder builder() {
         return new Builder();
@@ -67,13 +76,24 @@ public class AmazonUnboxItem {
             Integer episodeNumber, Set<AmazonUnboxGenre> genres, String largeImageUrl, Quality quality, Boolean isPreOrder, 
             Boolean isRental, Boolean isSeasonPass, Boolean isStreamable, String synopsis, String rating, String price, 
             DateTime releaseDate, Duration duration, Set<String> starring, String seasonAsin, Integer seasonNumber, 
-            String seriesAsin, String seriesTitle, String studio, String tConst, String title, Boolean isTivoEnabled, String url) {
+            String seriesAsin, String seriesTitle, String studio, String tConst, String title, Boolean isTivoEnabled, String url,
+            String unboxSdPurchasePrice, String unboxSdPurchaseUrl, String unboxHdPurchasePrice, String unboxHdPurchaseUrl, 
+            String unboxSdRentalPrice, String unboxSdRentalUrl, String unboxHdRentalPrice, String unboxHdRentalUrl, Boolean isTrident) {
         this.amazonRating = amazonRating;
         this.amazonRatingsCount = amazonRatingsCount;
         this.asin = asin;
         this.contentType = contentType;
         this.director = director;
         this.episodeNumber = episodeNumber;
+        this.unboxSdPurchasePrice = unboxSdPurchasePrice;
+        this.unboxSdPurchaseUrl = unboxSdPurchaseUrl;
+        this.unboxHdPurchasePrice = unboxHdPurchasePrice;
+        this.unboxHdPurchaseUrl = unboxHdPurchaseUrl;
+        this.unboxSdRentalPrice = unboxSdRentalPrice;
+        this.unboxSdRentalUrl = unboxSdRentalUrl;
+        this.unboxHdRentalPrice = unboxHdRentalPrice;
+        this.unboxHdRentalUrl = unboxHdRentalUrl;
+        this.isTrident = isTrident;
         this.starring = ImmutableSet.copyOf(starring);
         this.genres = ImmutableSet.copyOf(genres);
         this.largeImageUrl = largeImageUrl;
@@ -206,9 +226,51 @@ public class AmazonUnboxItem {
         return isTivoEnabled;
     }
     
+    public Boolean isTrident() {
+        return isTrident;
+    }
+    
     public String getUrl() {
         return url;
     }
+    
+    public String getUnboxSdPurchasePrice() {
+        return unboxSdPurchasePrice;
+    }
+    
+    public String getUnboxSdPurchaseUrl() {
+        return unboxSdPurchaseUrl;
+    }
+    
+    public String getUnboxHdPurchasePrice() {
+        return unboxHdPurchasePrice;
+    }
+    
+    public String getUnboxHdPurchaseUrl() {
+        return unboxHdPurchaseUrl;
+    }
+    
+
+    public String getUnboxSdRentalPrice() {
+        return unboxSdRentalPrice;
+    }
+
+    
+    public String getUnboxSdRentalUrl() {
+        return unboxSdRentalUrl;
+    }
+
+    
+    public String getUnboxHdRentalPrice() {
+        return unboxHdRentalPrice;
+    }
+
+    
+    public String getUnboxHdRentalUrl() {
+        return unboxHdRentalUrl;
+    }
+
+
     
     @Override
     public int hashCode() {
@@ -296,6 +358,15 @@ public class AmazonUnboxItem {
         private String title;
         private Boolean isTivoEnabled;
         private String url;
+        private String unboxSdPurchasePrice;
+        private String unboxSdPurchaseUrl;
+        private String unboxHdPurchasePrice;
+        private String unboxHdPurchaseUrl;
+        private String unboxSdRentalPrice;
+        private String unboxSdRentalUrl;
+        private String unboxHdRentalPrice;
+        private String unboxHdRentalUrl;
+        private Boolean isTrident;
         
         private Builder() {}
         
@@ -303,7 +374,9 @@ public class AmazonUnboxItem {
             return new AmazonUnboxItem(amazonRating, amazonRatingsCount, asin, contentType, director, 
                     episodeNumber, genres, largeImageUrl, quality, isPreOrder, isRental, isSeasonPass, 
                     isStreamable, synopsis, rating, price, releaseDate, duration, starring, seasonAsin, 
-                    seasonNumber, seriesAsin, seriesTitle, studio, tConst, title, isTivoEnabled, url);
+                    seasonNumber, seriesAsin, seriesTitle, studio, tConst, title, isTivoEnabled, url, 
+                    unboxSdPurchasePrice, unboxSdPurchaseUrl, unboxHdPurchasePrice, unboxHdPurchaseUrl,
+                    unboxSdRentalPrice, unboxSdRentalUrl, unboxHdRentalPrice, unboxHdRentalUrl, isTrident);
         }
         
         public Builder withAmazonRating(float amazonRating) {
@@ -373,6 +446,11 @@ public class AmazonUnboxItem {
         
         public Builder withStreamable(Boolean isStreamable) {
             this.isStreamable = isStreamable;
+            return this;
+        }
+        
+        public Builder withIsTrident(Boolean isTrident) {
+            this.isTrident = isTrident;
             return this;
         }
         
@@ -453,6 +531,46 @@ public class AmazonUnboxItem {
         
         public Builder withUrl(String url) {
             this.url = url;
+            return this;
+        }
+        
+        public Builder withUnboxSdPurchasePrice(String price) {
+            this.unboxSdPurchasePrice = price;
+            return this;
+        }
+        
+        public Builder withUnboxSdPurchaseUrl(String url) {
+            this.unboxSdPurchaseUrl = url;
+            return this;
+        }
+        
+        public Builder withUnboxHdPurchasePrice(String price) {
+            this.unboxHdPurchasePrice = price;
+            return this;
+        }
+        
+        public Builder withUnboxHdPurchaseUrl(String url) {
+            this.unboxHdPurchaseUrl = url;
+            return this;
+        }
+
+        public Builder withUnboxSdRentalPrice(String price) {
+            this.unboxSdRentalPrice = price;
+            return this;
+        
+        }
+        public Builder withUnboxSdRentalUrl(String url) {
+            this.unboxSdRentalUrl = url;
+            return this;
+        }
+
+        public Builder withUnboxHdRentalPrice(String price) {
+            this.unboxHdRentalPrice = price;
+            return this;
+        }
+
+        public Builder withUnboxHdRentalUrl(String url) {
+            this.unboxHdRentalUrl = url;
             return this;
         }
     }

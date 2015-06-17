@@ -33,7 +33,6 @@ import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 
-import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -41,6 +40,7 @@ import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.metabroadcast.common.collect.ImmutableOptionalMap;
 import com.metabroadcast.common.collect.OptionalMap;
 import com.metabroadcast.common.currency.Price;
@@ -50,6 +50,8 @@ import com.metabroadcast.common.media.MimeType;
 
 public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem, Iterable<Content>> {
     
+    private static final boolean IS_SD = false;
+    private static final boolean IS_HD = true;
     private static final String LANGUAGE_ENGLISH = "en";
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
     private static final String ASIN_NAMESPACE = "gb:amazon:asin";
@@ -193,11 +195,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
         if (!hdLocations.isEmpty()) {
-            encodings.add(createEncoding(source, true, source.getUrl() + "hd", hdLocations));
+            encodings.add(createEncoding(source, IS_HD, source.getUrl() + "hd", hdLocations));
         }
         
         if (!sdLocations.isEmpty()) {
-            encodings.add(createEncoding(source, false, source.getUrl(), sdLocations));
+            encodings.add(createEncoding(source, IS_SD, source.getUrl(), sdLocations));
         }
         
         return ImmutableSet.of(createVersion(source, source.getUrl(), encodings.build()));

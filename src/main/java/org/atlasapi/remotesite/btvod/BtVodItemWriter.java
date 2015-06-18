@@ -14,6 +14,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.intl.Country;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Certificate;
@@ -31,6 +32,7 @@ import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.simple.Pricing;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -283,7 +285,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
-            item.setCertificates(ImmutableList.of(new Certificate(rating.getPlproduct$ratingString(), Countries.GB)));
+            item.setCertificates(ImmutableList.of(new Certificate(rating.getProductRating(), Countries.GB)));
         }
         
         item.setClips(extractTrailer(row));
@@ -355,7 +357,8 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         }
         policy.setPricing(pricings.build());
         policy.setSubscriptionPackages(row.getSubscriptionCodes());
-
+        policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
+        policy.setRevenueContract(RevenueContract.PAY_TO_RENT);
         Location location = new Location();
         location.setPolicy(policy);
         location.setCanonicalUri(uriFor(row));
@@ -383,20 +386,10 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
-            Integer ageRating = rating.getProductRating();
-            if (ageRating != null) {
-                version.setRestriction(Restriction.from(ageRating, rating.getProductScheme()));
-            } else {
-                version.setRestriction(
-                        Restriction.from(
-                                String.format(
-                                        "%s:%s",
-                                        rating.getProductScheme(),
-                                        rating.getPlproduct$ratingString()
-                                )
-                        )
-                );
-            }
+            String scheme = rating.getProductScheme();
+            String ratingValue = rating.getProductRating();
+            
+            version.setRestriction(Restriction.from(scheme, ratingValue));
         }
 
         return ImmutableSet.of(version);

@@ -55,7 +55,7 @@ public class BtVodResponseTransformerTest {
 
         BtVodProductRating restriction = Iterables.getOnlyElement(entry1.getplproduct$ratings());
 
-        assertThat(restriction.getProductRating(), is(12));
+        assertThat(restriction.getProductRating(), is("12"));
         assertThat(restriction.getProductScheme(), is("urn:www.bbfc.co.uk"));
 
         BtVodPlproductImages images = entry1.getProductImages();

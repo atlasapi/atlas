@@ -358,7 +358,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         policy.setPricing(pricings.build());
         policy.setSubscriptionPackages(row.getSubscriptionCodes());
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
-        policy.setRevenueContract(RevenueContract.PAY_TO_RENT);
+        
+        if (!row.getSubscriptionCodes().isEmpty()) {
+            policy.setRevenueContract(RevenueContract.SUBSCRIPTION);
+        } else {
+            policy.setRevenueContract(RevenueContract.PAY_TO_BUY);
+        }
         Location location = new Location();
         location.setPolicy(policy);
         location.setCanonicalUri(uriFor(row));

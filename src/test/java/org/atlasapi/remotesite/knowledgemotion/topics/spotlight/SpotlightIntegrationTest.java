@@ -15,7 +15,7 @@ public class SpotlightIntegrationTest {
     @Test
     public void testSpotlightIntegrationForSingleKwExtraction() {
         // temporary outage of spotlight server
-        if (DateTime.now().isBefore(DateTime.parse("2015-06-16"))) {
+        if (DateTime.now().isBefore(DateTime.parse("2015-06-24"))) {
             return;
         }
 

@@ -86,6 +86,7 @@ public class BtVodUpdater extends ScheduledTask {
                 listeners,
                 describedFieldsExtractor,
                 processedRows,
+                new BtVodPricingAvailabilityGrouper(),
                 new TitleSanitiser()
         );
         

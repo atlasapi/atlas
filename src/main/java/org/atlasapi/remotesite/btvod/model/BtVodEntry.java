@@ -59,6 +59,9 @@ public class BtVodEntry {
     @SerializedName("btproduct$duration")
     private Long productDuration;
     
+    @SerializedName("btproduct$productOfferingType")
+    private String productOfferingType;
+    
     public BtVodEntry() {}
 
     public String getGuid() {
@@ -79,6 +82,10 @@ public class BtVodEntry {
 
     public String getProductType() {
         return productType;
+    }
+    
+    public String getProductOfferingType() {
+        return productOfferingType;
     }
 
     public String getContentProviderId() {

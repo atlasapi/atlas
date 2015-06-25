@@ -77,7 +77,9 @@ public class BtVodItemWriterTest {
                                 PUBLISHER, URI_PREFIX,
                                 contentListener,
                                 new BtVodDescribedFieldsExtractor(imageExtractor),
-                                Sets.<String>newHashSet(), new TitleSanitiser());
+                                Sets.<String>newHashSet(),
+                                new BtVodPricingAvailabilityGrouper(),
+                                new TitleSanitiser());
     
     @Test
     public void testExtractsEpisode() {
@@ -121,8 +123,8 @@ public class BtVodItemWriterTest {
                     
                     
         assertThat(writtenItem.getAliases(), is(expectedAliases));
-        //assertThat(Iterables.getOnlyElement(location.getPolicy().getAvailableCountries()).code(), is("GB"));
-        //assertThat(location.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_RENT));
+        assertThat(Iterables.getOnlyElement(location.getPolicy().getAvailableCountries()).code(), is("GB"));
+        assertThat(location.getPolicy().getRevenueContract(), is(RevenueContract.SUBSCRIPTION));
     }
     
     private Item extractAndCapture(BtVodEntry entry) {

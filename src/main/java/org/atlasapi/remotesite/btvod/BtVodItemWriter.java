@@ -2,9 +2,11 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -12,6 +14,7 @@ import java.util.regex.Pattern;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.intl.Country;
@@ -44,6 +47,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
+import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -89,6 +93,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final TitleSanitiser titleSanitiser;
     private UpdateProgress progress = UpdateProgress.START;
+    private BtVodPricingAvailabilityGrouper grouper;
 
     public BtVodItemWriter(
             ContentWriter writer,
@@ -100,9 +105,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             BtVodContentListener listener,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
+            BtVodPricingAvailabilityGrouper grouper,
             TitleSanitiser titleSanitiser
     ) {
-        this.describedFieldsExtractor = describedFieldsExtractor;
+        this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
+        this.grouper = checkNotNull(grouper);
         this.listener = checkNotNull(listener);
         this.writer = checkNotNull(writer);
         this.resolver = checkNotNull(resolver);
@@ -329,6 +336,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private Set<Version> createVersions(BtVodEntry row) {
+        
+        Set<Alias> aliases = ImmutableSet.of(
+                                new Alias(BT_VOD_GUID_NAMESPACE, row.getGuid()), 
+                                new Alias(BT_VOD_ID_NAMESPACE, row.getId())
+                             );
+        
         if (row.getProductOfferStartDate() == null
                 || row.getProductOfferEndDate() == null
                 || !isItemTvodPlayoutAllowed(row)
@@ -336,14 +349,64 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             return ImmutableSet.of();
         }
 
-        DateTime availabilityStart = new DateTime(row.getProductOfferStartDate(), DateTimeZone.UTC);
-        DateTime availabilityEnd = new DateTime(row.getProductOfferEndDate(), DateTimeZone.UTC);
+        ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
+        if (!row.getSubscriptionCodes().isEmpty()) {
+            DateTime availabilityStart = new DateTime(row.getProductOfferStartDate(), DateTimeZone.UTC);
+            DateTime availabilityEnd = new DateTime(row.getProductOfferEndDate(), DateTimeZone.UTC);
+            locations.add(createLocation(row, new Interval(availabilityStart, availabilityEnd), 
+                    ImmutableSet.<BtVodProductPricingTier>of(), RevenueContract.SUBSCRIPTION, aliases));
+        }
+        
+        //TODO filter for blackout
+        if (!row.getProductPricingPlan().getProductPricingTiers().isEmpty()) {
+            if (row.getProductOfferingType().contains("-EST")) {
+                locations.addAll(createLocations(row, RevenueContract.PAY_TO_BUY, aliases));
+            } else {
+                locations.addAll(createLocations(row, RevenueContract.PAY_TO_RENT, aliases));
+            }
+        }
 
+        Encoding encoding = new Encoding();
+        encoding.setAvailableAt(locations.build());
+        setQualityOn(encoding, row);
+        
+        Version version = new Version();
+        version.setManifestedAs(ImmutableSet.of(encoding));
+        version.setCanonicalUri(uriFor(row));
+        version.setAliases(aliases);
+        
+        if (row.getProductDuration() != null) {
+            version.setDuration(Duration.standardSeconds(row.getProductDuration()));
+        }
+        
+        BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
+        if (rating != null) {
+            String scheme = rating.getProductScheme();
+            String ratingValue = rating.getProductRating();
+            
+            version.setRestriction(Restriction.from(scheme, ratingValue));
+        }
+
+        return ImmutableSet.of(version);
+    }
+    
+    private Set<Location> createLocations(BtVodEntry row, RevenueContract subscription, Set<Alias> aliases) {
+        ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
+        Multimap<Interval, BtVodProductPricingTier> groupAvailabilityPeriods = grouper.groupAvailabilityPeriods(row);
+        for (Entry<Interval, Collection<BtVodProductPricingTier>> entry : groupAvailabilityPeriods.asMap().entrySet()) {
+            locations.add(createLocation(row, entry.getKey(), entry.getValue(), subscription, aliases));
+        }
+        return locations.build();
+    }
+
+    private Location createLocation(BtVodEntry row, Interval availability, Collection<BtVodProductPricingTier> pricingTiers,
+            RevenueContract subscription, Set<Alias> aliases) {
+        
         Policy policy = new Policy();
-        policy.setAvailabilityStart(availabilityStart);
-        policy.setAvailabilityEnd(availabilityEnd);
+        policy.setAvailabilityStart(availability.getStart());
+        policy.setAvailabilityEnd(availability.getEnd());
         ImmutableList.Builder<Pricing> pricings = ImmutableList.builder();
-        for (BtVodProductPricingTier pricingTier : row.getProductPricingPlan().getProductPricingTiers()) {
+        for (BtVodProductPricingTier pricingTier : pricingTiers) {
             DateTime startDate = new DateTime(pricingTier.getProductAbsoluteStart(), DateTimeZone.UTC);
             DateTime endDate = new DateTime(pricingTier.getProductAbsoluteEnd(), DateTimeZone.UTC);
             Double amount;
@@ -362,44 +425,22 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         if (!row.getSubscriptionCodes().isEmpty()) {
             policy.setRevenueContract(RevenueContract.SUBSCRIPTION);
         } else {
-            policy.setRevenueContract(RevenueContract.PAY_TO_BUY);
+            if (row.getProductOfferingType().contains("-EST")) {
+                policy.setRevenueContract(RevenueContract.PAY_TO_BUY);                
+            } else {
+                policy.setRevenueContract(RevenueContract.PAY_TO_RENT);
+            }
         }
         Location location = new Location();
         location.setPolicy(policy);
         location.setCanonicalUri(uriFor(row));
         location.setUri(uriFor(row));
+        location.setAliases(aliases);
         
-        Alias btVodGuidAlias = new Alias(BT_VOD_GUID_NAMESPACE, row.getGuid());
-        Alias btVodIdAlias = new Alias(BT_VOD_ID_NAMESPACE, row.getId());
-        location.setAliases(ImmutableSet.of(btVodGuidAlias, btVodIdAlias));
-        location.setAliasUrls(ImmutableSet.of(uriFor(row), row.getId()));
-
-
-        Encoding encoding = new Encoding();
-        encoding.setAvailableAt(ImmutableSet.of(location));
-        setQualityOn(encoding, row);
-
-        Version version = new Version();
-        version.setManifestedAs(ImmutableSet.of(encoding));
-        version.setCanonicalUri(uriFor(row));
-        version.setAliasUrls(location.getAliasUrls());
-        version.setAliases(location.getAliases());
+        return location;
         
-        if (row.getProductDuration() != null) {
-            version.setDuration(Duration.standardSeconds(row.getProductDuration()));
-        }
-        
-        BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
-        if (rating != null) {
-            String scheme = rating.getProductScheme();
-            String ratingValue = rating.getProductRating();
-            
-            version.setRestriction(Restriction.from(scheme, ratingValue));
-        }
-
-        return ImmutableSet.of(version);
     }
-    
+
     private boolean isItemMediaAvailableOnCdn(BtVodEntry row) {
         return true;
         //return row.getServiceTypes().contains(OTG_PLATFORM);

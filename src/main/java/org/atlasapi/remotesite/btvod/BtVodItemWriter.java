@@ -325,6 +325,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         return titleSanitiser.sanitiseTitle(row.getTitle());
     }
 
+    private String uriFor(BtVodEntry row, RevenueContract revenueContract) {
+        String id = row.getGuid();
+        return uriPrefix + "items/" + id + "/" + revenueContract.toString();
+    }
+    
     private String uriFor(BtVodEntry row) {
         String id = row.getGuid();
         return uriPrefix + "items/" + id;
@@ -384,7 +389,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             String scheme = rating.getProductScheme();
             String ratingValue = rating.getProductRating();
             
-            version.setRestriction(Restriction.from(scheme, ratingValue));
+//            version.setRestriction(Restriction.from(scheme, ratingValue));
         }
 
         return ImmutableSet.of(version);
@@ -433,7 +438,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         }
         Location location = new Location();
         location.setPolicy(policy);
-        location.setCanonicalUri(uriFor(row));
+        location.setCanonicalUri(uriFor(row, policy.getRevenueContract()));
         location.setUri(uriFor(row));
         location.setAliases(aliases);
         

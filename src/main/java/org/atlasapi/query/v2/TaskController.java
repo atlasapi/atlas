@@ -37,6 +37,8 @@ import com.metabroadcast.common.query.Selection.SelectionBuilder;
 @Controller
 public class TaskController extends BaseController<Iterable<Task>> {
     
+    private static final String NITRO_URI_PREFIX = "http://nitro.bbc.co.uk/programmes/";
+    
     private static final SelectionBuilder SELECTION_BUILDER = Selection.builder().withMaxLimit(100).withDefaultLimit(10);
     private static final AtlasErrorSummary NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
             .withMessage("No Task exists with the provided ID")
@@ -90,6 +92,12 @@ public class TaskController extends BaseController<Iterable<Task>> {
     
     private TaskQuery queryFrom(Publisher publisher, Selection selection, String contentUri, String remoteId, String statusStr, 
             String actionStr, String typeStr, String elementId) {
+        
+        if (contentUri != null 
+                && !contentUri.startsWith(NITRO_URI_PREFIX)) {
+            contentUri = NITRO_URI_PREFIX + contentUri;
+        }
+        
         TaskQuery.Builder query = TaskQuery.builder(selection, publisher)
                 .withContentUri(contentUri)
                 .withRemoteId(remoteId)

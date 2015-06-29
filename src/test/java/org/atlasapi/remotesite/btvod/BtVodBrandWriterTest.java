@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,7 +40,8 @@ public class BtVodBrandWriterTest {
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageUriProvider imageUriProvider = mock(ImageUriProvider.class);
     private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
-    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor);
+    private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver);
     private final BtVodBrandWriter brandExtractor
                     = new BtVodBrandWriter(
                                 contentWriter,

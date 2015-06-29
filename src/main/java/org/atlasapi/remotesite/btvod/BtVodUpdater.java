@@ -8,6 +8,7 @@ import java.util.Set;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,9 +33,9 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodOldContentDeactivator oldContentDeactivator;
     
     public BtVodUpdater(ContentResolver resolver, ContentWriter contentWriter,
-            BtVodData vodData, String uriPrefix, 
-            BtVodContentGroupUpdater contentGroupUpdater, 
-            BtVodDescribedFieldsExtractor describedFieldsExtractor, 
+            BtVodData vodData, String uriPrefix,
+            BtVodContentGroupUpdater contentGroupUpdater,
+            BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Publisher publisher, BtVodOldContentDeactivator oldContentDeactivator) {
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.resolver = checkNotNull(resolver);

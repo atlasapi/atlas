@@ -54,6 +54,12 @@
           "plproduct$title": "a10ffd98-9e20-477e-a833-4d058e6a0552",
           "plproduct$titleLocalized": {
           }
+        },
+        {
+          "plproduct$scheme": "contentProvider",
+          "plproduct$schemeLocalized": {},
+          "plproduct$title": "MCL",
+          "plproduct$titleLocalized": {}
         }
       ],
       "plproduct$productTagIds": [

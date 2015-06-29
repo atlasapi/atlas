@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.btvod;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -17,6 +18,9 @@ import org.atlasapi.media.entity.Image;
 
 import com.google.common.collect.Iterables;
 
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.TopicRef;
+import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 
@@ -33,13 +37,15 @@ public class BtVodDescribedFieldsExtractor {
 
     static final String GUID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:guid";
     static final String ID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:id";
-    
+    static final String CONTENT_PROVIDER_TOPIC_NAMESPACE = "gb:bt:tv:mpx:prod:contentProvider";
+
     private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
     private static final Pattern SUB_GENRE_ARRAYPATTERN = Pattern.compile("^\\[(.*)\\]$");
     private static final CSVFormat SUB_GENRE_CSV_PARSER = CSVFormat.RFC4180;
 
     private final ImageExtractor imageExtractor;
+    private final TopicCreatingTopicResolver topicCreatingTopicResolver;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -129,9 +135,11 @@ public class BtVodDescribedFieldsExtractor {
     
     
     public BtVodDescribedFieldsExtractor(
-            ImageExtractor imageExtractor
+            ImageExtractor imageExtractor,
+            TopicCreatingTopicResolver topicCreatingTopicResolver
     ) {
         this.imageExtractor = checkNotNull(imageExtractor);
+        this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
     }
     
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
@@ -206,5 +214,23 @@ public class BtVodDescribedFieldsExtractor {
         // images are of poor quality, so not useful to save
         // return imageExtractor.extractImages(row.getProductImages());
         return ImmutableSet.of(); 
+    }
+
+    public Optional<TopicRef> topicFor(BtVodEntry entry) {
+        if (entry.getContentProviderId() == null) {
+            return Optional.absent();
+        }
+        return Optional.of(
+                new TopicRef(
+                        topicCreatingTopicResolver.topicFor(
+                                Publisher.BT_VOD,
+                                CONTENT_PROVIDER_TOPIC_NAMESPACE,
+                                entry.getContentProviderId()
+                        ).requireValue(),
+                        1.0f,
+                        false,
+                        TopicRef.Relationship.ABOUT
+                )
+        );
     }
 }

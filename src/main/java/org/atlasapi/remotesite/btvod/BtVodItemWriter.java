@@ -34,6 +34,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Song;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.simple.Pricing;
@@ -189,11 +190,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         populateItemFields(item, row);
         return item;
     }
-    
+
     private void includeVersionsAndClipsOnAlreadyExtractedItem(Item item, BtVodEntry row) {
         item.addVersions(createVersions(row));
         item.addClips(extractTrailer(row));
-        item.addAliases(describedFieldsExtractor.aliasesFrom(row));        
+        item.addAliases(describedFieldsExtractor.aliasesFrom(row));
     }
 
     private String itemKeyForDeduping(BtVodEntry row) {
@@ -289,25 +290,26 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         item.setVersions(createVersions(row));
         item.setEditorialPriority(row.getProductPriority());
+        item.setTopicRefs(describedFieldsExtractor.topicFor(row).asSet());
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
             item.setCertificates(ImmutableList.of(new Certificate(rating.getProductRating(), Countries.GB)));
         }
-        
+
         item.setClips(extractTrailer(row));
     }
 
     private List<Clip> extractTrailer(BtVodEntry row) {
         if (!isTrailerMediaAvailableOnCdn(row)
                 || Strings.isNullOrEmpty(row.getProductTrailerMediaId())) {
-            return ImmutableList.of(); 
+            return ImmutableList.of();
         }
-        
-        Clip clip = new Clip(row.getProductTrailerMediaId(), 
-                             row.getProductTrailerMediaId(), 
+
+        Clip clip = new Clip(row.getProductTrailerMediaId(),
+                             row.getProductTrailerMediaId(),
                              publisher);
-        
+
         Version version = new Version();
         Encoding encoding = new Encoding();
         setQualityOn(encoding, row);
@@ -315,7 +317,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         clip.addVersion(version);
         return ImmutableList.of(clip);
     }
-    
+
     private boolean isTrailerMediaAvailableOnCdn(BtVodEntry row) {
         return true;
         //return row.getTrailerServiceTypes().contains(OTG_PLATFORM);
@@ -329,7 +331,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         String id = row.getGuid();
         return uriPrefix + "items/" + id + "/" + revenueContract.toString();
     }
-    
+
     private String uriFor(BtVodEntry row) {
         String id = row.getGuid();
         return uriPrefix + "items/" + id;
@@ -341,12 +343,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private Set<Version> createVersions(BtVodEntry row) {
-        
+
         Set<Alias> aliases = ImmutableSet.of(
-                                new Alias(BT_VOD_GUID_NAMESPACE, row.getGuid()), 
+                                new Alias(BT_VOD_GUID_NAMESPACE, row.getGuid()),
                                 new Alias(BT_VOD_ID_NAMESPACE, row.getId())
                              );
-        
+
         if (row.getProductOfferStartDate() == null
                 || row.getProductOfferEndDate() == null
                 || !isItemTvodPlayoutAllowed(row)
@@ -358,10 +360,10 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         if (!row.getSubscriptionCodes().isEmpty()) {
             DateTime availabilityStart = new DateTime(row.getProductOfferStartDate(), DateTimeZone.UTC);
             DateTime availabilityEnd = new DateTime(row.getProductOfferEndDate(), DateTimeZone.UTC);
-            locations.add(createLocation(row, new Interval(availabilityStart, availabilityEnd), 
+            locations.add(createLocation(row, new Interval(availabilityStart, availabilityEnd),
                     ImmutableSet.<BtVodProductPricingTier>of(), RevenueContract.SUBSCRIPTION, aliases));
         }
-        
+
         //TODO filter for blackout
         if (!row.getProductPricingPlan().getProductPricingTiers().isEmpty()) {
             if (row.getProductOfferingType().contains("-EST")) {
@@ -374,27 +376,27 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         Encoding encoding = new Encoding();
         encoding.setAvailableAt(locations.build());
         setQualityOn(encoding, row);
-        
+
         Version version = new Version();
         version.setManifestedAs(ImmutableSet.of(encoding));
         version.setCanonicalUri(uriFor(row));
         version.setAliases(aliases);
-        
+
         if (row.getProductDuration() != null) {
             version.setDuration(Duration.standardSeconds(row.getProductDuration()));
         }
-        
+
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
             String scheme = rating.getProductScheme();
             String ratingValue = rating.getProductRating();
-            
+
 //            version.setRestriction(Restriction.from(scheme, ratingValue));
         }
 
         return ImmutableSet.of(version);
     }
-    
+
     private Set<Location> createLocations(BtVodEntry row, RevenueContract subscription, Set<Alias> aliases) {
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
         Multimap<Interval, BtVodProductPricingTier> groupAvailabilityPeriods = grouper.groupAvailabilityPeriods(row);
@@ -406,7 +408,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Location createLocation(BtVodEntry row, Interval availability, Collection<BtVodProductPricingTier> pricingTiers,
             RevenueContract subscription, Set<Alias> aliases) {
-        
+
         Policy policy = new Policy();
         policy.setAvailabilityStart(availability.getStart());
         policy.setAvailabilityEnd(availability.getEnd());
@@ -426,12 +428,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         policy.setPricing(pricings.build());
         policy.setSubscriptionPackages(row.getSubscriptionCodes());
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
-        
+
         if (!row.getSubscriptionCodes().isEmpty()) {
             policy.setRevenueContract(RevenueContract.SUBSCRIPTION);
         } else {
             if (row.getProductOfferingType().contains("-EST")) {
-                policy.setRevenueContract(RevenueContract.PAY_TO_BUY);                
+                policy.setRevenueContract(RevenueContract.PAY_TO_BUY);
             } else {
                 policy.setRevenueContract(RevenueContract.PAY_TO_RENT);
             }
@@ -441,9 +443,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         location.setCanonicalUri(uriFor(row, policy.getRevenueContract()));
         location.setUri(uriFor(row));
         location.setAliases(aliases);
-        
+
         return location;
-        
+
     }
 
     private boolean isItemMediaAvailableOnCdn(BtVodEntry row) {

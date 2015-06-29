@@ -15,6 +15,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
@@ -129,6 +130,8 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         series.setParentRef(brandExtractor.getBrandRefFor(row).orNull());
         series.setAliases(describedFieldsExtractor.aliasesFrom(row));
         series.setGenres(describedFieldsExtractor.btGenresFrom(row));
+        series.setTopicRefs(describedFieldsExtractor.topicFor(row).asSet());
+
         return series;
     }
 

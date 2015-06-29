@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.hamcrest.Matchers;
 import org.junit.Test;
@@ -37,7 +38,9 @@ public class BtVodSeriesWriterTest {
     private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
-    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor);
+    private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
+
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver);
 
     private final BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(
             contentWriter,

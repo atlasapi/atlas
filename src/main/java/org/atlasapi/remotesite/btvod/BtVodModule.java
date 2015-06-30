@@ -20,6 +20,7 @@ import org.atlasapi.remotesite.btvod.portal.PortalClient;
 import org.atlasapi.remotesite.btvod.portal.XmlPortalClient;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -69,6 +70,7 @@ public class BtVodModule {
     @Autowired
     private TopicCreatingTopicResolver topicResolver;
     @Autowired
+    @Qualifier("topicStore")
     private TopicWriter topicWriter;
     @Value("${bt.vod.file}")
     private String filename;

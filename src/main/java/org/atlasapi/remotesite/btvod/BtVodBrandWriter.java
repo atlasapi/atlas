@@ -81,7 +81,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         this.resolver = checkNotNull(resolver);
         this.publisher = checkNotNull(publisher);
         this.uriPrefix = checkNotNull(uriPrefix);
-        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
+        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
         this.titleSanitiser = checkNotNull(titleSanitiser);
         //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.

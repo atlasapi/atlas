@@ -73,7 +73,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         //      Added as a collaborator for Alias extraction, but should be used more 
         //      widely
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
-        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
+        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
     }
     
     @Override

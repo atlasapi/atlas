@@ -4,12 +4,12 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import com.google.common.collect.Maps;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVParser;
 import org.atlasapi.media.entity.Alias;
@@ -19,14 +19,15 @@ import org.atlasapi.media.entity.Image;
 import com.google.common.collect.Iterables;
 
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
+import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 
 import java.io.IOException;
 import java.io.StringReader;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -38,14 +39,16 @@ public class BtVodDescribedFieldsExtractor {
     static final String GUID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:guid";
     static final String ID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:id";
     static final String CONTENT_PROVIDER_TOPIC_NAMESPACE = "gb:bt:tv:mpx:prod:contentProvider";
-
     private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
+
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
     private static final Pattern SUB_GENRE_ARRAYPATTERN = Pattern.compile("^\\[(.*)\\]$");
     private static final CSVFormat SUB_GENRE_CSV_PARSER = CSVFormat.RFC4180;
-
     private final ImageExtractor imageExtractor;
+
     private final TopicCreatingTopicResolver topicCreatingTopicResolver;
+    private final TopicWriter topicWriter;
+    private final Map<String, Topic> topics = Maps.newConcurrentMap();
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -136,10 +139,12 @@ public class BtVodDescribedFieldsExtractor {
     
     public BtVodDescribedFieldsExtractor(
             ImageExtractor imageExtractor,
-            TopicCreatingTopicResolver topicCreatingTopicResolver
+            TopicCreatingTopicResolver topicCreatingTopicResolver,
+            TopicWriter topicWriter
     ) {
         this.imageExtractor = checkNotNull(imageExtractor);
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
+        this.topicWriter = checkNotNull(topicWriter);
     }
     
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
@@ -206,8 +211,8 @@ public class BtVodDescribedFieldsExtractor {
     
     public Iterable<Alias> aliasesFrom(BtVodEntry row) {
         return ImmutableSet.of(
-                    new Alias(GUID_ALIAS_NAMESPACE, row.getGuid()),
-                    new Alias(ID_ALIAS_NAMESPACE, row.getId()));
+                new Alias(GUID_ALIAS_NAMESPACE, row.getGuid()),
+                new Alias(ID_ALIAS_NAMESPACE, row.getId()));
     }
 
     private Iterable<Image> createImages(BtVodEntry row) {
@@ -216,17 +221,28 @@ public class BtVodDescribedFieldsExtractor {
         return ImmutableSet.of(); 
     }
 
-    public Optional<TopicRef> topicFor(BtVodEntry entry) {
-        if (entry.getContentProviderId() == null) {
+    public synchronized Optional<TopicRef> topicFor(BtVodEntry entry) {
+        String contentProviderId = entry.getContentProviderId();
+        if (contentProviderId == null) {
             return Optional.absent();
         }
+        Topic topic;
+        if(topics.containsKey(contentProviderId)) {
+            topic = topics.get(contentProviderId);
+        } else {
+
+            topic = topicCreatingTopicResolver.topicFor(
+                    Publisher.BT_VOD,
+                    CONTENT_PROVIDER_TOPIC_NAMESPACE,
+                    contentProviderId
+            ).requireValue();
+            topics.put(contentProviderId, topic);
+            topicWriter.write(topic);
+        }
+        //We do this because TopicCreatingTopicResolver creates topics, but doesn't store it (╯°□°）╯︵ ┻━┻)
         return Optional.of(
                 new TopicRef(
-                        topicCreatingTopicResolver.topicFor(
-                                Publisher.BT_VOD,
-                                CONTENT_PROVIDER_TOPIC_NAMESPACE,
-                                entry.getContentProviderId()
-                        ).requireValue(),
+                        topic,
                         1.0f,
                         false,
                         TopicRef.Relationship.ABOUT

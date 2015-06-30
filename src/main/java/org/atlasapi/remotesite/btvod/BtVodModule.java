@@ -12,6 +12,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
+import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.HttpClients;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupPredicates;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
@@ -67,6 +68,8 @@ public class BtVodModule {
     private ContentGroupWriter contentGroupWriter;
     @Autowired
     private TopicCreatingTopicResolver topicResolver;
+    @Autowired
+    private TopicWriter topicWriter;
     @Value("${bt.vod.file}")
     private String filename;
     @Value("${bt.portal.baseUri}")
@@ -92,7 +95,7 @@ public class BtVodModule {
     
     @Bean
     public BtVodDescribedFieldsExtractor describedFieldsExtractor() {
-        return new BtVodDescribedFieldsExtractor(new BtVodMpxImageExtractor(btPortalBaseUri), topicResolver);
+        return new BtVodDescribedFieldsExtractor(new BtVodMpxImageExtractor(btPortalBaseUri), topicResolver, topicWriter);
     }
     
     @Bean

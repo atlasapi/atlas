@@ -25,6 +25,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
+import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
@@ -69,6 +70,8 @@ public class BtVodItemWriterTest {
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
+    private final TopicWriter topicWriter = mock(TopicWriter.class);
+
 
 
     private final BtVodItemWriter itemExtractor 
@@ -79,7 +82,7 @@ public class BtVodItemWriterTest {
                                 seriesExtractor,
                                 PUBLISHER, URI_PREFIX,
                                 contentListener,
-                                new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver),
+                                new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter),
                                 Sets.<String>newHashSet(),
                                 new BtVodPricingAvailabilityGrouper(),
                                 new TitleSanitiser());

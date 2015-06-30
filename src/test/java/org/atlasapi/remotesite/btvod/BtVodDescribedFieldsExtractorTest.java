@@ -7,6 +7,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
+import org.atlasapi.persistence.topic.TopicWriter;
+import org.atlasapi.query.v2.TopicWriteController;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
@@ -19,6 +21,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -30,6 +33,9 @@ public class BtVodDescribedFieldsExtractorTest {
 
     @Mock
     private TopicCreatingTopicResolver topicResolver;
+
+    @Mock
+    private TopicWriter topicWriter;
 
     @InjectMocks
     private BtVodDescribedFieldsExtractor objectUnderTest;
@@ -58,8 +64,7 @@ public class BtVodDescribedFieldsExtractorTest {
 
         Optional<TopicRef> topicRef = objectUnderTest.topicFor(entry);
 
-
-
+        verify(topicWriter).write(created);
         assertThat(topicRef.get().getTopic(), is(42L));
     }
 }

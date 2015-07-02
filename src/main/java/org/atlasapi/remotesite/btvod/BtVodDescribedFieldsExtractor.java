@@ -236,8 +236,9 @@ public class BtVodDescribedFieldsExtractor {
                     CONTENT_PROVIDER_TOPIC_NAMESPACE,
                     contentProviderId
             ).requireValue();
-            topics.put(contentProviderId, topic);
+            topic.setTitle(contentProviderId);
             topicWriter.write(topic);
+            topics.put(contentProviderId, topic);
         }
         //We do this because TopicCreatingTopicResolver creates topics, but doesn't store it (╯°□°）╯︵ ┻━┻)
         return Optional.of(

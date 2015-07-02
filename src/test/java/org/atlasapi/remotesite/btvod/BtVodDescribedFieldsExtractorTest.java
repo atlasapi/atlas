@@ -65,6 +65,7 @@ public class BtVodDescribedFieldsExtractorTest {
         Optional<TopicRef> topicRef = objectUnderTest.topicFor(entry);
 
         verify(topicWriter).write(created);
+        verify(created).setTitle("contentProviderTitle");
         assertThat(topicRef.get().getTopic(), is(42L));
     }
 }

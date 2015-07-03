@@ -40,7 +40,9 @@ public class BtVodDescribedFieldsExtractor {
     static final String ID_ALIAS_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "id";
     static final String CONTENT_PROVIDER_TOPIC_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "contentProvider";
     static final String GENRE_TOPIC_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "genre";
+
     private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
+    private static final Integer TOPIC_CACHE_SIZE = 1000;
 
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
     private final ImageExtractor imageExtractor;
@@ -146,7 +148,7 @@ public class BtVodDescribedFieldsExtractor {
         this.topicWriter = checkNotNull(topicWriter);
         this.subGenreParser = new BtVodSubGenreParser();
         this.topics = CacheBuilder.newBuilder()
-                .maximumSize(1000)
+                .maximumSize(TOPIC_CACHE_SIZE)
                 .build();
 
 

@@ -89,12 +89,6 @@ public class BtVodDescribedFieldsExtractorTest {
         verify(subGenre2).setTitle("SubGenre2");
         verify(subGenre3).setTitle("SubGenre3");
 
-//        verify(topicWriter).write(genre);
-//        verify(topicWriter).write(subGenre1);
-//        verify(topicWriter).write(subGenre2);
-//        verify(topicWriter).write(subGenre3);
-//
-
         assertThat(
                 result,
                 Is.<Set<TopicRef>>is(

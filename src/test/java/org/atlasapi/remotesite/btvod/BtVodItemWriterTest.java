@@ -85,7 +85,8 @@ public class BtVodItemWriterTest {
                                 new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter),
                                 Sets.<String>newHashSet(),
                                 new BtVodPricingAvailabilityGrouper(),
-                                new TitleSanitiser());
+                                new TitleSanitiser(),
+                                new NoImageExtractor());
     
     @Test
     public void testExtractsEpisode() {
@@ -95,9 +96,8 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.extractImages(Matchers.<BtVodPlproductImages>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.extractImages(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntry)).thenReturn(Optional.of(seriesRef));
-        when(seriesExtractor.extractSeriesNumber(btVodEntry.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
 
         Item writtenItem = extractAndCapture(btVodEntry);
@@ -153,7 +153,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.extractImages(Matchers.<BtVodPlproductImages>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.extractImages(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntry)).thenReturn(Optional.of(seriesRef));
         when(seriesExtractor.extractSeriesNumber(btVodEntry.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
@@ -179,9 +179,8 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.extractImages(Matchers.<BtVodPlproductImages>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.extractImages(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntrySD)).thenReturn(Optional.of(seriesRef));
-        when(seriesExtractor.extractSeriesNumber(btVodEntrySD.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);
@@ -218,9 +217,8 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.extractImages(Matchers.<BtVodPlproductImages>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.extractImages(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesExtractor.getSeriesRefFor(btVodEntrySD)).thenReturn(Optional.of(seriesRef));
-        when(seriesExtractor.extractSeriesNumber(btVodEntrySD.getTitle())).thenReturn(Optional.of(1));
         when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);

@@ -1,8 +1,10 @@
 package org.atlasapi.remotesite.btvod;
 
 import com.google.common.collect.ImmutableSet;
+
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodImage;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 
@@ -19,7 +21,8 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
     }
 
     @Override
-    public Set<Image> extractImages(BtVodPlproductImages btVodPlproductImages) {
+    public Set<Image> extractImages(BtVodEntry entry) {
+        BtVodPlproductImages btVodPlproductImages = entry.getProductImages();
         ImmutableSet.Builder<Image> extractedImages = ImmutableSet.builder();
 
         for (BtVodImage packshotImage : btVodPlproductImages.getPackshotImages()) {
@@ -52,5 +55,10 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
                 baseUrl,
                 image.getPlproduct$url()
         );
+    }
+
+    @Override
+    public void start() {
+        
     }
 }

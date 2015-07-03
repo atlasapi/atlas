@@ -93,6 +93,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private final Map<String, Item> processedItems;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final TitleSanitiser titleSanitiser;
+    private final ImageExtractor imageExtractor;
     private UpdateProgress progress = UpdateProgress.START;
     private BtVodPricingAvailabilityGrouper grouper;
 
@@ -107,7 +108,8 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
             BtVodPricingAvailabilityGrouper grouper,
-            TitleSanitiser titleSanitiser
+            TitleSanitiser titleSanitiser,
+            ImageExtractor imageExtractor
     ) {
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.grouper = checkNotNull(grouper);
@@ -122,6 +124,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         this.processedRows = checkNotNull(processedRows);
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.processedItems = Maps.newHashMap();
+        this.imageExtractor = checkNotNull(imageExtractor);
     }
 
     @Override
@@ -209,7 +212,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Episode createEpisode(BtVodEntry row) {
         Episode episode = new Episode(uriFor(row), null, publisher);
-        episode.setSeriesNumber(seriesExtractor.extractSeriesNumber(row.getTitle()).orNull());
+        episode.setSeriesNumber(extractSeriesNumber(row));
         episode.setEpisodeNumber(extractEpisodeNumber(row));
         episode.setTitle(extractEpisodeTitle(row.getTitle()));
         episode.setSeriesRef(getSeriesRefOrNull(row));
@@ -217,9 +220,13 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         return episode;
     }
+    
+    public Integer extractSeriesNumber(BtVodEntry row) {
+        return seriesExtractor.extractSeriesNumber(row.getTitle()).orNull();
+    }
 
 
-    private Integer extractEpisodeNumber(BtVodEntry row) {
+    public static Integer extractEpisodeNumber(BtVodEntry row) {
         String episodeNumber = Iterables.getOnlyElement(
                 row.getProductScopes()
         ).getProductMetadata().getEpisodeNumber();
@@ -291,6 +298,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         item.setVersions(createVersions(row));
         item.setEditorialPriority(row.getProductPriority());
         item.setTopicRefs(describedFieldsExtractor.topicFor(row).asSet());
+        item.setImages(imageExtractor.extractImages(row));
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {

@@ -150,7 +150,6 @@ public class BtVodDescribedFieldsExtractor {
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());
-        described.setImages(createImages(row));
         if (row.getProductPriority() != null) {
             described.setPriority(Double.valueOf(row.getProductPriority()));
         }
@@ -176,7 +175,8 @@ public class BtVodDescribedFieldsExtractor {
             described.setGenres(genres.build());
         }
 
-        if (!described.getImages().isEmpty()) {
+        if (described.getImages() != null 
+                && !described.getImages().isEmpty()) {
             described.setImage(Iterables.getFirst(described.getImages(), null).getCanonicalUri());
         }
         

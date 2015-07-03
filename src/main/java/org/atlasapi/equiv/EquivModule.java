@@ -23,6 +23,7 @@ import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
@@ -290,7 +291,7 @@ public class EquivModule {
         EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
-            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX, RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK, PA, BT_VOD, BETTY), 
+            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX, RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK, PA, BT_VOD, BT_TVE_VOD, BETTY), 
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();
@@ -408,6 +409,14 @@ public class EquivModule {
                         .withScorer(new SeriesSequenceItemScorer()).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(btVodPublishers))
                 .withNonTopLevelContainerUpdater(vodSeriesUpdater(btVodPublishers))
+                .build());
+        
+        Set<Publisher> btTveVodPublishers = ImmutableSet.of(PA);
+        updaters.register(BT_TVE_VOD, SourceSpecificEquivalenceUpdater.builder(BT_TVE_VOD)
+                .withItemUpdater(vodItemUpdater(btTveVodPublishers)
+                        .withScorer(new SeriesSequenceItemScorer()).build())
+                .withTopLevelContainerUpdater(vodContainerUpdater(btTveVodPublishers))
+                .withNonTopLevelContainerUpdater(vodSeriesUpdater(btTveVodPublishers))
                 .build());
                 
         Set<Publisher> itunesAndMusicPublishers = Sets.union(musicPublishers, ImmutableSet.of(ITUNES));

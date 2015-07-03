@@ -207,8 +207,8 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
             throw new RuntimeException("Unexpected state - row with product_id: " + productId + " is not a brand nor is possible to parse a brand from it");
         }
         brand.setAliases(describedFieldExtractor.aliasesFrom(row));
-        brand.setGenres(describedFieldExtractor.btGenresFrom(row));
-        brand.setTopicRefs(describedFieldExtractor.topicFor(row).asSet());
+        brand.setGenres(describedFieldExtractor.btGenreStringsFrom(row));
+        brand.addTopicRefs(describedFieldExtractor.topicFor(row).asSet());
         brand.setSpecialization(Specialization.TV);
         brand.setImages(brandImageExtractor.extractImages(row));
         return brand;

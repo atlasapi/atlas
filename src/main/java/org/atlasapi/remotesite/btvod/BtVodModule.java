@@ -54,7 +54,7 @@ public class BtVodModule {
     private static final String NEW_CATEGORY = "New";
     
     private static final String URI_PREFIX = "http://vod.bt.com/";
-    private static final String TVE_URI_PREFIX = "http://tve-vod.bt.com";
+    private static final String TVE_URI_PREFIX = "http://tve-vod.bt.com/";
     
     @Autowired
     private SimpleScheduler scheduler;

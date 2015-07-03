@@ -28,4 +28,10 @@ public class BtVodContentPurgeController {
         contentPurger.purge(Publisher.BT_VOD, ImmutableSet.<Publisher>of());
         response.setStatus(HttpStatusCode.OK.code());
     }
+    
+    @RequestMapping(value = "/system/content/purge/bttvevod", method = RequestMethod.POST)
+    public void purgeTve(HttpServletResponse response) {
+        contentPurger.purge(Publisher.BT_TVE_VOD, ImmutableSet.<Publisher>of());
+        response.setStatus(HttpStatusCode.OK.code());
+    }
 }

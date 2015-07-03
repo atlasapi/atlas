@@ -176,7 +176,7 @@ public class BtVodModule {
     
     @PostConstruct
     public void scheduleTask() {
-        scheduler.schedule(btVodUpdater(), RepetitionRules.NEVER);
-        scheduler.schedule(btTveVodUpdater(), RepetitionRules.NEVER);
+        scheduler.schedule(btVodUpdater().withName("BT VoD Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(btTveVodUpdater().withName("BT TVE VoD Updater"), RepetitionRules.NEVER);
     }
 }

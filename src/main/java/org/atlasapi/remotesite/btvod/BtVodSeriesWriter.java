@@ -135,7 +135,7 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         return series;
     }
 
-    public Optional<Integer> extractSeriesNumber(String title) {
+    public static Optional<Integer> extractSeriesNumber(String title) {
         if (title == null) {
             return Optional.absent();
         }
@@ -148,13 +148,11 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
 
         }
 
-
-
         return Optional.absent();
     }
 
     public Optional<String> uriFor(BtVodEntry row) {
-        Optional<String> brandUri = brandExtractor.uriFor(row);
+        Optional<String> brandUri = brandExtractor.brandUriFor(row);
         if(!brandUri.isPresent()) {
             return Optional.absent();
         }

@@ -9,12 +9,14 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableList;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.TopicRef;
+import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
@@ -39,18 +41,19 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
  */
 public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
-    private static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
+    private static final String HELP_TYPE = "help";
+    private static final String EPISODE_TYPE = "episode";
+    
+    static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
             Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*"),
             Pattern.compile("^(.*).*S[0-9]+\\-E.*"),
             Pattern.compile("^(.*)Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*"),
             Pattern.compile("^(.*)\\-.*")
     );
+    
+    static final Pattern BRAND_TITLE_FROM_SERIES_PATTERN = Pattern.compile("^(.*) Series [0-9]+");
 
-    private static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
-
-    private static final Pattern BRAND_TITLE_FROM_SERIES_PATTERN = Pattern.compile("^(.*) Series [0-9]+");
-    private static final String HELP_TYPE = "help";
-    private static final String EPISODE_TYPE = "episode";
+    static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
 
     private static final Logger log = LoggerFactory.getLogger(BtVodBrandWriter.class);
     private static final boolean CONTINUE = true;
@@ -65,6 +68,8 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     private final Set<String> processedRows;
     private final TitleSanitiser titleSanitiser;
     private final BtVodDescribedFieldsExtractor describedFieldExtractor;
+    private final BrandImageExtractor brandImageExtractor;
+    private final BrandUriExtractor brandUriExtractor;
     private UpdateProgress progress = UpdateProgress.START;
 
     public BtVodBrandWriter(
@@ -75,7 +80,10 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
             BtVodContentListener listener,
             Set<String> processedRows,
             TitleSanitiser titleSanitiser,
-            BtVodDescribedFieldsExtractor describedFieldExtractor) {
+            BtVodDescribedFieldsExtractor describedFieldExtractor,
+            BrandImageExtractor brandImageExtractor,
+            BrandUriExtractor brandUriExtractor) {
+        this.brandImageExtractor = checkNotNull(brandImageExtractor);
         this.listener = checkNotNull(listener);
         this.writer = checkNotNull(writer);
         this.resolver = checkNotNull(resolver);
@@ -84,6 +92,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
         this.titleSanitiser = checkNotNull(titleSanitiser);
+        this.brandUriExtractor = checkNotNull(brandUriExtractor);
         //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
         //      Added as a collaborator for Alias extraction, but should be used more 
         //      widely
@@ -114,8 +123,28 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return CONTINUE;
     }
 
+    private boolean shouldSynthesizeBrand(BtVodEntry row) {
+        return !HELP_TYPE.equals(row.getProductType())
+                && EPISODE_TYPE.equals(row.getProductType())
+                && canParseBrandFromEpisode(row);
+    }
+    
+    private boolean canParseBrandFromEpisode(BtVodEntry row) {
+        return isTitleSyntesizableFromEpisode(row.getTitle());
+    }
+    
+    //TODO remove this duplication of code
+    private boolean isTitleSyntesizableFromEpisode(String title) {
+        for (Pattern brandPattern : BtVodBrandWriter.BRAND_TITLE_FROM_EPISODE_PATTERNS) {
+            if (brandPattern.matcher(stripHDSuffix(title)).matches()) {
+                return true;
+            }
+        }
+        return false;
+    }
+    
     private boolean isBrandAlreadyProcessed(BtVodEntry row) {
-        Optional<String> optionalUri = uriFor(row);
+        Optional<String> optionalUri = brandUriFor(row);
         return optionalUri.isPresent() && processedBrands.containsKey(optionalUri.get());
     }
 
@@ -153,31 +182,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return null;
     }
 
-    private boolean shouldSynthesizeBrand(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getProductType())
-                && EPISODE_TYPE.equals(row.getProductType())
-                && canParseBrandFromEpisode(row);
-    }
-
-    private boolean canParseBrandFromEpisode(BtVodEntry row) {
-        return isTitleSyntesizableFromEpisode(row.getTitle());
-    }
-
-    private boolean isTitleSynthesizableFromSeries(String title) {
-        Matcher matcher = BRAND_TITLE_FROM_SERIES_PATTERN.matcher(title);
-        return matcher.matches();
-    }
-
-    private boolean isTitleSyntesizableFromEpisode(String title) {
-        for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
-            if (brandPattern.matcher(stripHDSuffix(title)).matches()) {
-                return true;
-            }
-
-        }
-        return false;
-    }
-
+   
     private void write(Brand extracted) {
         Maybe<Identified> existing = resolver
                 .findByCanonicalUris(ImmutableSet.of(extracted.getCanonicalUri()))
@@ -193,7 +198,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private Brand brandFrom(BtVodEntry row) {
-        Brand brand = new Brand(uriFor(row).get(), null, publisher);
+        Brand brand = new Brand(brandUriFor(row).get(), null, publisher);
 
         if (canParseBrandFromEpisode(row)) {
             brand.setTitle(brandTitleFromEpisodeTitle(row.getTitle()));
@@ -204,26 +209,13 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         brand.setAliases(describedFieldExtractor.aliasesFrom(row));
         brand.setGenres(describedFieldExtractor.btGenresFrom(row));
         brand.setTopicRefs(describedFieldExtractor.topicFor(row).asSet());
+        brand.setSpecialization(Specialization.TV);
+        brand.setImages(brandImageExtractor.extractImages(row));
         return brand;
     }
     
-    public Optional<String> uriFor(BtVodEntry row) {
-        if (!shouldSynthesizeBrand(row)) {
-            return Optional.absent();
-        } else {
-            return Optional.of(uriPrefix + "synthesized/brands/" + ensureSynthesizedKey(row));
-        }
-    }
-
-    private String ensureSynthesizedKey(BtVodEntry row) {
-        Optional<String> synthesizedKey = getSynthesizedKey(row);
-
-        if (!synthesizedKey.isPresent()) {
-            String productId = row.getGuid();
-            throw new RuntimeException("Not able to generate a synthesized key for a synthesizable brand from row: [PRODUCT_ID="+productId+"]");
-        }
-
-        return synthesizedKey.get();
+    public Optional<String> brandUriFor(BtVodEntry row) {
+        return brandUriExtractor.extractBrandUri(row);
     }
 
     @Override
@@ -232,7 +224,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     public Optional<ParentRef> getBrandRefFor(BtVodEntry row) {
-        Optional<String> optionalUri = uriFor(row);
+        Optional<String> optionalUri = brandUriFor(row);
 
         if (!optionalUri.isPresent()) {
             return Optional.absent();

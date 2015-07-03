@@ -15,6 +15,8 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
+import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -23,6 +25,7 @@ import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
@@ -43,6 +46,7 @@ public class BtVodBrandWriterTest {
     private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
+    private final BrandUriExtractor brandUriExtractor = new BrandUriExtractor(URI_PREFIX, new TitleSanitiser());
 
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter);
     private final BtVodBrandWriter brandExtractor
@@ -53,16 +57,19 @@ public class BtVodBrandWriterTest {
                                 contentListener,
                                 Sets.<String>newHashSet(),
                                 new TitleSanitiser(), 
-                                describedFieldsExtractor
+                                describedFieldsExtractor,
+                                new NoImageExtractor(), brandUriExtractor
     );
     
     @Test
     public void testCreatesSyntheticBrandFromEpisodeData() {
+        BtVodEntry row = row();
+        
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(URI_PREFIX + "synthesized/brands/brand-title")))
                 .thenReturn(ResolvedContent.builder().build());
 
-        brandExtractor.process(row());
+        brandExtractor.process(row);
 
         ArgumentCaptor<Brand> captor = ArgumentCaptor.forClass(Brand.class);
         verify(contentWriter).createOrUpdate(captor.capture());
@@ -114,17 +121,17 @@ public class BtVodBrandWriterTest {
         row11.setTitle("Classic Premiership Rugby - Saracens v Leicester Tigers 2010/11 - HD");
 
 
-        assertThat(brandExtractor.uriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
-        assertThat(brandExtractor.uriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
-        assertThat(brandExtractor.uriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
-        assertThat(brandExtractor.uriFor(row4).get(), is(URI_PREFIX + "synthesized/brands/ufc-the-ultimate-fighter"));
-        assertThat(brandExtractor.uriFor(row5).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
-        assertThat(brandExtractor.uriFor(row6).get(), is(URI_PREFIX + "synthesized/brands/being-human-usa"));
-        assertThat(brandExtractor.uriFor(row7).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
-        assertThat(brandExtractor.uriFor(row8).get(), is(URI_PREFIX + "synthesized/brands/peppa-pig"));
-        assertThat(brandExtractor.uriFor(row9).get(), is(URI_PREFIX + "synthesized/brands/american-horror-story"));
-        assertThat(brandExtractor.uriFor(row10).isPresent(), is(false));
-        assertThat(brandExtractor.uriFor(row11).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
+        assertThat(brandExtractor.brandUriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
+        assertThat(brandExtractor.brandUriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
+        assertThat(brandExtractor.brandUriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
+        assertThat(brandExtractor.brandUriFor(row4).get(), is(URI_PREFIX + "synthesized/brands/ufc-the-ultimate-fighter"));
+        assertThat(brandExtractor.brandUriFor(row5).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
+        assertThat(brandExtractor.brandUriFor(row6).get(), is(URI_PREFIX + "synthesized/brands/being-human-usa"));
+        assertThat(brandExtractor.brandUriFor(row7).get(), is(URI_PREFIX + "synthesized/brands/modern-family"));
+        assertThat(brandExtractor.brandUriFor(row8).get(), is(URI_PREFIX + "synthesized/brands/peppa-pig"));
+        assertThat(brandExtractor.brandUriFor(row9).get(), is(URI_PREFIX + "synthesized/brands/american-horror-story"));
+        assertThat(brandExtractor.brandUriFor(row10).isPresent(), is(false));
+        assertThat(brandExtractor.brandUriFor(row11).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
     }
 
     @Test
@@ -142,6 +149,7 @@ public class BtVodBrandWriterTest {
     }
 
     private BtVodEntry row() {
+        
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);
         entry.setId("12345");
@@ -149,6 +157,8 @@ public class BtVodBrandWriterTest {
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         entry.setProductType("episode");
+        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
+        entry.setProductScopes(ImmutableList.<BtVodProductScope>of());
         return entry;
     }
     

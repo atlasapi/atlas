@@ -8,7 +8,6 @@ import java.util.Set;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,12 +30,18 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodContentGroupUpdater contentGroupUpdater;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final BtVodOldContentDeactivator oldContentDeactivator;
+    private final String baseUrl;
+    private final ImageExtractor imageExtractor;
+    private final BrandImageExtractor brandImageExtractor;
+    private final BrandUriExtractor brandUriExtractor;
     
     public BtVodUpdater(ContentResolver resolver, ContentWriter contentWriter,
             BtVodData vodData, String uriPrefix,
             BtVodContentGroupUpdater contentGroupUpdater,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
-            Publisher publisher, BtVodOldContentDeactivator oldContentDeactivator) {
+            Publisher publisher, BtVodOldContentDeactivator oldContentDeactivator,
+            BrandImageExtractor brandImageExtractor, String baseUrl, ImageExtractor imageExtractor,
+            BrandUriExtractor brandUriExtractor) {
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(contentWriter);
@@ -45,6 +50,10 @@ public class BtVodUpdater extends ScheduledTask {
         this.publisher = checkNotNull(publisher);
         this.contentGroupUpdater = checkNotNull(contentGroupUpdater);
         this.oldContentDeactivator = checkNotNull(oldContentDeactivator);
+        this.brandImageExtractor = checkNotNull(brandImageExtractor);
+        this.brandUriExtractor = checkNotNull(brandUriExtractor);
+        this.baseUrl = checkNotNull(baseUrl);
+        this.imageExtractor = checkNotNull(imageExtractor);
         
         withName("BT VOD Catalogue Ingest");
     }
@@ -53,11 +62,13 @@ public class BtVodUpdater extends ScheduledTask {
     public void runTask() {
         contentGroupUpdater.start();
         oldContentDeactivator.start();
+        brandImageExtractor.start();
 
         MultiplexingVodContentListener listeners 
             = new MultiplexingVodContentListener(
                     ImmutableList.of(oldContentDeactivator, contentGroupUpdater));
         Set<String> processedRows = Sets.newHashSet();
+        
         BtVodBrandWriter brandExtractor = new BtVodBrandWriter(
                 writer,
                 resolver,
@@ -66,7 +77,9 @@ public class BtVodUpdater extends ScheduledTask {
                 listeners,
                 processedRows,
                 new TitleSanitiser(), 
-                describedFieldsExtractor
+                describedFieldsExtractor,
+                brandImageExtractor,
+                brandUriExtractor
         );
         BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(
                 writer,
@@ -88,9 +101,9 @@ public class BtVodUpdater extends ScheduledTask {
                 describedFieldsExtractor,
                 processedRows,
                 new BtVodPricingAvailabilityGrouper(),
-                new TitleSanitiser()
+                new TitleSanitiser(),
+                imageExtractor
         );
-        
         
         try {
             reportStatus("Brand extract [IN PROGRESS]  Series extract [TODO]  Item extract [TODO]");

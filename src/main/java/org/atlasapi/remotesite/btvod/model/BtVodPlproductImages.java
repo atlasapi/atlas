@@ -13,6 +13,9 @@ public class BtVodPlproductImages {
     @SerializedName("image-single-packshot")
     private List<BtVodImage> packshotImages;
 
+    @SerializedName("image-double-packshot")
+    private List<BtVodImage> packshotDoubleImages;
+    
     public BtVodPlproductImages() {
     }
 
@@ -33,9 +36,20 @@ public class BtVodPlproductImages {
         }
         return packshotImages;
     }
+    
+    public List<BtVodImage> getPackshotDoubleImages() {
+        if (packshotDoubleImages == null) {
+            return ImmutableList.of();
+        }
+        return ImmutableList.copyOf(packshotDoubleImages);
+    }
 
     public void setPackshotImages(List<BtVodImage> packshotImages) {
         this.packshotImages = packshotImages;
+    }
+    
+    public void setPackshotDoubleImages(List<BtVodImage> packshotDoubleImages) {
+        this.packshotDoubleImages = packshotDoubleImages;
     }
 
     @Override

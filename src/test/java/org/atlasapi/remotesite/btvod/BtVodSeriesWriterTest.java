@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.btvod;
 
 import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 import org.atlasapi.media.entity.ParentRef;
@@ -14,6 +15,8 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
+import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.hamcrest.Matchers;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -65,7 +68,7 @@ public class BtVodSeriesWriterTest {
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(brandUri + "/series/1")))
                 .thenReturn(ResolvedContent.builder().build());
 
-        when(brandExtractor.uriFor(entry)).thenReturn(Optional.of(brandUri));
+        when(brandExtractor.brandUriFor(entry)).thenReturn(Optional.of(brandUri));
         when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
 
 
@@ -104,11 +107,11 @@ public class BtVodSeriesWriterTest {
         String brandUri4 = "http://brand-uri4.com";
         String brandUri5 = "http://brand-uri5.com";
 
-        when(brandExtractor.uriFor(row1)).thenReturn(Optional.of(brandUri));
-        when(brandExtractor.uriFor(row2)).thenReturn(Optional.of(brandUri2));
-        when(brandExtractor.uriFor(row3)).thenReturn(Optional.of(brandUri3));
-        when(brandExtractor.uriFor(row4)).thenReturn(Optional.of(brandUri4));
-        when(brandExtractor.uriFor(row5)).thenReturn(Optional.of(brandUri5));
+        when(brandExtractor.brandUriFor(row1)).thenReturn(Optional.of(brandUri));
+        when(brandExtractor.brandUriFor(row2)).thenReturn(Optional.of(brandUri2));
+        when(brandExtractor.brandUriFor(row3)).thenReturn(Optional.of(brandUri3));
+        when(brandExtractor.brandUriFor(row4)).thenReturn(Optional.of(brandUri4));
+        when(brandExtractor.brandUriFor(row5)).thenReturn(Optional.of(brandUri5));
 
 
         assertThat(seriesExtractor.uriFor(row1).get(), Matchers.is(brandUri + "/series/2"));
@@ -129,7 +132,7 @@ public class BtVodSeriesWriterTest {
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(brandUri + "/series/1")))
                 .thenReturn(ResolvedContent.builder().build());
 
-        when(brandExtractor.uriFor(entry)).thenReturn(Optional.of(brandUri));
+        when(brandExtractor.brandUriFor(entry)).thenReturn(Optional.of(brandUri));
         when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
 
 
@@ -149,6 +152,8 @@ public class BtVodSeriesWriterTest {
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         entry.setProductType("episode");// "Apr 30 2014 12:00AM"
+        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
+        entry.setProductScopes(ImmutableList.<BtVodProductScope>of());
         return entry;
     }
 }

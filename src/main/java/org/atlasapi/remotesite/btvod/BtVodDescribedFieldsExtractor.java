@@ -5,13 +5,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import com.google.common.collect.Maps;
 import org.apache.commons.csv.CSVFormat;
-import org.apache.commons.csv.CSVParser;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
@@ -26,29 +26,30 @@ import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 
-import java.io.IOException;
-import java.io.StringReader;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 
 public class BtVodDescribedFieldsExtractor {
 
-    static final String GUID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:guid";
-    static final String ID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:id";
-    static final String CONTENT_PROVIDER_TOPIC_NAMESPACE = "gb:bt:tv:mpx:prod:contentProvider";
+    static final String BT_VOD_NAMESPACES_PREFIX = "gb:bt:tv:mpx:prod:";
+    static final String GUID_ALIAS_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "guid";
+    static final String ID_ALIAS_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "id";
+    static final String CONTENT_PROVIDER_TOPIC_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "contentProvider";
+    static final String GENRE_TOPIC_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "genre";
+
     private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
+    private static final Integer TOPIC_CACHE_SIZE = 1000;
 
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
-    private static final Pattern SUB_GENRE_ARRAYPATTERN = Pattern.compile("^\\[(.*)\\]$");
-    private static final CSVFormat SUB_GENRE_CSV_PARSER = CSVFormat.RFC4180;
     private final ImageExtractor imageExtractor;
-
     private final TopicCreatingTopicResolver topicCreatingTopicResolver;
     private final TopicWriter topicWriter;
-    private final Map<String, Topic> topics = Maps.newConcurrentMap();
+    private final Cache<String, Topic> topics;
+    private final BtVodSubGenreParser subGenreParser;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -145,6 +146,12 @@ public class BtVodDescribedFieldsExtractor {
         this.imageExtractor = checkNotNull(imageExtractor);
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
+        this.subGenreParser = new BtVodSubGenreParser();
+        this.topics = CacheBuilder.newBuilder()
+                .maximumSize(TOPIC_CACHE_SIZE)
+                .build();
+
+
     }
     
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
@@ -155,7 +162,7 @@ public class BtVodDescribedFieldsExtractor {
         }
         
         ImmutableList.Builder<String> genres = ImmutableList.builder();
-        for (String btGenre : btGenresFrom(row)) {
+        for (String btGenre : btGenreStringsFrom(row)) {
             genres.add(
                     String.format(
                             "%s/%s",
@@ -175,40 +182,74 @@ public class BtVodDescribedFieldsExtractor {
             described.setGenres(genres.build());
         }
 
-        if (described.getImages() != null 
+        if (described.getImages() != null
                 && !described.getImages().isEmpty()) {
             described.setImage(Iterables.getFirst(described.getImages(), null).getCanonicalUri());
         }
         
         described.setAliases(aliasesFrom(row));
     }
-    
-    public Set<String> btGenresFrom(BtVodEntry row) {
+
+    public Set<String> btGenreStringsFrom(BtVodEntry row) {
         ImmutableSet.Builder<String> genres = ImmutableSet.builder();
-        
+
         if (!Strings.isNullOrEmpty(row.getGenre())) {
             genres.add(row.getGenre());
         }
-        
+
         for (BtVodProductScope scope : row.getProductScopes()) {
             if (scope.getProductMetadata() != null) {
                 String subGenres = scope.getProductMetadata().getSubGenres();
-                if (!Strings.isNullOrEmpty(subGenres)) {
-                    Matcher matcher = SUB_GENRE_ARRAYPATTERN.matcher(subGenres);
-                    if (matcher.matches()) {
-                        try {
-                            CSVParser parse = SUB_GENRE_CSV_PARSER.parse(new StringReader(matcher.group(1)));
-                            genres.addAll(parse.getRecords().get(0).iterator());
-                        } catch (IOException e) {
-                            throw Throwables.propagate(e);
-                        }
-                    }
+                genres.addAll(subGenreParser.parse(subGenres));
+            }
+        }
+        return genres.build();
+    }
+
+    public Set<TopicRef> btGenresFrom(final BtVodEntry row) {
+        ImmutableSet.Builder<TopicRef> genres = ImmutableSet.builder();
+
+        if (!Strings.isNullOrEmpty(row.getGenre())) {
+            genres.add(
+                    topicRefFor(
+                            cacheKey(GENRE_TOPIC_NAMESPACE, row.getGenre()),
+                            genreCallable(GENRE_TOPIC_NAMESPACE, row.getGenre())
+                    )
+            );
+        }
+
+        for (BtVodProductScope scope : row.getProductScopes()) {
+            if (scope.getProductMetadata() != null) {
+                List<String> subGenres = subGenreParser.parse(scope.getProductMetadata().getSubGenres());
+                for (final String subGenre : subGenres) {
+                    genres.add(
+                            topicRefFor(
+                                    cacheKey(GENRE_TOPIC_NAMESPACE, subGenre),
+                                    genreCallable(GENRE_TOPIC_NAMESPACE, subGenre)
+                            )
+                    );
                 }
             }
         }
         return genres.build();
     }
-    
+
+    private Callable<Topic> genreCallable(final String namespace, final String genre) {
+        return new Callable<Topic>() {
+            @Override
+            public Topic call() throws Exception {
+                Topic topic = topicCreatingTopicResolver.topicFor(
+                        Publisher.BT_VOD,
+                        namespace,
+                        genre
+                ).requireValue();
+                topic.setTitle(genre);
+                topicWriter.write(topic);
+                return topic;
+            }
+        };
+    }
+
     public Iterable<Alias> aliasesFrom(BtVodEntry row) {
         return ImmutableSet.of(
                 new Alias(GUID_ALIAS_NAMESPACE, row.getGuid()),
@@ -218,36 +259,56 @@ public class BtVodDescribedFieldsExtractor {
     private Iterable<Image> createImages(BtVodEntry row) {
         // images are of poor quality, so not useful to save
         // return imageExtractor.extractImages(row.getProductImages());
-        return ImmutableSet.of(); 
+        return ImmutableSet.of();
     }
 
-    public synchronized Optional<TopicRef> topicFor(BtVodEntry entry) {
-        String contentProviderId = entry.getContentProviderId();
+    public Optional<TopicRef> topicFor(BtVodEntry entry) {
+        final String contentProviderId = entry.getContentProviderId();
         if (contentProviderId == null) {
             return Optional.absent();
         }
-        Topic topic;
-        if(topics.containsKey(contentProviderId)) {
-            topic = topics.get(contentProviderId);
-        } else {
 
-            topic = topicCreatingTopicResolver.topicFor(
-                    Publisher.BT_VOD,
-                    CONTENT_PROVIDER_TOPIC_NAMESPACE,
-                    contentProviderId
-            ).requireValue();
-            topic.setTitle(contentProviderId);
-            topicWriter.write(topic);
-            topics.put(contentProviderId, topic);
-        }
-        //We do this because TopicCreatingTopicResolver creates topics, but doesn't store it (╯°□°）╯︵ ┻━┻)
         return Optional.of(
-                new TopicRef(
-                        topic,
-                        1.0f,
-                        false,
-                        TopicRef.Relationship.ABOUT
+                topicRefFor(
+                        cacheKey(CONTENT_PROVIDER_TOPIC_NAMESPACE, contentProviderId),
+                        new Callable<Topic>() {
+                            @Override
+                            public Topic call() throws Exception {
+                                Topic topic = topicCreatingTopicResolver.topicFor(
+                                        Publisher.BT_VOD,
+                                        CONTENT_PROVIDER_TOPIC_NAMESPACE,
+                                        contentProviderId
+                                ).requireValue();
+                                topic.setTitle(contentProviderId);
+                                topicWriter.write(topic);
+                                return topic;
+                            }
+                        }
                 )
+
         );
+
+    }
+
+    private String cacheKey(String namespace, String value) {
+        return String.format(
+                "%s:%s",
+                namespace,
+                value
+        );
+    }
+
+    private TopicRef topicRefFor(String key ,Callable<Topic> callable) {
+        try {
+            return new TopicRef(
+                    topics.get(key, callable),
+                    1.0f,
+                    false,
+                    TopicRef.Relationship.ABOUT
+
+            );
+        } catch (ExecutionException e) {
+            throw Throwables.propagate(e);
+        }
     }
 }

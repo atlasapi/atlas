@@ -106,8 +106,10 @@ public class BtVodUpdater extends ScheduledTask {
         );
         
         try {
+            reportStatus("Extracting brand images");
+            vodData.processData(brandImageExtractor);
+            
             reportStatus("Brand extract [IN PROGRESS]  Series extract [TODO]  Item extract [TODO]");
-
             vodData.processData(brandExtractor);
             reportStatus(String.format("Brand extract [DONE: %d rows successful %d rows failed]  Series extract [IN PROGRESS]  Item extract [TODO]  Content group update [TODO]", 
                     brandExtractor.getResult().getProcessed(), 

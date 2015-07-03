@@ -110,7 +110,7 @@ public class BtVodModule {
         return new BtVodDescribedFieldsExtractor(new BtVodMpxImageExtractor(btPortalBaseUri), topicResolver, topicWriter);
     }
     
-    public BrandImageExtractor brandImageExtractor(String baseUrl) {
+    public DerivingFromItemBrandImageExtractor brandImageExtractor(String baseUrl) {
         return new DerivingFromItemBrandImageExtractor(brandUriExtractor(baseUrl), baseUrl);
     }
     

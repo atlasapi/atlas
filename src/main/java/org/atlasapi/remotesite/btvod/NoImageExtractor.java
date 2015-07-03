@@ -20,4 +20,14 @@ public class NoImageExtractor implements ImageExtractor, BrandImageExtractor {
         
     }
 
+    @Override
+    public boolean process(BtVodEntry row) {
+        return true;
+    }
+
+    @Override
+    public Void getResult() {
+        return null;
+    }
+
 }

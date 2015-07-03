@@ -15,10 +15,12 @@ import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.hamcrest.core.Is;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
+import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Set;
@@ -32,6 +34,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodDescribedFieldsExtractorTest {
 
+    private Publisher publisher = Publisher.BT_TVE_VOD;
+
     @Mock
     private ImageExtractor imageExtractor;
 
@@ -41,8 +45,12 @@ public class BtVodDescribedFieldsExtractorTest {
     @Mock
     private TopicWriter topicWriter;
 
-    @InjectMocks
     private BtVodDescribedFieldsExtractor objectUnderTest;
+
+    @Before
+    public void setUp() {
+        objectUnderTest = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter, publisher);
+    }
 
     @Test
     public void testBtGenresFrom() {
@@ -72,14 +80,14 @@ public class BtVodDescribedFieldsExtractorTest {
         Topic subGenre3 = mock(Topic.class);
         when(subGenre3.getId()).thenReturn(4L);
 
-        when(topicResolver.topicFor(Publisher.BT_VOD, "gb:bt:tv:mpx:prod:genre", "Genre"))
+        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "Genre"))
                 .thenReturn(Maybe.just(genre));
 
-        when(topicResolver.topicFor(Publisher.BT_VOD, "gb:bt:tv:mpx:prod:genre", "SubGenre1"))
+        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "SubGenre1"))
                 .thenReturn(Maybe.just(subGenre1));
-        when(topicResolver.topicFor(Publisher.BT_VOD, "gb:bt:tv:mpx:prod:genre", "SubGenre2"))
+        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "SubGenre2"))
                 .thenReturn(Maybe.just(subGenre2));
-        when(topicResolver.topicFor(Publisher.BT_VOD, "gb:bt:tv:mpx:prod:genre", "SubGenre3"))
+        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "SubGenre3"))
                 .thenReturn(Maybe.just(subGenre3));
 
         Set<TopicRef> result = objectUnderTest.btGenresFrom(entry);
@@ -123,7 +131,7 @@ public class BtVodDescribedFieldsExtractorTest {
 
         Topic created = mock(Topic.class);
         when(created.getId()).thenReturn(42L);
-        when(topicResolver.topicFor(Publisher.BT_VOD, "gb:bt:tv:mpx:prod:contentProvider", "contentProviderTitle"))
+        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:contentProvider", "contentProviderTitle"))
                 .thenReturn(Maybe.just(created));
 
         Optional<TopicRef> topicRef = objectUnderTest.topicFor(entry);

@@ -48,7 +48,7 @@ public class BtVodBrandWriterTest {
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BrandUriExtractor brandUriExtractor = new BrandUriExtractor(URI_PREFIX, new TitleSanitiser());
 
-    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter);
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter, Publisher.BT_VOD);
     private final BtVodBrandWriter brandExtractor
                     = new BtVodBrandWriter(
                                 contentWriter,

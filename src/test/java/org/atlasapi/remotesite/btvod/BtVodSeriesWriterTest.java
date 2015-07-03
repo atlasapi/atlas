@@ -45,7 +45,7 @@ public class BtVodSeriesWriterTest {
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
 
-    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter);
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter, Publisher.BT_VOD);
 
     private final BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(
             contentWriter,

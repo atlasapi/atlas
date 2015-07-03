@@ -27,7 +27,6 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
 import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
@@ -82,7 +81,7 @@ public class BtVodItemWriterTest {
                                 seriesExtractor,
                                 PUBLISHER, URI_PREFIX,
                                 contentListener,
-                                new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter),
+                                new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter, Publisher.BT_VOD),
                                 Sets.<String>newHashSet(),
                                 new BtVodPricingAvailabilityGrouper(),
                                 new TitleSanitiser(),

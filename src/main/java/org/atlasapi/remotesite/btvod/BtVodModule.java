@@ -86,8 +86,8 @@ public class BtVodModule {
     @Bean
     public BtVodUpdater btVodUpdater() {
         return new BtVodUpdater(contentResolver, 
-                contentWriter, btVodData(), URI_PREFIX, btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX), 
-                describedFieldsExtractor(), Publisher.BT_VOD, oldContentDeactivator(Publisher.BT_VOD),
+                contentWriter, btVodData(), URI_PREFIX, btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX),
+                describedFieldsExtractor(Publisher.BT_VOD), Publisher.BT_VOD, oldContentDeactivator(Publisher.BT_VOD),
                 noImageExtractor(), URI_PREFIX, noImageExtractor(), brandUriExtractor(URI_PREFIX));
     }
     
@@ -95,7 +95,7 @@ public class BtVodModule {
     public BtVodUpdater btTveVodUpdater() {
         return new BtVodUpdater(contentResolver, 
                 contentWriter, btVodData(), TVE_URI_PREFIX, btVodContentGroupUpdater(Publisher.BT_TVE_VOD, TVE_URI_PREFIX), 
-                describedFieldsExtractor(), Publisher.BT_TVE_VOD, oldContentDeactivator(Publisher.BT_TVE_VOD),
+                describedFieldsExtractor(Publisher.BT_TVE_VOD), Publisher.BT_TVE_VOD, oldContentDeactivator(Publisher.BT_TVE_VOD),
                 brandImageExtractor(TVE_URI_PREFIX), TVE_URI_PREFIX, itemImageExtractor(), brandUriExtractor(TVE_URI_PREFIX));
     }
     
@@ -106,8 +106,8 @@ public class BtVodModule {
                         THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT);
     }
     
-    public BtVodDescribedFieldsExtractor describedFieldsExtractor() {
-        return new BtVodDescribedFieldsExtractor(new BtVodMpxImageExtractor(btPortalBaseUri), topicResolver, topicWriter);
+    public BtVodDescribedFieldsExtractor describedFieldsExtractor(Publisher publisher) {
+        return new BtVodDescribedFieldsExtractor(new BtVodMpxImageExtractor(btPortalBaseUri), topicResolver, topicWriter, publisher);
     }
     
     public DerivingFromItemBrandImageExtractor brandImageExtractor(String baseUrl) {

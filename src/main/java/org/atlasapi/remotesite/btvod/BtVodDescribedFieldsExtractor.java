@@ -50,6 +50,7 @@ public class BtVodDescribedFieldsExtractor {
     private final TopicWriter topicWriter;
     private final Cache<String, Topic> topics;
     private final BtVodSubGenreParser subGenreParser;
+    private final Publisher publisher;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -141,11 +142,13 @@ public class BtVodDescribedFieldsExtractor {
     public BtVodDescribedFieldsExtractor(
             ImageExtractor imageExtractor,
             TopicCreatingTopicResolver topicCreatingTopicResolver,
-            TopicWriter topicWriter
+            TopicWriter topicWriter,
+            Publisher publisher
     ) {
         this.imageExtractor = checkNotNull(imageExtractor);
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
+        this.publisher = checkNotNull(publisher);
         this.subGenreParser = new BtVodSubGenreParser();
         this.topics = CacheBuilder.newBuilder()
                 .maximumSize(TOPIC_CACHE_SIZE)
@@ -239,7 +242,7 @@ public class BtVodDescribedFieldsExtractor {
             @Override
             public Topic call() throws Exception {
                 Topic topic = topicCreatingTopicResolver.topicFor(
-                        Publisher.BT_VOD,
+                        publisher,
                         namespace,
                         genre
                 ).requireValue();
@@ -275,7 +278,7 @@ public class BtVodDescribedFieldsExtractor {
                             @Override
                             public Topic call() throws Exception {
                                 Topic topic = topicCreatingTopicResolver.topicFor(
-                                        Publisher.BT_VOD,
+                                        publisher,
                                         CONTENT_PROVIDER_TOPIC_NAMESPACE,
                                         contentProviderId
                                 ).requireValue();

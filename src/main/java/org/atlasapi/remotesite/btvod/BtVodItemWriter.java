@@ -298,6 +298,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         item.setVersions(createVersions(row));
         item.setEditorialPriority(row.getProductPriority());
         item.addTopicRefs(describedFieldsExtractor.topicFor(row).asSet());
+        item.addTopicRefs(describedFieldsExtractor.btGenresFrom(row));
         item.setImages(imageExtractor.extractImages(row));
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);

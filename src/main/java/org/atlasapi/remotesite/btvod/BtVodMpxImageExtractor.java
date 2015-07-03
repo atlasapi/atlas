@@ -27,13 +27,13 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
 
         for (BtVodImage packshotImage : btVodPlproductImages.getPackshotImages()) {
             extractedImages.add(
-                    buildImage(packshotImage, ImageType.PRIMARY)
+                    buildImage(packshotImage, ImageType.PRIMARY, true)
             );
         }
 
         for (BtVodImage backgroundImage : btVodPlproductImages.getBackgroundImages()) {
             extractedImages.add(
-                    buildImage(backgroundImage, ImageType.ADDITIONAL)
+                    buildImage(backgroundImage, ImageType.ADDITIONAL, false)
             );
         }
 
@@ -41,11 +41,12 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
         return extractedImages.build();
     }
 
-    private Image buildImage(BtVodImage btVodImage, ImageType imageType) {
+    private Image buildImage(BtVodImage btVodImage, ImageType imageType, boolean hasTitleArt) {
         return Image.builder(uriFor(btVodImage))
                 .withHeight(btVodImage.getPlproduct$height())
                 .withWidth(btVodImage.getPlproduct$width())
                 .withType(imageType)
+                .withHasTitleArt(hasTitleArt)
                 .build();
     }
 

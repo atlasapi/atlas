@@ -34,6 +34,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Song;
+import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.Policy.RevenueContract;
@@ -207,6 +208,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private Item createSong(BtVodEntry row) {
         Song song = new Song(uriFor(row), null, publisher);
         song.setTitle(titleForNonEpisode(row));
+        song.setSpecialization(Specialization.MUSIC);
         return song;
     }
 
@@ -217,7 +219,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         episode.setTitle(extractEpisodeTitle(row.getTitle()));
         episode.setSeriesRef(getSeriesRefOrNull(row));
         episode.setParentRef(getBrandRefOrNull(row));
-
+        episode.setSpecialization(Specialization.TV);
         return episode;
     }
     
@@ -275,6 +277,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Item createItem(BtVodEntry row) {
         Item item = new Item(uriFor(row), null, publisher);
+        item.setSpecialization(Specialization.TV);
         return item;
     }
 
@@ -282,6 +285,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         Film film = new Film(uriFor(row), null, publisher);
         film.setYear(Ints.tryParse(Iterables.getOnlyElement(row.getProductScopes()).getProductMetadata().getReleaseYear()));
         film.setTitle(titleForNonEpisode(row));
+        film.setSpecialization(Specialization.FILM);
         return film;
     }
 

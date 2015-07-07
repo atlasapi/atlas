@@ -21,4 +21,18 @@ public class MultiplexingVodContentListener implements BtVodContentListener {
             delegate.onContent(content, vodData);
         }
     }
+
+    @Override
+    public void beforeContent() {
+        for (BtVodContentListener delegate : delegates) {
+            delegate.beforeContent();
+        }
+    }
+
+    @Override
+    public void afterContent() {
+        for (BtVodContentListener delegate : delegates) {
+            delegate.afterContent();
+        }
+    }
 }

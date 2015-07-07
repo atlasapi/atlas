@@ -26,7 +26,8 @@ public class BtVodOldContentDeactivator implements BtVodContentListener {
         this.threshold = threshold;
     }
     
-    public void start() {
+    @Override
+    public void beforeContent() {
         validContentUris.clear();
     }
     
@@ -35,7 +36,8 @@ public class BtVodOldContentDeactivator implements BtVodContentListener {
         validContentUris.add(content.getCanonicalUri());
     }
     
-    public void finish() {
+    @Override
+    public void afterContent() {
         oldContentDeactivator.deactivateOldContent(publisher, validContentUris, threshold);
     }
 

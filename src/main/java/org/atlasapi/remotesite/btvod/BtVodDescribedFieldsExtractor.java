@@ -2,22 +2,15 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.cache.Cache;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
-import org.apache.commons.csv.CSVFormat;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
-
-import com.google.common.collect.Iterables;
-
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
@@ -26,11 +19,15 @@ import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 
 public class BtVodDescribedFieldsExtractor {
@@ -45,12 +42,13 @@ public class BtVodDescribedFieldsExtractor {
     private static final Integer TOPIC_CACHE_SIZE = 1000;
 
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
-    private final ImageExtractor imageExtractor;
     private final TopicCreatingTopicResolver topicCreatingTopicResolver;
     private final TopicWriter topicWriter;
     private final Cache<String, Topic> topics;
     private final BtVodSubGenreParser subGenreParser;
     private final Publisher publisher;
+    private final BtVodContentMatchingPredicate newTopicPredicate;
+    private final Topic newTopic;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -140,16 +138,18 @@ public class BtVodDescribedFieldsExtractor {
     
     
     public BtVodDescribedFieldsExtractor(
-            ImageExtractor imageExtractor,
             TopicCreatingTopicResolver topicCreatingTopicResolver,
             TopicWriter topicWriter,
-            Publisher publisher
+            Publisher publisher,
+            BtVodContentMatchingPredicate newTopicPredicate,
+            Topic newTopic
     ) {
-        this.imageExtractor = checkNotNull(imageExtractor);
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
         this.publisher = checkNotNull(publisher);
         this.subGenreParser = new BtVodSubGenreParser();
+        this.newTopicPredicate = checkNotNull(newTopicPredicate);
+        this.newTopic = checkNotNull(newTopic);
         this.topics = CacheBuilder.newBuilder()
                 .maximumSize(TOPIC_CACHE_SIZE)
                 .build();
@@ -209,10 +209,26 @@ public class BtVodDescribedFieldsExtractor {
         return genres.build();
     }
 
-    public Set<TopicRef> btGenresFrom(final BtVodEntry row) {
+    public Set<TopicRef> topicsFrom(VodEntryAndContent vodAndContent) {
+        ImmutableSet.Builder<TopicRef> topicRefs = ImmutableSet.builder();
+        topicRefs.addAll(genreTopicsFrom(vodAndContent));
+        topicRefs.addAll(newTopicFrom(vodAndContent).asSet());
+        topicRefs.addAll(contentProviderTopicFor(vodAndContent).asSet());
+        return topicRefs.build();
+    }
+    
+    private Optional<TopicRef> newTopicFrom(final VodEntryAndContent vodAndContent) {
+        if (newTopicPredicate.apply(vodAndContent)) {
+            return Optional.of(topicRefFor(newTopic));
+        }
+        return Optional.absent();
+    }
+    
+    private Set<TopicRef> genreTopicsFrom(final VodEntryAndContent vodAndContent) {
+        BtVodEntry row = vodAndContent.getBtVodEntry();
         ImmutableSet.Builder<TopicRef> genres = ImmutableSet.builder();
 
-        if (!Strings.isNullOrEmpty(row.getGenre())) {
+        if (!Strings.isNullOrEmpty(vodAndContent.getBtVodEntry().getGenre())) {
             genres.add(
                     topicRefFor(
                             cacheKey(GENRE_TOPIC_NAMESPACE, row.getGenre()),
@@ -265,8 +281,8 @@ public class BtVodDescribedFieldsExtractor {
         return ImmutableSet.of();
     }
 
-    public Optional<TopicRef> topicFor(BtVodEntry entry) {
-        final String contentProviderId = entry.getContentProviderId();
+    private Optional<TopicRef> contentProviderTopicFor(VodEntryAndContent vodAndContent) {
+        final String contentProviderId = vodAndContent.getBtVodEntry().getContentProviderId();
         if (contentProviderId == null) {
             return Optional.absent();
         }
@@ -301,17 +317,18 @@ public class BtVodDescribedFieldsExtractor {
         );
     }
 
-    private TopicRef topicRefFor(String key ,Callable<Topic> callable) {
+    private TopicRef topicRefFor(String key, Callable<Topic> callable) {
         try {
-            return new TopicRef(
-                    topics.get(key, callable),
-                    1.0f,
-                    false,
-                    TopicRef.Relationship.ABOUT
-
-            );
+            return topicRefFor(topics.get(key, callable));
         } catch (ExecutionException e) {
             throw Throwables.propagate(e);
         }
+    }
+    
+    private TopicRef topicRefFor(Topic topic) {
+        return new TopicRef(topic, 
+                            1.0f, 
+                            false, 
+                            TopicRef.Relationship.ABOUT);
     }
 }

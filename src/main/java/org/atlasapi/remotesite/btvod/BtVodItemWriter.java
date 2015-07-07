@@ -17,7 +17,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.intl.Country;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Certificate;
@@ -62,7 +61,7 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
 
 
 public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
-
+    
     private static final String FILM_TYPE = "film";
     private static final String MUSIC_TYPE = "music";
     private static final String EPISODE_TYPE = "episode";
@@ -301,8 +300,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         item.setVersions(createVersions(row));
         item.setEditorialPriority(row.getProductPriority());
-        item.addTopicRefs(describedFieldsExtractor.topicFor(row).asSet());
-        item.addTopicRefs(describedFieldsExtractor.btGenresFrom(row));
+        
+        VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, item);
+        item.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
         item.setImages(imageExtractor.extractImages(row));
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);

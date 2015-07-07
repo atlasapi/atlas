@@ -18,6 +18,7 @@ import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
@@ -38,6 +39,7 @@ import org.joda.time.DateTimeZone;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
@@ -70,7 +72,8 @@ public class BtVodItemWriterTest {
     private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
-
+    private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
+    
 
 
     private final BtVodItemWriter itemExtractor 
@@ -81,7 +84,8 @@ public class BtVodItemWriterTest {
                                 seriesExtractor,
                                 PUBLISHER, URI_PREFIX,
                                 contentListener,
-                                new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter, Publisher.BT_VOD),
+                                new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, Publisher.BT_VOD,
+                                        newTopicContentMatchingPredicate, new Topic(123L)),
                                 Sets.<String>newHashSet(),
                                 new BtVodPricingAvailabilityGrouper(),
                                 new TitleSanitiser(),
@@ -104,7 +108,6 @@ public class BtVodItemWriterTest {
         assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
         assertThat(writtenItem.getContainer(), is(parentRef));
-        assertThat(writtenItem.getGenres().size(), is(4));
         
         Location location = Iterables.getOnlyElement(
                                 Iterables.getOnlyElement(
@@ -314,7 +317,6 @@ public class BtVodItemWriterTest {
         BtVodProductScope productScope = new BtVodProductScope();
         BtVodProductMetadata productMetadata = new BtVodProductMetadata();
         productMetadata.setEpisodeNumber("1");
-        productMetadata.setSubGenres("[\"00's\",\"Sad\",\"European\",\"Piano\"]");
         productScope.setProductMetadata(productMetadata);
         entry.setProductScopes(ImmutableList.of(productScope));
         entry.setProductRatings(ImmutableList.<BtVodProductRating>of());

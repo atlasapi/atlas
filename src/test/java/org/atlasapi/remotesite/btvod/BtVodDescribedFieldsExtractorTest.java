@@ -1,15 +1,19 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.base.Maybe;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Set;
+
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
-import org.atlasapi.query.v2.TopicWriteController;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
@@ -18,18 +22,13 @@ import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.Spy;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import java.util.Set;
-
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodDescribedFieldsExtractorTest {
@@ -47,14 +46,19 @@ public class BtVodDescribedFieldsExtractorTest {
 
     private BtVodDescribedFieldsExtractor objectUnderTest;
 
+    @Mock
+    private BtVodContentMatchingPredicate newTopicContentMatchingPredicate;
+    
     @Before
     public void setUp() {
-        objectUnderTest = new BtVodDescribedFieldsExtractor(imageExtractor, topicResolver, topicWriter, publisher);
+        objectUnderTest = new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, publisher,
+                newTopicContentMatchingPredicate, new Topic(123L));
     }
 
     @Test
     public void testBtGenresFrom() {
         BtVodEntry entry = new BtVodEntry();
+        Item item = new Item();
         BtVodPlproduct$productTag genreProductTag = new BtVodPlproduct$productTag();
         genreProductTag.setPlproduct$scheme("genre");
         genreProductTag.setPlproduct$title("Genre");
@@ -90,7 +94,8 @@ public class BtVodDescribedFieldsExtractorTest {
         when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "SubGenre3"))
                 .thenReturn(Maybe.just(subGenre3));
 
-        Set<TopicRef> result = objectUnderTest.btGenresFrom(entry);
+        VodEntryAndContent entryAndContent = new VodEntryAndContent(entry, item);
+        Set<TopicRef> result = objectUnderTest.topicsFrom(entryAndContent);
 
         verify(genre).setTitle("Genre");
         verify(subGenre1).setTitle("SubGenre1");
@@ -109,15 +114,14 @@ public class BtVodDescribedFieldsExtractorTest {
                 )
         );
 
-
-
     }
 
 
     @Test
     public void testTopicFor() throws Exception {
         BtVodEntry entry = new BtVodEntry();
-
+        entry.setProductScopes(ImmutableList.<BtVodProductScope>of());
+        Item item = new Item();
 
         BtVodPlproduct$productTag productTag = new BtVodPlproduct$productTag();
         productTag.setPlproduct$scheme("contentProvider");
@@ -134,9 +138,10 @@ public class BtVodDescribedFieldsExtractorTest {
         when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:contentProvider", "contentProviderTitle"))
                 .thenReturn(Maybe.just(created));
 
-        Optional<TopicRef> topicRef = objectUnderTest.topicFor(entry);
+        VodEntryAndContent entryAndContent = new VodEntryAndContent(entry, item);
+        Set<TopicRef> topicRef = objectUnderTest.topicsFrom(entryAndContent);
 
         verify(created).setTitle("contentProviderTitle");
-        assertThat(topicRef.get().getTopic(), is(42L));
+        assertThat(Iterables.getOnlyElement(topicRef).getTopic(), is(42L));
     }
 }

@@ -6,18 +6,21 @@ import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
+import org.atlasapi.persistence.topic.TopicContentLister;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.HttpClients;
-import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupPredicates;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
 import org.atlasapi.remotesite.btvod.portal.XmlPortalClient;
+import org.atlasapi.remotesite.btvod.topics.BtVodStaleTopicContentRemover;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -26,6 +29,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.http.SimpleHttpClientBuilder;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -33,6 +37,9 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 @Configuration
 public class BtVodModule {
 
+    static final String BT_VOD_FEED_NAMESPACE = "gb:bt:tv:mpx:prod:feed";
+    static final String BT_VOD_NEW_FEED = "new";
+    
     private static final int THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT = 75;
     private static final String PORTAL_BOXSET_GROUP = "03_tv/40_searcha-z/all";
     private static final String PORTAL_BOXOFFICE_GROUP = "01_boxoffice/05_new/all";
@@ -71,6 +78,8 @@ public class BtVodModule {
     @Autowired
     private TopicCreatingTopicResolver topicResolver;
     @Autowired
+    private TopicContentLister topicContentLister;
+    @Autowired
     @Qualifier("topicStore")
     private TopicWriter topicWriter;
     @Value("${bt.vod.file}")
@@ -86,17 +95,45 @@ public class BtVodModule {
     @Bean
     public BtVodUpdater btVodUpdater() {
         return new BtVodUpdater(contentResolver, 
-                contentWriter, btVodData(), URI_PREFIX, btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX),
-                describedFieldsExtractor(Publisher.BT_VOD), Publisher.BT_VOD, oldContentDeactivator(Publisher.BT_VOD),
-                noImageExtractor(), URI_PREFIX, noImageExtractor(), brandUriExtractor(URI_PREFIX));
+                                contentWriter, 
+                                btVodData(), 
+                                URI_PREFIX, 
+                                btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX),
+                                Publisher.BT_VOD, 
+                                oldContentDeactivator(Publisher.BT_VOD),
+                                noImageExtractor(), 
+                                URI_PREFIX, 
+                                noImageExtractor(), 
+                                brandUriExtractor(URI_PREFIX),
+                                topicResolver, 
+                                topicWriter, 
+                                newFeedContentMatchingPredicate(), 
+                                newTopic(Publisher.BT_VOD), 
+                                staleTopicContentRemover(Publisher.BT_VOD));
     }
     
+    private BtVodStaleTopicContentRemover staleTopicContentRemover(Publisher publisher) {
+        return new BtVodStaleTopicContentRemover(ImmutableSet.of(newTopic(publisher)), topicContentLister, contentWriter);
+    }
+
     @Bean
     public BtVodUpdater btTveVodUpdater() {
         return new BtVodUpdater(contentResolver, 
-                contentWriter, btVodData(), TVE_URI_PREFIX, btVodContentGroupUpdater(Publisher.BT_TVE_VOD, TVE_URI_PREFIX), 
-                describedFieldsExtractor(Publisher.BT_TVE_VOD), Publisher.BT_TVE_VOD, oldContentDeactivator(Publisher.BT_TVE_VOD),
-                brandImageExtractor(TVE_URI_PREFIX), TVE_URI_PREFIX, itemImageExtractor(), brandUriExtractor(TVE_URI_PREFIX));
+                                contentWriter, 
+                                btVodData(), 
+                                TVE_URI_PREFIX, 
+                                btVodContentGroupUpdater(Publisher.BT_TVE_VOD, TVE_URI_PREFIX), 
+                                Publisher.BT_TVE_VOD, 
+                                oldContentDeactivator(Publisher.BT_TVE_VOD),
+                                brandImageExtractor(TVE_URI_PREFIX), 
+                                TVE_URI_PREFIX, 
+                                itemImageExtractor(), 
+                                brandUriExtractor(TVE_URI_PREFIX),
+                                topicResolver, 
+                                topicWriter, 
+                                newFeedContentMatchingPredicate(), 
+                                newTopic(Publisher.BT_TVE_VOD), 
+                                staleTopicContentRemover(Publisher.BT_TVE_VOD));
     }
     
     private BtVodOldContentDeactivator oldContentDeactivator(Publisher publisher) {
@@ -107,7 +144,7 @@ public class BtVodModule {
     }
     
     public BtVodDescribedFieldsExtractor describedFieldsExtractor(Publisher publisher) {
-        return new BtVodDescribedFieldsExtractor(new BtVodMpxImageExtractor(btPortalBaseUri), topicResolver, topicWriter, publisher);
+        return new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, publisher, newFeedContentMatchingPredicate(), newTopic(publisher));
     }
     
     public DerivingFromItemBrandImageExtractor brandImageExtractor(String baseUrl) {
@@ -149,20 +186,30 @@ public class BtVodModule {
         );
     }
     
-    private Map<String, BtVodContentGroupPredicate> contentGroupsAndCriteria() {
-        return ImmutableMap.<String, BtVodContentGroupPredicate> builder()
-                .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.schedulerChannelPredicate(MUSIC_CATEGORY))
-                .put(FILM_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.filmPredicate())
-                .put(TV_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.schedulerChannelPredicate(TV_CATEGORY))
-                .put(KIDS_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.schedulerChannelPredicate(KIDS_CATEGORY))
-                .put(SPORT_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.schedulerChannelPredicate(SPORT_CATEGORY))
-                .put(CZN_CONTENT_PROVIDER_ID.toLowerCase(), BtVodContentGroupPredicates.cznPredicate())
-                .put(BUY_TO_OWN_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.portalContentGroupPredicate(portalClient(), PORTAL_BUY_TO_OWN_GROUP, null))
-                .put(BOX_OFFICE_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.portalContentGroupPredicate(portalClient(), PORTAL_BOXOFFICE_GROUP, null))
-                .put(TV_BOX_SETS_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.portalContentGroupPredicate(portalClient(), PORTAL_BOXSET_GROUP, Series.class))
-                .put(BOX_OFFICE_PICKS_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.portalContentGroupPredicate(portalClient(), BOX_OFFICE_PICKS_GROUP, null))
-                .put(NEW_CATEGORY.toLowerCase(), BtVodContentGroupPredicates.mpxContentGroupPredicate(mpxVodClient(), NEW_CONTENT_MPX_FEED_NAME))
+    private Map<String, BtVodContentMatchingPredicate> contentGroupsAndCriteria() {
+        return ImmutableMap.<String, BtVodContentMatchingPredicate> builder()
+                .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(MUSIC_CATEGORY))
+                .put(FILM_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.filmPredicate())
+                .put(TV_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(TV_CATEGORY))
+                .put(KIDS_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY))
+                .put(SPORT_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(SPORT_CATEGORY))
+                .put(CZN_CONTENT_PROVIDER_ID.toLowerCase(), BtVodContentMatchingPredicates.cznPredicate())
+                .put(BUY_TO_OWN_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), PORTAL_BUY_TO_OWN_GROUP, null))
+                .put(BOX_OFFICE_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), PORTAL_BOXOFFICE_GROUP, null))
+                .put(TV_BOX_SETS_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), PORTAL_BOXSET_GROUP, Series.class))
+                .put(BOX_OFFICE_PICKS_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), BOX_OFFICE_PICKS_GROUP, null))
+                .put(NEW_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(), NEW_CONTENT_MPX_FEED_NAME))
                 .build();
+    }
+    
+    private Topic newTopic(Publisher publisher) {
+        Topic topic = topicResolver.topicFor(publisher, BT_VOD_FEED_NAMESPACE, BT_VOD_NEW_FEED).requireValue();
+        topicWriter.write(topic);
+        return topic;
+    }
+    
+    private BtVodContentMatchingPredicate newFeedContentMatchingPredicate() {
+        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(), NEW_CONTENT_MPX_FEED_NAME);
     }
     
     @Bean

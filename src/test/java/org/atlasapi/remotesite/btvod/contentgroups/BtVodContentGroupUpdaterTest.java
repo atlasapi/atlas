@@ -14,9 +14,8 @@ import org.atlasapi.media.entity.testing.ComplexItemTestDataBuilder;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ResolvedContent.ResolvedContentBuilder;
-import org.atlasapi.remotesite.btvod.BtVodContentGroupPredicate;
+import org.atlasapi.remotesite.btvod.BtVodContentMatchingPredicate;
 import org.atlasapi.remotesite.btvod.VodEntryAndContent;
-import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -40,7 +39,7 @@ public class BtVodContentGroupUpdaterTest {
     private final ContentGroupResolver contentGroupResolver = mock(ContentGroupResolver.class);
     private final ContentGroupWriter contentGroupWriter = mock(ContentGroupWriter.class);
     
-    private Map<String, BtVodContentGroupPredicate> contentGroupsAndCriteria = 
+    private Map<String, BtVodContentMatchingPredicate> contentGroupsAndCriteria = 
             ImmutableMap.of();
     
     private BtVodContentGroupUpdater updater;
@@ -57,10 +56,10 @@ public class BtVodContentGroupUpdaterTest {
         
         BtVodEntry dummyDataRow = new BtVodEntry();
         
-        updater.start();
+        updater.beforeContent();
         updater.onContent(item1, dummyDataRow);
         updater.onContent(item2, dummyDataRow);
-        updater.finish();
+        updater.afterContent();
         
         ArgumentCaptor<ContentGroup> contentGroupCaptor = ArgumentCaptor.forClass(ContentGroup.class);
         verify(contentGroupWriter).createOrUpdate(contentGroupCaptor.capture());
@@ -70,8 +69,8 @@ public class BtVodContentGroupUpdaterTest {
         
     }
     
-    private final BtVodContentGroupPredicate item1Predicate = 
-            new BtVodContentGroupPredicate() {
+    private final BtVodContentMatchingPredicate item1Predicate = 
+            new BtVodContentMatchingPredicate() {
 
                 @Override
                 public boolean apply(VodEntryAndContent input) {

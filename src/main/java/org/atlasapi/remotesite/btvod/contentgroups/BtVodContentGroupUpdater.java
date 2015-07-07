@@ -13,7 +13,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
-import org.atlasapi.remotesite.btvod.BtVodContentGroupPredicate;
+import org.atlasapi.remotesite.btvod.BtVodContentMatchingPredicate;
 import org.atlasapi.remotesite.btvod.BtVodContentListener;
 import org.atlasapi.remotesite.btvod.VodEntryAndContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
@@ -29,14 +29,14 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
 
     private final ContentGroupResolver contentGroupResolver;
     private final ContentGroupWriter contentGroupWriter;
-    private final ImmutableMap<String, BtVodContentGroupPredicate> contentGroupsAndCriteria;
+    private final ImmutableMap<String, BtVodContentMatchingPredicate> contentGroupsAndCriteria;
     private final String uriPrefix;
     private final Publisher publisher;
     private Multimap<String, ChildRef> contents;
 
     public BtVodContentGroupUpdater(ContentGroupResolver contentGroupResolver, 
             ContentGroupWriter contentGroupWriter,
-            Map<String, BtVodContentGroupPredicate> contentGroupsAndCriteria,
+            Map<String, BtVodContentMatchingPredicate> contentGroupsAndCriteria,
             String uriPrefix, Publisher publisher) {
         this.contentGroupResolver = checkNotNull(contentGroupResolver);
         this.contentGroupWriter = checkNotNull(contentGroupWriter);
@@ -48,7 +48,7 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
     @Override
     public void onContent(Content content, BtVodEntry vodData) {
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(vodData, content);
-        for (Entry<String, BtVodContentGroupPredicate> entry : 
+        for (Entry<String, BtVodContentMatchingPredicate> entry : 
                 contentGroupsAndCriteria.entrySet()) {
             if (entry.getValue().apply(vodEntryAndContent)) {
                 contents.put(entry.getKey(), content.childRef());
@@ -56,15 +56,17 @@ public class BtVodContentGroupUpdater implements BtVodContentListener {
         }
     }
 
-    public void start() {
+    @Override
+    public void beforeContent() {
         contents = HashMultimap.create();
         
-        for (BtVodContentGroupPredicate predicate : contentGroupsAndCriteria.values()) {
+        for (BtVodContentMatchingPredicate predicate : contentGroupsAndCriteria.values()) {
             predicate.init();
         }
     }
     
-    public void finish() {
+    @Override
+    public void afterContent() {
         for (String key : contentGroupsAndCriteria.keySet()) {
             ContentGroup contentGroup = getOrCreateContentGroup(uriPrefix + key);
             Collection<ChildRef> newChildRefs = contents.get(key);

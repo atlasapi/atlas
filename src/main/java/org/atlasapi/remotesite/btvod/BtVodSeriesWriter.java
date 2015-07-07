@@ -130,8 +130,8 @@ public class BtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress>{
         series.setParentRef(brandExtractor.getBrandRefFor(row).orNull());
         series.setAliases(describedFieldsExtractor.aliasesFrom(row));
         series.setGenres(describedFieldsExtractor.btGenreStringsFrom(row));
-        series.addTopicRefs(describedFieldsExtractor.topicFor(row).asSet());
-        series.addTopicRefs(describedFieldsExtractor.btGenresFrom(row));
+        VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
+        series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
 
 
         return series;

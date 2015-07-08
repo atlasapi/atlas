@@ -90,6 +90,9 @@ public class BtVodModule {
     private String btPortalContentGroupsBaseUri;
     @Value("${bt.vod.mpx.feed.baseUrl}")
     private String btVodMpxFeedBaseUrl;
+
+    @Value("${bt.vod.mpx.feed.params.q")
+    private String btVodMpxFeedQParam;
    
     
     @Bean
@@ -182,7 +185,7 @@ public class BtVodModule {
     public HttpBtMpxVodClient mpxVodClient() {
         return new HttpBtMpxVodClient(
                 new SimpleHttpClientBuilder().withUserAgent(HttpClients.ATLAS_USER_AGENT).build(),
-                new HttpBtMpxFeedRequestProvider(btVodMpxFeedBaseUrl)
+                new HttpBtMpxFeedRequestProvider(btVodMpxFeedBaseUrl, btVodMpxFeedQParam)
         );
     }
     

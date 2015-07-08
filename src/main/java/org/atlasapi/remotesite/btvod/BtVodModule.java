@@ -90,8 +90,7 @@ public class BtVodModule {
     private String btPortalContentGroupsBaseUri;
     @Value("${bt.vod.mpx.feed.baseUrl}")
     private String btVodMpxFeedBaseUrl;
-
-    @Value("${bt.vod.mpx.feed.params.q")
+    @Value("${bt.vod.mpx.feed.params.q}")
     private String btVodMpxFeedQParam;
    
     

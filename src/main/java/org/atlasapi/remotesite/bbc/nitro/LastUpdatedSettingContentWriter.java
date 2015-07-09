@@ -247,7 +247,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                 && Objects.equal(prevVersion.getDuration(), version.getDuration())
                 && Objects.equal(prevVersion.getProvider(), version.getProvider())
                 && Objects.equal(prevVersion.getPublishedDuration(), version.getPublishedDuration())
-                && Objects.equal(prevVersion.getRestriction(), version.getRestriction())
                 && Objects.equal(prevVersion.is3d(), version.is3d());
     }
 

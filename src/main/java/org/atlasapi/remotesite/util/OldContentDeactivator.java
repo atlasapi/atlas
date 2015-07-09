@@ -17,6 +17,8 @@ import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Many foreign data set ingests into Atlas are of the form of snapshot 
@@ -26,6 +28,8 @@ import com.google.common.collect.Lists;
  *
  */
 public class OldContentDeactivator {
+
+    private static final Logger log = LoggerFactory.getLogger(OldContentDeactivator.class);
 
     private final ContentLister contentLister;
     private final ContentResolver contentResolver;
@@ -71,16 +75,33 @@ public class OldContentDeactivator {
                 }
             }
         }
-        double seenAsAPercentageOfFullCatalogue 
+        double seenAsAPercentageOfFullCatalogue
                 = allExistingContent > 0  
                      ? (validContentUris.size() / (float) allExistingContent) * 100 
                      : 0;
                      
         if (!toRemove.isEmpty() 
                 && (threshold == null || seenAsAPercentageOfFullCatalogue > threshold)) {
+            log.info(
+                    "Deactivating content for {}, content remaining {}%, threshold {}",
+                    new Object[]{
+                            publisher,
+                            seenAsAPercentageOfFullCatalogue,
+                            threshold
+                    }
+
+            );
             markAsInactive(toRemove);
             return true;
         }
+        log.warn(
+                "Content for {} not deactivated, threshold: {}, percentage of content remaining: {}",
+                new Object[]{
+                        publisher,
+                        threshold,
+                        Double.valueOf(seenAsAPercentageOfFullCatalogue)
+                }
+        );
         return false;
     }
     

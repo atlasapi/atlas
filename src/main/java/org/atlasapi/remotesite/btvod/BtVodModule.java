@@ -40,7 +40,7 @@ public class BtVodModule {
     static final String BT_VOD_FEED_NAMESPACE = "gb:bt:tv:mpx:prod:feed";
     static final String BT_VOD_NEW_FEED = "new";
     
-    private static final int THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT = 75;
+    private static final int THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT = 25;
     private static final String PORTAL_BOXSET_GROUP = "03_tv/40_searcha-z/all";
     private static final String PORTAL_BOXOFFICE_GROUP = "01_boxoffice/05_new/all";
     private static final String PORTAL_BUY_TO_OWN_GROUP = "01_boxoffice/Must_Own_Movies_Categories/New_To_Own";

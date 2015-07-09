@@ -10,15 +10,18 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.google.common.collect.Sets;
 
 /**
  * Many foreign data set ingests into Atlas are of the form of snapshot 
@@ -63,6 +66,7 @@ public class OldContentDeactivator {
                                             new ContentListingCriteria
                                                     .Builder()
                                                     .forPublisher(publisher)
+                                                    .forContent(ImmutableList.copyOf(Sets.union(ContentCategory.CONTAINERS, ContentCategory.ITEMS)))
                                                     .build()
                                                  );
         

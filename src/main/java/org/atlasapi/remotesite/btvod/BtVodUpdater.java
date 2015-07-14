@@ -3,9 +3,11 @@ package org.atlasapi.remotesite.btvod;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
+import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -42,15 +44,27 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodContentMatchingPredicate newFeedContentMatchingPredicate;
     private final Topic newTopic;
     private final BtVodStaleTopicContentRemover staleTopicContentRemover;
+    private final BtVodSeriesUriExtractor seriesUriExtractor;
     
-    public BtVodUpdater(ContentResolver resolver, ContentWriter contentWriter,
-            BtVodData vodData, String uriPrefix,
+    public BtVodUpdater(
+            ContentResolver resolver,
+            ContentWriter contentWriter,
+            BtVodData vodData,
+            String uriPrefix,
             BtVodContentGroupUpdater contentGroupUpdater,
-            Publisher publisher, BtVodOldContentDeactivator oldContentDeactivator,
-            BrandImageExtractor brandImageExtractor, String baseUrl, ImageExtractor imageExtractor,
-            BrandUriExtractor brandUriExtractor, TopicCreatingTopicResolver topicResolver,
-            TopicWriter topicWriter, BtVodContentMatchingPredicate newFeedContentMatchingPredicate,
-            Topic newTopic, BtVodStaleTopicContentRemover staleTopicContentRemover) {
+            Publisher publisher,
+            BtVodOldContentDeactivator oldContentDeactivator,
+            BrandImageExtractor brandImageExtractor,
+            String baseUrl,
+            ImageExtractor imageExtractor,
+            BrandUriExtractor brandUriExtractor,
+            TopicCreatingTopicResolver topicResolver,
+            TopicWriter topicWriter,
+            BtVodContentMatchingPredicate newFeedContentMatchingPredicate,
+            Topic newTopic,
+            BtVodStaleTopicContentRemover staleTopicContentRemover,
+            BtVodSeriesUriExtractor seriesUriExtractor
+    ) {
         this.staleTopicContentRemover = staleTopicContentRemover;
         this.topicResolver = checkNotNull(topicResolver);
         this.topicWriter = checkNotNull(topicWriter);
@@ -67,7 +81,8 @@ public class BtVodUpdater extends ScheduledTask {
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.baseUrl = checkNotNull(baseUrl);
         this.imageExtractor = checkNotNull(imageExtractor);
-        
+        this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
+
         withName("BT VOD Catalogue Ingest");
     }
 
@@ -99,61 +114,122 @@ public class BtVodUpdater extends ScheduledTask {
                 brandImageExtractor,
                 brandUriExtractor
         );
-        BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(
+
+        BtVodExplicitSeriesWriter explicitSeriesExtractor = new BtVodExplicitSeriesWriter(
                 writer,
                 resolver,
                 brandExtractor,
                 publisher,
-                listeners,
-                describedFieldsExtractor, 
-                processedRows
-        );
-        BtVodItemWriter itemExtractor = new BtVodItemWriter(
-                writer,
-                resolver,
-                brandExtractor,
-                seriesExtractor,
-                publisher,
-                uriPrefix,
                 listeners,
                 describedFieldsExtractor,
                 processedRows,
-                new BtVodPricingAvailabilityGrouper(),
-                new TitleSanitiser(),
-                imageExtractor
+                seriesUriExtractor
         );
-        
+
         try {
             reportStatus("Extracting brand images");
             vodData.processData(brandImageExtractor);
-            
-            reportStatus("Brand extract [IN PROGRESS]  Series extract [TODO]  Item extract [TODO]");
+            reportStatus("Brand extract [IN PROGRESS] Explicit series extract [TODO] Synthesized series extract [TODO]  Item extract [TODO]");
             vodData.processData(brandExtractor);
-            reportStatus(String.format("Brand extract [DONE: %d rows successful %d rows failed]  Series extract [IN PROGRESS]  Item extract [TODO]  Content group update [TODO]", 
-                    brandExtractor.getResult().getProcessed(), 
-                    brandExtractor.getResult().getFailures()));
+            reportStatus(
+                    String.format(
+                            "Brand extract [DONE: %d rows successful %d rows failed] Explicit series extract [IN PROGRESS] Synthesized series extract [TODO]  Item extract [TODO]",
+                            brandExtractor.getResult().getProcessed(),
+                            brandExtractor.getResult().getFailures()
+                    )
+            );
 
-            vodData.processData(seriesExtractor);
-            reportStatus(String.format("Brand extract [DONE: %d rows successful %d rows failed]  Series extract [DONE: %d rows successful %d rows failed]  Item extract [IN PROGRESS]  Content group update [TODO]", 
-                    brandExtractor.getResult().getProcessed(), 
-                    brandExtractor.getResult().getFailures(), 
-                    seriesExtractor.getResult().getProcessed(), 
-                    seriesExtractor.getResult().getFailures()));
+            vodData.processData(explicitSeriesExtractor);
+            reportStatus(
+                    String.format(
+                            "Brand extract [DONE: %d rows successful %d rows failed] Explicit series extract [DONE: %d rows successful %d rows failed] Synthesized series extract [IN PROGRESS]  Item extract [TODO]",
+                            brandExtractor.getResult().getProcessed(),
+                            brandExtractor.getResult().getFailures(),
+                            explicitSeriesExtractor.getResult().getProcessed(),
+                            explicitSeriesExtractor.getResult().getFailures()
+                    )
+            );
+
+            Map<String, Series> explicitSeries = explicitSeriesExtractor.getExplicitSeries();
+
+            BtVodSynthesizedSeriesWriter synthesizedSeriesExtractor = new BtVodSynthesizedSeriesWriter(
+                    writer,
+                    resolver,
+                    brandExtractor,
+                    publisher,
+                    listeners,
+                    describedFieldsExtractor,
+                    processedRows,
+                    seriesUriExtractor,
+                    explicitSeries.keySet()
+            );
+            vodData.processData(synthesizedSeriesExtractor);
+            reportStatus(
+                    String.format(
+                            "Brand extract [DONE: %d rows successful %d rows failed] Explicit series extract [DONE: %d rows successful %d rows failed] Synthesized series extract [DONE: %d rows successful %d rows failed]  Item extract [IN PROGRESS]",
+                            brandExtractor.getResult().getProcessed(),
+                            brandExtractor.getResult().getFailures(),
+                            explicitSeriesExtractor.getResult().getProcessed(),
+                            explicitSeriesExtractor.getResult().getFailures(),
+                            synthesizedSeriesExtractor.getResult().getProcessed(),
+                            synthesizedSeriesExtractor.getResult().getFailures()
+                    )
+            );
+
+            Map<String, Series> synthesizedSeries = synthesizedSeriesExtractor.getSynthesizedSeries();
+
+            BtVodSeriesProvider seriesProvider = new BtVodSeriesProvider(explicitSeries, synthesizedSeries, seriesUriExtractor);
+
+            BtVodItemWriter itemExtractor = new BtVodItemWriter(
+                    writer,
+                    resolver,
+                    brandExtractor,
+                    seriesProvider,
+                    publisher,
+                    uriPrefix,
+                    listeners,
+                    describedFieldsExtractor,
+                    processedRows,
+                    new BtVodPricingAvailabilityGrouper(),
+                    new TitleSanitiser(),
+                    imageExtractor
+            );
 
             vodData.processData(itemExtractor);
-            reportStatus(String.format("Brand extract [DONE: %d rows successful %d rows failed]  Series extract [DONE: %d rows successful %d rows failed]  Item extract [DONE: %d rows successful %d rows failed] Content group update [IN PROGRESS]",
-                    brandExtractor.getResult().getProcessed(), 
-                    brandExtractor.getResult().getFailures(), 
-                    seriesExtractor.getResult().getProcessed(), 
-                    seriesExtractor.getResult().getFailures(),
-                    itemExtractor.getResult().getProcessed(),
-                    itemExtractor.getResult().getFailures()));
+            reportStatus(
+                    String.format(
+                            "Brand extract [DONE: %d rows successful %d rows failed] Explicit series extract [DONE: %d rows successful %d rows failed] Synthesized series extract [DONE: %d rows successful %d rows failed]  Item extract [DONE: %d rows successful %d rows failed] Content group update [IN PROGRESS]",
+                            brandExtractor.getResult().getProcessed(),
+                            brandExtractor.getResult().getFailures(),
+                            explicitSeriesExtractor.getResult().getProcessed(),
+                            explicitSeriesExtractor.getResult().getFailures(),
+                            synthesizedSeriesExtractor.getResult().getProcessed(),
+                            synthesizedSeriesExtractor.getResult().getFailures(),
+                            itemExtractor.getResult().getProcessed(),
+                            itemExtractor.getResult().getFailures()
+                    )
+            );
             
             
             listeners.afterContent();
+
+            reportStatus(
+                    String.format(
+                            "Brand extract [DONE: %d rows successful %d rows failed] Explicit series extract [DONE: %d rows successful %d rows failed] Synthesized series extract [DONE: %d rows successful %d rows failed]  Item extract [DONE: %d rows successful %d rows failed] Content group update [DONE]",
+                            brandExtractor.getResult().getProcessed(),
+                            brandExtractor.getResult().getFailures(),
+                            explicitSeriesExtractor.getResult().getProcessed(),
+                            explicitSeriesExtractor.getResult().getFailures(),
+                            synthesizedSeriesExtractor.getResult().getProcessed(),
+                            synthesizedSeriesExtractor.getResult().getFailures(),
+                            itemExtractor.getResult().getProcessed(),
+                            itemExtractor.getResult().getFailures()
+                    )
+            );
             
             if (brandExtractor.getResult().getFailures() > 0
-                    || seriesExtractor.getResult().getFailures() > 0
+                    || explicitSeriesExtractor.getResult().getFailures() > 0
+                    || synthesizedSeriesExtractor.getResult().getFailures() > 0
                     || itemExtractor.getResult().getFailures() > 0) {
                 throw new RuntimeException("Failed to extract some rows");
             }

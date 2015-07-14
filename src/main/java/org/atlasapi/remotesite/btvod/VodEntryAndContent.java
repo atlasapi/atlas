@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import com.google.common.base.Objects;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 

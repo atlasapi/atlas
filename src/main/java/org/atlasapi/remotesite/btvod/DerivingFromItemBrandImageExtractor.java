@@ -33,10 +33,16 @@ public class DerivingFromItemBrandImageExtractor implements BrandImageExtractor,
     private final Map<String, BrandImage> backgroundImages = Maps.newHashMap();
     private final Map<String, BrandImage> packshotImages = Maps.newHashMap();
     private final BrandUriExtractor brandUriExtractor;
+    private final BtVodSeriesUriExtractor seriesUriExtractor;
 
-    public DerivingFromItemBrandImageExtractor(BrandUriExtractor brandUriExtractor, String baseUrl) {
+    public DerivingFromItemBrandImageExtractor(
+            BrandUriExtractor brandUriExtractor,
+            String baseUrl,
+            BtVodSeriesUriExtractor seriesUriExtractor
+    ) {
         this.baseUrl = checkNotNull(baseUrl);
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
+        this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
     }
     
     @Override
@@ -67,7 +73,7 @@ public class DerivingFromItemBrandImageExtractor implements BrandImageExtractor,
         if (!brandUri.isPresent()) {
             return true;
         }
-        Integer seriesNumber = BtVodSeriesWriter.extractSeriesNumber(entry.getTitle()).orNull();
+        Integer seriesNumber = seriesUriExtractor.extractSeriesNumber(entry).orNull();
         Integer episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
         if (episodeNumber != null && seriesNumber != null) {
             retainIfBestImage(brandUri.get(), backgroundImages, getBackgroundImage(entry), seriesNumber, episodeNumber);

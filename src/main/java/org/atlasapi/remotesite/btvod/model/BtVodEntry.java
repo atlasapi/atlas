@@ -61,7 +61,13 @@ public class BtVodEntry {
     
     @SerializedName("btproduct$productOfferingType")
     private String productOfferingType;
-    
+
+    @SerializedName("btproduct$seriesNumber")
+    private Integer seriesNumber;
+
+    @SerializedName("btproduct$parentGuid")
+    private String parentGuid;
+
     public BtVodEntry() {}
 
     public String getGuid() {
@@ -83,29 +89,29 @@ public class BtVodEntry {
     public String getProductType() {
         return productType;
     }
-    
+
     public String getProductOfferingType() {
         return productOfferingType;
     }
 
     public String getContentProviderId() {
-        return productTag(CONTENT_PROVIDER);    
+        return productTag(CONTENT_PROVIDER);
     }
-    
+
     /**
      * Platforms the trailer media is available on
      */
     public ImmutableSet<String> getTrailerServiceTypes() {
         return productTags(TRAILER_SERVICE_TYPE_SCHEME);
     }
-    
+
     /**
      * Platforms the content media is available on
      */
     public ImmutableSet<String> getServiceTypes() {
         return productTags(SERVICE_TYPE_SCHEME);
     }
-    
+
     private String productTag(String tag) {
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
             if (plproduct$productTag.getPlproduct$scheme().equals(tag)) {
@@ -115,7 +121,7 @@ public class BtVodEntry {
 
         return null;
     }
-    
+
     private ImmutableSet<String> productTags(String tag) {
         ImmutableSet.Builder<String> tags = ImmutableSet.builder();
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
@@ -125,19 +131,19 @@ public class BtVodEntry {
         }
         return tags.build();
     }
-    
+
     public String getGenre() {
         return productTag(GENRE);
     }
-    
+
     public ImmutableSet<String> getSubscriptionCodes() {
         return productTags(SUBSCRIPTION_PRODUCT_SCHEME);
     }
-    
+
     public String getMasterAgreementOtgTvodPlay() {
         return productTag(MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME);
     }
-    
+
     public String getSchedulerChannel() {
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
             if (plproduct$productTag.getPlproduct$scheme().equals(SCHEDULER_CHANNEL)) {
@@ -174,11 +180,11 @@ public class BtVodEntry {
     public void setProductDuration(Long productDuration) {
         this.productDuration = productDuration;
     }
-    
+
     public Long getProductDuration() {
         return productDuration;
     }
-    
+
     public void setProductLongDescription(String productLongDescription) {
         this.productLongDescription = productLongDescription;
     }
@@ -279,4 +285,15 @@ public class BtVodEntry {
         this.productTrailerMediaId = productTrailerMediaId;
     }
 
+    public Integer getSeriesNumber() {
+        return seriesNumber;
+    }
+
+    public String getParentGuid() {
+        return parentGuid;
+    }
+
+    public void setParentGuid(String parentGuid) {
+        this.parentGuid = parentGuid;
+    }
 }

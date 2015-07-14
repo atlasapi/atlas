@@ -28,8 +28,9 @@ public class DerivingFromItemBrandImageExtractorTest {
     private static final String BASE_URL = "http://example.org/";
     
     private final BrandUriExtractor brandUriExtractor = mock(BrandUriExtractor.class);
+    private final BtVodSeriesUriExtractor seriesUriExtractor = mock(BtVodSeriesUriExtractor.class);
     private final DerivingFromItemBrandImageExtractor extractor 
-                    = new DerivingFromItemBrandImageExtractor(brandUriExtractor, BASE_URL);
+                    = new DerivingFromItemBrandImageExtractor(brandUriExtractor, BASE_URL, seriesUriExtractor);
     
     @Test
     public void testExtractsImagesFromLowestEpisodeNumber() {
@@ -38,7 +39,9 @@ public class DerivingFromItemBrandImageExtractorTest {
           
         when(brandUriExtractor.extractBrandUri(s1e1)).thenReturn(Optional.of("http://example.org/"));
         when(brandUriExtractor.extractBrandUri(s1e2)).thenReturn(Optional.of("http://example.org/"));
-        
+        when(seriesUriExtractor.extractSeriesNumber(s1e1)).thenReturn(Optional.of(1));
+        when(seriesUriExtractor.extractSeriesNumber(s1e2)).thenReturn(Optional.of(2));
+
         extractor.process(s1e1);
         extractor.process(s1e2);
         

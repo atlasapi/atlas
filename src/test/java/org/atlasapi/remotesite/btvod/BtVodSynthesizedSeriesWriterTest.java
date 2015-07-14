@@ -23,20 +23,24 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mockito;
 
+import static org.hamcrest.CoreMatchers.any;
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-public class BtVodSeriesWriterTest {
+public class BtVodSynthesizedSeriesWriterTest {
 
     private static final String BRAND_TITLE = "Brand Title";
     private static final String PRODUCT_ID = "1234";
     private static final String REAL_EPISODE_TITLE = "Real Title";
     private static final String FULL_EPISODE_TITLE = BRAND_TITLE + ": S1 S1-E9 " + REAL_EPISODE_TITLE;
     private static final Publisher PUBLISHER = Publisher.BT_VOD;
+    private static final String SERIES_GUID = "series_guid";
 
     private final ContentWriter contentWriter = mock(ContentWriter.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
@@ -46,20 +50,22 @@ public class BtVodSeriesWriterTest {
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
+    private final BtVodSeriesUriExtractor seriesUriExtractor = mock(BtVodSeriesUriExtractor.class);
     
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, Publisher.BT_VOD,
             newTopicContentMatchingPredicate, new Topic(123L));
 
-    private final BtVodSeriesWriter seriesExtractor = new BtVodSeriesWriter(
+    private final BtVodSynthesizedSeriesWriter seriesExtractor = new BtVodSynthesizedSeriesWriter(
             contentWriter,
             contentResolver,
             brandExtractor,
             PUBLISHER,
             contentListener,
             describedFieldsExtractor, 
-            Sets.<String>newHashSet()
+            Sets.<String>newHashSet(),
+            seriesUriExtractor,
+            ImmutableSet.of(SERIES_GUID)
     );
-
 
     @Test
     public void testExtractsSeriesFromEpisode() {
@@ -73,7 +79,8 @@ public class BtVodSeriesWriterTest {
 
         when(brandExtractor.brandUriFor(entry)).thenReturn(Optional.of(brandUri));
         when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
-
+        when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
+        when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of(brandUri + "/series/1"));
 
         ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
 
@@ -84,45 +91,21 @@ public class BtVodSeriesWriterTest {
         assertThat(series.getCanonicalUri(), is(brandUri + "/series/1"));
         assertThat(series.getSeriesNumber(), is(1));
         assertThat(series.getParent(), is(brandRef));
-        assertThat(seriesExtractor.getSeriesRefFor(entry).get().getUri(), is(brandUri + "/series/1"));
+        assertThat(seriesExtractor.getSeriesFor(entry).get().getCanonicalUri(), is(brandUri + "/series/1"));
     }
 
     @Test
-    public void testCanExtractSeriesUrlFromEpisode() {
-        BtVodEntry row1 = new BtVodEntry();
-        row1.setTitle("Cashmere Mafia S2-E2 Conference Call");
-
-        BtVodEntry row2 = new BtVodEntry();
-        row2.setTitle(FULL_EPISODE_TITLE);
-
-        BtVodEntry row3 = new BtVodEntry();
-        row3.setTitle("UFC: The Ultimate Fighter Season 19 - Season 19 Episode 2");
-
-        BtVodEntry row4 = new BtVodEntry();
-        row4.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
-
-        BtVodEntry row5 = new BtVodEntry();
-        row5.setTitle("Being Human (USA) S2-E7 The Ties That Blind");
-
-        String brandUri = "http://brand-uri.com";
-        String brandUri2 = "http://brand-uri2.com";
-        String brandUri3 = "http://brand-uri3.com";
-        String brandUri4 = "http://brand-uri4.com";
-        String brandUri5 = "http://brand-uri5.com";
-
-        when(brandExtractor.brandUriFor(row1)).thenReturn(Optional.of(brandUri));
-        when(brandExtractor.brandUriFor(row2)).thenReturn(Optional.of(brandUri2));
-        when(brandExtractor.brandUriFor(row3)).thenReturn(Optional.of(brandUri3));
-        when(brandExtractor.brandUriFor(row4)).thenReturn(Optional.of(brandUri4));
-        when(brandExtractor.brandUriFor(row5)).thenReturn(Optional.of(brandUri5));
+    public void testDoesntExtractsSeriesFromEpisodeWhichAlreadyHasExplicitSeriesExtracted() {
+        BtVodEntry entry = row();
+        entry.setParentGuid(SERIES_GUID);
 
 
-        assertThat(seriesExtractor.uriFor(row1).get(), Matchers.is(brandUri + "/series/2"));
-        assertThat(seriesExtractor.uriFor(row2).get(), Matchers.is(brandUri2 + "/series/1"));
-        assertThat(seriesExtractor.uriFor(row3).get(), Matchers.is(brandUri3 + "/series/19"));
-        assertThat(seriesExtractor.uriFor(row4).get(), Matchers.is(brandUri4 + "/series/3"));
-        assertThat(seriesExtractor.uriFor(row5).get(), Matchers.is(brandUri5 + "/series/2"));
+        seriesExtractor.process(entry);
+
+        verifyNoMoreInteractions(contentWriter);
     }
+
+
 
     @Test
     public void testDoesntExtractSeriesFromNonEpisode() {

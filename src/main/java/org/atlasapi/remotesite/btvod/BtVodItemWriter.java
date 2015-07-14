@@ -31,10 +31,9 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Quality;
-import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.simple.Pricing;
@@ -77,14 +76,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
     private static final String BT_VOD_GUID_NAMESPACE = "bt:vod:guid";
     private static final String BT_VOD_ID_NAMESPACE = "bt:vod:id";
-    private static final Object OTG_PLATFORM = "OTG";
-    private static final Object FALSE = "false";
 
 
     private final ContentWriter writer;
     private final ContentResolver resolver;
     private final BtVodBrandWriter brandExtractor;
-    private final BtVodSeriesWriter seriesExtractor;
+    private final BtVodSeriesProvider seriesProvider;
     private final Publisher publisher;
     private final String uriPrefix;
     private final ContentMerger contentMerger;
@@ -101,7 +98,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             ContentWriter writer,
             ContentResolver resolver,
             BtVodBrandWriter brandExtractor,
-            BtVodSeriesWriter seriesExtractor,
+            BtVodSeriesProvider seriesProvider,
             Publisher publisher,
             String uriPrefix,
             BtVodContentListener listener,
@@ -117,7 +114,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         this.writer = checkNotNull(writer);
         this.resolver = checkNotNull(resolver);
         this.brandExtractor = checkNotNull(brandExtractor);
-        this.seriesExtractor = checkNotNull(seriesExtractor);
+        this.seriesProvider = checkNotNull(seriesProvider);
         this.publisher = checkNotNull(publisher);
         this.uriPrefix = checkNotNull(uriPrefix);
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
@@ -223,7 +220,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
     
     public Integer extractSeriesNumber(BtVodEntry row) {
-        return seriesExtractor.extractSeriesNumber(row.getTitle()).orNull();
+        Optional<Series> seriesRef = seriesProvider.seriesFor(row);
+        if(!seriesRef.isPresent()) {
+            return null;
+        }
+        return seriesRef.get().getSeriesNumber();
     }
 
 
@@ -239,11 +240,12 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private ParentRef getSeriesRefOrNull(BtVodEntry row) {
 
-        Optional<ParentRef> seriesRef = seriesExtractor.getSeriesRefFor(row);
-        if (!seriesRef.isPresent()) {
+        Optional<Series> series = seriesProvider.seriesFor(row);
+        if (!series.isPresent()) {
             log.warn("Episode without series {}", row.getTitle());
+            return null;
         }
-        return seriesRef.orNull();
+        return ParentRef.parentRefFrom(series.get());
     }
 
     private ParentRef getBrandRefOrNull(BtVodEntry row) {

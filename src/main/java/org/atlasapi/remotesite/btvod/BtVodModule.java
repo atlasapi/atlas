@@ -92,26 +92,29 @@ public class BtVodModule {
     private String btVodMpxFeedBaseUrl;
     @Value("${bt.vod.mpx.feed.params.q}")
     private String btVodMpxFeedQParam;
-   
-    
+
+
     @Bean
     public BtVodUpdater btVodUpdater() {
-        return new BtVodUpdater(contentResolver, 
-                                contentWriter, 
-                                btVodData(), 
-                                URI_PREFIX, 
-                                btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX),
-                                Publisher.BT_VOD, 
-                                oldContentDeactivator(Publisher.BT_VOD),
-                                noImageExtractor(), 
-                                URI_PREFIX, 
-                                noImageExtractor(), 
-                                brandUriExtractor(URI_PREFIX),
-                                topicResolver, 
-                                topicWriter, 
-                                newFeedContentMatchingPredicate(), 
-                                newTopic(Publisher.BT_VOD), 
-                                staleTopicContentRemover(Publisher.BT_VOD));
+        return new BtVodUpdater(
+                contentResolver,
+                contentWriter,
+                btVodData(),
+                URI_PREFIX,
+                btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX),
+                Publisher.BT_VOD,
+                oldContentDeactivator(Publisher.BT_VOD),
+                noImageExtractor(),
+                URI_PREFIX,
+                noImageExtractor(),
+                brandUriExtractor(URI_PREFIX),
+                topicResolver,
+                topicWriter,
+                newFeedContentMatchingPredicate(),
+                newTopic(Publisher.BT_VOD),
+                staleTopicContentRemover(Publisher.BT_VOD),
+                seriesUriExtractor(URI_PREFIX)
+        );
     }
     
     private BtVodStaleTopicContentRemover staleTopicContentRemover(Publisher publisher) {
@@ -120,22 +123,24 @@ public class BtVodModule {
 
     @Bean
     public BtVodUpdater btTveVodUpdater() {
-        return new BtVodUpdater(contentResolver, 
-                                contentWriter, 
-                                btVodData(), 
-                                TVE_URI_PREFIX, 
-                                btVodContentGroupUpdater(Publisher.BT_TVE_VOD, TVE_URI_PREFIX), 
-                                Publisher.BT_TVE_VOD, 
-                                oldContentDeactivator(Publisher.BT_TVE_VOD),
-                                brandImageExtractor(TVE_URI_PREFIX), 
-                                TVE_URI_PREFIX, 
-                                itemImageExtractor(), 
-                                brandUriExtractor(TVE_URI_PREFIX),
-                                topicResolver, 
-                                topicWriter, 
-                                newFeedContentMatchingPredicate(), 
-                                newTopic(Publisher.BT_TVE_VOD), 
-                                staleTopicContentRemover(Publisher.BT_TVE_VOD));
+        return new BtVodUpdater(
+                contentResolver,
+                contentWriter,
+                btVodData(),
+                TVE_URI_PREFIX,
+                btVodContentGroupUpdater(Publisher.BT_TVE_VOD, TVE_URI_PREFIX),
+                Publisher.BT_TVE_VOD,
+                oldContentDeactivator(Publisher.BT_TVE_VOD),
+                brandImageExtractor(TVE_URI_PREFIX),
+                TVE_URI_PREFIX,
+                itemImageExtractor(),
+                brandUriExtractor(TVE_URI_PREFIX),
+                topicResolver,
+                topicWriter,
+                newFeedContentMatchingPredicate(),
+                newTopic(Publisher.BT_TVE_VOD),
+                staleTopicContentRemover(Publisher.BT_TVE_VOD), seriesUriExtractor(TVE_URI_PREFIX)
+        );
     }
     
     private BtVodOldContentDeactivator oldContentDeactivator(Publisher publisher) {
@@ -144,13 +149,17 @@ public class BtVodModule {
                         new OldContentDeactivator(contentLister, contentWriter, contentResolver), 
                         THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT);
     }
+
+    private BtVodSeriesUriExtractor seriesUriExtractor(String prefix) {
+        return new BtVodSeriesUriExtractor(brandUriExtractor(prefix));
+    }
     
     public BtVodDescribedFieldsExtractor describedFieldsExtractor(Publisher publisher) {
         return new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, publisher, newFeedContentMatchingPredicate(), newTopic(publisher));
     }
     
     public DerivingFromItemBrandImageExtractor brandImageExtractor(String baseUrl) {
-        return new DerivingFromItemBrandImageExtractor(brandUriExtractor(baseUrl), baseUrl);
+        return new DerivingFromItemBrandImageExtractor(brandUriExtractor(baseUrl), baseUrl, seriesUriExtractor(baseUrl));
     }
     
     public ImageExtractor itemImageExtractor() {

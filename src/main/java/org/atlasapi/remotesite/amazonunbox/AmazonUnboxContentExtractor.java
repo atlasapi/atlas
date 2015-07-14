@@ -55,7 +55,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String LANGUAGE_ENGLISH = "en";
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
     private static final String ASIN_NAMESPACE = "gb:amazon:asin";
-    private static final String IMDB_ALIAS_URL_PREFIX = "http://www.imdb.com/title/%s";
+    private static final String IMDB_ALIAS_URL_PREFIX = "http://imdb.com/title/%s";
     private static final String AMAZON_ALIAS_URL_VERSION = "http://gb.amazon.com/asin/%s";
     private static final String URI_VERSION = "http://unbox.amazon.co.uk/%s";
     private static final String LOCATION_URI_PATTERN = "http://www.amazon.co.uk/dp/%s/";

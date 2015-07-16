@@ -73,6 +73,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
             }
 
             Series series = seriesFrom(row);
+            setAdditionalFields(series, row);
             write(series);
             onSeriesProcessed(series, row);
 

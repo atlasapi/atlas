@@ -50,28 +50,14 @@ public class BtVodVersionsExtractor {
 
         if (row.getProductOfferStartDate() == null
                 || row.getProductOfferEndDate() == null
-                || !
-
-                isItemTvodPlayoutAllowed(row)
-
-                || !
-
-                isItemMediaAvailableOnCdn(row)
-
-                )
-
-        {
+                || !isItemTvodPlayoutAllowed(row)
+                || !isItemMediaAvailableOnCdn(row)
+                ) {
             return ImmutableSet.of();
         }
 
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
-        if (!row.getSubscriptionCodes().
-
-                isEmpty()
-
-                )
-
-        {
+        if (!row.getSubscriptionCodes().isEmpty() || BrandUriExtractor.SERIES_TYPE.equals(row.getProductType())) {
             DateTime availabilityStart = new DateTime(row.getProductOfferStartDate(), DateTimeZone.UTC);
             DateTime availabilityEnd = new DateTime(row.getProductOfferEndDate(), DateTimeZone.UTC);
             locations.add(createLocation(row, new Interval(availabilityStart, availabilityEnd),
@@ -79,17 +65,7 @@ public class BtVodVersionsExtractor {
         }
 
         //TODO filter for blackout
-        if (!row.getProductPricingPlan().
-
-                getProductPricingTiers()
-
-                .
-
-                        isEmpty()
-
-                )
-
-        {
+        if (!row.getProductPricingPlan().getProductPricingTiers().isEmpty()) {
             if (row.getProductOfferingType().contains("-EST")) {
                 locations.addAll(createLocations(row, Policy.RevenueContract.PAY_TO_BUY, aliases));
             } else {
@@ -104,16 +80,9 @@ public class BtVodVersionsExtractor {
 
         Version version = new Version();
         version.setManifestedAs(ImmutableSet.of(encoding));
-        version.setCanonicalUri(
-
-                uriFor(row)
-
-        );
+        version.setCanonicalUri(uriFor(row));
         version.setAliases(aliases);
-
-        if (row.getProductDuration() != null)
-
-        {
+        if (row.getProductDuration() != null) {
             version.setDuration(Duration.standardSeconds(row.getProductDuration()));
         }
 

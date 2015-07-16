@@ -57,7 +57,7 @@ public class BtVodVersionsExtractor {
         }
 
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
-        if (!row.getSubscriptionCodes().isEmpty() || BrandUriExtractor.SERIES_TYPE.equals(row.getProductType())) {
+        if (!row.getSubscriptionCodes().isEmpty()) {
             DateTime availabilityStart = new DateTime(row.getProductOfferStartDate(), DateTimeZone.UTC);
             DateTime availabilityEnd = new DateTime(row.getProductOfferEndDate(), DateTimeZone.UTC);
             locations.add(createLocation(row, new Interval(availabilityStart, availabilityEnd),

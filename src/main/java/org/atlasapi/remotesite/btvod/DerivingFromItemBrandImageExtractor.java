@@ -70,7 +70,7 @@ public class DerivingFromItemBrandImageExtractor implements BrandImageExtractor,
     @Override
     public boolean process(BtVodEntry entry) {
         Optional<String> brandUri = brandUriExtractor.extractBrandUri(entry);
-        if (!brandUri.isPresent()) {
+        if (BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType()) || !brandUri.isPresent()) {
             return true;
         }
         Integer seriesNumber = seriesUriExtractor.extractSeriesNumber(entry).orNull();

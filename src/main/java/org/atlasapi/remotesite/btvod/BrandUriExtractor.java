@@ -16,7 +16,7 @@ public class BrandUriExtractor {
 
     private static final String HELP_TYPE = "help";
     private static final String EPISODE_TYPE = "episode";
-    private static final String SERIES_TYPE = "season";
+    public static final String SERIES_TYPE = "season";
 
     private static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
             Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*"),

@@ -15,6 +15,7 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentMerger.AliasMergeStrategy;
@@ -67,8 +68,8 @@ public class ContentMergerTest {
     public void testVersionMergeReplaceStrategy() {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
         
-        Item current = new Item();
-        Item extracted = new Item();
+        Series current = new Series();
+        Series extracted = new Series();
         
         Version version1 = new Version();
         version1.setCanonicalUri("http://example.org/1");
@@ -82,7 +83,7 @@ public class ContentMergerTest {
         version2.setRestriction(restriction);
         
         extracted.setVersions(ImmutableSet.of(version2));
-        Item merged = contentMerger.merge(current, extracted);
+        Series merged = (Series)contentMerger.merge(current, extracted);
 
         Version mergedVersion = Iterables.getOnlyElement(merged.getVersions());
         assertEquals("http://example.org/2", mergedVersion.getCanonicalUri());

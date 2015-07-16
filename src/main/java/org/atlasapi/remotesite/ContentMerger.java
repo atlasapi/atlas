@@ -31,7 +31,7 @@ public class ContentMerger {
     }
 
     private static interface VersionMergeStrategy {
-        Item mergeVersions(Item current, Item extracted);
+        Content mergeVersions(Content current, Content extracted);
     }
     
     static interface AliasMergeStrategy {
@@ -64,7 +64,6 @@ public class ContentMerger {
 
     public Item merge(Item current, Item extracted) {
 
-        current = versionMergeStrategy.mergeVersions(current, extracted);
         current = aliasMergeStrategy.mergeAliases(current, extracted);
         current = mergeContents(current, extracted);
 
@@ -158,6 +157,7 @@ public class ContentMerger {
         current.setSpecialization(extracted.getSpecialization());
         current.setPriority(extracted.getPriority());
         topicsMergeStrategy.mergeTopics(current, extracted);
+        versionMergeStrategy.mergeVersions(current, extracted);
 
         return current;
     }
@@ -188,7 +188,7 @@ public class ContentMerger {
         }
 
         @Override
-        public Item mergeVersions(Item current, Item extracted) {
+        public Content mergeVersions(Content current, Content extracted) {
             return current;
         }
 
@@ -207,7 +207,7 @@ public class ContentMerger {
         }
 
         @Override
-        public Item mergeVersions(Item current, Item extracted) {
+        public Content mergeVersions(Content current, Content extracted) {
             current.setVersions(extracted.getVersions());
             return current;
         }
@@ -222,7 +222,7 @@ public class ContentMerger {
 
     private static class StandardMerge extends MergeStrategy implements VersionMergeStrategy, AliasMergeStrategy {
         @Override
-        public Item mergeVersions(Item current, Item extracted) {
+        public Content mergeVersions(Content current, Content extracted) {
             Map<String, Version> mergedVersions = Maps.newHashMap();
             for (Version version : current.getVersions()) {
                 mergedVersions.put(version.getCanonicalUri(), version);

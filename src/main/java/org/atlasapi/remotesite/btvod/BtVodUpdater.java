@@ -45,6 +45,7 @@ public class BtVodUpdater extends ScheduledTask {
     private final Topic newTopic;
     private final BtVodStaleTopicContentRemover staleTopicContentRemover;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
+    private final BtVodVersionsExtractor versionsExtractor;
     
     public BtVodUpdater(
             ContentResolver resolver,
@@ -63,8 +64,8 @@ public class BtVodUpdater extends ScheduledTask {
             BtVodContentMatchingPredicate newFeedContentMatchingPredicate,
             Topic newTopic,
             BtVodStaleTopicContentRemover staleTopicContentRemover,
-            BtVodSeriesUriExtractor seriesUriExtractor
-    ) {
+            BtVodSeriesUriExtractor seriesUriExtractor,
+            BtVodVersionsExtractor versionsExtractor) {
         this.staleTopicContentRemover = staleTopicContentRemover;
         this.topicResolver = checkNotNull(topicResolver);
         this.topicWriter = checkNotNull(topicWriter);
@@ -82,6 +83,7 @@ public class BtVodUpdater extends ScheduledTask {
         this.baseUrl = checkNotNull(baseUrl);
         this.imageExtractor = checkNotNull(imageExtractor);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
+        this.versionsExtractor = checkNotNull(versionsExtractor);
 
         withName("BT VOD Catalogue Ingest");
     }
@@ -121,8 +123,8 @@ public class BtVodUpdater extends ScheduledTask {
                 listeners,
                 describedFieldsExtractor,
                 processedRows,
-                seriesUriExtractor
-        );
+                seriesUriExtractor,
+                versionsExtractor);
 
         try {
             reportStatus("Extracting brand images");
@@ -188,9 +190,9 @@ public class BtVodUpdater extends ScheduledTask {
                     listeners,
                     describedFieldsExtractor,
                     processedRows,
-                    new BtVodPricingAvailabilityGrouper(),
                     new TitleSanitiser(),
-                    imageExtractor
+                    imageExtractor,
+                    versionsExtractor
             );
 
             vodData.processData(itemExtractor);

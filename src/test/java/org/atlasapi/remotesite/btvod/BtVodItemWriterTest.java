@@ -87,9 +87,11 @@ public class BtVodItemWriterTest {
                                 new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, Publisher.BT_VOD,
                                         newTopicContentMatchingPredicate, new Topic(123L)),
                                 Sets.<String>newHashSet(),
-                                new BtVodPricingAvailabilityGrouper(),
+
                                 new TitleSanitiser(),
-                                new NoImageExtractor());
+                                new NoImageExtractor(),
+                                new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), URI_PREFIX)
+    );
     
     @Test
     public void testExtractsEpisode() {

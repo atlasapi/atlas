@@ -2,11 +2,24 @@ package org.atlasapi.remotesite.btvod;
 
 import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
+import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.joda.time.Interval;
 
 import java.util.Map;
 import java.util.Set;
@@ -21,6 +34,8 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
      * GUID -> series
      */
     private final Map<String, Series> explicitSeries;
+    private final BtVodVersionsExtractor versionsExtractor;
+
 
     public BtVodExplicitSeriesWriter(
             ContentWriter writer,
@@ -30,12 +45,14 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
             BtVodContentListener listener,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
-            BtVodSeriesUriExtractor seriesUriExtractor
-
-            ) {
+            BtVodSeriesUriExtractor seriesUriExtractor,
+            BtVodVersionsExtractor versionsExtractor
+    ) {
         super(writer, resolver, brandExtractor, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor);
+        this.versionsExtractor = checkNotNull(versionsExtractor);
         explicitSeries = Maps.newHashMap();
     }
+
 
 
     @Override
@@ -46,6 +63,11 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
     @Override
     protected void onSeriesProcessed(Series series, BtVodEntry row) {
         explicitSeries.put(row.getGuid(), series);
+    }
+
+    @Override
+    protected void setAdditionalFields(Series series, BtVodEntry row) {
+        series.addVersions(versionsExtractor.createVersions(row));
     }
 
     public Map<String, Series> getExplicitSeries() {

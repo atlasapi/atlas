@@ -108,6 +108,8 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
 
     protected abstract void onSeriesProcessed(Series series, BtVodEntry row);
 
+    protected abstract void setAdditionalFields(Series series, BtVodEntry row);
+
     private Series seriesFrom(BtVodEntry row) {
         Series series = new Series(seriesUriExtractor.seriesUriFor(row).get(), null, publisher);
         //TODO more fields

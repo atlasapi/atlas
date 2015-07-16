@@ -113,7 +113,8 @@ public class BtVodModule {
                 newFeedContentMatchingPredicate(),
                 newTopic(Publisher.BT_VOD),
                 staleTopicContentRemover(Publisher.BT_VOD),
-                seriesUriExtractor(URI_PREFIX)
+                seriesUriExtractor(URI_PREFIX),
+                versionsExtractor(URI_PREFIX)
         );
     }
     
@@ -139,7 +140,8 @@ public class BtVodModule {
                 topicWriter,
                 newFeedContentMatchingPredicate(),
                 newTopic(Publisher.BT_TVE_VOD),
-                staleTopicContentRemover(Publisher.BT_TVE_VOD), seriesUriExtractor(TVE_URI_PREFIX)
+                staleTopicContentRemover(Publisher.BT_TVE_VOD), seriesUriExtractor(TVE_URI_PREFIX),
+                versionsExtractor(TVE_URI_PREFIX)
         );
     }
     
@@ -148,6 +150,10 @@ public class BtVodModule {
                         publisher, 
                         new OldContentDeactivator(contentLister, contentWriter, contentResolver), 
                         THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT);
+    }
+
+    private BtVodVersionsExtractor versionsExtractor(String prefix) {
+        return new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), prefix);
     }
 
     private BtVodSeriesUriExtractor seriesUriExtractor(String prefix) {

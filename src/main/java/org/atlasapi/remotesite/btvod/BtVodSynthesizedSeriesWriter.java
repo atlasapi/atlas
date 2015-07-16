@@ -76,6 +76,9 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
         }
     }
 
+    @Override
+    protected void setAdditionalFields(Series series, BtVodEntry row) {}
+
     public Map<String, Series> getSynthesizedSeries() {
         return ImmutableMap.copyOf(synthesizedSeries);
     }

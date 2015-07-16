@@ -39,7 +39,7 @@ public class BtVodSeriesUriExtractor {
             return Optional.of(
                     String.format(
                             "%s/series/%s/%s",
-                            brandUri,
+                            brandUri.get(),
                             seriesNumber.get(),
                             row.getGuid()
                     )

@@ -57,10 +57,9 @@ public class BtVodBrandWriterTest {
                     = new BtVodBrandWriter(
                                 contentWriter,
                                 contentResolver,
-                                PUBLISHER, URI_PREFIX,
+                                PUBLISHER,
                                 contentListener,
                                 Sets.<String>newHashSet(),
-                                new TitleSanitiser(), 
                                 describedFieldsExtractor,
                                 new NoImageExtractor(), brandUriExtractor
     );
@@ -87,6 +86,33 @@ public class BtVodBrandWriterTest {
         BtVodEntry entry = new BtVodEntry();
         entry.setProductType("episode");
         return entry;
+    }
+
+    private BtVodEntry seasonEntry() {
+        BtVodEntry entry = new BtVodEntry();
+        entry.setProductType("season");
+        return entry;
+    }
+
+    @Test
+    public void testCanParseBrandFromSeasonTitles() {
+        BtVodEntry row1 = seasonEntry();
+        row1.setTitle("Dominion: S2");
+
+        BtVodEntry row2 = seasonEntry();
+        row2.setTitle("Workaholics: S2 - HD");
+
+        BtVodEntry row3 = seasonEntry();
+        row3.setTitle("Wire Series 5");
+
+        BtVodEntry row4 = seasonEntry();
+        row4.setTitle("Judge Geordie");
+
+
+        assertThat(brandExtractor.brandUriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/dominion"));
+        assertThat(brandExtractor.brandUriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/workaholics"));
+        assertThat(brandExtractor.brandUriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/wire"));
+        assertThat(brandExtractor.brandUriFor(row4).get(), is(URI_PREFIX + "synthesized/brands/judge-geordie"));
     }
 
     @Test

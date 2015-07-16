@@ -106,10 +106,8 @@ public class BtVodUpdater extends ScheduledTask {
                 writer,
                 resolver,
                 publisher,
-                uriPrefix,
                 listeners,
                 processedRows,
-                new TitleSanitiser(), 
                 describedFieldsExtractor,
                 brandImageExtractor,
                 brandUriExtractor

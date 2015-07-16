@@ -2,9 +2,11 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.common.base.Optional;
@@ -14,7 +16,21 @@ public class BrandUriExtractor {
 
     private static final String HELP_TYPE = "help";
     private static final String EPISODE_TYPE = "episode";
-    
+    private static final String SERIES_TYPE = "season";
+
+    private static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
+            Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*"),
+            Pattern.compile("^(.*).*S[0-9]+\\-E.*"),
+            Pattern.compile("^(.*)Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*"),
+            Pattern.compile("^(.*)\\-.*")
+    );
+
+    private static final List<Pattern> BRAND_TITLE_FROM_SERIES_PATTERNS = ImmutableList.of(
+            Pattern.compile("^(.*) Series [0-9]+"),
+            Pattern.compile("^(.*) S[0-9]+")
+    );
+
+
     private final String uriPrefix;
     private final TitleSanitiser titleSanitiser;
     
@@ -45,15 +61,18 @@ public class BrandUriExtractor {
     public Optional<String> getSynthesizedKey(BtVodEntry row) {
         String title = row.getTitle();
 
-        if (canParseBrandFromEpisode(row)) {
+        if (EPISODE_TYPE.equals(row.getProductType()) && canParseBrandFromEpisode(row)) {
             return Optional.of(Sanitizer.sanitize(brandTitleFromEpisodeTitle(title)));
+        }
+        if (SERIES_TYPE.equals(row.getProductType())) {
+            return Optional.of(Sanitizer.sanitize(brandTitleFromSeriesTitle(title)));
         }
 
         return Optional.absent();
     }
     
-    private String brandTitleFromEpisodeTitle(String title) {
-        for (Pattern brandPattern : BtVodBrandWriter.BRAND_TITLE_FROM_EPISODE_PATTERNS) {
+    public String brandTitleFromEpisodeTitle(String title) {
+        for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
             Matcher matcher = brandPattern.matcher(stripHDSuffix(title));
             if (matcher.matches()) {
                 return titleSanitiser.sanitiseTitle(matcher.group(1));
@@ -62,19 +81,28 @@ public class BrandUriExtractor {
         }
         return null;
     }
+    public String brandTitleFromSeriesTitle(String title) {
+        for (Pattern brandPattern : BRAND_TITLE_FROM_SERIES_PATTERNS) {
+            Matcher matcher = brandPattern.matcher(stripHDSuffix(title));
+            if (matcher.matches()) {
+                return titleSanitiser.sanitiseTitle(matcher.group(1));
+            }
 
-    private boolean shouldSynthesizeBrand(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getProductType())
-                && EPISODE_TYPE.equals(row.getProductType())
-                && canParseBrandFromEpisode(row);
+        }
+        return stripHDSuffix(title);
     }
 
-    private boolean canParseBrandFromEpisode(BtVodEntry row) {
+    public boolean shouldSynthesizeBrand(BtVodEntry row) {
+        return !HELP_TYPE.equals(row.getProductType())
+                && ((EPISODE_TYPE.equals(row.getProductType()) && canParseBrandFromEpisode(row)) || (SERIES_TYPE.equals(row.getProductType())));
+    }
+
+    public boolean canParseBrandFromEpisode(BtVodEntry row) {
         return isTitleSyntesizableFromEpisode(row.getTitle());
     }
 
     private boolean isTitleSyntesizableFromEpisode(String title) {
-        for (Pattern brandPattern : BtVodBrandWriter.BRAND_TITLE_FROM_EPISODE_PATTERNS) {
+        for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
             if (brandPattern.matcher(stripHDSuffix(title)).matches()) {
                 return true;
             }
@@ -82,7 +110,17 @@ public class BrandUriExtractor {
         }
         return false;
     }
-    
+
+    private boolean isTitleSyntesizableFromSeries(String title) {
+        for (Pattern brandPattern : BRAND_TITLE_FROM_SERIES_PATTERNS) {
+            if (brandPattern.matcher(stripHDSuffix(title)).matches()) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+
     private String stripHDSuffix(String title) {
         Matcher hdMatcher = BtVodBrandWriter.HD_PATTERN.matcher(title);
         if (hdMatcher.matches()) {

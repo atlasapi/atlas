@@ -41,17 +41,8 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
  */
 public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
-    private static final String HELP_TYPE = "help";
-    private static final String EPISODE_TYPE = "episode";
-    
-    static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
-            Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*"),
-            Pattern.compile("^(.*).*S[0-9]+\\-E.*"),
-            Pattern.compile("^(.*)Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*"),
-            Pattern.compile("^(.*)\\-.*")
-    );
-    
-    static final Pattern BRAND_TITLE_FROM_SERIES_PATTERN = Pattern.compile("^(.*) Series [0-9]+");
+
+
 
     static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
 
@@ -62,11 +53,9 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     private final ContentWriter writer;
     private final ContentResolver resolver;
     private final Publisher publisher;
-    private final String uriPrefix;
     private final ContentMerger contentMerger;
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
-    private final TitleSanitiser titleSanitiser;
     private final BtVodDescribedFieldsExtractor describedFieldExtractor;
     private final BrandImageExtractor brandImageExtractor;
     private final BrandUriExtractor brandUriExtractor;
@@ -76,10 +65,8 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
             ContentWriter writer,
             ContentResolver resolver,
             Publisher publisher,
-            String uriPrefix,
             BtVodContentListener listener,
             Set<String> processedRows,
-            TitleSanitiser titleSanitiser,
             BtVodDescribedFieldsExtractor describedFieldExtractor,
             BrandImageExtractor brandImageExtractor,
             BrandUriExtractor brandUriExtractor) {
@@ -88,10 +75,8 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         this.writer = checkNotNull(writer);
         this.resolver = checkNotNull(resolver);
         this.publisher = checkNotNull(publisher);
-        this.uriPrefix = checkNotNull(uriPrefix);
         this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
-        this.titleSanitiser = checkNotNull(titleSanitiser);
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
         //      Added as a collaborator for Alias extraction, but should be used more 
@@ -103,7 +88,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     public boolean process(BtVodEntry row) {
         UpdateProgress thisProgress = UpdateProgress.FAILURE;
         try {
-            if ( (!shouldSynthesizeBrand(row))
+            if ( (!brandUriExtractor.shouldSynthesizeBrand(row))
                     || isBrandAlreadyProcessed(row)
                     || processedRows.contains(getKey(row))) {
                 thisProgress = UpdateProgress.SUCCESS;
@@ -123,64 +108,20 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return CONTINUE;
     }
 
-    private boolean shouldSynthesizeBrand(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getProductType())
-                && EPISODE_TYPE.equals(row.getProductType())
-                && canParseBrandFromEpisode(row);
-    }
-    
-    private boolean canParseBrandFromEpisode(BtVodEntry row) {
-        return isTitleSyntesizableFromEpisode(row.getTitle());
-    }
-    
-    //TODO remove this duplication of code
-    private boolean isTitleSyntesizableFromEpisode(String title) {
-        for (Pattern brandPattern : BtVodBrandWriter.BRAND_TITLE_FROM_EPISODE_PATTERNS) {
-            if (brandPattern.matcher(stripHDSuffix(title)).matches()) {
-                return true;
-            }
-        }
-        return false;
-    }
-    
     private boolean isBrandAlreadyProcessed(BtVodEntry row) {
         Optional<String> optionalUri = brandUriFor(row);
         return optionalUri.isPresent() && processedBrands.containsKey(optionalUri.get());
     }
 
-    public Optional<String> getSynthesizedKey(BtVodEntry row) {
-        String title = row.getTitle();
 
-        if (canParseBrandFromEpisode(row)) {
-            return Optional.of(Sanitizer.sanitize(brandTitleFromEpisodeTitle(title)));
-        }
-
-        return Optional.absent();
-    }
 
     private String getKey(BtVodEntry row) {
         String productId = row.getGuid();
-        return getSynthesizedKey(row).or(productId);
+        return brandUriExtractor.getSynthesizedKey(row).or(productId);
     }
 
-    private String brandTitleFromEpisodeTitle(String title) {
-        for (Pattern brandPattern : BRAND_TITLE_FROM_EPISODE_PATTERNS) {
-            Matcher matcher = brandPattern.matcher(stripHDSuffix(title));
-            if (matcher.matches()) {
-                return titleSanitiser.sanitiseTitle(matcher.group(1));
-            }
 
-        }
-        return null;
-    }
 
-    private String brandTitleFromSeriesTitle(String title) {
-        Matcher matcher = BRAND_TITLE_FROM_SERIES_PATTERN.matcher(title);
-        if (matcher.matches()) {
-            return matcher.group(1);
-        }
-        return null;
-    }
 
    
     private void write(Brand extracted) {
@@ -200,8 +141,8 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     private Brand brandFrom(BtVodEntry row) {
         Brand brand = new Brand(brandUriFor(row).get(), null, publisher);
 
-        if (canParseBrandFromEpisode(row)) {
-            brand.setTitle(brandTitleFromEpisodeTitle(row.getTitle()));
+        if (brandUriExtractor.canParseBrandFromEpisode(row)) {
+            brand.setTitle(brandUriExtractor.brandTitleFromEpisodeTitle(row.getTitle()));
         } else {
             String productId = row.getGuid();
             throw new RuntimeException("Unexpected state - row with product_id: " + productId + " is not a brand nor is possible to parse a brand from it");

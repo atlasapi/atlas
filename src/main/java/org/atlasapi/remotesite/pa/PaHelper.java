@@ -12,6 +12,12 @@ public class PaHelper {
         return PA_BASE_URL + "films/" + id;
     }
     
+    public static Alias getProgIdAlias(String id) {
+        // Inconsistent namespace with others, but this is
+        // properly namespaced
+        return new Alias("gb:pressassociation:prod:prog_id", id);
+    }
+    
     public static Alias getFilmAlias(String id) {
         return new Alias(PA_BASE_ALIAS + "film", id);
     }

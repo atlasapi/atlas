@@ -120,6 +120,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
             
         	Item item = itemAndBroadcast.getItem();
         	item.setGenericDescription(isGenericDescription(progData));
+        	item.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
             item.setLastUpdated(updatedAt.toDateTimeUTC());
             
             return new ContentHierarchyAndSummaries(possibleBrand, possibleSeries, item, itemAndBroadcast.getBroadcast().requireValue(), 

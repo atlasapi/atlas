@@ -124,7 +124,8 @@ public class BtVodUpdater extends ScheduledTask {
                 describedFieldsExtractor,
                 processedRows,
                 seriesUriExtractor,
-                versionsExtractor);
+                versionsExtractor, new TitleSanitiser()
+        );
 
         try {
             reportStatus("Extracting brand images");

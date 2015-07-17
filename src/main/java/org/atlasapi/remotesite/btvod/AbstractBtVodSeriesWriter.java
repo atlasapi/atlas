@@ -35,10 +35,11 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
     private final Map<String, Series> processedSeries = Maps.newHashMap();
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
+
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
+
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private UpdateProgress progress = UpdateProgress.START;
-
     protected AbstractBtVodSeriesWriter(
             ContentWriter writer,
             ContentResolver resolver,
@@ -96,7 +97,6 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         return progress;
     }
 
-
     public Optional<Series> getSeriesFor(BtVodEntry row) {
         Optional<String> seriesUri = seriesUriExtractor.seriesUriFor(row);
         if(seriesUri.isPresent()) {
@@ -104,6 +104,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         }
         return Optional.absent();
     }
+
 
     protected abstract boolean shouldProcess(BtVodEntry row);
 
@@ -140,6 +141,10 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
 
     protected BtVodSeriesUriExtractor getSeriesUriExtractor() {
         return seriesUriExtractor;
+    }
+
+    protected BtVodDescribedFieldsExtractor getDescribedFieldsExtractor() {
+        return describedFieldsExtractor;
     }
 
 }

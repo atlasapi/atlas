@@ -65,8 +65,8 @@ public class BtVodVersionsExtractor {
         }
 
         //TODO filter for blackout
-        if (!row.getProductPricingPlan().getProductPricingTiers().isEmpty()) {
-            if (row.getProductOfferingType().contains("-EST")) {
+        if (row.getProductPricingPlan() != null && !row.getProductPricingPlan().getProductPricingTiers().isEmpty()) {
+            if (row.getProductOfferingType()!= null && row.getProductOfferingType().contains("-EST")) {
                 locations.addAll(createLocations(row, Policy.RevenueContract.PAY_TO_BUY, aliases));
             } else {
                 locations.addAll(createLocations(row, Policy.RevenueContract.PAY_TO_RENT, aliases));

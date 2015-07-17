@@ -4,13 +4,10 @@ import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Topic;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -65,15 +62,16 @@ public class BtVodExplicitSeriesWriterTest {
                 describedFieldsExtractor,
                 Sets.<String>newHashSet(),
                 seriesUriExtractor,
-                new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), "prefix"));
+                new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), "prefix"),
+                new TitleSanitiser()
+        );
     }
 
 
     @Test
     public void testDoesntExtractsSeriesFromEntryWhichIsNotSeason() {
         BtVodEntry entry = row();
-        entry.setProductType("episode");// "Apr 30 2014 12:00AM"
-
+        entry.setProductType("episode");
 
         seriesExtractor.process(entry);
 
@@ -104,6 +102,9 @@ public class BtVodExplicitSeriesWriterTest {
 
         verify(contentWriter).createOrUpdate(captor.capture());
         Series series = captor.getValue();
+
+        verify(describedFieldsExtractor).setDescribedFieldsFrom(entry, series);
+
         assertThat(series.getCanonicalUri(), is("seriesUri"));
         assertThat(series.getSeriesNumber(), is(1));
         assertThat(series.getParent(), is(brandRef));

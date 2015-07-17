@@ -35,6 +35,7 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
      */
     private final Map<String, Series> explicitSeries;
     private final BtVodVersionsExtractor versionsExtractor;
+    private final TitleSanitiser titleSanitiser;
 
 
     public BtVodExplicitSeriesWriter(
@@ -46,14 +47,14 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            BtVodVersionsExtractor versionsExtractor
+            BtVodVersionsExtractor versionsExtractor,
+            TitleSanitiser titleSanitiser
     ) {
         super(writer, resolver, brandExtractor, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor);
+        this.titleSanitiser = titleSanitiser;
         this.versionsExtractor = checkNotNull(versionsExtractor);
         explicitSeries = Maps.newHashMap();
     }
-
-
 
     @Override
     protected boolean shouldProcess(BtVodEntry row) {
@@ -68,6 +69,8 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
     @Override
     protected void setAdditionalFields(Series series, BtVodEntry row) {
         series.addVersions(versionsExtractor.createVersions(row));
+        series.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
+        getDescribedFieldsExtractor().setDescribedFieldsFrom(row, series);
     }
 
     public Map<String, Series> getExplicitSeries() {

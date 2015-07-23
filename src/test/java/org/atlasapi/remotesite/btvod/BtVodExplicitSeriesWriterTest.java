@@ -63,7 +63,8 @@ public class BtVodExplicitSeriesWriterTest {
                 Sets.<String>newHashSet(),
                 seriesUriExtractor,
                 new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), "prefix"),
-                new TitleSanitiser()
+                new TitleSanitiser(),
+                imageExtractor
         );
     }
 

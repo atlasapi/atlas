@@ -1,13 +1,13 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 import java.util.Set;
 
 import com.google.api.client.util.Maps;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -36,7 +36,8 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            Set<String> explicitSeriesIds) {
+            Set<String> explicitSeriesIds, 
+            ImageExtractor imageExtractor) {
         super(
                 writer,
                 resolver,
@@ -45,7 +46,8 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
                 listener,
                 processedRows,
                 describedFieldsExtractor,
-                seriesUriExtractor
+                seriesUriExtractor,
+                imageExtractor
         );
 
         this.explicitSeriesIds = ImmutableSet.copyOf(explicitSeriesIds);

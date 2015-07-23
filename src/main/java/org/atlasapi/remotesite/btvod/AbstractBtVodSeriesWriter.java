@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.UpdateProgress;
+
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
@@ -13,6 +14,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,8 +40,10 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
 
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
 
+    private final ImageExtractor imageExtractor;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private UpdateProgress progress = UpdateProgress.START;
+
     protected AbstractBtVodSeriesWriter(
             ContentWriter writer,
             ContentResolver resolver,
@@ -48,7 +52,8 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
-            BtVodSeriesUriExtractor seriesUriExtractor
+            BtVodSeriesUriExtractor seriesUriExtractor,
+            ImageExtractor imageExtractor
     ) {
         this.processedRows = checkNotNull(processedRows);
         this.listener = checkNotNull(listener);
@@ -57,6 +62,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         this.brandExtractor = checkNotNull(brandExtractor);
         this.publisher = checkNotNull(publisher);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
+        this.imageExtractor = checkNotNull(imageExtractor);
         //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
         //      Added as a collaborator for Alias extraction, but should be used more
         //      widely
@@ -121,6 +127,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         series.setGenres(describedFieldsExtractor.btGenreStringsFrom(row));
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
+        series.setImages(imageExtractor.extractImages(row));
 
         return series;
     }

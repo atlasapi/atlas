@@ -23,29 +23,29 @@ import com.google.common.collect.Maps;
 
 
 @RunWith(MockitoJUnitRunner.class)
-public class DerivingFromItemBrandImageExtractorTest {
+public class DerivingFromSeriesBrandImageExtractorTest {
 
     private static final String BASE_URL = "http://example.org/";
     
     private final BrandUriExtractor brandUriExtractor = mock(BrandUriExtractor.class);
     private final BtVodSeriesUriExtractor seriesUriExtractor = mock(BtVodSeriesUriExtractor.class);
-    private final DerivingFromItemBrandImageExtractor extractor 
-                    = new DerivingFromItemBrandImageExtractor(brandUriExtractor, BASE_URL, seriesUriExtractor);
+    private final DerivingFromSeriesBrandImageExtractor extractor 
+                    = new DerivingFromSeriesBrandImageExtractor(brandUriExtractor, BASE_URL, seriesUriExtractor);
     
     @Test
     public void testExtractsImagesFromLowestEpisodeNumber() {
         BtVodEntry s1e1 = row(1, 1, "1/1-background.jpg", "1/1-packshot.jpg");
-        BtVodEntry s1e2 = row(1, 2, "1/2-background.jpg", "1/2-packshot.jpg");
+        BtVodEntry s2e1 = row(2, 1, "1/2-background.jpg", "1/2-packshot.jpg");
           
         when(brandUriExtractor.extractBrandUri(s1e1)).thenReturn(Optional.of("http://example.org/"));
-        when(brandUriExtractor.extractBrandUri(s1e2)).thenReturn(Optional.of("http://example.org/"));
+        when(brandUriExtractor.extractBrandUri(s2e1)).thenReturn(Optional.of("http://example.org/"));
         when(seriesUriExtractor.extractSeriesNumber(s1e1)).thenReturn(Optional.of(1));
-        when(seriesUriExtractor.extractSeriesNumber(s1e2)).thenReturn(Optional.of(2));
+        when(seriesUriExtractor.extractSeriesNumber(s2e1)).thenReturn(Optional.of(2));
 
         extractor.process(s1e1);
-        extractor.process(s1e2);
+        extractor.process(s2e1);
         
-        Map<String, Image> images = Maps.uniqueIndex(extractor.extractImages(s1e2), new Function<Image, String>() {
+        Map<String, Image> images = Maps.uniqueIndex(extractor.extractImages(s2e1), new Function<Image, String>() {
 
             @Override
             public String apply(Image input) {
@@ -65,7 +65,7 @@ public class DerivingFromItemBrandImageExtractorTest {
         entry.setTitle("Test S" + seriesNumber + "-E" + episodeNumber);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
-        entry.setProductType("episode");
+        entry.setProductType("season");
         
         BtVodProductMetadata metadata = new BtVodProductMetadata();
         metadata.setEpisodeNumber("1");

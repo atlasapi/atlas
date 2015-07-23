@@ -48,9 +48,10 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            TitleSanitiser titleSanitiser
+            TitleSanitiser titleSanitiser, 
+            ImageExtractor imageExtractor
     ) {
-        super(writer, resolver, brandExtractor, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor);
+        super(writer, resolver, brandExtractor, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor, imageExtractor);
         this.titleSanitiser = titleSanitiser;
         this.versionsExtractor = checkNotNull(versionsExtractor);
         explicitSeries = Maps.newHashMap();

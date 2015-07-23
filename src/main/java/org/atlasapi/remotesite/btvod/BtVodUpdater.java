@@ -124,7 +124,8 @@ public class BtVodUpdater extends ScheduledTask {
                 describedFieldsExtractor,
                 processedRows,
                 seriesUriExtractor,
-                versionsExtractor, new TitleSanitiser()
+                versionsExtractor, new TitleSanitiser(),
+                imageExtractor
         );
 
         try {
@@ -162,7 +163,8 @@ public class BtVodUpdater extends ScheduledTask {
                     describedFieldsExtractor,
                     processedRows,
                     seriesUriExtractor,
-                    explicitSeries.keySet()
+                    explicitSeries.keySet(),
+                    imageExtractor
             );
             vodData.processData(synthesizedSeriesExtractor);
             reportStatus(

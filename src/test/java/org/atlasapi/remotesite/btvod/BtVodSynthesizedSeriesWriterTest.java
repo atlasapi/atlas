@@ -64,7 +64,8 @@ public class BtVodSynthesizedSeriesWriterTest {
             describedFieldsExtractor, 
             Sets.<String>newHashSet(),
             seriesUriExtractor,
-            ImmutableSet.of(SERIES_GUID)
+            ImmutableSet.of(SERIES_GUID),
+            imageExtractor
     );
 
     @Test

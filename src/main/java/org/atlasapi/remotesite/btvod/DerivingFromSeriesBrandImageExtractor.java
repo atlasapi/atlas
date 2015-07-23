@@ -19,7 +19,7 @@ import com.google.common.collect.Iterables;
  * Extract low-resolution brand images from MPX feed.
  * 
  * Images aren't provided at the brand level, however. we
- * must find the images from the first episode, ordered editorially.
+ * must find the images from the first series, ordered editorially.
  * 
  * To do this in an efficient manner during ingest, and avoid writing a
  * brand many times, users of this class are expected to pre-process the
@@ -27,7 +27,7 @@ import com.google.common.collect.Iterables;
  * brands are written.
  *
  */
-public class DerivingFromItemBrandImageExtractor implements BrandImageExtractor, BtVodDataProcessor<Void> {
+public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtractor, BtVodDataProcessor<Void> {
 
     private final String baseUrl;
     private final Map<String, BrandImage> backgroundImages = Maps.newHashMap();
@@ -35,7 +35,7 @@ public class DerivingFromItemBrandImageExtractor implements BrandImageExtractor,
     private final BrandUriExtractor brandUriExtractor;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
 
-    public DerivingFromItemBrandImageExtractor(
+    public DerivingFromSeriesBrandImageExtractor(
             BrandUriExtractor brandUriExtractor,
             String baseUrl,
             BtVodSeriesUriExtractor seriesUriExtractor
@@ -70,20 +70,19 @@ public class DerivingFromItemBrandImageExtractor implements BrandImageExtractor,
     @Override
     public boolean process(BtVodEntry entry) {
         Optional<String> brandUri = brandUriExtractor.extractBrandUri(entry);
-        if (BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType()) || !brandUri.isPresent()) {
+        if (!BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())) {
             return true;
         }
         Integer seriesNumber = seriesUriExtractor.extractSeriesNumber(entry).orNull();
-        Integer episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
-        if (episodeNumber != null && seriesNumber != null) {
-            retainIfBestImage(brandUri.get(), backgroundImages, getBackgroundImage(entry), seriesNumber, episodeNumber);
-            retainIfBestImage(brandUri.get(), packshotImages, getPackshotDoubleImage(entry), seriesNumber, episodeNumber);
+        if (seriesNumber != null) {
+            retainIfBestImage(brandUri.get(), backgroundImages, getBackgroundImage(entry), seriesNumber);
+            retainIfBestImage(brandUri.get(), packshotImages, getPackshotDoubleImage(entry), seriesNumber);
         }
         return true;
     }
     
     private void retainIfBestImage(String brandUri, Map<String, BrandImage> images,
-            BtVodImage image, Integer seriesNumber, Integer episodeNumber) {
+            BtVodImage image, Integer seriesNumber) {
         
         if (image == null) {
             return;
@@ -92,19 +91,11 @@ public class DerivingFromItemBrandImageExtractor implements BrandImageExtractor,
         BrandImage current = images.get(brandUri);
         
         if (current == null 
-                || newImageIsForEarlierEpisode(current, seriesNumber, episodeNumber)) {
+                || current.seriesNumber > seriesNumber) {
             images.put(brandUri, 
                         new BrandImage(seriesNumber, 
-                                       episodeNumber, 
                                        image));
         }
-    }
-
-    private boolean newImageIsForEarlierEpisode(BrandImage current, Integer seriesNumber,
-            Integer episodeNumber) {
-        
-        return (seriesNumber < current.seriesNumber)
-                || (seriesNumber == current.seriesNumber && episodeNumber < current.episodeNumber);
     }
 
     private BtVodImage getBackgroundImage(BtVodEntry row) {
@@ -122,14 +113,13 @@ public class DerivingFromItemBrandImageExtractor implements BrandImageExtractor,
     
     private static class BrandImage {
         private int seriesNumber;
-        private int episodeNumber;
         private BtVodImage image;
         
-        public BrandImage(int seriesNumber, int episodeNumber, BtVodImage image) {
+        public BrandImage(int seriesNumber, BtVodImage image) {
             this.seriesNumber = seriesNumber;
-            this.episodeNumber = episodeNumber;
             this.image = image;
         }
+        
     }
     
     private Image buildImage(BtVodImage btVodImage, ImageType imageType, boolean hasTitleArt) {

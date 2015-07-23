@@ -164,8 +164,8 @@ public class BtVodModule {
         return new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, publisher, newFeedContentMatchingPredicate(), newTopic(publisher));
     }
     
-    public DerivingFromItemBrandImageExtractor brandImageExtractor(String baseUrl) {
-        return new DerivingFromItemBrandImageExtractor(brandUriExtractor(baseUrl), baseUrl, seriesUriExtractor(baseUrl));
+    public DerivingFromSeriesBrandImageExtractor brandImageExtractor(String baseUrl) {
+        return new DerivingFromSeriesBrandImageExtractor(brandUriExtractor(baseUrl), baseUrl, seriesUriExtractor(baseUrl));
     }
     
     public ImageExtractor itemImageExtractor() {

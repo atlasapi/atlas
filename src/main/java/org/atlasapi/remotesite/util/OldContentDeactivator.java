@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Iterator;
 import java.util.List;
 
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
@@ -111,8 +112,12 @@ public class OldContentDeactivator {
     
     private void markAsInactive(Iterable<String> uris) {
         for (String uri : uris) {
-            Identified ided = contentResolver.findByCanonicalUris(ImmutableSet.of(uri))
-                           .getFirstValue().requireValue();
+            Maybe<Identified> resolvedValue = contentResolver.findByCanonicalUris(ImmutableSet.of(uri)).getFirstValue();
+            if(!resolvedValue.hasValue()) {
+                log.warn("Can't find content with URI: {}", uri);
+                continue;
+            }
+            Identified ided = resolvedValue.requireValue();
             if (ided instanceof Content) {
                 Content content = (Content) ided;
                 content.setActivelyPublished(false);

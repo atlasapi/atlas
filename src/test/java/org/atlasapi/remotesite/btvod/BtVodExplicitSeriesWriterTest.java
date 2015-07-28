@@ -24,8 +24,10 @@ import org.mockito.ArgumentCaptor;
 import java.util.Set;
 
 import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
@@ -112,6 +114,64 @@ public class BtVodExplicitSeriesWriterTest {
         assertThat(series.getAliases(), CoreMatchers.<Set<Alias>>is(ImmutableSet.of(alias1, alias2)));
         assertThat(series.getGenres(), CoreMatchers.<Set<String>>is(ImmutableSet.of(genre)));
         assertThat(seriesExtractor.getExplicitSeries().get(PRODUCT_ID), is(series));
+
+    }
+
+    @Test
+    public void testDeduplicatesSeries() {
+        String series1Id = "GUID1";
+        String series2Id = "GUID2";
+        String seriesUri = "seriesUri";
+
+        BtVodEntry series1 = row();
+        series1.setProductType("season");
+        series1.setParentGuid(series1Id);
+        series1.setGuid(series1Id);
+
+        BtVodEntry series2 = row();
+        series2.setProductType("season");
+        series2.setParentGuid(series2Id);
+        series2.setGuid(series2Id);
+
+        Alias alias1 = mock(Alias.class);
+        Alias alias2 = mock(Alias.class);
+
+        ParentRef brandRef = mock(ParentRef.class);
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(seriesUri))).thenReturn(ResolvedContent.builder().build());
+
+        when(seriesUriExtractor.seriesUriFor(series1)).thenReturn(Optional.of(seriesUri));
+        when(seriesUriExtractor.extractSeriesNumber(series1)).thenReturn(Optional.of(1));
+        when(brandExtractor.getBrandRefFor(series1)).thenReturn(Optional.of(brandRef));
+
+        when(seriesUriExtractor.seriesUriFor(series2)).thenReturn(Optional.of(seriesUri));
+        when(seriesUriExtractor.extractSeriesNumber(series2)).thenReturn(Optional.of(1));
+        when(brandExtractor.getBrandRefFor(series2)).thenReturn(Optional.of(brandRef));
+
+
+
+        when(describedFieldsExtractor.aliasesFrom(series1)).thenReturn(ImmutableSet.of(alias1));
+        when(describedFieldsExtractor.btGenreStringsFrom(series1)).thenReturn(ImmutableSet.<String>of());
+
+        when(describedFieldsExtractor.aliasesFrom(series2)).thenReturn(ImmutableSet.of(alias2));
+        when(describedFieldsExtractor.btGenreStringsFrom(series2)).thenReturn(ImmutableSet.<String>of());
+
+        ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
+
+        seriesExtractor.process(series1);
+        seriesExtractor.process(series2);
+
+        verify(contentWriter, times(2)).createOrUpdate(captor.capture());
+        Series savedSeries = captor.getAllValues().get(0);
+        Series savedSeries2 = captor.getAllValues().get(0);
+
+        verify(describedFieldsExtractor).setDescribedFieldsFrom(series1, savedSeries);
+        verify(describedFieldsExtractor).setDescribedFieldsFrom(series1, savedSeries2);
+
+        assertThat(savedSeries, sameInstance(savedSeries2));
+        assertThat(seriesExtractor.getExplicitSeries().get(series1Id), is(savedSeries));
+        assertThat(seriesExtractor.getExplicitSeries().get(series2Id), is(savedSeries));
+        assertThat(savedSeries.getAliases(), CoreMatchers.<Set<Alias>>is(ImmutableSet.of(alias1, alias2)));
 
     }
 

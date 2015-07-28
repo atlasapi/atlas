@@ -103,7 +103,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
                 scores.addEquivalent(equivFilm, score);
             } else {
                 desc.appendText("%s (%s) ignored. Wrong year %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), equivFilm.getYear());
-                scores.addEquivalent(equivFilm, Score.valueOf(0.0));
+                scores.addEquivalent(equivFilm, Score.negativeOne());
             }
         }
         

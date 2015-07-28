@@ -132,7 +132,7 @@ public class BtVodModule {
                 btVodContentGroupUpdater(Publisher.BT_TVE_VOD, TVE_URI_PREFIX),
                 Publisher.BT_TVE_VOD,
                 oldContentDeactivator(Publisher.BT_TVE_VOD),
-                brandImageExtractor(TVE_URI_PREFIX),
+                brandImageExtractor(btPortalBaseUri),
                 TVE_URI_PREFIX,
                 itemImageExtractor(),
                 brandUriExtractor(TVE_URI_PREFIX),

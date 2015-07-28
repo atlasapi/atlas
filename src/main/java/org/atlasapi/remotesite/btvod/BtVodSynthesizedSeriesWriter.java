@@ -60,15 +60,20 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
         return !HELP_TYPE.equals(row.getProductType())
                 && EPISODE_TYPE.equals(row.getProductType())
                 && getSeriesUriExtractor().extractSeriesNumber(row).isPresent();
+
+    }
+    private boolean isAlreadyProcessed(BtVodEntry row) {
+        return getSeriesUriExtractor().seriesUriFor(row).isPresent()
+                && getProcessedRows().contains(getSeriesUriExtractor().seriesUriFor(row).get());
     }
 
     @Override
     protected boolean shouldProcess(BtVodEntry row) {
         String parentGuid = row.getParentGuid();
         if (parentGuid == null) {
-            return isPartOfSeries(row);
+            return !isAlreadyProcessed(row) && isPartOfSeries(row);
         }
-        return !explicitSeriesIds.contains(parentGuid) && isPartOfSeries(row);
+        return !isAlreadyProcessed(row) && !explicitSeriesIds.contains(parentGuid) && isPartOfSeries(row);
     }
 
     @Override

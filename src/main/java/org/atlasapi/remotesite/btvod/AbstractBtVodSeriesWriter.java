@@ -36,14 +36,15 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
     private final ContentMerger contentMerger;
     private final Map<String, Series> processedSeries = Maps.newHashMap();
     private final BtVodContentListener listener;
+
     private final Set<String> processedRows;
 
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
 
     private final ImageExtractor imageExtractor;
+
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private UpdateProgress progress = UpdateProgress.START;
-
     protected AbstractBtVodSeriesWriter(
             ContentWriter writer,
             ContentResolver resolver,
@@ -74,12 +75,17 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
     public boolean process(BtVodEntry row) {
         UpdateProgress thisProgress = UpdateProgress.FAILURE;
         try {
-            if (!shouldProcess(row) || processedRows.contains(seriesUriExtractor.seriesUriFor(row).get())) {
+            if (!shouldProcess(row)) {
                 thisProgress = UpdateProgress.SUCCESS;
                 return true;
             }
 
-            Series series = seriesFrom(row);
+            Series series;
+            if(processedSeries.containsKey(seriesUriExtractor.seriesUriFor(row).get())) {
+                series = processedSeries.get(seriesUriExtractor.seriesUriFor(row).get());
+            } else {
+                series = seriesFrom(row);
+            }
             setAdditionalFields(series, row);
             write(series);
             onSeriesProcessed(series, row);
@@ -88,6 +94,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
             // Consequently this map will be used to lookup SeriesRef when processing episodes
             // TODO: is there a better approach than this ^?
             processedSeries.put(seriesUriExtractor.seriesUriFor(row).get(), series);
+            processedRows.add(seriesUriExtractor.seriesUriFor(row).get());
             listener.onContent(series, row);
             thisProgress = UpdateProgress.SUCCESS;
         } catch (Exception e) {
@@ -111,7 +118,6 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         return Optional.absent();
     }
 
-
     protected abstract boolean shouldProcess(BtVodEntry row);
 
     protected abstract void onSeriesProcessed(Series series, BtVodEntry row);
@@ -123,7 +129,6 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         //TODO more fields
         series.withSeriesNumber(seriesUriExtractor.extractSeriesNumber(row).get());
         series.setParentRef(brandExtractor.getBrandRefFor(row).orNull());
-        series.setAliases(describedFieldsExtractor.aliasesFrom(row));
         series.setGenres(describedFieldsExtractor.btGenreStringsFrom(row));
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
@@ -152,6 +157,10 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
 
     protected BtVodDescribedFieldsExtractor getDescribedFieldsExtractor() {
         return describedFieldsExtractor;
+    }
+
+    protected Set<String> getProcessedRows() {
+        return ImmutableSet.copyOf(processedRows);
     }
 
 }

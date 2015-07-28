@@ -35,18 +35,6 @@ public class BtVodSeriesUriExtractor {
             return Optional.absent();
         }
 
-        if (SERIES_TYPE.equals(row.getProductType())) {
-            return Optional.of(
-                    String.format(
-                            "%s/series/%s/%s",
-                            brandUri.get(),
-                            seriesNumber.get(),
-                            row.getGuid()
-                    )
-            );
-        }
-
-
         return Optional.of(brandUri.get() + "/series/" + seriesNumber.get());
 
     }

@@ -70,6 +70,7 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
     @Override
     protected void setAdditionalFields(Series series, BtVodEntry row) {
         series.addVersions(versionsExtractor.createVersions(row));
+        series.addAliases(getDescribedFieldsExtractor().aliasesFrom(row));
         series.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
         getDescribedFieldsExtractor().setDescribedFieldsFrom(row, series);
     }

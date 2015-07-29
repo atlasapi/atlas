@@ -16,7 +16,8 @@ public class BtVodSeriesUriExtractor {
     private static final String SERIES_TYPE = "season";
     private static final List<Pattern> SERIES_NUMBER_PATTERNS = ImmutableList.of(
             Pattern.compile("S([0-9]+)\\-E[0-9]+"),
-            Pattern.compile("^.*Season\\s([0-9]+)\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*")
+            Pattern.compile("^.*Season\\s([0-9]+)\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*"),
+            Pattern.compile("^.*Series\\s+([0-9])+.*")
     );
 
     private final BrandUriExtractor brandUriExtractor;

@@ -45,24 +45,24 @@ public class BtVodSeriesUriExtractorTest {
         BtVodEntry row5 = new BtVodEntry();
         row5.setTitle("Being Human (USA) S2-E7 The Ties That Blind");
 
-        String brandUri = "http://brand-uri.com";
-        String brandUri2 = "http://brand-uri2.com";
-        String brandUri3 = "http://brand-uri3.com";
-        String brandUri4 = "http://brand-uri4.com";
-        String brandUri5 = "http://brand-uri5.com";
+        BtVodEntry row6 = new BtVodEntry();
+        row6.setTitle("Peppa Pig, Series 2, Vol. 1 - The Quarrel / The Toy Cupboard");
 
+        String brandUri = "http://brand-uri.com";
         when(brandUriExtractor.extractBrandUri(row1)).thenReturn(Optional.of(brandUri));
-        when(brandUriExtractor.extractBrandUri(row2)).thenReturn(Optional.of(brandUri2));
-        when(brandUriExtractor.extractBrandUri(row3)).thenReturn(Optional.of(brandUri3));
-        when(brandUriExtractor.extractBrandUri(row4)).thenReturn(Optional.of(brandUri4));
-        when(brandUriExtractor.extractBrandUri(row5)).thenReturn(Optional.of(brandUri5));
+        when(brandUriExtractor.extractBrandUri(row2)).thenReturn(Optional.of(brandUri));
+        when(brandUriExtractor.extractBrandUri(row3)).thenReturn(Optional.of(brandUri));
+        when(brandUriExtractor.extractBrandUri(row4)).thenReturn(Optional.of(brandUri));
+        when(brandUriExtractor.extractBrandUri(row5)).thenReturn(Optional.of(brandUri));
+        when(brandUriExtractor.extractBrandUri(row6)).thenReturn(Optional.of(brandUri));
 
 
         assertThat(seriesUriExtractor.seriesUriFor(row1).get(), Matchers.is(brandUri + "/series/2"));
-        assertThat(seriesUriExtractor.seriesUriFor(row2).get(), Matchers.is(brandUri2 + "/series/1"));
-        assertThat(seriesUriExtractor.seriesUriFor(row3).get(), Matchers.is(brandUri3 + "/series/19"));
-        assertThat(seriesUriExtractor.seriesUriFor(row4).get(), Matchers.is(brandUri4 + "/series/3"));
-        assertThat(seriesUriExtractor.seriesUriFor(row5).get(), Matchers.is(brandUri5 + "/series/2"));
+        assertThat(seriesUriExtractor.seriesUriFor(row2).get(), Matchers.is(brandUri + "/series/1"));
+        assertThat(seriesUriExtractor.seriesUriFor(row3).get(), Matchers.is(brandUri + "/series/19"));
+        assertThat(seriesUriExtractor.seriesUriFor(row4).get(), Matchers.is(brandUri + "/series/3"));
+        assertThat(seriesUriExtractor.seriesUriFor(row5).get(), Matchers.is(brandUri + "/series/2"));
+        assertThat(seriesUriExtractor.seriesUriFor(row6).get(), Matchers.is(brandUri + "/series/2"));
     }
 
     @Test

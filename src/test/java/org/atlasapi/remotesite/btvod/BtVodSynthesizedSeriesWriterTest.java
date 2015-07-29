@@ -99,7 +99,8 @@ public class BtVodSynthesizedSeriesWriterTest {
     public void testDoesntExtractsSeriesFromEpisodeWhichAlreadyHasExplicitSeriesExtracted() {
         BtVodEntry entry = row();
         entry.setParentGuid(SERIES_GUID);
-
+        when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
+        when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("URI"));
 
         seriesExtractor.process(entry);
 

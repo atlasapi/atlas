@@ -156,6 +156,8 @@ public class BtVodBrandWriterTest {
         BtVodEntry row13 = episodeEntry();
         row13.setTitle("Brand - with multiple - dashes");
 
+        BtVodEntry row14 = episodeEntry();
+        row14.setTitle("Peppa Pig, Series 2, Vol. 1 - The Quarrel / The Toy Cupboard");
 
         assertThat(brandExtractor.brandUriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandExtractor.brandUriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
@@ -170,6 +172,7 @@ public class BtVodBrandWriterTest {
         assertThat(brandExtractor.brandUriFor(row11).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
         assertThat(brandExtractor.brandUriFor(row12).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
         assertThat(brandExtractor.brandUriFor(row13).get(), is(URI_PREFIX + "synthesized/brands/brand"));
+        assertThat(brandExtractor.brandUriFor(row14).get(), is(URI_PREFIX + "synthesized/brands/peppa-pig"));
     }
 
     @Test

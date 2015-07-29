@@ -71,9 +71,9 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
     protected boolean shouldProcess(BtVodEntry row) {
         String parentGuid = row.getParentGuid();
         if (parentGuid == null) {
-            return !isAlreadyProcessed(row) && isPartOfSeries(row);
+            return isPartOfSeries(row) && !isAlreadyProcessed(row);
         }
-        return !isAlreadyProcessed(row) && !explicitSeriesIds.contains(parentGuid) && isPartOfSeries(row);
+        return isPartOfSeries(row) && !isAlreadyProcessed(row) && !explicitSeriesIds.contains(parentGuid);
     }
 
     @Override

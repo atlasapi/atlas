@@ -150,6 +150,12 @@ public class BtVodBrandWriterTest {
         BtVodEntry row11 = episodeEntry();
         row11.setTitle("Classic Premiership Rugby - Saracens v Leicester Tigers 2010/11 - HD");
 
+        BtVodEntry row12 = episodeEntry();
+        row12.setTitle("Plankton Invasion - Operation Yellow-Ball-That-Heats/ Operation Albedo/ Operation Meltdown");
+
+        BtVodEntry row13 = episodeEntry();
+        row13.setTitle("Brand - with multiple - dashes");
+
 
         assertThat(brandExtractor.brandUriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandExtractor.brandUriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
@@ -162,6 +168,8 @@ public class BtVodBrandWriterTest {
         assertThat(brandExtractor.brandUriFor(row9).get(), is(URI_PREFIX + "synthesized/brands/american-horror-story"));
         assertThat(brandExtractor.brandUriFor(row10).isPresent(), is(false));
         assertThat(brandExtractor.brandUriFor(row11).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
+        assertThat(brandExtractor.brandUriFor(row12).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
+        assertThat(brandExtractor.brandUriFor(row13).get(), is(URI_PREFIX + "synthesized/brands/brand"));
     }
 
     @Test

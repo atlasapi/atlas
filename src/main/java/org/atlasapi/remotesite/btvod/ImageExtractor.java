@@ -7,6 +7,6 @@ import java.util.Set;
 
 public interface ImageExtractor {
 
-    Set<Image> brandImagesFor(BtVodEntry btVodPlproductImages);
+    Set<Image> imagesFor(BtVodEntry btVodPlproductImages);
     void start();
 }

@@ -105,7 +105,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.brandImagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
 
         Item writtenItem = extractAndCapture(btVodEntry);
@@ -159,7 +159,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.brandImagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(mock(Series.class)));
         when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
 
@@ -190,7 +190,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.brandImagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);
@@ -233,7 +233,7 @@ public class BtVodItemWriterTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
                 .thenReturn(ResolvedContent.builder().build());
-        when(imageExtractor.brandImagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
+        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);

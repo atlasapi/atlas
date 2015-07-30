@@ -8,6 +8,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodImage;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 
+import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -21,11 +22,11 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
     }
 
     @Override
-    public Set<Image> brandImagesFor(BtVodEntry entry) {
+    public Set<Image> imagesFor(BtVodEntry entry) {
         BtVodPlproductImages btVodPlproductImages = entry.getProductImages();
         ImmutableSet.Builder<Image> extractedImages = ImmutableSet.builder();
 
-        for (BtVodImage packshotImage : btVodPlproductImages.getPackshotImages()) {
+        for (BtVodImage packshotImage : getPackshotImages(entry)) {
             extractedImages.add(
                     buildImage(packshotImage, ImageType.PRIMARY, true)
             );
@@ -37,10 +38,27 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
             );
         }
 
-
         return extractedImages.build();
     }
 
+    private List<BtVodImage> getPackshotImages(BtVodEntry entry) {
+        
+        BtVodPlproductImages images = entry.getProductImages();
+        if (BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())) {
+            if (!images.getHdPackshotDoubleImages().isEmpty()) {
+                return images.getHdPackshotDoubleImages();
+            } else {
+                return images.getPackshotDoubleImages();
+            }
+        } else {
+            if (!images.getHdPackshotImages().isEmpty()) {
+                return images.getHdPackshotImages();
+            } else {
+                return images.getPackshotImages();
+            }
+        }
+    }
+    
     private Image buildImage(BtVodImage btVodImage, ImageType imageType, boolean hasTitleArt) {
         return Image.builder(uriFor(btVodImage))
                 .withHeight(btVodImage.getPlproduct$height())

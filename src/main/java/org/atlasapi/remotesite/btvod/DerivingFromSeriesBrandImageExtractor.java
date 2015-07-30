@@ -80,7 +80,10 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         }
         
         Integer seriesNumber = seriesUriExtractor.extractSeriesNumber(entry).orNull();
-        Integer episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
+        Integer episodeNumber = null;
+        if (BtVodItemWriter.EPISODE_TYPE.equals(entry.getProductType())) {
+            episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
+        }
         if (seriesNumber != null || episodeNumber != null) {
             retainIfBestImage(brandUri.get(), backgroundImages, getBackgroundImage(entry), seriesNumber, episodeNumber);
             retainIfBestImage(brandUri.get(), packshotImages, Iterables.getFirst(getPackshotImages(entry), null), seriesNumber, episodeNumber);

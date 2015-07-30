@@ -63,7 +63,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     
     private static final String FILM_TYPE = "film";
     private static final String MUSIC_TYPE = "music";
-    private static final String EPISODE_TYPE = "episode";
+    static final String EPISODE_TYPE = "episode";
     private static final String COLLECTION_TYPE = "collection";
     private static final String HELP_TYPE = "help";
 
@@ -301,7 +301,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, item);
         item.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-        item.setImages(imageExtractor.extractImages(row));
+        item.setImages(imageExtractor.brandImagesFor(row));
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {

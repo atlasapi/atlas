@@ -33,9 +33,36 @@ public class DerivingFromSeriesBrandImageExtractorTest {
                     = new DerivingFromSeriesBrandImageExtractor(brandUriExtractor, BASE_URL, seriesUriExtractor);
     
     @Test
-    public void testExtractsImagesFromLowestEpisodeNumber() {
-        BtVodEntry s1e1 = row(1, 1, "1/1-background.jpg", "1/1-packshot.jpg");
-        BtVodEntry s2e1 = row(2, 1, "1/2-background.jpg", "1/2-packshot.jpg");
+    public void testExtractsImagesFromFirstSeries() {
+        BtVodEntry s1 = row(1, 1, "1/background.jpg", "1/packshot.jpg", "season");
+        BtVodEntry s2 = row(2, 1, "2/background.jpg", "2/packshot.jpg", "season");
+        BtVodEntry s2e1 = row(2, 1, "1/2-background.jpg", "1/2-packshot.jpg", "episode");
+          
+        when(brandUriExtractor.extractBrandUri(s1)).thenReturn(Optional.of("http://example.org/"));
+        when(brandUriExtractor.extractBrandUri(s2)).thenReturn(Optional.of("http://example.org/"));
+        when(seriesUriExtractor.extractSeriesNumber(s1)).thenReturn(Optional.of(1));
+        when(seriesUriExtractor.extractSeriesNumber(s2)).thenReturn(Optional.of(2));
+
+        extractor.process(s1);
+        extractor.process(s2);
+        extractor.process(s2e1);
+        
+        Map<String, Image> images = Maps.uniqueIndex(extractor.brandImagesFor(s2), new Function<Image, String>() {
+
+            @Override
+            public String apply(Image input) {
+                return input.getCanonicalUri();
+            }
+        });
+        
+        assertNotNull(images.get("http://example.org/1/background.jpg"));
+        assertNotNull(images.get("http://example.org/1/packshot.jpg"));
+    }
+    
+    @Test
+    public void testExtractsImagesFromLatestEpisode() {
+        BtVodEntry s1e1 = row(1, 1, "1/1-background.jpg", "1/1-packshot.jpg", "episode");
+        BtVodEntry s2e1 = row(2, 1, "1/2-background.jpg", "1/2-packshot.jpg", "episode");
           
         when(brandUriExtractor.extractBrandUri(s1e1)).thenReturn(Optional.of("http://example.org/"));
         when(brandUriExtractor.extractBrandUri(s2e1)).thenReturn(Optional.of("http://example.org/"));
@@ -45,7 +72,7 @@ public class DerivingFromSeriesBrandImageExtractorTest {
         extractor.process(s1e1);
         extractor.process(s2e1);
         
-        Map<String, Image> images = Maps.uniqueIndex(extractor.extractImages(s2e1), new Function<Image, String>() {
+        Map<String, Image> images = Maps.uniqueIndex(extractor.brandImagesFor(s2e1), new Function<Image, String>() {
 
             @Override
             public String apply(Image input) {
@@ -58,14 +85,14 @@ public class DerivingFromSeriesBrandImageExtractorTest {
     }
     
     private BtVodEntry row(int seriesNumber, int episodeNumber, String backgroundImageUri,
-            String packshotImageUri) {
+            String packshotImageUri, String productType) {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid("abc");
         entry.setId("def");
         entry.setTitle("Test S" + seriesNumber + "-E" + episodeNumber);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
-        entry.setProductType("season");
+        entry.setProductType(productType);
         
         BtVodProductMetadata metadata = new BtVodProductMetadata();
         metadata.setEpisodeNumber("1");

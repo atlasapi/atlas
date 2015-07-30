@@ -132,7 +132,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         series.setGenres(describedFieldsExtractor.btGenreStringsFrom(row));
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-        series.setImages(imageExtractor.extractImages(row));
+        series.setImages(imageExtractor.brandImagesFor(row));
 
         return series;
     }

@@ -16,10 +16,11 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
 /**
- * Extract low-resolution brand images from MPX feed.
+ * Extract brand images from MPX feed.
  * 
- * Images aren't provided at the brand level, however. we
- * must find the images from the first series, ordered editorially.
+ * Images aren't provided at the brand level, however. We therefore
+ * locate images from the first series, in the case of a brand with
+ * series, or the last episode in the case of brands without them.
  * 
  * To do this in an efficient manner during ingest, and avoid writing a
  * brand many times, users of this class are expected to pre-process the
@@ -46,7 +47,7 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
     }
     
     @Override
-    public Set<Image> extractImages(BtVodEntry entry) {
+    public Set<Image> brandImagesFor(BtVodEntry entry) {
         Optional<String> brandUri = brandUriExtractor.extractBrandUri(entry);
         if (!brandUri.isPresent()) {
             return ImmutableSet.of();
@@ -70,19 +71,23 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
     @Override
     public boolean process(BtVodEntry entry) {
         Optional<String> brandUri = brandUriExtractor.extractBrandUri(entry);
-        if (!BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())) {
+        
+        if (!BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())
+                && !BtVodItemWriter.EPISODE_TYPE.equals(entry.getProductType())) {
             return true;
         }
+        
         Integer seriesNumber = seriesUriExtractor.extractSeriesNumber(entry).orNull();
-        if (seriesNumber != null) {
-            retainIfBestImage(brandUri.get(), backgroundImages, getBackgroundImage(entry), seriesNumber);
-            retainIfBestImage(brandUri.get(), packshotImages, getPackshotDoubleImage(entry), seriesNumber);
+        Integer episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
+        if (seriesNumber != null || episodeNumber != null) {
+            retainIfBestImage(brandUri.get(), backgroundImages, getBackgroundImage(entry), seriesNumber, episodeNumber);
+            retainIfBestImage(brandUri.get(), packshotImages, getPackshotDoubleImage(entry), seriesNumber, episodeNumber);
         }
         return true;
     }
     
     private void retainIfBestImage(String brandUri, Map<String, BrandImage> images,
-            BtVodImage image, Integer seriesNumber) {
+            BtVodImage image, Integer seriesNumber, Integer episodeNumber) {
         
         if (image == null) {
             return;
@@ -91,11 +96,38 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         BrandImage current = images.get(brandUri);
         
         if (current == null 
-                || current.seriesNumber > seriesNumber) {
+                || isBetterThanCurrentFavourite(current, seriesNumber, episodeNumber)) {
             images.put(brandUri, 
-                        new BrandImage(seriesNumber, 
+                        new BrandImage(seriesNumber, episodeNumber, 
                                        image));
         }
+    }
+
+    private boolean isBetterThanCurrentFavourite(BrandImage current, Integer seriesNumber,
+            Integer episodeNumber) {
+        
+        // A season image always trumps an image from an episode
+        
+        if (current.seriesNumber == null && seriesNumber != null) {
+            return true;
+        }
+        
+        // Prefer a lower season number 
+        
+        if (current.seriesNumber != null 
+                && seriesNumber != null
+                && current.seriesNumber > seriesNumber) {
+            return true;
+        }
+        
+        // Prefer the latest episode
+        
+        if (current.seriesNumber == null 
+                && current.episodeNumber < episodeNumber) {
+            return true;
+        }
+
+        return false;
     }
 
     private BtVodImage getBackgroundImage(BtVodEntry row) {
@@ -112,11 +144,13 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
     }
     
     private static class BrandImage {
-        private int seriesNumber;
+        private Integer seriesNumber;
+        private Integer episodeNumber;
         private BtVodImage image;
         
-        public BrandImage(int seriesNumber, BtVodImage image) {
+        public BrandImage(Integer seriesNumber, Integer episodeNumber, BtVodImage image) {
             this.seriesNumber = seriesNumber;
+            this.episodeNumber = episodeNumber;
             this.image = image;
         }
         

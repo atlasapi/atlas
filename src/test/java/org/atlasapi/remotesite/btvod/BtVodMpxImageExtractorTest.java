@@ -57,7 +57,7 @@ public class BtVodMpxImageExtractorTest {
         images.setBackgroundImages(ImmutableList.of(backgroundImage1, backgroundImage2));
 
         entry.setProductImages(images);
-        Set<Image> extractedImages = imageExtractor.extractImages(entry);
+        Set<Image> extractedImages = imageExtractor.brandImagesFor(entry);
 
         assertThat(extractedImages.size(), is(4));
 

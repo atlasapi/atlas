@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableSet;
 public class NoImageExtractor implements ImageExtractor, BrandImageExtractor {
 
     @Override
-    public Set<Image> extractImages(BtVodEntry btVodPlproductImages) {
+    public Set<Image> brandImagesFor(BtVodEntry btVodPlproductImages) {
         return ImmutableSet.of();
     }
 

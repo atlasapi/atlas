@@ -21,7 +21,7 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
     }
 
     @Override
-    public Set<Image> extractImages(BtVodEntry entry) {
+    public Set<Image> brandImagesFor(BtVodEntry entry) {
         BtVodPlproductImages btVodPlproductImages = entry.getProductImages();
         ImmutableSet.Builder<Image> extractedImages = ImmutableSet.builder();
 

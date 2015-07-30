@@ -51,13 +51,19 @@ public class BtVodMpxImageExtractorTest {
         backgroundImage2.setPlproduct$width(8);
         backgroundImage2.setPlproduct$url("imageUrl4");
 
+        BtVodImage packShotImageSd = new BtVodImage();
+        packShotImageSd.setPlproduct$mediaFileId("mediaFileIdSd");
+        packShotImageSd.setPlproduct$height(9);
+        packShotImageSd.setPlproduct$width(10);
+        packShotImageSd.setPlproduct$url("imageUrlSd");
 
         BtVodPlproductImages images = new BtVodPlproductImages();
-        images.setPackshotImages(ImmutableList.of(packShotImage1, packShotImage2));
+        images.setPackshotImages(ImmutableList.of(packShotImageSd));
+        images.setPackshotImagesHd(ImmutableList.of(packShotImage1, packShotImage2));
         images.setBackgroundImages(ImmutableList.of(backgroundImage1, backgroundImage2));
 
         entry.setProductImages(images);
-        Set<Image> extractedImages = imageExtractor.brandImagesFor(entry);
+        Set<Image> extractedImages = imageExtractor.imagesFor(entry);
 
         assertThat(extractedImages.size(), is(4));
 

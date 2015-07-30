@@ -150,7 +150,7 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         brand.setAliases(describedFieldExtractor.aliasesFrom(row));
         brand.setGenres(describedFieldExtractor.btGenreStringsFrom(row));
         brand.setSpecialization(Specialization.TV);
-        brand.setImages(brandImageExtractor.brandImagesFor(row));
+        brand.setImages(brandImageExtractor.imagesFor(row));
         
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, brand);
         brand.addTopicRefs(describedFieldExtractor.topicsFrom(vodEntryAndContent));

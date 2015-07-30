@@ -47,7 +47,7 @@ public class DerivingFromSeriesBrandImageExtractorTest {
         extractor.process(s2);
         extractor.process(s2e1);
         
-        Map<String, Image> images = Maps.uniqueIndex(extractor.brandImagesFor(s2), new Function<Image, String>() {
+        Map<String, Image> images = Maps.uniqueIndex(extractor.imagesFor(s2), new Function<Image, String>() {
 
             @Override
             public String apply(Image input) {
@@ -72,7 +72,7 @@ public class DerivingFromSeriesBrandImageExtractorTest {
         extractor.process(s1e1);
         extractor.process(s2e1);
         
-        Map<String, Image> images = Maps.uniqueIndex(extractor.brandImagesFor(s2e1), new Function<Image, String>() {
+        Map<String, Image> images = Maps.uniqueIndex(extractor.imagesFor(s2e1), new Function<Image, String>() {
 
             @Override
             public String apply(Image input) {

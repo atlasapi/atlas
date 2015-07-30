@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -9,6 +10,7 @@ import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodImage;
+import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 
 import com.google.api.client.util.Maps;
 import com.google.common.base.Optional;
@@ -47,7 +49,7 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
     }
     
     @Override
-    public Set<Image> brandImagesFor(BtVodEntry entry) {
+    public Set<Image> imagesFor(BtVodEntry entry) {
         Optional<String> brandUri = brandUriExtractor.extractBrandUri(entry);
         if (!brandUri.isPresent()) {
             return ImmutableSet.of();
@@ -81,7 +83,7 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         Integer episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
         if (seriesNumber != null || episodeNumber != null) {
             retainIfBestImage(brandUri.get(), backgroundImages, getBackgroundImage(entry), seriesNumber, episodeNumber);
-            retainIfBestImage(brandUri.get(), packshotImages, getPackshotDoubleImage(entry), seriesNumber, episodeNumber);
+            retainIfBestImage(brandUri.get(), packshotImages, Iterables.getFirst(getPackshotImages(entry), null), seriesNumber, episodeNumber);
         }
         return true;
     }
@@ -108,7 +110,8 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         
         // A season image always trumps an image from an episode
         
-        if (current.seriesNumber == null && seriesNumber != null) {
+        if (current.seriesNumber == null 
+                && seriesNumber != null) {
             return true;
         }
         
@@ -134,8 +137,22 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         return Iterables.getFirst(row.getProductImages().getBackgroundImages(), null);
     }
     
-    private BtVodImage getPackshotDoubleImage(BtVodEntry row) {
-        return Iterables.getFirst(row.getProductImages().getPackshotDoubleImages(), null);
+    private List<BtVodImage> getPackshotImages(BtVodEntry entry) {
+        
+        BtVodPlproductImages images = entry.getProductImages();
+        if (BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())) {
+            if (!images.getHdPackshotDoubleImages().isEmpty()) {
+                return images.getHdPackshotDoubleImages();
+            } else {
+                return images.getPackshotDoubleImages();
+            }
+        } else {
+            if (!images.getHdPackshotImages().isEmpty()) {
+                return images.getHdPackshotImages();
+            } else {
+                return images.getPackshotImages();
+            }
+        }
     }
 
     @Override

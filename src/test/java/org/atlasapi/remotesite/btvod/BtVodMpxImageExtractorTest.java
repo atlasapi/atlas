@@ -58,14 +58,14 @@ public class BtVodMpxImageExtractorTest {
         packShotImageSd.setPlproduct$url("imageUrlSd");
 
         BtVodPlproductImages images = new BtVodPlproductImages();
-        images.setPackshotImages(ImmutableList.of(packShotImageSd));
-        images.setPackshotImagesHd(ImmutableList.of(packShotImage1, packShotImage2));
+        images.setSinglePackshotImages(ImmutableList.of(packShotImageSd));
+        images.setSinglePackshotImagesHd(ImmutableList.of(packShotImage1, packShotImage2));
         images.setBackgroundImages(ImmutableList.of(backgroundImage1, backgroundImage2));
 
         entry.setProductImages(images);
         Set<Image> extractedImages = imageExtractor.imagesFor(entry);
 
-        assertThat(extractedImages.size(), is(4));
+        assertThat(extractedImages.size(), is(3));
 
         assertThat(
                 Iterables.any(
@@ -86,19 +86,10 @@ public class BtVodMpxImageExtractorTest {
         assertThat(
                 Iterables.any(
                         extractedImages,
-                        predicateFor(BASE_URL + "imageUrl3", 5, 6, ImageType.ADDITIONAL)
+                        predicateFor(BASE_URL + "imageUrlSd", 9, 10, ImageType.PRIMARY)
                 ),
                 is(true)
         );
-
-        assertThat(
-                Iterables.any(
-                        extractedImages,
-                        predicateFor(BASE_URL + "imageUrl4", 7, 8, ImageType.ADDITIONAL)
-                ),
-                is(true)
-        );
-
 
     }
 

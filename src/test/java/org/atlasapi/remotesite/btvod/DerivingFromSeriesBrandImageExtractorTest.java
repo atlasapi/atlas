@@ -4,6 +4,7 @@ import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Map;
 
 import org.atlasapi.media.entity.Image;
@@ -30,18 +31,28 @@ public class DerivingFromSeriesBrandImageExtractorTest {
     private final BrandUriExtractor brandUriExtractor = mock(BrandUriExtractor.class);
     private final BtVodSeriesUriExtractor seriesUriExtractor = mock(BtVodSeriesUriExtractor.class);
     private final DerivingFromSeriesBrandImageExtractor extractor 
-                    = new DerivingFromSeriesBrandImageExtractor(brandUriExtractor, BASE_URL, seriesUriExtractor);
+                    = new DerivingFromSeriesBrandImageExtractor(brandUriExtractor, seriesUriExtractor, new BtVodMpxImageExtractor(BASE_URL));
     
     @Test
     public void testExtractsImagesFromFirstSeries() {
-        BtVodEntry s1 = row(1, 1, "1/background.jpg", "1/packshot.jpg", "season");
-        BtVodEntry s2 = row(2, 1, "2/background.jpg", "2/packshot.jpg", "season");
-        BtVodEntry s2e1 = row(2, 1, "1/2-background.jpg", "1/2-packshot.jpg", "episode");
-          
+        BtVodEntry s1 = row(1, 1, "season");
+        BtVodEntry s2 = row(2, 1, "season");
+        BtVodEntry s2e1 = row(2, 1, "episode");
+        
+        s1.getProductImages().setDoublePackshotImages(createImage("1/packshot.jpg"));
+        s1.getProductImages().setDoublePackshotImagesHd(createImage("1/packshot-hd.jpg"));
+        
+        s2.getProductImages().setDoublePackshotImages(createImage("2/packshot.jpg"));
+        s2.getProductImages().setDoublePackshotImagesHd(createImage("2/packshot-hd.jpg"));
+        
+        s2e1.getProductImages().setSinglePackshotImages(createImage("2/1-packshot.jpg"));
+        
         when(brandUriExtractor.extractBrandUri(s1)).thenReturn(Optional.of("http://example.org/"));
         when(brandUriExtractor.extractBrandUri(s2)).thenReturn(Optional.of("http://example.org/"));
+        when(brandUriExtractor.extractBrandUri(s2e1)).thenReturn(Optional.of("http://example.org/"));
         when(seriesUriExtractor.extractSeriesNumber(s1)).thenReturn(Optional.of(1));
         when(seriesUriExtractor.extractSeriesNumber(s2)).thenReturn(Optional.of(2));
+        when(seriesUriExtractor.extractSeriesNumber(s2e1)).thenReturn(Optional.of(2));
 
         extractor.process(s1);
         extractor.process(s2);
@@ -55,24 +66,30 @@ public class DerivingFromSeriesBrandImageExtractorTest {
             }
         });
         
-        assertNotNull(images.get("http://example.org/1/background.jpg"));
+        assertNotNull(images.get("http://example.org/1/packshot-hd.jpg"));
         assertNotNull(images.get("http://example.org/1/packshot.jpg"));
     }
     
     @Test
     public void testExtractsImagesFromLatestEpisode() {
-        BtVodEntry s1e1 = row(1, 1, "1/1-background.jpg", "1/1-packshot.jpg", "episode");
-        BtVodEntry s2e1 = row(2, 1, "1/2-background.jpg", "1/2-packshot.jpg", "episode");
+        BtVodEntry s1e1 = row(1, 1, "episode");
+        BtVodEntry s2e2 = row(2, 2, "episode");
           
+        s1e1.getProductImages().setSinglePackshotImages(createImage("1/packshot.jpg"));
+        s1e1.getProductImages().setSinglePackshotImagesHd(createImage("1/packshot-hd.jpg"));
+        
+        s2e2.getProductImages().setSinglePackshotImages(createImage("2/packshot.jpg"));
+        s2e2.getProductImages().setSinglePackshotImagesHd(createImage("2/packshot-hd.jpg"));
+        
         when(brandUriExtractor.extractBrandUri(s1e1)).thenReturn(Optional.of("http://example.org/"));
-        when(brandUriExtractor.extractBrandUri(s2e1)).thenReturn(Optional.of("http://example.org/"));
-        when(seriesUriExtractor.extractSeriesNumber(s1e1)).thenReturn(Optional.of(1));
-        when(seriesUriExtractor.extractSeriesNumber(s2e1)).thenReturn(Optional.of(2));
+        when(brandUriExtractor.extractBrandUri(s2e2)).thenReturn(Optional.of("http://example.org/"));
+        when(seriesUriExtractor.extractSeriesNumber(s1e1)).thenReturn(Optional.<Integer>absent());
+        when(seriesUriExtractor.extractSeriesNumber(s2e2)).thenReturn(Optional.<Integer>absent());
 
         extractor.process(s1e1);
-        extractor.process(s2e1);
+        extractor.process(s2e2);
         
-        Map<String, Image> images = Maps.uniqueIndex(extractor.imagesFor(s2e1), new Function<Image, String>() {
+        Map<String, Image> images = Maps.uniqueIndex(extractor.imagesFor(s2e2), new Function<Image, String>() {
 
             @Override
             public String apply(Image input) {
@@ -80,12 +97,11 @@ public class DerivingFromSeriesBrandImageExtractorTest {
             }
         });
         
-        assertNotNull(images.get("http://example.org/1/1-background.jpg"));
-        assertNotNull(images.get("http://example.org/1/1-packshot.jpg"));
+        assertNotNull(images.get("http://example.org/2/packshot-hd.jpg"));
+        assertNotNull(images.get("http://example.org/2/packshot.jpg"));
     }
     
-    private BtVodEntry row(int seriesNumber, int episodeNumber, String backgroundImageUri,
-            String packshotImageUri, String productType) {
+    private BtVodEntry row(int seriesNumber, int episodeNumber, String productType) {
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid("abc");
         entry.setId("def");
@@ -95,22 +111,18 @@ public class DerivingFromSeriesBrandImageExtractorTest {
         entry.setProductType(productType);
         
         BtVodProductMetadata metadata = new BtVodProductMetadata();
-        metadata.setEpisodeNumber("1");
+        metadata.setEpisodeNumber(String.valueOf(episodeNumber));
         BtVodProductScope scope = new BtVodProductScope();
         scope.setProductMetadata(metadata);
         entry.setProductScopes(ImmutableList.of(scope));
         
-        BtVodImage backgroundImage = new BtVodImage();
-        backgroundImage.setPlproduct$url(backgroundImageUri);
-        
-        BtVodImage packshotImage = new BtVodImage();
-        packshotImage.setPlproduct$url(packshotImageUri);
-        
-        BtVodPlproductImages images = new BtVodPlproductImages();
-        images.setBackgroundImages(ImmutableList.of(backgroundImage));
-        images.setPackshotDoubleImages(ImmutableList.of(packshotImage));
-        entry.setProductImages(images);
-
+        entry.setProductImages(new BtVodPlproductImages());
         return entry;
+    }
+    
+    private List<BtVodImage> createImage(String uri) {
+        BtVodImage image = new BtVodImage();
+        image.setPlproduct$url(uri);
+        return ImmutableList.of(image);
     }
 }

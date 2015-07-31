@@ -6,22 +6,23 @@ public class BtVodProductMetadata {
 
     private String episodeNumber;
     private String audioDescription;
-    private String releaseYear;
-    private String subGenres;
 
+    private String releaseYear;
+
+    private String subGenres;
     @SerializedName("assetColorType.video-cardinal")
     private String assetColorTypeVideoCardinal;
+
     private String audioLanguage;
     private String clientAssetId;
-
     @SerializedName("plproduct$title")
     private String productTitle;
 
     @SerializedName("plproduct$description")
     private String productDescription;
-    
 
     public BtVodProductMetadata() {}
+
 
     public String getEpisodeNumber() {
         return episodeNumber;
@@ -34,11 +35,11 @@ public class BtVodProductMetadata {
     public String getReleaseYear() {
         return releaseYear;
     }
-    
+
     public String getSubGenres() {
         return subGenres;
     }
-    
+
     public void setSubGenres(String subGenres) {
         this.subGenres = subGenres;
     }
@@ -69,5 +70,9 @@ public class BtVodProductMetadata {
 
     public void setEpisodeNumber(String episodeNumber) {
         this.episodeNumber = episodeNumber;
+    }
+
+    public void setReleaseYear(String releaseYear) {
+        this.releaseYear = releaseYear;
     }
 }

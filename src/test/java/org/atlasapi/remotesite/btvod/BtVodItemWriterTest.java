@@ -307,8 +307,79 @@ public class BtVodItemWriterTest {
     }
     
     @Test
-    public void testExtractsFilm() {
-        
+    public void testMergesHDandSDforFilms() {
+        BtVodEntry btVodEntrySD = filmRow("About Alex");
+        btVodEntrySD.setProductTargetBandwidth("SD");
+
+        BtVodEntry btVodEntryHD = filmRow("About Alex - HD");
+        btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
+        btVodEntryHD.setProductTargetBandwidth("HD");
+
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
+                .thenReturn(ResolvedContent.builder().build());
+        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
+
+        when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
+        when(brandExtractor.getBrandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+
+
+
+        itemExtractor.process(btVodEntrySD);
+        itemExtractor.process(btVodEntryHD);
+
+        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
+        verify(contentWriter, times(2)).createOrUpdate(itemCaptor.capture());
+
+
+        Item writtenItem = Iterables.getOnlyElement(ImmutableSet.copyOf(itemCaptor.getAllValues()));
+
+        assertThat(writtenItem.getTitle(), is("About Alex"));
+        assertThat(writtenItem.getDescription(), is(SYNOPSIS));
+
+        assertThat(writtenItem.getVersions().size(), is(2));
+
+        Version hdVersion = Iterables.get(writtenItem.getVersions(), 0);
+        Version sdVersion = Iterables.get(writtenItem.getVersions(), 1);
+        assertThat(Iterables.getOnlyElement(sdVersion.getManifestedAs()).getHighDefinition(), is(false));
+        assertThat(Iterables.getOnlyElement(hdVersion.getManifestedAs()).getHighDefinition(), is(true));
+    }
+
+    @Test
+    public void testMergesFilmsFromCurzon() {
+        BtVodEntry btVodEntrySD = filmRow("Amour");
+
+        BtVodEntry btVodEntryHD = filmRow("Amour (Curzon)");
+        btVodEntryHD.setGuid(PRODUCT_GUID + "Curzon");
+
+        BtVodEntry btVodEntryHDCurzon = filmRow("Amour (Curzon) - HD");
+        btVodEntryHDCurzon.setGuid(PRODUCT_GUID + "Curzon_HD");
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(itemUri())))
+                .thenReturn(ResolvedContent.builder().build());
+        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
+
+        when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
+        when(brandExtractor.getBrandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+        when(brandExtractor.getBrandRefFor(btVodEntryHDCurzon)).thenReturn(Optional.<ParentRef>absent());
+
+
+
+        itemExtractor.process(btVodEntrySD);
+        itemExtractor.process(btVodEntryHD);
+        itemExtractor.process(btVodEntryHDCurzon);
+
+        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
+        verify(contentWriter, times(3)).createOrUpdate(itemCaptor.capture());
+
+
+        Item writtenItem = Iterables.getOnlyElement(ImmutableSet.copyOf(itemCaptor.getAllValues()));
+
+        assertThat(writtenItem.getTitle(), is("Amour"));
+        assertThat(writtenItem.getDescription(), is(SYNOPSIS));
+
+        assertThat(writtenItem.getVersions().size(), is(3));
+
     }
     
     @Test
@@ -344,9 +415,37 @@ public class BtVodItemWriterTest {
         BtVodPlproduct$productTag itemCdnAvailabilityTag = new BtVodPlproduct$productTag();
         itemCdnAvailabilityTag.setPlproduct$scheme("serviceType");
         itemCdnAvailabilityTag.setPlproduct$title("OTG");
-        
+
         entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of(tag, trailerCdnAvailabilityTag, itemCdnAvailabilityTag));
-        
+
+
+        return entry;
+    }
+
+    private BtVodEntry filmRow(String title) {
+        BtVodEntry entry = new BtVodEntry();
+        entry.setGuid(PRODUCT_GUID);
+        entry.setId(PRODUCT_ID);
+        entry.setTitle(title);
+        entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
+        entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
+        entry.setDescription(SYNOPSIS);
+        entry.setProductType("film");
+        entry.setProductPricingPlan(new BtVodProductPricingPlan());
+        entry.setProductTrailerMediaId(TRAILER_URI);
+        BtVodProductScope productScope = new BtVodProductScope();
+        BtVodProductMetadata productMetadata = new BtVodProductMetadata();
+        productMetadata.setReleaseYear("2015");
+        productScope.setProductMetadata(productMetadata);
+        entry.setProductScopes(ImmutableList.of(productScope));
+        entry.setProductRatings(ImmutableList.<BtVodProductRating>of());
+        BtVodPlproduct$productTag tag = new BtVodPlproduct$productTag();
+        tag.setPlproduct$scheme("subscription");
+        tag.setPlproduct$title(SUBSCRIPTION_CODE);
+
+        entry.setProductTags(ImmutableList.of(tag));
+
+
 
         return entry;
     }

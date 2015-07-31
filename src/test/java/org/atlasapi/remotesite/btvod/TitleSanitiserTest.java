@@ -30,6 +30,12 @@ public class TitleSanitiserTest {
     }
 
     @Test
+    public void testRemovesCurzonSuffixFromHDTitles() {
+        String titleWithCurzonSuffix = "Film (Curzon) - HD";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithCurzonSuffix), is("Film"));
+    }
+
+    @Test
     public void testRemovesHdFromWithinTitle(){
         String title = "Modern Family: S03 S3-E17 Truth Be Told";
 

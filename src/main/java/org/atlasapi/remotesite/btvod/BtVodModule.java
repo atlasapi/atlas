@@ -165,7 +165,7 @@ public class BtVodModule {
     }
     
     public DerivingFromSeriesBrandImageExtractor brandImageExtractor(String baseUrl) {
-        return new DerivingFromSeriesBrandImageExtractor(brandUriExtractor(baseUrl), baseUrl, seriesUriExtractor(baseUrl));
+        return new DerivingFromSeriesBrandImageExtractor(brandUriExtractor(baseUrl), seriesUriExtractor(baseUrl), itemImageExtractor());
     }
     
     public ImageExtractor itemImageExtractor() {

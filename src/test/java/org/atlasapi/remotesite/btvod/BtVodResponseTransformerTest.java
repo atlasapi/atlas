@@ -61,7 +61,7 @@ public class BtVodResponseTransformerTest {
 
         BtVodPlproductImages images = entry1.getProductImages();
 
-        BtVodImage packshotImage = Iterables.getOnlyElement(images.getPackshotImages());
+        BtVodImage packshotImage = Iterables.getOnlyElement(images.getSinglePackshotImages());
         BtVodImage backgroundImage = Iterables.getOnlyElement(images.getBackgroundImages());
 
         assertThat(packshotImage.getPlproduct$mediaFileId(), is("http://bt.data.media.theplatform.eu/media/data/MediaFile/4828741146"));

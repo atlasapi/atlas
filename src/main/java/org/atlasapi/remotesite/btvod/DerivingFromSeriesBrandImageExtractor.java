@@ -2,15 +2,11 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.atlasapi.remotesite.btvod.model.BtVodImage;
-import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 
 import com.google.api.client.util.Maps;
 import com.google.common.base.Optional;
@@ -32,20 +28,19 @@ import com.google.common.collect.Iterables;
  */
 public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtractor, BtVodDataProcessor<Void> {
 
-    private final String baseUrl;
-    private final Map<String, BrandImage> backgroundImages = Maps.newHashMap();
-    private final Map<String, BrandImage> packshotImages = Maps.newHashMap();
+    private final Map<String, BrandImages> bestImages = Maps.newHashMap(); 
     private final BrandUriExtractor brandUriExtractor;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
+    private final ImageExtractor baseImageExtractor;
 
     public DerivingFromSeriesBrandImageExtractor(
             BrandUriExtractor brandUriExtractor,
-            String baseUrl,
-            BtVodSeriesUriExtractor seriesUriExtractor
+            BtVodSeriesUriExtractor seriesUriExtractor,
+            ImageExtractor baseImageExtractor
     ) {
-        this.baseUrl = checkNotNull(baseUrl);
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
+        this.baseImageExtractor = checkNotNull(baseImageExtractor);
     }
     
     @Override
@@ -55,19 +50,13 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
             return ImmutableSet.of();
         }
         
-        ImmutableSet.Builder<Image> images = ImmutableSet.builder();
-        BrandImage backgroundImage = backgroundImages.get(brandUri.get());
+        BrandImages currentBestImages = bestImages.get(brandUri.get());
         
-        if (backgroundImage != null) {
-            images.add(buildImage(backgroundImage.image, ImageType.ADDITIONAL, false));
+        if (currentBestImages != null) {
+            return currentBestImages.images;
         }
         
-        BrandImage packshotImage = packshotImages.get(brandUri.get());
-        if (packshotImage != null) {
-            images.add(buildImage(packshotImage.image, ImageType.PRIMARY, true));
-        }
-        
-        return images.build();
+        return ImmutableSet.of();
     }
 
     @Override
@@ -85,30 +74,33 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
             episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
         }
         if (seriesNumber != null || episodeNumber != null) {
-            retainIfBestImage(brandUri.get(), backgroundImages, getBackgroundImage(entry), seriesNumber, episodeNumber);
-            retainIfBestImage(brandUri.get(), packshotImages, Iterables.getFirst(getPackshotImages(entry), null), seriesNumber, episodeNumber);
+            retainIfBestImage(brandUri.get(), 
+                              bestImages, 
+                              baseImageExtractor.imagesFor(entry), 
+                              seriesNumber,
+                              episodeNumber);
         }
         return true;
     }
     
-    private void retainIfBestImage(String brandUri, Map<String, BrandImage> images,
-            BtVodImage image, Integer seriesNumber, Integer episodeNumber) {
+    private void retainIfBestImage(String brandUri, Map<String, BrandImages> bestImages,
+            Iterable<Image> images, Integer seriesNumber, Integer episodeNumber) {
         
-        if (image == null) {
+        if (Iterables.isEmpty(images)) {
             return;
         }
         
-        BrandImage current = images.get(brandUri);
+        BrandImages current = bestImages.get(brandUri);
         
         if (current == null 
                 || isBetterThanCurrentFavourite(current, seriesNumber, episodeNumber)) {
-            images.put(brandUri, 
-                        new BrandImage(seriesNumber, episodeNumber, 
-                                       image));
+            bestImages.put(brandUri, 
+                        new BrandImages(seriesNumber, episodeNumber, 
+                                       images));
         }
     }
 
-    private boolean isBetterThanCurrentFavourite(BrandImage current, Integer seriesNumber,
+    private boolean isBetterThanCurrentFavourite(BrandImages current, Integer seriesNumber,
             Integer episodeNumber) {
         
         // A season image always trumps an image from an episode
@@ -136,66 +128,26 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         return false;
     }
 
-    private BtVodImage getBackgroundImage(BtVodEntry row) {
-        return Iterables.getFirst(row.getProductImages().getBackgroundImages(), null);
-    }
-    
-    private List<BtVodImage> getPackshotImages(BtVodEntry entry) {
-        
-        BtVodPlproductImages images = entry.getProductImages();
-        if (BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())) {
-            if (!images.getHdPackshotDoubleImages().isEmpty()) {
-                return images.getHdPackshotDoubleImages();
-            } else {
-                return images.getPackshotDoubleImages();
-            }
-        } else {
-            if (!images.getHdPackshotImages().isEmpty()) {
-                return images.getHdPackshotImages();
-            } else {
-                return images.getPackshotImages();
-            }
-        }
-    }
-
     @Override
     public Void getResult() {
         return null;
     }
     
-    private static class BrandImage {
+    private static class BrandImages {
         private Integer seriesNumber;
         private Integer episodeNumber;
-        private BtVodImage image;
+        private Set<Image> images;
         
-        public BrandImage(Integer seriesNumber, Integer episodeNumber, BtVodImage image) {
+        public BrandImages(Integer seriesNumber, Integer episodeNumber, Iterable<Image> image) {
             this.seriesNumber = seriesNumber;
             this.episodeNumber = episodeNumber;
-            this.image = image;
+            this.images = ImmutableSet.copyOf(image);
         }
         
     }
     
-    private Image buildImage(BtVodImage btVodImage, ImageType imageType, boolean hasTitleArt) {
-        return Image.builder(uriFor(btVodImage))
-                .withHeight(btVodImage.getPlproduct$height())
-                .withWidth(btVodImage.getPlproduct$width())
-                .withType(imageType)
-                .withHasTitleArt(hasTitleArt)
-                .build();
-    }
-
-    private String uriFor(BtVodImage image) {
-        return String.format(
-                "%s%s",
-                baseUrl,
-                image.getPlproduct$url()
-        );
-    }
-
     @Override
     public void start() {
-        backgroundImages.clear();
-        packshotImages.clear();
+        bestImages.clear();
     }
 }

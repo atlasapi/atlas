@@ -1,6 +1,8 @@
 package org.atlasapi.remotesite.btvod;
 
+import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
@@ -8,7 +10,6 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodImage;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 
-import java.util.List;
 import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -23,51 +24,42 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
 
     @Override
     public Set<Image> imagesFor(BtVodEntry entry) {
-        BtVodPlproductImages btVodPlproductImages = entry.getProductImages();
-        ImmutableSet.Builder<Image> extractedImages = ImmutableSet.builder();
-
-        for (BtVodImage packshotImage : getPackshotImages(entry)) {
-            extractedImages.add(
-                    buildImage(packshotImage, ImageType.PRIMARY, true)
-            );
-        }
-
-        for (BtVodImage backgroundImage : btVodPlproductImages.getBackgroundImages()) {
-            extractedImages.add(
-                    buildImage(backgroundImage, ImageType.ADDITIONAL, false)
-            );
-        }
-
-        return extractedImages.build();
+        return ImmutableSet.copyOf(getPackshotImages(entry));
     }
 
-    private List<BtVodImage> getPackshotImages(BtVodEntry entry) {
+    private Iterable<Image> getPackshotImages(BtVodEntry entry) {
         
         BtVodPlproductImages images = entry.getProductImages();
         if (BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())) {
-            if (!images.getHdPackshotDoubleImages().isEmpty()) {
-                return images.getHdPackshotDoubleImages();
-            } else {
-                return images.getPackshotDoubleImages();
-            }
+            return Iterables.concat(
+                        Iterables.transform(images.getDoublePackshotImagesHd(), toImage(false, ImageType.PRIMARY)),
+                        Iterables.transform(images.getDoublePackshotImages(), toImage(true, ImageType.PRIMARY))
+                    );
         } else {
-            if (!images.getHdPackshotImages().isEmpty()) {
-                return images.getHdPackshotImages();
-            } else {
-                return images.getPackshotImages();
-            }
+            return Iterables.concat(
+                    Iterables.transform(images.getSinglePackshotImagesHd(), toImage(false, ImageType.PRIMARY)),
+                    Iterables.transform(images.getSinglePackshotImages(), toImage(true, ImageType.PRIMARY))
+                );
         }
     }
-    
-    private Image buildImage(BtVodImage btVodImage, ImageType imageType, boolean hasTitleArt) {
-        return Image.builder(uriFor(btVodImage))
-                .withHeight(btVodImage.getPlproduct$height())
-                .withWidth(btVodImage.getPlproduct$width())
-                .withType(imageType)
-                .withHasTitleArt(hasTitleArt)
-                .build();
-    }
 
+    
+    private Function<BtVodImage, Image> toImage(final boolean hasTitleArt, final ImageType imageType) {
+        return new Function<BtVodImage, Image>() {
+
+            @Override
+            public Image apply(BtVodImage input) {
+                return Image.builder(uriFor(input))
+                        .withHeight(input.getPlproduct$height())
+                        .withWidth(input.getPlproduct$width())
+                        .withType(imageType)
+                        .withHasTitleArt(hasTitleArt)
+                        .build();
+            }
+            
+        };
+    }
+    
     private String uriFor(BtVodImage image) {
         return String.format(
                 "%s%s",

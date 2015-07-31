@@ -11,16 +11,16 @@ public class BtVodPlproductImages {
     private List<BtVodImage> backgroundImages;
 
     @SerializedName("image-single-packshot")
-    private List<BtVodImage> packshotImages;
+    private List<BtVodImage> singlePackshotImages;
 
     @SerializedName("image-double-packshot")
-    private List<BtVodImage> packshotDoubleImages;
+    private List<BtVodImage> doublePackshotImages;
 
     @SerializedName("image-single-packshot-hd")
-    private List<BtVodImage> packshotImagesHd;
+    private List<BtVodImage> singlePackshotImagesHd;
 
     @SerializedName("image-double-packshot-hd")
-    private List<BtVodImage> packshotDoubleImagesHd;
+    private List<BtVodImage> doublePackshotImagesHd;
     
     public BtVodPlproductImages() {
     }
@@ -36,55 +36,55 @@ public class BtVodPlproductImages {
         this.backgroundImages = backgroundImages;
     }
 
-    public List<BtVodImage> getPackshotImages() {
-        if (packshotImages == null) {
+    public List<BtVodImage> getSinglePackshotImages() {
+        if (singlePackshotImages == null) {
             return ImmutableList.of();
         }
-        return packshotImages;
+        return singlePackshotImages;
     }
     
-    public List<BtVodImage> getHdPackshotImages() {
-        if (packshotImagesHd == null) {
+    public List<BtVodImage> getSinglePackshotImagesHd() {
+        if (singlePackshotImagesHd == null) {
             return ImmutableList.of();
         }
-        return ImmutableList.copyOf(packshotImagesHd);
+        return ImmutableList.copyOf(singlePackshotImagesHd);
     }
     
-    public List<BtVodImage> getPackshotDoubleImages() {
-        if (packshotDoubleImages == null) {
+    public List<BtVodImage> getDoublePackshotImages() {
+        if (doublePackshotImages == null) {
             return ImmutableList.of();
         }
-        return ImmutableList.copyOf(packshotDoubleImages);
+        return ImmutableList.copyOf(doublePackshotImages);
     }
     
-    public List<BtVodImage> getHdPackshotDoubleImages() {
-        if (packshotDoubleImagesHd == null) {
+    public List<BtVodImage> getDoublePackshotImagesHd() {
+        if (doublePackshotImagesHd == null) {
             return ImmutableList.of();
         }
-        return ImmutableList.copyOf(packshotDoubleImagesHd);
+        return ImmutableList.copyOf(doublePackshotImagesHd);
     }
 
-    public void setPackshotImages(List<BtVodImage> packshotImages) {
-        this.packshotImages = packshotImages;
+    public void setSinglePackshotImages(List<BtVodImage> packshotImages) {
+        this.singlePackshotImages = packshotImages;
     }
     
-    public void setPackshotDoubleImages(List<BtVodImage> packshotDoubleImages) {
-        this.packshotDoubleImages = packshotDoubleImages;
+    public void setDoublePackshotImages(List<BtVodImage> packshotDoubleImages) {
+        this.doublePackshotImages = packshotDoubleImages;
     }
     
-    public void setPackshotImagesHd(List<BtVodImage> packshotImagesHd) {
-        this.packshotImagesHd = packshotImagesHd;
+    public void setSinglePackshotImagesHd(List<BtVodImage> packshotImagesHd) {
+        this.singlePackshotImagesHd = packshotImagesHd;
     }
     
-    public void setPackshotDoubleImagesHd(List<BtVodImage> packshotDoubleImagesHd) {
-        this.packshotDoubleImagesHd = packshotDoubleImagesHd;
+    public void setDoublePackshotImagesHd(List<BtVodImage> packshotDoubleImagesHd) {
+        this.doublePackshotImagesHd = packshotDoubleImagesHd;
     }
 
     @Override
     public String toString() {
         return "BtVodPlproduct$images{" +
                 "backgroundImages=" + backgroundImages +
-                ", packshotImages=" + packshotImages +
+                ", packshotImages=" + singlePackshotImages +
                 '}';
     }
 }

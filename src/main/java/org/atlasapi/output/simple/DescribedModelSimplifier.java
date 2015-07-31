@@ -87,12 +87,13 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         if (annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
             simpleDescription.setGenres(content.getGenres());
             simpleDescription.setTags(content.getTags());
-            simpleDescription.setSameAs(Iterables.transform(content.getEquivalentTo(),LookupRef.TO_URI));
+            simpleDescription.setSameAs(Iterables.transform(content.getEquivalentTo(), LookupRef.TO_URI));
             simpleDescription.setEquivalents(Iterables.transform(content.getEquivalentTo(), TO_SAME_AS));
             simpleDescription.setPresentationChannel(content.getPresentationChannel());
             simpleDescription.setMediumDescription(applyWatermark(content, content.getMediumDescription()));
             simpleDescription.setLongDescription(applyWatermark(content, content.getLongDescription()));
             simpleDescription.setDescriptions(simplifyLocalizedDescriptions(content));
+            simpleDescription.setPriority(content.getPriority());
         }
         
         if (annotations.contains(Annotation.IMAGES)) {

@@ -226,7 +226,7 @@ public class AmazonUnboxContentExtractorTest {
         Alias imdbAlias = new Alias("zz:imdb:id", "ImdbId");
         Alias asinAlias = new Alias("gb:amazon:asin", "filmAsin");
         assertEquals(ImmutableSet.of(imdbAlias, asinAlias), film.getAliases());
-        assertEquals(ImmutableSet.of("http://www.imdb.com/title/ImdbId", "http://gb.amazon.com/asin/filmAsin"), film.getAliasUrls());
+        assertEquals(ImmutableSet.of("http://imdb.com/title/ImdbId", "http://gb.amazon.com/asin/filmAsin"), film.getAliasUrls());
     }
 
     public void testExtractionOfVersions() {

@@ -108,11 +108,18 @@ public class BtVodBrandWriterTest {
         BtVodEntry row4 = seasonEntry();
         row4.setTitle("Judge Geordie");
 
+        BtVodEntry row5 = seasonEntry();
+        row5.setTitle("Tom and Jerry Series 1");
+
+        BtVodEntry row6 = seasonEntry();
+        row6.setTitle("Plankton Invasion - Sr1 Series 1");
 
         assertThat(brandExtractor.brandUriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/dominion"));
         assertThat(brandExtractor.brandUriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/workaholics"));
         assertThat(brandExtractor.brandUriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/wire"));
         assertThat(brandExtractor.brandUriFor(row4).get(), is(URI_PREFIX + "synthesized/brands/judge-geordie"));
+        assertThat(brandExtractor.brandUriFor(row5).get(), is(URI_PREFIX + "synthesized/brands/tom-and-jerry"));
+        assertThat(brandExtractor.brandUriFor(row6).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
     }
 
     @Test
@@ -159,6 +166,9 @@ public class BtVodBrandWriterTest {
         BtVodEntry row14 = episodeEntry();
         row14.setTitle("Peppa Pig, Series 2, Vol. 1 - The Quarrel / The Toy Cupboard");
 
+        BtVodEntry row15 = episodeEntry();
+        row15.setTitle("Plankton Invasion - Sr1 S1-E46 Operation Some Like It Cold");
+
         assertThat(brandExtractor.brandUriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandExtractor.brandUriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
         assertThat(brandExtractor.brandUriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
@@ -173,6 +183,7 @@ public class BtVodBrandWriterTest {
         assertThat(brandExtractor.brandUriFor(row12).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
         assertThat(brandExtractor.brandUriFor(row13).get(), is(URI_PREFIX + "synthesized/brands/brand"));
         assertThat(brandExtractor.brandUriFor(row14).get(), is(URI_PREFIX + "synthesized/brands/peppa-pig"));
+        assertThat(brandExtractor.brandUriFor(row15).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
     }
 
     @Test

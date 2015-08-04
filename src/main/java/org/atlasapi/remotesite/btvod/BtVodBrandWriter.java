@@ -49,39 +49,35 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     private static final Logger log = LoggerFactory.getLogger(BtVodBrandWriter.class);
     private static final boolean CONTINUE = true;
     
-    private final Map<String, ParentRef> processedBrands = Maps.newHashMap();
-    private final ContentWriter writer;
-    private final ContentResolver resolver;
+    private final Map<String, Brand> processedBrands = Maps.newHashMap();
     private final Publisher publisher;
-    private final ContentMerger contentMerger;
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
     private final BtVodDescribedFieldsExtractor describedFieldExtractor;
     private final BrandImageExtractor brandImageExtractor;
     private final BrandUriExtractor brandUriExtractor;
     private UpdateProgress progress = UpdateProgress.START;
+    private final MergingContentWriter contentWriter;
 
     public BtVodBrandWriter(
-            ContentWriter writer,
-            ContentResolver resolver,
             Publisher publisher,
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldExtractor,
             BrandImageExtractor brandImageExtractor,
-            BrandUriExtractor brandUriExtractor) {
+            BrandUriExtractor brandUriExtractor,
+            MergingContentWriter contentWriter
+    ) {
         this.brandImageExtractor = checkNotNull(brandImageExtractor);
         this.listener = checkNotNull(listener);
-        this.writer = checkNotNull(writer);
-        this.resolver = checkNotNull(resolver);
         this.publisher = checkNotNull(publisher);
-        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
-        //      Added as a collaborator for Alias extraction, but should be used more 
+        //      Added as a collaborator for Alias extraction, but should be used more
         //      widely
         this.describedFieldExtractor = checkNotNull(describedFieldExtractor);
+        this.contentWriter = checkNotNull(contentWriter);
     }
     
     @Override
@@ -95,9 +91,9 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
                 return CONTINUE;
             }
             Brand brand = brandFrom(row);
-            write(brand);
+            contentWriter.write(brand);
             listener.onContent(brand, row);
-            processedBrands.put(brand.getCanonicalUri(), ParentRef.parentRefFrom(brand));
+            processedBrands.put(brand.getCanonicalUri(), brand);
             thisProgress = UpdateProgress.SUCCESS;
         } catch (Exception e) {
             log.error("Failed to process row " + row.toString(), e);
@@ -113,30 +109,12 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
         return optionalUri.isPresent() && processedBrands.containsKey(optionalUri.get());
     }
 
-
-
     private String getKey(BtVodEntry row) {
         String productId = row.getGuid();
         return brandUriExtractor.getSynthesizedKey(row).or(productId);
     }
 
 
-
-
-   
-    private void write(Brand extracted) {
-        Maybe<Identified> existing = resolver
-                .findByCanonicalUris(ImmutableSet.of(extracted.getCanonicalUri()))
-                .getFirstValue();
-        
-        if (existing.hasValue()) {
-            Container merged = contentMerger.merge((Brand) existing.requireValue(), 
-                                                   extracted);
-            writer.createOrUpdate(merged);
-        } else {
-            writer.createOrUpdate(extracted);
-        }
-    }
 
     private Brand brandFrom(BtVodEntry row) {
         Brand brand = new Brand(brandUriFor(row).get(), null, publisher);
@@ -169,19 +147,24 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
     public Optional<ParentRef> getBrandRefFor(BtVodEntry row) {
         Optional<String> optionalUri = brandUriFor(row);
 
-        if (!optionalUri.isPresent()) {
+        if (!optionalUri.isPresent() || !processedBrands.containsKey(optionalUri.get())) {
             return Optional.absent();
         }
 
-        return Optional.fromNullable(processedBrands.get(optionalUri.get()));
+        return Optional.fromNullable(
+                ParentRef.parentRefFrom(
+                        processedBrands.get(
+                                optionalUri.get()
+                        )
+                )
+        );
     }
 
-    private String stripHDSuffix(String title) {
-        Matcher hdMatcher = HD_PATTERN.matcher(title);
-        if (hdMatcher.matches()) {
-            return hdMatcher.group(1).trim().replace("- HD ", "");
-        }
-        return title;
+    public void addTopicTo(BtVodEntry row, TopicRef topicRef) {
+        Brand brand = processedBrands.get(brandUriFor(row).get());
+        brand.addTopicRef(topicRef);
+        contentWriter.write(brand);
+        listener.onContent(brand, row);
     }
-    
+
 }

@@ -97,8 +97,7 @@ public class BtVodModule {
     @Bean
     public BtVodUpdater btVodUpdater() {
         return new BtVodUpdater(
-                contentResolver,
-                contentWriter,
+                mergingContentWriter(),
                 btVodData(),
                 URI_PREFIX,
                 btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX),
@@ -125,8 +124,7 @@ public class BtVodModule {
     @Bean
     public BtVodUpdater btTveVodUpdater() {
         return new BtVodUpdater(
-                contentResolver,
-                contentWriter,
+                mergingContentWriter(),
                 btVodData(),
                 TVE_URI_PREFIX,
                 btVodContentGroupUpdater(Publisher.BT_TVE_VOD, TVE_URI_PREFIX),
@@ -227,6 +225,10 @@ public class BtVodModule {
     
     private BtVodContentMatchingPredicate newFeedContentMatchingPredicate() {
         return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(), NEW_CONTENT_MPX_FEED_NAME);
+    }
+
+    private MergingContentWriter mergingContentWriter() {
+        return new MergingContentWriter(contentWriter,contentResolver);
     }
     
     @Bean

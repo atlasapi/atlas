@@ -1,15 +1,19 @@
 package org.atlasapi.remotesite.btvod;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Topic;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
@@ -17,6 +21,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import sun.swing.CachedPainter;
 
 import java.util.Map;
 import java.util.Set;
@@ -27,13 +32,9 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
 
     private static final Logger log = LoggerFactory.getLogger(AbstractBtVodSeriesWriter.class);
 
-    private final ContentWriter writer;
-    private final ContentResolver resolver;
-
     private final BtVodBrandWriter brandExtractor;
 
     private final Publisher publisher;
-    private final ContentMerger contentMerger;
     private final Map<String, Series> processedSeries = Maps.newHashMap();
     private final BtVodContentListener listener;
 
@@ -45,21 +46,24 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
 
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private UpdateProgress progress = UpdateProgress.START;
+
+    private final TopicRef newTopic;
+
+    private final MergingContentWriter contentWriter;
+
     protected AbstractBtVodSeriesWriter(
-            ContentWriter writer,
-            ContentResolver resolver,
             BtVodBrandWriter brandExtractor,
             Publisher publisher,
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            ImageExtractor imageExtractor
+            ImageExtractor imageExtractor,
+            final TopicRef newTopic,
+            MergingContentWriter contentWriter
     ) {
         this.processedRows = checkNotNull(processedRows);
         this.listener = checkNotNull(listener);
-        this.writer = checkNotNull(writer);
-        this.resolver = checkNotNull(resolver);
         this.brandExtractor = checkNotNull(brandExtractor);
         this.publisher = checkNotNull(publisher);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
@@ -68,7 +72,8 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         //      Added as a collaborator for Alias extraction, but should be used more
         //      widely
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
-        this.contentMerger = new ContentMerger(ContentMerger.MergeStrategy.REPLACE, ContentMerger.MergeStrategy.REPLACE, ContentMerger.MergeStrategy.REPLACE);
+        this.newTopic = checkNotNull(newTopic);
+        this.contentWriter = checkNotNull(contentWriter);
     }
 
     @Override
@@ -81,15 +86,17 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
             }
 
             Series series;
-            if(processedSeries.containsKey(seriesUriExtractor.seriesUriFor(row).get())) {
+            if (processedSeries.containsKey(seriesUriExtractor.seriesUriFor(row).get())) {
                 series = processedSeries.get(seriesUriExtractor.seriesUriFor(row).get());
             } else {
                 series = seriesFrom(row);
             }
             setAdditionalFields(series, row);
-            write(series);
+            contentWriter.write(series);
+            if (series.getTopicRefs().contains((newTopic))) {
+                brandExtractor.addTopicTo(row, newTopic);
+            }
             onSeriesProcessed(series, row);
-
             // This allows a lookup by series title. Note that the only reference from an episode to a series is the series title.
             // Consequently this map will be used to lookup SeriesRef when processing episodes
             // TODO: is there a better approach than this ^?
@@ -112,7 +119,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
 
     public Optional<Series> getSeriesFor(BtVodEntry row) {
         Optional<String> seriesUri = seriesUriExtractor.seriesUriFor(row);
-        if(seriesUri.isPresent()) {
+        if (seriesUri.isPresent()) {
             return Optional.fromNullable(processedSeries.get(seriesUri.get()));
         }
         return Optional.absent();
@@ -137,19 +144,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         return series;
     }
 
-    private void write(Series extracted) {
-        Maybe<Identified> existing = resolver
-                .findByCanonicalUris(ImmutableSet.of(extracted.getCanonicalUri()))
-                .getFirstValue();
 
-        if (existing.hasValue()) {
-            Container merged = contentMerger.merge((Series) existing.requireValue(),
-                    extracted);
-            writer.createOrUpdate(merged);
-        } else {
-            writer.createOrUpdate(extracted);
-        }
-    }
 
     protected BtVodSeriesUriExtractor getSeriesUriExtractor() {
         return seriesUriExtractor;

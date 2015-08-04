@@ -238,20 +238,45 @@ public class ContentMergerTest {
     }
     
     @Test
-    public void testKeepAliasesMergeStrategy() {
+      public void testKeepAliasesMergeStrategy() {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.KEEP);
         Item current = createItem("title", Publisher.METABROADCAST);
         Item extracted = createItem("title", Publisher.METABROADCAST);
         Set<Alias> currentAliases = ImmutableSet.of(new Alias("1", "2"), new Alias("2", "3"));
         current.setAliases(currentAliases);
         extracted.setAliases(ImmutableSet.of(new Alias("3", "4")));
-        
+
         current.setAliasUrls(ImmutableSet.of("http://a.com/b", "http://b.com/c"));
         extracted.setAliasUrls(ImmutableSet.of("http://c.com/d"));
-        
+
         Item merged = contentMerger.merge(current, extracted);
-        
+
         assertEquals(currentAliases, merged.getAliases());
+    }
+
+
+    @Test
+    public void testMergeTopicsMergeStrategy() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.MERGE, MergeStrategy.KEEP);
+        Item current = createItem("title", Publisher.METABROADCAST);
+        Item extracted = createItem("title", Publisher.METABROADCAST);
+
+        TopicRef topicRef1 = mock(TopicRef.class);
+        TopicRef topicRef2 = mock(TopicRef.class);
+        TopicRef topicRef3 = mock(TopicRef.class);
+
+        current.addTopicRef(topicRef1);
+        current.addTopicRef(topicRef2);
+
+        extracted.addTopicRef(topicRef3);
+
+        Item merged = contentMerger.merge(current, extracted);
+
+        assertEquals(
+                ImmutableSet.copyOf(merged.getTopicRefs()),
+                ImmutableSet.of(topicRef1, topicRef2, topicRef3)
+        );
+
     }
 
     private Item createItem(String title, Publisher publisher) {

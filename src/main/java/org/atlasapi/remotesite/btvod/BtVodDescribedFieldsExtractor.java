@@ -325,7 +325,7 @@ public class BtVodDescribedFieldsExtractor {
         }
     }
     
-    private TopicRef topicRefFor(Topic topic) {
+    public TopicRef topicRefFor(Topic topic) {
         return new TopicRef(topic, 
                             1.0f, 
                             false, 

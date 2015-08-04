@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
@@ -220,7 +222,7 @@ public class ContentMerger {
         }
     }
 
-    private static class StandardMerge extends MergeStrategy implements VersionMergeStrategy, AliasMergeStrategy {
+    private static class StandardMerge extends MergeStrategy implements VersionMergeStrategy, AliasMergeStrategy, TopicMergeStrategy {
         @Override
         public Content mergeVersions(Content current, Content extracted) {
             Map<String, Version> mergedVersions = Maps.newHashMap();
@@ -251,6 +253,17 @@ public class ContentMerger {
         public Item mergeAliases(Item current, Item extracted) {
             current.setAliases(Sets.union(current.getAliases(), extracted.getAliases()));
             current.setAliasUrls(Sets.union(current.getAliasUrls(), extracted.getAliasUrls()));
+            return current;
+        }
+
+        @Override
+        public Content mergeTopics(Content current, Content extracted) {
+            current.setTopicRefs(
+                    Sets.union(
+                            ImmutableSet.copyOf(current.getTopicRefs()),
+                            ImmutableSet.copyOf(extracted.getTopicRefs())
+                    )
+            );
             return current;
         }
     }

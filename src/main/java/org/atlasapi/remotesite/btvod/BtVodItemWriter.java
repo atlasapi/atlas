@@ -34,6 +34,8 @@ import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Specialization;
+import org.atlasapi.media.entity.Topic;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.simple.Pricing;
@@ -74,13 +76,10 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     );
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
 
-    private final ContentWriter writer;
-    private final ContentResolver resolver;
     private final BtVodBrandWriter brandExtractor;
     private final BtVodSeriesProvider seriesProvider;
     private final Publisher publisher;
     private final String uriPrefix;
-    private final ContentMerger contentMerger;
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
     private final Map<String, Item> processedItems;
@@ -89,10 +88,10 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private final ImageExtractor imageExtractor;
     private UpdateProgress progress = UpdateProgress.START;
     private final BtVodVersionsExtractor versionsExtractor;
+    private final TopicRef newTopic;
+    private final MergingContentWriter contentWriter;
 
     public BtVodItemWriter(
-            ContentWriter writer,
-            ContentResolver resolver,
             BtVodBrandWriter brandExtractor,
             BtVodSeriesProvider seriesProvider,
             Publisher publisher,
@@ -102,22 +101,23 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             Set<String> processedRows,
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
-            BtVodVersionsExtractor versionsExtractor
+            BtVodVersionsExtractor versionsExtractor,
+            TopicRef newTopic,
+            MergingContentWriter contentWriter
     ) {
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.listener = checkNotNull(listener);
-        this.writer = checkNotNull(writer);
-        this.resolver = checkNotNull(resolver);
         this.brandExtractor = checkNotNull(brandExtractor);
         this.seriesProvider = checkNotNull(seriesProvider);
         this.publisher = checkNotNull(publisher);
         this.uriPrefix = checkNotNull(uriPrefix);
-        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
         this.processedRows = checkNotNull(processedRows);
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.processedItems = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
+        this.newTopic = checkNotNull(newTopic);
+        this.contentWriter = checkNotNull(contentWriter);
     }
 
     @Override
@@ -132,7 +132,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
             Item item = itemFrom(row);
             processedItems.put(itemKeyForDeduping(row), item);
-            write(item);
+            contentWriter.write(item);
             processedRows.add(row.getGuid());
             listener.onContent(item, row);
             thisProgress = UpdateProgress.SUCCESS;
@@ -144,19 +144,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         return true;
     }
 
-    private void write(Item extracted) {
-        Maybe<Identified> existing = resolver
-                .findByCanonicalUris(ImmutableSet.of(extracted.getCanonicalUri()))
-                .getFirstValue();
 
-        if (existing.hasValue()) {
-            Item merged = contentMerger.merge((Item) existing.requireValue(),
-                    extracted);
-            writer.createOrUpdate(merged);
-        } else {
-            writer.createOrUpdate(extracted);
-        }
-    }
 
     private boolean shouldProcess(BtVodEntry row) {
         return !COLLECTION_TYPE.equals(row.getProductType()) && !HELP_TYPE.equals(row.getProductType());
@@ -184,7 +172,22 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             item = createItem(row);
         }
         populateItemFields(item, row);
+        addNewTopicToParents(item, row);
         return item;
+    }
+
+    private void addNewTopicToParents(Item item, BtVodEntry row) {
+        if (item.getTopicRefs().contains(newTopic) ) {
+            if (item.getContainer() != null) {
+                brandExtractor.addTopicTo(row, newTopic);
+            }
+            if(item instanceof Episode && ((Episode)item).getSeriesRef() != null) {
+                Series series = seriesProvider.seriesFor(row).get();
+                series.addTopicRef(newTopic);
+                contentWriter.write(series);
+                listener.onContent(series, row);
+            }
+        }
     }
 
     private void includeVersionsAndClipsOnAlreadyExtractedItem(Item item, BtVodEntry row) {
@@ -349,11 +352,4 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     public UpdateProgress getResult() {
         return progress;
     }
-
-
-
-
-
-
-
 }

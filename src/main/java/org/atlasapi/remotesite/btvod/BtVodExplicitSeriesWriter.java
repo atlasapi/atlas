@@ -2,24 +2,13 @@ package org.atlasapi.remotesite.btvod;
 
 import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Encoding;
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.Topic;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
-import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
-import org.joda.time.Interval;
 
 import java.util.Map;
 import java.util.Set;
@@ -39,8 +28,6 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
 
 
     public BtVodExplicitSeriesWriter(
-            ContentWriter writer,
-            ContentResolver resolver,
             BtVodBrandWriter brandExtractor,
             Publisher publisher,
             BtVodContentListener listener,
@@ -49,10 +36,12 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
             BtVodSeriesUriExtractor seriesUriExtractor,
             BtVodVersionsExtractor versionsExtractor,
             TitleSanitiser titleSanitiser, 
-            ImageExtractor imageExtractor
+            ImageExtractor imageExtractor,
+            TopicRef newTopic,
+            MergingContentWriter contentWriter
     ) {
-        super(writer, resolver, brandExtractor, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor, imageExtractor);
-        this.titleSanitiser = titleSanitiser;
+        super(brandExtractor, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor, imageExtractor, newTopic, contentWriter);
+        this.titleSanitiser = checkNotNull(titleSanitiser);
         this.versionsExtractor = checkNotNull(versionsExtractor);
         explicitSeries = Maps.newHashMap();
     }

@@ -10,6 +10,7 @@ import static org.mockito.Mockito.when;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -40,7 +41,7 @@ public class BtVodBrandWriterTest {
     private static final Publisher PUBLISHER = Publisher.BT_VOD;
     private static final String URI_PREFIX = "http://example.org/";
     
-    private final ContentWriter contentWriter = mock(ContentWriter.class);
+    private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageUriProvider imageUriProvider = mock(ImageUriProvider.class);
@@ -52,16 +53,17 @@ public class BtVodBrandWriterTest {
 
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, Publisher.BT_VOD,
             newTopicContentMatchingPredicate, new Topic(123L));
-    
+
     private final BtVodBrandWriter brandExtractor
-                    = new BtVodBrandWriter(
-                                contentWriter,
-                                contentResolver,
-                                PUBLISHER,
-                                contentListener,
-                                Sets.<String>newHashSet(),
-                                describedFieldsExtractor,
-                                new NoImageExtractor(), brandUriExtractor
+            = new BtVodBrandWriter(
+            PUBLISHER,
+            contentListener,
+            Sets.<String>newHashSet(),
+            describedFieldsExtractor,
+            new NoImageExtractor(),
+            brandUriExtractor,
+            contentWriter
+
     );
     
     @Test
@@ -75,7 +77,7 @@ public class BtVodBrandWriterTest {
         brandExtractor.process(row);
 
         ArgumentCaptor<Brand> captor = ArgumentCaptor.forClass(Brand.class);
-        verify(contentWriter).createOrUpdate(captor.capture());
+        verify(contentWriter).write(captor.capture());
 
         Brand saved = captor.getValue();
         assertThat(saved.getCanonicalUri(), is(URI_PREFIX + "synthesized/brands/brand-title"));
@@ -197,7 +199,7 @@ public class BtVodBrandWriterTest {
 
         brandExtractor.process(entry);
 
-        verify(contentWriter,never()).createOrUpdate(Mockito.any(Brand.class));
+        verify(contentWriter,never()).write(Mockito.any(Brand.class));
     }
 
     private BtVodEntry row() {

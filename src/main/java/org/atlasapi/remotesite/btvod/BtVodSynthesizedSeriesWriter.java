@@ -4,12 +4,12 @@ import java.util.Map;
 import java.util.Set;
 
 import com.google.api.client.util.Maps;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
@@ -28,8 +28,6 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
 
     private final Set<String> explicitSeriesIds;
     public BtVodSynthesizedSeriesWriter(
-            ContentWriter writer,
-            ContentResolver resolver,
             BtVodBrandWriter brandExtractor,
             Publisher publisher,
             BtVodContentListener listener,
@@ -37,24 +35,25 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
             Set<String> explicitSeriesIds, 
-            ImageExtractor imageExtractor) {
+            ImageExtractor imageExtractor,
+            TopicRef newTopic,
+            MergingContentWriter contentWriter
+    ) {
         super(
-                writer,
-                resolver,
                 brandExtractor,
                 publisher,
                 listener,
                 processedRows,
                 describedFieldsExtractor,
                 seriesUriExtractor,
-                imageExtractor
+                imageExtractor,
+                newTopic,
+                contentWriter
         );
 
         this.explicitSeriesIds = ImmutableSet.copyOf(explicitSeriesIds);
         synthesizedSeries = Maps.newHashMap();
     }
-
-
 
     private boolean isPartOfSeries(BtVodEntry row) {
         return !HELP_TYPE.equals(row.getProductType())

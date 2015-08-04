@@ -9,8 +9,6 @@ import java.util.Set;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Topic;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
@@ -27,9 +25,8 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 public class BtVodUpdater extends ScheduledTask {
 
     private static final Logger log = LoggerFactory.getLogger(BtVodUpdater.class);
-    
-    private final ContentResolver resolver;
-    private final ContentWriter writer;
+
+    private final MergingContentWriter contentWriter;
     private final String uriPrefix;
     private final Publisher publisher;
     private final BtVodData vodData;
@@ -48,8 +45,7 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodVersionsExtractor versionsExtractor;
     
     public BtVodUpdater(
-            ContentResolver resolver,
-            ContentWriter contentWriter,
+            MergingContentWriter contentWriter,
             BtVodData vodData,
             String uriPrefix,
             BtVodContentGroupUpdater contentGroupUpdater,
@@ -65,14 +61,14 @@ public class BtVodUpdater extends ScheduledTask {
             Topic newTopic,
             BtVodStaleTopicContentRemover staleTopicContentRemover,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            BtVodVersionsExtractor versionsExtractor) {
+            BtVodVersionsExtractor versionsExtractor
+    ) {
         this.staleTopicContentRemover = staleTopicContentRemover;
+        this.contentWriter = checkNotNull(contentWriter);
         this.topicResolver = checkNotNull(topicResolver);
         this.topicWriter = checkNotNull(topicWriter);
         this.newFeedContentMatchingPredicate = checkNotNull(newFeedContentMatchingPredicate);
         this.newTopic = checkNotNull(newTopic);
-        this.resolver = checkNotNull(resolver);
-        this.writer = checkNotNull(contentWriter);
         this.vodData = checkNotNull(vodData);
         this.uriPrefix = checkNotNull(uriPrefix);
         this.publisher = checkNotNull(publisher);
@@ -105,19 +101,16 @@ public class BtVodUpdater extends ScheduledTask {
         listeners.beforeContent();
         
         BtVodBrandWriter brandExtractor = new BtVodBrandWriter(
-                writer,
-                resolver,
                 publisher,
                 listeners,
                 processedRows,
                 describedFieldsExtractor,
                 brandImageExtractor,
-                brandUriExtractor
+                brandUriExtractor,
+                contentWriter
         );
 
         BtVodExplicitSeriesWriter explicitSeriesExtractor = new BtVodExplicitSeriesWriter(
-                writer,
-                resolver,
                 brandExtractor,
                 publisher,
                 listeners,
@@ -125,8 +118,10 @@ public class BtVodUpdater extends ScheduledTask {
                 processedRows,
                 seriesUriExtractor,
                 versionsExtractor, new TitleSanitiser(),
-                imageExtractor
-        );
+                imageExtractor,
+                describedFieldsExtractor.topicRefFor(newTopic),
+                contentWriter
+                );
 
         try {
             reportStatus("Extracting brand images");
@@ -155,8 +150,6 @@ public class BtVodUpdater extends ScheduledTask {
             Map<String, Series> explicitSeries = explicitSeriesExtractor.getExplicitSeries();
 
             BtVodSynthesizedSeriesWriter synthesizedSeriesExtractor = new BtVodSynthesizedSeriesWriter(
-                    writer,
-                    resolver,
                     brandExtractor,
                     publisher,
                     listeners,
@@ -164,7 +157,9 @@ public class BtVodUpdater extends ScheduledTask {
                     processedRows,
                     seriesUriExtractor,
                     explicitSeries.keySet(),
-                    imageExtractor
+                    imageExtractor,
+                    describedFieldsExtractor.topicRefFor(newTopic),
+                    contentWriter
             );
             vodData.processData(synthesizedSeriesExtractor);
             reportStatus(
@@ -184,8 +179,6 @@ public class BtVodUpdater extends ScheduledTask {
             BtVodSeriesProvider seriesProvider = new BtVodSeriesProvider(explicitSeries, synthesizedSeries, seriesUriExtractor);
 
             BtVodItemWriter itemExtractor = new BtVodItemWriter(
-                    writer,
-                    resolver,
                     brandExtractor,
                     seriesProvider,
                     publisher,
@@ -195,8 +188,10 @@ public class BtVodUpdater extends ScheduledTask {
                     processedRows,
                     new TitleSanitiser(),
                     imageExtractor,
-                    versionsExtractor
-            );
+                    versionsExtractor,
+                    describedFieldsExtractor.topicRefFor(newTopic),
+                    contentWriter
+                    );
 
             vodData.processData(itemExtractor);
             reportStatus(

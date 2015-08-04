@@ -12,6 +12,8 @@ import com.google.api.client.util.Maps;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Extract brand images from MPX feed.
@@ -28,6 +30,7 @@ import com.google.common.collect.Iterables;
  */
 public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtractor, BtVodDataProcessor<Void> {
 
+    private static final Logger log = LoggerFactory.getLogger(DerivingFromSeriesBrandImageExtractor.class);
     private final Map<String, BrandImages> bestImages = Maps.newHashMap(); 
     private final BrandUriExtractor brandUriExtractor;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
@@ -74,11 +77,20 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
             episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
         }
         if (seriesNumber != null || episodeNumber != null) {
-            retainIfBestImage(brandUri.get(), 
-                              bestImages, 
-                              baseImageExtractor.imagesFor(entry), 
-                              seriesNumber,
-                              episodeNumber);
+            if(!brandUri.isPresent()) {
+                log.warn(
+                        "Row {} has series number or episode number, but we're unable to parse brand from it",
+                        entry
+                );
+                return false;
+            }
+            retainIfBestImage(
+                    brandUri.get(),
+                    bestImages,
+                    baseImageExtractor.imagesFor(entry),
+                    seriesNumber,
+                    episodeNumber
+            );
         }
         return true;
     }

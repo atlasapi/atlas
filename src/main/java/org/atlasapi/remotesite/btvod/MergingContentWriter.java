@@ -13,7 +13,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.ContentMerger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-
+//TODO this should probably be moved to atlas-persistence
 public class MergingContentWriter {
 
     private final ContentWriter writer;
@@ -26,7 +26,13 @@ public class MergingContentWriter {
                 resolver,
                 new ContentMerger(
                         ContentMerger.MergeStrategy.REPLACE,
-                        ContentMerger.MergeStrategy.REPLACE,
+                        /* we need to use this merge strategy in order to be able to save topics and keep data in consitent stage
+                        if we use replace merge strategy there will be time when pieces of content(especially brands) would get
+                        all their topics removed
+                        Stale topics will get removed by stale topic remover
+                        ideally we should process everything and write everything in one go which would solve
+                        this problem */
+                        ContentMerger.MergeStrategy.MERGE,
                         ContentMerger.MergeStrategy.REPLACE
                 )
         );

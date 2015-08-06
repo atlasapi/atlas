@@ -115,7 +115,7 @@ public class ChildRefUpdateTaskTest extends TestCase {
         assertThat(resolvedBrand.getId(), is(1L));
         checkSeriesIds(resolvedBrand.getSeriesRefs(), 3L, 2L);
         checkSeriesNumbers(resolvedBrand.getSeriesRefs(), 2, 1);
-        checkIds(resolvedBrand.getChildRefs(), 5L, 6L, 4L);
+        checkIds(resolvedBrand.getChildRefs(), 6L, 4L, 5L);
         
         checkSeries(resolve(series1), 2L, 1L, 4L, 5L);
         checkSeries(resolve(series2), 3L, 1L, 6L);
@@ -155,7 +155,7 @@ public class ChildRefUpdateTaskTest extends TestCase {
         
         task.run();
         
-        checkTopLevelSeries(resolve(series), 1L, 3L, 2L);
+        checkTopLevelSeries(resolve(series), 1L, 2L, 3L);
         checkEpisode(resolve(episode1), 2L, 1L, 1L);
         checkEpisode(resolve(item1), 3L, 1L, null);
         

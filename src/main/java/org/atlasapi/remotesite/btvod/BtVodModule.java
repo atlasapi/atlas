@@ -182,11 +182,13 @@ public class BtVodModule {
     }
     
     public BtVodDescribedFieldsExtractor describedFieldsExtractor(Publisher publisher) {
+        BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate();
+        newContentPredicate.init();
         return new BtVodDescribedFieldsExtractor(
                 topicResolver,
                 topicWriter,
                 publisher,
-                newFeedContentMatchingPredicate(),
+                newContentPredicate,
                 contentGroupsAndCriteria().get(KIDS_CATEGORY.toLowerCase()),
                 BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
                         TV_CATEGORY, SEASON_PRODUCT_OFFERING_TYPES

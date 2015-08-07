@@ -33,6 +33,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
 import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
@@ -93,13 +94,29 @@ public class BtVodItemWriterTest {
             seriesProvider,
             PUBLISHER, URI_PREFIX,
             contentListener,
-            new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, Publisher.BT_VOD,
-                    newTopicContentMatchingPredicate, new Topic(123L)),
+            new BtVodDescribedFieldsExtractor(
+                    topicResolver,
+                    topicWriter,
+                    Publisher.BT_VOD,
+                    newTopicContentMatchingPredicate,
+                    BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
+                    BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
+                            "TV", ImmutableSet.of("Season", "Season-EST")
+                    ),
+                    BtVodContentMatchingPredicates.schedulerChannelPredicate("TV Replay"),
+                    NEW_TOPIC,
+                    new Topic(234L),
+                    new Topic(345L),
+                    new Topic(456L)
+            ),
             Sets.<String>newHashSet(),
             new TitleSanitiser(),
             new NoImageExtractor(),
             new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), URI_PREFIX),
             newTopicRef,
+            new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
+            new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
+            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT),
             contentWriter
     );
     

@@ -16,6 +16,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
@@ -51,8 +52,21 @@ public class BtVodBrandWriterTest {
     private final BrandUriExtractor brandUriExtractor = new BrandUriExtractor(URI_PREFIX, new TitleSanitiser());
     private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
 
-    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, Publisher.BT_VOD,
-            newTopicContentMatchingPredicate, new Topic(123L));
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(
+            topicResolver,
+            topicWriter,
+            Publisher.BT_VOD,
+            newTopicContentMatchingPredicate,
+            BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
+            BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
+                    "TV", ImmutableSet.of("Season", "Season-EST")
+            ),
+            BtVodContentMatchingPredicates.schedulerChannelPredicate("TV Replay"),
+            new Topic(123L),
+            new Topic(234L),
+            new Topic(345L),
+            new Topic(456L)
+    );
 
     private final BtVodBrandWriter brandExtractor
             = new BtVodBrandWriter(

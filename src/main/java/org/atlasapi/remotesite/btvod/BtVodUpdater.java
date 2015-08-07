@@ -40,9 +40,13 @@ public class BtVodUpdater extends ScheduledTask {
     private final TopicWriter topicWriter;
     private final BtVodContentMatchingPredicate newFeedContentMatchingPredicate;
     private final Topic newTopic;
+    private final Topic kidsTopic;
+    private final Topic tvBoxsetTopic;
+    private final Topic subscriptionCatchupTopic;
     private final BtVodStaleTopicContentRemover staleTopicContentRemover;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private final BtVodVersionsExtractor versionsExtractor;
+    private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     
     public BtVodUpdater(
             MergingContentWriter contentWriter,
@@ -59,9 +63,13 @@ public class BtVodUpdater extends ScheduledTask {
             TopicWriter topicWriter,
             BtVodContentMatchingPredicate newFeedContentMatchingPredicate,
             Topic newTopic,
+            Topic kidsTopic,
+            Topic tvBoxsetTopic,
+            Topic subscriptionCatchupTopic,
             BtVodStaleTopicContentRemover staleTopicContentRemover,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            BtVodVersionsExtractor versionsExtractor
+            BtVodVersionsExtractor versionsExtractor,
+            BtVodDescribedFieldsExtractor describedFieldsExtractor
     ) {
         this.staleTopicContentRemover = staleTopicContentRemover;
         this.contentWriter = checkNotNull(contentWriter);
@@ -69,6 +77,9 @@ public class BtVodUpdater extends ScheduledTask {
         this.topicWriter = checkNotNull(topicWriter);
         this.newFeedContentMatchingPredicate = checkNotNull(newFeedContentMatchingPredicate);
         this.newTopic = checkNotNull(newTopic);
+        this.kidsTopic = checkNotNull(kidsTopic);
+        this.tvBoxsetTopic = checkNotNull(tvBoxsetTopic);
+        this.subscriptionCatchupTopic = checkNotNull(subscriptionCatchupTopic);
         this.vodData = checkNotNull(vodData);
         this.uriPrefix = checkNotNull(uriPrefix);
         this.publisher = checkNotNull(publisher);
@@ -80,6 +91,7 @@ public class BtVodUpdater extends ScheduledTask {
         this.imageExtractor = checkNotNull(imageExtractor);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
+        this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
 
         withName("BT VOD Catalogue Ingest");
     }
@@ -88,8 +100,6 @@ public class BtVodUpdater extends ScheduledTask {
     public void runTask() {
         
         newFeedContentMatchingPredicate.init();
-        
-        BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, publisher, newFeedContentMatchingPredicate, newTopic);
         
         brandImageExtractor.start();
         
@@ -190,6 +200,10 @@ public class BtVodUpdater extends ScheduledTask {
                     imageExtractor,
                     versionsExtractor,
                     describedFieldsExtractor.topicRefFor(newTopic),
+                    describedFieldsExtractor.topicRefFor(kidsTopic),
+                    describedFieldsExtractor.topicRefFor(tvBoxsetTopic),
+                    describedFieldsExtractor.topicRefFor(subscriptionCatchupTopic),
+
                     contentWriter
                     );
 

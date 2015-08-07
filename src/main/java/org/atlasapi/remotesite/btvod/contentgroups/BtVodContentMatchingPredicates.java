@@ -50,6 +50,24 @@ public class BtVodContentMatchingPredicates {
         };
     }
 
+    public static BtVodContentMatchingPredicate schedulerChannelAndOfferingTypePredicate(
+            final String schedulerChannel, final Set<String> productOfferingTypes) {
+
+        return new BtVodContentMatchingPredicate() {
+
+            @Override
+            public boolean apply(VodEntryAndContent input) {
+                return schedulerChannel.equals(input.getBtVodEntry().getSchedulerChannel()) &&
+                        productOfferingTypes.contains(input.getBtVodEntry().getProductOfferingType());
+            }
+
+            @Override
+            public void init() {
+
+            }
+        };
+    }
+
     public static BtVodContentMatchingPredicate contentProviderPredicate(final String providerId) {
         
         return new BtVodContentMatchingPredicate() {

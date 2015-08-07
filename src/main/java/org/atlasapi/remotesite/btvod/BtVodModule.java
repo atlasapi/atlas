@@ -38,7 +38,11 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 public class BtVodModule {
 
     static final String BT_VOD_FEED_NAMESPACE = "gb:bt:tv:mpx:prod:feed";
+    static final String BT_VOD_APP_CATEGORY_NAMESPACE = "gb:bt:tv:app:category";
     static final String BT_VOD_NEW_FEED = "new";
+    static final String BT_VOD_KIDS_TOPIC = "kids";
+    static final String BT_VOD_CATCHUP_TOPIC = "subscription-catchup";
+    static final String BT_VOD_TV_BOXSETS_TOPIC = "tv-box-sets";
     
     private static final int THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT = 25;
     private static final String PORTAL_BOXSET_GROUP = "03_tv/40_searcha-z/all";
@@ -62,7 +66,9 @@ public class BtVodModule {
     
     private static final String URI_PREFIX = "http://vod.bt.com/";
     private static final String TVE_URI_PREFIX = "http://tve-vod.bt.com/";
-    
+    private static final ImmutableSet<String> SEASON_PRODUCT_OFFERING_TYPES = ImmutableSet.of("Season", "Season-EST");
+    private static final String SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL = "TV Replay";
+
     @Autowired
     private SimpleScheduler scheduler;
     @Autowired
@@ -110,15 +116,28 @@ public class BtVodModule {
                 topicResolver,
                 topicWriter,
                 newFeedContentMatchingPredicate(),
-                newTopic(Publisher.BT_VOD),
+                topicFor(BT_VOD_FEED_NAMESPACE, BT_VOD_NEW_FEED, Publisher.BT_VOD),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_KIDS_TOPIC, Publisher.BT_VOD),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_VOD),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_CATCHUP_TOPIC, Publisher.BT_VOD),
                 staleTopicContentRemover(Publisher.BT_VOD),
                 seriesUriExtractor(URI_PREFIX),
-                versionsExtractor(URI_PREFIX)
+                versionsExtractor(URI_PREFIX),
+                describedFieldsExtractor(Publisher.BT_VOD)
         );
     }
     
     private BtVodStaleTopicContentRemover staleTopicContentRemover(Publisher publisher) {
-        return new BtVodStaleTopicContentRemover(ImmutableSet.of(newTopic(publisher)), topicContentLister, contentWriter);
+        return new BtVodStaleTopicContentRemover(
+                ImmutableSet.of(
+                        topicFor(BT_VOD_FEED_NAMESPACE, BT_VOD_NEW_FEED, publisher),
+                        topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_TV_BOXSETS_TOPIC, publisher),
+                        topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_KIDS_TOPIC, publisher),
+                        topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_CATCHUP_TOPIC, publisher)
+                ),
+                topicContentLister,
+                contentWriter
+        );
     }
 
     @Bean
@@ -137,9 +156,13 @@ public class BtVodModule {
                 topicResolver,
                 topicWriter,
                 newFeedContentMatchingPredicate(),
-                newTopic(Publisher.BT_TVE_VOD),
+                topicFor(BT_VOD_FEED_NAMESPACE, BT_VOD_NEW_FEED, Publisher.BT_TVE_VOD),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_KIDS_TOPIC, Publisher.BT_TVE_VOD),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_TVE_VOD),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_CATCHUP_TOPIC, Publisher.BT_TVE_VOD),
                 staleTopicContentRemover(Publisher.BT_TVE_VOD), seriesUriExtractor(TVE_URI_PREFIX),
-                versionsExtractor(TVE_URI_PREFIX)
+                versionsExtractor(TVE_URI_PREFIX),
+                describedFieldsExtractor(Publisher.BT_TVE_VOD)
         );
     }
     
@@ -159,7 +182,21 @@ public class BtVodModule {
     }
     
     public BtVodDescribedFieldsExtractor describedFieldsExtractor(Publisher publisher) {
-        return new BtVodDescribedFieldsExtractor(topicResolver, topicWriter, publisher, newFeedContentMatchingPredicate(), newTopic(publisher));
+        return new BtVodDescribedFieldsExtractor(
+                topicResolver,
+                topicWriter,
+                publisher,
+                newFeedContentMatchingPredicate(),
+                contentGroupsAndCriteria().get(KIDS_CATEGORY),
+                BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
+                        TV_CATEGORY, SEASON_PRODUCT_OFFERING_TYPES
+                ),
+                BtVodContentMatchingPredicates.schedulerChannelPredicate(SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL),
+                topicFor(BT_VOD_FEED_NAMESPACE, BT_VOD_NEW_FEED, publisher),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_KIDS_TOPIC, publisher),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_TV_BOXSETS_TOPIC, publisher),
+                topicFor(BT_VOD_APP_CATEGORY_NAMESPACE, BT_VOD_CATCHUP_TOPIC, publisher)
+        );
     }
     
     public DerivingFromSeriesBrandImageExtractor brandImageExtractor(String baseUrl) {
@@ -217,8 +254,8 @@ public class BtVodModule {
                 .build();
     }
     
-    private Topic newTopic(Publisher publisher) {
-        Topic topic = topicResolver.topicFor(publisher, BT_VOD_FEED_NAMESPACE, BT_VOD_NEW_FEED).requireValue();
+    private Topic topicFor(String namespace, String topicName, Publisher publisher) {
+        Topic topic = topicResolver.topicFor(publisher, namespace, topicName).requireValue();
         topicWriter.write(topic);
         return topic;
     }

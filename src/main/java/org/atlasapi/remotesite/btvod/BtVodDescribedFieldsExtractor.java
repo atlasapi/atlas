@@ -48,7 +48,13 @@ public class BtVodDescribedFieldsExtractor {
     private final BtVodSubGenreParser subGenreParser;
     private final Publisher publisher;
     private final BtVodContentMatchingPredicate newTopicPredicate;
+    private final BtVodContentMatchingPredicate kidsTopicPredicate;
+    private final BtVodContentMatchingPredicate tvBoxsetTopicPredicate;
+    private final BtVodContentMatchingPredicate subCatchupTopicPredicate;
     private final Topic newTopic;
+    private final Topic kidsTopic;
+    private final Topic tvBoxsetTopic;
+    private final Topic subCatchupTopic;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -142,14 +148,25 @@ public class BtVodDescribedFieldsExtractor {
             TopicWriter topicWriter,
             Publisher publisher,
             BtVodContentMatchingPredicate newTopicPredicate,
-            Topic newTopic
-    ) {
+            BtVodContentMatchingPredicate kidsTopicPredicate,
+            BtVodContentMatchingPredicate tvTopicPredicate,
+            BtVodContentMatchingPredicate subCatchupTopicPredicate,
+            Topic newTopic,
+            Topic kidsTopic,
+            Topic tvBoxsetTopic,
+            Topic subCatchupTopic) {
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
         this.publisher = checkNotNull(publisher);
         this.subGenreParser = new BtVodSubGenreParser();
         this.newTopicPredicate = checkNotNull(newTopicPredicate);
+        this.kidsTopicPredicate = checkNotNull(kidsTopicPredicate);
+        this.tvBoxsetTopicPredicate = checkNotNull(tvTopicPredicate);
+        this.subCatchupTopicPredicate = checkNotNull(subCatchupTopicPredicate);
         this.newTopic = checkNotNull(newTopic);
+        this.kidsTopic = checkNotNull(kidsTopic);
+        this.tvBoxsetTopic = checkNotNull(tvBoxsetTopic);
+        this.subCatchupTopic = checkNotNull(subCatchupTopic);
         this.topics = CacheBuilder.newBuilder()
                 .maximumSize(TOPIC_CACHE_SIZE)
                 .build();
@@ -212,14 +229,17 @@ public class BtVodDescribedFieldsExtractor {
     public Set<TopicRef> topicsFrom(VodEntryAndContent vodAndContent) {
         ImmutableSet.Builder<TopicRef> topicRefs = ImmutableSet.builder();
         topicRefs.addAll(genreTopicsFrom(vodAndContent));
-        topicRefs.addAll(newTopicFrom(vodAndContent).asSet());
+        topicRefs.addAll(topicFrom(vodAndContent, newTopic, newTopicPredicate).asSet());
+        topicRefs.addAll(topicFrom(vodAndContent, kidsTopic, kidsTopicPredicate).asSet());
+        topicRefs.addAll(topicFrom(vodAndContent, tvBoxsetTopic, tvBoxsetTopicPredicate).asSet());
+        topicRefs.addAll(topicFrom(vodAndContent, subCatchupTopic, subCatchupTopicPredicate).asSet());
         topicRefs.addAll(contentProviderTopicFor(vodAndContent).asSet());
         return topicRefs.build();
     }
     
-    private Optional<TopicRef> newTopicFrom(final VodEntryAndContent vodAndContent) {
-        if (newTopicPredicate.apply(vodAndContent)) {
-            return Optional.of(topicRefFor(newTopic));
+    private Optional<TopicRef> topicFrom(final VodEntryAndContent vodAndContent, Topic topic, BtVodContentMatchingPredicate predicate) {
+        if (predicate.apply(vodAndContent)) {
+            return Optional.of(topicRefFor(topic));
         }
         return Optional.absent();
     }

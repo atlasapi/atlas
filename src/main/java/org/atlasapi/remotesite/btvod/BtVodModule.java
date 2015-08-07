@@ -187,7 +187,7 @@ public class BtVodModule {
                 topicWriter,
                 publisher,
                 newFeedContentMatchingPredicate(),
-                contentGroupsAndCriteria().get(KIDS_CATEGORY),
+                contentGroupsAndCriteria().get(KIDS_CATEGORY.toLowerCase()),
                 BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
                         TV_CATEGORY, SEASON_PRODUCT_OFFERING_TYPES
                 ),

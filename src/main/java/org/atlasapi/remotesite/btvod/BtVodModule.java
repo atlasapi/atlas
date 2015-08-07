@@ -66,8 +66,8 @@ public class BtVodModule {
     
     private static final String URI_PREFIX = "http://vod.bt.com/";
     private static final String TVE_URI_PREFIX = "http://tve-vod.bt.com/";
-    public static final ImmutableSet<String> SEASON_PRODUCT_OFFERING_TYPES = ImmutableSet.of("Season", "Season-EST");
-    public static final String SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL = "TV Replay";
+    private static final ImmutableSet<String> SEASON_PRODUCT_OFFERING_TYPES = ImmutableSet.of("Season", "Season-EST");
+    private static final String SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL = "TV Replay";
 
     @Autowired
     private SimpleScheduler scheduler;

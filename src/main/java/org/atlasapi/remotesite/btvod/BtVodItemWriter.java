@@ -2,62 +2,39 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import java.util.Collection;
-import java.util.Currency;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 
-import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.media.entity.Policy.RevenueContract;
-import org.atlasapi.media.entity.simple.Pricing;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.ContentMerger;
-import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
-import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.primitives.Ints;
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 
@@ -89,6 +66,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     private UpdateProgress progress = UpdateProgress.START;
     private final BtVodVersionsExtractor versionsExtractor;
     private final TopicRef newTopic;
+    private final TopicRef kidsTopic;
+    private final TopicRef tvTopic;
+    private final TopicRef subscriptionCatchupTopic;
     private final MergingContentWriter contentWriter;
 
     public BtVodItemWriter(
@@ -103,6 +83,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             ImageExtractor imageExtractor,
             BtVodVersionsExtractor versionsExtractor,
             TopicRef newTopic,
+            TopicRef kidsTopic,
+            TopicRef tvTopic,
+            TopicRef subscriptionCatchupTopic,
             MergingContentWriter contentWriter
     ) {
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
@@ -117,6 +100,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
         this.newTopic = checkNotNull(newTopic);
+        this.kidsTopic = checkNotNull(kidsTopic);
+        this.tvTopic = checkNotNull(tvTopic);
+        this.subscriptionCatchupTopic = checkNotNull(subscriptionCatchupTopic);
         this.contentWriter = checkNotNull(contentWriter);
     }
 
@@ -172,20 +158,22 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             item = createItem(row);
         }
         populateItemFields(item, row);
-        addNewTopicToParents(item, row);
+        addTopicsToParents(item, row);
         return item;
     }
 
-    private void addNewTopicToParents(Item item, BtVodEntry row) {
-        if (item.getTopicRefs().contains(newTopic) ) {
-            if (item.getContainer() != null) {
-                brandExtractor.addTopicTo(row, newTopic);
-            }
-            if(item instanceof Episode && ((Episode)item).getSeriesRef() != null) {
-                Series series = seriesProvider.seriesFor(row).get();
-                series.addTopicRef(newTopic);
-                contentWriter.write(series);
-                listener.onContent(series, row);
+    private void addTopicsToParents(Item item, BtVodEntry row) {
+        for (TopicRef topicRef : ImmutableSet.of(newTopic, kidsTopic, tvTopic, subscriptionCatchupTopic)) {
+            if (item.getTopicRefs().contains(topicRef)) {
+                if (item.getContainer() != null) {
+                    brandExtractor.addTopicTo(row, topicRef);
+                }
+                if(item instanceof Episode && ((Episode)item).getSeriesRef() != null) {
+                    Series series = seriesProvider.seriesFor(row).get();
+                    series.addTopicRef(topicRef);
+                    contentWriter.write(series);
+                    listener.onContent(series, row);
+                }
             }
         }
     }

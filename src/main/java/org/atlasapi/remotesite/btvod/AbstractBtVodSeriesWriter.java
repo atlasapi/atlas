@@ -1,27 +1,15 @@
 package org.atlasapi.remotesite.btvod;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.UpdateProgress;
-
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.atlasapi.remotesite.btvod.model.BtVodImage;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import sun.swing.CachedPainter;
 
 import java.util.Map;
 import java.util.Set;

@@ -13,6 +13,7 @@ import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
@@ -52,7 +53,15 @@ public class BtVodSynthesizedSeriesWriterTest {
             topicWriter,
             Publisher.BT_VOD,
             newTopicContentMatchingPredicate,
-            NEW_TOPIC
+            BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
+            BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
+                    "TV", ImmutableSet.of("Season", "Season-EST")
+            ),
+            BtVodContentMatchingPredicates.schedulerChannelPredicate("TV Replay"),
+            NEW_TOPIC,
+            new Topic(234L),
+            new Topic(345L),
+            new Topic(456L)
     );
 
     private final TopicRef newTopicRef = new TopicRef(

@@ -11,18 +11,23 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Maps.EntryTransformer;
 
 public class RequiredScoreFilteringCombiner<T extends Content> implements ScoreCombiner<T> {
 
     private final ScoreCombiner<T> delegate;
-    private final String source;
+    private final ImmutableSet<String> sources;
     private final ScoreThreshold threshold;
 
     public RequiredScoreFilteringCombiner(ScoreCombiner<T> delegate, String source, ScoreThreshold threshold) {
+        this(delegate, ImmutableSet.of(source), threshold);
+    }
+    
+    public RequiredScoreFilteringCombiner(ScoreCombiner<T> delegate, Iterable<String> source, ScoreThreshold threshold) {
         this.delegate = delegate;
-        this.source = source;
+        this.sources = ImmutableSet.copyOf(source);
         this.threshold = threshold;
     }
     
@@ -30,16 +35,20 @@ public class RequiredScoreFilteringCombiner<T extends Content> implements ScoreC
         this(delegate, source, ScoreThreshold.positive());
     }
     
+    public RequiredScoreFilteringCombiner(ScoreCombiner<T> delegate, Iterable<String> sources) {
+        this(delegate, sources, ScoreThreshold.positive());
+    }
+    
     @Override
     public ScoredCandidates<T> combine(List<ScoredCandidates<T>> scoredEquivalents, final ResultDescription desc) {
         ScoredCandidates<T> combined = delegate.combine(scoredEquivalents, desc);
         
-        desc.startStage("Filtering null " +  source + " scores");
+        desc.startStage("Filtering null " +  sources + " scores");
         
         ScoredCandidates<T> itemScores = findItemScores(scoredEquivalents);
         
         if(itemScores == null) {
-            desc.appendText("No %s scores found", source).finishStage();
+            desc.appendText("No %s scores found", sources).finishStage();
             return combined;
         }
         
@@ -58,7 +67,7 @@ public class RequiredScoreFilteringCombiner<T extends Content> implements ScoreC
                     return combinedScore;
                 }
                 
-                desc.appendText("%s score set to null, %s score %s", equiv.getCanonicalUri(), source, itemScore);
+                desc.appendText("%s score set to null, %s score %s", equiv.getCanonicalUri(), sources, itemScore);
                 return Score.NULL_SCORE;
             }
         }));
@@ -68,7 +77,7 @@ public class RequiredScoreFilteringCombiner<T extends Content> implements ScoreC
     
     private ScoredCandidates<T> findItemScores(List<ScoredCandidates<T>> scoredEquivalents) {
         for (ScoredCandidates<T> sourceEquivs : scoredEquivalents) {
-            if(sourceEquivs.source().equals(source)) {
+            if(sources.contains(sourceEquivs.source())) {
                 return sourceEquivs;
             }
         }

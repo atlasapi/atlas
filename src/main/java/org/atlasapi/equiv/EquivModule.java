@@ -413,7 +413,7 @@ public class EquivModule {
         
         Set<Publisher> btTveVodPublishers = ImmutableSet.of(PA);
         updaters.register(BT_TVE_VOD, SourceSpecificEquivalenceUpdater.builder(BT_TVE_VOD)
-                .withItemUpdater(vodItemUpdater(btTveVodPublishers)
+                .withItemUpdater(btVodItemUpdater(btTveVodPublishers)
                         .withScorer(new SeriesSequenceItemScorer()).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(btTveVodPublishers))
                 .withNonTopLevelContainerUpdater(vodSeriesUpdater(btTveVodPublishers))
@@ -564,6 +564,33 @@ public class EquivModule {
             .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                 new NullScoreAwareAveragingCombiner<Item>(),
                 TitleMatchingItemScorer.NAME
+            ))
+            .withFilter(this.<Item>standardFilter())
+            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
+            .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
+                EpisodeFilteringEquivalenceResultHandler.strict(
+                    new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
+                    equivSummaryStore
+                ),
+                new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+            )));
+    }
+    
+    // 
+    private ContentEquivalenceUpdater.Builder<Item> btVodItemUpdater(Set<Publisher> acceptablePublishers) {
+        return ContentEquivalenceUpdater.<Item> builder()
+            .withGenerators(ImmutableSet.of(
+                new ContainerCandidatesItemEquivalenceGenerator(contentResolver, equivSummaryStore),
+                new FilmEquivalenceGenerator(searchResolver, acceptablePublishers, true)
+            ))
+            .withScorers(ImmutableSet.of(
+                new TitleMatchingItemScorer(),
+                new SequenceItemScorer()
+            ))
+            .withCombiner(new RequiredScoreFilteringCombiner<Item>(
+                new NullScoreAwareAveragingCombiner<Item>(),
+                ImmutableSet.of(TitleMatchingItemScorer.NAME, SequenceItemScorer.SEQUENCE_SCORER)
             ))
             .withFilter(this.<Item>standardFilter())
             .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))

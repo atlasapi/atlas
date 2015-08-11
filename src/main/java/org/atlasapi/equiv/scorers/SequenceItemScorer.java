@@ -15,9 +15,11 @@ import com.google.common.collect.Iterables;
 
 public class SequenceItemScorer implements EquivalenceScorer<Item> {
 
+    public static final String SEQUENCE_SCORER = "Sequence";
+
     @Override
     public ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates, ResultDescription desc) {
-        Builder<Item> equivalents = DefaultScoredCandidates.fromSource("Sequence");
+        Builder<Item> equivalents = DefaultScoredCandidates.fromSource(SEQUENCE_SCORER);
         
         if (subject instanceof Episode) {
             Episode episode = (Episode) subject;

@@ -105,6 +105,7 @@ public class ContentMerger {
 
     private Episode mergeEpisodeSpecificFields(Episode current, Episode extracted) {
         current.setEpisodeNumber(extracted.getEpisodeNumber());
+        current.setSeriesNumber(extracted.getSeriesNumber());
 
         if ( current.getSeriesRef() == null
                 || extracted.getSeriesRef() == null

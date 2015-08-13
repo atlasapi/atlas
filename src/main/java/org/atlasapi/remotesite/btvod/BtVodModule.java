@@ -22,6 +22,7 @@ import org.atlasapi.remotesite.btvod.portal.PortalClient;
 import org.atlasapi.remotesite.btvod.portal.XmlPortalClient;
 import org.atlasapi.remotesite.btvod.topics.BtVodStaleTopicContentRemover;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
+import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -31,6 +32,7 @@ import org.springframework.context.annotation.Configuration;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.http.SimpleHttpClientBuilder;
+import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 
@@ -68,6 +70,9 @@ public class BtVodModule {
     private static final String TVE_URI_PREFIX = "http://tve-vod.bt.com/";
     private static final ImmutableSet<String> SEASON_PRODUCT_OFFERING_TYPES = ImmutableSet.of("Season", "Season-EST");
     private static final String SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL = "TV Replay";
+    
+    private static final RepetitionRule TVE_MPX_REPETITION_RULE = RepetitionRules.daily(new LocalTime(7, 0, 0));
+    private static final RepetitionRule MPX_REPETITION_RULE = RepetitionRules.daily(new LocalTime(11, 0, 0));
 
     @Autowired
     private SimpleScheduler scheduler;
@@ -281,7 +286,7 @@ public class BtVodModule {
     
     @PostConstruct
     public void scheduleTask() {
-        scheduler.schedule(btVodUpdater().withName("BT VoD Updater"), RepetitionRules.NEVER);
-        scheduler.schedule(btTveVodUpdater().withName("BT TVE VoD Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(btVodUpdater().withName("BT VoD Updater"), MPX_REPETITION_RULE);
+        scheduler.schedule(btTveVodUpdater().withName("BT TVE VoD Updater"), TVE_MPX_REPETITION_RULE);
     }
 }

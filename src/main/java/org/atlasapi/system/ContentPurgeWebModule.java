@@ -2,6 +2,10 @@ package org.atlasapi.system;
 
 import org.atlasapi.persistence.MongoContentPersistenceModule;
 import org.atlasapi.persistence.content.ContentPurger;
+import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.listing.ContentLister;
+import org.atlasapi.persistence.content.listing.ProgressStore;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +26,15 @@ public class ContentPurgeWebModule {
 
     @Autowired
     private ContentPurger contentPurger;
+    @Autowired
+    private ContentWriter writer;
+    @Autowired
+    private ContentLister lister;
+    @Autowired
+    private LookupEntryStore lookup;
+    @Autowired
+    private ProgressStore progressStore;
+
     
     @Bean
     public LyrebirdYoutubeContentPurgeController lyrebirdYoutubeContentPurgeController() {
@@ -36,5 +49,11 @@ public class ContentPurgeWebModule {
     @Bean
     public BtVodContentPurgeController btVodContentPurgeController() {
         return new BtVodContentPurgeController(contentPurger);
+    }
+
+    public PaContentDeactivationController paContentDeactivationController() {
+        return new PaContentDeactivationController(
+                new PaContentDeactivator(lookup, lister, writer, 10, progressStore)
+        );
     }
 }

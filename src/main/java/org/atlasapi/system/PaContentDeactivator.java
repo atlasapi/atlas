@@ -106,19 +106,12 @@ public class PaContentDeactivator {
             if (!filter.mightContain(content.getId())) {
                 LOG.info("Content {} - {} not in bloom filter, deactivating...",
                         content.getClass().getSimpleName(), content.getId());
-                executor.submit(contentDeactivatingRunnable(content));
-            }
-            int count = progressCount.incrementAndGet();
-            if (count % 1000 == 0) {
-                progressStore.storeProgress(
-                        getClass().getSimpleName(),
-                        ContentListingProgress.progressFrom(content)
-                );
+                executor.submit(contentDeactivatingRunnable(content, progressCount));
             }
         }
     }
 
-    private Runnable contentDeactivatingRunnable(final Content content) {
+    private Runnable contentDeactivatingRunnable(final Content content, final AtomicInteger progressCount) {
         return new Runnable() {
             @Override
             public void run() {
@@ -128,6 +121,13 @@ public class PaContentDeactivator {
                 }
                 if (content instanceof Item) {
                     contentWriter.createOrUpdate((Item) content);
+                }
+                int count = progressCount.incrementAndGet();
+                if (count % 1000 == 0) {
+                    progressStore.storeProgress(
+                            getClass().getSimpleName(),
+                            ContentListingProgress.progressFrom(content)
+                    );
                 }
             }
         };

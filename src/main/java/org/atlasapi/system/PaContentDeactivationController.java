@@ -1,6 +1,7 @@
 package org.atlasapi.system;
 
 import com.metabroadcast.common.http.HttpStatusCode;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -11,6 +12,7 @@ import java.io.IOException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@Controller
 public class PaContentDeactivationController {
 
     private final PaContentDeactivator paDeactivator;

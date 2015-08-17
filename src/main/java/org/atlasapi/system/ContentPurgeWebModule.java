@@ -46,6 +46,7 @@ public class ContentPurgeWebModule {
         return new BtVodContentPurgeController(contentPurger);
     }
 
+    @Bean
     public PaContentDeactivationController paContentDeactivationController() {
         return new PaContentDeactivationController(
                 new PaContentDeactivator(lookup, lister, writer, 10, progressStore)

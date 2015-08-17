@@ -21,6 +21,8 @@ import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
+import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.atlasapi.persistence.content.listing.ProgressStore;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.slf4j.Logger;
@@ -28,6 +30,7 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.Charset;
 import java.nio.file.Files;
 import java.util.Collection;
 import java.util.Iterator;
@@ -37,6 +40,7 @@ import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -45,6 +49,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class PaContentDeactivator {
 
     private static final Logger LOG = LoggerFactory.getLogger(PaContentDeactivator.class);
+    private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private static final Pattern SERIES_ID_PATTERN = Pattern.compile("<series_id>([0-9]*)</series_id>");
     private static final Pattern SEASON_ID_PATTERN = Pattern.compile("<season_id>([0-9]*)</season_id>");
@@ -70,17 +75,20 @@ public class PaContentDeactivator {
     private final LookupEntryStore lookupStore;
     private final ContentLister contentLister;
     private final ContentWriter contentWriter;
+    private final ProgressStore progressStore;
     private final ExecutorService executor;
 
-    public PaContentDeactivator(LookupEntryStore lookupStore, ContentLister contentLister, ContentWriter contentWriter, Integer maxThreads) {
+    public PaContentDeactivator(LookupEntryStore lookupStore, ContentLister contentLister,
+            ContentWriter contentWriter, Integer maxThreads, ProgressStore progressStore) {
         this.lookupStore = checkNotNull(lookupStore);
         this.contentLister = checkNotNull(contentLister);
         this.contentWriter = checkNotNull(contentWriter);
-        this.executor = newThreadPool(maxThreads);
+        this.progressStore = checkNotNull(progressStore);
+        this.executor = createThreadPool(maxThreads);
     }
 
     public void deactivate(File file) throws IOException {
-        List<String> lines = Files.readAllLines(file.toPath());
+        List<String> lines = Files.readAllLines(file.toPath(), UTF8);
         ImmutableSetMultimap<String, String> typeToIds = extractAliases(lines);
         deactivate(typeToIds);
     }
@@ -88,13 +96,24 @@ public class PaContentDeactivator {
     public void deactivate(Multimap<String, String> paNamespaceToAliases) {
         ImmutableSet<Long> activeAtlasContentIds = resolvePaAliasesToIds(paNamespaceToAliases);
         final BloomFilter<Long> filter = bloomFilterFor(activeAtlasContentIds);
-        final Iterator<Content> contentIterator = contentLister.listContent(listingCriteria());
+        final Iterator<Content> contentIterator = contentLister.listContent(
+                createListingCriteria(progressStore.progressForTask(getClass().getSimpleName()))
+        );
+
+        final AtomicInteger progressCount = new AtomicInteger();
         while (contentIterator.hasNext()) {
             Content content = contentIterator.next();
             if (!filter.mightContain(content.getId())) {
                 LOG.info("Content {} - {} not in bloom filter, deactivating...",
                         content.getClass().getSimpleName(), content.getId());
-                executor.execute(contentDeactivatingRunnable(content));
+                executor.submit(contentDeactivatingRunnable(content));
+            }
+            int count = progressCount.incrementAndGet();
+            if (count % 1000 == 0) {
+                progressStore.storeProgress(
+                        getClass().getSimpleName(),
+                        ContentListingProgress.progressFrom(content)
+                );
             }
         }
     }
@@ -114,7 +133,7 @@ public class PaContentDeactivator {
         };
     }
 
-    private ThreadPoolExecutor newThreadPool(Integer maxThreads) {
+    private ThreadPoolExecutor createThreadPool(Integer maxThreads) {
         return new ThreadPoolExecutor(
                 maxThreads,
                 maxThreads,
@@ -125,16 +144,19 @@ public class PaContentDeactivator {
         );
     }
 
-    private ContentListingCriteria listingCriteria() {
+    private ContentListingCriteria createListingCriteria(Optional<ContentListingProgress> progress) {
         ImmutableList<ContentCategory> categories = ImmutableList.of(
                 ContentCategory.CONTAINER,
                 ContentCategory.CHILD_ITEM,
                 ContentCategory.TOP_LEVEL_ITEM
         );
-        return ContentListingCriteria.defaultCriteria()
+        ContentListingCriteria.Builder criteria = ContentListingCriteria.defaultCriteria()
                 .forContent(categories)
-                .forPublisher(Publisher.PA)
-                .build();
+                .forPublisher(Publisher.PA);
+        if (progress.isPresent()) {
+            return criteria.startingAt(progress.get()).build();
+        }
+        return criteria.build();
     }
 
     private BloomFilter<Long> bloomFilterFor(Set<Long> ids) {
@@ -191,8 +213,11 @@ public class PaContentDeactivator {
 
     private ImmutableSet<Long> lookupIdForPaAlias(String namespace, Iterable<String> value) {
         Iterable<LookupEntry> entriesForId = lookupStore.entriesForAliases(
-                Optional.of(namespace), ImmutableList.of(value)
+                Optional.of(namespace), value
         );
-        return ImmutableSet.copyOf(Iterables.transform(entriesForId, LOOKUP_ENTRY_TO_ID));
+        if (entriesForId.iterator().hasNext()) {
+            return ImmutableSet.copyOf(Iterables.transform(entriesForId, LOOKUP_ENTRY_TO_ID));
+        }
+        return ImmutableSet.of();
     }
 }

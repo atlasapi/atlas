@@ -1,7 +1,9 @@
 package org.atlasapi.system;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
@@ -37,7 +39,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -71,6 +72,12 @@ public class PaContentDeactivator {
             return lookupEntry.id();
         }
     };
+    private static final Predicate<String> IS_FILM = new Predicate<String>() {
+        @Override
+        public boolean apply(String s) {
+            return !Strings.isNullOrEmpty(s) && s.startsWith("http://pressassociation.com/films/");
+        }
+    };
 
     private final LookupEntryStore lookupStore;
     private final ContentLister contentLister;
@@ -101,7 +108,7 @@ public class PaContentDeactivator {
         final AtomicInteger progressCount = new AtomicInteger();
         while (contentIterator.hasNext()) {
             Content content = contentIterator.next();
-            if (!filter.mightContain(content.getId())) {
+            if (!Iterables.any(content.getAllUris(), IS_FILM) && !filter.mightContain(content.getId())) {
                 LOG.info("Content {} - {} not in bloom filter, deactivating...",
                         content.getClass().getSimpleName(), content.getId());
                 executor.submit(contentDeactivatingRunnable(content, progressCount));

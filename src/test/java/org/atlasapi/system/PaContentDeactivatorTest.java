@@ -43,7 +43,7 @@ public class PaContentDeactivatorTest {
         lister = mock(ContentLister.class);
         writer = mock(ContentWriter.class);
         progressStore = mock(ProgressStore.class);
-        deactivator = new PaContentDeactivator(lookup, lister, writer, 1, progressStore);
+        deactivator = new PaContentDeactivator(lookup, lister, writer, progressStore);
         activeContent = new Brand("10", "10", Publisher.PA);
         activeContent.setId(10l);
 
@@ -60,7 +60,7 @@ public class PaContentDeactivatorTest {
                 .build();
 
         typesToIds.put("pa:brand", "10");
-        deactivator.deactivate(typesToIds);
+        deactivator.deactivate(typesToIds, 1);
         assertThat(activeContent.isActivelyPublished(), is(true));
         assertThat(inactiveContent.isActivelyPublished(), is(false));
     }

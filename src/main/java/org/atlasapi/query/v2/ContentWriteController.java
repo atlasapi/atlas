@@ -154,6 +154,7 @@ public class ContentWriteController {
         existing.setMediaType(update.getMediaType());
         existing.setSpecialization(update.getSpecialization());
         existing.setRelatedLinks(merge ? merge(existing.getRelatedLinks(), update.getRelatedLinks()) : update.getRelatedLinks());
+        existing.setAliases(merge ? merge(existing.getAliases(), update.getAliases()) : update.getAliases());
         existing.setTopicRefs(merge ? merge(existing.getTopicRefs(), update.getTopicRefs()) : update.getTopicRefs());
         existing.setPeople(merge ? merge(existing.people(), update.people()) : update.people());
         existing.setKeyPhrases(update.getKeyPhrases());

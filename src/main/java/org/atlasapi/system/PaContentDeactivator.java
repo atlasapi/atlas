@@ -76,30 +76,28 @@ public class PaContentDeactivator {
     private final ContentLister contentLister;
     private final ContentWriter contentWriter;
     private final ProgressStore progressStore;
-    private final ExecutorService executor;
 
     public PaContentDeactivator(LookupEntryStore lookupStore, ContentLister contentLister,
-            ContentWriter contentWriter, Integer maxThreads, ProgressStore progressStore) {
+            ContentWriter contentWriter, ProgressStore progressStore) {
         this.lookupStore = checkNotNull(lookupStore);
         this.contentLister = checkNotNull(contentLister);
         this.contentWriter = checkNotNull(contentWriter);
         this.progressStore = checkNotNull(progressStore);
-        this.executor = createThreadPool(maxThreads);
     }
 
-    public void deactivate(File file) throws IOException {
+    public void deactivate(File file, Integer threads) throws IOException {
         List<String> lines = Files.readAllLines(file.toPath(), UTF8);
         ImmutableSetMultimap<String, String> typeToIds = extractAliases(lines);
-        deactivate(typeToIds);
+        deactivate(typeToIds, threads);
     }
 
-    public void deactivate(Multimap<String, String> paNamespaceToAliases) {
+    public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads) {
         ImmutableSet<Long> activeAtlasContentIds = resolvePaAliasesToIds(paNamespaceToAliases);
         final BloomFilter<Long> filter = bloomFilterFor(activeAtlasContentIds);
         final Iterator<Content> contentIterator = contentLister.listContent(
                 createListingCriteria(progressStore.progressForTask(getClass().getSimpleName()))
         );
-
+        final ThreadPoolExecutor executor = createThreadPool(threads);
         final AtomicInteger progressCount = new AtomicInteger();
         while (contentIterator.hasNext()) {
             Content content = contentIterator.next();

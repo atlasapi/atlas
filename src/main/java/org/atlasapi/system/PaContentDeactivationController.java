@@ -22,8 +22,9 @@ public class PaContentDeactivationController {
     }
 
     @RequestMapping(value = "/system/content/deactivate/pa", method = RequestMethod.POST)
-    public void purge(HttpServletResponse response, @RequestParam(value = "filePath", required = true) String filePath) throws IOException {
-        paDeactivator.deactivate(new File(filePath));
+    public void purge(HttpServletResponse response, @RequestParam(value = "filePath", required = true) String filePath,
+        @RequestParam(value = "threads", required = true) Integer threads) throws IOException {
+        paDeactivator.deactivate(new File(filePath, threads));
         response.setStatus(HttpStatusCode.OK.code());
         response.flushBuffer();
     }

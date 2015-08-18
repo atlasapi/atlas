@@ -49,7 +49,7 @@ public class ContentPurgeWebModule {
     @Bean
     public PaContentDeactivationController paContentDeactivationController() {
         return new PaContentDeactivationController(
-                new PaContentDeactivator(lookup, lister, writer, 10, progressStore)
+                new PaContentDeactivator(lookup, lister, writer, progressStore)
         );
     }
 }

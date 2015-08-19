@@ -52,6 +52,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             Pattern.compile("^.*?\\-\\s(.*)")
     );
     private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
+    private static final String OTG_PLATFORM = "OTG";
 
     private final BtVodBrandWriter brandExtractor;
     private final BtVodSeriesProvider seriesProvider;
@@ -321,8 +322,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private boolean isTrailerMediaAvailableOnCdn(BtVodEntry row) {
-        return true;
-        //return row.getTrailerServiceTypes().contains(OTG_PLATFORM);
+        return row.getTrailerServiceTypes().contains(OTG_PLATFORM);
     }
 
     private String titleForNonEpisode(BtVodEntry row) {

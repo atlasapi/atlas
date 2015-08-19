@@ -58,7 +58,7 @@ public class BtVodContentMatchingPredicates {
             @Override
             public boolean apply(VodEntryAndContent input) {
                 return schedulerChannel.equals(input.getBtVodEntry().getSchedulerChannel()) &&
-                        productOfferingTypes.contains(input.getBtVodEntry().getProductOfferingType());
+                        productOfferingTypes.contains(input.getBtVodEntry().getProductOfferingType().toLowerCase());
             }
 
             @Override

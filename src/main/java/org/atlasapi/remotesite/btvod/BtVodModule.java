@@ -68,7 +68,7 @@ public class BtVodModule {
     
     private static final String URI_PREFIX = "http://vod.bt.com/";
     private static final String TVE_URI_PREFIX = "http://tve-vod.bt.com/";
-    private static final ImmutableSet<String> SEASON_PRODUCT_OFFERING_TYPES = ImmutableSet.of("Season".toLowerCase(), "Season-EST".toLowerCase());
+    private static final ImmutableSet<String> SEASON_PRODUCT_OFFERING_TYPES = ImmutableSet.of("season", "season-est");
     private static final String SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL = "TV Replay";
     
     private static final RepetitionRule TVE_MPX_REPETITION_RULE = RepetitionRules.daily(new LocalTime(7, 0, 0));

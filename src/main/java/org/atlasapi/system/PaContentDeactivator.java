@@ -132,7 +132,7 @@ public class PaContentDeactivator {
                 if (count % 1000 == 0) {
                     progressStore.storeProgress(
                             getClass().getSimpleName(),
-                            ContentListingProgress.progressFrom(content)
+                            ContentListingProgress.progressFrom(content, count)
                     );
                 }
             }

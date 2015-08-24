@@ -119,7 +119,7 @@ public class ChildRefUpdateTaskTest extends TestCase {
         
         checkSeries(resolve(series1), 2L, 1L, 4L, 5L);
         checkSeries(resolve(series2), 3L, 1L, 6L);
-        
+
         checkEpisode(resolve(episode1), 4L, 1L, 2L);
         checkEpisode(resolve(item1), 5L, 1L, null);
         checkEpisode(resolve(episode2), 6L, 1L, 3L);

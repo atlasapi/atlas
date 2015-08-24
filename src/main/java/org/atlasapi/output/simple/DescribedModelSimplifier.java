@@ -83,8 +83,8 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setMediumDescription(applyWatermark(content, content.getMediumDescription()));
             simpleDescription.setLongDescription(applyWatermark(content, content.getLongDescription()));
             simpleDescription.setDescriptions(simplifyLocalizedDescriptions(content));
-            simpleDescription.setPriority(new Priority(content.getPriority().getScore(),
-                content.getPriority().getReasons()));
+            //simpleDescription.setPriority(new Priority(content.getPriority().getScore(),
+            //    content.getPriority().getReasons()));
         }
         
         if (annotations.contains(Annotation.IMAGES)) {

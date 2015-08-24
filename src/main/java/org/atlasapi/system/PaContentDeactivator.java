@@ -115,6 +115,7 @@ public class PaContentDeactivator {
                 executor.submit(contentDeactivatingRunnable(content, progressCount));
             }
         }
+        LOG.info("Deactivated {} items", progressCount.get());
     }
 
     private Runnable contentDeactivatingRunnable(final Content content, final AtomicInteger progressCount) {

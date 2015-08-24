@@ -11,6 +11,7 @@ import java.util.concurrent.ExecutionException;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.Priority;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
@@ -178,7 +179,12 @@ public class BtVodDescribedFieldsExtractor {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());
         if (row.getProductPriority() != null) {
-            described.setPriority(Double.valueOf(row.getProductPriority()) * 3);
+            Double priority = Double.valueOf(row.getProductPriority());
+            if (priority > 0) {
+                described.setPriority(new Priority(priority * 3, ImmutableList.of("")));
+            } else {
+                described.setPriority(new Priority(10d, ImmutableList.of("")));
+            }
         }
         
         ImmutableList.Builder<String> genres = ImmutableList.builder();

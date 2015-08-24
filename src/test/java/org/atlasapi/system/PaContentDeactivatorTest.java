@@ -49,6 +49,7 @@ public class PaContentDeactivatorTest {
 
         inactiveContent = new Brand("20", "20", Publisher.PA);
         inactiveContent.setId(20l);
+        inactiveContent.setGenericDescription(false);
         setupMocks(activeContent, inactiveContent);
     }
 

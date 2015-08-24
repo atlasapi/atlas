@@ -108,8 +108,12 @@ public class PaContentDeactivator {
         final AtomicInteger progressCount = new AtomicInteger();
         while (contentIterator.hasNext()) {
             Content content = contentIterator.next();
-            if (!Iterables.any(content.getAllUris(), IS_FILM) && !filter.mightContain(content.getId()) &&
-                    !content.getGenericDescription()) {
+            if (
+                    !Iterables.any(content.getAllUris(), IS_FILM)
+                            && !filter.mightContain(content.getId())
+                            &&  content.getGenericDescription() != null
+                            && !content.getGenericDescription()
+                    ) {
                 LOG.info("Content {} - {} not in bloom filter, deactivating...",
                         content.getClass().getSimpleName(), content.getId());
                 executor.submit(contentDeactivatingRunnable(content, progressCount));

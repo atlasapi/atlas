@@ -12,14 +12,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.simple.Description;
-import org.atlasapi.media.entity.simple.Image;
-import org.atlasapi.media.entity.simple.LocalizedDescription;
-import org.atlasapi.media.entity.simple.LocalizedTitle;
-import org.atlasapi.media.entity.simple.Rating;
-import org.atlasapi.media.entity.simple.RelatedLink;
-import org.atlasapi.media.entity.simple.Review;
-import org.atlasapi.media.entity.simple.SameAs;
+import org.atlasapi.media.entity.simple.*;
 import org.atlasapi.output.Annotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -87,7 +80,8 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setMediumDescription(applyWatermark(content, content.getMediumDescription()));
             simpleDescription.setLongDescription(applyWatermark(content, content.getLongDescription()));
             simpleDescription.setDescriptions(simplifyLocalizedDescriptions(content));
-            simpleDescription.setPriority(content.getPriority());
+            simpleDescription.setPriority(new Priority(content.getPriority().getScore(),
+                content.getPriority().getReasons()));
         }
         
         if (annotations.contains(Annotation.IMAGES)) {

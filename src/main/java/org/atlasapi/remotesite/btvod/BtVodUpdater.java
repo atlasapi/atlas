@@ -92,8 +92,6 @@ public class BtVodUpdater extends ScheduledTask {
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
-
-        withName("BT VOD Catalogue Ingest");
     }
 
     @Override

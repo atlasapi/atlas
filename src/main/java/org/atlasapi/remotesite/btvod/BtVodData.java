@@ -12,16 +12,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class BtVodData {
 
-    private static final String FEED_NAME = "btv-prd-search";
     private static final CharSequence BACK_TO_BACKS_SUBGENRE = "Back to Back";
     private BtMpxVodClient vodClient;
-    
-    public BtVodData(BtMpxVodClient vodClient) {
+    private final String feedName;
+
+    public BtVodData(BtMpxVodClient vodClient, String feedName) {
         this.vodClient = checkNotNull(vodClient);
+        this.feedName = checkNotNull(feedName);
     }
     
     public <T> T processData(BtVodDataProcessor<T> processor) throws IOException {
-        Iterator<BtVodEntry> btMpxFeed = vodClient.getFeed(FEED_NAME);
+        Iterator<BtVodEntry> btMpxFeed = vodClient.getFeed(feedName);
         while (btMpxFeed.hasNext()) {
             BtVodEntry entry = btMpxFeed.next();
             if (!shouldFilter(entry)) {

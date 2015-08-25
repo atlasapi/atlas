@@ -1,43 +1,30 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.hamcrest.Matchers.any;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
-import java.util.Set;
-
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
-import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
+import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
+import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.joda.time.DateTime;
@@ -46,13 +33,18 @@ import org.joda.time.DateTimeZone;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-
 import org.mockito.Matchers;
+
+import java.util.Set;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 public class BtVodItemWriterTest {
@@ -70,6 +62,7 @@ public class BtVodItemWriterTest {
     private static final String BRAND_URI = URI_PREFIX + "brands/1234";
     private static final String TRAILER_URI = "http://vod.bt.com/trailer/1224";
     private static final Topic NEW_TOPIC = new Topic(123L);
+    private static final String BT_VOD_NAMESPECASE_PREFIX = "Namespace prefix";
 
 
     private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
@@ -107,7 +100,8 @@ public class BtVodItemWriterTest {
                     NEW_TOPIC,
                     new Topic(234L),
                     new Topic(345L),
-                    new Topic(456L)
+                    new Topic(456L),
+                    BT_VOD_NAMESPECASE_PREFIX
             ),
             Sets.<String>newHashSet(),
             new TitleSanitiser(),
@@ -156,8 +150,10 @@ public class BtVodItemWriterTest {
         );
 
         Set<Alias> expectedAliases =
-                ImmutableSet.of(new Alias(BtVodDescribedFieldsExtractor.GUID_ALIAS_NAMESPACE, btVodEntry.getGuid()),
-                                new Alias(BtVodDescribedFieldsExtractor.ID_ALIAS_NAMESPACE, btVodEntry.getId()));
+                ImmutableSet.of(
+                        new Alias(BT_VOD_NAMESPECASE_PREFIX + "guid", btVodEntry.getGuid()),
+                        new Alias(BT_VOD_NAMESPECASE_PREFIX + "id", btVodEntry.getId())
+                );
 
 
         assertThat(writtenItem.getAliases(), is(expectedAliases));

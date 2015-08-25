@@ -41,7 +41,9 @@ public class BtVodBrandWriterTest {
     private static final String FULL_EPISODE_TITLE = BRAND_TITLE + ": S1 S1-E9 " + REAL_EPISODE_TITLE;
     private static final Publisher PUBLISHER = Publisher.BT_VOD;
     private static final String URI_PREFIX = "http://example.org/";
-    
+    private static final String BT_VOD_NAMESPECASE_PREFIX = "Namespace prefix";
+
+
     private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
@@ -65,7 +67,8 @@ public class BtVodBrandWriterTest {
             new Topic(123L),
             new Topic(234L),
             new Topic(345L),
-            new Topic(456L)
+            new Topic(456L),
+            BT_VOD_NAMESPECASE_PREFIX
     );
 
     private final BtVodBrandWriter brandExtractor

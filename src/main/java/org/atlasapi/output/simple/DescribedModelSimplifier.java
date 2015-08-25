@@ -29,33 +29,33 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 public abstract class DescribedModelSimplifier<F extends Described, T extends Description> extends IdentifiedModelSimplifier<F,T> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
-    
+
     private final ImageSimplifier imageSimplifier;
     private final DescriptionWatermarker descriptionWatermarker;
     private final DescribedImageExtractor imageExtractor = new DescribedImageExtractor();
     private final PublisherSimplifier publisherSimplifier = new PublisherSimplifier();
     private final RatingModelSimplifier ratingModelSimplifier = new RatingModelSimplifier();
     private final AudienceStatisticsModelSimplifier audienceStatsModelSimplifier = new AudienceStatisticsModelSimplifier();
-    
+
     protected DescribedModelSimplifier(ImageSimplifier imageSimplifier) {
         this.imageSimplifier = imageSimplifier;
         this.descriptionWatermarker = null;
     }
-    
-    protected DescribedModelSimplifier(ImageSimplifier imageSimplifier, NumberToShortStringCodec codec, 
+
+    protected DescribedModelSimplifier(ImageSimplifier imageSimplifier, NumberToShortStringCodec codec,
             @Nullable DescriptionWatermarker descriptionWatermarker) {
         super(codec);
         this.imageSimplifier = imageSimplifier;
         this.descriptionWatermarker = descriptionWatermarker;
     }
-    
+
     protected void copyBasicDescribedAttributes(F content, T simpleDescription, Set<Annotation> annotations) {
-        
+
         copyIdentifiedAttributesTo(content, simpleDescription, annotations);
-        
+
         if (annotations.contains(Annotation.DESCRIPTION) || annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
             simpleDescription.setPublisher(toPublisherDetails(content.getPublisher()));
-            
+
             simpleDescription.setTitle(content.getTitle());
             simpleDescription.setTitles(simplifyLocalizedTitles(content));
             simpleDescription.setDescription(applyWatermark(content, content.getDescription()));
@@ -67,13 +67,13 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             if (mediaType != null) {
                 simpleDescription.setMediaType(mediaType.toString().toLowerCase());
             }
-            
+
             Specialization specialization = content.getSpecialization();
             if (specialization != null) {
                 simpleDescription.setSpecialization(specialization.toString().toLowerCase());
             }
         }
-        
+
         if (annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
             simpleDescription.setGenres(content.getGenres());
             simpleDescription.setTags(content.getTags());
@@ -83,10 +83,17 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setMediumDescription(applyWatermark(content, content.getMediumDescription()));
             simpleDescription.setLongDescription(applyWatermark(content, content.getLongDescription()));
             simpleDescription.setDescriptions(simplifyLocalizedDescriptions(content));
-            //simpleDescription.setPriority(new Priority(content.getPriority().getScore(),
-            //    content.getPriority().getReasons()));
+            if (content.getPriority() != null) {
+                simpleDescription.setPriority(
+                        new Priority(
+                            content.getPriority().getScore(),
+                            content.getPriority().getReasons()
+                    )
+                );
+
+            }
         }
-        
+
         if (annotations.contains(Annotation.IMAGES)) {
             simpleDescription.setImages(toImages(imageExtractor.getImages(content), annotations));
         }
@@ -103,20 +110,20 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         if (annotations.contains(Annotation.RATINGS)) {
             simpleDescription.setRatings(toRatings(content.getRatings(), annotations));
         }
-        
+
     }
 
     private String applyWatermark(F described, String description) {
         if (!(described instanceof Item) || descriptionWatermarker == null) {
             return description;
         }
-        
+
         Item item = (Item) described;
         Broadcast firstBroadcast = Iterables.getFirst(Item.FLATTEN_BROADCASTS.apply(item), null);
-        
+
         return descriptionWatermarker.watermark(firstBroadcast, description);
     }
-    
+
     private Iterable<Image> toImages(Iterable<org.atlasapi.media.entity.Image> images, Set<Annotation> annotations) {
         Builder<Image> simpleImages = ImmutableSet.builder();
         for(org.atlasapi.media.entity.Image image : images) {
@@ -124,7 +131,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         }
         return simpleImages.build();
     }
-    
+
     private Iterable<Rating> toRatings(Iterable<org.atlasapi.media.entity.Rating> ratings, Set<Annotation> annotations) {
         ImmutableList.Builder<Rating> simpleRatings = ImmutableList.builder();
         for (org.atlasapi.media.entity.Rating rating : ratings) {
@@ -132,7 +139,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         }
         return simpleRatings.build();
     }
-    
+
     private Function<LookupRef, SameAs> TO_SAME_AS = new Function<LookupRef, SameAs>() {
 
         @Override
@@ -144,7 +151,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             return new SameAs(id != null ? idCodec.encode(BigInteger.valueOf(id)) : null, input.uri());
         }
     };
-    
+
     private Iterable<RelatedLink> simplifyRelatedLinks(F described) {
         return Iterables.transform(described.getRelatedLinks(), new Function<org.atlasapi.media.entity.RelatedLink, RelatedLink>() {
 
@@ -165,26 +172,26 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             }
         });
     }
-    
+
     private Iterable<Review> simplifyReviews(final F content) {
         return Iterables.transform(content.getReviews(), new Function<org.atlasapi.media.entity.Review, Review>() {
 
             @Override
             public Review apply(org.atlasapi.media.entity.Review complex) {
                 Review simple = new Review();
-                
+
                 if (complex.getLocale() != null) {
                     simple.setLanguage(complex.getLocale().toLanguageTag());
                 }
                 simple.setReview(complex.getReview());
                 simple.setPublisherDetails(toPublisherDetails(content.getPublisher()));
-                
+
                 return simple;
             }
         });
     }
 
-    
+
     private Set<LocalizedDescription> simplifyLocalizedDescriptions(F content) {
         return ImmutableSet.copyOf(Iterables.transform(content.getLocalizedDescriptions(),
                 TO_SIMPLE_LOCALISED_DESCRIPTION));
@@ -194,7 +201,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         return ImmutableSet.copyOf(Iterables.transform(content.getLocalizedTitles(),
                 TO_SIMPLE_LOCALIZED_TITLE));
     }
-    
+
     private static final Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription> TO_SIMPLE_LOCALISED_DESCRIPTION = new Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription>() {
 
         @Override
@@ -223,5 +230,5 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             return simple;
         }
     };
-    
+
 }

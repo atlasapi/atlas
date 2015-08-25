@@ -8,7 +8,7 @@ import java.io.IOException;
 
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.remotesite.btvod.BtMpxVodClient;
-import org.atlasapi.remotesite.btvod.BtVodContentGroupPredicate;
+import org.atlasapi.remotesite.btvod.BtVodContentMatchingPredicate;
 import org.atlasapi.remotesite.btvod.VodEntryAndContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Test;
@@ -32,7 +32,7 @@ public class BtVodContentGroupPredicatesTest {
         when(mpxClient.getFeed(FEED_NAME))
             .thenReturn(ImmutableSet.of(entryWithId(ID_IN_FEED)).iterator());
         
-        BtVodContentGroupPredicate predicate = BtVodContentGroupPredicates.mpxContentGroupPredicate(mpxClient, FEED_NAME);
+        BtVodContentMatchingPredicate predicate = BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxClient, FEED_NAME);
         predicate.init();
         
         assertTrue(predicate.apply(vodEntryAndContent(ID_IN_FEED)));

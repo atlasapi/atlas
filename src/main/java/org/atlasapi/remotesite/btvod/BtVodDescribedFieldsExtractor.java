@@ -2,29 +2,66 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
-
-import com.google.common.collect.Iterables;
+import org.atlasapi.media.entity.Priority;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Topic;
+import org.atlasapi.media.entity.TopicRef;
+import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
+import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 
-import java.util.Map;
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.cache.Cache;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 
 public class BtVodDescribedFieldsExtractor {
 
-    static final String GUID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:guid";
-    static final String ID_ALIAS_NAMESPACE = "gb:bt:tv:mpx:prod:id";
-    
     private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
-    private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
 
-    private final ImageExtractor imageExtractor;
+    private static final Integer TOPIC_CACHE_SIZE = 1000;
+
+    private static final String GUID_SUFFIX = "guid";
+    private static final String ID_SUFFIX = "id";
+    private static final String CONTENT_PROVIDER_SUFFIX = "contentProvider";
+    private static final String GENRE_SUFFIX = "genre";
+
+
+    private final String guidAliasNamespace;
+    private final String idAliasNamespace;
+    private final String contentProviderTopicNamespace;
+    private final String genreTopicNamespace;
+
+    private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
+    private final TopicCreatingTopicResolver topicCreatingTopicResolver;
+    private final TopicWriter topicWriter;
+    private final Cache<String, Topic> topics;
+    private final BtVodSubGenreParser subGenreParser;
+    private final Publisher publisher;
+    private final BtVodContentMatchingPredicate newTopicPredicate;
+    private final BtVodContentMatchingPredicate kidsTopicPredicate;
+    private final BtVodContentMatchingPredicate tvBoxsetTopicPredicate;
+    private final BtVodContentMatchingPredicate subCatchupTopicPredicate;
+    private final Topic newTopic;
+    private final Topic kidsTopic;
+    private final Topic tvBoxsetTopic;
+    private final Topic subCatchupTopic;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -114,19 +151,58 @@ public class BtVodDescribedFieldsExtractor {
     
     
     public BtVodDescribedFieldsExtractor(
-            ImageExtractor imageExtractor
+            TopicCreatingTopicResolver topicCreatingTopicResolver,
+            TopicWriter topicWriter,
+            Publisher publisher,
+            BtVodContentMatchingPredicate newTopicPredicate,
+            BtVodContentMatchingPredicate kidsTopicPredicate,
+            BtVodContentMatchingPredicate tvTopicPredicate,
+            BtVodContentMatchingPredicate subCatchupTopicPredicate,
+            Topic newTopic,
+            Topic kidsTopic,
+            Topic tvBoxsetTopic,
+            Topic subCatchupTopic,
+            String btVodNamespacesPrefix
     ) {
-        this.imageExtractor = checkNotNull(imageExtractor);
+
+        this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
+        this.topicWriter = checkNotNull(topicWriter);
+        this.publisher = checkNotNull(publisher);
+        this.subGenreParser = new BtVodSubGenreParser();
+        this.newTopicPredicate = checkNotNull(newTopicPredicate);
+        this.kidsTopicPredicate = checkNotNull(kidsTopicPredicate);
+        this.tvBoxsetTopicPredicate = checkNotNull(tvTopicPredicate);
+        this.subCatchupTopicPredicate = checkNotNull(subCatchupTopicPredicate);
+        this.newTopic = checkNotNull(newTopic);
+        this.kidsTopic = checkNotNull(kidsTopic);
+        this.tvBoxsetTopic = checkNotNull(tvBoxsetTopic);
+        this.subCatchupTopic = checkNotNull(subCatchupTopic);
+        this.topics = CacheBuilder.newBuilder()
+                .maximumSize(TOPIC_CACHE_SIZE)
+                .build();
+        checkNotNull(btVodNamespacesPrefix);
+        this.guidAliasNamespace = btVodNamespacesPrefix + GUID_SUFFIX;
+        this.idAliasNamespace = btVodNamespacesPrefix + ID_SUFFIX;
+        this.contentProviderTopicNamespace = btVodNamespacesPrefix + CONTENT_PROVIDER_SUFFIX;
+        this.genreTopicNamespace = btVodNamespacesPrefix + GENRE_SUFFIX;
+
+
     }
     
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());
-        described.setImages(createImages(row));
-
-        String btGenre = row.getGenre();
+        if (row.getProductPriority() != null) {
+            Double priority = Double.valueOf(row.getProductPriority());
+            if (priority > 0) {
+                described.setPriority(new Priority(priority * 3, ImmutableList.of("")));
+            } else {
+                described.setPriority(new Priority(10d, ImmutableList.of("")));
+            }
+        }
+        
         ImmutableList.Builder<String> genres = ImmutableList.builder();
-        if (btGenre != null) {
+        for (String btGenre : btGenreStringsFrom(row)) {
             genres.add(
                     String.format(
                             "%s/%s",
@@ -146,20 +222,153 @@ public class BtVodDescribedFieldsExtractor {
             described.setGenres(genres.build());
         }
 
-        if (!described.getImages().isEmpty()) {
+        if (described.getImages() != null
+                && !described.getImages().isEmpty()) {
             described.setImage(Iterables.getFirst(described.getImages(), null).getCanonicalUri());
         }
         
         described.setAliases(aliasesFrom(row));
     }
+
+    public Set<String> btGenreStringsFrom(BtVodEntry row) {
+        ImmutableSet.Builder<String> genres = ImmutableSet.builder();
+
+        if (!Strings.isNullOrEmpty(row.getGenre())) {
+            genres.add(row.getGenre());
+        }
+
+        for (BtVodProductScope scope : row.getProductScopes()) {
+            if (scope.getProductMetadata() != null) {
+                String subGenres = scope.getProductMetadata().getSubGenres();
+                genres.addAll(subGenreParser.parse(subGenres));
+            }
+        }
+        return genres.build();
+    }
+
+    public Set<TopicRef> topicsFrom(VodEntryAndContent vodAndContent) {
+        ImmutableSet.Builder<TopicRef> topicRefs = ImmutableSet.builder();
+        topicRefs.addAll(genreTopicsFrom(vodAndContent));
+        topicRefs.addAll(topicFrom(vodAndContent, newTopic, newTopicPredicate).asSet());
+        topicRefs.addAll(topicFrom(vodAndContent, kidsTopic, kidsTopicPredicate).asSet());
+        topicRefs.addAll(topicFrom(vodAndContent, tvBoxsetTopic, tvBoxsetTopicPredicate).asSet());
+        topicRefs.addAll(topicFrom(vodAndContent, subCatchupTopic, subCatchupTopicPredicate).asSet());
+        topicRefs.addAll(contentProviderTopicFor(vodAndContent).asSet());
+        return topicRefs.build();
+    }
     
+    private Optional<TopicRef> topicFrom(final VodEntryAndContent vodAndContent, Topic topic, BtVodContentMatchingPredicate predicate) {
+        if (predicate.apply(vodAndContent)) {
+            return Optional.of(topicRefFor(topic));
+        }
+        return Optional.absent();
+    }
+    
+    private Set<TopicRef> genreTopicsFrom(final VodEntryAndContent vodAndContent) {
+        BtVodEntry row = vodAndContent.getBtVodEntry();
+        ImmutableSet.Builder<TopicRef> genres = ImmutableSet.builder();
+
+        if (!Strings.isNullOrEmpty(vodAndContent.getBtVodEntry().getGenre())) {
+            genres.add(
+                    topicRefFor(
+                            cacheKey(genreTopicNamespace, row.getGenre()),
+                            genreCallable(genreTopicNamespace, row.getGenre())
+                    )
+            );
+        }
+
+        for (BtVodProductScope scope : row.getProductScopes()) {
+            if (scope.getProductMetadata() != null) {
+                List<String> subGenres = subGenreParser.parse(scope.getProductMetadata().getSubGenres());
+                for (final String subGenre : subGenres) {
+                    genres.add(
+                            topicRefFor(
+                                    cacheKey(genreTopicNamespace, subGenre),
+                                    genreCallable(genreTopicNamespace, subGenre)
+                            )
+                    );
+                }
+            }
+        }
+        return genres.build();
+    }
+
+    private Callable<Topic> genreCallable(final String namespace, final String genre) {
+        return new Callable<Topic>() {
+            @Override
+            public Topic call() throws Exception {
+                Topic topic = topicCreatingTopicResolver.topicFor(
+                        publisher,
+                        namespace,
+                        genre
+                ).requireValue();
+                topic.setTitle(genre);
+                topicWriter.write(topic);
+                return topic;
+            }
+        };
+    }
+
     public Iterable<Alias> aliasesFrom(BtVodEntry row) {
         return ImmutableSet.of(
-                    new Alias(GUID_ALIAS_NAMESPACE, row.getGuid()),
-                    new Alias(ID_ALIAS_NAMESPACE, row.getId()));
+                new Alias(guidAliasNamespace, row.getGuid()),
+                new Alias(idAliasNamespace, row.getId()));
     }
 
     private Iterable<Image> createImages(BtVodEntry row) {
-        return imageExtractor.extractImages(row.getProductImages());
+        // images are of poor quality, so not useful to save
+        // return imageExtractor.extractImages(row.getProductImages());
+        return ImmutableSet.of();
+    }
+
+    private Optional<TopicRef> contentProviderTopicFor(VodEntryAndContent vodAndContent) {
+        final String contentProviderId = vodAndContent.getBtVodEntry().getContentProviderId();
+        if (contentProviderId == null) {
+            return Optional.absent();
+        }
+
+        return Optional.of(
+                topicRefFor(
+                        cacheKey(contentProviderTopicNamespace, contentProviderId),
+                        new Callable<Topic>() {
+                            @Override
+                            public Topic call() throws Exception {
+                                Topic topic = topicCreatingTopicResolver.topicFor(
+                                        publisher,
+                                        contentProviderTopicNamespace,
+                                        contentProviderId
+                                ).requireValue();
+                                topic.setTitle(contentProviderId);
+                                topicWriter.write(topic);
+                                return topic;
+                            }
+                        }
+                )
+
+        );
+
+    }
+
+    private String cacheKey(String namespace, String value) {
+        return String.format(
+                "%s:%s",
+                namespace,
+                value
+        );
+    }
+
+    private TopicRef topicRefFor(String key, Callable<Topic> callable) {
+        try {
+            return topicRefFor(topics.get(key, callable));
+        } catch (ExecutionException e) {
+            throw Throwables.propagate(e);
+        }
+    }
+    
+    public TopicRef topicRefFor(Topic topic) {
+        return new TopicRef(topic, 
+                            1.0f, 
+                            false, 
+                            TopicRef.Relationship.ABOUT);
     }
 }

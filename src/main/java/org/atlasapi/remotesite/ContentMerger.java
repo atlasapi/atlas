@@ -6,6 +6,8 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
@@ -27,11 +29,11 @@ import com.google.common.collect.Sets;
 public class ContentMerger {
 
     private static interface TopicMergeStrategy {
-        Item mergeTopics(Item current, Item extracted);
+        Content mergeTopics(Content current, Content extracted);
     }
 
     private static interface VersionMergeStrategy {
-        Item mergeVersions(Item current, Item extracted);
+        Content mergeVersions(Content current, Content extracted);
     }
     
     static interface AliasMergeStrategy {
@@ -64,8 +66,6 @@ public class ContentMerger {
 
     public Item merge(Item current, Item extracted) {
 
-        current = versionMergeStrategy.mergeVersions(current, extracted);
-        current = topicsMergeStrategy.mergeTopics(current, extracted);
         current = aliasMergeStrategy.mergeAliases(current, extracted);
         current = mergeContents(current, extracted);
 
@@ -105,6 +105,7 @@ public class ContentMerger {
 
     private Episode mergeEpisodeSpecificFields(Episode current, Episode extracted) {
         current.setEpisodeNumber(extracted.getEpisodeNumber());
+        current.setSeriesNumber(extracted.getSeriesNumber());
 
         if ( current.getSeriesRef() == null
                 || extracted.getSeriesRef() == null
@@ -157,6 +158,9 @@ public class ContentMerger {
         current.setPresentationChannel(extracted.getPresentationChannel());
         current.setMediaType(extracted.getMediaType());
         current.setSpecialization(extracted.getSpecialization());
+        current.setPriority(extracted.getPriority());
+        topicsMergeStrategy.mergeTopics(current, extracted);
+        versionMergeStrategy.mergeVersions(current, extracted);
 
         return current;
     }
@@ -182,12 +186,12 @@ public class ContentMerger {
 
     private static class LeaveEverythingAlone extends MergeStrategy implements TopicMergeStrategy, VersionMergeStrategy, AliasMergeStrategy {
         @Override
-        public Item mergeTopics(Item current, Item extracted) {
+        public Content mergeTopics(Content current, Content extracted) {
             return current;
         }
 
         @Override
-        public Item mergeVersions(Item current, Item extracted) {
+        public Content mergeVersions(Content current, Content extracted) {
             return current;
         }
 
@@ -200,13 +204,13 @@ public class ContentMerger {
 
     private static class ReplaceEverything extends MergeStrategy implements TopicMergeStrategy, VersionMergeStrategy, AliasMergeStrategy {
         @Override
-        public Item mergeTopics(Item current, Item extracted) {
+        public Content mergeTopics(Content current, Content extracted) {
             current.setTopicRefs(extracted.getTopicRefs());
             return current;
         }
 
         @Override
-        public Item mergeVersions(Item current, Item extracted) {
+        public Content mergeVersions(Content current, Content extracted) {
             current.setVersions(extracted.getVersions());
             return current;
         }
@@ -219,9 +223,9 @@ public class ContentMerger {
         }
     }
 
-    private static class StandardMerge extends MergeStrategy implements VersionMergeStrategy, AliasMergeStrategy {
+    private static class StandardMerge extends MergeStrategy implements VersionMergeStrategy, AliasMergeStrategy, TopicMergeStrategy {
         @Override
-        public Item mergeVersions(Item current, Item extracted) {
+        public Content mergeVersions(Content current, Content extracted) {
             Map<String, Version> mergedVersions = Maps.newHashMap();
             for (Version version : current.getVersions()) {
                 mergedVersions.put(version.getCanonicalUri(), version);
@@ -237,7 +241,6 @@ public class ContentMerger {
                     } else {
                         mergedVersion.setDuration(Duration.standardSeconds(version.getDuration()));
                     }
-
                     mergedVersions.put(version.getCanonicalUri(), mergedVersion);
                 } else {
                     mergedVersions.put(version.getCanonicalUri(), version);
@@ -253,6 +256,17 @@ public class ContentMerger {
             current.setAliasUrls(Sets.union(current.getAliasUrls(), extracted.getAliasUrls()));
             return current;
         }
+
+        @Override
+        public Content mergeTopics(Content current, Content extracted) {
+            current.setTopicRefs(
+                    Sets.union(
+                            ImmutableSet.copyOf(current.getTopicRefs()),
+                            ImmutableSet.copyOf(extracted.getTopicRefs())
+                    )
+            );
+            return current;
+        }
     }
 
     private static class ReplaceTopicsBasedOnEquivalence extends MergeStrategy implements TopicMergeStrategy {
@@ -263,7 +277,7 @@ public class ContentMerger {
         }
 
         @Override
-        public Item mergeTopics(Item current, Item extracted) {
+        public Content mergeTopics(Content current, Content extracted) {
             Set<Equivalence.Wrapper<TopicRef>> mergedRefs = new HashSet<>();
 
             for (TopicRef topicRef : current.getTopicRefs()) {

@@ -22,21 +22,10 @@ public class BtVodProductRating {
         this.productScheme = productScheme;
     }
 
-    public Integer getProductRating() {
-        if (productRating == null) {
-            return null;
-        }
-        try {
-            return Ints.tryParse(productRating);
-        } catch (Exception e) {
-            return null;
-        }
+    public String getProductRating() {
+        return productRating;
     }
-
-    public String getPlproduct$ratingString() {
-       return productRating;
-    }
-
+    
     public void setProductRating(String productRating) {
         this.productRating = productRating;
     }

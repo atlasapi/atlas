@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.btvod.model;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.gson.annotations.SerializedName;
 
 import java.util.List;
@@ -8,6 +9,12 @@ public class BtVodEntry {
 
     private static final String CONTENT_PROVIDER = "contentProvider";
     private static final String GENRE = "genre";
+    private static final String SUBSCRIPTION_PRODUCT_SCHEME = "subscription";
+    private static final String SCHEDULER_CHANNEL = "schedulerChannel";
+    private static final String TRAILER_SERVICE_TYPE_SCHEME = "trailerServiceType";
+    private static final String SERVICE_TYPE_SCHEME = "serviceType";
+    private static final String MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME = "masterAgreementOtgTvodPlay";
+    
     private String id;
     private String guid;
     private String title;
@@ -49,6 +56,18 @@ public class BtVodEntry {
     @SerializedName("btproduct$trailerMediaId")
     private String productTrailerMediaId;
 
+    @SerializedName("btproduct$duration")
+    private Long productDuration;
+    
+    @SerializedName("btproduct$productOfferingType")
+    private String productOfferingType;
+
+    @SerializedName("btproduct$seriesNumber")
+    private Integer seriesNumber;
+
+    @SerializedName("btproduct$parentGuid")
+    private String parentGuid;
+
     public BtVodEntry() {}
 
     public String getGuid() {
@@ -71,22 +90,66 @@ public class BtVodEntry {
         return productType;
     }
 
+    public String getProductOfferingType() {
+        return productOfferingType;
+    }
+
     public String getContentProviderId() {
+        return productTag(CONTENT_PROVIDER);
+    }
+
+    /**
+     * Platforms the trailer media is available on
+     */
+    public ImmutableSet<String> getTrailerServiceTypes() {
+        return productTags(TRAILER_SERVICE_TYPE_SCHEME);
+    }
+
+    /**
+     * Platforms the content media is available on
+     */
+    public ImmutableSet<String> getServiceTypes() {
+        return productTags(SERVICE_TYPE_SCHEME);
+    }
+
+    private String productTag(String tag) {
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
-            if (plproduct$productTag.getPlproduct$scheme().equals(CONTENT_PROVIDER)) {
+            if (plproduct$productTag.getPlproduct$scheme().equals(tag)) {
                 return plproduct$productTag.getPlproduct$title();
             }
         }
 
         return null;
     }
-    public String getGenre() {
+
+    private ImmutableSet<String> productTags(String tag) {
+        ImmutableSet.Builder<String> tags = ImmutableSet.builder();
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
-            if (plproduct$productTag.getPlproduct$scheme().equals(GENRE)) {
+            if (plproduct$productTag.getPlproduct$scheme().equals(tag)) {
+                tags.add(plproduct$productTag.getPlproduct$title());
+            }
+        }
+        return tags.build();
+    }
+
+    public String getGenre() {
+        return productTag(GENRE);
+    }
+
+    public ImmutableSet<String> getSubscriptionCodes() {
+        return productTags(SUBSCRIPTION_PRODUCT_SCHEME);
+    }
+
+    public String getMasterAgreementOtgTvodPlay() {
+        return productTag(MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME);
+    }
+
+    public String getSchedulerChannel() {
+        for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
+            if (plproduct$productTag.getPlproduct$scheme().equals(SCHEDULER_CHANNEL)) {
                 return plproduct$productTag.getPlproduct$title();
             }
         }
-
         return null;
     }
 
@@ -112,6 +175,14 @@ public class BtVodEntry {
 
     public void setDescription(String description) {
         this.description = description;
+    }
+
+    public void setProductDuration(Long productDuration) {
+        this.productDuration = productDuration;
+    }
+
+    public Long getProductDuration() {
+        return productDuration;
     }
 
     public void setProductLongDescription(String productLongDescription) {
@@ -212,5 +283,17 @@ public class BtVodEntry {
 
     public void setProductTrailerMediaId(String productTrailerMediaId) {
         this.productTrailerMediaId = productTrailerMediaId;
+    }
+
+    public Integer getSeriesNumber() {
+        return seriesNumber;
+    }
+
+    public String getParentGuid() {
+        return parentGuid;
+    }
+
+    public void setParentGuid(String parentGuid) {
+        this.parentGuid = parentGuid;
     }
 }

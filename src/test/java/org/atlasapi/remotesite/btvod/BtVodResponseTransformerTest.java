@@ -45,6 +45,7 @@ public class BtVodResponseTransformerTest {
         assertThat(entry1.getGuid(), is("BBJ374300A"));
         assertThat(entry1.getId(), is("http://data.product.theplatform.eu/product/data/Product/247726"));
         assertThat(entry1.getProductTrailerMediaId(), is("http://bt.data.media.theplatform.eu/media/data/Media/3510853473"));
+        assertThat(entry1.getContentProviderId(), is("MCL"));
 
         BtVodProductPricingTier entry1PricingTier = Iterables.getOnlyElement(entry1.getProductPricingPlan().getProductPricingTiers());
 
@@ -55,12 +56,12 @@ public class BtVodResponseTransformerTest {
 
         BtVodProductRating restriction = Iterables.getOnlyElement(entry1.getplproduct$ratings());
 
-        assertThat(restriction.getProductRating(), is(12));
+        assertThat(restriction.getProductRating(), is("12"));
         assertThat(restriction.getProductScheme(), is("urn:www.bbfc.co.uk"));
 
         BtVodPlproductImages images = entry1.getProductImages();
 
-        BtVodImage packshotImage = Iterables.getOnlyElement(images.getPackshotImages());
+        BtVodImage packshotImage = Iterables.getOnlyElement(images.getSinglePackshotImages());
         BtVodImage backgroundImage = Iterables.getOnlyElement(images.getBackgroundImages());
 
         assertThat(packshotImage.getPlproduct$mediaFileId(), is("http://bt.data.media.theplatform.eu/media/data/MediaFile/4828741146"));

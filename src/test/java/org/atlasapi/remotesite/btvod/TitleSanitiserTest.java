@@ -23,12 +23,40 @@ public class TitleSanitiserTest {
 
     }
 
+    @Test
+    public void testRemovesCurzonSuffixFromTitles() {
+        String titleWithCurzonSuffix = "Film (Curzon)";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithCurzonSuffix), is("Film"));
+    }
 
     @Test
-    public void testDoesntMessUpCorrectTitles(){
-        String title = "Modern Family: S03 - HD S3-E17 Truth Be Told - HD";
+    public void testRemovesCurzonSuffixFromHDTitles() {
+        String titleWithCurzonSuffix = "Film (Curzon) - HD";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithCurzonSuffix), is("Film"));
+    }
+
+    @Test
+    public void testRemovesHdFromWithinTitle(){
+        String title = "Modern Family: S03 S3-E17 Truth Be Told";
 
         assertThat(titleSanitiser.sanitiseTitle(title), is(title));
-
+    }
+    
+    @Test
+    public void testRemovesComingSoonSuffix() {
+        String titleWithHdSuffix = "Film : Coming Soon";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithHdSuffix), is("Film"));
+    }
+    
+    @Test
+    public void testRemovesBeforeSuffix() {
+        String titleWithHdSuffix = "Film (Before DVD)";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithHdSuffix), is("Film"));
+    }
+    
+    @Test
+    public void testRemovesHdSuffix() {
+        String titleWithHdSuffix = "Film - HD";
+        assertThat(titleSanitiser.sanitiseTitle(titleWithHdSuffix), is("Film"));
     }
 }

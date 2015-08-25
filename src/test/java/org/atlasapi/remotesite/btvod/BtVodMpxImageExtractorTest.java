@@ -3,8 +3,10 @@ package org.atlasapi.remotesite.btvod;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodImage;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproductImages;
 import org.junit.Test;
@@ -23,6 +25,8 @@ public class BtVodMpxImageExtractorTest {
 
     @Test
     public void testExtractImages() throws Exception {
+        BtVodEntry entry = new BtVodEntry();
+        
         BtVodImage packShotImage1 = new BtVodImage();
         packShotImage1.setPlproduct$mediaFileId("mediaFileId1");
         packShotImage1.setPlproduct$height(1);
@@ -47,14 +51,21 @@ public class BtVodMpxImageExtractorTest {
         backgroundImage2.setPlproduct$width(8);
         backgroundImage2.setPlproduct$url("imageUrl4");
 
+        BtVodImage packShotImageSd = new BtVodImage();
+        packShotImageSd.setPlproduct$mediaFileId("mediaFileIdSd");
+        packShotImageSd.setPlproduct$height(9);
+        packShotImageSd.setPlproduct$width(10);
+        packShotImageSd.setPlproduct$url("imageUrlSd");
 
         BtVodPlproductImages images = new BtVodPlproductImages();
-        images.setPackshotImages(ImmutableList.of(packShotImage1, packShotImage2));
+        images.setSinglePackshotImages(ImmutableList.of(packShotImageSd));
+        images.setSinglePackshotImagesHd(ImmutableList.of(packShotImage1, packShotImage2));
         images.setBackgroundImages(ImmutableList.of(backgroundImage1, backgroundImage2));
 
-        Set<Image> extractedImages = imageExtractor.extractImages(images);
+        entry.setProductImages(images);
+        Set<Image> extractedImages = imageExtractor.imagesFor(entry);
 
-        assertThat(extractedImages.size(), is(4));
+        assertThat(extractedImages.size(), is(3));
 
         assertThat(
                 Iterables.any(
@@ -75,19 +86,10 @@ public class BtVodMpxImageExtractorTest {
         assertThat(
                 Iterables.any(
                         extractedImages,
-                        predicateFor(BASE_URL + "imageUrl3", 5, 6, ImageType.ADDITIONAL)
+                        predicateFor(BASE_URL + "imageUrlSd", 9, 10, ImageType.PRIMARY)
                 ),
                 is(true)
         );
-
-        assertThat(
-                Iterables.any(
-                        extractedImages,
-                        predicateFor(BASE_URL + "imageUrl4", 7, 8, ImageType.ADDITIONAL)
-                ),
-                is(true)
-        );
-
 
     }
 

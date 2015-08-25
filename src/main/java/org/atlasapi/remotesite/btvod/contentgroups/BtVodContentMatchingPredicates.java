@@ -9,7 +9,7 @@ import javax.annotation.Nullable;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.remotesite.btvod.BtMpxVodClient;
-import org.atlasapi.remotesite.btvod.BtVodContentGroupPredicate;
+import org.atlasapi.remotesite.btvod.BtVodContentMatchingPredicate;
 import org.atlasapi.remotesite.btvod.VodEntryAndContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
@@ -22,9 +22,9 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 
 
-public class BtVodContentGroupPredicates {
+public class BtVodContentMatchingPredicates {
 
-    private static final Logger log = LoggerFactory.getLogger(BtVodContentGroupPredicates.class);
+    private static final Logger log = LoggerFactory.getLogger(BtVodContentMatchingPredicates.class);
     
     private static final String FOX_PROVIDER_ID = "XXA";
     private static final String SONY_PROVIDER_ID = "XXB";
@@ -32,15 +32,15 @@ public class BtVodContentGroupPredicates {
     private static final String CZN_CONTENT_PROVIDER_ID = "CHC";
     private static final String FILM_CATEGORY = "Film";
     
-    public static BtVodContentGroupPredicate schedulerChannelPredicate(final String schedulerChannel) {
+    public static BtVodContentMatchingPredicate schedulerChannelPredicate(final String schedulerChannel) {
 
-        return new BtVodContentGroupPredicate() {
+        return new BtVodContentMatchingPredicate() {
 
             @Override
             public boolean apply(VodEntryAndContent input) {
                 return schedulerChannel.equals(
-                        input.getBtVodEntry().getProductType()
-                );
+                        input.getBtVodEntry().getSchedulerChannel()
+                       );
             }
 
             @Override
@@ -50,9 +50,27 @@ public class BtVodContentGroupPredicates {
         };
     }
 
-    public static BtVodContentGroupPredicate contentProviderPredicate(final String providerId) {
+    public static BtVodContentMatchingPredicate schedulerChannelAndOfferingTypePredicate(
+            final String schedulerChannel, final Set<String> productOfferingTypes) {
+
+        return new BtVodContentMatchingPredicate() {
+
+            @Override
+            public boolean apply(VodEntryAndContent input) {
+                return schedulerChannel.equals(input.getBtVodEntry().getSchedulerChannel()) &&
+                        productOfferingTypes.contains(input.getBtVodEntry().getProductOfferingType().toLowerCase());
+            }
+
+            @Override
+            public void init() {
+
+            }
+        };
+    }
+
+    public static BtVodContentMatchingPredicate contentProviderPredicate(final String providerId) {
         
-        return new BtVodContentGroupPredicate() {
+        return new BtVodContentMatchingPredicate() {
 
             @Override
             public boolean apply(VodEntryAndContent input) {
@@ -70,9 +88,9 @@ public class BtVodContentGroupPredicates {
     }
     
     @SuppressWarnings("unchecked")
-    public static BtVodContentGroupPredicate buyToOwnPredicate() {
+    public static BtVodContentMatchingPredicate buyToOwnPredicate() {
         
-        return new BtVodContentGroupPredicate() {
+        return new BtVodContentMatchingPredicate() {
             
             private final Predicate<VodEntryAndContent> delegate =
                     Predicates.or(
@@ -92,9 +110,9 @@ public class BtVodContentGroupPredicates {
         };
     };
     
-    public static BtVodContentGroupPredicate filmPredicate() {
+    public static BtVodContentMatchingPredicate filmPredicate() {
         
-        return new BtVodContentGroupPredicate() {
+        return new BtVodContentMatchingPredicate() {
             
             @SuppressWarnings("unchecked")
             private final Predicate<VodEntryAndContent> delegate =
@@ -116,14 +134,14 @@ public class BtVodContentGroupPredicates {
         };
     }
     
-    public static BtVodContentGroupPredicate cznPredicate() {
+    public static BtVodContentMatchingPredicate cznPredicate() {
         return contentProviderPredicate(CZN_CONTENT_PROVIDER_ID);
     }
     
-    public static BtVodContentGroupPredicate portalContentGroupPredicate(final PortalClient portalClient, final String groupId,
+    public static BtVodContentMatchingPredicate portalGroupContentMatchingPredicate(final PortalClient portalClient, final String groupId,
             @Nullable final Class<? extends Described> typeFilter) {
         
-        return new BtVodContentGroupPredicate() {
+        return new BtVodContentMatchingPredicate() {
             
             private Set<String> ids = null;
             
@@ -144,9 +162,9 @@ public class BtVodContentGroupPredicates {
         };
     }
     
-    public static BtVodContentGroupPredicate mpxContentGroupPredicate(final BtMpxVodClient mpxClient, final String feedName) {
+    public static BtVodContentMatchingPredicate mpxFeedContentMatchingPredicate(final BtMpxVodClient mpxClient, final String feedName) {
         
-        return new BtVodContentGroupPredicate() {
+        return new BtVodContentMatchingPredicate() {
             
             private Set<String> ids = null;
             

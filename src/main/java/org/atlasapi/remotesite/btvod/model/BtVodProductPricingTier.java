@@ -12,6 +12,9 @@ public class BtVodProductPricingTier {
 
     @SerializedName("plproduct$amounts")
     private BtVodProductAmounts productAmounts;
+    
+    @SerializedName("plproduct$isBlackout")
+    private Boolean isBlackout;
 
     public BtVodProductPricingTier() {
     }
@@ -38,5 +41,13 @@ public class BtVodProductPricingTier {
 
     public void setProductAmounts(BtVodProductAmounts productAmounts) {
         this.productAmounts = productAmounts;
+    }
+    
+    public void setIsBlackout(Boolean isBlackout) {
+        this.isBlackout = isBlackout;
+    }
+    
+    public Boolean getIsBlackout() {
+        return isBlackout;
     }
 }

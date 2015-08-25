@@ -144,8 +144,7 @@ public class BtVodModule {
         );
     }
 
-    @Bean
-    public BtVodUpdater btVodUpdater() {
+    private BtVodUpdater btVodUpdater() {
         return new BtVodUpdater(
                 mergingContentWriter(),
                 btVodData(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
@@ -309,8 +308,7 @@ public class BtVodModule {
         return new BrandUriExtractor(uriPrefix, titleSanitiser());
     }
     
-    @Bean
-    public TitleSanitiser titleSanitiser() {
+    private TitleSanitiser titleSanitiser() {
         return new TitleSanitiser();
     }
     public NoImageExtractor noImageExtractor() {
@@ -329,8 +327,7 @@ public class BtVodModule {
         );
     }
 
-    @Bean
-    public HttpBtMpxVodClient mpxVodClient(String baseUrl, String qParam) {
+    private HttpBtMpxVodClient mpxVodClient(String baseUrl, String qParam) {
         return new HttpBtMpxVodClient(
                 new SimpleHttpClientBuilder().withUserAgent(HttpClients.ATLAS_USER_AGENT).build(),
                 new HttpBtMpxFeedRequestProvider(baseUrl, qParam)

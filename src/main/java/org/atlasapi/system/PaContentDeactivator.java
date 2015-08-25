@@ -32,8 +32,14 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
+import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.nio.file.OpenOption;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -98,28 +104,43 @@ public class PaContentDeactivator {
         deactivate(typeToIds, threads);
     }
 
-    public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads) {
+    public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads) throws IOException {
         ImmutableSet<Long> activeAtlasContentIds = resolvePaAliasesToIds(paNamespaceToAliases);
         final BloomFilter<Long> filter = bloomFilterFor(activeAtlasContentIds);
+        LOG.info("Serializing bloom filter to disk");
+        OutputStream os = Files.newOutputStream(Paths.get("/tmp", "bloom-filter"), StandardOpenOption.CREATE);
+        ObjectOutputStream oos = new ObjectOutputStream(os);
+        oos.writeObject(filter);
+        LOG.info("Serialized bloom filter to disk");
         final Iterator<Content> contentIterator = contentLister.listContent(
                 createListingCriteria(progressStore.progressForTask(getClass().getSimpleName()))
         );
         final ThreadPoolExecutor executor = createThreadPool(threads);
-        final AtomicInteger progressCount = new AtomicInteger();
+        final AtomicInteger deactivatedCount = new AtomicInteger();
+        final AtomicInteger processedCount = new AtomicInteger();
         while (contentIterator.hasNext()) {
             Content content = contentIterator.next();
             if (
-                    !Iterables.any(content.getAllUris(), IS_FILM)
-                            && !filter.mightContain(content.getId())
-                            &&  content.getGenericDescription() != null
-                            && !content.getGenericDescription()
-                    ) {
+                    !Iterables.any(content.getAllUris(), IS_FILM) &&
+                    !filter.mightContain(content.getId()) &&
+                    content.getGenericDescription() != null &&
+                    !content.getGenericDescription()) {
+
                 LOG.info("Content {} - {} not in bloom filter, deactivating...",
                         content.getClass().getSimpleName(), content.getId());
-                executor.submit(contentDeactivatingRunnable(content, progressCount));
+                executor.submit(contentDeactivatingRunnable(content, deactivatedCount));
+            }
+            int count = processedCount.incrementAndGet();
+            if (count % 1000 == 0) {
+                progressStore.storeProgress(
+                        getClass().getSimpleName(),
+                        ContentListingProgress.progressFrom(content)
+                );
+                LOG.info("Processed {} items, saving progress", Integer.valueOf(count));
             }
         }
-        LOG.info("Deactivated {} items", progressCount.get());
+        LOG.info("Finished processing {} items", Integer.valueOf(processedCount.get()));
+        LOG.info("Finished deactivating {} items", Integer.valueOf(deactivatedCount.get()));
     }
 
     private Runnable contentDeactivatingRunnable(final Content content, final AtomicInteger progressCount) {
@@ -135,10 +156,7 @@ public class PaContentDeactivator {
                 }
                 int count = progressCount.incrementAndGet();
                 if (count % 1000 == 0) {
-                    progressStore.storeProgress(
-                            getClass().getSimpleName(),
-                            ContentListingProgress.progressFrom(content)
-                    );
+                    LOG.info("Deactivated {} items", Integer.valueOf(count));
                 }
             }
         };
@@ -172,6 +190,7 @@ public class PaContentDeactivator {
 
     private BloomFilter<Long> bloomFilterFor(Set<Long> ids) {
         BloomFilter<Long> filter = BloomFilter.create(LONG_FUNNEL, ids.size());
+        LOG.info("Creating and populating bloom filter with {} entries", Integer.valueOf(ids.size()));
         return populateBloomFilter(filter, ids);
     }
 

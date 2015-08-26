@@ -215,7 +215,7 @@ public class BtVodModule {
     }
 
     private ScheduledTask btVodUpdater(Publisher publisher, String envName, String feedBaseUrl, String feedName, String feedQParam) {
-        String uriPrefix = String.format(TVE_URI_PREFIX_FORMAT, envName);
+        String uriPrefix = String.format(TVE_URI_PREFIX_FORMAT, publisher.key());
         return new BtVodUpdater(
                 mergingContentWriter(),
                 btVodData(feedBaseUrl, feedName, feedQParam),

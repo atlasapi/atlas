@@ -41,9 +41,6 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
  */
 public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
-
-
-
     static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
 
     private static final Logger log = LoggerFactory.getLogger(BtVodBrandWriter.class);
@@ -121,6 +118,8 @@ public class BtVodBrandWriter implements BtVodDataProcessor<UpdateProgress> {
 
         if (brandUriExtractor.canParseBrandFromEpisode(row)) {
             brand.setTitle(brandUriExtractor.brandTitleFromEpisodeTitle(row.getTitle()));
+        } else if (brandUriExtractor.canParseBrandFromSeries(row)) {
+            brand.setTitle(brandUriExtractor.brandTitleFromSeriesTitle(row.getTitle()));
         } else {
             String productId = row.getGuid();
             throw new RuntimeException("Unexpected state - row with product_id: " + productId + " is not a brand nor is possible to parse a brand from it");

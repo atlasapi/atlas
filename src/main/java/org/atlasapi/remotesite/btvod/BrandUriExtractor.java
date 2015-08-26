@@ -113,6 +113,10 @@ public class BrandUriExtractor {
         return false;
     }
 
+    public boolean canParseBrandFromSeries(BtVodEntry row) {
+        return isTitleSyntesizableFromSeries(row.getTitle());
+    }
+
     private boolean isTitleSyntesizableFromSeries(String title) {
         for (Pattern brandPattern : BRAND_TITLE_FROM_SERIES_PATTERNS) {
             if (brandPattern.matcher(stripHDSuffix(title)).matches()) {

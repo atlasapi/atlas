@@ -69,7 +69,9 @@ public class PaContentDeactivator {
     private static final Funnel<Long> LONG_FUNNEL = new Funnel<Long>() {
         @Override
         public void funnel(Long aLong, PrimitiveSink sink) {
-            sink.putLong(aLong);
+            if (aLong != null) {
+                sink.putLong(aLong);
+            }
         }
     };
     private static final Function<LookupEntry, Long> LOOKUP_ENTRY_TO_ID = new Function<LookupEntry, Long>() {

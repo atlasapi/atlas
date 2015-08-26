@@ -107,7 +107,7 @@ public class PaContentDeactivator {
     }
 
     public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads) throws IOException {
-        ImmutableSet<Long> activeAtlasContentIds = resolvePaAliasesToIds(paNamespaceToAliases);
+        ImmutableSet<Long> activeAtlasContentIds = resolvePaAliasesToIds(paNamespaceToAliases, threads);
         final BloomFilter<Long> filter = bloomFilterFor(activeAtlasContentIds);
         final Iterator<Content> contentIterator = contentLister.listContent(
                 createListingCriteria(progressStore.progressForTask(getClass().getSimpleName()))
@@ -221,11 +221,18 @@ public class PaContentDeactivator {
         return ImmutableSetMultimap.copyOf(typeToIds);
     }
 
-    private ImmutableSet<Long> resolvePaAliasesToIds(Multimap<String, String> typeToIds) {
-        ImmutableSet.Builder<Long> ids = ImmutableSet.builder();
-        for (Map.Entry<String, Collection<String>> entry : typeToIds.asMap().entrySet()) {
-            for (List<String> idPartition : Iterables.partition(entry.getValue(), 200)) {
-                ids.addAll(lookupIdForPaAlias(entry.getKey(), idPartition));
+    private ImmutableSet<Long> resolvePaAliasesToIds(Multimap<String, String> typeToIds, Integer threads) {
+        ThreadPoolExecutor threadPool = createThreadPool(threads);
+        final ImmutableSet.Builder<Long> ids = ImmutableSet.builder();
+        for (final Map.Entry<String, Collection<String>> entry : typeToIds.asMap().entrySet()) {
+            for (final List<String> idPartition : Iterables.partition(entry.getValue(), 200)) {
+                LOG.info("Resolving PA aliases for ids {}", idPartition);
+                threadPool.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        ids.addAll(lookupIdForPaAlias(entry.getKey(), idPartition));
+                    }
+                });
             }
         }
         return ids.build();

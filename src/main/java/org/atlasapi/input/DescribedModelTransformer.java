@@ -45,8 +45,10 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         result.setThumbnail(inputContent.getThumbnail());
         result.setRelatedLinks(relatedLinks(inputContent.getRelatedLinks()));
         result.setImages(transformImages(inputContent.getImages()));
-        result.setPriority(new Priority(inputContent.getPriority().getScore(),
-            inputContent.getPriority().getReasons()));
+        if (inputContent.getPriority() != null) {
+            result.setPriority(new Priority(inputContent.getPriority().getScore(),
+                inputContent.getPriority().getReasons()));
+        }
         if (inputContent.getSpecialization() != null) {
             result.setSpecialization(Specialization.fromKey(inputContent.getSpecialization()).valueOrNull());
         }

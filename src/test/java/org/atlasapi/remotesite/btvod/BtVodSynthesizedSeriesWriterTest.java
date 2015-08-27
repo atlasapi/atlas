@@ -38,6 +38,7 @@ public class BtVodSynthesizedSeriesWriterTest {
     private static final Publisher PUBLISHER = Publisher.BT_VOD;
     private static final String SERIES_GUID = "series_guid";
     private static final Topic NEW_TOPIC = new Topic(123L);
+    private static final String BT_VOD_NAMESPACE_PREFIX = "Namespace prefix";
 
     private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
     private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
@@ -61,7 +62,8 @@ public class BtVodSynthesizedSeriesWriterTest {
             NEW_TOPIC,
             new Topic(234L),
             new Topic(345L),
-            new Topic(456L)
+            new Topic(456L),
+            BT_VOD_NAMESPACE_PREFIX
     );
 
     private final TopicRef newTopicRef = new TopicRef(

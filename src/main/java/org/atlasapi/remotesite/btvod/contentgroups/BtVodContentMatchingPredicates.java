@@ -6,6 +6,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
+import com.google.common.base.Strings;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.remotesite.btvod.BtMpxVodClient;
@@ -57,8 +58,10 @@ public class BtVodContentMatchingPredicates {
 
             @Override
             public boolean apply(VodEntryAndContent input) {
-                return schedulerChannel.equals(input.getBtVodEntry().getSchedulerChannel()) &&
-                        productOfferingTypes.contains(input.getBtVodEntry().getProductOfferingType().toLowerCase());
+                return schedulerChannel.equals(input.getBtVodEntry().getSchedulerChannel())
+                       && productOfferingTypes.contains(
+                        Strings.nullToEmpty(input.getBtVodEntry().getProductOfferingType()).toLowerCase()
+                );
             }
 
             @Override

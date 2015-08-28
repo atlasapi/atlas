@@ -266,6 +266,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
     private Item createItem(BtVodEntry row) {
         Item item = new Item(uriFor(row), null, publisher);
+        item.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
         item.setSpecialization(Specialization.TV);
         return item;
     }

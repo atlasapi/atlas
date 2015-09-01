@@ -1,6 +1,8 @@
 package org.atlasapi.query.v2;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.common.time.DateTimeZones.UTC;
+import static org.joda.time.DateTimeConstants.JANUARY;
 
 import java.io.IOException;
 import java.util.Collection;
@@ -12,13 +14,14 @@ import javax.xml.bind.JAXBElement;
 
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.feeds.tasks.Destination.DestinationType;
+import org.atlasapi.feeds.tvanytime.TvAnytimeGenerator;
 import org.atlasapi.feeds.tvanytime.TvaGenerationException;
-import org.atlasapi.feeds.tvanytime.granular.GranularTvAnytimeGenerator;
+import org.atlasapi.feeds.youview.FilterFactory;
 import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.hierarchy.ItemAndVersion;
 import org.atlasapi.feeds.youview.hierarchy.ItemBroadcastHierarchy;
 import org.atlasapi.feeds.youview.hierarchy.ItemOnDemandHierarchy;
-import org.atlasapi.feeds.youview.upload.granular.FilterFactory;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -75,13 +78,18 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             .withMessage("Unable to resolve element with the provided id")
             .withErrorCode("Element not found")
             .withStatusCode(HttpStatusCode.BAD_REQUEST);
+    private static final AtlasErrorSummary INVALID_DESTINATION_TYPE = new AtlasErrorSummary(new NullPointerException())
+            .withMessage("No Feed exists of the provided type")
+            .withErrorCode("Feed Type not found")
+            .withStatusCode(HttpStatusCode.NOT_FOUND);
+    private static final DateTime START_OF_TIME = new DateTime(2000, JANUARY, 1, 0, 0, 0, UTC);
     
-    private final GranularTvAnytimeGenerator feedGenerator;
+    private final TvAnytimeGenerator feedGenerator;
     private final ContentResolver contentResolver;
     private final ContentHierarchyExpander hierarchyExpander;
     
     public ContentFeedController(ApplicationConfigurationFetcher configFetcher, AdapterLog log, 
-            AtlasModelWriter<JAXBElement<TVAMainType>> outputter, GranularTvAnytimeGenerator feedGenerator, 
+            AtlasModelWriter<JAXBElement<TVAMainType>> outputter, TvAnytimeGenerator feedGenerator, 
             ContentResolver contentResolver, ContentHierarchyExpander hierarchyExpander) {
         super(configFetcher, log, outputter);
         this.feedGenerator = checkNotNull(feedGenerator);
@@ -98,13 +106,21 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
      *                      bootstrap feed
      * @throws IOException 
      */
-    @RequestMapping(value="/3.0/feeds/youview/{publisher}.xml", method = RequestMethod.GET)
+    @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}.xml", method = RequestMethod.GET)
     public void generateFeed(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("destinationType") String destinationTypeStr,
             @PathVariable("publisher") String publisherStr,
             @RequestParam(value = "uri", required = true) String uri) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
             ApplicationConfiguration appConfig = appConfig(request);
+            DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
+            
+            if (destinationType == null) {
+                errorViewFor(request, response, INVALID_DESTINATION_TYPE);
+                return;
+            }
+            
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -122,8 +138,8 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             }
             if (content.get() instanceof Item) {
                 Item item = (Item) content.get();
-                
-                Predicate<ItemBroadcastHierarchy> broadcastFilter = FilterFactory.broadcastFilter(Optional.<DateTime>absent());
+                // TODO what is the default here?
+                Predicate<ItemBroadcastHierarchy> broadcastFilter = FilterFactory.broadcastFilter(START_OF_TIME);
                 
                 Map<String, ItemAndVersion> versions = hierarchyExpander.versionHierarchiesFor(item);
                 Map<String, ItemBroadcastHierarchy> broadcasts = Maps.filterValues(hierarchyExpander.broadcastHierarchiesFor(item), broadcastFilter);
@@ -143,13 +159,21 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         }
     }
 
-    @RequestMapping(value="/3.0/feeds/youview/{publisher}/content.xml", method = RequestMethod.GET)
+    @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/content.xml", method = RequestMethod.GET)
     public void generateContentFeed(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("destinationType") String destinationTypeStr,
             @PathVariable("publisher") String publisherStr,
             @RequestParam(value = "uri", required = true) String uri) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
             ApplicationConfiguration appConfig = appConfig(request);
+            DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
+            
+            if (destinationType == null) {
+                errorViewFor(request, response, INVALID_DESTINATION_TYPE);
+                return;
+            }
+            
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -175,14 +199,22 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         }
     }
     
-    @RequestMapping(value="/3.0/feeds/youview/{publisher}/versions.xml", method = RequestMethod.GET)
+    @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/versions.xml", method = RequestMethod.GET)
     public void generateVersionsFeed(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("destinationType") String destinationTypeStr,
             @PathVariable("publisher") String publisherStr,
             @RequestParam(value = "uri", required = true) String uri,
             @RequestParam(value = "version_crid", required = false) String versionCrid) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
             ApplicationConfiguration appConfig = appConfig(request);
+            DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
+            
+            if (destinationType == null) {
+                errorViewFor(request, response, INVALID_DESTINATION_TYPE);
+                return;
+            }
+            
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -223,14 +255,22 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         }
     }
     
-    @RequestMapping(value="/3.0/feeds/youview/{publisher}/broadcasts.xml", method = RequestMethod.GET)
+    @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/broadcasts.xml", method = RequestMethod.GET)
     public void generateBroadcastFeed(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("destinationType") String destinationTypeStr,
             @PathVariable("publisher") String publisherStr,
             @RequestParam(value = "uri", required = true) String uri,
             @RequestParam(value = "broadcast_imi", required = false) String broadcastImi) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
             ApplicationConfiguration appConfig = appConfig(request);
+            DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
+            
+            if (destinationType == null) {
+                errorViewFor(request, response, INVALID_DESTINATION_TYPE);
+                return;
+            }
+            
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -272,14 +312,22 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         }
     }
 
-    @RequestMapping(value="/3.0/feeds/youview/{publisher}/on_demands.xml", method = RequestMethod.GET)
+    @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/on_demands.xml", method = RequestMethod.GET)
     public void generateOnDemandFeed(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("destinationType") String destinationTypeStr,
             @PathVariable("publisher") String publisherStr,
             @RequestParam(value = "uri", required = true) String uri,
             @RequestParam(value = "on_demand_imi", required = false) String onDemandImi) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
             ApplicationConfiguration appConfig = appConfig(request);
+            DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
+            
+            if (destinationType == null) {
+                errorViewFor(request, response, INVALID_DESTINATION_TYPE);
+                return;
+            }
+            
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -319,6 +367,15 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
+    }
+    
+    private DestinationType parseDestinationFrom(String destinationTypeStr) {
+        for (DestinationType destinationType : DestinationType.values()) {
+            if (destinationType.name().equalsIgnoreCase(destinationTypeStr)) {
+                return destinationType;
+            }
+        }
+        return null;
     }
 
     private AtlasErrorSummary tvaGenerationError(TvaGenerationException e) { 

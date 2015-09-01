@@ -34,6 +34,8 @@ import com.metabroadcast.common.base.Maybe;
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodDescribedFieldsExtractorTest {
 
+    private static final String BT_VOD_NAMESPACE_PREFIX = "gb:bt:tv:mpx:prod:";
+
     private Publisher publisher = Publisher.BT_TVE_VOD;
 
     @Mock
@@ -65,7 +67,8 @@ public class BtVodDescribedFieldsExtractorTest {
                 new Topic(123L),
                 new Topic(234L),
                 new Topic(345L),
-                new Topic(456L)
+                new Topic(456L),
+                BT_VOD_NAMESPACE_PREFIX
         );
     }
 

@@ -33,14 +33,20 @@ import com.google.common.collect.Iterables;
 
 public class BtVodDescribedFieldsExtractor {
 
-    static final String BT_VOD_NAMESPACES_PREFIX = "gb:bt:tv:mpx:prod:";
-    static final String GUID_ALIAS_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "guid";
-    static final String ID_ALIAS_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "id";
-    static final String CONTENT_PROVIDER_TOPIC_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "contentProvider";
-    static final String GENRE_TOPIC_NAMESPACE = BT_VOD_NAMESPACES_PREFIX + "genre";
-
     private static final String BT_VOD_GENRE_PREFIX = "http://vod.bt.com/genres";
+
     private static final Integer TOPIC_CACHE_SIZE = 1000;
+
+    private static final String GUID_SUFFIX = "guid";
+    private static final String ID_SUFFIX = "id";
+    private static final String CONTENT_PROVIDER_SUFFIX = "contentProvider";
+    private static final String GENRE_SUFFIX = "genre";
+
+
+    private final String guidAliasNamespace;
+    private final String idAliasNamespace;
+    private final String contentProviderTopicNamespace;
+    private final String genreTopicNamespace;
 
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
     private final TopicCreatingTopicResolver topicCreatingTopicResolver;
@@ -155,7 +161,10 @@ public class BtVodDescribedFieldsExtractor {
             Topic newTopic,
             Topic kidsTopic,
             Topic tvBoxsetTopic,
-            Topic subCatchupTopic) {
+            Topic subCatchupTopic,
+            String btVodNamespacesPrefix
+    ) {
+
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
         this.publisher = checkNotNull(publisher);
@@ -171,6 +180,11 @@ public class BtVodDescribedFieldsExtractor {
         this.topics = CacheBuilder.newBuilder()
                 .maximumSize(TOPIC_CACHE_SIZE)
                 .build();
+        checkNotNull(btVodNamespacesPrefix);
+        this.guidAliasNamespace = btVodNamespacesPrefix + GUID_SUFFIX;
+        this.idAliasNamespace = btVodNamespacesPrefix + ID_SUFFIX;
+        this.contentProviderTopicNamespace = btVodNamespacesPrefix + CONTENT_PROVIDER_SUFFIX;
+        this.genreTopicNamespace = btVodNamespacesPrefix + GENRE_SUFFIX;
 
 
     }
@@ -257,8 +271,8 @@ public class BtVodDescribedFieldsExtractor {
         if (!Strings.isNullOrEmpty(vodAndContent.getBtVodEntry().getGenre())) {
             genres.add(
                     topicRefFor(
-                            cacheKey(GENRE_TOPIC_NAMESPACE, row.getGenre()),
-                            genreCallable(GENRE_TOPIC_NAMESPACE, row.getGenre())
+                            cacheKey(genreTopicNamespace, row.getGenre()),
+                            genreCallable(genreTopicNamespace, row.getGenre())
                     )
             );
         }
@@ -269,8 +283,8 @@ public class BtVodDescribedFieldsExtractor {
                 for (final String subGenre : subGenres) {
                     genres.add(
                             topicRefFor(
-                                    cacheKey(GENRE_TOPIC_NAMESPACE, subGenre),
-                                    genreCallable(GENRE_TOPIC_NAMESPACE, subGenre)
+                                    cacheKey(genreTopicNamespace, subGenre),
+                                    genreCallable(genreTopicNamespace, subGenre)
                             )
                     );
                 }
@@ -297,8 +311,8 @@ public class BtVodDescribedFieldsExtractor {
 
     public Iterable<Alias> aliasesFrom(BtVodEntry row) {
         return ImmutableSet.of(
-                new Alias(GUID_ALIAS_NAMESPACE, row.getGuid()),
-                new Alias(ID_ALIAS_NAMESPACE, row.getId()));
+                new Alias(guidAliasNamespace, row.getGuid()),
+                new Alias(idAliasNamespace, row.getId()));
     }
 
     private Iterable<Image> createImages(BtVodEntry row) {
@@ -315,13 +329,13 @@ public class BtVodDescribedFieldsExtractor {
 
         return Optional.of(
                 topicRefFor(
-                        cacheKey(CONTENT_PROVIDER_TOPIC_NAMESPACE, contentProviderId),
+                        cacheKey(contentProviderTopicNamespace, contentProviderId),
                         new Callable<Topic>() {
                             @Override
                             public Topic call() throws Exception {
                                 Topic topic = topicCreatingTopicResolver.topicFor(
                                         publisher,
-                                        CONTENT_PROVIDER_TOPIC_NAMESPACE,
+                                        contentProviderTopicNamespace,
                                         contentProviderId
                                 ).requireValue();
                                 topic.setTitle(contentProviderId);

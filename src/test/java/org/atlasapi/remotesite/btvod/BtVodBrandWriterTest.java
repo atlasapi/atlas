@@ -41,7 +41,9 @@ public class BtVodBrandWriterTest {
     private static final String FULL_EPISODE_TITLE = BRAND_TITLE + ": S1 S1-E9 " + REAL_EPISODE_TITLE;
     private static final Publisher PUBLISHER = Publisher.BT_VOD;
     private static final String URI_PREFIX = "http://example.org/";
-    
+    private static final String BT_VOD_NAMESPECASE_PREFIX = "Namespace prefix";
+
+
     private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
@@ -65,7 +67,8 @@ public class BtVodBrandWriterTest {
             new Topic(123L),
             new Topic(234L),
             new Topic(345L),
-            new Topic(456L)
+            new Topic(456L),
+            BT_VOD_NAMESPECASE_PREFIX
     );
 
     private final BtVodBrandWriter brandExtractor
@@ -130,12 +133,16 @@ public class BtVodBrandWriterTest {
         BtVodEntry row6 = seasonEntry();
         row6.setTitle("Plankton Invasion - Sr1 Series 1");
 
+        BtVodEntry row7 = seasonEntry();
+        row7.setTitle("Transformers Prime: Beast Hunters Series 3");
+
         assertThat(brandExtractor.brandUriFor(row1).get(), is(URI_PREFIX + "synthesized/brands/dominion"));
         assertThat(brandExtractor.brandUriFor(row2).get(), is(URI_PREFIX + "synthesized/brands/workaholics"));
         assertThat(brandExtractor.brandUriFor(row3).get(), is(URI_PREFIX + "synthesized/brands/wire"));
         assertThat(brandExtractor.brandUriFor(row4).get(), is(URI_PREFIX + "synthesized/brands/judge-geordie"));
         assertThat(brandExtractor.brandUriFor(row5).get(), is(URI_PREFIX + "synthesized/brands/tom-and-jerry"));
         assertThat(brandExtractor.brandUriFor(row6).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
+        assertThat(brandExtractor.brandUriFor(row7).get(), is(URI_PREFIX + "synthesized/brands/transformers-prime-beast-hunters"));
     }
 
     @Test

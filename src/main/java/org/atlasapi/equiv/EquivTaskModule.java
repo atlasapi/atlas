@@ -4,6 +4,9 @@ import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_SYSTEST2_CONFIG_1;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLD_CONFIG_1;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLE_CONFIG_1;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.C4;
@@ -159,7 +162,10 @@ public class EquivTaskModule {
             taskScheduler.schedule(publisherUpdateTask(ROVI_EN).withName("Rovi EN Equivalence Updater"), ROVI_EN_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(RTE).withName("RTE Equivalence Updater"), RTE_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(BT_VOD).withName("BT VOD Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
-            taskScheduler.schedule(publisherUpdateTask(BT_TVE_VOD).withName("BT VOD TVE Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(BT_TVE_VOD).withName("BT TVE VOD (prod, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(BT_TVE_VOD_VOLD_CONFIG_1).withName("BT TVE VOD (vold, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(BT_TVE_VOD_VOLE_CONFIG_1).withName("BT TVE VOD (vole, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1).withName("BT TVE VOD (systest2, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(AMAZON_UNBOX).withName("Amazon Unbox Equivalence Updater"), AMAZON_EQUIVALENCE_REPETITION);
             
             taskScheduler.schedule(publisherUpdateTask(Publisher.BBC_MUSIC).withName("Music Equivalence Updater"), RepetitionRules.every(Duration.standardHours(6)));

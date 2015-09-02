@@ -2,10 +2,13 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.math.BigInteger;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.joda.time.DateTime;
 
+import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.Image;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Series;
@@ -43,6 +46,10 @@ public class NitroSeriesExtractor
     @Override
     protected Synopses extractSynopses(Series source) {
         return source.getSynopses();
+    }
+
+    @Override protected Brand.People extractPeople(Series series) {
+        return series.getPeople();
     }
 
     @Override

@@ -9,18 +9,17 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.v3.ApplicationConfiguration;
-import org.atlasapi.feeds.youview.tasks.Action;
-import org.atlasapi.feeds.youview.tasks.Status;
-import org.atlasapi.feeds.youview.tasks.TVAElementType;
-import org.atlasapi.feeds.youview.tasks.Task;
-import org.atlasapi.feeds.youview.tasks.TaskQuery;
-import org.atlasapi.feeds.youview.tasks.persistence.TaskStore;
+import org.atlasapi.feeds.tasks.Action;
+import org.atlasapi.feeds.tasks.Status;
+import org.atlasapi.feeds.tasks.TVAElementType;
+import org.atlasapi.feeds.tasks.Task;
+import org.atlasapi.feeds.tasks.TaskQuery;
+import org.atlasapi.feeds.tasks.Destination.DestinationType;
+import org.atlasapi.feeds.tasks.persistence.TaskStore;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -48,8 +47,11 @@ public class TaskController extends BaseController<Iterable<Task>> {
             .withMessage("You require an API key to view this data")
             .withErrorCode("Api Key required")
             .withStatusCode(HttpStatusCode.FORBIDDEN);
+    private static final AtlasErrorSummary INVALID_DESTINATION_TYPE = new AtlasErrorSummary(new NullPointerException())
+            .withMessage("No Feed exists of the provided type")
+            .withErrorCode("Feed Type not found")
+            .withStatusCode(HttpStatusCode.NOT_FOUND);
     
-    private final Logger log = LoggerFactory.getLogger(getClass());
     private final TaskStore taskStore;
     private final NumberToShortStringCodec idCodec;
     
@@ -60,8 +62,9 @@ public class TaskController extends BaseController<Iterable<Task>> {
         this.idCodec = checkNotNull(idCodec);
     }
 
-    @RequestMapping(value="/3.0/feeds/youview/{publisher}/tasks.json", method = RequestMethod.GET)
+    @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/tasks.json", method = RequestMethod.GET)
     public void transactions(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("destinationType") String destinationTypeStr,
             @PathVariable("publisher") String publisherStr,
             @RequestParam(value = "uri", required = false) String contentUri,
             @RequestParam(value = "remote_id", required = false) String remoteId,
@@ -75,13 +78,21 @@ public class TaskController extends BaseController<Iterable<Task>> {
             Selection selection = SELECTION_BUILDER.build(request);
             ApplicationConfiguration appConfig = appConfig(request);
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
+            DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
+            
+            if (destinationType == null) {
+                errorViewFor(request, response, INVALID_DESTINATION_TYPE);
+                return;
+            }
             
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 
-            TaskQuery taskQuery = queryFrom(publisher, selection, contentUri, remoteId, status, action, type, elementId);
+            TaskQuery taskQuery = queryFrom(destinationType, publisher, selection, contentUri, 
+                    remoteId, status, action, type, elementId);
+            
             Iterable<Task> allTasks = taskStore.allTasks(taskQuery);
             
             modelAndViewFor(request, response, allTasks, appConfig);
@@ -90,15 +101,25 @@ public class TaskController extends BaseController<Iterable<Task>> {
         }
     }
     
-    private TaskQuery queryFrom(Publisher publisher, Selection selection, String contentUri, String remoteId, String statusStr, 
-            String actionStr, String typeStr, String elementId) {
-        
+    private DestinationType parseDestinationFrom(String destinationTypeStr) {
+        for (DestinationType destinationType : DestinationType.values()) {
+            if (destinationType.name().equalsIgnoreCase(destinationTypeStr)) {
+                return destinationType;
+            }
+        }
+        return null;
+    }
+
+    private TaskQuery queryFrom(DestinationType destinationType, Publisher publisher, Selection selection, 
+            String contentUri, String remoteId, String statusStr, String actionStr, String typeStr, 
+            String elementId) {
+
         if (contentUri != null 
                 && !contentUri.startsWith(NITRO_URI_PREFIX)) {
             contentUri = NITRO_URI_PREFIX + contentUri;
         }
         
-        TaskQuery.Builder query = TaskQuery.builder(selection, publisher)
+        TaskQuery.Builder query = TaskQuery.builder(selection, publisher, destinationType)
                 .withContentUri(contentUri)
                 .withRemoteId(remoteId)
                 .withElementId(elementId);
@@ -119,16 +140,22 @@ public class TaskController extends BaseController<Iterable<Task>> {
         return query.build();
     }
 
-    @RequestMapping(value="/3.0/feeds/youview/{publisher}/tasks/{id}.json", method = RequestMethod.GET)
+    @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/tasks/{id}.json", method = RequestMethod.GET)
     public void task(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("destinationType") String destinationTypeStr,
             @PathVariable("publisher") String publisherStr,
             @PathVariable("id") String id) throws IOException {
         try {
             
-            String rawPublisherStr = publisherStr.trim().toUpperCase();
-            log.debug("tasks accessed with publisher {}", rawPublisherStr);
-            Publisher publisher = Publisher.valueOf(rawPublisherStr);
+            Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
             ApplicationConfiguration appConfig = appConfig(request);
+            DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
+            
+            if (destinationType == null) {
+                errorViewFor(request, response, INVALID_DESTINATION_TYPE);
+                return;
+            }
+            
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;

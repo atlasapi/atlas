@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
 
 import java.util.List;
@@ -13,6 +14,7 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
@@ -74,14 +76,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private final ListeningExecutorService executor;
     
-    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient, Clock clock, int pageSize) {
+    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient, QueuingPersonWriter peopleWriter, Clock clock, int pageSize) {
         this.glycerin = checkNotNull(glycerin);
         this.nitroClient = checkNotNull(nitroClient);
         this.pageSize = pageSize;
         this.clipsAdapter = new GlycerinNitroClipsAdapter(glycerin, clock, pageSize);
         this.brandExtractor = new NitroBrandExtractor(clock);
         this.seriesExtractor = new NitroSeriesExtractor(clock);
-        this.itemExtractor = new NitroEpisodeExtractor(clock);
+        this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
     }
     
@@ -210,7 +212,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         for (List<PidReference> ref : Iterables.partition(refs, NITRO_BATCH_SIZE)) {
             ProgrammesQuery query = ProgrammesQuery.builder()
                     .withPid(toStrings(ref))
-                    .withMixins(TITLES)
+                    .withMixins(TITLES, PEOPLE)
                     .withPageSize(pageSize)
                     .build();
             

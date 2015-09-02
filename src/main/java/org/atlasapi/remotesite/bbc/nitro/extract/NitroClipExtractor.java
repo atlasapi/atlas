@@ -1,8 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import com.metabroadcast.atlas.glycerin.model.Clip;
+import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.Image;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
+import com.metabroadcast.atlas.glycerin.model.Clip;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
 
@@ -40,6 +41,11 @@ public class NitroClipExtractor
     @Override
     protected Synopses extractSynopses(NitroItemSource<Clip> source) {
         return source.getProgramme().getSynopses();
+    }
+
+    @Override
+    protected Brand.People extractPeople(NitroItemSource<Clip> source) {
+        return source.getProgramme().getPeople();
     }
 
     @Override

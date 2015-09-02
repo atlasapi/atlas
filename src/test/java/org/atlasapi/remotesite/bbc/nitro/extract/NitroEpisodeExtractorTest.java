@@ -20,11 +20,13 @@ import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
 import org.hamcrest.Matchers;
 import org.joda.time.Duration;
 import org.junit.Assert;
 import org.junit.Test;
+import org.mockito.Mockito;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -56,7 +58,8 @@ public class NitroEpisodeExtractorTest {
 
     private static final String EPISODE_PID = "p01mv8m3";
     private static final ImmutableList<Availability> noAvailability = ImmutableList.<Availability>of();
-    private final NitroEpisodeExtractor extractor = new NitroEpisodeExtractor(new SystemClock());
+    private final NitroEpisodeExtractor extractor = new NitroEpisodeExtractor(new SystemClock(),
+            Mockito.mock(QueuingPersonWriter.class));
 
     @Test
     public void testParentRefsForExtractedTopLevelItemAreEmpty() {

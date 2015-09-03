@@ -19,10 +19,11 @@ public class KnowledgeMotionSpecialIdFixer {
         this.dataHandler = checkNotNull(dataHandler);
     }
 
-    protected ProcessingResult process(Iterator<KnowledgeMotionDataRow> rows, ProcessingResult processingResult) {
+    protected ProcessingResult.Builder process(Iterator<KnowledgeMotionDataRow> rows,
+            ProcessingResult.Builder resultBuilder) {
         if (!rows.hasNext()) {
             log.info("Knowledgemotion Common Ingest received an empty file");
-            processingResult.error("input file", "Empty file");
+            resultBuilder.error("input file", "Empty file");
         }
 
         while (rows.hasNext()) {
@@ -38,7 +39,7 @@ public class KnowledgeMotionSpecialIdFixer {
             }
         }
 
-        return processingResult;
+        return resultBuilder;
     }
 
 }

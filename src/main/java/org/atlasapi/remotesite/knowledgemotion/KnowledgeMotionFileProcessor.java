@@ -53,34 +53,34 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
     public ProcessingResult process(String originalFilename, File file) {
         log.info("Processing Knowledgemotion updater feed file");
 
-        ProcessingResult processingResult = new ProcessingResult();
+        ProcessingResult.Builder resultBuilder = ProcessingResult.builder();
 
         Iterator<KnowledgeMotionDataRow> rowIterator;
         try {
             rowIterator = csvTranslator.translate(file);
         } catch (IOException e) {
             log.info("Unable to parse input file");
-            processingResult.error("input file", "Unable to parse input file: " + e.getMessage());
-            return processingResult;
+            resultBuilder.error("input file", "Unable to parse input file: " + e.getMessage());
+            return resultBuilder.build();
         }
 
         KnowledgeMotionUpdater updater = new KnowledgeMotionUpdater(SOURCES,
             new KnowledgeMotionContentMerger(contentResolver, contentWriter,
                 new KnowledgeMotionDataRowContentExtractor(SOURCES, topicGuesser)), contentLister);
-        updater.process(rowIterator, processingResult);
+        updater.process(rowIterator, resultBuilder);
 
         try {
             rowIterator = csvTranslator.translate(file);
         } catch (IOException e) {
             log.info("Unable to parse input file");
-            processingResult.error("input file", "Unable to parse input file: " + e.getMessage());
-            return processingResult;
+            resultBuilder.error("input file", "Unable to parse input file: " + e.getMessage());
+            return resultBuilder.build();
         }
 
         KnowledgeMotionSpecialIdFixer specialIdFixer = new KnowledgeMotionSpecialIdFixer(new SpecialIdFixingKnowledgeMotionDataRowHandler(contentResolver, contentWriter, FIX_SOURCES.get(0)));
-        specialIdFixer.process(rowIterator, processingResult);
+        specialIdFixer.process(rowIterator, resultBuilder);
 
-        return processingResult;
+        return resultBuilder.build();
     }
 
 }

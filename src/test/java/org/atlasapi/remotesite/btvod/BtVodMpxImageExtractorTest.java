@@ -65,7 +65,7 @@ public class BtVodMpxImageExtractorTest {
         entry.setProductImages(images);
         Set<Image> extractedImages = imageExtractor.imagesFor(entry);
 
-        assertThat(extractedImages.size(), is(3));
+        assertThat(extractedImages.size(), is(5));
 
         assertThat(
                 Iterables.any(

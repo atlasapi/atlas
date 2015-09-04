@@ -27,20 +27,20 @@ public class BtVodMpxImageExtractor implements ImageExtractor {
         return ImmutableSet.copyOf(getPackshotImages(entry));
     }
 
+    @SuppressWarnings("unchecked")
     private Iterable<Image> getPackshotImages(BtVodEntry entry) {
         
         BtVodPlproductImages images = entry.getProductImages();
-        if (BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())) {
-            return Iterables.concat(
+        
+        return Iterables.concat(
                         Iterables.transform(images.getDoublePackshotImagesHd(), toImage(false, ImageType.PRIMARY)),
-                        Iterables.transform(images.getDoublePackshotImages(), toImage(true, ImageType.PRIMARY))
+                        Iterables.transform(images.getSinglePackshotImagesHd(), toImage(false, ImageType.PRIMARY)),
+                        Iterables.transform(images.getBackgroundImages(), toImage(false, ImageType.PRIMARY)),
+                        Iterables.transform(images.getSinglePackshotImages(), toImage(true, ImageType.PRIMARY)),
+                        Iterables.transform(images.getDoublePackshotImages(), toImage(true, ImageType.PRIMARY)),
+                        Iterables.transform(images.getDoublePackshotHiresImages(), toImage(true, ImageType.PRIMARY)),
+                        Iterables.transform(images.getSinglePackshotHiresImages(), toImage(true, ImageType.PRIMARY))
                     );
-        } else {
-            return Iterables.concat(
-                    Iterables.transform(images.getSinglePackshotImagesHd(), toImage(false, ImageType.PRIMARY)),
-                    Iterables.transform(images.getSinglePackshotImages(), toImage(true, ImageType.PRIMARY))
-                );
-        }
     }
 
     

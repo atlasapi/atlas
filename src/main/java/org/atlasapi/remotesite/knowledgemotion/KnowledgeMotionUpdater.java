@@ -37,10 +37,11 @@ public class KnowledgeMotionUpdater {
         seenUris = Sets.newHashSet();
     }
 
-    protected ProcessingResult process(Iterator<KnowledgeMotionDataRow> rows, ProcessingResult processingResult) {
+    protected ProcessingResult.Builder process(Iterator<KnowledgeMotionDataRow> rows,
+            ProcessingResult.Builder resultBuilder) {
         if (!rows.hasNext()) {
             log.info("Knowledgemotion Common Ingest received an empty file");
-            processingResult.error("input file", "Empty file");
+            resultBuilder.error("input file", "Empty file");
         }
 
         KnowledgeMotionDataRow firstRow = rows.next();
@@ -60,15 +61,15 @@ public class KnowledgeMotionUpdater {
                 errorText.append(config.rowHeader()).append("\n");
             }
 
-            processingResult.error("input file", errorText.toString());
+            resultBuilder.error("input file", errorText.toString());
         }
 
         boolean allRowsSuccess = true;
-        if (!writeRow(firstRow, processingResult)) {
+        if (!writeRow(firstRow, resultBuilder)) {
             allRowsSuccess = false;
         }
         while (rows.hasNext()) {
-            if (!writeRow(rows.next(), processingResult)) {
+            if (!writeRow(rows.next(), resultBuilder)) {
                 allRowsSuccess = false;
             }
         }
@@ -88,26 +89,25 @@ public class KnowledgeMotionUpdater {
             }
         }
 
-        return processingResult;
+        return resultBuilder;
     }
 
     /**
      * @return success
      */
-    private boolean writeRow(KnowledgeMotionDataRow row, ProcessingResult processingResult) {
+    private boolean writeRow(KnowledgeMotionDataRow row, ProcessingResult.Builder resultBuilder) {
         try {
             Optional<Content> written = dataHandler.handle(row);
             if (written.isPresent()) {
                 seenUris.add(written.get().getCanonicalUri());
             }
             log.debug("Successfully updated row {}", row.getId());
-            processingResult.success();
+            resultBuilder.success();
             return true;
         } catch (RuntimeException e) {
             log.debug("Failed to update row {}", row.getId(), e);
-            processingResult.error(row.getId(), "While merging content: " + e.getMessage());
+            resultBuilder.error(row.getId(), "While merging content: " + e.getMessage());
             return false;
         }
     }
-
 }

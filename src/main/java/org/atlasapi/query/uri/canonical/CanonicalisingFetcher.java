@@ -95,14 +95,14 @@ public class CanonicalisingFetcher implements Fetcher<Identified>, ContentResolv
 	}
 
 	@Override
-	public ResolvedContent findByCanonicalUris(Iterable<String> uris) {
-	    ResolvedContentBuilder builder = ResolvedContent.builder();
-	    for (String uri : uris) {
-            builder.put(uri, fetch(uri));
-        }
+	public ResolvedContent findByCanonicalUris(Iterable<? extends String> canonicalUris) {
+		ResolvedContentBuilder builder = ResolvedContent.builder();
+		for (String uri : canonicalUris) {
+			builder.put(uri, fetch(uri));
+		}
 		return builder.build();
 	}
-	
+
 	@Override
 	public ResolvedContent findByUris(Iterable<String> uris) {
 	    throw new UnsupportedOperationException();

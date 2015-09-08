@@ -53,15 +53,15 @@ public class LocalOrRemoteFetcher implements Fetcher<Identified>, ContentResolve
 	}
 
 	@Override
-	public ResolvedContent findByCanonicalUris(Iterable<String> uris) {
+	public ResolvedContent findByCanonicalUris(Iterable<? extends String> canonicalUris) {
 		ResolvedContentBuilder builder = ResolvedContent.builder();
-		for (String uri : uris) {
-            builder.put(uri, fetch(uri));
-        }
-        return builder.build();
+		for (String uri : canonicalUris) {
+			builder.put(uri, fetch(uri));
+		}
+		return builder.build();
 	}
 
-    @Override
+	@Override
     public ResolvedContent findByUris(Iterable<String> uris) {
         throw new UnsupportedOperationException();
     }

@@ -73,10 +73,11 @@ public class ContentBuffer implements ContentResolver {
         contentCache.get().put(hierarchy.getItem().getCanonicalUri(), hierarchy.getItem());
         hierarchies.get().add(hierarchy);
     }
-    
-    public ResolvedContent findByCanonicalUris(Iterable<String> canonicalUris) {
+
+    @Override
+    public ResolvedContent findByCanonicalUris(Iterable<? extends String> canonicalUris) {
         Identified identified = contentCache.get().get(Iterables.getOnlyElement(canonicalUris));
-        
+
         if (identified != null) {
             return ResolvedContent.builder().put(identified.getCanonicalUri(), identified).build();
         }

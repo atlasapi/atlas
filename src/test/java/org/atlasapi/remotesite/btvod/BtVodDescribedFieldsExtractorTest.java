@@ -34,7 +34,10 @@ import com.metabroadcast.common.base.Maybe;
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodDescribedFieldsExtractorTest {
 
-    private static final String BT_VOD_NAMESPACE_PREFIX = "gb:bt:tv:mpx:prod:";
+    private static final String BT_VOD_GUID_NAMESPACE = "guid namespace";
+    private static final String BT_VOD_ID_NAMESPACE = "id namespace";
+    private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
+    private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
 
     private Publisher publisher = Publisher.BT_TVE_VOD;
 
@@ -68,7 +71,10 @@ public class BtVodDescribedFieldsExtractorTest {
                 new Topic(234L),
                 new Topic(345L),
                 new Topic(456L),
-                BT_VOD_NAMESPACE_PREFIX
+                BT_VOD_GUID_NAMESPACE,
+                BT_VOD_ID_NAMESPACE,
+                BT_VOD_CONTENT_PROVIDER_NAMESPACE,
+                BT_VOD_GENRE_NAMESPACE
         );
     }
 
@@ -101,14 +107,14 @@ public class BtVodDescribedFieldsExtractorTest {
         Topic subGenre3 = mock(Topic.class);
         when(subGenre3.getId()).thenReturn(4L);
 
-        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "Genre"))
+        when(topicResolver.topicFor(publisher, BT_VOD_GENRE_NAMESPACE, "Genre"))
                 .thenReturn(Maybe.just(genre));
 
-        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "SubGenre1"))
+        when(topicResolver.topicFor(publisher, BT_VOD_GENRE_NAMESPACE, "SubGenre1"))
                 .thenReturn(Maybe.just(subGenre1));
-        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "SubGenre2"))
+        when(topicResolver.topicFor(publisher, BT_VOD_GENRE_NAMESPACE, "SubGenre2"))
                 .thenReturn(Maybe.just(subGenre2));
-        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:genre", "SubGenre3"))
+        when(topicResolver.topicFor(publisher, BT_VOD_GENRE_NAMESPACE, "SubGenre3"))
                 .thenReturn(Maybe.just(subGenre3));
 
         VodEntryAndContent entryAndContent = new VodEntryAndContent(entry, item);
@@ -152,7 +158,7 @@ public class BtVodDescribedFieldsExtractorTest {
 
         Topic created = mock(Topic.class);
         when(created.getId()).thenReturn(42L);
-        when(topicResolver.topicFor(publisher, "gb:bt:tv:mpx:prod:contentProvider", "contentProviderTitle"))
+        when(topicResolver.topicFor(publisher, BT_VOD_CONTENT_PROVIDER_NAMESPACE, "contentProviderTitle"))
                 .thenReturn(Maybe.just(created));
 
         VodEntryAndContent entryAndContent = new VodEntryAndContent(entry, item);

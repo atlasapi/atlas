@@ -162,9 +162,11 @@ public class BtVodDescribedFieldsExtractor {
             Topic kidsTopic,
             Topic tvBoxsetTopic,
             Topic subCatchupTopic,
-            String btVodNamespacesPrefix
+            String guidAliasNamespace,
+            String idAliasNamespace,
+            String contentProviderTopicNamespace,
+            String genreTopicNamespace
     ) {
-
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
         this.publisher = checkNotNull(publisher);
@@ -180,13 +182,11 @@ public class BtVodDescribedFieldsExtractor {
         this.topics = CacheBuilder.newBuilder()
                 .maximumSize(TOPIC_CACHE_SIZE)
                 .build();
-        checkNotNull(btVodNamespacesPrefix);
-        this.guidAliasNamespace = btVodNamespacesPrefix + GUID_SUFFIX;
-        this.idAliasNamespace = btVodNamespacesPrefix + ID_SUFFIX;
-        this.contentProviderTopicNamespace = btVodNamespacesPrefix + CONTENT_PROVIDER_SUFFIX;
-        this.genreTopicNamespace = btVodNamespacesPrefix + GENRE_SUFFIX;
 
-
+        this.guidAliasNamespace = checkNotNull(guidAliasNamespace);
+        this.idAliasNamespace = checkNotNull(idAliasNamespace);
+        this.contentProviderTopicNamespace = checkNotNull(contentProviderTopicNamespace);
+        this.genreTopicNamespace = checkNotNull(genreTopicNamespace);
     }
     
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {

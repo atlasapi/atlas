@@ -4,7 +4,7 @@
     <groupId>org.atlasapi</groupId>
     <artifactId>atlas</artifactId>
     <packaging>war</packaging>
-    <version>5.0-SNAPSHOT</version>
+    <version>5.1-SNAPSHOT</version>
     <description>Atlas 3.0 API</description>
     <build>
         <finalName>atlas</finalName>

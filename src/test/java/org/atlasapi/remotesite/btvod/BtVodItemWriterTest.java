@@ -62,7 +62,13 @@ public class BtVodItemWriterTest {
     private static final String BRAND_URI = URI_PREFIX + "brands/1234";
     private static final String TRAILER_URI = "http://vod.bt.com/trailer/1224";
     private static final Topic NEW_TOPIC = new Topic(123L);
-    private static final String BT_VOD_NAMESPECASE_PREFIX = "Namespace prefix";
+    private static final String BT_VOD_GUID_NAMESPACE = "guid namespace";
+    private static final String BT_VOD_ID_NAMESPACE = "id namespace";
+    private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
+    private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
+
+    private static final String BT_VOD_VERSION_GUID_NAMESPACE = "version:guid:namespace";
+    private static final String BT_VOD_VERSION_ID_NAMESPACE = "version:id:namespace";
 
 
     private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
@@ -101,12 +107,20 @@ public class BtVodItemWriterTest {
                     new Topic(234L),
                     new Topic(345L),
                     new Topic(456L),
-                    BT_VOD_NAMESPECASE_PREFIX
+                    BT_VOD_GUID_NAMESPACE,
+                    BT_VOD_ID_NAMESPACE,
+                    BT_VOD_CONTENT_PROVIDER_NAMESPACE,
+                    BT_VOD_GENRE_NAMESPACE
             ),
             Sets.<String>newHashSet(),
             new TitleSanitiser(),
             new NoImageExtractor(),
-            new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), URI_PREFIX),
+            new BtVodVersionsExtractor(
+                    new BtVodPricingAvailabilityGrouper(),
+                    URI_PREFIX,
+                    BT_VOD_VERSION_GUID_NAMESPACE,
+                    BT_VOD_VERSION_ID_NAMESPACE
+            ),
             newTopicRef,
             new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
             new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
@@ -151,8 +165,8 @@ public class BtVodItemWriterTest {
 
         Set<Alias> expectedAliases =
                 ImmutableSet.of(
-                        new Alias(BT_VOD_NAMESPECASE_PREFIX + "guid", btVodEntry.getGuid()),
-                        new Alias(BT_VOD_NAMESPECASE_PREFIX + "id", btVodEntry.getId())
+                        new Alias(BT_VOD_GUID_NAMESPACE, btVodEntry.getGuid()),
+                        new Alias(BT_VOD_ID_NAMESPACE, btVodEntry.getId())
                 );
 
 

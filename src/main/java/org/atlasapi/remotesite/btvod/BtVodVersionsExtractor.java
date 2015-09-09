@@ -28,24 +28,31 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class BtVodVersionsExtractor {
 
-    private static final String BT_VOD_GUID_NAMESPACE = "bt:vod:guid";
-    private static final String BT_VOD_ID_NAMESPACE = "bt:vod:id";
     private static final String HD_FLAG = "HD";
     private static final String SD_FLAG = "SD";
 
-    private final BtVodPricingAvailabilityGrouper grouper;
     private final String uriPrefix;
+    private final BtVodPricingAvailabilityGrouper grouper;
+    private final String guidAliasNamespace;
+    private final String idAliasNamespace;
 
 
-    public BtVodVersionsExtractor(BtVodPricingAvailabilityGrouper grouper, String uriPrefix) {
+    public BtVodVersionsExtractor(
+            BtVodPricingAvailabilityGrouper grouper,
+            String uriPrefix,
+            String guidAliasNamespace,
+            String idAliasNamespace
+    ) {
         this.grouper = checkNotNull(grouper);
         this.uriPrefix = checkNotNull(uriPrefix);
+        this.guidAliasNamespace = checkNotNull(guidAliasNamespace);
+        this.idAliasNamespace = checkNotNull(idAliasNamespace);
     }
 
     public Set<Version> createVersions(BtVodEntry row) {
         Set<Alias> aliases = ImmutableSet.of(
-                new Alias(BT_VOD_GUID_NAMESPACE, row.getGuid()),
-                new Alias(BT_VOD_ID_NAMESPACE, row.getId())
+                new Alias(guidAliasNamespace, row.getGuid()),
+                new Alias(idAliasNamespace, row.getId())
         );
 
         if (row.getProductOfferStartDate() == null

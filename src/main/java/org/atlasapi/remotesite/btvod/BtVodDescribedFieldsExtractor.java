@@ -37,12 +37,6 @@ public class BtVodDescribedFieldsExtractor {
 
     private static final Integer TOPIC_CACHE_SIZE = 1000;
 
-    private static final String GUID_SUFFIX = "guid";
-    private static final String ID_SUFFIX = "id";
-    private static final String CONTENT_PROVIDER_SUFFIX = "contentProvider";
-    private static final String GENRE_SUFFIX = "genre";
-
-
     private final String guidAliasNamespace;
     private final String idAliasNamespace;
     private final String contentProviderTopicNamespace;

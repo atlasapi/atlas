@@ -39,6 +39,8 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 
 @Configuration
 public class BtVodModule {
+    private static final String BT_VOD_UPDATER_ENV = "prod";
+    private static final String BT_VOD_UPDATER_CONFIG = "config1";
 
     private static final String BT_VOD_NAMESPACES_PREFIX = "gb:bt:tv:mpx:";
     private static final String BT_VOD_FEED_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "feed:%s:%s";
@@ -163,14 +165,14 @@ public class BtVodModule {
                 topicResolver,
                 topicWriter,
                 newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam),
-                topicFor(feedNamepaceFor("prod", "config1"), BT_VOD_NEW_FEED, Publisher.BT_VOD),
-                topicFor(btVodAppCategoryNamespaceFor("prod", "config1"), BT_VOD_KIDS_TOPIC, Publisher.BT_VOD),
-                topicFor(btVodAppCategoryNamespaceFor("prod", "config1"), BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_VOD),
-                topicFor(btVodAppCategoryNamespaceFor("prod", "config1"), BT_VOD_CATCHUP_TOPIC, Publisher.BT_VOD),
-                staleTopicContentRemover(Publisher.BT_VOD, "prod", "config1"),
+                topicFor(feedNamepaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_NEW_FEED, Publisher.BT_VOD),
+                topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_KIDS_TOPIC, Publisher.BT_VOD),
+                topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_VOD),
+                topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_CATCHUP_TOPIC, Publisher.BT_VOD),
+                staleTopicContentRemover(Publisher.BT_VOD, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 seriesUriExtractor(URI_PREFIX),
-                versionsExtractor(URI_PREFIX),
-                describedFieldsExtractor(Publisher.BT_VOD,"prod", "config1", btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam)
+                versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
+                describedFieldsExtractor(Publisher.BT_VOD,BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG, btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam)
         );
     }
 
@@ -250,7 +252,7 @@ public class BtVodModule {
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_TV_BOXSETS_TOPIC, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_CATCHUP_TOPIC, publisher),
                 staleTopicContentRemover(Publisher.BT_TVE_VOD, envName, conf), seriesUriExtractor(uriPrefix),
-                versionsExtractor(uriPrefix),
+                versionsExtractor(uriPrefix, envName, conf),
                 describedFieldsExtractor(
                         publisher,
                         envName,
@@ -284,8 +286,13 @@ public class BtVodModule {
                         THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT);
     }
 
-    private BtVodVersionsExtractor versionsExtractor(String prefix) {
-        return new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), prefix);
+    private BtVodVersionsExtractor versionsExtractor(String prefix, String env, String conf) {
+        return new BtVodVersionsExtractor(
+                new BtVodPricingAvailabilityGrouper(),
+                prefix,
+                String.format(BT_VOD_GUID_ALIAS_NAMESPACE_FORMAT, env, conf),
+                String.format(BT_VOD_ID_ALIAS_NAMESPACE_FORMAT, env, conf)
+        );
     }
 
     private BtVodSeriesUriExtractor seriesUriExtractor(String prefix) {

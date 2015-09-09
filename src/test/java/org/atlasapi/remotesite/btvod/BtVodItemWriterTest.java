@@ -67,6 +67,9 @@ public class BtVodItemWriterTest {
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
 
+    private static final String BT_VOD_VERSION_GUID_NAMESPACE = "version:guid:namespace";
+    private static final String BT_VOD_VERSION_ID_NAMESPACE = "version:id:namespace";
+
 
     private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
     private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
@@ -112,7 +115,12 @@ public class BtVodItemWriterTest {
             Sets.<String>newHashSet(),
             new TitleSanitiser(),
             new NoImageExtractor(),
-            new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), URI_PREFIX),
+            new BtVodVersionsExtractor(
+                    new BtVodPricingAvailabilityGrouper(),
+                    URI_PREFIX,
+                    BT_VOD_VERSION_GUID_NAMESPACE,
+                    BT_VOD_VERSION_ID_NAMESPACE
+            ),
             newTopicRef,
             new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
             new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),

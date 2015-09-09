@@ -10,10 +10,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
-import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
@@ -28,7 +25,6 @@ import java.util.Set;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.*;
-import static org.mockito.Matchers.anyObject;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -40,6 +36,8 @@ public class BtVodExplicitSeriesWriterTest {
     private static final Publisher PUBLISHER = Publisher.BT_VOD;
     private static final String PRODUCT_ID = "1234";
     private static final String SERIES_TITLE = "Brand1 Season 1";
+    private static final String BT_VOD_VERSION_GUID_NAMESPACE = "version:guid:namespace";
+    private static final String BT_VOD_VERSION_ID_NAMESPACE = "version:id:namespace";
 
 
     private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
@@ -63,7 +61,12 @@ public class BtVodExplicitSeriesWriterTest {
                 describedFieldsExtractor,
                 Sets.<String>newHashSet(),
                 seriesUriExtractor,
-                new BtVodVersionsExtractor(new BtVodPricingAvailabilityGrouper(), "prefix"),
+                new BtVodVersionsExtractor(
+                        new BtVodPricingAvailabilityGrouper(),
+                        "prefix",
+                        BT_VOD_VERSION_GUID_NAMESPACE,
+                        BT_VOD_VERSION_ID_NAMESPACE
+                ),
                 new TitleSanitiser(),
                 imageExtractor,
                 newTopic,

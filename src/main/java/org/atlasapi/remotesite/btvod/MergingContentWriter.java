@@ -32,7 +32,7 @@ public class MergingContentWriter {
                         Stale topics will get removed by stale topic remover
                         ideally we should process everything and write everything in one go which would solve
                         this problem */
-                        ContentMerger.MergeStrategy.MERGE,
+                        ContentMerger.MergeStrategy.REPLACE,
                         ContentMerger.MergeStrategy.REPLACE
                 )
         );

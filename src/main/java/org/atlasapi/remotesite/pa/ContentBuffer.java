@@ -75,7 +75,7 @@ public class ContentBuffer implements ContentResolver {
     }
 
     @Override
-    public ResolvedContent findByCanonicalUris(Iterable<? extends String> canonicalUris) {
+    public ResolvedContent findByCanonicalUris(Iterable<String> canonicalUris) {
         Identified identified = contentCache.get().get(Iterables.getOnlyElement(canonicalUris));
 
         if (identified != null) {

@@ -440,8 +440,8 @@ public class BtVodItemWriterTest {
         itemCdnAvailabilityTag.setPlproduct$title("OTG");
         
         BtVodPlproduct$productTag itemMasterAgreementAvailabilityTag = new BtVodPlproduct$productTag();
-        itemCdnAvailabilityTag.setPlproduct$scheme("masterAgreementOtgTvodPlay");
-        itemCdnAvailabilityTag.setPlproduct$title("TRUE");        
+        itemMasterAgreementAvailabilityTag.setPlproduct$scheme("masterAgreementOtgTvodPlay");
+        itemMasterAgreementAvailabilityTag.setPlproduct$title("TRUE");        
 
         entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of(tag, trailerCdnAvailabilityTag, itemCdnAvailabilityTag, itemMasterAgreementAvailabilityTag));
 
@@ -454,8 +454,8 @@ public class BtVodItemWriterTest {
         entry.setGuid(PRODUCT_GUID);
         entry.setId(PRODUCT_ID);
         entry.setTitle(title);
-        entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
-        entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
+        entry.setProductOfferStartDate(new DateTime(2013, DateTimeConstants.APRIL, 1, 0, 0, 0, 0).getMillis());
+        entry.setProductOfferEndDate(new DateTime(2014, DateTimeConstants.APRIL, 30, 0, 0, 0).getMillis());
         entry.setDescription(SYNOPSIS);
         entry.setProductType("film");
         entry.setProductPricingPlan(new BtVodProductPricingPlan());
@@ -470,7 +470,15 @@ public class BtVodItemWriterTest {
         tag.setPlproduct$scheme("subscription");
         tag.setPlproduct$title(SUBSCRIPTION_CODE);
 
-        entry.setProductTags(ImmutableList.of(tag));
+        BtVodPlproduct$productTag itemCdnAvailabilityTag = new BtVodPlproduct$productTag();
+        itemCdnAvailabilityTag.setPlproduct$scheme("serviceType");
+        itemCdnAvailabilityTag.setPlproduct$title("OTG");
+        
+        BtVodPlproduct$productTag itemMasterAgreementAvailabilityTag = new BtVodPlproduct$productTag();
+        itemMasterAgreementAvailabilityTag.setPlproduct$scheme("masterAgreementOtgTvodPlay");
+        itemMasterAgreementAvailabilityTag.setPlproduct$title("TRUE"); 
+        
+        entry.setProductTags(ImmutableList.of(tag, itemCdnAvailabilityTag, itemMasterAgreementAvailabilityTag));
 
 
 

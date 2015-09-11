@@ -438,8 +438,12 @@ public class BtVodItemWriterTest {
         BtVodPlproduct$productTag itemCdnAvailabilityTag = new BtVodPlproduct$productTag();
         itemCdnAvailabilityTag.setPlproduct$scheme("serviceType");
         itemCdnAvailabilityTag.setPlproduct$title("OTG");
+        
+        BtVodPlproduct$productTag itemMasterAgreementAvailabilityTag = new BtVodPlproduct$productTag();
+        itemCdnAvailabilityTag.setPlproduct$scheme("masterAgreementOtgTvodPlay");
+        itemCdnAvailabilityTag.setPlproduct$title("TRUE");        
 
-        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of(tag, trailerCdnAvailabilityTag, itemCdnAvailabilityTag));
+        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of(tag, trailerCdnAvailabilityTag, itemCdnAvailabilityTag, itemMasterAgreementAvailabilityTag));
 
 
         return entry;

@@ -123,7 +123,7 @@ public class BtVodVersionsExtractor {
     }
 
     private boolean isItemTvodPlayoutAllowed(BtVodEntry row) {
-        return !Boolean.FALSE.equals(row.getMasterAgreementOtgTvodPlay());
+        return !Boolean.FALSE.equals(Boolean.valueOf(row.getMasterAgreementOtgTvodPlay()));
     }
 
     private Location createLocation(BtVodEntry row, Interval availability, Collection<BtVodProductPricingTier> pricingTiers,

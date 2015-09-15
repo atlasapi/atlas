@@ -82,12 +82,14 @@ public class TitleMatchingItemScorerTest extends TestCase {
     @Test
     public void testMatchingWithThePrefix() {
         DefaultDescription desc = new DefaultDescription();
-        
+
+        score(1, scorer.score(itemWithTitle("Sports"), of(itemWithTitle("Live Sports")), desc));
         score(1, scorer.score(itemWithTitle("The Great Escape"), of(itemWithTitle("Great Escape")), desc));
         score(1, scorer.score(itemWithTitle("the Great Escape"), of(itemWithTitle("Great Escape")), desc));
         score(0, scorer.score(itemWithTitle("Theatreland"), of(itemWithTitle("The atreland")), desc));
         score(0, scorer.score(itemWithTitle("theatreland"), of(itemWithTitle("the atreland")), desc));
-        
+        score(0, scorer.score(itemWithTitle("liveandnotlive live"), of(itemWithTitle("live")), desc));
+
     }
     
     private void score(double expected, ScoredCandidates<Item> scores) {

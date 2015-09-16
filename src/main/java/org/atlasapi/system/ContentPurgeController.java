@@ -15,11 +15,11 @@ import com.metabroadcast.common.http.HttpStatusCode;
 
 
 @Controller
-public class BtVodContentPurgeController {
+public class ContentPurgeController {
     
     private final ContentPurger contentPurger;
     
-    public BtVodContentPurgeController(ContentPurger contentPurger) {
+    public ContentPurgeController(ContentPurger contentPurger) {
         this.contentPurger = checkNotNull(contentPurger);
     }
     
@@ -32,6 +32,12 @@ public class BtVodContentPurgeController {
     @RequestMapping(value = "/system/content/purge/bttvevod", method = RequestMethod.POST)
     public void purgeTve(HttpServletResponse response) {
         contentPurger.purge(Publisher.BT_TVE_VOD, ImmutableSet.<Publisher>of());
+        response.setStatus(HttpStatusCode.OK.code());
+    }
+
+    @RequestMapping(value = "/system/content/purge/uktv", method = RequestMethod.POST)
+    public void purgeUkTv(HttpServletResponse response) {
+        contentPurger.purge(Publisher.UKTV, ImmutableSet.<Publisher>of());
         response.setStatus(HttpStatusCode.OK.code());
     }
 }

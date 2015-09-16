@@ -47,8 +47,8 @@ public class ContentPurgeWebModule {
     }
     
     @Bean
-    public BtVodContentPurgeController btVodContentPurgeController() {
-        return new BtVodContentPurgeController(contentPurger);
+    public ContentPurgeController btVodContentPurgeController() {
+        return new ContentPurgeController(contentPurger);
     }
 
     @Bean

@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -17,6 +18,7 @@ import com.google.common.collect.ImmutableList;
 public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     
     public static final String NAME = "Title";
+    private static final ImmutableSet<String> PREFIXES = ImmutableSet.of("the ", "Live ");
 
     public enum TitleType {
         
@@ -117,9 +119,14 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
     
     private String removeCommonPrefixes(String title) {
-        String prefix = "the ";
-        return title.startsWith(prefix) ? title.substring(prefix.length())
-                                        : title;
+        String titleWithoutPrefix = title;
+        for (String prefix : PREFIXES) {
+            if (titleWithoutPrefix.length() > prefix.length() &&
+                    titleWithoutPrefix.substring(0, prefix.length()).equalsIgnoreCase(prefix)) {
+                titleWithoutPrefix = titleWithoutPrefix.substring(prefix.length());
+            }
+        }
+        return titleWithoutPrefix;
     }
 
     //Matches e.g. "2. Kinross"

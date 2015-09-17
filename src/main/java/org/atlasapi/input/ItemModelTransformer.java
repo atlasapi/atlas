@@ -150,11 +150,13 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
 
         org.atlasapi.media.entity.simple.Restriction simpleRestriction = broadcast.getRestriction();
 
-        restriction.setRestricted(simpleRestriction.isRestricted());
-        restriction.setAuthority(simpleRestriction.getAuthority());
-        restriction.setRating(simpleRestriction.getRating());
-        restriction.setMinimumAge(simpleRestriction.getMinimumAge());
-        restriction.setMessage(simpleRestriction.getMessage());
+        if (simpleRestriction != null) {
+            restriction.setRestricted(simpleRestriction.isRestricted());
+            restriction.setAuthority(simpleRestriction.getAuthority());
+            restriction.setRating(simpleRestriction.getRating());
+            restriction.setMinimumAge(simpleRestriction.getMinimumAge());
+            restriction.setMessage(simpleRestriction.getMessage());
+        }
 
         return restriction;
     }

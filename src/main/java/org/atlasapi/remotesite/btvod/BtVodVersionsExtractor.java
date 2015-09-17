@@ -193,7 +193,8 @@ public class BtVodVersionsExtractor {
 
     private String uriFor(BtVodEntry row, Policy.RevenueContract revenueContract, Long serviceId) {
         String id = row.getGuid();
+        String serviceIdString = serviceId != null ? serviceId.toString() : "";
         return uriPrefix + "items/" + id + "/" + revenueContract.toString() 
-                + "/" + serviceId != null ? serviceId.toString() : "";
+                + "/" + serviceIdString;
     }
 }

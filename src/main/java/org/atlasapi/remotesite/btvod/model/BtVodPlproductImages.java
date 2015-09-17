@@ -22,9 +22,29 @@ public class BtVodPlproductImages {
     @SerializedName("image-double-packshot-hd")
     private List<BtVodImage> doublePackshotImagesHd;
     
+    @SerializedName("image-single-packshot-hires")
+    private List<BtVodImage> singlePackshotHires;
+    
+    @SerializedName("image-double-packshot-hires")
+    private List<BtVodImage> doublePackshotHires;
+    
     public BtVodPlproductImages() {
     }
 
+    public List<BtVodImage> getSinglePackshotHiresImages() {
+        if (singlePackshotHires == null) {
+            return ImmutableList.of();
+        }
+        return singlePackshotHires;
+    }
+    
+    public List<BtVodImage> getDoublePackshotHiresImages() {
+        if (doublePackshotHires == null) {
+            return ImmutableList.of();
+        }
+        return doublePackshotHires;
+    }
+    
     public List<BtVodImage> getBackgroundImages() {
         if (backgroundImages == null) {
             return ImmutableList.of();

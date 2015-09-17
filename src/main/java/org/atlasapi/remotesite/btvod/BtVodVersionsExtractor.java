@@ -28,6 +28,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class BtVodVersionsExtractor {
 
+    private static final String OTG_PLATFORM = "OTG";
+    private static final String BT_VOD_GUID_NAMESPACE = "bt:vod:guid";
+    private static final String BT_VOD_ID_NAMESPACE = "bt:vod:id";
     private static final String HD_FLAG = "HD";
     private static final String SD_FLAG = "SD";
 
@@ -116,13 +119,11 @@ public class BtVodVersionsExtractor {
     }
 
     private boolean isItemMediaAvailableOnCdn(BtVodEntry row) {
-        return true;
-        //return row.getServiceTypes().contains(OTG_PLATFORM);
+        return row.getServiceTypes().contains(OTG_PLATFORM);
     }
 
     private boolean isItemTvodPlayoutAllowed(BtVodEntry row) {
-        return true;
-        //return !FALSE.equals(row.getMasterAgreementOtgTvodPlay());
+        return !Boolean.FALSE.equals(Boolean.valueOf(row.getMasterAgreementOtgTvodPlay()));
     }
 
     private Location createLocation(BtVodEntry row, Interval availability, Collection<BtVodProductPricingTier> pricingTiers,

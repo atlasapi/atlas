@@ -178,7 +178,7 @@ public class BtVodVersionsExtractor {
         }
         Location location = new Location();
         location.setPolicy(policy);
-        location.setCanonicalUri(uriFor(row, policy.getRevenueContract()));
+        location.setCanonicalUri(uriFor(row, policy.getRevenueContract(), serviceId));
         location.setUri(uriFor(row));
         location.setAliases(aliases);
 
@@ -191,8 +191,9 @@ public class BtVodVersionsExtractor {
         return uriPrefix + "items/" + id;
     }
 
-    private String uriFor(BtVodEntry row, Policy.RevenueContract revenueContract) {
+    private String uriFor(BtVodEntry row, Policy.RevenueContract revenueContract, Long serviceId) {
         String id = row.getGuid();
-        return uriPrefix + "items/" + id + "/" + revenueContract.toString();
+        return uriPrefix + "items/" + id + "/" + revenueContract.toString() 
+                + "/" + serviceId != null ? serviceId.toString() : "";
     }
 }

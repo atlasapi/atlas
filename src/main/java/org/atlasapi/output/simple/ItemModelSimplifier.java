@@ -418,6 +418,8 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
             restriction.setRestricted(version.getRestriction().isRestricted());
             restriction.setMinimumAge(version.getRestriction().getMinimumAge());
             restriction.setMessage(version.getRestriction().getMessage());
+            restriction.setAuthority(version.getRestriction().getAuthority());
+            restriction.setRating(version.getRestriction().getRating());
         }
 
         simpleLocation.setRestriction(restriction);

@@ -22,6 +22,7 @@ import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
 import static org.atlasapi.media.entity.Publisher.ROVI_EN;
 import static org.atlasapi.media.entity.Publisher.RTE;
 import static org.atlasapi.media.entity.Publisher.TALK_TALK;
+import static org.atlasapi.media.entity.Publisher.UKTV;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
@@ -118,6 +119,7 @@ public class EquivTaskModule {
     private static final RepetitionRule ROVI_EN_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(8, 00));
     private static final RepetitionRule RTE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(22, 00));
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(3, 00));
     
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
@@ -167,7 +169,8 @@ public class EquivTaskModule {
             taskScheduler.schedule(publisherUpdateTask(BT_TVE_VOD_VOLE_CONFIG_1).withName("BT TVE VOD (vole, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1).withName("BT TVE VOD (systest2, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(AMAZON_UNBOX).withName("Amazon Unbox Equivalence Updater"), AMAZON_EQUIVALENCE_REPETITION);
-            
+            taskScheduler.schedule(publisherUpdateTask(UKTV).withName("UKTV Equivalence Updater"), UKTV_EQUIVALENCE_REPETITION);
+
             taskScheduler.schedule(publisherUpdateTask(Publisher.BBC_MUSIC).withName("Music Equivalence Updater"), RepetitionRules.every(Duration.standardHours(6)));
             
             taskScheduler.schedule(taskBuilder(0, 7)

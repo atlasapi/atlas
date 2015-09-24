@@ -77,7 +77,7 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
 
     @Override
     protected void onSeriesProcessed(Series series, BtVodEntry row) {
-        if (synthesizedSeries.containsKey(series.getCanonicalUri())) {
+        if (!synthesizedSeries.containsKey(series.getCanonicalUri())) {
             synthesizedSeries.put(series.getCanonicalUri(), series);
         }
     }

@@ -25,6 +25,11 @@ public class BtVodPricingAvailabilityGrouper {
 
     public Multimap<Interval, BtVodProductPricingTier> groupAvailabilityPeriods(BtVodEntry entry) {
         
+        if (entry.getProductPricingPlan() == null
+                || entry.getProductPricingPlan().getProductPricingTiers() == null) {
+            return ImmutableMultimap.of();
+        }
+        
         ImmutableMap<Interval, BtVodProductPricingTier> intervalToTier = Maps.uniqueIndex(
                 Iterables.filter(entry.getProductPricingPlan().getProductPricingTiers(), Predicates.not(IS_BLACKOUT)), 
                 new Function<BtVodProductPricingTier, Interval>() {

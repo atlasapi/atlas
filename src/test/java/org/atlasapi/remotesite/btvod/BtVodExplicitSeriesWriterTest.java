@@ -65,7 +65,9 @@ public class BtVodExplicitSeriesWriterTest {
                         new BtVodPricingAvailabilityGrouper(),
                         "prefix",
                         BT_VOD_VERSION_GUID_NAMESPACE,
-                        BT_VOD_VERSION_ID_NAMESPACE
+                        BT_VOD_VERSION_ID_NAMESPACE,
+                        null,
+                        null
                 ),
                 new TitleSanitiser(),
                 imageExtractor,

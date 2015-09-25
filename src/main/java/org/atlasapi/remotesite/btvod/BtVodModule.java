@@ -136,7 +136,13 @@ public class BtVodModule {
     @Value("${bt.vod.mpx.systest2.feed.params.q}")
     private String btVodMpxSystest2FeedQParam;
 
-
+    @Value("${service.bttv.id}")
+    private Long btTvServiceId;
+    
+    @Value("${service.bttvotg.id}")
+    private Long btTvOtgServiceId;
+    
+    
     private BtVodStaleTopicContentRemover staleTopicContentRemover(Publisher publisher, String env, String conf) {
         return new BtVodStaleTopicContentRemover(
                 ImmutableSet.of(
@@ -291,7 +297,9 @@ public class BtVodModule {
                 new BtVodPricingAvailabilityGrouper(),
                 prefix,
                 String.format(BT_VOD_GUID_ALIAS_NAMESPACE_FORMAT, env, conf),
-                String.format(BT_VOD_ID_ALIAS_NAMESPACE_FORMAT, env, conf)
+                String.format(BT_VOD_ID_ALIAS_NAMESPACE_FORMAT, env, conf),
+                btTvServiceId,
+                btTvOtgServiceId
         );
     }
 

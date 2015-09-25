@@ -119,7 +119,9 @@ public class BtVodItemWriterTest {
                     new BtVodPricingAvailabilityGrouper(),
                     URI_PREFIX,
                     BT_VOD_VERSION_GUID_NAMESPACE,
-                    BT_VOD_VERSION_ID_NAMESPACE
+                    BT_VOD_VERSION_ID_NAMESPACE,
+                    null,
+                    null
             ),
             newTopicRef,
             new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),

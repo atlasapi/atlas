@@ -1,3 +1,8 @@
+# IntelliJ
+*.iml
+.idea
+
+
 .classpath
 .project
 generated

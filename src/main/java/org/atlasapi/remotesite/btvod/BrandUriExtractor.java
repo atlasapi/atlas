@@ -128,7 +128,7 @@ public class BrandUriExtractor {
 
 
     private String stripHDSuffix(String title) {
-        Matcher hdMatcher = BtVodBrandWriter.HD_PATTERN.matcher(title);
+        Matcher hdMatcher = BtVodBrandExtractor.HD_PATTERN.matcher(title);
         if (hdMatcher.matches()) {
             return hdMatcher.group(1).trim().replace("- HD ", "");
         }

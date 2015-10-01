@@ -9,11 +9,13 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.intl.Countries;
 
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Encoding;
@@ -38,7 +40,7 @@ import com.google.common.primitives.Ints;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 
-public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
+public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     
     private static final String FILM_TYPE = "film";
     private static final String MUSIC_TYPE = "music";
@@ -51,29 +53,28 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             Pattern.compile("^.*Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\s(Episode\\s[0-9]+.*)"),
             Pattern.compile("^.*?\\-\\s(.*)")
     );
-    private static final Logger log = LoggerFactory.getLogger(BtVodItemWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(BtVodItemExtractor.class);
     private static final String OTG_PLATFORM = "OTG";
 
-    private final BtVodBrandWriter brandExtractor;
+    private final BtVodBrandProvider brandProvider;
     private final BtVodSeriesProvider seriesProvider;
     private final Publisher publisher;
     private final String uriPrefix;
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
+
     private final Map<String, Item> processedItems;
+
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final TitleSanitiser titleSanitiser;
     private final ImageExtractor imageExtractor;
     private UpdateProgress progress = UpdateProgress.START;
     private final BtVodVersionsExtractor versionsExtractor;
-    private final TopicRef newTopic;
-    private final TopicRef kidsTopic;
-    private final TopicRef tvTopic;
-    private final TopicRef subscriptionCatchupTopic;
-    private final MergingContentWriter contentWriter;
 
-    public BtVodItemWriter(
-            BtVodBrandWriter brandExtractor,
+    private final ImmutableSet<TopicRef> topicsToPropagateToParents;
+
+    public BtVodItemExtractor(
+            BtVodBrandProvider brandProvider,
             BtVodSeriesProvider seriesProvider,
             Publisher publisher,
             String uriPrefix,
@@ -86,12 +87,11 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
             TopicRef newTopic,
             TopicRef kidsTopic,
             TopicRef tvTopic,
-            TopicRef subscriptionCatchupTopic,
-            MergingContentWriter contentWriter
+            TopicRef subscriptionCatchupTopic
     ) {
+        this.brandProvider = checkNotNull(brandProvider);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.listener = checkNotNull(listener);
-        this.brandExtractor = checkNotNull(brandExtractor);
         this.seriesProvider = checkNotNull(seriesProvider);
         this.publisher = checkNotNull(publisher);
         this.uriPrefix = checkNotNull(uriPrefix);
@@ -100,11 +100,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         this.processedItems = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
-        this.newTopic = checkNotNull(newTopic);
-        this.kidsTopic = checkNotNull(kidsTopic);
-        this.tvTopic = checkNotNull(tvTopic);
-        this.subscriptionCatchupTopic = checkNotNull(subscriptionCatchupTopic);
-        this.contentWriter = checkNotNull(contentWriter);
+        this.topicsToPropagateToParents = ImmutableSet.of(newTopic, kidsTopic, tvTopic, subscriptionCatchupTopic);
     }
 
     @Override
@@ -119,7 +115,6 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
             Item item = itemFrom(row);
             processedItems.put(itemKeyForDeduping(row), item);
-            contentWriter.write(item);
             processedRows.add(row.getGuid());
             listener.onContent(item, row);
             thisProgress = UpdateProgress.SUCCESS;
@@ -164,15 +159,16 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private void addTopicsToParents(Item item, BtVodEntry row) {
-        for (TopicRef topicRef : ImmutableSet.of(newTopic, kidsTopic, tvTopic, subscriptionCatchupTopic)) {
+        for (TopicRef topicRef : topicsToPropagateToParents) {
             if (item.getTopicRefs().contains(topicRef)) {
                 if (item.getContainer() != null) {
-                    brandExtractor.addTopicTo(row, topicRef);
+                    Brand brand = brandProvider.brandFor(row).get();
+                    brand.addTopicRef(topicRef);
+                    listener.onContent(brand, row);
                 }
                 if(item instanceof Episode && ((Episode)item).getSeriesRef() != null) {
                     Series series = seriesProvider.seriesFor(row).get();
                     series.addTopicRef(topicRef);
-                    contentWriter.write(series);
                     listener.onContent(series, row);
                 }
             }
@@ -206,7 +202,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
         episode.setSpecialization(Specialization.TV);
         return episode;
     }
-    
+
     public Integer extractSeriesNumber(BtVodEntry row) {
         Optional<Series> seriesRef = seriesProvider.seriesFor(row);
         if(!seriesRef.isPresent()) {
@@ -237,7 +233,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private ParentRef getBrandRefOrNull(BtVodEntry row) {
-        Optional<ParentRef> brandRef = brandExtractor.getBrandRefFor(row);
+        Optional<ParentRef> brandRef = brandProvider.brandRefFor(row);
         if (!brandRef.isPresent()) {
             log.warn("Episode without brand {}", row.getTitle());
         }
@@ -280,7 +276,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private void populateItemFields(Item item, BtVodEntry row) {
-        Optional<ParentRef> brandRefFor = brandExtractor.getBrandRefFor(row);
+        Optional<ParentRef> brandRefFor = brandProvider.brandRefFor(row);
 
 
         if (brandRefFor.isPresent()) {
@@ -291,7 +287,7 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
 
         item.setVersions(versionsExtractor.createVersions(row));
         item.setEditorialPriority(row.getProductPriority());
-        
+
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, item);
         item.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
         item.setImages(imageExtractor.imagesFor(row));
@@ -340,5 +336,9 @@ public class BtVodItemWriter implements BtVodDataProcessor<UpdateProgress> {
     @Override
     public UpdateProgress getResult() {
         return progress;
+    }
+
+    public Map<String, Item> getProcessedItems() {
+        return ImmutableMap.copyOf(processedItems);
     }
 }

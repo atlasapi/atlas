@@ -6,8 +6,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
-import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
@@ -32,7 +32,6 @@ import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 
 import java.util.Set;
@@ -42,15 +41,13 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 
-public class BtVodItemWriterTest {
+public class BtVodItemExtractorTest {
 
     private static final String SUBSCRIPTION_CODE = "S012345";
-    private static final String IMAGE_URI = "http://example.org/123.png";
     private static final String PRODUCT_GUID = "1234";
     private static final String PRODUCT_ID = "http://example.org/content/1244";
     private static final String SERIES_TITLE = "Series Title";
@@ -70,9 +67,7 @@ public class BtVodItemWriterTest {
     private static final String BT_VOD_VERSION_GUID_NAMESPACE = "version:guid:namespace";
     private static final String BT_VOD_VERSION_ID_NAMESPACE = "version:id:namespace";
 
-
-    private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
-    private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
+    private final BtVodBrandProvider btVodBrandProvider = mock(BtVodBrandProvider.class);
     private final BtVodSeriesProvider seriesProvider = mock(BtVodSeriesProvider.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
@@ -87,9 +82,9 @@ public class BtVodItemWriterTest {
     );
 
 
-    private final BtVodItemWriter itemExtractor
-            = new BtVodItemWriter(
-            brandExtractor,
+    private final BtVodItemExtractor itemExtractor
+            = new BtVodItemExtractor(
+            btVodBrandProvider,
             seriesProvider,
             PUBLISHER, URI_PREFIX,
             contentListener,
@@ -126,8 +121,7 @@ public class BtVodItemWriterTest {
             newTopicRef,
             new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
             new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
-            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT),
-            contentWriter
+            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
     );
     
     @Test
@@ -141,9 +135,10 @@ public class BtVodItemWriterTest {
         when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(series));
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
-        when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
+        when(btVodBrandProvider.brandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
 
-        Item writtenItem = extractAndCapture(btVodEntry);
+        itemExtractor.process(btVodEntry);
+        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
@@ -177,15 +172,6 @@ public class BtVodItemWriterTest {
         assertThat(location.getPolicy().getRevenueContract(), is(RevenueContract.SUBSCRIPTION));
     }
 
-    private Item extractAndCapture(BtVodEntry entry) {
-        itemExtractor.process(entry);
-
-        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
-        verify(contentWriter).write(itemCaptor.capture());
-
-        return itemCaptor.getValue();
-    }
-
     @Test
     @Ignore
     // Ingored until we have real data which allows us to
@@ -196,11 +182,11 @@ public class BtVodItemWriterTest {
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(mock(Series.class)));
-        when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
+        when(btVodBrandProvider.brandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
 
         btVodEntry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
 
-        Item writtenItem = extractAndCapture(btVodEntry);
+        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertTrue(writtenItem.getClips().isEmpty());
 
@@ -224,16 +210,12 @@ public class BtVodItemWriterTest {
         when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.of(series));
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
-        when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
+        when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
 
-        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
-        verify(contentWriter, times(2)).write(itemCaptor.capture());
-
-
-        Item writtenItem = Iterables.getOnlyElement(ImmutableSet.copyOf(itemCaptor.getAllValues()));
+        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
@@ -265,16 +247,12 @@ public class BtVodItemWriterTest {
         when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.of(series));
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
-        when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
+        when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
 
-        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
-        verify(contentWriter, times(2)).write(itemCaptor.capture());
-
-
-        Item writtenItem = Iterables.getOnlyElement(ImmutableSet.copyOf(itemCaptor.getAllValues()));
+        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
@@ -349,17 +327,13 @@ public class BtVodItemWriterTest {
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
 
-        when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
-        when(brandExtractor.getBrandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+        when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
+        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
 
-        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
-        verify(contentWriter, times(2)).write(itemCaptor.capture());
-
-
-        Item writtenItem = Iterables.getOnlyElement(ImmutableSet.copyOf(itemCaptor.getAllValues()));
+        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertThat(writtenItem.getTitle(), is("About Alex"));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
@@ -384,21 +358,15 @@ public class BtVodItemWriterTest {
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
 
-        when(brandExtractor.getBrandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
-        when(brandExtractor.getBrandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
-        when(brandExtractor.getBrandRefFor(btVodEntryHDCurzon)).thenReturn(Optional.<ParentRef>absent());
-
-
+        when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
+        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+        when(btVodBrandProvider.brandRefFor(btVodEntryHDCurzon)).thenReturn(Optional.<ParentRef>absent());
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
         itemExtractor.process(btVodEntryHDCurzon);
 
-        ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
-        verify(contentWriter, times(3)).write(itemCaptor.capture());
-
-
-        Item writtenItem = Iterables.getOnlyElement(ImmutableSet.copyOf(itemCaptor.getAllValues()));
+        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertThat(writtenItem.getTitle(), is("Amour"));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
@@ -492,26 +460,23 @@ public class BtVodItemWriterTest {
         BtVodEntry btVodEntry = episodeRow();
         ParentRef parentRef = new ParentRef(BRAND_URI);
         Series series = mock(Series.class);
+        Brand brand = mock(Brand.class);
         when(series.getCanonicalUri()).thenReturn("seriesUri");
         when(series.getSeriesNumber()).thenReturn(1);
 
         when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(series));
+        when(btVodBrandProvider.brandFor(btVodEntry)).thenReturn(Optional.of(brand));
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
-        when(brandExtractor.getBrandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
+        when(btVodBrandProvider.brandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
         when(newTopicContentMatchingPredicate.apply(isA(VodEntryAndContent.class))).thenReturn(true);
 
         itemExtractor.process(btVodEntry);
 
-        ArgumentCaptor<Content> itemCaptor = ArgumentCaptor.forClass(Content.class);
-        verify(contentWriter,times(2)).write(itemCaptor.capture());
-        verify(brandExtractor).addTopicTo(btVodEntry, newTopicRef);
-
-        Series writtenSeries = (Series) itemCaptor.getAllValues().get(0);
-        Item writtenItem = (Item) itemCaptor.getAllValues().get(1);
+        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertThat(writtenItem.getTopicRefs().contains(newTopicRef), is(true));
-        assertThat(writtenSeries, is(series));
         verify(series).addTopicRef(newTopicRef);
+        verify(brand).addTopicRef(newTopicRef);
     }
 }

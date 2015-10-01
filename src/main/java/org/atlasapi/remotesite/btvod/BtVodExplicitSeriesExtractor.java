@@ -4,10 +4,7 @@ import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableMap;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import java.util.Map;
@@ -15,7 +12,7 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
+public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
     private static final String SERIES_TYPE = "season";
 
@@ -27,20 +24,19 @@ public class BtVodExplicitSeriesWriter extends AbstractBtVodSeriesWriter {
     private final TitleSanitiser titleSanitiser;
 
 
-    public BtVodExplicitSeriesWriter(
-            BtVodBrandWriter brandExtractor,
+    public BtVodExplicitSeriesExtractor(
+            BtVodBrandProvider btVodBrandProvider,
             Publisher publisher,
             BtVodContentListener listener,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            TitleSanitiser titleSanitiser, 
+            TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
-            TopicRef newTopic,
-            MergingContentWriter contentWriter
+            TopicRef newTopic
     ) {
-        super(brandExtractor, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor, imageExtractor, newTopic, contentWriter);
+        super(btVodBrandProvider, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor, imageExtractor, newTopic);
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.versionsExtractor = checkNotNull(versionsExtractor);
         explicitSeries = Maps.newHashMap();

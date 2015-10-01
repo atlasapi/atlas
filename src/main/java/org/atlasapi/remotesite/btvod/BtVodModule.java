@@ -169,24 +169,20 @@ public class BtVodModule {
 
     private BtVodUpdater btVodUpdater(String newFeedSuffix) {
         return new BtVodUpdater(
-                mergingContentWriter(),
+                contentWriter,
                 btVodData(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
                 URI_PREFIX,
                 btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX, btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam),
                 Publisher.BT_VOD,
                 oldContentDeactivator(Publisher.BT_VOD),
                 noImageExtractor(),
-                URI_PREFIX,
                 noImageExtractor(),
                 brandUriExtractor(URI_PREFIX),
-                topicResolver,
-                topicWriter,
                 newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam, newFeedSuffix),
                 topicFor(feedNamepaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_NEW_FEED, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_KIDS_TOPIC, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_CATCHUP_TOPIC, Publisher.BT_VOD),
-                staleTopicContentRemover(Publisher.BT_VOD, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 seriesUriExtractor(URI_PREFIX),
                 versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 describedFieldsExtractor(Publisher.BT_VOD,BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG, 
@@ -257,24 +253,21 @@ public class BtVodModule {
     ) {
         String uriPrefix = String.format(TVE_URI_PREFIX_FORMAT, publisher.key());
         return new BtVodUpdater(
-                mergingContentWriter(),
+                contentWriter,
                 btVodData(feedBaseUrl, feedName, feedQParam),
                 uriPrefix,
                 btVodContentGroupUpdater(publisher, uriPrefix, feedBaseUrl, feedQParam),
                 publisher,
                 oldContentDeactivator(publisher),
                 brandImageExtractor(btPortalBaseUri),
-                uriPrefix,
                 itemImageExtractor(),
                 brandUriExtractor(uriPrefix),
-                topicResolver,
-                topicWriter,
                 newFeedContentMatchingPredicate(feedBaseUrl, newFeedSuffix, feedQParam),
                 topicFor(feedNamepaceFor(envName, conf), BT_VOD_NEW_FEED, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_KIDS_TOPIC, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_TV_BOXSETS_TOPIC, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_CATCHUP_TOPIC, publisher),
-                staleTopicContentRemover(Publisher.BT_TVE_VOD, envName, conf), seriesUriExtractor(uriPrefix),
+                seriesUriExtractor(uriPrefix),
                 versionsExtractor(uriPrefix, envName, conf),
                 describedFieldsExtractor(
                         publisher,
@@ -420,10 +413,6 @@ public class BtVodModule {
         return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUrl, qParam), NEW_CONTENT_MPX_FEED_NAME);
     }
 
-    private MergingContentWriter mergingContentWriter() {
-        return new MergingContentWriter(contentWriter,contentResolver);
-    }
-    
     @Bean
     public PortalClient portalClient() {
         return new XmlPortalClient(btPortalContentGroupsBaseUri, 

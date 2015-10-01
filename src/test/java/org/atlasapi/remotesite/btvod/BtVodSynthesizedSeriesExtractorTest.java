@@ -6,6 +6,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
+import com.google.common.collect.Iterables;
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -18,18 +20,14 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 
 import static org.hamcrest.CoreMatchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-public class BtVodSynthesizedSeriesWriterTest {
+public class BtVodSynthesizedSeriesExtractorTest {
 
     private static final String BRAND_TITLE = "Brand Title";
     private static final String PRODUCT_ID = "1234";
@@ -43,8 +41,7 @@ public class BtVodSynthesizedSeriesWriterTest {
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
 
-    private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
-    private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
+    private final BtVodBrandProvider brandProvider = mock(BtVodBrandProvider.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
@@ -79,8 +76,8 @@ public class BtVodSynthesizedSeriesWriterTest {
             TopicRef.Relationship.ABOUT
     );
 
-    private final BtVodSynthesizedSeriesWriter seriesExtractor = new BtVodSynthesizedSeriesWriter(
-            brandExtractor,
+    private final BtVodSynthesizedSeriesExtractor seriesExtractor = new BtVodSynthesizedSeriesExtractor(
+            brandProvider,
             PUBLISHER,
             contentListener,
             describedFieldsExtractor, 
@@ -88,8 +85,7 @@ public class BtVodSynthesizedSeriesWriterTest {
             seriesUriExtractor,
             ImmutableSet.of(SERIES_GUID),
             imageExtractor,
-            newTopicRef,
-            contentWriter
+            newTopicRef
     );
 
     @Test
@@ -99,17 +95,13 @@ public class BtVodSynthesizedSeriesWriterTest {
         String brandUri = "http://brand-uri.com";
         ParentRef brandRef = mock(ParentRef.class);
 
-        when(brandExtractor.brandUriFor(entry)).thenReturn(Optional.of(brandUri));
-        when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of(brandUri + "/series/1"));
 
-        ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
-
         seriesExtractor.process(entry);
 
-        verify(contentWriter).write(captor.capture());
-        Series series = captor.getValue();
+        Series series = Iterables.getOnlyElement(seriesExtractor.getSynthesizedSeries().values());
         assertThat(series.getCanonicalUri(), is(brandUri + "/series/1"));
         assertThat(series.getSeriesNumber(), is(1));
         assertThat(series.getParent(), is(brandRef));
@@ -125,7 +117,7 @@ public class BtVodSynthesizedSeriesWriterTest {
 
         seriesExtractor.process(entry);
 
-        verifyNoMoreInteractions(contentWriter);
+        assertThat(seriesExtractor.getSynthesizedSeries().isEmpty(), is(true));
     }
 
 
@@ -135,39 +127,35 @@ public class BtVodSynthesizedSeriesWriterTest {
         BtVodEntry entry = row();
         entry.setProductType("film");
 
-        String brandUri = "http://brand-uri.com";
         ParentRef brandRef = mock(ParentRef.class);
 
-        when(brandExtractor.brandUriFor(entry)).thenReturn(Optional.of(brandUri));
-        when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
 
         seriesExtractor.process(entry);
-
-        verify(contentWriter, never()).write(Mockito.any(Series.class));
+        assertThat(seriesExtractor.getSynthesizedSeries().isEmpty(), is(true));
     }
 
     @Test
     public void testPropagatesNewTagToBrand() {
         BtVodEntry entry = row();
+        Brand brand = mock(Brand.class);
 
         String brandUri = "http://brand-uri.com";
         ParentRef brandRef = mock(ParentRef.class);
 
-        when(brandExtractor.brandUriFor(entry)).thenReturn(Optional.of(brandUri));
-        when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandFor(entry)).thenReturn(Optional.of(brand));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of(brandUri + "/series/1"));
         when(newTopicContentMatchingPredicate.apply(org.mockito.Matchers.<VodEntryAndContent>anyObject())).thenReturn(true);
 
-        ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
 
         seriesExtractor.process(entry);
 
-        verify(contentWriter).write(captor.capture());
-        Series series = captor.getValue();
+        Series series = Iterables.getOnlyElement(seriesExtractor.getSynthesizedSeries().values());
         assertThat(series.getTopicRefs().contains(newTopicRef), is(true));
 
-        verify(brandExtractor).addTopicTo(entry, newTopicRef);
+        verify(brand).addTopicRef(newTopicRef);
     }
 
 

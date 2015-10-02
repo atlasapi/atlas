@@ -2,8 +2,6 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.util.List;
 
-import javax.annotation.Nullable;
-
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.remotesite.ContentExtractor;
@@ -11,6 +9,7 @@ import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.joda.time.DateTime;
 
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -30,6 +29,14 @@ public class NitroBroadcastExtractor
     private static final String BID_TYPE = "bid";
     private static final String PIPS_AUTHORITY = "pips";
     private static final String TELEVIEW_AUTHORITY = "teleview";
+    private static final Function<Alias, String> TO_ALIAS_URI = new Function<Alias, String>() {
+
+        @Override
+        public String apply(Alias input) {
+            return input.getValue();
+        }
+        
+    };
 
     @Override
     public Optional<Broadcast> extract(com.metabroadcast.atlas.glycerin.model.Broadcast source) {
@@ -44,6 +51,7 @@ public class NitroBroadcastExtractor
         broadcast.setRepeat(source.isIsRepeat());
         broadcast.setAudioDescribed(source.isIsAudioDescribed());
         broadcast.setAliases(extractAliasesFrom(source));
+        broadcast.setAliasUrls(Iterables.transform(broadcast.getAliases(), TO_ALIAS_URI));
         broadcast.setAudioDescribed(source.isIsAudioDescribed());
         return Optional.of(broadcast);
     }

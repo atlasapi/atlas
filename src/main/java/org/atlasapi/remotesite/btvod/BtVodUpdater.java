@@ -159,7 +159,7 @@ public class BtVodUpdater extends ScheduledTask {
             );
             vodData.processData(explicitSeriesExtractor);
             explicitSeriesExtractStatus = String.format(
-                    "[DONE: %d rows successful, %d rows failed, %d brands extracted]",
+                    "[DONE: %d rows successful, %d rows failed, %d series extracted]",
                     explicitSeriesExtractor.getResult().getProcessed(),
                     explicitSeriesExtractor.getResult().getFailures(),
                     explicitSeriesExtractor.getExplicitSeries().size()
@@ -191,7 +191,7 @@ public class BtVodUpdater extends ScheduledTask {
             );
             vodData.processData(synthesizedSeriesExtractor);
             synthesizedSeriesExtractStatus = String.format(
-                    "[DONE: %d rows successful, %d rows failed, %d brands extracted]",
+                    "[DONE: %d rows successful, %d rows failed, %d series extracted]",
                     synthesizedSeriesExtractor.getResult().getProcessed(),
                     synthesizedSeriesExtractor.getResult().getFailures(),
                     synthesizedSeriesExtractor.getSynthesizedSeries().size()
@@ -229,8 +229,8 @@ public class BtVodUpdater extends ScheduledTask {
             );
 
             vodData.processData(itemExtractor);
-            synthesizedSeriesExtractStatus = String.format(
-                    "[DONE: %d rows successful, %d rows failed, %d brands extracted]",
+            itemExtractStatus = String.format(
+                    "[DONE: %d rows successful, %d rows failed, %d items extracted]",
                     itemExtractor.getResult().getProcessed(),
                     itemExtractor.getResult().getFailures(),
                     itemExtractor.getProcessedItems().size()

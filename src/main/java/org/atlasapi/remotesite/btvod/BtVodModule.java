@@ -181,7 +181,7 @@ public class BtVodModule {
                 brandUriExtractor(URI_PREFIX),
                 topicResolver,
                 topicWriter,
-                newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam, newFeedSuffix),
+                newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam),
                 topicFor(feedNamepaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_NEW_FEED, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_KIDS_TOPIC, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_VOD),
@@ -334,7 +334,6 @@ public class BtVodModule {
             String qParam
     ) {
         BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(baseUrl, newFeedSuffix, qParam);
-        newContentPredicate.init();
         return new BtVodDescribedFieldsExtractor(
                 topicResolver,
                 topicWriter,

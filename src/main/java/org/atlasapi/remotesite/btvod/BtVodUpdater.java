@@ -98,6 +98,7 @@ public class BtVodUpdater extends ScheduledTask {
     public void runTask() {
         
         newFeedContentMatchingPredicate.init();
+        describedFieldsExtractor.init();
         
         brandImageExtractor.start();
         

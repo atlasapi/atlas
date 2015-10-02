@@ -13,6 +13,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.model.Id;
 import com.metabroadcast.atlas.glycerin.model.Ids;
@@ -29,11 +30,12 @@ public class NitroBroadcastExtractor
     private static final String BID_TYPE = "bid";
     private static final String PIPS_AUTHORITY = "pips";
     private static final String TELEVIEW_AUTHORITY = "teleview";
-    private static final Function<Alias, String> TO_ALIAS_URI = new Function<Alias, String>() {
+    
+    private static final Predicate<Alias> PCRID_ALIAS = new Predicate<Alias>() {
 
         @Override
-        public String apply(Alias input) {
-            return input.getValue();
+        public boolean apply(Alias input) {
+            return input.getNamespace().contains(TERRESTRIAL_PROGRAM_CRID_TYPE);
         }
         
     };
@@ -51,7 +53,12 @@ public class NitroBroadcastExtractor
         broadcast.setRepeat(source.isIsRepeat());
         broadcast.setAudioDescribed(source.isIsAudioDescribed());
         broadcast.setAliases(extractAliasesFrom(source));
-        broadcast.setAliasUrls(Iterables.transform(broadcast.getAliases(), TO_ALIAS_URI));
+        
+        // Adding an alias uri for equivalence between Nitro and YV broadcasts
+        Optional<Alias> pcridAlias = Iterables.tryFind(broadcast.getAliases(), PCRID_ALIAS);
+        if (pcridAlias.isPresent()) {
+            broadcast.setAliasUrls(ImmutableSet.of("pcrid:" + pcridAlias.get().getValue()));            
+        }
         broadcast.setAudioDescribed(source.isIsAudioDescribed());
         return Optional.of(broadcast);
     }

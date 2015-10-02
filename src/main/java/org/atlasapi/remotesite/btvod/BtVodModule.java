@@ -181,7 +181,7 @@ public class BtVodModule {
                 brandUriExtractor(URI_PREFIX),
                 topicResolver,
                 topicWriter,
-                newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam),
+                newFeedContentMatchingPredicate(newFeedSuffix, btVodMpxProdFeedQParam),
                 topicFor(feedNamepaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_NEW_FEED, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_KIDS_TOPIC, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_VOD),
@@ -269,7 +269,7 @@ public class BtVodModule {
                 brandUriExtractor(uriPrefix),
                 topicResolver,
                 topicWriter,
-                newFeedContentMatchingPredicate(feedBaseUrl, newFeedSuffix, feedQParam),
+                newFeedContentMatchingPredicate(newFeedSuffix, feedQParam),
                 topicFor(feedNamepaceFor(envName, conf), BT_VOD_NEW_FEED, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_KIDS_TOPIC, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_TV_BOXSETS_TOPIC, publisher),
@@ -333,7 +333,7 @@ public class BtVodModule {
             String newFeedSuffix,
             String qParam
     ) {
-        BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(baseUrl, newFeedSuffix, qParam);
+        BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(newFeedSuffix, qParam);
         return new BtVodDescribedFieldsExtractor(
                 topicResolver,
                 topicWriter,
@@ -415,8 +415,8 @@ public class BtVodModule {
         return topic;
     }
     
-    private BtVodContentMatchingPredicate newFeedContentMatchingPredicate(String baseUrl, String feedName, String qParam) {
-        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUrl, qParam), feedName);
+    private BtVodContentMatchingPredicate newFeedContentMatchingPredicate(String feedName, String qParam) {
+        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(btVodMpxNewFeedBaseUrl, qParam), feedName);
     }
 
     private MergingContentWriter mergingContentWriter() {

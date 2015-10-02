@@ -417,7 +417,7 @@ public class BtVodModule {
     }
     
     private BtVodContentMatchingPredicate newFeedContentMatchingPredicate(String baseUrl, String feedName, String qParam) {
-        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUrl, qParam), NEW_CONTENT_MPX_FEED_NAME);
+        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUrl, qParam), feedName);
     }
 
     private MergingContentWriter mergingContentWriter() {

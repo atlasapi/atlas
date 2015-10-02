@@ -4,7 +4,9 @@ import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -28,10 +30,9 @@ import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
-public class BtVodExplicitSeriesWriterTest {
+public class BtVodExplicitSeriesExtractorTest {
 
     private static final Publisher PUBLISHER = Publisher.BT_VOD;
     private static final String PRODUCT_ID = "1234";
@@ -40,9 +41,8 @@ public class BtVodExplicitSeriesWriterTest {
     private static final String BT_VOD_VERSION_ID_NAMESPACE = "version:id:namespace";
 
 
-    private final MergingContentWriter contentWriter = mock(MergingContentWriter.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
-    private final BtVodBrandWriter brandExtractor = mock(BtVodBrandWriter.class);
+    private final BtVodBrandProvider brandProvider = mock(BtVodBrandProvider.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
     private final BtVodSeriesUriExtractor seriesUriExtractor = mock(BtVodSeriesUriExtractor.class);
@@ -50,12 +50,12 @@ public class BtVodExplicitSeriesWriterTest {
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor = mock(BtVodDescribedFieldsExtractor.class);
     private final TopicRef newTopic = mock(TopicRef.class);
 
-    private BtVodExplicitSeriesWriter seriesExtractor;
+    private BtVodExplicitSeriesExtractor seriesExtractor;
 
     @Before
     public void setUp() {
-        seriesExtractor = new BtVodExplicitSeriesWriter(
-                brandExtractor,
+        seriesExtractor = new BtVodExplicitSeriesExtractor(
+                brandProvider,
                 PUBLISHER,
                 contentListener,
                 describedFieldsExtractor,
@@ -71,8 +71,7 @@ public class BtVodExplicitSeriesWriterTest {
                 ),
                 new TitleSanitiser(),
                 imageExtractor,
-                newTopic,
-                contentWriter
+                newTopic
         );
     }
 
@@ -83,8 +82,8 @@ public class BtVodExplicitSeriesWriterTest {
         entry.setProductType("episode");
 
         seriesExtractor.process(entry);
+        assertThat(seriesExtractor.getExplicitSeries().isEmpty(), is(true));
 
-        verifyNoMoreInteractions(contentWriter);
     }
 
     @Test
@@ -101,16 +100,14 @@ public class BtVodExplicitSeriesWriterTest {
 
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("seriesUri"));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
-        when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
         when(describedFieldsExtractor.aliasesFrom(entry)).thenReturn(ImmutableSet.of(alias1, alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of(genre));
 
-        ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
 
         seriesExtractor.process(entry);
 
-        verify(contentWriter).write(captor.capture());
-        Series series = captor.getValue();
+        Series series = Iterables.getOnlyElement(seriesExtractor.getExplicitSeries().values());
 
         verify(describedFieldsExtractor).setDescribedFieldsFrom(entry, series);
 
@@ -147,11 +144,11 @@ public class BtVodExplicitSeriesWriterTest {
 
         when(seriesUriExtractor.seriesUriFor(series1)).thenReturn(Optional.of(seriesUri));
         when(seriesUriExtractor.extractSeriesNumber(series1)).thenReturn(Optional.of(1));
-        when(brandExtractor.getBrandRefFor(series1)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandRefFor(series1)).thenReturn(Optional.of(brandRef));
 
         when(seriesUriExtractor.seriesUriFor(series2)).thenReturn(Optional.of(seriesUri));
         when(seriesUriExtractor.extractSeriesNumber(series2)).thenReturn(Optional.of(1));
-        when(brandExtractor.getBrandRefFor(series2)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandRefFor(series2)).thenReturn(Optional.of(brandRef));
 
 
 
@@ -161,21 +158,25 @@ public class BtVodExplicitSeriesWriterTest {
         when(describedFieldsExtractor.aliasesFrom(series2)).thenReturn(ImmutableSet.of(alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(series2)).thenReturn(ImmutableSet.<String>of());
 
-        ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
+        ArgumentCaptor<Series> seriesCaptor = ArgumentCaptor.forClass(Series.class);
+
+        ArgumentCaptor<BtVodEntry> entryCaptor = ArgumentCaptor.forClass(BtVodEntry.class);
 
         seriesExtractor.process(series1);
         seriesExtractor.process(series2);
 
-        verify(contentWriter, times(2)).write(captor.capture());
-        Series savedSeries = captor.getAllValues().get(0);
-        Series savedSeries2 = captor.getAllValues().get(0);
+        verify(describedFieldsExtractor, times(2)).setDescribedFieldsFrom(entryCaptor.capture(), seriesCaptor.capture());
 
-        verify(describedFieldsExtractor).setDescribedFieldsFrom(series1, savedSeries);
-        verify(describedFieldsExtractor).setDescribedFieldsFrom(series1, savedSeries2);
+
+
+        Series savedSeries = seriesCaptor.getAllValues().get(0);
+        Series savedSeries2 = seriesCaptor.getAllValues().get(1);
 
         assertThat(savedSeries, sameInstance(savedSeries2));
         assertThat(seriesExtractor.getExplicitSeries().get(series1Id), is(savedSeries));
         assertThat(seriesExtractor.getExplicitSeries().get(series2Id), is(savedSeries));
+        assertThat(entryCaptor.getAllValues().get(0), is(series1));
+        assertThat(entryCaptor.getAllValues().get(1), is(series2));
         assertThat(savedSeries.getAliases(), CoreMatchers.<Set<Alias>>is(ImmutableSet.of(alias1, alias2)));
 
     }
@@ -188,29 +189,30 @@ public class BtVodExplicitSeriesWriterTest {
         Alias alias1 = mock(Alias.class);
         Alias alias2 = mock(Alias.class);
         String genre = "genre1";
+        Brand brand = mock(Brand.class);
 
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of("seriesUri"))).thenReturn(ResolvedContent.builder().build());
 
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("seriesUri"));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
-        when(brandExtractor.getBrandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(brandProvider.brandFor(entry)).thenReturn(Optional.of(brand));
         when(describedFieldsExtractor.aliasesFrom(entry)).thenReturn(ImmutableSet.of(alias1, alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of(genre));
         when(describedFieldsExtractor.topicsFrom(Matchers.<VodEntryAndContent>anyObject())).thenReturn(ImmutableSet.of(newTopic));
 
-        ArgumentCaptor<Series> captor = ArgumentCaptor.forClass(Series.class);
 
         seriesExtractor.process(entry);
 
-        verify(contentWriter).write(captor.capture());
-        Series series = captor.getValue();
+
+        Series series = Iterables.getOnlyElement(seriesExtractor.getExplicitSeries().values());
 
         verify(describedFieldsExtractor).setDescribedFieldsFrom(entry, series);
 
         assertThat(series.getTopicRefs().contains(newTopic), is(true));
 
-        verify(brandExtractor).addTopicTo(entry, newTopic);
+        verify(brand).addTopicRef(newTopic);
 
     }
 

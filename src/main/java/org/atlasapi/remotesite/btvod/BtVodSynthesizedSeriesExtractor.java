@@ -10,12 +10,10 @@ import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 
-public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
+public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
 
     private static final String HELP_TYPE = "help";
@@ -27,28 +25,26 @@ public class BtVodSynthesizedSeriesWriter extends AbstractBtVodSeriesWriter {
     private final Map<String, Series> synthesizedSeries;
 
     private final Set<String> explicitSeriesIds;
-    public BtVodSynthesizedSeriesWriter(
-            BtVodBrandWriter brandExtractor,
+    public BtVodSynthesizedSeriesExtractor(
+            BtVodBrandProvider btVodBrandProvider,
             Publisher publisher,
             BtVodContentListener listener,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            Set<String> explicitSeriesIds, 
+            Set<String> explicitSeriesIds,
             ImageExtractor imageExtractor,
-            TopicRef newTopic,
-            MergingContentWriter contentWriter
+            TopicRef newTopic
     ) {
         super(
-                brandExtractor,
+                btVodBrandProvider,
                 publisher,
                 listener,
                 processedRows,
                 describedFieldsExtractor,
                 seriesUriExtractor,
                 imageExtractor,
-                newTopic,
-                contentWriter
+                newTopic
         );
 
         this.explicitSeriesIds = ImmutableSet.copyOf(explicitSeriesIds);

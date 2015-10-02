@@ -67,14 +67,14 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         Optional<String> brandUri = brandUriExtractor.extractBrandUri(entry);
         
         if (!BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())
-                && !BtVodItemWriter.EPISODE_TYPE.equals(entry.getProductType())) {
+                && !BtVodItemExtractor.EPISODE_TYPE.equals(entry.getProductType())) {
             return true;
         }
         
         Integer seriesNumber = seriesUriExtractor.extractSeriesNumber(entry).orNull();
         Integer episodeNumber = null;
-        if (BtVodItemWriter.EPISODE_TYPE.equals(entry.getProductType())) {
-            episodeNumber = BtVodItemWriter.extractEpisodeNumber(entry);
+        if (BtVodItemExtractor.EPISODE_TYPE.equals(entry.getProductType())) {
+            episodeNumber = BtVodItemExtractor.extractEpisodeNumber(entry);
         }
         if (seriesNumber != null || episodeNumber != null) {
             if(!brandUri.isPresent()) {

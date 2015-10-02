@@ -4,6 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
@@ -16,11 +17,11 @@ import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<UpdateProgress> {
+public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor<UpdateProgress> {
 
-    private static final Logger log = LoggerFactory.getLogger(AbstractBtVodSeriesWriter.class);
+    private static final Logger log = LoggerFactory.getLogger(AbstractBtVodSeriesExtractor.class);
 
-    private final BtVodBrandWriter brandExtractor;
+    private final BtVodBrandProvider brandProvider;
 
     private final Publisher publisher;
     private final Map<String, Series> processedSeries = Maps.newHashMap();
@@ -37,22 +38,20 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
 
     private final TopicRef newTopic;
 
-    private final MergingContentWriter contentWriter;
 
-    protected AbstractBtVodSeriesWriter(
-            BtVodBrandWriter brandExtractor,
+    protected AbstractBtVodSeriesExtractor(
+            BtVodBrandProvider brandProvider,
             Publisher publisher,
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             BtVodSeriesUriExtractor seriesUriExtractor,
             ImageExtractor imageExtractor,
-            final TopicRef newTopic,
-            MergingContentWriter contentWriter
+            final TopicRef newTopic
     ) {
         this.processedRows = checkNotNull(processedRows);
         this.listener = checkNotNull(listener);
-        this.brandExtractor = checkNotNull(brandExtractor);
+        this.brandProvider = checkNotNull(brandProvider);
         this.publisher = checkNotNull(publisher);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
         this.imageExtractor = checkNotNull(imageExtractor);
@@ -61,7 +60,6 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         //      widely
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.newTopic = checkNotNull(newTopic);
-        this.contentWriter = checkNotNull(contentWriter);
     }
 
     @Override
@@ -80,9 +78,9 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
                 series = seriesFrom(row);
             }
             setAdditionalFields(series, row);
-            contentWriter.write(series);
             if (series.getTopicRefs().contains((newTopic))) {
-                brandExtractor.addTopicTo(row, newTopic);
+                Brand brand = brandProvider.brandFor(row).get();
+                brand.addTopicRef(newTopic);
             }
             onSeriesProcessed(series, row);
             // This allows a lookup by series title. Note that the only reference from an episode to a series is the series title.
@@ -123,7 +121,7 @@ public abstract class AbstractBtVodSeriesWriter implements BtVodDataProcessor<Up
         Series series = new Series(seriesUriExtractor.seriesUriFor(row).get(), null, publisher);
         //TODO more fields
         series.withSeriesNumber(seriesUriExtractor.extractSeriesNumber(row).get());
-        series.setParentRef(brandExtractor.getBrandRefFor(row).orNull());
+        series.setParentRef(brandProvider.brandRefFor(row).orNull());
         series.setGenres(describedFieldsExtractor.btGenreStringsFrom(row));
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));

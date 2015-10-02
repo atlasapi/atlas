@@ -281,8 +281,8 @@ public class BtVodModule {
                         envName,
                         conf,
                         feedBaseUrl,
-                        feedQParam,
-                        newFeedSuffix
+                        newFeedSuffix,
+                        feedQParam
                 )
         ).withName(
                 String.format(

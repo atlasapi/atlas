@@ -190,7 +190,7 @@ public class BtVodModule {
                 seriesUriExtractor(URI_PREFIX),
                 versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 describedFieldsExtractor(Publisher.BT_VOD,BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG, 
-                        btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam, newFeedSuffix)
+                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam)
         );
     }
 

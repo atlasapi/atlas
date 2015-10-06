@@ -109,23 +109,10 @@ public class BtVodUpdater extends ScheduledTask {
                 brandUriExtractor
         );
 
-        BtVodBrandProvider brandProvider = new BtVodBrandProvider(brandUriExtractor, brandExtractor.getProcessedBrands());
-
         String brandExtractStatus = "[TODO]";
         String explicitSeriesExtractStatus = "[TODO]";
         String synthesizedSeriesExtractStatus = "[TODO]";
         String itemExtractStatus = "[TODO]";
-        BtVodExplicitSeriesExtractor explicitSeriesExtractor = new BtVodExplicitSeriesExtractor(
-                brandProvider,
-                publisher,
-                listeners,
-                describedFieldsExtractor,
-                processedRows,
-                seriesUriExtractor,
-                versionsExtractor, new TitleSanitiser(),
-                imageExtractor,
-                describedFieldsExtractor.topicRefFor(newTopic)
-        );
 
         try {
             reportStatus("Extracting brand images");
@@ -157,6 +144,21 @@ public class BtVodUpdater extends ScheduledTask {
                             itemExtractStatus
                     )
             );
+            
+            BtVodBrandProvider brandProvider = new BtVodBrandProvider(brandUriExtractor, brandExtractor.getProcessedBrands());
+            
+            BtVodExplicitSeriesExtractor explicitSeriesExtractor = new BtVodExplicitSeriesExtractor(
+                    brandProvider,
+                    publisher,
+                    listeners,
+                    describedFieldsExtractor,
+                    processedRows,
+                    seriesUriExtractor,
+                    versionsExtractor, new TitleSanitiser(),
+                    imageExtractor,
+                    describedFieldsExtractor.topicRefFor(newTopic)
+            );
+            
             vodData.processData(explicitSeriesExtractor);
             explicitSeriesExtractStatus = String.format(
                     "[DONE: %d rows successful, %d rows failed, %d series extracted]",

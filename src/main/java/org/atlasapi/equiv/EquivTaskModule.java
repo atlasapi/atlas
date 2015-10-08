@@ -119,7 +119,7 @@ public class EquivTaskModule {
     private static final RepetitionRule ROVI_EN_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(8, 00));
     private static final RepetitionRule RTE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(22, 00));
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
-    private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(20, 00));
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(3, 00));
     
     private @Value("${equiv.updater.enabled}") String updaterEnabled;

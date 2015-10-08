@@ -48,6 +48,9 @@ public class BtVodSeriesUriExtractorTest {
         BtVodEntry row6 = new BtVodEntry();
         row6.setTitle("Peppa Pig, Series 2, Vol. 1 - The Quarrel / The Toy Cupboard");
 
+        BtVodEntry row7 = new BtVodEntry();
+        row7.setTitle("The Thundermans S1-E1 Adventures in Supersitting");
+
         String brandUri = "http://brand-uri.com";
         when(brandUriExtractor.extractBrandUri(row1)).thenReturn(Optional.of(brandUri));
         when(brandUriExtractor.extractBrandUri(row2)).thenReturn(Optional.of(brandUri));
@@ -55,6 +58,7 @@ public class BtVodSeriesUriExtractorTest {
         when(brandUriExtractor.extractBrandUri(row4)).thenReturn(Optional.of(brandUri));
         when(brandUriExtractor.extractBrandUri(row5)).thenReturn(Optional.of(brandUri));
         when(brandUriExtractor.extractBrandUri(row6)).thenReturn(Optional.of(brandUri));
+        when(brandUriExtractor.extractBrandUri(row7)).thenReturn(Optional.of(brandUri));
 
 
         assertThat(seriesUriExtractor.seriesUriFor(row1).get(), Matchers.is(brandUri + "/series/2"));
@@ -63,6 +67,7 @@ public class BtVodSeriesUriExtractorTest {
         assertThat(seriesUriExtractor.seriesUriFor(row4).get(), Matchers.is(brandUri + "/series/3"));
         assertThat(seriesUriExtractor.seriesUriFor(row5).get(), Matchers.is(brandUri + "/series/2"));
         assertThat(seriesUriExtractor.seriesUriFor(row6).get(), Matchers.is(brandUri + "/series/2"));
+        assertThat(seriesUriExtractor.seriesUriFor(row7).get(), Matchers.is(brandUri + "/series/1"));
     }
 
     @Test

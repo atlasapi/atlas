@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.atlasapi:atlas-model:5.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/atlasapi/atlas-model/5.0-SNAPSHOT/atlas-model-5.0-20150928.100320-86.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/atlasapi/atlas-model/5.0-SNAPSHOT/atlas-model-5.0-20150928.100320-86-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/atlasapi/atlas-model/5.0-SNAPSHOT/atlas-model-5.0-20150928.100320-86-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

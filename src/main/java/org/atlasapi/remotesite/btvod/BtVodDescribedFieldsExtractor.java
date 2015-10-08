@@ -183,6 +183,13 @@ public class BtVodDescribedFieldsExtractor {
         this.genreTopicNamespace = checkNotNull(genreTopicNamespace);
     }
     
+    public void init() {
+        newTopicPredicate.init();
+        kidsTopicPredicate.init();
+        tvBoxsetTopicPredicate.init();
+        subCatchupTopicPredicate.init();
+    }
+    
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());

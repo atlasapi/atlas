@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: org.atlasapi:atlas-feeds:5.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/atlasapi/atlas-feeds/5.0-SNAPSHOT/atlas-feeds-5.0-20150930.161004-216.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/org/atlasapi/atlas-feeds/5.0-SNAPSHOT/atlas-feeds-5.0-20150930.161004-216-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/org/atlasapi/atlas-feeds/5.0-SNAPSHOT/atlas-feeds-5.0-20150930.161004-216-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

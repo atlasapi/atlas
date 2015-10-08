@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.google.closure:compiler:20110218-nodep">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/closure/compiler/20110218-nodep/compiler-20110218-nodep.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/closure/compiler/20110218-nodep/compiler-20110218-nodep-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/closure/compiler/20110218-nodep/compiler-20110218-nodep-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

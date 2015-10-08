@@ -60,8 +60,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if ("episode".equals(type)) {
             item = createEpisode(inputItem);
         } else if ("film".equals(type)) {
-            Film film = new Film();
-            item = film;
+            item = new Film();
         } else if ("song".equals(type)) {
             item = createSong(inputItem);
         } else if ("broadcast".equals(type)) {
@@ -75,8 +74,11 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
 
     private Item createBroadcast(org.atlasapi.media.entity.simple.Item inputItem) {
         Item item = new Item();
-        Version version = createVersion(inputItem);
+
+        Version version = new Version();
+        addBroadcasts(inputItem, version);
         item.setVersions(ImmutableSet.of(version));
+
         return item;
     }
 
@@ -103,33 +105,36 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
     protected Item setFields(Item item, org.atlasapi.media.entity.simple.Item inputItem) {
         super.setFields(item, inputItem);
         DateTime now = this.clock.now();
+
+        Version version = new Version();
+
         Set<Encoding> encodings = encodingsFrom(inputItem.getLocations(), now);
         if (!encodings.isEmpty()) {
-            Version version = new Version();
             version.setLastUpdated(now);
             version.setManifestedAs(encodings);
-            item.setVersions(ImmutableSet.of(version));
         }
         if (inputItem.getBrandSummary() != null) {
             item.setParentRef(new ParentRef(inputItem.getBrandSummary().getUri()));
         }
         if (!inputItem.getBroadcasts().isEmpty()) {
-            Version version = createVersion(inputItem);
-            item.addVersion(version);
+            version.setLastUpdated(now);
+            addBroadcasts(inputItem, version);
         }
-        if (inputItem != null && inputItem.getSegments() != null && !inputItem.getSegments().isEmpty()) {
+        if (inputItem.getSegments() != null && !inputItem.getSegments().isEmpty()) {
             Set<SegmentEvent> segments = Sets.newHashSet();
             for (org.atlasapi.media.entity.simple.SegmentEvent segmentEvent : inputItem.getSegments()) {
                 segments.add(segmentModelTransformer.transform(segmentEvent, inputItem.getPublisher()));
             }
-            Version version = new Version();
+            version.setLastUpdated(now);
             version.setSegmentEvents(segments);
-            item.addVersion(version);
         }
+
+        item.setVersions(ImmutableSet.of(version));
+
         return item;
     }
 
-    private Version createVersion(org.atlasapi.media.entity.simple.Item inputItem) {
+    private void addBroadcasts(org.atlasapi.media.entity.simple.Item inputItem, Version version) {
         Set<Broadcast> broadcasts = Sets.newHashSet();
         Set<Restriction> restrictions = Sets.newHashSet();
 
@@ -138,11 +143,8 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             restrictions.add(createRestriction(broadcast));
         }
 
-        Version version = new Version().copyWithBroadcasts(broadcasts);
-
+        version.setBroadcasts(broadcasts);
         setToFirstRestriction(version, restrictions);
-
-        return version;
     }
 
     private Restriction createRestriction(org.atlasapi.media.entity.simple.Broadcast broadcast) {

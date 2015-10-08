@@ -8,6 +8,7 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Item;
 
@@ -27,6 +28,16 @@ public class BroadcastAliasScorer implements EquivalenceScorer<Item> {
         }
 
     };
+    
+    private static final Function<Broadcast, Iterable<Alias>> BROADCAST_TO_ALIAS_ITERABLE = new Function<Broadcast, Iterable<Alias>>() {
+
+        @Override
+        public Iterable<Alias> apply(Broadcast input) {
+            return input.getAliases();
+        }
+
+    };
+    
     private final Score mismatchScore;
 
     public BroadcastAliasScorer(Score mismatchScore) {
@@ -45,18 +56,32 @@ public class BroadcastAliasScorer implements EquivalenceScorer<Item> {
     }
 
     private Score score(Item subject, Item candidate) {
-        ImmutableSet<String> aliasesOfCandidateBroadcasts = FluentIterable.from(candidate.flattenBroadcasts())
+        ImmutableSet<String> aliasStringsOfCandidateBroadcasts = FluentIterable.from(candidate.flattenBroadcasts())
                 .transformAndConcat(BROADCAST_TO_ALIAS_STRING_ITERABLE)
                 .toSet();
 
-        ImmutableSet<String> aliasesOfSubjectBroadcasts = FluentIterable.from(subject.flattenBroadcasts())
+        ImmutableSet<String> aliasStringsOfSubjectBroadcasts = FluentIterable.from(subject.flattenBroadcasts())
                 .transformAndConcat(BROADCAST_TO_ALIAS_STRING_ITERABLE)
                 .toSet();
 
+        if (!Sets.intersection(aliasStringsOfCandidateBroadcasts, aliasStringsOfSubjectBroadcasts)
+                .isEmpty()) {
+            return Score.ONE;
+        }
+        
+        ImmutableSet<Alias> aliasesOfCandidateBroadcasts = FluentIterable.from(candidate.flattenBroadcasts())
+                .transformAndConcat(BROADCAST_TO_ALIAS_ITERABLE)
+                .toSet();
+
+        ImmutableSet<Alias> aliasesOfSubjectBroadcasts = FluentIterable.from(subject.flattenBroadcasts())
+                .transformAndConcat(BROADCAST_TO_ALIAS_ITERABLE)
+                .toSet();
+        
         if (!Sets.intersection(aliasesOfCandidateBroadcasts, aliasesOfSubjectBroadcasts)
                 .isEmpty()) {
             return Score.ONE;
         }
+        
         return mismatchScore;
     }
 }

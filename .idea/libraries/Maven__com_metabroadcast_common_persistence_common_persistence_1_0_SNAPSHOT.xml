@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.metabroadcast.common.persistence:common-persistence:1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/metabroadcast/common/persistence/common-persistence/1.0-SNAPSHOT/common-persistence-1.0-20150929.092533-23.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/metabroadcast/common/persistence/common-persistence/1.0-SNAPSHOT/common-persistence-1.0-20150929.092533-23-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/metabroadcast/common/persistence/common-persistence/1.0-SNAPSHOT/common-persistence-1.0-20150929.092533-23-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

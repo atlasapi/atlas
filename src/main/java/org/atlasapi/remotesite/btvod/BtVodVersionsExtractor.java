@@ -16,6 +16,7 @@ import org.atlasapi.media.entity.simple.Pricing;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
@@ -148,6 +149,9 @@ public class BtVodVersionsExtractor {
         if (availability != null) {
             policy.setAvailabilityStart(availability.getStart());
             policy.setAvailabilityEnd(availability.getEnd());
+        } else {
+            policy.setAvailabilityStart(new DateTime(2000, DateTimeConstants.JANUARY, 1, 0, 0, 0));
+            policy.setAvailabilityEnd(new DateTime(2100, DateTimeConstants.JANUARY, 1, 0, 0, 0));
         }
         policy.setService(serviceId);
         ImmutableList.Builder<Pricing> pricings = ImmutableList.builder();

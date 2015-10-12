@@ -151,7 +151,7 @@ public class BtVodVersionsExtractor {
             policy.setAvailabilityEnd(availability.getEnd());
         } else {
             policy.setAvailabilityStart(new DateTime(2000, DateTimeConstants.JANUARY, 1, 0, 0, 0));
-            policy.setAvailabilityEnd(new DateTime(2100, DateTimeConstants.JANUARY, 1, 0, 0, 0));
+            policy.setAvailabilityEnd(new DateTime(2035, DateTimeConstants.JANUARY, 1, 0, 0, 0));
         }
         policy.setService(serviceId);
         ImmutableList.Builder<Pricing> pricings = ImmutableList.builder();

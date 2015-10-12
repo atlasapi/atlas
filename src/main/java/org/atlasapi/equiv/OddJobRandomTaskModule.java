@@ -34,11 +34,18 @@ public class OddJobRandomTaskModule {
         scheduler.schedule(personRefUpdateTask(), RepetitionRules.NEVER);
         scheduler.schedule(personLookupPopulationTask(), RepetitionRules.NEVER);
         scheduler.schedule(lookupRefUpdateTask(), RepetitionRules.NEVER);
+        scheduler.schedule(tveChildRefUpdateTask().withName("TVE ChildRef update"), RepetitionRules.NEVER);
     }
     
     @Bean
     public ChildRefUpdateController childRefUpdateTaskController() {
         return new ChildRefUpdateController(childRefUpdateTask(), resolver);
+    }
+    
+    @Bean
+    public ChildRefUpdateTask tveChildRefUpdateTask() {
+        return new ChildRefUpdateTask(lister, resolver, mongo, progressStore)
+            .forPublishers(Publisher.BT_TVE_VOD, Publisher.BT_TVE_VOD_VOLD_CONFIG_1);
     }
     
     @Bean

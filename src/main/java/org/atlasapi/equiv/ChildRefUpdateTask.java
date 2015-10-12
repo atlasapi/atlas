@@ -174,6 +174,9 @@ public class ChildRefUpdateTask extends ScheduledTask {
         
         ResolvedContent resolvedEpisodes = resolver.findByCanonicalUris(Iterables.transform(container.getChildRefs(),ChildRef.TO_URI));
         for (Item item : Iterables.filter(resolvedEpisodes.getAllResolvedResults(), Item.class)) {
+            if (!item.isActivelyPublished()) {
+                continue;
+            }
             
             ChildRef childRef = item.childRef();
             if (item instanceof Episode && ((Episode)item).getSeriesRef() != null) {

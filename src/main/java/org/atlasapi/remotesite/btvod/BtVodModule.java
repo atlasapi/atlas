@@ -107,9 +107,6 @@ public class BtVodModule {
     private String btPortalBaseUri;
     @Value("${bt.portal.contentGroups.baseUri}")
     private String btPortalContentGroupsBaseUri;
-
-    @Value("${bt.vod.mpx.feed.new.baseUrl}")
-    private String btVodMpxNewFeedBaseUrl;
     
     @Value("${bt.vod.mpx.prod.feed.baseUrl}")
     private String btVodMpxProdFeedBaseUrl;
@@ -178,7 +175,7 @@ public class BtVodModule {
                 noImageExtractor(),
                 noImageExtractor(),
                 brandUriExtractor(URI_PREFIX),
-                newFeedContentMatchingPredicate(newFeedSuffix, btVodMpxProdFeedQParam),
+                newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam),
                 topicFor(feedNamepaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_NEW_FEED, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_KIDS_TOPIC, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_VOD),
@@ -262,7 +259,7 @@ public class BtVodModule {
                 brandImageExtractor(btPortalBaseUri),
                 itemImageExtractor(),
                 brandUriExtractor(uriPrefix),
-                newFeedContentMatchingPredicate(newFeedSuffix, feedQParam),
+                newFeedContentMatchingPredicate(feedBaseUrl, newFeedSuffix, feedQParam),
                 topicFor(feedNamepaceFor(envName, conf), BT_VOD_NEW_FEED, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_KIDS_TOPIC, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_TV_BOXSETS_TOPIC, publisher),
@@ -326,7 +323,7 @@ public class BtVodModule {
             String newFeedSuffix,
             String qParam
     ) {
-        BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(newFeedSuffix, qParam);
+        BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(baseUrl, newFeedSuffix, qParam);
         return new BtVodDescribedFieldsExtractor(
                 topicResolver,
                 topicWriter,
@@ -408,8 +405,8 @@ public class BtVodModule {
         return topic;
     }
     
-    private BtVodContentMatchingPredicate newFeedContentMatchingPredicate(String feedName, String qParam) {
-        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(btVodMpxNewFeedBaseUrl, qParam), feedName);
+    private BtVodContentMatchingPredicate newFeedContentMatchingPredicate(String baseUri, String feedName, String qParam) {
+        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUri, qParam), feedName);
     }
 
     @Bean

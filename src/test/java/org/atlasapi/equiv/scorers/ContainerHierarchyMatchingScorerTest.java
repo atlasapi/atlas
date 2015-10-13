@@ -116,7 +116,7 @@ public class ContainerHierarchyMatchingScorerTest {
     
     @Test
     @SuppressWarnings("unchecked")
-    public void testScoresNullWhenCandidateHasNoSeries() {
+    public void testScoresMismatchScoreWhenCandidateHasNoSeries() {
         
         Brand subject = brandWithSeries(1);
         Brand candidate = brandWithSeries(0);
@@ -126,7 +126,7 @@ public class ContainerHierarchyMatchingScorerTest {
         
         ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.of(candidate), desc());
         
-        assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
+        assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.negativeOne()));
         verify(contentResolver).findByCanonicalUris((Iterable<String>)any());
         
     }

@@ -71,8 +71,8 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
 
     private Score score(List<Integer> subjSeriesSizes, Container cand, ResultDescription desc) {
         if (!(cand instanceof Brand)) {
-            desc.appendText("%s: not Brand -> none", cand);
-            return Score.nullScore();
+            desc.appendText("%s: not Brand -> %.2f", mismatchScore.asDouble());
+            return mismatchScore;
         }
         return score(subjSeriesSizes, (Brand)cand, desc);
     }
@@ -80,8 +80,8 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
     private Score score(List<Integer> subjSeriesSizes, Brand cand, ResultDescription desc) {
         
         if (cand.getSeriesRefs().isEmpty()) {
-            desc.appendText("%s: series count 0 -> none", cand);
-            return Score.nullScore();
+            desc.appendText("%s: series count 0 -> %.2f", cand, mismatchScore.asDouble());
+            return mismatchScore;
         }
         
         return scoreSortedSeriesSizes(subjSeriesSizes, sortedSeriesSizes(seriesFor(cand)), cand.getCanonicalUri(), desc);
@@ -128,7 +128,7 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
         }
         
         if (seriesMismatches >= SERIES_DIFFERENCE_TO_GIVE_MISMATCH_SCORE) {
-            desc.appendText("%s: series episode counts %s -> %f", candUri, candSeriesSizes, mismatchScore.asDouble());
+            desc.appendText("%s: series episode counts %s -> %.2f", candUri, candSeriesSizes, mismatchScore.asDouble());
             return mismatchScore;
         }
         

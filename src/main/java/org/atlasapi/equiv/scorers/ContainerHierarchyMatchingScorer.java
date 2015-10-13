@@ -101,29 +101,39 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
         int subj = 0;
         int cand = 0;
         
+        int subjExhausted = 0;
+        int candExhausted = 0;
+        
         while(subjAllocation.hasNext() && candAllocation.hasNext()) {
             
             subj = subjAllocation.next();
             cand = candAllocation.next();
             
+            subjExhausted++;
+            candExhausted++;
+            
             if (!acceptable(subj, cand)) {
                 droppedCount++;
                 if (candAllocation.hasNext() && acceptable(subj, candAllocation.peek())) {
                     cand = candAllocation.next();
+                    candExhausted++;
                 } else if (subjAllocation.hasNext() && acceptable(subjAllocation.peek(), cand)) {
                     subj = subjAllocation.next();
+                    subjExhausted++;
                 }
             }
         }
 
-        int seriesMismatches = Math.abs(subjSeriesSizes.size() - candSeriesSizes.size()) + droppedCount;
+        int subjNotExhausted = subjSeriesSizes.size() - subjExhausted;
+        int candNotExhausted = candSeriesSizes.size() - candExhausted;
+        int seriesMismatches = Math.max(subjNotExhausted, candNotExhausted) + droppedCount;
         if (seriesMismatches <= MAX_SERIES_DIFFERENCE) {
             desc.appendText("%s: series episode counts %s -> 1", candUri, subjSeriesSizes, candSeriesSizes);
             return Score.ONE;
         }
         
         if (seriesMismatches >= SERIES_DIFFERENCE_TO_GIVE_MISMATCH_SCORE) {
-            desc.appendText("%s: series episode counts %s -> %d", candUri, candSeriesSizes, mismatchScore.asDouble());
+            desc.appendText("%s: series episode counts %s -> %f", candUri, candSeriesSizes, mismatchScore.asDouble());
             return mismatchScore;
         }
         

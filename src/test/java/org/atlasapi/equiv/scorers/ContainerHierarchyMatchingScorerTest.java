@@ -68,11 +68,15 @@ public class ContainerHierarchyMatchingScorerTest {
     public void testScoresNullWhenSeriesContainerWithSeriesCountsOutOfRange() {
         
         final Brand subject = brandWithSeries(5);
+        final Brand candidate = brandWithSeries(7);
 
         when(contentResolver.findByCanonicalUris(ImmutableList.copyOf(Iterables.transform(subject.getSeriesRefs(),SeriesRef.TO_URI))))
             .thenReturn(ResolvedContent.builder().putAll(series(5)).build());
+        
+        when(contentResolver.findByCanonicalUris(ImmutableList.copyOf(Iterables.transform(candidate.getSeriesRefs(),SeriesRef.TO_URI))))
+            .thenReturn(ResolvedContent.builder().putAll(series(7)).build());
 
-        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.<Container>of(brandWithSeries(7)), desc());
+        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.<Container>of(candidate), desc());
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
     }

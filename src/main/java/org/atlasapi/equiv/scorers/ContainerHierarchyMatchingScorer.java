@@ -84,11 +84,6 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
             return Score.nullScore();
         }
         
-        if (Math.abs(subjSeriesSizes.size() - cand.getSeriesRefs().size()) > MAX_SERIES_DIFFERENCE) {
-            desc.appendText("%s: series count |%s-%s| > %s -> none", cand, subjSeriesSizes.size(), cand.getSeriesRefs().size(), MAX_SERIES_DIFFERENCE);
-            return Score.nullScore();
-        }
-        
         return scoreSortedSeriesSizes(subjSeriesSizes, sortedSeriesSizes(seriesFor(cand)), cand.getCanonicalUri(), desc);
     }
 

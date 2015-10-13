@@ -539,7 +539,7 @@ public class EquivModule {
             )
             .withScorers(ImmutableSet.of(
                 new TitleMatchingContainerScorer(),
-                new ContainerHierarchyMatchingScorer(contentResolver)
+                new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne())
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),

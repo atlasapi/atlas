@@ -27,11 +27,14 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
 
     private static final int MAX_EPISODE_DIFFERENCE = 1;
     private static final int MAX_SERIES_DIFFERENCE = 1;
+    private static final int SERIES_DIFFERENCE_TO_GIVE_MISMATCH_SCORE = 3;
 
     private final ContentResolver contentResolver;
+    private final Score mismatchScore;
 
-    public ContainerHierarchyMatchingScorer(ContentResolver contentResolver) {
+    public ContainerHierarchyMatchingScorer(ContentResolver contentResolver, Score mismatchScore) {
         this.contentResolver = contentResolver;
+        this.mismatchScore = mismatchScore;
     }
     
     @Override
@@ -94,7 +97,7 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
         PeekingIterator<Integer> subjAllocation = Iterators.peekingIterator(subjSeriesSizes.iterator());
         PeekingIterator<Integer> candAllocation = Iterators.peekingIterator(candSeriesSizes.iterator());
        
-        boolean dropped = false;
+        int droppedCount = 0;
         int subj = 0;
         int cand = 0;
         
@@ -103,28 +106,30 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
             subj = subjAllocation.next();
             cand = candAllocation.next();
             
-            if (!acceptable(subj,cand)) {
-                if (dropped) {
-                    desc.appendText("%s: series episode counts %s -> none", candUri, candSeriesSizes);
-                    return Score.nullScore();
-                }
-                dropped = true;
+            if (!acceptable(subj, cand)) {
+                droppedCount++;
                 if (candAllocation.hasNext() && acceptable(subj, candAllocation.peek())) {
                     cand = candAllocation.next();
                 } else if (subjAllocation.hasNext() && acceptable(subjAllocation.peek(), cand)) {
                     subj = subjAllocation.next();
-                } 
+                }
             }
-            
         }
 
-        if (dropped && (candAllocation.hasNext() || subjAllocation.hasNext())) {
-            desc.appendText("%s: series episode counts %s -> none", candUri, candSeriesSizes);
-            return Score.nullScore();
+        int seriesMismatches = Math.abs(subjSeriesSizes.size() - candSeriesSizes.size()) + droppedCount;
+        if (seriesMismatches <= MAX_SERIES_DIFFERENCE) {
+            desc.appendText("%s: series episode counts %s -> 1", candUri, subjSeriesSizes, candSeriesSizes);
+            return Score.ONE;
         }
         
-        desc.appendText("%s: series episode counts %s -> 1", candUri, subjSeriesSizes, candSeriesSizes);
-        return Score.ONE;
+        if (seriesMismatches >= SERIES_DIFFERENCE_TO_GIVE_MISMATCH_SCORE) {
+            desc.appendText("%s: series episode counts %s -> %d", candUri, candSeriesSizes, mismatchScore.asDouble());
+            return mismatchScore;
+        }
+        
+        desc.appendText("%s: series episode counts %s -> none", candUri, candSeriesSizes);
+        return Score.nullScore();
+        
     }
     
     private boolean acceptable(int sub, int sug) {
@@ -140,7 +145,7 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
         }));
     }
 
-    //Simple case were container heirarchy is flat: compare episode counts.
+    //Simple case were container hierarchy is flat: compare episode counts.
     private Score score(Container subj, Container cand, ResultDescription desc) {
         if (cand instanceof Brand && !((Brand)cand).getSeriesRefs().isEmpty()) {
             return Score.nullScore();

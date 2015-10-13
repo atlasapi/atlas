@@ -42,7 +42,7 @@ public class ContainerHierarchyMatchingScorerTest {
 
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     
-    private final ContainerHierarchyMatchingScorer scorer = new ContainerHierarchyMatchingScorer(contentResolver);
+    private final ContainerHierarchyMatchingScorer scorer = new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne());
     
     @Test
     @SuppressWarnings("unchecked")
@@ -100,10 +100,11 @@ public class ContainerHierarchyMatchingScorerTest {
         assertThat(scorer.scoreSortedSeriesSizes(list(1,2,3,4), list(1,2,3,4), "candidate", desc), is(Score.ONE));
         assertThat(scorer.scoreSortedSeriesSizes(list(1,2,3,4,5), list(1,2,3,4), "candidate", desc), is(Score.ONE));
         assertThat(scorer.scoreSortedSeriesSizes(list(1,2,3,4), list(1,3,4), "candidate", desc), is(Score.ONE));
-        assertThat(scorer.scoreSortedSeriesSizes(list(1,2,3,6), list(1,3,5), "candidate", desc), is(Score.ONE));
         
+        assertThat(scorer.scoreSortedSeriesSizes(list(6,6), list(6,24,24,24), "candidate", desc), is(Score.negativeOne()));
+        
+        assertThat(scorer.scoreSortedSeriesSizes(list(1,2,3,6), list(1,3,5), "candidate", desc), is(Score.nullScore()));
         assertThat(scorer.scoreSortedSeriesSizes(list(6,6), list(24,24), "candidate", desc), is(Score.nullScore()));
-        assertThat(scorer.scoreSortedSeriesSizes(list(6,6), list(6,24,24), "candidate", desc), is(Score.nullScore()));
         assertThat(scorer.scoreSortedSeriesSizes(list(2,3,4), list(3,4,6,7), "candidate", desc), is(Score.nullScore()));
         
     }

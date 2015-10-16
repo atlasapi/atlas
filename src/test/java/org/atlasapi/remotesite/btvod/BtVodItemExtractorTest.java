@@ -230,12 +230,22 @@ public class BtVodItemExtractorTest {
 
     @Test
     public void testMergesVersionsForHDandSDForEpisodes() {
+        testHdSdMerging(SERIES_TITLE + ": - HD S1 S1-E9 " + REAL_EPISODE_TITLE + " - HD", FULL_EPISODE_TITLE, REAL_EPISODE_TITLE);
+    }
+    
+    @Test 
+    public void testMergesVersionsForCollections() {
+        testHdSdMerging("Ben & Holly's Elf and Fairy Party - HD - Lucy's Sleepover - HD", "Ben & Holly's Elf and Fairy Party - Lucy's Sleepover", "Lucy's Sleepover");
+    }
+    
+    private void testHdSdMerging(String hdTitle, String sdTitle, String extractedTitle) {
         BtVodEntry btVodEntrySD = episodeRow();
+        btVodEntrySD.setTitle(sdTitle);
         ParentRef parentRef = new ParentRef(BRAND_URI);
         btVodEntrySD.setProductTargetBandwidth("SD");
 
         BtVodEntry btVodEntryHD = episodeRow();
-        btVodEntryHD.setTitle(SERIES_TITLE + ": - HD S1 S1-E9 " + REAL_EPISODE_TITLE + " - HD");
+        btVodEntryHD.setTitle(hdTitle);
         btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
         btVodEntryHD.setProductTargetBandwidth("HD");
 
@@ -254,7 +264,7 @@ public class BtVodItemExtractorTest {
 
         Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
-        assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
+        assertThat(writtenItem.getTitle(), is(extractedTitle));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
         assertThat(writtenItem.getContainer(), is(parentRef));
 
@@ -268,7 +278,6 @@ public class BtVodItemExtractorTest {
                 Iterables.getFirst(writtenItem.getClips(), null),
                 is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
         );
-
     }
 
     @Test
@@ -302,6 +311,9 @@ public class BtVodItemExtractorTest {
 
         BtVodEntry btVodEntry10 = new BtVodEntry();
         btVodEntry10.setTitle("ZQWAmerican_Horror_Story: S01 S1-E11 ZQWBirth");
+        
+        BtVodEntry btVodEntry11 = new BtVodEntry();
+        btVodEntry11.setTitle("Peppa's Circus - HD - Peppa's Circus - HD");
 
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry1.getTitle()), is(REAL_EPISODE_TITLE));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry2.getTitle()), is("Conference Call"));
@@ -313,6 +325,7 @@ public class BtVodItemExtractorTest {
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry8.getTitle()), is("The Incident"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry9.getTitle()), is("School Play"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry10.getTitle()), is("Birth"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry11.getTitle()), is("Peppa's Circus"));
     }
     
     @Test

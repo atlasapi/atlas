@@ -14,6 +14,7 @@ public class TitleSanitiser {
             .put(Pattern.compile("\\s\\-\\sHD"), "")
             .put(Pattern.compile(" \\(Before DVD\\)$"), "")
             .put(Pattern.compile(" : Coming Soon$"), "")
+            .put(Pattern.compile("^HD - "), "")
             .build()
     ;
 

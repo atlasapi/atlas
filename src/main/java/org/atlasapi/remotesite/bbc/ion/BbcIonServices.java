@@ -47,7 +47,7 @@ public class BbcIonServices {
         .put("bbc_two_wales_digital", "http://www.bbc.co.uk/services/bbctwo/wales")
 //        .put("bbc_two_northern_ireland", "http://www.bbc.co.uk/services/bbctwo/ni_analogue")
         .put("bbc_two_northern_ireland_digital", "http://www.bbc.co.uk/services/bbctwo/ni")
-        
+        .put("bbc_two_scotland", "http://www.bbc.co.uk/services/bbctwo/scotland")
         .put("bbc_three",       "http://www.bbc.co.uk/services/bbcthree")
         .put("bbc_three_hd",  "http://ref.atlasapi.org/channels/pressassociation.com/1852")
         .put("bbc_four",        "http://www.bbc.co.uk/services/bbcfour")
@@ -96,7 +96,6 @@ public class BbcIonServices {
         .put("bbc_radio_scotland", "http://ref.atlasapi.org/channels/pressassociation.com/stations/153")
         .put("bbc_radio_wales", "http://ref.atlasapi.org/channels/pressassociation.com/stations/466")
         .put("bbc_two", "http://ref.atlasapi.org/channels/pressassociation.com/stations/6")
-        .put("bbc_two_scotland", "http://www.bbc.co.uk/services/bbctwo/scotland")
         .put("bbc_sport", "http://www.bbc.co.uk/services/bbc_sport")
         .put("bbc_webonly", "http://www.bbc.co.uk/services/bbc_webonly")
 //       I don't think the following are required, but leaving here so the full list can be 

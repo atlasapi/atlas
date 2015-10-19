@@ -211,7 +211,9 @@ public class FiveBrandProcessor {
     private Maybe<String> getImage(Element element) {
         Elements imageElements = element.getFirstChildElement("images").getChildElements("image");
         if (imageElements.size() > 0) {
-            return Maybe.just(imageElements.get(0).getValue());
+            if (!imageElements.get(0).getValue().contains("api-images.channel5.com/images/default")) {
+                return Maybe.just(imageElements.get(0).getValue());
+            }
         }
 
         return Maybe.nothing();

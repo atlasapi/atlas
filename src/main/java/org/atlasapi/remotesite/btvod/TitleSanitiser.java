@@ -10,6 +10,7 @@ public class TitleSanitiser {
     private static final Map<Pattern, String> PATTERNS_TO_REMOVE = ImmutableMap.<Pattern, String>builder()
             .put(Pattern.compile("ZQ[A-Z]{1}"), "")
             .put(Pattern.compile("_"), " ")
+            .put(Pattern.compile("^Back to Backs - "), "")
             .put(Pattern.compile("\\(Curzon\\).*(-\\sHD)?$"), "")
             .put(Pattern.compile("\\s\\-\\sHD"), "")
             .put(Pattern.compile(" \\(Before DVD\\)$"), "")

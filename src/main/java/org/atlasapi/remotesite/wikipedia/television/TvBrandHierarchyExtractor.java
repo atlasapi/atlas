@@ -71,7 +71,13 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
             title = guessBrandNameFromArticleTitle(brandArticle.getTitle());
         }
         brand.setTitle(title);
-        
+
+
+        String image = info.image;
+        if (!Strings.isNullOrEmpty(image)) {
+           brand.setImage(image);
+        }
+
         if (info.firstAired.isPresent()) {
             brand.setYear(info.firstAired.get().getYear());
         }

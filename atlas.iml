@@ -8,10 +8,21 @@
       <sourceFolder url="file://$MODULE_DIR$/src/main/resources" type="java-resource" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/java" isTestSource="true" />
       <sourceFolder url="file://$MODULE_DIR$/src/test/resources" type="java-test-resource" />
-      <excludeFolder url="file://$MODULE_DIR$/target" />
+      <sourceFolder url="file://$MODULE_DIR$/target/generated-sources" isTestSource="false" generated="true" />
+      <excludeFolder url="file://$MODULE_DIR$/target/atlas" />
+      <excludeFolder url="file://$MODULE_DIR$/target/classes" />
+      <excludeFolder url="file://$MODULE_DIR$/target/dependency-maven-plugin-markers" />
+      <excludeFolder url="file://$MODULE_DIR$/target/maven-archiver" />
+      <excludeFolder url="file://$MODULE_DIR$/target/maven-status" />
+      <excludeFolder url="file://$MODULE_DIR$/target/test-classes" />
+      <excludeFolder url="file://$MODULE_DIR$/target/tmp" />
     </content>
     <orderEntry type="inheritedJdk" />
     <orderEntry type="sourceFolder" forTests="false" />
+    <orderEntry type="library" name="Maven: org.atlasapi:atlas-model:5.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.atlasapi:atlas-feeds:5.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.atlasapi:atlas-applications:5.1-SNAPSHOT" level="project" />
+    <orderEntry type="library" name="Maven: org.atlasapi:atlas-persistence:5.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: org.atlasapi:atlas-model:5.1-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: com.metabroadcast.common:common:1.0-SNAPSHOT" level="project" />
     <orderEntry type="library" name="Maven: junit:junit:4.11" level="project" />

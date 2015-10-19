@@ -68,6 +68,8 @@ public final class BrandInfoboxScraper extends AstVisitor {
             result.firstAired = SwebleHelper.extractDate(a.getValue());
         } else if ("last_aired".equalsIgnoreCase(name) && result.lastAired == null) {
             result.lastAired = SwebleHelper.extractDate(a.getValue());
+        } else if ("image".equalsIgnoreCase(name) && result.image == null) {
+            result.image = SwebleHelper.flattenTextNodeList(a.getValue());
         }
     }
 

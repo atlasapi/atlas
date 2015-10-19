@@ -164,12 +164,12 @@ public class BtVodModule {
         );
     }
 
-    private BtVodUpdater btVodUpdater(String newFeedSuffix) {
+    private BtVodUpdater btVodUpdater(String newFeedSuffix, Map<String, BtVodContentMatchingPredicate> contentGroupsAndCritera) {
         return new BtVodUpdater(
                 contentWriter,
                 btVodData(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
                 URI_PREFIX,
-                btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX, btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam),
+                btVodContentGroupUpdater(Publisher.BT_VOD, URI_PREFIX, btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam, contentGroupsAndCritera),
                 Publisher.BT_VOD,
                 oldContentDeactivator(Publisher.BT_VOD),
                 noImageExtractor(),
@@ -183,7 +183,7 @@ public class BtVodModule {
                 seriesUriExtractor(URI_PREFIX),
                 versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 describedFieldsExtractor(Publisher.BT_VOD,BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG, 
-                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam)
+                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, contentGroupsAndCritera)
         );
     }
 
@@ -196,7 +196,8 @@ public class BtVodModule {
                 btVodMpxProdFeedBaseUrl,
                 btVodMpxProdFeedName,
                 btVodMpxProdFeedQParam,
-                btVodMpxProdFeedNewSuffix
+                btVodMpxProdFeedNewSuffix, 
+                tveContentGroupsAndCriteria(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam)
         );
     }
 
@@ -209,7 +210,8 @@ public class BtVodModule {
                 btVodMpxVoleFeedBaseUrl,
                 btVodMpxVoleFeedName,
                 btVodMpxVoleFeedQParam,
-                btVodMpxVolEFeedNewSuffix
+                btVodMpxVolEFeedNewSuffix,
+                tveContentGroupsAndCriteria(btVodMpxVoleFeedBaseUrl, btVodMpxVoleFeedQParam)
         );
     }
 
@@ -222,7 +224,8 @@ public class BtVodModule {
                 btVodMpxVolDFeedBaseUrl,
                 btVodMpxVolDFeedName,
                 btVodMpxVolDFeedQParam,
-                btVodMpxVolDFeedNewSuffix
+                btVodMpxVolDFeedNewSuffix,
+                tveContentGroupsAndCriteria(btVodMpxVolDFeedBaseUrl, btVodMpxVolDFeedQParam)
         );
     }
 
@@ -235,7 +238,8 @@ public class BtVodModule {
                 btVodMpxSystest2FeedBaseUrl,
                 btVodMpxSystest2FeedName,
                 btVodMpxSystest2FeedQParam,
-                btVodMpxSystest2FeedNewSuffix
+                btVodMpxSystest2FeedNewSuffix,
+                tveContentGroupsAndCriteria(btVodMpxSystest2FeedBaseUrl, btVodMpxVolDFeedQParam)
         );
     }
 
@@ -246,14 +250,15 @@ public class BtVodModule {
             String feedBaseUrl,
             String feedName,
             String feedQParam,
-            String newFeedSuffix
+            String newFeedSuffix,
+            Map<String, BtVodContentMatchingPredicate> contentGroupsAndCritera
     ) {
         String uriPrefix = String.format(TVE_URI_PREFIX_FORMAT, publisher.key());
         return new BtVodUpdater(
                 contentWriter,
                 btVodData(feedBaseUrl, feedName, feedQParam),
                 uriPrefix,
-                btVodContentGroupUpdater(publisher, uriPrefix, feedBaseUrl, feedQParam),
+                btVodContentGroupUpdater(publisher, uriPrefix, feedBaseUrl, feedQParam, contentGroupsAndCritera),
                 publisher,
                 oldContentDeactivator(publisher),
                 brandImageExtractor(btPortalBaseUri),
@@ -272,7 +277,8 @@ public class BtVodModule {
                         conf,
                         feedBaseUrl,
                         newFeedSuffix,
-                        feedQParam
+                        feedQParam, 
+                        contentGroupsAndCritera
                 )
         ).withName(
                 String.format(
@@ -321,7 +327,8 @@ public class BtVodModule {
             String conf,
             String baseUrl,
             String newFeedSuffix,
-            String qParam
+            String qParam,
+            Map<String, BtVodContentMatchingPredicate> contentGroupsAndCritera
     ) {
         BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(baseUrl, newFeedSuffix, qParam);
         return new BtVodDescribedFieldsExtractor(
@@ -329,7 +336,7 @@ public class BtVodModule {
                 topicWriter,
                 publisher,
                 newContentPredicate,
-                contentGroupsAndCriteria(baseUrl, qParam).get(KIDS_CATEGORY.toLowerCase()),
+                contentGroupsAndCritera.get(KIDS_CATEGORY.toLowerCase()),
                 BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
                         TV_CATEGORY, SEASON_PRODUCT_OFFERING_TYPES
                 ),
@@ -364,9 +371,10 @@ public class BtVodModule {
         return new NoImageExtractor();
     }
     
-    public BtVodContentGroupUpdater btVodContentGroupUpdater(Publisher publisher, String uriPrefix, String baseUrl, String qParam) {
+    public BtVodContentGroupUpdater btVodContentGroupUpdater(Publisher publisher, String uriPrefix, String baseUrl, String qParam,
+            Map<String, BtVodContentMatchingPredicate> contentGroupsAndCriteria) {
         return new BtVodContentGroupUpdater(contentGroupResolver, contentGroupWriter, 
-                contentGroupsAndCriteria(baseUrl, qParam), uriPrefix, publisher);
+                contentGroupsAndCriteria, uriPrefix, publisher);
     }
     
     private BtVodData btVodData(String baseUrl, String feedName,   String qParam) {
@@ -383,7 +391,23 @@ public class BtVodModule {
         );
     }
     
-    private Map<String, BtVodContentMatchingPredicate> contentGroupsAndCriteria(String baseUrl, String qParam) {
+    private Map<String, BtVodContentMatchingPredicate> tveContentGroupsAndCriteria(String baseUrl, String qParam) {
+        return ImmutableMap.<String, BtVodContentMatchingPredicate> builder()
+                .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(MUSIC_CATEGORY))
+                .put(FILM_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(FILM_CATEGORY))
+                .put(TV_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(TV_CATEGORY))
+                .put(KIDS_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY))
+                .put(SPORT_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(SPORT_CATEGORY))
+                .put(CZN_CONTENT_PROVIDER_ID.toLowerCase(), BtVodContentMatchingPredicates.cznPredicate())
+                .put(BUY_TO_OWN_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), PORTAL_BUY_TO_OWN_GROUP, null))
+                .put(BOX_OFFICE_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), PORTAL_BOXOFFICE_GROUP, null))
+                .put(TV_BOX_SETS_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), PORTAL_BOXSET_GROUP, Series.class))
+                .put(BOX_OFFICE_PICKS_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), BOX_OFFICE_PICKS_GROUP, null))
+                .put(NEW_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUrl, qParam), NEW_CONTENT_MPX_FEED_NAME))
+                .build();
+    }
+    
+    private Map<String, BtVodContentMatchingPredicate> salesContentGroupsAndCriteria(String baseUrl, String qParam) {
         return ImmutableMap.<String, BtVodContentMatchingPredicate> builder()
                 .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(MUSIC_CATEGORY))
                 .put(FILM_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.filmPredicate())
@@ -420,7 +444,7 @@ public class BtVodModule {
     
     @PostConstruct
     public void scheduleTask() {
-        scheduler.schedule(btVodUpdater(btVodMpxProdFeedNewSuffix).withName("BT VoD Updater"), MPX_REPETITION_RULE);
+        scheduler.schedule(btVodUpdater(btVodMpxProdFeedNewSuffix, salesContentGroupsAndCriteria(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam)).withName("BT VoD Updater"), MPX_REPETITION_RULE);
         scheduler.schedule(btTveVodProdConfig1Updater(), TVE_MPX_REPETITION_RULE);
         scheduler.schedule(btTveVodSystest2Config1Updater(), TVE_MPX_REPETITION_RULE);
         scheduler.schedule(btTveVodVoldConfig1Updater(), TVE_MPX_REPETITION_RULE);

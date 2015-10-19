@@ -273,8 +273,9 @@ public class FiveEpisodeProcessor {
         
         Elements imageElements = element.getFirstChildElement("images").getChildElements("image");
         if (imageElements.size() > 0) {
-            if (!imageElements.get(0).getValue().contains("api-images.channel5.com/images/default")) {
-                return Maybe.just(imageElements.get(0).getValue());
+            String image = imageElements.get(0).getValue();
+            if (!image.contains("api-images.channel5.com/images/default")) {
+                return Maybe.just(image);
             }
         }
 

@@ -14,13 +14,18 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query.v2;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.io.IOException;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
@@ -32,6 +37,7 @@ import org.atlasapi.persistence.logging.AdapterLog;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -39,6 +45,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.IdGenerator;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 @Controller
@@ -52,9 +59,19 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 	private final KnownTypeQueryExecutor executor;
 
     private final ContentWriteController contentWriteController;
-	
-    public QueryController(KnownTypeQueryExecutor executor, ApplicationConfigurationFetcher configFetcher, AdapterLog log, AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter, ContentWriteController contentWriteController) {
+    private final IdGenerator idGenerator;
+
+    public QueryController(
+            KnownTypeQueryExecutor executor,
+            ApplicationConfigurationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter,
+            ContentWriteController contentWriteController,
+            IdGenerator idGenerator
+    ) {
 	    super(configFetcher, log, outputter, SubstitutionTableNumberCodec.lowerCaseOnly());
+        idGenerator = checkNotNull(idGenerator);
+        this.idGenerator = idGenerator;
         this.executor = executor;
         this.contentWriteController = contentWriteController;
 	}
@@ -155,8 +172,25 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     }
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
-    public Void postContent(HttpServletRequest req, HttpServletResponse resp) {
-        return contentWriteController.postContent(req, resp);
+    public Void postContent(
+            @RequestParam(value = "id_only", defaultValue = "false") Boolean idOnly,
+            HttpServletRequest req,
+            HttpServletResponse resp
+    ) throws InvalidIpForApiKeyException, ApiKeyNotFoundException, RevokedApiKeyException {
+        if (idOnly) {
+            long id = idGenerator.generateRaw();
+            Identified identified = new Identified();
+            identified.setId(id);
+            try {
+                modelAndViewFor(req, resp, QueryResult.of(ImmutableList.of(identified)), appConfig(req));
+            } catch (IOException e) {
+                resp.setStatus(HttpStatusCode.SERVER_ERROR.code());
+                resp.setContentLength(0);
+            }
+            return null;
+        } else {
+            return contentWriteController.postContent(req, resp);
+        }
     }
 
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.PUT)

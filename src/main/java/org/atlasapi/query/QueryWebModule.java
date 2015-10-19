@@ -142,6 +142,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 import com.google.common.base.Splitter;
+import com.metabroadcast.common.ids.IdGenerator;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
@@ -172,6 +173,7 @@ public class QueryWebModule {
     private @Autowired TopicQueryResolver topicResolver;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     private @Autowired TopicContentLister topicContentLister;
+    private @Autowired IdGenerator idGenerator;
     private @Autowired SegmentResolver segmentResolver;
     private @Autowired ProductResolver productResolver;
     private @Autowired PeopleQueryResolver peopleQueryResolver;
@@ -191,7 +193,7 @@ public class QueryWebModule {
     private @Autowired KnownTypeQueryExecutor queryExecutor;
     private @Autowired ApplicationConfigurationFetcher configFetcher;
     private @Autowired AdapterLog log;
-    
+
     @Bean ChannelController channelController() {
         return new ChannelController(configFetcher, log, channelModelWriter(), channelResolver, new SubstitutionTableNumberCodec());
     }
@@ -280,7 +282,7 @@ public class QueryWebModule {
 
     @Bean
     QueryController queryController() {
-        return new QueryController(queryExecutor, configFetcher, log, contentModelOutputter(), contentWriteController());
+        return new QueryController(queryExecutor, configFetcher, log, contentModelOutputter(), contentWriteController(), idGenerator);
     }
     
     NumberToShortStringCodec idCodec() {

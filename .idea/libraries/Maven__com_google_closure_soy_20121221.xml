@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.google.closure:soy:20121221">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/closure/soy/20121221/soy-20121221.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/closure/soy/20121221/soy-20121221-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/google/closure/soy/20121221/soy-20121221-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

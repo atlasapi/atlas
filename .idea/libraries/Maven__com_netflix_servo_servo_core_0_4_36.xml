@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.netflix.servo:servo-core:0.4.36">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/netflix/servo/servo-core/0.4.36/servo-core-0.4.36.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/netflix/servo/servo-core/0.4.36/servo-core-0.4.36-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/netflix/servo/servo-core/0.4.36/servo-core-0.4.36-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

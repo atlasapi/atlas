@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="Maven: com.metabroadcast.common.ingest:common-ingest:1.0-SNAPSHOT">
+    <CLASSES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/metabroadcast/common/ingest/common-ingest/1.0-SNAPSHOT/common-ingest-1.0-20150904.180227-29.jar!/" />
+    </CLASSES>
+    <JAVADOC>
+      <root url="jar://$MAVEN_REPOSITORY$/com/metabroadcast/common/ingest/common-ingest/1.0-SNAPSHOT/common-ingest-1.0-20150904.180227-29-javadoc.jar!/" />
+    </JAVADOC>
+    <SOURCES>
+      <root url="jar://$MAVEN_REPOSITORY$/com/metabroadcast/common/ingest/common-ingest/1.0-SNAPSHOT/common-ingest-1.0-20150904.180227-29-sources.jar!/" />
+    </SOURCES>
+  </library>
+</component>

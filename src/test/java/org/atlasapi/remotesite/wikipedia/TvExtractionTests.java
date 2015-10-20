@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.wikipedia;
 import java.net.URISyntaxException;
 import java.nio.file.Paths;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentWriter;

@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.wikipedia.television;
 
+import info.bliki.wiki.filter.PlainTextConverter;
+import info.bliki.wiki.model.WikiModel;
 import org.atlasapi.remotesite.wikipedia.Callback;
 import org.atlasapi.remotesite.wikipedia.SwebleHelper;
 import org.slf4j.Logger;
@@ -75,23 +77,23 @@ public final class EpisodeListScraper extends AstVisitor {
         String name = SwebleHelper.flattenTextNodeList(a.getName());
         // http://en.wikipedia.org/wiki/Template:Episode_list
         if ("Title".equalsIgnoreCase(name)) {
-            currentResult.title = SwebleHelper.flattenTextNodeList(a.getValue());
+            currentResult.title = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("RTitle".equalsIgnoreCase(name) && currentResult.title == null) {
-            currentResult.title = SwebleHelper.flattenTextNodeList(a.getValue());
+            currentResult.title =  normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("EpisodeNumber".equalsIgnoreCase(name)) {
             currentResult.numberInShow = Integer.parseInt(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("EpisodeNumber2".equalsIgnoreCase(name)) {
             currentResult.numberInSeason = Integer.parseInt(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("DirectedBy".equalsIgnoreCase(name)) {
-            currentResult.director = SwebleHelper.flattenTextNodeList(a.getValue());
+            currentResult.director = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("WrittenBy".equalsIgnoreCase(name)) {
-            currentResult.writer = SwebleHelper.flattenTextNodeList(a.getValue());
+            currentResult.writer = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("OriginalAirDate".equalsIgnoreCase(name) && currentResult.originalAirDate == null) {
             currentResult.originalAirDate = SwebleHelper.extractDate(a.getValue());
         } else if ("ProdCode".equalsIgnoreCase(name)) {
-            currentResult.prodCode = SwebleHelper.flattenTextNodeList(a.getValue());
+            currentResult.prodCode = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("ShortSummary".equalsIgnoreCase(name)) {
-            currentResult.summary = SwebleHelper.flattenTextNodeList(a.getValue());
+            currentResult.summary = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         }
     }
 
@@ -99,6 +101,12 @@ public final class EpisodeListScraper extends AstVisitor {
     protected Object visitNotFound(AstNode node) {
         log.debug("Skipping node " + node.getNodeName());
         return null;
+    }
+
+    protected String normalize(String text) {
+        WikiModel model = new WikiModel("","");
+        String noMarkUp = model.render( new PlainTextConverter(),text);
+        return noMarkUp;
     }
     
 }

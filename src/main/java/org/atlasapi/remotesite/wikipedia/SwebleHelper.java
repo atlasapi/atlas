@@ -24,6 +24,9 @@ import org.sweble.wikitext.lazy.preprocessor.Template;
 import org.sweble.wikitext.lazy.preprocessor.TemplateArgument;
 import org.sweble.wikitext.lazy.utils.SimpleParserConfig;
 
+import info.bliki.wiki.filter.PlainTextConverter;
+import info.bliki.wiki.model.WikiModel;
+
 import xtc.parser.ParseException;
 
 import com.google.common.base.Optional;
@@ -176,15 +179,21 @@ public class SwebleHelper {
         protected Object visitNotFound(AstNode node) {
             return null;
         }
-    };
+    }
     
     public static class ListItemResult {
         public final String name;
         public final Optional<String> articleTitle;
         public ListItemResult(String name, Optional<String> articleTitle) {
-            this.name = checkNotNull(name);
+            this.name = normalize(checkNotNull(name));
             this.articleTitle = articleTitle;
         }
+        protected String normalize(String text) {
+            WikiModel model = new WikiModel("","");
+            String noMarkUp = model.render( new PlainTextConverter(),text);
+            return noMarkUp;
+        }
+
         @Override
         public String toString() {
             return name + (articleTitle.isPresent() ? " (=> " + articleTitle.get() + ")" : "");

@@ -28,6 +28,7 @@ import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
@@ -179,7 +180,7 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     ) throws InvalidIpForApiKeyException, ApiKeyNotFoundException, RevokedApiKeyException {
         if (idOnly) {
             long id = idGenerator.generateRaw();
-            Identified identified = new Identified();
+            Identified identified = new Item();
             identified.setId(id);
             try {
                 modelAndViewFor(req, resp, QueryResult.of(ImmutableList.of(identified)), appConfig(req));

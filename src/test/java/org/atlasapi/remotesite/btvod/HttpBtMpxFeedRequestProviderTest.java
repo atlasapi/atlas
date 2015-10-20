@@ -19,9 +19,9 @@ public class HttpBtMpxFeedRequestProviderTest {
                 "-(productTagFullTitles:%22schedulerChannel:Music%22%20OR%20productTagFullTitles:%22contentProvider:SKY%22%20OR%20productType:%22help%22)"
         );
 
-        SimpleHttpRequest<BtVodResponse> request = objectUnderTest.buildRequest("btv-prd-search", 42);
+        SimpleHttpRequest<BtVodResponse> request = objectUnderTest.buildRequest("btv-prd-search", 42, 142);
 
-        assertThat(request.getUrl(), is("https://example.org/base/btv-prd-search?startIndex=42&q=-(productTagFullTitles:%22schedulerChannel:Music%22%20OR%20productTagFullTitles:%22contentProvider:SKY%22%20OR%20productType:%22help%22)"));
+        assertThat(request.getUrl(), is("https://example.org/base/btv-prd-search?range=42-142&q=-(productTagFullTitles:%22schedulerChannel:Music%22%20OR%20productTagFullTitles:%22contentProvider:SKY%22%20OR%20productType:%22help%22)"));
         assertThat(request.getTransformer(), instanceOf(BtVodResponseTransformer.class));
     }
 
@@ -33,9 +33,9 @@ public class HttpBtMpxFeedRequestProviderTest {
                 ""
         );
 
-        SimpleHttpRequest<BtVodResponse> request = objectUnderTest.buildRequest("btv-prd-search", 42);
+        SimpleHttpRequest<BtVodResponse> request = objectUnderTest.buildRequest("btv-prd-search", 42, 142);
 
-        assertThat(request.getUrl(), is("https://example.org/base/btv-prd-search?startIndex=42"));
+        assertThat(request.getUrl(), is("https://example.org/base/btv-prd-search?range=42-142"));
         assertThat(request.getTransformer(), instanceOf(BtVodResponseTransformer.class));
     }
 }

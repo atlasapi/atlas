@@ -7,9 +7,9 @@ import com.metabroadcast.common.http.SimpleHttpRequest;
 
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodResponse;
+import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -32,9 +32,13 @@ public class HttpBtMpxVodClientTest {
     @Mock
     private HttpBtMpxFeedRequestProvider requestProvider;
 
-    @InjectMocks
     private HttpBtMpxVodClient objectUnderTest;
 
+    @Before
+    public void setUp() {
+        objectUnderTest = new HttpBtMpxVodClient(httpClient, requestProvider, 2);
+    }
+    
     @Test
     public void testCorrectPagination() throws Exception {
 
@@ -69,9 +73,9 @@ public class HttpBtMpxVodClientTest {
         SimpleHttpRequest<BtVodResponse> request2 = mock(SimpleHttpRequest.class);
         SimpleHttpRequest<BtVodResponse> request3 = mock(SimpleHttpRequest.class);
 
-        when(requestProvider.buildRequest(FEED_NAME, 1)).thenReturn(request1);
-        when(requestProvider.buildRequest(FEED_NAME, 3)).thenReturn(request2);
-        when(requestProvider.buildRequest(FEED_NAME, 5)).thenReturn(request3);
+        when(requestProvider.buildRequest(FEED_NAME, 1, 2)).thenReturn(request1);
+        when(requestProvider.buildRequest(FEED_NAME, 3, 4)).thenReturn(request2);
+        when(requestProvider.buildRequest(FEED_NAME, 5, 6)).thenReturn(request3);
 
         when(httpClient.get(request1)).thenReturn(btVodResponse1);
         when(httpClient.get(request2)).thenReturn(btVodResponse2);

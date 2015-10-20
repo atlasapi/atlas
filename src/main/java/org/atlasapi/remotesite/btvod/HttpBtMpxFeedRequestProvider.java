@@ -1,17 +1,14 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
-import com.google.common.base.Optional;
-import com.metabroadcast.common.http.SimpleHttpRequest;
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.atlasapi.remotesite.btvod.model.BtVodResponse;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.io.UnsupportedEncodingException;
-import java.net.URLEncoder;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
+import com.metabroadcast.common.http.SimpleHttpRequest;
 
 public class HttpBtMpxFeedRequestProvider {
 
@@ -25,12 +22,13 @@ public class HttpBtMpxFeedRequestProvider {
     }
 
 
-    public SimpleHttpRequest<BtVodResponse> buildRequest(String endpoint, Integer startIndex) {
+    public SimpleHttpRequest<BtVodResponse> buildRequest(String endpoint, int rangeStart, int rangeEnd) {
         String url = String.format(
-                "%s%s?startIndex=%s%s",
+                "%s%s?range=%d-%d%s",
                 urlBase,
                 endpoint,
-                startIndex,
+                rangeStart,
+                rangeEnd,
                 additionalQueryParams()
         );
         log.debug("Calling BT VoD MPX feed url {}", url);

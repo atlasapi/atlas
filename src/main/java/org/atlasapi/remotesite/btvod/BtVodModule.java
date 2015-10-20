@@ -1,10 +1,12 @@
 package org.atlasapi.remotesite.btvod;
 
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
 
 import com.metabroadcast.common.scheduling.ScheduledTask;
+
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Topic;
@@ -386,7 +388,9 @@ public class BtVodModule {
 
     private HttpBtMpxVodClient mpxVodClient(String baseUrl, String qParam) {
         return new HttpBtMpxVodClient(
-                new SimpleHttpClientBuilder().withUserAgent(HttpClients.ATLAS_USER_AGENT).build(),
+                new SimpleHttpClientBuilder().withUserAgent(HttpClients.ATLAS_USER_AGENT)
+                        .withConnectionTimeout(2, TimeUnit.MINUTES)
+                        .build(),
                 new HttpBtMpxFeedRequestProvider(baseUrl, qParam)
         );
     }

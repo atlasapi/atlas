@@ -16,11 +16,10 @@ public class RunFilmExtraction {
                 new ContentWriter() {
                     @Override
                     public void createOrUpdate(Container container) {
-                        System.out.println(container);
+
                     }
                     @Override
                     public Item createOrUpdate(Item item) {
-                        System.out.println(item);
                         return item;
                     }
                 },

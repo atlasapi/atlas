@@ -16,7 +16,7 @@ public class RunTvExtraction {
                 new ContentWriter() {
                     @Override
                     public Item createOrUpdate(Item item) {
-                        System.out.println(item.toString());
+                        System.out.println(item.getTitle());
                         return item;
                     }
 

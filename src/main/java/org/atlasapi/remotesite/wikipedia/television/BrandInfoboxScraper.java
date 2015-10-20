@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.wikipedia.television;
 
+import info.bliki.wiki.filter.PlainTextConverter;
+import info.bliki.wiki.model.WikiModel;
 import org.atlasapi.remotesite.wikipedia.Callback;
 import org.atlasapi.remotesite.wikipedia.SwebleHelper;
 import org.slf4j.Logger;
@@ -56,20 +58,21 @@ public final class BrandInfoboxScraper extends AstVisitor {
     }
 
     public void visit(TemplateArgument a) {
+
         String name = SwebleHelper.flattenTextNodeList(a.getName());
         // http://en.wikipedia.org/wiki/Template:Infobox_television
         if ("show_name".equalsIgnoreCase(name)) {
-            result.title = SwebleHelper.flattenTextNodeList(a.getValue());
+            result.title = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("creator".equalsIgnoreCase(name)) {
-            result.creator = SwebleHelper.flattenTextNodeList(a.getValue());
+            result.creator = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("list_episodes".equalsIgnoreCase(name)) {
-            result.episodeListLinkTarget = SwebleHelper.flattenTextNodeList(a.getValue());
+            result.episodeListLinkTarget = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         } else if ("first_aired".equalsIgnoreCase(name) && result.firstAired == null) {
             result.firstAired = SwebleHelper.extractDate(a.getValue());
         } else if ("last_aired".equalsIgnoreCase(name) && result.lastAired == null) {
             result.lastAired = SwebleHelper.extractDate(a.getValue());
         } else if ("image".equalsIgnoreCase(name) && result.image == null) {
-            result.image = SwebleHelper.flattenTextNodeList(a.getValue());
+            result.image = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         }
     }
 
@@ -77,6 +80,12 @@ public final class BrandInfoboxScraper extends AstVisitor {
     protected Object visitNotFound(AstNode node) {
         log.debug("Skipping node " + node.getNodeName());
         return null;
+    }
+
+    protected String normalize(String text) {
+        WikiModel model = new WikiModel("","");
+        String noMarkUp = model.render( new PlainTextConverter(),text);
+        return noMarkUp;
     }
     
 }

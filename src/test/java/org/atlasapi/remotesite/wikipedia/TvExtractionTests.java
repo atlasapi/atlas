@@ -44,9 +44,11 @@ public class TvExtractionTests {
                 public void createOrUpdate(Container container) {
                     // TODO mock
                 }
-                
+
                 @Override
                 public Item createOrUpdate(Item item) {
+                    System.out.println(item.getTitle());
+                    System.out.println(item.getCanonicalUri());
                     return item;
                 }
             },

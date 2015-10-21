@@ -49,7 +49,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private static final String HELP_TYPE = "help";
 
     private static final List<Pattern> EPISODE_TITLE_PATTERNS = ImmutableList.of(
-            Pattern.compile("^.* S[0-9]+\\-E[0-9]+\\s(.*)"),
+            Pattern.compile("^.* S[0-9]+[\\- ]E[0-9]+\\s(.*)"),
             Pattern.compile("^.*Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\s(Episode\\s[0-9]+.*)"),
             Pattern.compile("^.*?\\-\\s(.*)")
     );

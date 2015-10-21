@@ -314,6 +314,9 @@ public class BtVodItemExtractorTest {
         
         BtVodEntry btVodEntry11 = new BtVodEntry();
         btVodEntry11.setTitle("Peppa's Circus - HD - Peppa's Circus - HD");
+        
+        BtVodEntry btVodEntry12 = new BtVodEntry();
+        btVodEntry12.setTitle("ZQWModern_Family: S01 S1 E4 ZQWThe_Incident");
 
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry1.getTitle()), is(REAL_EPISODE_TITLE));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry2.getTitle()), is("Conference Call"));
@@ -326,6 +329,7 @@ public class BtVodItemExtractorTest {
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry9.getTitle()), is("School Play"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry10.getTitle()), is("Birth"));
         assertThat(itemExtractor.extractEpisodeTitle(btVodEntry11.getTitle()), is("Peppa's Circus"));
+        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry12.getTitle()), is("The Incident"));
     }
     
     @Test

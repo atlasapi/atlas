@@ -28,6 +28,7 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
@@ -59,6 +60,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String AMAZON_ALIAS_URL_VERSION = "http://gb.amazon.com/asin/%s";
     private static final String URI_VERSION = "http://unbox.amazon.co.uk/%s";
     private static final String LOCATION_URI_PATTERN = "http://www.amazon.co.uk/dp/%s/";
+    private static final String SERIES_URI_PATTERN = LOCATION_URI_PATTERN;
     private static final String URL_SUFFIX_TO_REMOVE = "ref=atv_feed_catalog";
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
@@ -150,6 +152,12 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         Brand brand = new Brand();
         setCommonFields(brand, source.getSeriesTitle(), createBrandUri(source.getSeriesAsin()));
         brand.setSpecialization(Specialization.TV);
+        
+        RelatedLink relatedLink = RelatedLink
+                                     .vodLink(String.format(SERIES_URI_PATTERN, source.getSeriesAsin()))
+                                     .build();
+        
+        brand.setRelatedLinks(ImmutableSet.of(relatedLink));
         return brand;
     }
 

@@ -11,6 +11,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
 import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.junit.Test;
 
@@ -70,7 +71,27 @@ public class BtVodPricingAvailabilityGrouperTest {
         
         assertThat(Iterables.getOnlyElement(grouped.values()).getProductAbsoluteStart(), is(tier2.getProductAbsoluteStart()));
     }
-    
+
+    @Test
+    public void testSingleTier() throws Exception {
+        BtVodProductPricingTier tier = tier(
+                new DateTime(2015, DateTimeConstants.AUGUST, 16, 23, 0, 0, DateTimeZone.UTC),
+                new DateTime(2016, DateTimeConstants.APRIL, 16, 12, 59, 0, DateTimeZone.UTC),
+                false
+        );
+
+        Multimap<Interval, BtVodProductPricingTier> grouped = grouper.groupAvailabilityPeriods(
+                vodEntryWithPricingTiers(ImmutableList.of(tier))
+        );
+
+        assertThat(Iterables.getOnlyElement(grouped.values()).getProductAbsoluteStart(),
+                is(tier.getProductAbsoluteStart()));
+
+        Entry<Interval, BtVodProductPricingTier> entry = Iterables.getOnlyElement(grouped.entries());
+        assertThat(entry.getKey().getStart().getMillis(),
+                is(entry.getValue().getProductAbsoluteStart()));
+    }
+
     private BtVodEntry vodEntryWithPricingTiers(Iterable<BtVodProductPricingTier> tiers) {
         BtVodEntry entry = new BtVodEntry();
         BtVodProductPricingPlan plan = new BtVodProductPricingPlan();

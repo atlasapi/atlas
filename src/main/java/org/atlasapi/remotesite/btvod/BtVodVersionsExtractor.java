@@ -1,10 +1,11 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
-import com.metabroadcast.common.currency.Price;
-import com.metabroadcast.common.intl.Countries;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Collection;
+import java.util.Currency;
+import java.util.Map;
+import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Encoding;
@@ -20,12 +21,11 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 
-import java.util.Collection;
-import java.util.Currency;
-import java.util.Map;
-import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.metabroadcast.common.currency.Price;
+import com.metabroadcast.common.intl.Countries;
 
 public class BtVodVersionsExtractor {
 
@@ -166,16 +166,8 @@ public class BtVodVersionsExtractor {
         policy.setPricing(pricings.build());
         policy.setSubscriptionPackages(row.getSubscriptionCodes());
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
+        policy.setRevenueContract(subscription);
 
-        if (!row.getSubscriptionCodes().isEmpty()) {
-            policy.setRevenueContract(Policy.RevenueContract.SUBSCRIPTION);
-        } else {
-            if (row.getProductOfferingType().contains("-EST")) {
-                policy.setRevenueContract(Policy.RevenueContract.PAY_TO_BUY);
-            } else {
-                policy.setRevenueContract(Policy.RevenueContract.PAY_TO_RENT);
-            }
-        }
         Location location = new Location();
         location.setPolicy(policy);
         location.setCanonicalUri(uriFor(row, policy.getRevenueContract(), serviceId));

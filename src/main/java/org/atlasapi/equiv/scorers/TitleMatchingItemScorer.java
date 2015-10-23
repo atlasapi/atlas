@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -13,12 +14,12 @@ import org.atlasapi.media.entity.Item;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
 public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     
     public static final String NAME = "Title";
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of("the ", "Live ");
+    private static final Pattern TRAILING_APOSTROPHE_PATTERN =Pattern.compile("\\w' ");
 
     public enum TitleType {
         
@@ -96,26 +97,62 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
         
-        String subjTitle = removeSequencePrefix(subject.getTitle());
-        String suggTitle = removeSequencePrefix(suggestion.getTitle());
-        
-        subjTitle = replaceSpecialChars(removeCommonPrefixes(subjTitle.toLowerCase()));
-        suggTitle = replaceSpecialChars(removeCommonPrefixes(suggTitle.toLowerCase()));
         
         Score score = Score.NULL_SCORE;
 
         if(subjectType == suggestionType) {
-            score = subjTitle.equals(suggTitle) ? Score.ONE 
-                                                : scoreOnMismatch;
+            return compareTitles(subject.getTitle(), suggestion.getTitle());
+
         }
         
         return score;
     }
+    
+    private Score compareTitles(final String subjectTitle, final String suggestionTitle) {
+        boolean matches;
+        
+        String subjTitle = normalize(subjectTitle);
+        String suggTitle = normalize(suggestionTitle);
+        
+        if (appearsToBeAppreviatedWithApostrophe(subjectTitle)) {
+            String regexp = normalizeRegularExpression(subjectTitle);
+            matches = Pattern.matches(regexp, suggTitle);
+        } else if (appearsToBeAppreviatedWithApostrophe(suggestionTitle)) {
+            String regexp = normalizeRegularExpression(suggestionTitle);
+            matches = Pattern.matches(regexp, subjTitle);
+        } else {
+            matches = subjTitle.equals(suggTitle);
+        }
+        
+        return matches ? Score.ONE 
+                       : scoreOnMismatch;
+    }
+    
+    private String normalize(String title) {
+        return replaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title).toLowerCase()));
+    }
+
+    private String normalizeRegularExpression(String title) {
+        return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title).toLowerCase()));
+    }
+    private boolean appearsToBeAppreviatedWithApostrophe(String title) {
+        return TRAILING_APOSTROPHE_PATTERN.matcher(title).find();
+    }
 
     private String replaceSpecialChars(String title) {
         return title.replaceAll(" & ", " and ")
-                    .replaceAll("[^A-Za-z0-9\\s]+", "-")
+                    .replaceAll("fc ", "")
+                    .replaceAll("[^A-Za-z0-9\\s']+", "-")
                     .replace(" ", "-");
+                    
+    }
+    
+    private String regularExpressionReplaceSpecialChars(String title) {
+        return title.replaceAll(" & ", " and ")
+                    .replaceAll("fc ", "")
+                    .replaceAll("[^A-Za-z0-9\\s']+", "-")
+                    .replace(" ", "\\-")
+                    .replaceAll("'\\\\-", "\\\\w+\\\\-");
     }
     
     private String removeCommonPrefixes(String title) {

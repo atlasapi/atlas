@@ -92,6 +92,15 @@ public class TitleMatchingItemScorerTest extends TestCase {
 
     }
     
+    @Test
+    public void testMatchingSports() {
+        DefaultDescription desc = new DefaultDescription();
+        
+        // score(1, scorer.score(itemWithTitle("Live B' Monchengladbach v Man City"), of(itemWithTitle("Borussia Moenchengladbach v Manchester City")), desc));
+        score(1, scorer.score(itemWithTitle("Live Porto v Chelsea"), of(itemWithTitle("FC Porto v Chelsea")), desc));
+        score(1, scorer.score(itemWithTitle("Live Maccabi Tel-Aviv v D' Kiev"), of(itemWithTitle("Maccabi Tel Aviv v Dynamo Kiev")), desc));
+    }
+    
     private void score(double expected, ScoredCandidates<Item> scores) {
         Score value = Iterables.getOnlyElement(scores.candidates().entrySet()).getValue();
         assertTrue(String.format("expected %s got %s", expected, value), value.equals(expected > 0 ? Score.valueOf(expected) : Score.NULL_SCORE));

@@ -625,7 +625,8 @@ public class EquivModule {
         return standardItemUpdater(sources, ImmutableSet.of(
             new TitleMatchingItemScorer(), 
             new SequenceItemScorer(),
-            new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/)
+            new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
+            new BroadcastAliasScorer(Score.nullScore())
         ), filter).build();
     }
 

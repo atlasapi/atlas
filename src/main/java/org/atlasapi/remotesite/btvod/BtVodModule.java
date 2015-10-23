@@ -178,7 +178,7 @@ public class BtVodModule {
                 noImageExtractor(),
                 noImageExtractor(),
                 brandUriExtractor(URI_PREFIX),
-                newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam, newFeedSuffix),
+                newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam),
                 topicFor(feedNamepaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_NEW_FEED, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_KIDS_TOPIC, Publisher.BT_VOD),
                 topicFor(btVodAppCategoryNamespaceFor(BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG), BT_VOD_TV_BOXSETS_TOPIC, Publisher.BT_VOD),
@@ -186,7 +186,7 @@ public class BtVodModule {
                 seriesUriExtractor(URI_PREFIX),
                 versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 describedFieldsExtractor(Publisher.BT_VOD,BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG, 
-                        btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam, newFeedSuffix)
+                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam)
         );
     }
 
@@ -274,8 +274,8 @@ public class BtVodModule {
                         envName,
                         conf,
                         feedBaseUrl,
-                        feedQParam,
-                        newFeedSuffix
+                        newFeedSuffix,
+                        feedQParam
                 )
         ).withName(
                 String.format(

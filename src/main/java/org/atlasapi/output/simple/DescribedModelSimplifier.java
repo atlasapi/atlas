@@ -14,7 +14,16 @@ import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.simple.*;
+import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.media.entity.simple.Image;
+import org.atlasapi.media.entity.simple.LocalizedDescription;
+import org.atlasapi.media.entity.simple.LocalizedTitle;
+import org.atlasapi.media.entity.simple.Priority;
+import org.atlasapi.media.entity.simple.PriorityScoreReasons;
+import org.atlasapi.media.entity.simple.Rating;
+import org.atlasapi.media.entity.simple.RelatedLink;
+import org.atlasapi.media.entity.simple.Review;
+import org.atlasapi.media.entity.simple.SameAs;
 import org.atlasapi.output.Annotation;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -86,11 +95,11 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             if (content.getPriority() != null) {
                 simpleDescription.setPriority(
                         new Priority(
-                            content.getPriority().getScore(),
-                            content.getPriority().getReasons()
-                    )
+                                content.getPriority().getScore(),
+                                new PriorityScoreReasons(content.getPriority().getReasons().getPositive(),
+                                        content.getPriority().getReasons().getNegative())
+                        )
                 );
-
             }
         }
 

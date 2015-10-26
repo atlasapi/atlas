@@ -124,6 +124,13 @@ public class SwebleHelper {
         }
         return b.toString().trim();
     }
+
+    public static String normalizeAndFlattenTextNodeList(NodeList l) {
+        String markUp = flattenTextNodeList(l);
+        WikiModel model = new WikiModel("http://wikipedia.org/","http://wikipedia.org/");
+        String noMarkUp = model.render(new PlainTextConverter(),markUp);
+        return noMarkUp;
+    }
     
     /**
      * Returns a positional template argument, passed through {@link #flattenTextNodeList(NodeList)}.
@@ -179,20 +186,16 @@ public class SwebleHelper {
         protected Object visitNotFound(AstNode node) {
             return null;
         }
-    }
+    };
     
     public static class ListItemResult {
         public final String name;
         public final Optional<String> articleTitle;
         public ListItemResult(String name, Optional<String> articleTitle) {
-            this.name = normalize(checkNotNull(name));
+            this.name = checkNotNull(name);
             this.articleTitle = articleTitle;
         }
-        protected String normalize(String text) {
-            WikiModel model = new WikiModel("","");
-            String noMarkUp = model.render( new PlainTextConverter(),text);
-            return noMarkUp;
-        }
+
 
         @Override
         public String toString() {
@@ -260,7 +263,5 @@ public class SwebleHelper {
 
         @Override
         protected Object visitNotFound(AstNode node) { return null; }
-
     }
-
 }

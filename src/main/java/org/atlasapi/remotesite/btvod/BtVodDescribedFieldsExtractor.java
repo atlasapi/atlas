@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Priority;
+import org.atlasapi.media.entity.PriorityScoreReasons;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;

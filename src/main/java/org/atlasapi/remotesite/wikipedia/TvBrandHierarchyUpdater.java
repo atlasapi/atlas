@@ -273,7 +273,6 @@ public final class TvBrandHierarchyUpdater extends ScheduledTask {
             writer.createOrUpdate(s);
         }
         for (Episode e : hierarchy.getEpisodes()) {
-            log.info("Processing episode article \"" + e.getTitle() + "\"");
             writer.createOrUpdate(e);
         }
     }

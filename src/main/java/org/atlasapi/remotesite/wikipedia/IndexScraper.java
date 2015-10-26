@@ -5,12 +5,10 @@ import de.fau.cs.osr.ptk.common.ast.AstNode;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
+
+import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.remotesite.wikipedia.SwebleHelper;
-import org.sweble.wikitext.lazy.parser.InternalLink;
-import org.sweble.wikitext.lazy.parser.Itemization;
-import org.sweble.wikitext.lazy.parser.ItemizationItem;
-import org.sweble.wikitext.lazy.parser.LazyParsedPage;
-import org.sweble.wikitext.lazy.parser.Section;
+import org.sweble.wikitext.lazy.parser.*;
 import xtc.parser.ParseException;
 
 /**

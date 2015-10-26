@@ -5,8 +5,11 @@ import javax.annotation.PostConstruct;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.organisation.OrganisationWriter;
 import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.film.FilmExtractor;
+import org.atlasapi.remotesite.wikipedia.football.FootballTeamsExtractor;
+import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchyExtractor;
 import org.joda.time.LocalTime;
@@ -37,7 +40,8 @@ public class WikipediaModule {
 
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
 	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
-    
+    private @Autowired @Qualifier("organisationWriter") OrganisationWriter organisationWriter;
+
     private final EnglishWikipediaClient ewc = new EnglishWikipediaClient();
     protected final ArticleFetcher fetcher = ewc;
     protected final FetchMeister fetchMeister = new FetchMeister(fetcher);
@@ -47,6 +51,9 @@ public class WikipediaModule {
     
     protected final TvBrandHierarchyExtractor tvBrandHierarchyExtractor = new TvBrandHierarchyExtractor();
     protected final TvBrandArticleTitleSource allTvBrandsTitleSource = ewc;
+
+    protected final FootballTeamsExtractor footballTeamsExtractor = new FootballTeamsExtractor();
+    protected final TeamsNamesSource teamsNamesSource = ewc;
     
     @PostConstruct
     public void setUp() {
@@ -67,6 +74,10 @@ public class WikipediaModule {
     
     public FilmsUpdater allFilmsUpdater() {
         return new FilmsUpdater(allFilmsTitleSource, fetchMeister, filmExtractor, contentWriter, filmsSimultaneousness, filmsThreads);
+    }
+
+    public FootballTeamsUpdater teamsUpdater() {
+        return new FootballTeamsUpdater(teamsNamesSource, fetchMeister, footballTeamsExtractor, organisationWriter, filmsSimultaneousness, filmsThreads);
     }
     
     public FilmsUpdater filmsUpdaterForTitles(FilmArticleTitleSource titleSource) {

@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Priority;
+import org.atlasapi.media.entity.PriorityScoreReasons;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
@@ -196,9 +197,9 @@ public class BtVodDescribedFieldsExtractor {
         if (row.getProductPriority() != null) {
             Double priority = Double.valueOf(row.getProductPriority());
             if (priority > 0) {
-                described.setPriority(new Priority(priority * 3, ImmutableList.of("")));
+                described.setPriority(new Priority(priority * 3, new PriorityScoreReasons(ImmutableList.of(""), ImmutableList.of(""))));
             } else {
-                described.setPriority(new Priority(10d, ImmutableList.of("")));
+                described.setPriority(new Priority(10d, new PriorityScoreReasons(ImmutableList.of(""), ImmutableList.of(""))));
             }
         }
         

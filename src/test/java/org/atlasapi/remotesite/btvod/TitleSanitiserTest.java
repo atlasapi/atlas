@@ -88,6 +88,12 @@ public class TitleSanitiserTest {
                 is("Peppa's Circus"));
         assertThat(titleSanitiser.sanitiseTitle("ZQWModern_Family: S01 S1 E4 ZQWThe_Incident"),
                 is("The Incident"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Mad Men S01 E01"),
+                is(""));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Mad Men S01 E01 A title"),
+                is("A title"));
     }
 
     @Test

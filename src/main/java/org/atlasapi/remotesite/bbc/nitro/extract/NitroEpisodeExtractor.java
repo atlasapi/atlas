@@ -18,6 +18,7 @@ import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
+import javax.xml.datatype.XMLGregorianCalendar;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Optional;
@@ -37,7 +38,6 @@ import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
 import org.joda.time.LocalDate;
 
-import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * <p>

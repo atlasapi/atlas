@@ -5,15 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.metabroadcast.common.intl.Countries;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Certificate;
@@ -36,7 +27,13 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
+import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 
@@ -48,11 +45,6 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private static final String COLLECTION_TYPE = "collection";
     private static final String HELP_TYPE = "help";
 
-    private static final List<Pattern> EPISODE_TITLE_PATTERNS = ImmutableList.of(
-            Pattern.compile("^.* S[0-9]+[\\- ]E[0-9]+\\s(.*)"),
-            Pattern.compile("^.*Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\s(Episode\\s[0-9]+.*)"),
-            Pattern.compile("^.*?\\-\\s(.*)")
-    );
     private static final Logger log = LoggerFactory.getLogger(BtVodItemExtractor.class);
     private static final String OTG_PLATFORM = "OTG";
 
@@ -187,7 +179,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
 
     private Item createSong(BtVodEntry row) {
         Song song = new Song(uriFor(row), null, publisher);
-        song.setTitle(titleForNonEpisode(row));
+        song.setTitle(titleSanitiser.sanitiseSongTitle(row.getTitle()));
         song.setSpecialization(Specialization.MUSIC);
         return song;
     }
@@ -196,7 +188,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         Episode episode = new Episode(uriFor(row), null, publisher);
         episode.setSeriesNumber(extractSeriesNumber(row));
         episode.setEpisodeNumber(extractEpisodeNumber(row));
-        episode.setTitle(extractEpisodeTitle(row.getTitle()));
+        episode.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
         episode.setSeriesRef(getSeriesRefOrNull(row));
         episode.setParentRef(getBrandRefOrNull(row));
         episode.setSpecialization(Specialization.TV);
@@ -240,26 +232,6 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         return brandRef.orNull();
     }
 
-    /**
-     * An episode title has usually the form of "Scrubs S4-E18 My Roommates"
-     * In this case we want to extract the real episode title "My Roommates"
-     * We also remove string " - HD" suffix
-     * Otherwise we leave the title untouched
-     */
-    public String extractEpisodeTitle(String title) {
-        if (title == null) {
-            return null;
-        }
-
-        for (Pattern titlePattern : EPISODE_TITLE_PATTERNS) {
-            Matcher matcher = titlePattern.matcher(title);
-            if (matcher.matches()) {
-                return titleSanitiser.sanitiseTitle(matcher.group(1));
-            }
-        }
-        return titleSanitiser.sanitiseTitle(title);
-    }
-
     private Item createItem(BtVodEntry row) {
         Item item = new Item(uriFor(row), null, publisher);
         item.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
@@ -270,7 +242,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private Film createFilm(BtVodEntry row) {
         Film film = new Film(uriFor(row), null, publisher);
         film.setYear(Ints.tryParse(Iterables.getOnlyElement(row.getProductScopes()).getProductMetadata().getReleaseYear()));
-        film.setTitle(titleForNonEpisode(row));
+        film.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
         film.setSpecialization(Specialization.FILM);
         return film;
     }
@@ -321,12 +293,6 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private boolean isTrailerMediaAvailableOnCdn(BtVodEntry row) {
         return row.getTrailerServiceTypes().contains(OTG_PLATFORM);
     }
-
-    private String titleForNonEpisode(BtVodEntry row) {
-        return titleSanitiser.sanitiseTitle(row.getTitle());
-    }
-
-
 
     private String uriFor(BtVodEntry row) {
         String id = row.getGuid();

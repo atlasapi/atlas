@@ -36,7 +36,7 @@ public class WikipediaModule {
     private @Value("${updaters.wikipedia.tv.threads}") int tvThreads;
 
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
-	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
+	private @Autowired ContentWriter contentWriter;
     
     private final EnglishWikipediaClient ewc = new EnglishWikipediaClient();
     protected final ArticleFetcher fetcher = ewc;

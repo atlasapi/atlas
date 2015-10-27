@@ -5,6 +5,8 @@
 
 .classpath
 .project
+.idea/
+atlas.iml
 generated
 .settings
 /target

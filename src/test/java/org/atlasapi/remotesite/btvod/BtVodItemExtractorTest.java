@@ -1,10 +1,15 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Set;
+
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
@@ -34,15 +39,11 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
 
-import java.util.Set;
-
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 
 public class BtVodItemExtractorTest {
@@ -230,12 +231,22 @@ public class BtVodItemExtractorTest {
 
     @Test
     public void testMergesVersionsForHDandSDForEpisodes() {
+        testHdSdMerging(SERIES_TITLE + ": - HD S1 S1-E9 " + REAL_EPISODE_TITLE + " - HD", FULL_EPISODE_TITLE, REAL_EPISODE_TITLE);
+    }
+    
+    @Test 
+    public void testMergesVersionsForCollections() {
+        testHdSdMerging("Ben & Holly's Elf and Fairy Party - HD - Lucy's Sleepover - HD", "Ben & Holly's Elf and Fairy Party - Lucy's Sleepover", "Lucy's Sleepover");
+    }
+    
+    private void testHdSdMerging(String hdTitle, String sdTitle, String extractedTitle) {
         BtVodEntry btVodEntrySD = episodeRow();
+        btVodEntrySD.setTitle(sdTitle);
         ParentRef parentRef = new ParentRef(BRAND_URI);
         btVodEntrySD.setProductTargetBandwidth("SD");
 
         BtVodEntry btVodEntryHD = episodeRow();
-        btVodEntryHD.setTitle(SERIES_TITLE + ": - HD S1 S1-E9 " + REAL_EPISODE_TITLE + " - HD");
+        btVodEntryHD.setTitle(hdTitle);
         btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
         btVodEntryHD.setProductTargetBandwidth("HD");
 
@@ -254,7 +265,7 @@ public class BtVodItemExtractorTest {
 
         Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
-        assertThat(writtenItem.getTitle(), is(REAL_EPISODE_TITLE));
+        assertThat(writtenItem.getTitle(), is(extractedTitle));
         assertThat(writtenItem.getDescription(), is(SYNOPSIS));
         assertThat(writtenItem.getContainer(), is(parentRef));
 
@@ -268,53 +279,10 @@ public class BtVodItemExtractorTest {
                 Iterables.getFirst(writtenItem.getClips(), null),
                 is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
         );
-
     }
 
-    @Test
-    public void testExtractsEpisodeTitles() {
-        BtVodEntry btVodEntry1 = episodeRow();
-        btVodEntry1.setTitle(FULL_EPISODE_TITLE);
 
-        BtVodEntry btVodEntry2 = episodeRow();
-        btVodEntry2.setTitle("Cashmere Mafia S1-E2 Conference Call");
 
-        BtVodEntry btVodEntry3 = episodeRow();
-        btVodEntry3.setTitle("Classic Premiership Rugby - Saracens v Leicester Tigers 2010/11");
-
-        BtVodEntry btVodEntry4 = episodeRow();
-        btVodEntry4.setTitle("FIFA Films - 1958 Sweden - Hinein! - HD");
-
-        BtVodEntry btVodEntry5 = episodeRow();
-        btVodEntry5.setTitle("FIFA Films - 1958 Sweden - Hinein!");
-
-        BtVodEntry btVodEntry6 = episodeRow();
-        btVodEntry6.setTitle("UFC: The Ultimate Fighter Season 19 - Season 19 Episode 2");
-
-        BtVodEntry btVodEntry7 = new BtVodEntry();
-        btVodEntry7.setTitle("Modern Family: S03 - HD S3-E17 Truth Be Told - HD");
-
-        BtVodEntry btVodEntry8 = new BtVodEntry();
-        btVodEntry8.setTitle("ZQWModern_Family: S01 S1-E4 ZQWThe_Incident");
-
-        BtVodEntry btVodEntry9 = new BtVodEntry();
-        btVodEntry9.setTitle("ZQZPeppa_Pig: S01 S1-E4 ZQZSchool Play");
-
-        BtVodEntry btVodEntry10 = new BtVodEntry();
-        btVodEntry10.setTitle("ZQWAmerican_Horror_Story: S01 S1-E11 ZQWBirth");
-
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry1.getTitle()), is(REAL_EPISODE_TITLE));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry2.getTitle()), is("Conference Call"));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry3.getTitle()), is("Saracens v Leicester Tigers 2010/11"));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry4.getTitle()), is("1958 Sweden - Hinein!"));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry5.getTitle()), is("1958 Sweden - Hinein!"));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry6.getTitle()), is("Episode 2"));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry7.getTitle()), is("Truth Be Told"));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry8.getTitle()), is("The Incident"));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry9.getTitle()), is("School Play"));
-        assertThat(itemExtractor.extractEpisodeTitle(btVodEntry10.getTitle()), is("Birth"));
-    }
-    
     @Test
     public void testMergesHDandSDforFilms() {
         BtVodEntry btVodEntrySD = filmRow("About Alex");
@@ -413,7 +381,10 @@ public class BtVodItemExtractorTest {
         itemMasterAgreementAvailabilityTag.setPlproduct$scheme("masterAgreementOtgTvodPlay");
         itemMasterAgreementAvailabilityTag.setPlproduct$title("TRUE");        
 
-        entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of(tag, trailerCdnAvailabilityTag, itemCdnAvailabilityTag, itemMasterAgreementAvailabilityTag));
+        entry.setProductTags(ImmutableList.of(tag,
+                trailerCdnAvailabilityTag,
+                itemCdnAvailabilityTag,
+                itemMasterAgreementAvailabilityTag));
 
 
         return entry;

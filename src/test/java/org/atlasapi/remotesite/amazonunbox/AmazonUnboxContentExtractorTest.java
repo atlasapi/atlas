@@ -339,6 +339,7 @@ public class AmazonUnboxContentExtractorTest {
         
         Brand brand = Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Brand.class));
         assertThat(brand.getCanonicalUri(), is(equalTo("http://unbox.amazon.co.uk/seriesAsin")));
+        assertThat(Iterables.getOnlyElement(brand.getRelatedLinks()).getUrl(), is("http://www.amazon.co.uk/dp/seriesAsin/"));
     }
     
     @Test

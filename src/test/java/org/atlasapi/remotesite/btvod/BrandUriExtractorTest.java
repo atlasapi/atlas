@@ -94,6 +94,12 @@ public class BrandUriExtractorTest {
 
         BtVodEntry row15 = episodeEntry();
         row15.setTitle("Plankton Invasion - Sr1 S1-E46 Operation Some Like It Cold");
+        
+        BtVodEntry row16 = episodeEntry();
+        row16.setTitle("Raa Raa the Noisy Lion - HD - Lots of Raas in the Jungle - HD");
+        
+        BtVodEntry row17 = episodeEntry();
+        row17.setTitle("Peppa's Circus - HD - Peppa's Circus - HD");
 
         assertThat(brandUriExtractor.extractBrandUri(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandUriExtractor.extractBrandUri(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
@@ -110,6 +116,8 @@ public class BrandUriExtractorTest {
         assertThat(brandUriExtractor.extractBrandUri(row13).get(), is(URI_PREFIX + "synthesized/brands/brand"));
         assertThat(brandUriExtractor.extractBrandUri(row14).get(), is(URI_PREFIX + "synthesized/brands/peppa-pig"));
         assertThat(brandUriExtractor.extractBrandUri(row15).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
+        assertThat(brandUriExtractor.extractBrandUri(row16).get(), is(URI_PREFIX + "synthesized/brands/raa-raa-the-noisy-lion"));
+        assertThat(brandUriExtractor.extractBrandUri(row17).get(), is(URI_PREFIX + "synthesized/brands/peppas-circus"));
     }
 
     private BtVodEntry episodeEntry() {

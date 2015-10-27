@@ -71,7 +71,7 @@ import static org.atlasapi.media.entity.Publisher.*;
 @Configuration
 @Import({EquivModule.class, KafkaMessagingModule.class, YouViewCoreModule.class })
 public class EquivTaskModule {
-    
+
     private final Logger log = LoggerFactory.getLogger(getClass());
 
     private static final Set<String> ignored = ImmutableSet.of("http://www.bbc.co.uk/programmes/b006mgyl"); 

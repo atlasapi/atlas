@@ -42,7 +42,7 @@ public class ContainerHierarchyMatchingScorerTest {
 
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     
-    private final ContainerHierarchyMatchingScorer scorer = new ContainerHierarchyMatchingScorer(contentResolver);
+    private final ContainerHierarchyMatchingScorer scorer = new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne());
     
     @Test
     @SuppressWarnings("unchecked")
@@ -68,11 +68,15 @@ public class ContainerHierarchyMatchingScorerTest {
     public void testScoresNullWhenSeriesContainerWithSeriesCountsOutOfRange() {
         
         final Brand subject = brandWithSeries(5);
+        final Brand candidate = brandWithSeries(7);
 
         when(contentResolver.findByCanonicalUris(ImmutableList.copyOf(Iterables.transform(subject.getSeriesRefs(),SeriesRef.TO_URI))))
             .thenReturn(ResolvedContent.builder().putAll(series(5)).build());
+        
+        when(contentResolver.findByCanonicalUris(ImmutableList.copyOf(Iterables.transform(candidate.getSeriesRefs(),SeriesRef.TO_URI))))
+            .thenReturn(ResolvedContent.builder().putAll(series(7)).build());
 
-        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.<Container>of(brandWithSeries(7)), desc());
+        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.<Container>of(candidate), desc());
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
     }
@@ -101,16 +105,18 @@ public class ContainerHierarchyMatchingScorerTest {
         assertThat(scorer.scoreSortedSeriesSizes(list(1,2,3,4,5), list(1,2,3,4), "candidate", desc), is(Score.ONE));
         assertThat(scorer.scoreSortedSeriesSizes(list(1,2,3,4), list(1,3,4), "candidate", desc), is(Score.ONE));
         assertThat(scorer.scoreSortedSeriesSizes(list(1,2,3,6), list(1,3,5), "candidate", desc), is(Score.ONE));
+        assertThat(scorer.scoreSortedSeriesSizes(list(12,12,12,13), list(3,12,12,12,13), "candidate", desc), is(Score.ONE));
         
+        
+        assertThat(scorer.scoreSortedSeriesSizes(list(6,6), list(6,24,24,24), "candidate", desc), is(Score.negativeOne()));
         assertThat(scorer.scoreSortedSeriesSizes(list(6,6), list(24,24), "candidate", desc), is(Score.nullScore()));
-        assertThat(scorer.scoreSortedSeriesSizes(list(6,6), list(6,24,24), "candidate", desc), is(Score.nullScore()));
         assertThat(scorer.scoreSortedSeriesSizes(list(2,3,4), list(3,4,6,7), "candidate", desc), is(Score.nullScore()));
         
     }
     
     @Test
     @SuppressWarnings("unchecked")
-    public void testScoresNullWhenCandidateHasNoSeries() {
+    public void testScoresMismatchScoreWhenCandidateHasNoSeries() {
         
         Brand subject = brandWithSeries(1);
         Brand candidate = brandWithSeries(0);
@@ -120,7 +126,7 @@ public class ContainerHierarchyMatchingScorerTest {
         
         ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.of(candidate), desc());
         
-        assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
+        assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.negativeOne()));
         verify(contentResolver).findByCanonicalUris((Iterable<String>)any());
         
     }

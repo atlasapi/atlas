@@ -21,6 +21,7 @@ public class RunFootballTeamsExtraction {
                         System.out.println(organisation.getTitle());
                         System.out.println(organisation.getPublisher());
                         System.out.println(organisation.getCanonicalUri());
+                        System.out.println(organisation.getImage());
                     }
 
                     @Override
@@ -28,6 +29,7 @@ public class RunFootballTeamsExtraction {
                         System.out.println(organisation.getTitle());
                         System.out.println(organisation.getPublisher());
                         System.out.println(organisation.getCanonicalUri());
+                        System.out.println(organisation.getImage());
                     }
                 },
                 5,

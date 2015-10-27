@@ -10,27 +10,23 @@ import java.io.IOException;
 import java.util.Collection;
 import java.util.LinkedList;
 
-public class EplTeamListScraper extends AstVisitor {
+public class EnglishTeamListScraper extends AstVisitor {
     public static Collection<String> extractNames(String indexText) throws IOException, ParseException {
         AstNode indexAST = SwebleHelper.parse(indexText);
-
         Visitor v = new Visitor();
         v.go(indexAST);
         return v.list;
     }
 
     protected static final class Visitor extends AstVisitor {
-        LinkedList<String> list = new LinkedList<String>();
+        LinkedList<String> list = new LinkedList<>();
 
-        public void visit(LazyParsedPage p) {
-            iterate(p.getContent());
-        }
+        public void visit(LazyParsedPage p) {iterate(p.getContent());}
 
         public void visit(Section s) {
-            if (!"Team overview".equalsIgnoreCase(SwebleHelper.flattenTextNodeList(s.getTitle()))) {
-                return;
+            if (SwebleHelper.flattenTextNodeList(s.getTitle()).contains("Clubs")) {
+                iterate(s.getBody());
             }
-            iterate(s.getBody());
         }
 
         public void visit(Table t) {
@@ -47,10 +43,9 @@ public class EplTeamListScraper extends AstVisitor {
 
         public void visit(InternalLink l) {
             String target = l.getTarget();
-            if (!target.contains("F.C")) {
-                return;
+            if (target.contains("F.C.")) {
+                 list.add(target);
             }
-            list.add(target);
         }
 
         @Override

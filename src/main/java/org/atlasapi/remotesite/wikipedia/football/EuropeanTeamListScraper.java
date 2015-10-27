@@ -28,10 +28,9 @@ public class EuropeanTeamListScraper extends AstVisitor {
         }
 
         public void visit(Section s) {
-            if (!"Teams".equalsIgnoreCase(SwebleHelper.flattenTextNodeList(s.getTitle()))) {
-                return;
+            if ("Teams".equalsIgnoreCase(SwebleHelper.flattenTextNodeList(s.getTitle()))) {
+                iterate(s.getBody());
             }
-            iterate(s.getBody());
         }
 
         public void visit(Table t) {

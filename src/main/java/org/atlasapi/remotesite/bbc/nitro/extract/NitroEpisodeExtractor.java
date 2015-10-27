@@ -184,7 +184,7 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
 
     private void setReleaseDate(Item item, NitroItemSource<Episode> source) {
         XMLGregorianCalendar date = extractReleaseDate(source);
-        LocalDate localDate = new LocalDate(date.toGregorianCalendar().toZonedDateTime().toLocalDate());
+        LocalDate localDate = new LocalDate(date.getYear(),date.getMonth(),date.getDay());
         ReleaseDate releaseDate = new ReleaseDate(localDate, Countries.GB, ReleaseDate.ReleaseType.FIRST_BROADCAST);
         item.setReleaseDates(Lists.newArrayList(releaseDate));
     }

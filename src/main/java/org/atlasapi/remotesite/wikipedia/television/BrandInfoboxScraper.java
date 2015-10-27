@@ -62,17 +62,15 @@ public final class BrandInfoboxScraper extends AstVisitor {
         String name = SwebleHelper.flattenTextNodeList(a.getName());
         // http://en.wikipedia.org/wiki/Template:Infobox_television
         if ("show_name".equalsIgnoreCase(name)) {
-            result.title = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
+            result.title = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
         } else if ("creator".equalsIgnoreCase(name)) {
-            result.creator = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
+            result.creator = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
         } else if ("list_episodes".equalsIgnoreCase(name)) {
-            result.episodeListLinkTarget = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
+            result.episodeListLinkTarget = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
         } else if ("first_aired".equalsIgnoreCase(name) && result.firstAired == null) {
             result.firstAired = SwebleHelper.extractDate(a.getValue());
         } else if ("last_aired".equalsIgnoreCase(name) && result.lastAired == null) {
             result.lastAired = SwebleHelper.extractDate(a.getValue());
-        } else if ("image".equalsIgnoreCase(name) && result.image == null) {
-            result.image = normalize(SwebleHelper.flattenTextNodeList(a.getValue()));
         }
     }
 
@@ -80,12 +78,6 @@ public final class BrandInfoboxScraper extends AstVisitor {
     protected Object visitNotFound(AstNode node) {
         log.debug("Skipping node " + node.getNodeName());
         return null;
-    }
-
-    protected String normalize(String text) {
-        WikiModel model = new WikiModel("","");
-        String noMarkUp = model.render( new PlainTextConverter(),text);
-        return noMarkUp;
     }
     
 }

@@ -5,7 +5,7 @@ import net.sourceforge.jwbf.mediawiki.bots.MediaWikiBot;
 
 import org.atlasapi.remotesite.FetchException;
 import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
-import org.atlasapi.remotesite.wikipedia.football.EplTeamListScraper;
+import org.atlasapi.remotesite.wikipedia.football.EnglishTeamListScraper;
 import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
 import org.atlasapi.remotesite.wikipedia.football.EuropeanTeamListScraper;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
@@ -73,10 +73,9 @@ public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleS
             builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Champions League qualifying phase and play-off round").getMediaWikiSource()));
             builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Europa League group stage").getMediaWikiSource()));
             builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Europa League qualifying phase and play-off round").getMediaWikiSource()));
-            builder.addAll(EplTeamListScraper.extractNames(fetchArticle("2015–16 Premier League").getMediaWikiSource()));
-            builder.addAll(EplTeamListScraper.extractNames(fetchArticle("2015–16 Football League One").getMediaWikiSource()));
-            builder.addAll(EplTeamListScraper.extractNames(fetchArticle("2015–16 Football League Championship").getMediaWikiSource()));
-
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Premier League").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League One").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Championship").getMediaWikiSource()));
             return builder.build();
         } catch (Exception ex) {
             log.error("Failed to load EPL football teams list!", ex);

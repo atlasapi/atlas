@@ -20,9 +20,11 @@ public class TeamInfoboxScrapper {
     private final static Logger log = LoggerFactory.getLogger(TeamInfoboxScrapper.class);
 
     public static class Result {
-        public ImmutableList<SwebleHelper.ListItemResult> clubname;
-        public ImmutableSet<SwebleHelper.ListItemResult> nicknames;
-        public Map<String,String> externalAliases = new TreeMap<>();
+        public String name;
+        public String fullname;
+        public String nicknames;
+        public String image;
+        public String website;
     }
 
     public static Result getInfoboxAttrs(String articleText) throws IOException, ParseException {
@@ -55,13 +57,6 @@ public class TeamInfoboxScrapper {
                 while(children.hasNext()) {
                     consumeAttribute(children.next());
                 }
-            } else if ("Official website".equalsIgnoreCase(name)) {
-                try {
-                    String website = SwebleHelper.extractArgument(t, 0);
-                    attrs.externalAliases.put("off:url", website);
-                } catch (Exception e) {
-                    log.warn("Failed to extract official website from \"" + SwebleHelper.unparse(t) + "\"", e);
-                }
             }
         }
 
@@ -73,9 +68,15 @@ public class TeamInfoboxScrapper {
             final String key = SwebleHelper.normalizeAndFlattenTextNodeList(a.getName());
 
             if ("clubname".equalsIgnoreCase(key)) {
-                attrs.clubname = SwebleHelper.extractList(a.getValue());
+                attrs.name = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             } else if ("nickname".equalsIgnoreCase(key)) {
-                attrs.nicknames.builder().addAll(SwebleHelper.extractList(a.getValue())).build();
+                attrs.nicknames = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            } else if ("image".equalsIgnoreCase(key)) {
+                attrs.image = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            } else if ("fullname".equalsIgnoreCase(key)) {
+                attrs.fullname = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            }else if ("website".equalsIgnoreCase(key)) {
+                attrs.website = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             }
         }
     }

@@ -127,7 +127,7 @@ public class SwebleHelper {
 
     public static String normalizeAndFlattenTextNodeList(NodeList l) {
         String markUp = flattenTextNodeList(l);
-        WikiModel model = new WikiModel("http://wikipedia.org/","http://wikipedia.org/");
+        WikiModel model = new WikiModel("http://wikipedia.org/${image}","http://wikipedia.org/${title}");
         String noMarkUp = model.render(new PlainTextConverter(),markUp);
         return noMarkUp;
     }

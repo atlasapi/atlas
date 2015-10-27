@@ -1,14 +1,14 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
-import org.atlasapi.media.entity.CrewMember;
-import org.atlasapi.media.entity.Film;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.Person;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.intl.Country;
+import org.atlasapi.media.entity.*;
 import org.atlasapi.persistence.content.people.QueuingItemsPeopleWriter;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
@@ -31,6 +31,9 @@ import com.metabroadcast.atlas.glycerin.model.Format;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
+import org.joda.time.LocalDate;
+
+import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * <p>
@@ -118,6 +121,10 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         return source.getProgramme().getImage();
     }
 
+    protected XMLGregorianCalendar extractReleaseDate(NitroItemSource<Episode> source) {
+        return source.getProgramme().getReleaseDate();
+    }
+
     @Override
     protected void extractAdditionalItemFields(NitroItemSource<Episode> source, Item item, DateTime now) {
         Episode episode = source.getProgramme();
@@ -137,6 +144,9 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         }
         item.setParentRef(getBrandRef(episode));
         item.setGenres(genresExtractor.extract(source.getGenres()));
+        if (episode.getReleaseDate() != null) {
+            setReleaseDate(item, source);
+        }
         writeAndSetPeople(item, source);
     }
 
@@ -166,6 +176,13 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
     private boolean hasMoreThanOneSeriesAncestor(Episode episode) {
         AncestorsTitles titles = episode.getAncestorsTitles();
         return titles != null && titles.getSeries().size() > 1;
+    }
+
+    private void setReleaseDate(Item item, NitroItemSource<Episode> source) {
+        XMLGregorianCalendar date = extractReleaseDate(source);
+        LocalDate localDate = new LocalDate(date.toGregorianCalendar().toZonedDateTime().toLocalDate());
+        ReleaseDate releaseDate = new ReleaseDate(localDate, Countries.GB, ReleaseDate.ReleaseType.FIRST_BROADCAST);
+        item.setReleaseDates(Lists.newArrayList(releaseDate));
     }
 
     private String compileTitleForSeriesSeriesEpisode(Episode episode) {

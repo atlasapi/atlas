@@ -9,12 +9,22 @@ import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.util.GregorianCalendar;
+import java.util.Locale;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TimeZone;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+import javax.xml.namespace.QName;
 
+import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
@@ -112,6 +122,23 @@ public class NitroEpisodeExtractorTest {
         assertThat(episode.getContainer().getUri(), endsWith("b00zdhtg"));
         assertThat(episode.getSeriesRef().getUri(), endsWith("b00zdhtg"));
         assertThat(episode.getTitle(), is(brandEpisode.getTitle()));
+    }
+
+    @Test
+    public void testReleaseDates() throws DatatypeConfigurationException {
+        Episode episode = new Episode();
+        LocalDate date = LocalDate.now();
+        GregorianCalendar gcal = GregorianCalendar.from(date.atStartOfDay(ZoneId.systemDefault()));
+        XMLGregorianCalendar xcal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
+        episode.setReleaseDate(xcal);
+        episode.setPid("b012cl84");
+        episode.setTitle("Destiny");
+        episode.setEpisodeOf(pidRef("series", "b00zdhtg"));
+        episode.setAncestorsTitles(ancestorsTitles(null, null,
+                ImmutableMap.of("b00zdhtg", "Wonders of the Universe")
+        ));
+        Item extracted = extractor.extract(NitroItemSource.valueOf(episode, noAvailability));
+        assertThat(extracted.getReleaseDates(), notNullValue());
     }
 
     @Test

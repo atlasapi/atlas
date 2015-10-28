@@ -1,7 +1,9 @@
 package org.atlasapi.remotesite;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.notNull;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -9,11 +11,14 @@ import static org.mockito.Mockito.when;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.intl.Countries;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
@@ -21,6 +26,7 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentMerger.AliasMergeStrategy;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -170,7 +176,7 @@ public class ContentMergerTest {
         assertEquals(extractedTitle, merged.getTitle());
         assertEquals(extractedEpisodeNum, merged.getEpisodeNumber());
     }
-    
+
     @Test
     public void testEpisodeEpisodeMergingProducesEpisode() {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
@@ -186,7 +192,30 @@ public class ContentMergerTest {
         assertEquals(extractedTitle, merged.getTitle());
         assertEquals(extractedEpisodeNum, merged.getEpisodeNumber());
     }
-    
+
+    @Test
+    public void testEpisodeEpisodeMergingMergesReleaseDate() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
+
+        Episode current = createEpisodeWithReleaseDate(PUBLISHER);
+        Episode extracted = createEpisodeWithReleaseDate(PUBLISHER);
+        Episode merged = (Episode) contentMerger.merge(current, extracted);
+        assertTrue(!merged.getReleaseDates().isEmpty());
+    }
+
+
+    @Test
+    public void testItemEpisodeMergingMergesReleaseDate() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
+
+        Item current = createItemWithReleaseDate(PUBLISHER);
+        Episode extracted = createEpisodeWithReleaseDate(PUBLISHER);
+        Episode merged = (Episode) contentMerger.merge(current, extracted);
+
+        assertTrue(!merged.getReleaseDates().isEmpty());
+        assertTrue(merged.getReleaseDates().size() == 1);
+    }
+
     @Test
     public void testAliasMergeStrategyInvoked() {
         AliasMergeStrategy aliasMergeStrategy = mock(AliasMergeStrategy.class);
@@ -281,7 +310,7 @@ public class ContentMergerTest {
 
     private Item createItem(String title, Publisher publisher) {
         Item item = new Item("item", "curie", publisher);
-        
+
         item.setTitle(title);
         
         return item;
@@ -293,6 +322,20 @@ public class ContentMergerTest {
         ep.setTitle(title);
         ep.setEpisodeNumber(episodeNum);
         
+        return ep;
+    }
+
+    private Item createItemWithReleaseDate(Publisher publisher) {
+        Item item = new Item("item", "curie", publisher);
+        ReleaseDate date = new ReleaseDate(LocalDate.now(), Countries.GB, ReleaseDate.ReleaseType.FIRST_BROADCAST);
+        item.setReleaseDates(Lists.newArrayList(date));
+        return item;
+    }
+
+    private Episode createEpisodeWithReleaseDate(Publisher publisher) {
+        Episode ep = new Episode("episode", "curie", publisher);
+        ReleaseDate date = new ReleaseDate(LocalDate.now(), Countries.GB, ReleaseDate.ReleaseType.FIRST_BROADCAST);
+        ep.setReleaseDates(Lists.newArrayList(date));
         return ep;
     }
 }

@@ -125,23 +125,6 @@ public class NitroEpisodeExtractorTest {
     }
 
     @Test
-    public void testReleaseDates() throws DatatypeConfigurationException {
-        Episode episode = new Episode();
-        LocalDate date = LocalDate.now();
-        GregorianCalendar gcal = GregorianCalendar.from(date.atStartOfDay(ZoneId.systemDefault()));
-        XMLGregorianCalendar xcal = DatatypeFactory.newInstance().newXMLGregorianCalendar(gcal);
-        episode.setReleaseDate(xcal);
-        episode.setPid("b012cl84");
-        episode.setTitle("Destiny");
-        episode.setEpisodeOf(pidRef("series", "b00zdhtg"));
-        episode.setAncestorsTitles(ancestorsTitles(null, null,
-                ImmutableMap.of("b00zdhtg", "Wonders of the Universe")
-        ));
-        Item extracted = extractor.extract(NitroItemSource.valueOf(episode, noAvailability));
-        assertThat(extracted.getReleaseDates(), notNullValue());
-    }
-
-    @Test
     public void testParentRefsForExtractedBrandSeriesEpisodeAreBrandAndSeries() {
         
         Episode brandSeriesEpisode = new Episode();

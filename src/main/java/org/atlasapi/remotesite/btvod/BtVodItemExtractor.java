@@ -174,7 +174,9 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private String itemKeyForDeduping(BtVodEntry row) {
-        return row.getProductType() + ":" + titleSanitiser.sanitiseTitle(row.getTitle());
+        ParentRef brandRef = getBrandRefOrNull(row);
+        String brandUri = brandRef != null ? brandRef.getUri() : "";
+        return row.getProductType() + ":" + brandUri + titleSanitiser.sanitiseTitle(row.getTitle());
     }
 
     private Item createSong(BtVodEntry row) {

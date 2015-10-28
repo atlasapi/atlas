@@ -212,7 +212,7 @@ public class BtVodItemExtractorTest {
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
-        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
@@ -260,7 +260,7 @@ public class BtVodItemExtractorTest {
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
-        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);

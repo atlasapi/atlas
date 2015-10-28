@@ -76,6 +76,7 @@ public class ContentMerger {
         }
         
         if (current instanceof Episode) {
+            current.setReleaseDates(extracted.getReleaseDates());
             if (extracted instanceof Episode) {
                 current = mergeEpisodeSpecificFields((Episode) current, (Episode) extracted);
             } else if (extracted instanceof Item) {
@@ -85,7 +86,6 @@ public class ContentMerger {
             }
         } else if (current instanceof Item) {
             current.setReleaseDates(extracted.getReleaseDates());
-
             if (extracted instanceof Episode) {
                 Episode newEp = new Episode();
                 Item.copyTo(current, newEp);

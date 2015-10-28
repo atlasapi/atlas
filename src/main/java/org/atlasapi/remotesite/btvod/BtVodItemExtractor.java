@@ -176,7 +176,17 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private String itemKeyForDeduping(BtVodEntry row) {
         ParentRef brandRef = getBrandRefOrNull(row);
         String brandUri = brandRef != null ? brandRef.getUri() : "";
-        return row.getProductType() + ":" + brandUri + titleSanitiser.sanitiseTitle(row.getTitle());
+        String title = titleSanitiser.sanitiseTitle(row.getTitle());
+        
+        // An empty title may happen, in which case we don't want to 
+        // merge all items with empty titles into the same item. 
+        // To avoid that, we use the GUID as the item's key, so it'll
+        // not be found as a merge candidate by another item
+        if (Strings.isNullOrEmpty(title)) {
+            title = row.getGuid();
+        }
+        
+        return row.getProductType() + ":" + brandUri + title;
     }
 
     private Item createSong(BtVodEntry row) {

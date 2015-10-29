@@ -135,7 +135,7 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        ImmutableSet<Item> fetched = contentAdapter.fetchEpisodesByRef(toFetch);
+        ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
         return mergeItemsWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
     }
     

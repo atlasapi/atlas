@@ -188,7 +188,7 @@ public class ContentWriteController {
         existing.setKeyPhrases(update.getKeyPhrases());
         existing.setClips(merge ? merge(existing.getClips(), update.getClips()) : update.getClips());
         existing.setPriority(update.getPriority());
-
+        existing.setEventRefs(merge ? merge(existing.events(), update.events()) : update.events());
         if (existing instanceof Item && update instanceof Item) {
             return mergeItems((Item)existing, (Item) update);
         }

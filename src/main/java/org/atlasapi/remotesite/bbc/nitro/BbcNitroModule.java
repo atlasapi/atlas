@@ -101,7 +101,12 @@ public class BbcNitroModule {
         return new ChannelDayProcessingTask(executor, drcds, nitroChannelDayProcessor(rateLimit, fullFetchPermittedPredicate),
                 null, jobFailureThresholdPercent);
     }
-    
+
+    @Bean
+    PidUpdateController pidUpdateController() {
+        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter);
+    }
+
     @Bean
     ScheduleDayUpdateController nitroScheduleUpdateController() {
         return new ScheduleDayUpdateController(channelResolver, 

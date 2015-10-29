@@ -94,7 +94,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
         try {
             checkRefType(refs, "brand");
-            ImmutableList<Programme> programmes = fetchProgrammes(refs);
+            ImmutableList<Programme> programmes =
+                    fetchProgrammes(makeProgrammeQueries(refs, pageSize));
             Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
             ImmutableSet.Builder<Brand> fetched = ImmutableSet.builder();
             for (Programme programme : programmes) {
@@ -123,7 +124,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
         try {
             checkRefType(refs, "series");
-            ImmutableList<Programme> programmes = fetchProgrammes(refs);
+            ImmutableList<Programme> programmes =
+                    fetchProgrammes(makeProgrammeQueries(refs, pageSize));
             Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
             ImmutableSet.Builder<Series> fetched = ImmutableSet.builder();
             for (Programme programme : programmes) {
@@ -139,30 +141,61 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
     }
 
+    public Iterable<ProgrammesQuery> makeProgrammeQueries(Iterable<PidReference> refs, final int pageSize) {
+        ImmutableList.Builder<ProgrammesQuery> queries = ImmutableList.builder();
+
+        queries.addAll(Iterables.transform(Iterables.partition(refs, NITRO_BATCH_SIZE),
+                new Function<List<PidReference>, ProgrammesQuery>() {
+                    @Override
+                    public ProgrammesQuery apply(List<PidReference> ref) {
+                        return ProgrammesQuery.builder()
+                                .withPid(toStrings(ref))
+                                .withMixins(TITLES, PEOPLE)
+                                .withPageSize(pageSize)
+                                .build();
+                    }
+                }));
+        return queries.build();
+    }
+
     @Override
-    public ImmutableSet<Item> fetchEpisodes(Iterable<PidReference> refs) throws NitroException {
-        if (Iterables.isEmpty(refs)) {
-            return ImmutableSet.of();
-        }
+    public ImmutableSet<Item> fetchEpisodes(ProgrammesQuery query) throws NitroException {
+        return fetchEpisodes(ImmutableList.of(query));
+    }
+
+    @Override
+    public ImmutableSet<Item> fetchEpisodesByRef(Iterable<PidReference> refs)
+            throws NitroException {
+        return fetchEpisodes(makeProgrammeQueries(refs, pageSize));
+    }
+
+    @Override
+    public ImmutableSet<Item> fetchEpisodes(Iterable<ProgrammesQuery> programmesQueries) throws NitroException {
         try {
-            checkRefType(refs, "episode");
-            ImmutableList<Programme> programmes = fetchProgrammes(refs);
+            ImmutableList<Programme> programmes = fetchProgrammes(programmesQueries);
             
             if (programmes.isEmpty()) {
-                log.warn("No programmes found for refs {}", Iterables.transform(refs, new Function<PidReference, String>() {
-
-                    @Override
-                    public String apply(PidReference pidRef) {
-                        return pidRef.getPid();
-                    }
-                    
-                }));
+                log.warn("No programmes found for queries {}", programmesQueries.toString());
                 return ImmutableSet.of();
             }
             
             ImmutableList<Episode> episodes = getAsEpisodes(programmes);
             ImmutableList<NitroItemSource<Episode>> sources = toItemSources(episodes);
-            Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
+
+            Iterable<PidReference> episodeRefs = Iterables.transform(episodes,
+                    new Function<Episode, PidReference>() {
+                        @Override
+                        public PidReference apply(Episode input) {
+                            Episode.Version version = input.getVersion();
+                            PidReference pidReference = new PidReference();
+                            pidReference.setHref(version.getHref());
+                            pidReference.setPid(version.getPid());
+                            return pidReference;
+                        }
+                    });
+
+            Multimap<String, Clip> clips = clipsAdapter.clipsFor(episodeRefs);
+
             ImmutableSet.Builder<Item> fetched = ImmutableSet.builder();
             for (NitroItemSource<Episode> source : sources) {
                 Item item = itemExtractor.extract(source);
@@ -171,7 +204,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             }
             return fetched.build();
         } catch (GlycerinException e) {
-            throw new NitroException(NitroUtil.toPids(refs).toString(), e);
+            throw new NitroException(programmesQueries.toString(), e);
         }
     }
 
@@ -205,20 +238,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                 }), Predicates.notNull()));
     }
 
-    private ImmutableList<Programme> fetchProgrammes(Iterable<PidReference> refs) throws GlycerinException {
-        
+    private ImmutableList<Programme> fetchProgrammes(Iterable<ProgrammesQuery> queries) throws GlycerinException {
+
         List<ListenableFuture<ImmutableList<Programme>>> futures = Lists.newArrayList();
-        
-        for (List<PidReference> ref : Iterables.partition(refs, NITRO_BATCH_SIZE)) {
-            ProgrammesQuery query = ProgrammesQuery.builder()
-                    .withPid(toStrings(ref))
-                    .withMixins(TITLES, PEOPLE)
-                    .withPageSize(pageSize)
-                    .build();
-            
+
+        for (ProgrammesQuery query : queries) {
             futures.add(executor.submit(exhaustingProgrammeCallable(query)));
         }
-        
+
         ListenableFuture<List<ImmutableList<Programme>>> all = Futures.allAsList(futures);
         try {
             return ImmutableList.copyOf(Iterables.concat(all.get()));

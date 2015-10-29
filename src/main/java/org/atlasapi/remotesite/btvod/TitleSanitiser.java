@@ -15,24 +15,28 @@ public class TitleSanitiser {
     private static final List<Pattern> PRE_PROCESSING_PATTERNS = ImmutableList.of(
             Pattern.compile("^.* S[0-9]+[\\- ]E[0-9]+\\s?(.*)"),
             Pattern.compile("^.*Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\s(Episode\\s[0-9]+.*)"),
+            // <Collection Name> - Back to Backs – Back to Back <Number> - <Collection Name>
+            Pattern.compile("^.* - Back to Backs - Back to Back \\d+ - (.*)"),
+            // <Collection Name> - Back to Backs – <Collection Name> - Back to Back
+            Pattern.compile("^.* - Back to Backs - .* - Back to Back - (.*)"),
+            Pattern.compile("^.* - Back to Backs - (.*)"),
+            Pattern.compile("^.* - Volume \\d+ - (.*)"),
+            Pattern.compile("^.* - Vol\\.? \\d+ - (.*)"),
+            // <Brand> - Collection - Episode
+            // This case covers the back-to-backs and Volume cases too, but 
+            // leaving those in place as they're specific rules to be covered
+            // and this one may change
+            Pattern.compile("^.* - .* - (.*)$"),
             Pattern.compile("^.*?\\-\\s(.*)")
     );
 
     private static final Map<Pattern, String> PATTERNS_TO_REMOVE = ImmutableMap.<Pattern, String>builder()
             .put(Pattern.compile("ZQ[A-Z]{1}"), "")
+            .put(Pattern.compile("^HD - "), "")
             .put(Pattern.compile("_"), " ")            
             .put(Pattern.compile("\\(Curzon\\).*(-\\sHD)?$"), "")
             .put(Pattern.compile(" \\(Before DVD\\)$"), "")
             .put(Pattern.compile(" : Coming Soon$"), "")
-            .put(Pattern.compile("^Volume \\d+ - "), "")
-            .put(Pattern.compile("^Vol\\.? \\d+ - "), "")
-            .put(Pattern.compile("^Vol\\.? \\d+ - "), "")
-            // <Collection Name> - Back to Backs – Back to Back <Number> - <Collection Name>
-            .put(Pattern.compile("^Back to Backs - Back to Back \\d+ - "), "")
-            // <Collection Name> - Back to Backs – <Collection Name> - Back to Back
-            .put(Pattern.compile("^Back to Backs - .* - Back to Back - "), "")
-            .put(Pattern.compile("^Back to Backs - "), "")
-            .put(Pattern.compile("^HD - "), "")
             .build()
     ;
 

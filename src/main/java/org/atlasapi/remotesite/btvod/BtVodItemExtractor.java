@@ -43,6 +43,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private static final String MUSIC_TYPE = "music";
     static final String EPISODE_TYPE = "episode";
     private static final String COLLECTION_TYPE = "collection";
+    private static final String SEASON_TYPE = "season";
     private static final String HELP_TYPE = "help";
 
     private static final Logger log = LoggerFactory.getLogger(BtVodItemExtractor.class);
@@ -121,7 +122,9 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
 
 
     private boolean shouldProcess(BtVodEntry row) {
-        return !COLLECTION_TYPE.equals(row.getProductType()) && !HELP_TYPE.equals(row.getProductType());
+        return !COLLECTION_TYPE.equals(row.getProductType()) 
+                    && !HELP_TYPE.equals(row.getProductType())
+                    && !SEASON_TYPE.equals(row.getProductType());
     }
 
     private boolean isEpisode(BtVodEntry row) {

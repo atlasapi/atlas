@@ -123,8 +123,8 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
 
     private boolean shouldProcess(BtVodEntry row) {
         return !COLLECTION_TYPE.equals(row.getProductType()) 
-                    && !HELP_TYPE.equals(row.getProductType())
-                    && !SEASON_TYPE.equals(row.getProductType());
+                    && !HELP_TYPE.equals(row.getProductType());
+                    //&& !SEASON_TYPE.equals(row.getProductType());
     }
 
     private boolean isEpisode(BtVodEntry row) {

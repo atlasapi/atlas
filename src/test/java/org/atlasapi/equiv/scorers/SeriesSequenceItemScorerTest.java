@@ -47,6 +47,16 @@ public class SeriesSequenceItemScorerTest {
     public void testEpisodesWithoutSeriesNumberScoreNull() {
         checkScore(episode("s", null, 5), episode("c",null,5), Score.NULL_SCORE);
     }
+    
+    @Test
+    /*
+     * A subject dataset may not have series and episode numbers, since it
+     * may not have hierarchy information. This should not stop it matching
+     * to a hierarchical dataset. 
+     */
+    public void testSubjectWithNoSeriesAndEpisodeNumberScoresNull() {
+        checkScore(episode("s", null, null), episode("c", 5, 5), Score.nullScore());
+    }
 
     private void checkScore(Item subject, Item candidate, Score expectedScore) {
         ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);

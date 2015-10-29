@@ -20,11 +20,18 @@ public class TitleSanitiser {
 
     private static final Map<Pattern, String> PATTERNS_TO_REMOVE = ImmutableMap.<Pattern, String>builder()
             .put(Pattern.compile("ZQ[A-Z]{1}"), "")
-            .put(Pattern.compile("_"), " ")
-            .put(Pattern.compile("^Back to Backs - "), "")
+            .put(Pattern.compile("_"), " ")            
             .put(Pattern.compile("\\(Curzon\\).*(-\\sHD)?$"), "")
             .put(Pattern.compile(" \\(Before DVD\\)$"), "")
             .put(Pattern.compile(" : Coming Soon$"), "")
+            .put(Pattern.compile("^Volume \\d+ - "), "")
+            .put(Pattern.compile("^Vol\\.? \\d+ - "), "")
+            .put(Pattern.compile("^Vol\\.? \\d+ - "), "")
+            // <Collection Name> - Back to Backs – Back to Back <Number> - <Collection Name>
+            .put(Pattern.compile("^Back to Backs - Back to Back \\d+ - "), "")
+            // <Collection Name> - Back to Backs – <Collection Name> - Back to Back
+            .put(Pattern.compile("^Back to Backs - .* - Back to Back - "), "")
+            .put(Pattern.compile("^Back to Backs - "), "")
             .put(Pattern.compile("^HD - "), "")
             .build()
     ;

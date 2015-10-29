@@ -94,6 +94,28 @@ public class TitleSanitiserTest {
         
         assertThat(titleSanitiser.sanitiseTitle("Mad Men S01 E01 A title"),
                 is("A title"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Series: S01 S01 E01"),
+                is(""));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Series: S1 S1 E1 Episode 1"),
+                is("Episode 1"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Ben & Holly's Little Kingdom - Back to Backs - Back to Back 2 - Ben & Holly's Little Kingdom"),
+                is("Ben & Holly's Little Kingdom"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Ben & Holly's Little Kingdom - Back to Backs - My Collection - Back to Back - Ben & Holly's Little Kingdom"),
+                is("Ben & Holly's Little Kingdom"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - Volume 4 - Pedro's Cough / The Library"),
+                is("Pedro's Cough / The Library"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - Vol 4 - Pedro's Cough / The Library"),
+                is("Pedro's Cough / The Library"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - Vol. 4 - Pedro's Cough / The Library"),
+                is("Pedro's Cough / The Library"));
+        
     }
 
     @Test

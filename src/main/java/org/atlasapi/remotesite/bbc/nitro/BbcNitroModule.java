@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.time.Clock;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
@@ -165,7 +166,9 @@ public class BbcNitroModule {
     
 
     GlycerinNitroContentAdapter nitroContentAdapter(Glycerin glycerin) {
-        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), peopleWriter, new SystemClock(), nitroRequestPageSize);
+        SystemClock clock = new SystemClock();
+        GlycerinNitroClipsAdapter clipsAdapter = new GlycerinNitroClipsAdapter(glycerin, clock, nitroRequestPageSize);
+        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), clipsAdapter, peopleWriter, clock, nitroRequestPageSize);
     }
 
     private Supplier<Range<LocalDate>> dayRangeSupplier(int back, int forward) {

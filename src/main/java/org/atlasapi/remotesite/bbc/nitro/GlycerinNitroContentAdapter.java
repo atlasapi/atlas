@@ -76,11 +76,11 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private final ListeningExecutorService executor;
     
-    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient, QueuingPersonWriter peopleWriter, Clock clock, int pageSize) {
+    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient, GlycerinNitroClipsAdapter clipsAdapter, QueuingPersonWriter peopleWriter, Clock clock, int pageSize) {
         this.glycerin = checkNotNull(glycerin);
         this.nitroClient = checkNotNull(nitroClient);
         this.pageSize = pageSize;
-        this.clipsAdapter = new GlycerinNitroClipsAdapter(glycerin, clock, pageSize);
+        this.clipsAdapter = clipsAdapter;
         this.brandExtractor = new NitroBrandExtractor(clock);
         this.seriesExtractor = new NitroSeriesExtractor(clock);
         this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
@@ -95,7 +95,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         try {
             checkRefType(refs, "brand");
             ImmutableList<Programme> programmes =
-                    fetchProgrammes(makeProgrammeQueries(refs, pageSize));
+                    fetchProgrammes(makeProgrammeQuery(refs));
             Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
             ImmutableSet.Builder<Brand> fetched = ImmutableSet.builder();
             for (Programme programme : programmes) {
@@ -125,7 +125,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         try {
             checkRefType(refs, "series");
             ImmutableList<Programme> programmes =
-                    fetchProgrammes(makeProgrammeQueries(refs, pageSize));
+                    fetchProgrammes(makeProgrammeQuery(refs));
             Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
             ImmutableSet.Builder<Series> fetched = ImmutableSet.builder();
             for (Programme programme : programmes) {
@@ -141,49 +141,30 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
     }
 
-    public Iterable<ProgrammesQuery> makeProgrammeQueries(Iterable<PidReference> refs, final int pageSize) {
-        ImmutableList.Builder<ProgrammesQuery> queries = ImmutableList.builder();
-
-        queries.addAll(Iterables.transform(Iterables.partition(refs, NITRO_BATCH_SIZE),
-                new Function<List<PidReference>, ProgrammesQuery>() {
-                    @Override
-                    public ProgrammesQuery apply(List<PidReference> ref) {
-                        return ProgrammesQuery.builder()
-                                .withPid(toStrings(ref))
-                                .withMixins(TITLES, PEOPLE)
-                                .withPageSize(pageSize)
-                                .build();
-                    }
-                }));
-        return queries.build();
+    public ProgrammesQuery makeProgrammeQuery(Iterable<PidReference> refs) {
+        return ProgrammesQuery.builder()
+                .withPid(toStrings(refs))
+                .withMixins(TITLES, PEOPLE)
+                .withPageSize(pageSize)
+                .build();
     }
 
     @Override
-    public ImmutableSet<Item> fetchEpisodes(ProgrammesQuery query) throws NitroException {
-        return fetchEpisodes(ImmutableList.of(query));
-    }
-
-    @Override
-    public ImmutableSet<Item> fetchEpisodesByRef(Iterable<PidReference> refs)
-            throws NitroException {
-        return fetchEpisodes(makeProgrammeQueries(refs, pageSize));
-    }
-
-    @Override
-    public ImmutableSet<Item> fetchEpisodes(Iterable<ProgrammesQuery> programmesQueries) throws NitroException {
+    public ImmutableSet<Item> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
         try {
-            ImmutableList<Programme> programmes = fetchProgrammes(programmesQueries);
-            
+            ImmutableList<Programme> programmes = fetchProgrammes(programmesQuery);
+
             if (programmes.isEmpty()) {
-                log.warn("No programmes found for queries {}", programmesQueries.toString());
+                log.warn("No programmes found for queries {}", programmesQuery.toString());
                 return ImmutableSet.of();
             }
-            
+
             ImmutableList<Episode> episodes = getAsEpisodes(programmes);
             ImmutableList<NitroItemSource<Episode>> sources = toItemSources(episodes);
 
             Iterable<PidReference> episodeRefs = Iterables.transform(episodes,
                     new Function<Episode, PidReference>() {
+
                         @Override
                         public PidReference apply(Episode input) {
                             Episode.Version version = input.getVersion();
@@ -204,8 +185,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             }
             return fetched.build();
         } catch (GlycerinException e) {
-            throw new NitroException(programmesQueries.toString(), e);
+            throw new NitroException(programmesQuery.toString(), e);
         }
+    }
+
+    @Override
+    public ImmutableSet<Item> fetchEpisodes(Iterable<PidReference> refs)
+            throws NitroException {
+        return fetchEpisodes(makeProgrammeQuery(refs));
     }
 
     private ImmutableList<NitroItemSource<Episode>> toItemSources(ImmutableList<Episode> episodes)
@@ -238,13 +225,10 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                 }), Predicates.notNull()));
     }
 
-    private ImmutableList<Programme> fetchProgrammes(Iterable<ProgrammesQuery> queries) throws GlycerinException {
+    private ImmutableList<Programme> fetchProgrammes(ProgrammesQuery query) throws GlycerinException {
 
-        List<ListenableFuture<ImmutableList<Programme>>> futures = Lists.newArrayList();
-
-        for (ProgrammesQuery query : queries) {
-            futures.add(executor.submit(exhaustingProgrammeCallable(query)));
-        }
+        List<ListenableFuture<ImmutableList<Programme>>> futures =
+                ImmutableList.of(executor.submit(exhaustingProgrammeCallable(query)));
 
         ListenableFuture<List<ImmutableList<Programme>>> all = Futures.allAsList(futures);
         try {
@@ -258,8 +242,9 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     private <T> ImmutableList<T> exhaust(GlycerinResponse<T> resp) throws GlycerinException {
-        ImmutableList.Builder<T> programmes = ImmutableList.builder(); 
-        programmes.addAll(resp.getResults());
+        ImmutableList.Builder<T> programmes = ImmutableList.builder();
+        ImmutableList<T> results = resp.getResults();
+        programmes.addAll(results);
         while(resp.hasNext()) {
             resp = resp.getNext();
             programmes.addAll(resp.getResults());

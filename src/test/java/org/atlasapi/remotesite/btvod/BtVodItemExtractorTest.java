@@ -21,6 +21,7 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
@@ -123,10 +124,12 @@ public class BtVodItemExtractorTest {
                     null,
                     null
             ),
-            newTopicRef,
-            new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
-            new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
-            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
+            ImmutableSet.of(
+                            newTopicRef,
+                            new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
+                            new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
+                            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
+                    )
     );
     
     @Test
@@ -303,6 +306,9 @@ public class BtVodItemExtractorTest {
 
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
         when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+        
+        when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.<Series>absent());
+        when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.<Series>absent());
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
@@ -335,6 +341,10 @@ public class BtVodItemExtractorTest {
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
         when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
         when(btVodBrandProvider.brandRefFor(btVodEntryHDCurzon)).thenReturn(Optional.<ParentRef>absent());
+
+        when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.<Series>absent());
+        when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.<Series>absent());
+        when(seriesProvider.seriesFor(btVodEntryHDCurzon)).thenReturn(Optional.<Series>absent());
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);

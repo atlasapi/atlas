@@ -77,10 +77,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            TopicRef newTopic,
-            TopicRef kidsTopic,
-            TopicRef tvTopic,
-            TopicRef subscriptionCatchupTopic
+            Iterable<TopicRef> topicsToPropagateToParents
     ) {
         this.brandProvider = checkNotNull(brandProvider);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
@@ -93,7 +90,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.processedItems = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
-        this.topicsToPropagateToParents = ImmutableSet.of(newTopic, kidsTopic, tvTopic, subscriptionCatchupTopic);
+        this.topicsToPropagateToParents = ImmutableSet.copyOf(topicsToPropagateToParents);
     }
 
     @Override
@@ -181,6 +178,9 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         String brandUri = brandRef != null ? brandRef.getUri() : "";
         String title = titleSanitiser.sanitiseTitle(row.getTitle());
         
+        ParentRef seriesRef = getSeriesRefOrNull(row);
+        String seriesUri = seriesRef != null ? seriesRef.getUri() : "";
+        
         // An empty title may happen, in which case we don't want to 
         // merge all items with empty titles into the same item. 
         // To avoid that, we use the GUID as the item's key, so it'll
@@ -189,7 +189,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             title = row.getGuid();
         }
         
-        return row.getProductType() + ":" + brandUri + title;
+        return row.getProductType() + ":" + brandUri + seriesUri + title;
     }
 
     private Item createSong(BtVodEntry row) {

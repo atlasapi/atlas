@@ -85,7 +85,7 @@ public class BtVodSynthesizedSeriesExtractorTest {
             seriesUriExtractor,
             ImmutableSet.of(SERIES_GUID),
             imageExtractor,
-            newTopicRef
+            ImmutableSet.of(newTopicRef)
     );
 
     @Test

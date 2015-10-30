@@ -34,9 +34,18 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
             BtVodVersionsExtractor versionsExtractor,
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
-            TopicRef newTopic
+            Iterable<TopicRef> topicsToPropagateToParents
     ) {
-        super(btVodBrandProvider, publisher, listener, processedRows, describedFieldsExtractor, seriesUriExtractor, imageExtractor, newTopic);
+        super(
+                btVodBrandProvider, 
+                publisher, 
+                listener, 
+                processedRows, 
+                describedFieldsExtractor, 
+                seriesUriExtractor, 
+                imageExtractor, 
+                topicsToPropagateToParents
+             );
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.versionsExtractor = checkNotNull(versionsExtractor);
         explicitSeries = Maps.newHashMap();

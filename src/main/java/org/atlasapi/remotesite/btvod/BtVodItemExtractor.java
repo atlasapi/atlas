@@ -77,10 +77,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            TopicRef newTopic,
-            TopicRef kidsTopic,
-            TopicRef tvTopic,
-            TopicRef subscriptionCatchupTopic
+            Iterable<TopicRef> topicsToPropagateToParents
     ) {
         this.brandProvider = checkNotNull(brandProvider);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
@@ -93,7 +90,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.processedItems = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
-        this.topicsToPropagateToParents = ImmutableSet.of(newTopic, kidsTopic, tvTopic, subscriptionCatchupTopic);
+        this.topicsToPropagateToParents = ImmutableSet.copyOf(topicsToPropagateToParents);
     }
 
     @Override
@@ -123,8 +120,8 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
 
     private boolean shouldProcess(BtVodEntry row) {
         return !COLLECTION_TYPE.equals(row.getProductType()) 
-                    && !HELP_TYPE.equals(row.getProductType());
-                    //&& !SEASON_TYPE.equals(row.getProductType());
+                    && !HELP_TYPE.equals(row.getProductType())
+                    && !SEASON_TYPE.equals(row.getProductType());
     }
 
     private boolean isEpisode(BtVodEntry row) {

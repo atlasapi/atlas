@@ -20,6 +20,7 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
@@ -301,6 +302,9 @@ public class BtVodItemExtractorTest {
 
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
         when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+        
+        when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.<Series>absent());
+        when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.<Series>absent());
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
@@ -333,6 +337,10 @@ public class BtVodItemExtractorTest {
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
         when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
         when(btVodBrandProvider.brandRefFor(btVodEntryHDCurzon)).thenReturn(Optional.<ParentRef>absent());
+
+        when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.<Series>absent());
+        when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.<Series>absent());
+        when(seriesProvider.seriesFor(btVodEntryHDCurzon)).thenReturn(Optional.<Series>absent());
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);

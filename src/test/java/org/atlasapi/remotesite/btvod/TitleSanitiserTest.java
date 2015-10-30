@@ -68,9 +68,9 @@ public class TitleSanitiserTest {
                         "Classic Premiership Rugby - Saracens v Leicester Tigers 2010/11"),
                 is("Saracens v Leicester Tigers 2010/11"));
         assertThat(titleSanitiser.sanitiseTitle("FIFA Films - 1958 Sweden - Hinein! - HD"),
-                is("1958 Sweden - Hinein!"));
+                is("Hinein!"));
         assertThat(titleSanitiser.sanitiseTitle("FIFA Films - 1958 Sweden - Hinein!"),
-                is("1958 Sweden - Hinein!"));
+                is("Hinein!"));
         assertThat(titleSanitiser.sanitiseTitle(
                         "UFC: The Ultimate Fighter Season 19 - Season 19 Episode 2"),
                 is("Episode 2"));
@@ -88,6 +88,39 @@ public class TitleSanitiserTest {
                 is("Peppa's Circus"));
         assertThat(titleSanitiser.sanitiseTitle("ZQWModern_Family: S01 S1 E4 ZQWThe_Incident"),
                 is("The Incident"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Mad Men S01 E01"),
+                is(""));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Mad Men S01 E01 A title"),
+                is("A title"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Series: S01 S01 E01"),
+                is(""));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Series: S1 S1 E1 Episode 1"),
+                is("Episode 1"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Ben & Holly's Little Kingdom - Back to Backs - Back to Back 2 - Ben & Holly's Little Kingdom"),
+                is("Ben & Holly's Little Kingdom"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Ben & Holly's Little Kingdom - Back to Backs - My Collection - Back to Back - Ben & Holly's Little Kingdom"),
+                is("Ben & Holly's Little Kingdom"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - Volume 4 - Pedro's Cough / The Library"),
+                is("Pedro's Cough / The Library"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - Vol 4 - Pedro's Cough / The Library"),
+                is("Pedro's Cough / The Library"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - Vol. 4 - Pedro's Cough / The Library"),
+                is("Pedro's Cough / The Library"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - Volume 6 - HD - Peppa's Christmas - HD"),
+                is("Peppa's Christmas"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - The Holiday - HD - Holiday in the Sun - HD"),
+                is("Holiday in the Sun"));
     }
 
     @Test

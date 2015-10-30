@@ -43,6 +43,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private static final String MUSIC_TYPE = "music";
     static final String EPISODE_TYPE = "episode";
     private static final String COLLECTION_TYPE = "collection";
+    private static final String SEASON_TYPE = "season";
     private static final String HELP_TYPE = "help";
 
     private static final Logger log = LoggerFactory.getLogger(BtVodItemExtractor.class);
@@ -121,7 +122,9 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
 
 
     private boolean shouldProcess(BtVodEntry row) {
-        return !COLLECTION_TYPE.equals(row.getProductType()) && !HELP_TYPE.equals(row.getProductType());
+        return !COLLECTION_TYPE.equals(row.getProductType()) 
+                    && !HELP_TYPE.equals(row.getProductType())
+                    && !SEASON_TYPE.equals(row.getProductType());
     }
 
     private boolean isEpisode(BtVodEntry row) {
@@ -174,7 +177,19 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private String itemKeyForDeduping(BtVodEntry row) {
-        return row.getProductType() + ":" + titleSanitiser.sanitiseTitle(row.getTitle());
+        ParentRef brandRef = getBrandRefOrNull(row);
+        String brandUri = brandRef != null ? brandRef.getUri() : "";
+        String title = titleSanitiser.sanitiseTitle(row.getTitle());
+        
+        // An empty title may happen, in which case we don't want to 
+        // merge all items with empty titles into the same item. 
+        // To avoid that, we use the GUID as the item's key, so it'll
+        // not be found as a merge candidate by another item
+        if (Strings.isNullOrEmpty(title)) {
+            title = row.getGuid();
+        }
+        
+        return row.getProductType() + ":" + brandUri + title;
     }
 
     private Item createSong(BtVodEntry row) {

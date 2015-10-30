@@ -127,7 +127,7 @@ public class BtVodItemExtractorTest {
     
     @Test
     public void testExtractsEpisode() {
-        BtVodEntry btVodEntry = episodeRow();
+        BtVodEntry btVodEntry = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         ParentRef parentRef = new ParentRef(BRAND_URI);
         Series series = new Series();
         series.setCanonicalUri("seriesUri");
@@ -178,7 +178,7 @@ public class BtVodItemExtractorTest {
     // Ingored until we have real data which allows us to
     // correctly implement availability criteria
     public void testOnlyExtractsTrailerWhenMatchesCriteria() {
-        BtVodEntry btVodEntry = episodeRow();
+        BtVodEntry btVodEntry = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         ParentRef parentRef = new ParentRef(BRAND_URI);
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
@@ -196,14 +196,14 @@ public class BtVodItemExtractorTest {
 
     @Test
     public void testMergesVersionsForHDandSD() {
-        BtVodEntry btVodEntrySD = episodeRow();
+        BtVodEntry btVodEntrySD = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         ParentRef parentRef = new ParentRef(BRAND_URI);
         Series series = new Series();
         series.setCanonicalUri("seriesUri");
         series.withSeriesNumber(1);
 
 
-        BtVodEntry btVodEntryHD = episodeRow();
+        BtVodEntry btVodEntryHD = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         btVodEntryHD.setTitle(FULL_EPISODE_TITLE + " - HD");
         btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
 
@@ -212,6 +212,7 @@ public class BtVodItemExtractorTest {
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
+        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
@@ -240,12 +241,12 @@ public class BtVodItemExtractorTest {
     }
     
     private void testHdSdMerging(String hdTitle, String sdTitle, String extractedTitle) {
-        BtVodEntry btVodEntrySD = episodeRow();
+        BtVodEntry btVodEntrySD = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         btVodEntrySD.setTitle(sdTitle);
         ParentRef parentRef = new ParentRef(BRAND_URI);
         btVodEntrySD.setProductTargetBandwidth("SD");
 
-        BtVodEntry btVodEntryHD = episodeRow();
+        BtVodEntry btVodEntryHD = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         btVodEntryHD.setTitle(hdTitle);
         btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
         btVodEntryHD.setProductTargetBandwidth("HD");
@@ -259,6 +260,7 @@ public class BtVodItemExtractorTest {
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
+        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.of(parentRef));
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
@@ -348,11 +350,11 @@ public class BtVodItemExtractorTest {
         
     }
     
-    private BtVodEntry episodeRow() {
+    private BtVodEntry episodeRow(String title, String guid) {
         BtVodEntry entry = new BtVodEntry();
-        entry.setGuid(PRODUCT_GUID);
+        entry.setGuid(guid);
         entry.setId(PRODUCT_ID);
-        entry.setTitle(FULL_EPISODE_TITLE);
+        entry.setTitle(title);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         entry.setDescription(SYNOPSIS);
@@ -428,7 +430,7 @@ public class BtVodItemExtractorTest {
 
     @Test
     public void testPropagatesNewTagToBrandAndSeries() {
-        BtVodEntry btVodEntry = episodeRow();
+        BtVodEntry btVodEntry = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         ParentRef parentRef = new ParentRef(BRAND_URI);
         Series series = mock(Series.class);
         Brand brand = mock(Brand.class);
@@ -449,5 +451,35 @@ public class BtVodItemExtractorTest {
         assertThat(writtenItem.getTopicRefs().contains(newTopicRef), is(true));
         verify(series).addTopicRef(newTopicRef);
         verify(brand).addTopicRef(newTopicRef);
+    }
+    
+    @Test
+    public void testDoesntMergeEpisodesWithSameTitleAcrossDifferentBrands() {
+        BtVodEntry btVodEntry = episodeRow(SERIES_TITLE + ": S1 S1-E9 " + REAL_EPISODE_TITLE, PRODUCT_GUID);
+        BtVodEntry btVodEntryFromDifferentSeries = episodeRow("A different " + SERIES_TITLE + ": S1 S1-E9 " + REAL_EPISODE_TITLE, "99999");
+        
+        ParentRef parentRef = new ParentRef(BRAND_URI);
+        ParentRef parentRefDiffSeries = new ParentRef(URI_PREFIX + "brands/a-different-1234");
+        
+        Series series = new Series();
+        series.setCanonicalUri("seriesUri");
+        series.withSeriesNumber(1);
+
+        when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(series));
+
+        
+        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
+
+        
+        when(btVodBrandProvider.brandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
+        when(btVodBrandProvider.brandRefFor(btVodEntryFromDifferentSeries)).thenReturn(Optional.of(parentRefDiffSeries));
+        when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(series));
+        when(seriesProvider.seriesFor(btVodEntryFromDifferentSeries)).thenReturn(Optional.of(series));
+
+        itemExtractor.process(btVodEntry);
+        itemExtractor.process(btVodEntryFromDifferentSeries);
+        
+        assertThat(itemExtractor.getProcessedItems().size(), is(2));
+
     }
 }

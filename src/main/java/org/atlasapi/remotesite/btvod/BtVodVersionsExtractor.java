@@ -5,7 +5,6 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 import java.util.Currency;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
@@ -23,6 +22,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -190,7 +190,7 @@ public class BtVodVersionsExtractor {
 
         ImmutableList<Pricing> pricings = pricingsBuilder.build();
         if(policyIsPayToX(subscription) && pricings.isEmpty()) {
-            return Optional.empty();
+            return Optional.absent();
         }
 
         policy.setPricing(pricings);

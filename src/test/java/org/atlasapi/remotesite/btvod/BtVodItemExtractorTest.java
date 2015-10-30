@@ -13,6 +13,7 @@ import java.util.Set;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
@@ -28,8 +29,10 @@ import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
+import org.atlasapi.remotesite.btvod.model.BtVodProductAmounts;
 import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
 import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
+import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.joda.time.DateTime;
@@ -43,6 +46,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 
 
@@ -481,5 +485,52 @@ public class BtVodItemExtractorTest {
         
         assertThat(itemExtractor.getProcessedItems().size(), is(2));
 
+    }
+
+    @Test
+    public void testDoesNotCreatePayToXLocationsWithZeroPrice() {
+        BtVodEntry btVodEntry = episodeRow(SERIES_TITLE + ": S1 S1-E9 " + REAL_EPISODE_TITLE, PRODUCT_GUID);
+
+        btVodEntry.setProductOfferingType("type-EST");
+
+        BtVodProductPricingPlan pricingPlan = new BtVodProductPricingPlan();
+
+        BtVodProductPricingTier pricingTier = new BtVodProductPricingTier();
+        pricingTier.setProductAbsoluteStart(DateTime.now().minusMonths(2).getMillis());
+        pricingTier.setProductAbsoluteEnd(DateTime.now().plusMonths(2).getMillis());
+
+        BtVodProductAmounts productAmounts = new BtVodProductAmounts();
+        productAmounts.setGBP(0D);
+
+        pricingTier.setProductAmounts(productAmounts);
+        pricingPlan.setProductPricingTiers(Lists.newArrayList(pricingTier));
+        btVodEntry.setProductPricingPlan(pricingPlan);
+
+        ParentRef parentRef = new ParentRef(BRAND_URI);
+
+        Series series = new Series();
+        series.setCanonicalUri("seriesUri");
+        series.withSeriesNumber(1);
+
+        when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(series));
+        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
+        when(btVodBrandProvider.brandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
+        when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(series));
+
+        itemExtractor.process(btVodEntry);
+
+        assertThat(itemExtractor.getProcessedItems().size(), is(1));
+
+        Item item = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
+        Version version = Iterables.getOnlyElement(item.getVersions());
+        Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
+
+        assertThat(encoding.getAvailableAt().size(), is(1));
+
+        Location location = Iterables.getOnlyElement(encoding.getAvailableAt());
+        assertThat(location.getCanonicalUri().contains(RevenueContract.PAY_TO_BUY.toString()),
+                is(false));
+        assertThat(location.getCanonicalUri().contains(RevenueContract.PAY_TO_RENT.toString()),
+                is(false));
     }
 }

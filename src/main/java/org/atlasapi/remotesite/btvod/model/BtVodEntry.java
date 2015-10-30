@@ -1,9 +1,9 @@
 package org.atlasapi.remotesite.btvod.model;
 
+import java.util.List;
+
 import com.google.common.collect.ImmutableSet;
 import com.google.gson.annotations.SerializedName;
-
-import java.util.List;
 
 public class BtVodEntry {
 
@@ -92,6 +92,10 @@ public class BtVodEntry {
 
     public String getProductOfferingType() {
         return productOfferingType;
+    }
+
+    public void setProductOfferingType(String offeringType) {
+        this.productOfferingType = offeringType;
     }
 
     public String getContentProviderId() {

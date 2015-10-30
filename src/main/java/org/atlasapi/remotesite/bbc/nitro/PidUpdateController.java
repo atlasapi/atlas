@@ -57,6 +57,7 @@ public class PidUpdateController {
         }
 
         if (items.isEmpty()) {
+            log.error("No items found in Nitro for pid {}", pid);
             response.setStatus(HttpStatusCode.NOT_FOUND.code());
             response.setContentLength(0);
             return;

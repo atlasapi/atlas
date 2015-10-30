@@ -196,25 +196,25 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         ImmutableList<Episode> episodes = getAsEpisodes(programmes);
         ImmutableList<NitroItemSource<Episode>> sources = toItemSources(episodes);
 
-        Iterable<PidReference> episodeRefs = Iterables.transform(episodes,
-                new Function<Episode, PidReference>() {
+        // TODO: track down why this NPEs
+//        Iterable<PidReference> episodeRefs = Iterables.transform(episodes,
+//                new Function<Episode, PidReference>() {
+//                    @Override
+//                    public PidReference apply(Episode input) {
+//                        Episode.Version version = input.getVersion();
+//                        PidReference pidReference = new PidReference();
+//                        pidReference.setHref(version.getHref());
+//                        pidReference.setPid(version.getPid());
+//                        return pidReference;
+//                    }
+//                });
 
-                    @Override
-                    public PidReference apply(Episode input) {
-                        Episode.Version version = input.getVersion();
-                        PidReference pidReference = new PidReference();
-                        pidReference.setHref(version.getHref());
-                        pidReference.setPid(version.getPid());
-                        return pidReference;
-                    }
-                });
-
-        Multimap<String, Clip> clips = clipsAdapter.clipsFor(episodeRefs);
+//        Multimap<String, Clip> clips = clipsAdapter.clipsFor(episodeRefs);
 
         ImmutableSet.Builder<Item> fetched = ImmutableSet.builder();
         for (NitroItemSource<Episode> source : sources) {
             Item item = itemExtractor.extract(source);
-            item.setClips(clips.get(item.getCanonicalUri()));
+//            item.setClips(clips.get(item.getCanonicalUri()));
             fetched.add(item);
         }
         return fetched.build();

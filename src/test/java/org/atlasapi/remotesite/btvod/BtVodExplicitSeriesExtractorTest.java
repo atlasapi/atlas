@@ -71,7 +71,7 @@ public class BtVodExplicitSeriesExtractorTest {
                 ),
                 new TitleSanitiser(),
                 imageExtractor,
-                newTopic
+                ImmutableSet.of(newTopic)
         );
     }
 

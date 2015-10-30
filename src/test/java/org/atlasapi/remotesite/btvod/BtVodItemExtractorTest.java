@@ -119,10 +119,12 @@ public class BtVodItemExtractorTest {
                     null,
                     null
             ),
-            newTopicRef,
-            new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
-            new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
-            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
+            ImmutableSet.of(
+                            newTopicRef,
+                            new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
+                            new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
+                            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
+                    )
     );
     
     @Test

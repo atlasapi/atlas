@@ -3,15 +3,8 @@ package org.atlasapi.remotesite.bbc.nitro;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
 import static org.mockito.Mockito.any;
-
-import java.time.ZonedDateTime;
-import java.util.GregorianCalendar;
-
-import javax.xml.datatype.XMLGregorianCalendar;
+import static org.mockito.Mockito.when;
 
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
@@ -31,13 +24,11 @@ import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
+import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.BroadcastTime;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.ServiceReference;
 import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;

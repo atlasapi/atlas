@@ -103,7 +103,8 @@ public class BtVodVersionsExtractor {
                     ImmutableSet.<BtVodProductPricingTier>of(),
                     Policy.RevenueContract.SUBSCRIPTION,
                     aliases,
-                    serviceId
+                    serviceId,
+                    row.getSubscriptionCodes()
             );
             if(location.isPresent()) {
                 locations.add(location.get());
@@ -135,16 +136,30 @@ public class BtVodVersionsExtractor {
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
         Multimap<Interval, BtVodProductPricingTier> groupAvailabilityPeriods = grouper.groupAvailabilityPeriods(row);
         for (Map.Entry<Interval, Collection<BtVodProductPricingTier>> entry : groupAvailabilityPeriods.asMap().entrySet()) {
-            Optional<Location> location = createLocation(row, entry.getKey(), entry.getValue(),
-                    subscription, aliases, serviceId);
+            Optional<Location> location = createLocation(
+                    row,
+                    entry.getKey(),
+                    entry.getValue(),
+                    subscription,
+                    aliases,
+                    serviceId,
+                    ImmutableSet.<String>of()
+            );
             if(location.isPresent()) {
                 locations.add(location.get());
             }
         }
         
         if (groupAvailabilityPeriods.asMap().entrySet().isEmpty()) {
-            Optional<Location> location = createLocation(row, null,
-                    ImmutableSet.<BtVodProductPricingTier>of(), subscription, aliases, serviceId);
+            Optional<Location> location = createLocation(
+                    row,
+                    null,
+                    ImmutableSet.<BtVodProductPricingTier>of(),
+                    subscription,
+                    aliases,
+                    serviceId,
+                    ImmutableSet.<String>of()
+            );
             if(location.isPresent()) {
                 locations.add(location.get());
             }
@@ -160,8 +175,9 @@ public class BtVodVersionsExtractor {
         return !Boolean.FALSE.equals(Boolean.valueOf(row.getMasterAgreementOtgTvodPlay()));
     }
 
-    private Optional<Location> createLocation(BtVodEntry row, Interval availability, Collection<BtVodProductPricingTier> pricingTiers,
-                                    Policy.RevenueContract subscription, Set<Alias> aliases, Long serviceId) {
+    private Optional<Location> createLocation(BtVodEntry row, Interval availability,
+            Collection<BtVodProductPricingTier> pricingTiers, Policy.RevenueContract subscription,
+            Set<Alias> aliases, Long serviceId, ImmutableSet<String> subscriptionCodes) {
         Policy policy = new Policy();
         if (availability != null) {
             policy.setAvailabilityStart(availability.getStart());
@@ -194,7 +210,7 @@ public class BtVodVersionsExtractor {
         }
 
         policy.setPricing(pricings);
-        policy.setSubscriptionPackages(row.getSubscriptionCodes());
+        policy.setSubscriptionPackages(subscriptionCodes);
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
         policy.setRevenueContract(subscription);
 

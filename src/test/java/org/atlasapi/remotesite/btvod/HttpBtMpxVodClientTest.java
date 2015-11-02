@@ -73,9 +73,9 @@ public class HttpBtMpxVodClientTest {
         SimpleHttpRequest<BtVodResponse> request2 = mock(SimpleHttpRequest.class);
         SimpleHttpRequest<BtVodResponse> request3 = mock(SimpleHttpRequest.class);
 
-        when(requestProvider.buildRequest(FEED_NAME, 1, 2)).thenReturn(request1);
-        when(requestProvider.buildRequest(FEED_NAME, 3, 4)).thenReturn(request2);
-        when(requestProvider.buildRequest(FEED_NAME, 5, 6)).thenReturn(request3);
+        when(requestProvider.buildRequestForFeed(FEED_NAME, 1, 2)).thenReturn(request1);
+        when(requestProvider.buildRequestForFeed(FEED_NAME, 3, 4)).thenReturn(request2);
+        when(requestProvider.buildRequestForFeed(FEED_NAME, 5, 6)).thenReturn(request3);
 
         when(httpClient.get(request1)).thenReturn(btVodResponse1);
         when(httpClient.get(request2)).thenReturn(btVodResponse2);

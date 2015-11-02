@@ -35,15 +35,18 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
     private final BrandUriExtractor brandUriExtractor;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private final ImageExtractor baseImageExtractor;
+    private final BtVodEpisodeNumberExtractor episodeNumberExtractor;
 
     public DerivingFromSeriesBrandImageExtractor(
             BrandUriExtractor brandUriExtractor,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            ImageExtractor baseImageExtractor
+            ImageExtractor baseImageExtractor,
+            BtVodEpisodeNumberExtractor episodeNumberExtractor
     ) {
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
         this.baseImageExtractor = checkNotNull(baseImageExtractor);
+        this.episodeNumberExtractor = checkNotNull(episodeNumberExtractor);
     }
     
     @Override
@@ -74,7 +77,7 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         Integer seriesNumber = seriesUriExtractor.extractSeriesNumber(entry).orNull();
         Integer episodeNumber = null;
         if (BtVodItemExtractor.EPISODE_TYPE.equals(entry.getProductType())) {
-            episodeNumber = BtVodItemExtractor.extractEpisodeNumber(entry);
+            episodeNumber = episodeNumberExtractor.extractEpisodeNumber(entry);
         }
         if (seriesNumber != null || episodeNumber != null) {
             if(!brandUri.isPresent()) {

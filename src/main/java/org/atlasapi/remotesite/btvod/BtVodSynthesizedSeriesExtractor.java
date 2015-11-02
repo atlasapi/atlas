@@ -57,6 +57,7 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
                 && getSeriesUriExtractor().extractSeriesNumber(row).isPresent();
 
     }
+
     private boolean isAlreadyProcessed(BtVodEntry row) {
         return getSeriesUriExtractor().seriesUriFor(row).isPresent()
                 && getProcessedRows().contains(getSeriesUriExtractor().seriesUriFor(row).get());

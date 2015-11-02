@@ -8,8 +8,11 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.io.IOException;
+import java.util.Iterator;
 import java.util.Set;
 
+import com.google.common.collect.*;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
@@ -44,11 +47,6 @@ import org.junit.Test;
 import org.mockito.Matchers;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
 
 
 public class BtVodItemExtractorTest {
@@ -87,6 +85,17 @@ public class BtVodItemExtractorTest {
             TopicRef.Relationship.ABOUT
     );
 
+    private final BtMpxVodClient mockMpxClient = new BtMpxVodClient() {
+        @Override
+        public Iterator<BtVodEntry> getFeed(String name) throws IOException {
+            return Lists.<BtVodEntry>newArrayList().iterator();
+        }
+
+        @Override
+        public Optional<BtVodEntry> getItem(String guid) {
+            return Optional.absent();
+        }
+    };
 
     private final BtVodItemExtractor itemExtractor
             = new BtVodItemExtractor(
@@ -129,7 +138,9 @@ public class BtVodItemExtractorTest {
                             new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
                             new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
                             new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
-                    )
+                    ),
+            new MockBtVodEpisodeNumberExtractor(mockMpxClient),
+            mockMpxClient
     );
     
     @Test

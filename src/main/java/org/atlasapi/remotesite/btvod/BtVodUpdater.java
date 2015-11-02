@@ -48,6 +48,7 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private final BtVodVersionsExtractor versionsExtractor;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
+    private final BtMpxVodClient mpxClient;
     
     public BtVodUpdater(
             ContentWriter contentWriter,
@@ -66,7 +67,8 @@ public class BtVodUpdater extends ScheduledTask {
             Topic subscriptionCatchupTopic,
             BtVodSeriesUriExtractor seriesUriExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            BtVodDescribedFieldsExtractor describedFieldsExtractor
+            BtVodDescribedFieldsExtractor describedFieldsExtractor,
+            BtMpxVodClient mpxClient
     ) {
         this.contentWriter = checkNotNull(contentWriter);
         this.newFeedContentMatchingPredicate = checkNotNull(newFeedContentMatchingPredicate);
@@ -85,6 +87,7 @@ public class BtVodUpdater extends ScheduledTask {
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
+        this.mpxClient = checkNotNull(mpxClient);
     }
 
     @Override
@@ -235,7 +238,9 @@ public class BtVodUpdater extends ScheduledTask {
                     new TitleSanitiser(),
                     imageExtractor,
                     versionsExtractor,
-                    topicsToPropagateToParents
+                    topicsToPropagateToParents,
+                    new BtVodEpisodeNumberExtractor(mpxClient),
+                    mpxClient
             );
 
             vodData.processData(itemExtractor);

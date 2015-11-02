@@ -106,11 +106,17 @@ public class BbcNitroModule {
     }
 
     private ScheduledTask nitroOffScheduleIntestTask() {
+        Glycerin glycerin = glycerin(null);
         return new OffScheduleContentIngestTask(
-                nitroContentAdapter(glycerin(null)),
+                nitroContentAdapter(glycerin),
                 nitroRequestPageSize,
                 contentWriter,
-                lock, localOrRemoteFetcher);
+                pidLock,
+                localOrRemoteNitroFetcher(
+                    glycerin,
+                    Optional.of(Predicates.<Item>alwaysTrue())
+                )
+        );
     }
 
     @Bean

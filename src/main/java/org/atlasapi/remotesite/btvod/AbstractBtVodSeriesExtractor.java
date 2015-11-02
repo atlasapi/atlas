@@ -71,6 +71,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
                 series = processedSeries.get(seriesUriExtractor.seriesUriFor(row).get());
             } else {
                 series = seriesFrom(row);
+                brandProvider.updateDescription(row, series);
             }
             setFields(series, row);
             setAdditionalFields(series, row);
@@ -91,7 +92,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
         return true;
     }
 
-    private final void setFields(Series series, BtVodEntry row) {
+    private void setFields(Series series, BtVodEntry row) {
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
     }

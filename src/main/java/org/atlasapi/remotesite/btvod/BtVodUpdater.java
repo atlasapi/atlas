@@ -6,8 +6,6 @@ import java.io.IOException;
 import java.util.Map;
 import java.util.Set;
 
-import com.google.common.collect.Iterables;
-
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
@@ -23,6 +21,7 @@ import org.slf4j.LoggerFactory;
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 
@@ -156,7 +155,11 @@ public class BtVodUpdater extends ScheduledTask {
                     )
             );
             
-            BtVodBrandProvider brandProvider = new BtVodBrandProvider(brandUriExtractor, brandExtractor.getProcessedBrands());
+            BtVodBrandProvider brandProvider = new BtVodBrandProvider(
+                    brandUriExtractor,
+                    brandExtractor.getProcessedBrands(),
+                    new BrandDescriptionUpdater()
+            );
             
             BtVodExplicitSeriesExtractor explicitSeriesExtractor = new BtVodExplicitSeriesExtractor(
                     brandProvider,
@@ -294,7 +297,7 @@ public class BtVodUpdater extends ScheduledTask {
             }
         } catch (IOException e) {
             log.error("Extraction failed", e);
-            Throwables.propagate(e);
+            throw Throwables.propagate(e);
         }
         
     }

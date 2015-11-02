@@ -273,7 +273,7 @@ public class BtVodDescribedFieldsExtractor {
             genres.add(
                     topicRefFor(
                             cacheKey(genreTopicNamespace, row.getGenre()),
-                            genreCallable(genreTopicNamespace, row.getGenre())
+                            topicCallable(genreTopicNamespace, row.getGenre())
                     )
             );
         }
@@ -285,7 +285,7 @@ public class BtVodDescribedFieldsExtractor {
                     genres.add(
                             topicRefFor(
                                     cacheKey(genreTopicNamespace, subGenre),
-                                    genreCallable(genreTopicNamespace, subGenre)
+                                    topicCallable(genreTopicNamespace, subGenre)
                             )
                     );
                 }
@@ -294,20 +294,18 @@ public class BtVodDescribedFieldsExtractor {
         return genres.build();
     }
 
-    private Callable<Topic> genreCallable(final String namespace, final String genre) {
-        return new Callable<Topic>() {
-            @Override
-            public Topic call() throws Exception {
-                Topic topic = topicCreatingTopicResolver.topicFor(
-                        publisher,
-                        namespace,
-                        genre
-                ).requireValue();
-                topic.setTitle(genre);
-                topicWriter.write(topic);
-                return topic;
-            }
-        };
+    private Optional<TopicRef> contentProviderTopicFor(VodEntryAndContent vodAndContent) {
+        final String contentProviderId = vodAndContent.getBtVodEntry().getContentProviderId();
+        if (contentProviderId == null) {
+            return Optional.absent();
+        }
+
+        return Optional.of(
+                topicRefFor(
+                        cacheKey(contentProviderTopicNamespace, contentProviderId),
+                        topicCallable(contentProviderTopicNamespace, contentProviderId)
+                )
+        );
     }
 
     public Iterable<Alias> aliasesFrom(BtVodEntry row) {
@@ -322,40 +320,28 @@ public class BtVodDescribedFieldsExtractor {
         return ImmutableSet.of();
     }
 
-    private Optional<TopicRef> contentProviderTopicFor(VodEntryAndContent vodAndContent) {
-        final String contentProviderId = vodAndContent.getBtVodEntry().getContentProviderId();
-        if (contentProviderId == null) {
-            return Optional.absent();
-        }
-
-        return Optional.of(
-                topicRefFor(
-                        cacheKey(contentProviderTopicNamespace, contentProviderId),
-                        new Callable<Topic>() {
-                            @Override
-                            public Topic call() throws Exception {
-                                Topic topic = topicCreatingTopicResolver.topicFor(
-                                        publisher,
-                                        contentProviderTopicNamespace,
-                                        contentProviderId
-                                ).requireValue();
-                                topic.setTitle(contentProviderId);
-                                topicWriter.write(topic);
-                                return topic;
-                            }
-                        }
-                )
-
-        );
-
-    }
-
     private String cacheKey(String namespace, String value) {
         return String.format(
                 "%s:%s",
                 namespace,
                 value
         );
+    }
+
+    private Callable<Topic> topicCallable(final String namespace, final String value) {
+        return new Callable<Topic>() {
+            @Override
+            public Topic call() throws Exception {
+                Topic topic = topicCreatingTopicResolver.topicFor(
+                        publisher,
+                        namespace,
+                        value
+                ).requireValue();
+                topic.setTitle(value);
+                topicWriter.write(topic);
+                return topic;
+            }
+        };
     }
 
     private TopicRef topicRefFor(String key, Callable<Topic> callable) {

@@ -65,7 +65,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final BtVodVersionsExtractor versionsExtractor;
 
     private final ImmutableSet<TopicRef> topicsToPropagateToParents;
-    private final BtVodEpisodeNumberExtractor episodeNumberExtractor;
+    private final BtVodMpxBackedEpisodeNumberExtractor episodeNumberExtractor;
     private final BtMpxVodClient mpxClient;
 
     public BtVodItemExtractor(

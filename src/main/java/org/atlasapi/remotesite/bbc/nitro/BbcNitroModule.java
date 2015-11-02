@@ -92,6 +92,9 @@ public class BbcNitroModule {
                     .withName("Nitro full fetch -8 to -30 day updater"), RepetitionRules.every(Duration.standardHours(12)));
             scheduler.schedule(nitroScheduleUpdateTask(7, 3, nitroAroundTodayThreadCount, nitroAroundTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
                     .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.every(Duration.standardHours(2)));
+            scheduler.schedule(
+                    nitroOffScheduleIntestTask().withName("Nitro off-schedule content updater"),
+                    RepetitionRules.every(Duration.standardHours(1)));
         }
     }
 
@@ -100,6 +103,20 @@ public class BbcNitroModule {
         ExecutorService executor = Executors.newFixedThreadPool(threadCount, nitroThreadFactory);
         return new ChannelDayProcessingTask(executor, drcds, nitroChannelDayProcessor(rateLimit, fullFetchPermittedPredicate),
                 null, jobFailureThresholdPercent);
+    }
+
+    private ScheduledTask nitroOffScheduleIntestTask() {
+        Glycerin glycerin = glycerin(null);
+        return new OffScheduleContentIngestTask(
+                nitroContentAdapter(glycerin),
+                nitroRequestPageSize,
+                contentWriter,
+                pidLock,
+                localOrRemoteNitroFetcher(
+                    glycerin,
+                    Optional.of(Predicates.<Item>alwaysTrue())
+                )
+        );
     }
 
     @Bean

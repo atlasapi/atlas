@@ -242,7 +242,7 @@ public class BtVodUpdater extends ScheduledTask {
                     imageExtractor,
                     versionsExtractor,
                     topicsToPropagateToParents,
-                    new BtVodEpisodeNumberExtractor(mpxClient),
+                    new BtVodMpxBackedEpisodeNumberExtractor(mpxClient),
                     mpxClient
             );
 

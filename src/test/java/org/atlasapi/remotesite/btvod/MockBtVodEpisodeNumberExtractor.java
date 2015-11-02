@@ -2,11 +2,7 @@ package org.atlasapi.remotesite.btvod;
 
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
-public class MockBtVodEpisodeNumberExtractor extends BtVodEpisodeNumberExtractor{
-
-    public MockBtVodEpisodeNumberExtractor(BtMpxVodClient mpxClient) {
-        super(mpxClient);
-    }
+public class MockBtVodEpisodeNumberExtractor implements BtVodEpisodeNumberExtractor {
 
     @Override
     public Integer extractEpisodeNumber(BtVodEntry row) {

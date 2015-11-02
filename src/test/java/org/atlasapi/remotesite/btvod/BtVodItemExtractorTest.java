@@ -139,7 +139,7 @@ public class BtVodItemExtractorTest {
                             new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
                             new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
                     ),
-            new MockBtVodEpisodeNumberExtractor(mockMpxClient),
+            new MockBtVodEpisodeNumberExtractor(),
             mockMpxClient
     );
     

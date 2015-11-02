@@ -31,7 +31,7 @@ public class DerivingFromSeriesBrandImageExtractorTest {
     private final BrandUriExtractor brandUriExtractor = mock(BrandUriExtractor.class);
     private final BtVodSeriesUriExtractor seriesUriExtractor = mock(BtVodSeriesUriExtractor.class);
     private final DerivingFromSeriesBrandImageExtractor extractor 
-                    = new DerivingFromSeriesBrandImageExtractor(brandUriExtractor, seriesUriExtractor, new BtVodMpxImageExtractor(BASE_URL));
+                    = new DerivingFromSeriesBrandImageExtractor(brandUriExtractor, seriesUriExtractor, new BtVodMpxImageExtractor(BASE_URL), new MockBtVodEpisodeNumberExtractor());
     
     @Test
     public void testExtractsImagesFromFirstSeries() {

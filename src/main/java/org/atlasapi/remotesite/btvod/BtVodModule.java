@@ -339,9 +339,7 @@ public class BtVodModule {
                 publisher,
                 newContentPredicate,
                 contentGroupsAndCritera.get(KIDS_CATEGORY.toLowerCase()),
-                BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
-                        TV_CATEGORY, SEASON_PRODUCT_OFFERING_TYPES
-                ),
+                BtVodContentMatchingPredicates.schedulerChannelPredicate(TV_CATEGORY),
                 BtVodContentMatchingPredicates.schedulerChannelPredicate(SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL),
                 topicFor(feedNamepaceFor(env, conf), BT_VOD_NEW_FEED, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(env, conf), BT_VOD_KIDS_TOPIC, publisher),

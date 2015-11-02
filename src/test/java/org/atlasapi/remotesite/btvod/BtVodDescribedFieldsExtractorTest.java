@@ -63,9 +63,7 @@ public class BtVodDescribedFieldsExtractorTest {
                 publisher,
                 newTopicContentMatchingPredicate,
                 BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
-                BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
-                        "TV", ImmutableSet.of("Season", "Season-EST")
-                ),
+                BtVodContentMatchingPredicates.schedulerChannelPredicate("TV"),
                 BtVodContentMatchingPredicates.schedulerChannelPredicate("TV Replay"),
                 new Topic(123L),
                 new Topic(234L),

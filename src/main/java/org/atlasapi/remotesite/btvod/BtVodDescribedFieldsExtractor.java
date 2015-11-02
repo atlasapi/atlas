@@ -41,6 +41,7 @@ public class BtVodDescribedFieldsExtractor {
     private final String idAliasNamespace;
     private final String contentProviderTopicNamespace;
     private final String genreTopicNamespace;
+    private final String channelIdNamespace;
 
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
     private final TopicCreatingTopicResolver topicCreatingTopicResolver;
@@ -159,7 +160,8 @@ public class BtVodDescribedFieldsExtractor {
             String guidAliasNamespace,
             String idAliasNamespace,
             String contentProviderTopicNamespace,
-            String genreTopicNamespace
+            String genreTopicNamespace,
+            String channelIdNamespace
     ) {
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
@@ -181,6 +183,7 @@ public class BtVodDescribedFieldsExtractor {
         this.idAliasNamespace = checkNotNull(idAliasNamespace);
         this.contentProviderTopicNamespace = checkNotNull(contentProviderTopicNamespace);
         this.genreTopicNamespace = checkNotNull(genreTopicNamespace);
+        this.channelIdNamespace = checkNotNull(channelIdNamespace);
     }
     
     public void init() {
@@ -255,16 +258,17 @@ public class BtVodDescribedFieldsExtractor {
         topicRefs.addAll(topicFrom(vodAndContent, tvBoxsetTopic, tvBoxsetTopicPredicate).asSet());
         topicRefs.addAll(topicFrom(vodAndContent, subCatchupTopic, subCatchupTopicPredicate).asSet());
         topicRefs.addAll(contentProviderTopicFor(vodAndContent).asSet());
+        topicRefs.addAll(channelTopicFor(vodAndContent));
         return topicRefs.build();
     }
-    
+
     private Optional<TopicRef> topicFrom(final VodEntryAndContent vodAndContent, Topic topic, BtVodContentMatchingPredicate predicate) {
         if (predicate.apply(vodAndContent)) {
             return Optional.of(topicRefFor(topic));
         }
         return Optional.absent();
     }
-    
+
     private Set<TopicRef> genreTopicsFrom(final VodEntryAndContent vodAndContent) {
         BtVodEntry row = vodAndContent.getBtVodEntry();
         ImmutableSet.Builder<TopicRef> genres = ImmutableSet.builder();
@@ -306,6 +310,23 @@ public class BtVodDescribedFieldsExtractor {
                         topicCallable(contentProviderTopicNamespace, contentProviderId)
                 )
         );
+    }
+
+    private Set<TopicRef> channelTopicFor(VodEntryAndContent vodAndContent) {
+        ImmutableSet<String> channelTags = vodAndContent.getBtVodEntry().getChannelTags();
+        if(channelTags.isEmpty()) {
+            return ImmutableSet.of();
+        }
+
+        ImmutableSet.Builder<TopicRef> topicRefBuilder = ImmutableSet.builder();
+        for (String channelTag : channelTags) {
+            topicRefBuilder.add(topicRefFor(
+                    cacheKey(channelIdNamespace, channelTag),
+                    topicCallable(channelIdNamespace, channelTag)
+            ));
+        }
+
+        return topicRefBuilder.build();
     }
 
     public Iterable<Alias> aliasesFrom(BtVodEntry row) {

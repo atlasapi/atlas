@@ -38,6 +38,7 @@ public class BtVodDescribedFieldsExtractorTest {
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
+    private static final String BT_VOD_CHANNEL_ID_NAMESPACE = "channel id namespace";
 
     private Publisher publisher = Publisher.BT_TVE_VOD;
 
@@ -72,7 +73,8 @@ public class BtVodDescribedFieldsExtractorTest {
                 BT_VOD_GUID_NAMESPACE,
                 BT_VOD_ID_NAMESPACE,
                 BT_VOD_CONTENT_PROVIDER_NAMESPACE,
-                BT_VOD_GENRE_NAMESPACE
+                BT_VOD_GENRE_NAMESPACE,
+                BT_VOD_CHANNEL_ID_NAMESPACE
         );
     }
 
@@ -163,6 +165,34 @@ public class BtVodDescribedFieldsExtractorTest {
         Set<TopicRef> topicRef = objectUnderTest.topicsFrom(entryAndContent);
 
         verify(created).setTitle("contentProviderTitle");
+        assertThat(Iterables.getOnlyElement(topicRef).getTopic(), is(42L));
+    }
+
+    @Test
+    public void testExtractTopicForChannelIds() throws Exception {
+        BtVodEntry entry = new BtVodEntry();
+        entry.setProductScopes(ImmutableList.<BtVodProductScope>of());
+        Item item = new Item();
+
+        BtVodPlproduct$productTag productTag = new BtVodPlproduct$productTag();
+        productTag.setPlproduct$scheme("keyword");
+        productTag.setPlproduct$title("channel id");
+
+        entry.setProductTags(
+                ImmutableList.of(
+                        productTag
+                )
+        );
+
+        Topic created = mock(Topic.class);
+        when(created.getId()).thenReturn(42L);
+        when(topicResolver.topicFor(publisher, BT_VOD_CHANNEL_ID_NAMESPACE, "channel id"))
+                .thenReturn(Maybe.just(created));
+
+        VodEntryAndContent entryAndContent = new VodEntryAndContent(entry, item);
+        Set<TopicRef> topicRef = objectUnderTest.topicsFrom(entryAndContent);
+
+        verify(created).setTitle("channel id");
         assertThat(Iterables.getOnlyElement(topicRef).getTopic(), is(42L));
     }
 }

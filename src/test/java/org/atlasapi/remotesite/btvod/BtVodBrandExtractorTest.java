@@ -3,11 +3,8 @@ package org.atlasapi.remotesite.btvod;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Iterables;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
@@ -21,14 +18,13 @@ import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
-import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -44,7 +40,7 @@ public class BtVodBrandExtractorTest {
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
-
+    private static final String BT_VOD_CHANNEL_ID_NAMESPACE = "channel id namespace";
 
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
@@ -72,7 +68,8 @@ public class BtVodBrandExtractorTest {
             BT_VOD_GUID_NAMESPACE,
             BT_VOD_ID_NAMESPACE,
             BT_VOD_CONTENT_PROVIDER_NAMESPACE,
-            BT_VOD_GENRE_NAMESPACE
+            BT_VOD_GENRE_NAMESPACE,
+            BT_VOD_CHANNEL_ID_NAMESPACE
     );
 
     private final BtVodBrandExtractor brandExtractor

@@ -1,12 +1,12 @@
 package org.atlasapi.remotesite.btvod;
 
 
-import com.google.api.client.util.Sets;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Iterables;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
@@ -21,11 +21,11 @@ import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.api.client.util.Sets;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 public class BtVodSynthesizedSeriesExtractorTest {
 
@@ -40,6 +40,7 @@ public class BtVodSynthesizedSeriesExtractorTest {
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
+    private static final String BT_VOD_CHANNEL_ID_NAMESPACE = "channel id namespace";
 
     private final BtVodBrandProvider brandProvider = mock(BtVodBrandProvider.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
@@ -66,7 +67,8 @@ public class BtVodSynthesizedSeriesExtractorTest {
             BT_VOD_GUID_NAMESPACE,
             BT_VOD_ID_NAMESPACE,
             BT_VOD_CONTENT_PROVIDER_NAMESPACE,
-            BT_VOD_GENRE_NAMESPACE
+            BT_VOD_GENRE_NAMESPACE,
+            BT_VOD_CHANNEL_ID_NAMESPACE
     );
 
     private final TopicRef newTopicRef = new TopicRef(

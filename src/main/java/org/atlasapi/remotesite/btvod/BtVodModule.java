@@ -49,6 +49,7 @@ public class BtVodModule {
     private static final String BT_VOD_APP_CATEGORY_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "category:%s:%s";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "contentProvider:%s:%s";
     private static final String BT_VOD_GENRE_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "genre:%s:%s";
+    private static final String BT_VOD_CHANNEL_ID_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "channel:%s:%s";
     private static final String BT_VOD_GUID_ALIAS_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "guid:%s:%s";
     private static final String BT_VOD_ID_ALIAS_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "id:%s:%s";
     private static final String BT_VOD_NEW_FEED = "new";
@@ -350,7 +351,8 @@ public class BtVodModule {
                 String.format(BT_VOD_GUID_ALIAS_NAMESPACE_FORMAT, env, conf),
                 String.format(BT_VOD_ID_ALIAS_NAMESPACE_FORMAT, env, conf),
                 String.format(BT_VOD_CONTENT_PROVIDER_NAMESPACE_FORMAT, env, conf),
-                String.format(BT_VOD_GENRE_NAMESPACE_FORMAT, env, conf)
+                String.format(BT_VOD_GENRE_NAMESPACE_FORMAT, env, conf),
+                String.format(BT_VOD_CHANNEL_ID_NAMESPACE_FORMAT, env, conf)
         );
     }
     

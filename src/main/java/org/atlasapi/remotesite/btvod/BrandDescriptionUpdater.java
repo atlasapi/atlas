@@ -10,11 +10,12 @@ import com.google.common.base.Optional;
 
 public class BrandDescriptionUpdater {
 
+    // Records the series number that is the source for the description in a brand
     private Map<String, Integer> brandIdToSeriesNumber = new HashMap<>();
 
     public void updateDescription(Brand brand, Series series) {
         Optional<Integer> sourceSeriesOptional =
-                getSourceSeries(brand.getCanonicalUri());
+                getDescriptionSourceSeriesNumber(brand.getCanonicalUri());
 
         if(brandHasOwnDescription(brand, sourceSeriesOptional)) {
             return;
@@ -38,16 +39,16 @@ public class BrandDescriptionUpdater {
     private void updateDescriptionFromSeries(Brand brand, Integer seriesNumber,
             String seriesDescription) {
         brand.setDescription(seriesDescription);
-        setSourceSeries(
+        setDescriptionSourceSeriesNumber(
                 brand.getCanonicalUri(), seriesNumber
         );
     }
 
-    private Optional<Integer> getSourceSeries(String canonicalUri) {
+    private Optional<Integer> getDescriptionSourceSeriesNumber(String canonicalUri) {
         return Optional.fromNullable(brandIdToSeriesNumber.get(canonicalUri));
     }
 
-    private void setSourceSeries(String canonicalUri, Integer seriesNumber) {
+    private void setDescriptionSourceSeriesNumber(String canonicalUri, Integer seriesNumber) {
         brandIdToSeriesNumber.put(canonicalUri, seriesNumber);
     }
 }

@@ -196,15 +196,16 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         ImmutableList<Episode> episodes = getAsEpisodes(programmes);
         ImmutableList<NitroItemSource<Episode>> sources = toItemSources(episodes);
 
-        // TODO: track down why this NPEs
+        /* TODO: this is a fugly-ish hack, because while in reality the clipsAdapter only needs
+                 the PIDs in string form, the public interface only takes PidRef's, which aren't
+                 available here. */
         Iterable<PidReference> episodeRefs = Iterables.transform(episodes,
                 new Function<Episode, PidReference>() {
                     @Override
                     public PidReference apply(Episode input) {
-                        Episode.Version version = input.getVersion();
                         PidReference pidReference = new PidReference();
-                        pidReference.setHref(version.getHref());
-                        pidReference.setPid(version.getPid());
+                        pidReference.setHref(input.getUri());
+                        pidReference.setPid(input.getPid());
                         return pidReference;
                     }
                 });

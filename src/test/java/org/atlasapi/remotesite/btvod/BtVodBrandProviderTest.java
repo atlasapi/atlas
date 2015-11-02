@@ -44,8 +44,8 @@ public class BtVodBrandProviderTest {
         when(brandUriExtractor.extractBrandUri(seriesRow))
                 .thenReturn(Optional.of(brand.getCanonicalUri()));
 
-        brandProvider.updateDescription(seriesRow, series);
+        brandProvider.updateDescriptions(seriesRow, series);
 
-        verify(brandDescriptionUpdater).updateDescription(brand, series);
+        verify(brandDescriptionUpdater).updateDescriptions(brand, series);
     }
 }

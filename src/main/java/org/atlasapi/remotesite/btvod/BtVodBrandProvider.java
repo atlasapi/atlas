@@ -53,13 +53,13 @@ public class BtVodBrandProvider {
         );
     }
 
-    public void updateDescription(BtVodEntry seriesRow, Series series) {
+    public void updateDescriptions(BtVodEntry seriesRow, Series series) {
         Optional<Brand> brandOptional = brandFor(seriesRow);
         if(!brandOptional.isPresent()) {
             return;
         }
         Brand brand = brandOptional.get();
 
-        brandDescriptionUpdater.updateDescription(brand, series);
+        brandDescriptionUpdater.updateDescriptions(brand, series);
     }
 }

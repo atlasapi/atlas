@@ -71,7 +71,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
                 series = processedSeries.get(seriesUriExtractor.seriesUriFor(row).get());
             } else {
                 series = seriesFrom(row);
-                brandProvider.updateDescription(row, series);
+                brandProvider.updateDescriptions(row, series);
             }
             setFields(series, row);
             setAdditionalFields(series, row);

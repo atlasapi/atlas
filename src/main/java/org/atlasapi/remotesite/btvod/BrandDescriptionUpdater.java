@@ -10,12 +10,18 @@ import com.google.common.base.Optional;
 
 public class BrandDescriptionUpdater {
 
-    // Records the series number that is the source for the description in a brand
-    private Map<String, Integer> brandIdToSeriesNumber = new HashMap<>();
+    // Records the series number that is the source for the description/long description in a brand
+    private Map<String, Integer> descriptionSourceEpisode = new HashMap<>();
+    private Map<String, Integer> longDescriptionSourceEpisode = new HashMap<>();
 
-    public void updateDescription(Brand brand, Series series) {
+    public void updateDescriptions(Brand brand, Series series) {
+        updateDescription(brand, series);
+        updateLongDescription(brand, series);
+    }
+
+    private void updateDescription(Brand brand, Series series) {
         Optional<Integer> sourceSeriesOptional =
-                getDescriptionSourceSeriesNumber(brand.getCanonicalUri());
+                Optional.fromNullable(descriptionSourceEpisode.get(brand.getCanonicalUri()));
 
         if(brandHasOwnDescription(brand, sourceSeriesOptional)) {
             return;
@@ -38,17 +44,48 @@ public class BrandDescriptionUpdater {
 
     private void updateDescriptionFromSeries(Brand brand, Integer seriesNumber,
             String seriesDescription) {
+        if(seriesDescription == null) {
+            return;
+        }
+
         brand.setDescription(seriesDescription);
-        setDescriptionSourceSeriesNumber(
-                brand.getCanonicalUri(), seriesNumber
-        );
+        descriptionSourceEpisode.put(brand.getCanonicalUri(), seriesNumber);
     }
 
-    private Optional<Integer> getDescriptionSourceSeriesNumber(String canonicalUri) {
-        return Optional.fromNullable(brandIdToSeriesNumber.get(canonicalUri));
+    public void updateLongDescription(Brand brand, Series series) {
+        Optional<Integer> sourceSeriesOptional =
+                Optional.fromNullable(longDescriptionSourceEpisode.get(brand.getCanonicalUri()));
+
+        if(brandHasOwnLongDescription(brand, sourceSeriesOptional)) {
+            return;
+        }
+
+        if(!sourceSeriesOptional.isPresent()) {
+            updateLongDescriptionFromSeries(
+                    brand, series.getSeriesNumber(), series.getLongDescription()
+            );
+            return;
+        }
+
+        Integer sourceSeries = sourceSeriesOptional.get();
+        if(sourceSeries > series.getSeriesNumber()) {
+            updateLongDescriptionFromSeries(
+                    brand, series.getSeriesNumber(), series.getLongDescription()
+            );
+        }
     }
 
-    private void setDescriptionSourceSeriesNumber(String canonicalUri, Integer seriesNumber) {
-        brandIdToSeriesNumber.put(canonicalUri, seriesNumber);
+    private boolean brandHasOwnLongDescription(Brand brand, Optional<Integer> sourceSeriesOptional) {
+        return brand.getLongDescription() != null && !sourceSeriesOptional.isPresent();
+    }
+
+    private void updateLongDescriptionFromSeries(Brand brand, Integer seriesNumber,
+            String seriesLongDescription) {
+        if(seriesLongDescription == null) {
+            return;
+        }
+
+        brand.setLongDescription(seriesLongDescription);
+        longDescriptionSourceEpisode.put(brand.getCanonicalUri(), seriesNumber);
     }
 }

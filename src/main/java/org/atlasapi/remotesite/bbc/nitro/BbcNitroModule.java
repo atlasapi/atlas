@@ -94,7 +94,7 @@ public class BbcNitroModule {
                     .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.every(Duration.standardHours(2)));
             scheduler.schedule(
                     nitroOffScheduleIntestTask().withName("Nitro off-schedule content updater"),
-                    RepetitionRules.every(Duration.standardHours(1)));
+                    RepetitionRules.every(Duration.standardDays(1)));
         }
     }
 
@@ -106,11 +106,17 @@ public class BbcNitroModule {
     }
 
     private ScheduledTask nitroOffScheduleIntestTask() {
+        Glycerin glycerin = glycerin(null);
         return new OffScheduleContentIngestTask(
-                nitroContentAdapter(glycerin(null)),
+                nitroContentAdapter(glycerin),
                 nitroRequestPageSize,
                 contentWriter,
-                lock, localOrRemoteFetcher);
+                pidLock,
+                localOrRemoteNitroFetcher(
+                    glycerin,
+                    Optional.of(Predicates.<Item>alwaysTrue())
+                )
+        );
     }
 
     @Bean

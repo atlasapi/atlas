@@ -1,7 +1,9 @@
 package org.atlasapi.remotesite.btvod;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.google.common.collect.AbstractIterator;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
 import com.metabroadcast.common.http.SimpleHttpClient;
 
@@ -50,7 +52,7 @@ public class HttpBtMpxVodClient implements BtMpxVodClient {
                 if (!currentItems.hasNext() && moreData) {
                     BtVodResponse response;
                     try {
-                        response = httpClient.get(requestProvider.buildRequest(name, rangeStart, rangeEnd));
+                        response = httpClient.get(requestProvider.buildRequestForFeed(name, rangeStart, rangeEnd));
                     } catch (Exception e) {
                         throw new RuntimeException(e);
                     }
@@ -67,4 +69,13 @@ public class HttpBtMpxVodClient implements BtMpxVodClient {
         };
     }
 
+    @Override
+    public Optional<BtVodEntry> getItem(String guid) {
+        try {
+            BtVodResponse response = httpClient.get(requestProvider.buildRequestForSingleAsset(guid));
+            return Optional.fromNullable(Iterables.getFirst(response.getEntries(), null));
+        } catch (Exception e) {
+            throw new RuntimeException(e);
+        }
+    }
 }

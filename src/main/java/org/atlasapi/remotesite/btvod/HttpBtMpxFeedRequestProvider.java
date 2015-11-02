@@ -22,7 +22,7 @@ public class HttpBtMpxFeedRequestProvider {
     }
 
 
-    public SimpleHttpRequest<BtVodResponse> buildRequest(String endpoint, int rangeStart, int rangeEnd) {
+    public SimpleHttpRequest<BtVodResponse> buildRequestForFeed(String endpoint, int rangeStart, int rangeEnd) {
         String url = String.format(
                 "%s%s?range=%d-%d%s",
                 urlBase,
@@ -36,6 +36,16 @@ public class HttpBtMpxFeedRequestProvider {
                 url,
                 new BtVodResponseTransformer()
         );
+    }
+
+    public SimpleHttpRequest<BtVodResponse> buildRequestForSingleAsset(String guid) {
+        String url = String.format(
+                "%s%s?byGuid=%s",
+                urlBase,
+                "btv-prd-search",
+                guid
+        );
+        return new SimpleHttpRequest<>(url, new BtVodResponseTransformer());
     }
 
     private String additionalQueryParams() {

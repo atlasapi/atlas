@@ -283,7 +283,7 @@ public class BtVodModule {
                         feedQParam, 
                         contentGroupsAndCritera
                 ),
-                mpxVodClient(feedBaseUrl, feedQParam)
+                mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam)
         ).withName(
                 String.format(
                         "BT TVE VoD Updater for %s",

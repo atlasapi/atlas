@@ -7,7 +7,6 @@ import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -29,6 +28,7 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -115,8 +115,22 @@ public class LocalOrRemoteNitroFetcher {
         this.fullFetchPermitted = checkNotNull(fullFetchPermitted);
         this.contentMerger = checkNotNull(contentMerger);
     }
-    
-    public ResolveOrFetchResult<Item> resolveOrFetchItem(Iterable<Broadcast> broadcasts) throws NitroException {
+
+    public ResolveOrFetchResult<Item> resolveItems(Iterable<Item> items)
+            throws NitroException {
+        ImmutableList.Builder<String> itemUris = ImmutableList.builder();
+        for (Item item : items) {
+            itemUris.add(item.getCanonicalUri());
+        }
+        ResolvedContent resolvedItems = resolve(itemUris.build());
+
+        return mergeItemsWithExisting(
+                ImmutableSet.copyOf(items),
+                ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
+    }
+
+    public ResolveOrFetchResult<Item> resolveOrFetchItem(Iterable<Broadcast> broadcasts)
+            throws NitroException {
         if (Iterables.isEmpty(broadcasts)) {
             return ResolveOrFetchResult.empty();
         }

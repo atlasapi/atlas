@@ -1,0 +1,896 @@
+{{About|the men's football club|the women's football club|Chelsea L.F.C.|other uses|Chelsea (disambiguation){{!}}Chelsea}}
+{{pp-blp|small=yes}}
+{{pp-move-indef}}
+{{Use dmy dates|date=May 2013}}
+{{Use British English|date=May 2013}}
+{{Infobox football club
+| clubname      = Chelsea
+| image         = [[File:Chelsea FC.svg|200px]]
+| fullname      = Chelsea Football Club
+| nickname      = The Blues, The Pensioners
+| founded       = {{Start date and age|1905|3|10|df=yes}}<ref name="teamhistory">{{cite web|url=http://www.chelseafc.com/page/TeamHistory/0,,10268,00.html|title=Team History – Introduction |publisher=Chelsea F.C. official website|accessdate=11 May 2011}}</ref>
+| ground        = [[Stamford Bridge (stadium)|Stamford Bridge]]
+| capacity      = 41,663<ref name="capacity">{{cite web|url=http://www.chelseafc.com/the-club/about-chelsea-football-club/general-club-info.html |title=General Club Information |publisher=Chelsea F.C. official website |accessdate=13 August 2015}}</ref>
+| chairman      = [[Bruce Buck]]
+| owner         = [[Roman Abramovich]]
+| manager       = [[José Mourinho]]
+| league        = [[Premier League]]
+| season        = [[2014–15 Premier League|2014–15]]
+| position      = Premier League, 1st
+| current       = 2015–16 Chelsea F.C. season
+| website       = http://www.chelseafc.com/
+| pattern_la1   = _chelsea1516h
+| pattern_b1    = _chelsea1516H
+| pattern_ra1   = _chelsea1516h
+| pattern_sh1   = _chelsea1516h
+| pattern_so1   = _chelsea1516h
+| leftarm1      = 0000FF
+| body1         = 0000FF
+| rightarm1     = 0000FF
+| shorts1       = 0000FF
+| socks1        = FFFFFF
+| pattern_la2   = _chelsea1516a
+| pattern_b2    = _chelsea1516A
+| pattern_ra2   = _chelsea1516a
+| pattern_sh2   = _adidasblue
+| pattern_so2   = _chelsea1516a
+| leftarm2      = FFFFFF
+| body2         = FFFFFF
+| rightarm2     = FFFFFF
+| shorts2       = FFFFFF
+| socks2        = 0000FF
+| pattern_la3   = _chelsea1516t
+| pattern_b3    = _chelsea1516T
+| pattern_ra3   = _chelsea1516t
+| pattern_sh3   = _chelsea1516t
+| pattern_so3   = _chelsea1516t
+| leftarm3      = 000000
+| body3         = 000000
+| rightarm3     = 000000
+| shorts3       = 000000
+| socks3        = FFFFFF
+}}
+'''Chelsea Football Club''' {{IPAc-en|ˈ|tʃ|ɛ|l|s|iː}} are a professional [[Association football|football]] club based in [[Fulham]], [[London]], who play in the [[Premier League]], the highest level of English football. Founded in 1905, the club have spent most of their history in the top tier of English football. The club's home ground is the 41,663-seat [[Stamford Bridge (stadium)|Stamford Bridge]] stadium, where they have played since their establishment.<ref name="capacity"/>
+
+One of the most successful clubs in English football, Chelsea had their first major success in [[1954–55 Chelsea F.C. season|1955]], when they won the league championship, and subsequently won various cup competitions between [[1964–65 Chelsea F.C. season|1965]] and 1990. The club have enjoyed their greatest period of success in the past two decades, winning 17 major trophies since [[1996–97 Chelsea F.C. season|1997]].<ref>{{cite web |url=http://www.chelseafc.com/page/HistoryTrophiesIndex/0,,10268,00.html |title=Trophy Cabinet |publisher=Chelsea F.C. official website |accessdate=20 May 2012 }}</ref>
+Domestically, Chelsea have won five [[List of English football champions#Total titles won|league titles]], seven [[FA Cup]]s, five [[Football League Cup|League Cups]] and four [[FA Community Shield]]s, while in continental competitions they have won one [[UEFA Champions League]], two [[UEFA Cup Winners' Cup]]s, one [[UEFA Europa League]] and one [[UEFA Super Cup]]. Chelsea are the only [[Football in London|London club]] to win the UEFA Champions League,<ref name="Chelsea win breaks London duck">{{cite news |title=Chelsea win breaks London duck |url=http://www.uefa.com/uefachampionsleague/news/newsid=1798274.html#chelseas+capital+gains |work=Union of European Football Associations |date=20 May 2012 |accessdate=20 May 2012 }}</ref> and one of [[UEFA club competition records#List of teams to have won the three main European club competitions|four clubs]], and the only British club, to have won all three main [[UEFA]] club competitions.<ref>{{cite web|url=http://espnfc.com/news/story/_/id/1449255/ivanovic-goal-wins-europa-league-chelsea?cc=5901 |title=Chelsea wins Europa on Ivanovic header |publisher=ESPNFC |date=16 May 2013 }}</ref><ref>{{cite web |url=http://www.uefa.com/uefaeuropaleague/news/newsid=1947872.html |title=Chelsea join illustrious trio |publisher=Uefa.com |accessdate=17 May 2013 }}</ref>
+
+Chelsea's regular [[Kit (association football)|kit]] colours are royal blue shirts and shorts with white socks. The club's crest has been changed several times in attempts to re-brand the club and modernise its image. The current crest, featuring a ceremonial lion rampant regardant holding a staff, is a modification of the one introduced in the early 1950s.<ref name="new crest">{{cite news |title=Chelsea centenary crest unveiled |url=http://news.bbc.co.uk/sport1/hi/football/teams/c/chelsea/4008257.stm |work=BBC Sport |publisher=British Broadcasting Corporation |date=12 November 2004 |accessdate=2 January 2007 }}</ref> The club have sustained the fifth-highest average all-time attendance in [[Football in England|English football]].<ref name="attendance">{{cite web | url=http://nufc.com/2011-12html/attendance-all-time.html | title=All Time League Attendance Records | accessdate=8 November 2013 |date=22 May 2011 |archiveurl=https://web.archive.org/web/20120111003541/http://nufc.com/2011-12html/attendance-all-time.html |archivedate=11 January 2012}}</ref> Their average home gate for the [[2014–15 in English football|2014–15 season]] was 41,546, the seventh highest in the Premier League.<ref name="14/15 attendances">{{cite web|url=http://www.soccerstats.com/attendance.asp?league=england|title=Attendances (at home)|publisher=Soccerstats.com|accessdate=6 August 2015}}</ref> Since July 2003, Chelsea have been owned by Russian billionaire [[Roman Abramovich]].<ref name="takeover">{{cite news |title=Russian businessman buys Chelsea |url=http://news.bbc.co.uk/1/hi/business/3036838.stm |work=BBC Sport |publisher=British Broadcasting Corporation |date=2 July 2003 |accessdate=11 February 2007 }}</ref> In May 2015, they were ranked by ''[[Forbes]]'' magazine as the [[Forbes' list of the most valuable football clubs|sixth most valuable football club in the world]], at £898&nbsp;million ($1.37&nbsp;billion).<ref name="Forbes List">{{cite web |url=http://www.forbes.com/sites/mikeozanian/2015/05/06/real-madrid-tops-ranking-of-the-worlds-most-valuable-soccer-teams/ | title=Real Madrid Tops Ranking Of The World's Most Valuable Soccer Teams |author=Mike Ozanian |date=6 May 2015 |work=Forbes |publisher=Forbes |accessdate=6 May 2015 }}</ref>
+
+==History==
+{{Main|History of Chelsea F.C.}}
+[[File:Chelsea Team 1905.jpg|thumb|250px|The [[History of Chelsea F.C.|first Chelsea team]] in September 1905]]
+
+In 1904, [[Gus Mears]] acquired the [[Stamford Bridge (stadium)|Stamford Bridge]] athletics stadium with the aim of turning it into a football ground. An offer to lease it to nearby [[Fulham F.C.|Fulham]] was turned down, so Mears opted to found his own club to use the stadium. As there was already a team named Fulham in the borough, the name of the adjacent borough of [[Metropolitan Borough of Chelsea|Chelsea]] was chosen for the new club; names like ''Kensington FC'', ''Stamford Bridge FC'' and ''London FC'' were also considered.<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | page=55}}</ref> Chelsea were founded on 10 March 1905 at The Rising Sun pub (now The Butcher's Hook),<ref name="teamhistory"/><ref>{{cite web |url=http://www.chelseafc.com/news-article/article/860972|title=HISTORY – CENTENARY|publisher=Chelsea F.C.|date=30 September 2004|accessdate=23 April 2014}}</ref> opposite the present-day main entrance to the ground on [[Fulham Road]], and were elected to the Football League shortly afterwards.
+
+The club won promotion to the First Division in their second season, and yo-yoed between the First and Second Divisions in their early years. They reached the [[1915 FA Cup Final]], where they lost to [[Sheffield United F.C.|Sheffield United]] at Old Trafford, and finished third in the First Division in 1920, the club's best league campaign to that point.<ref>{{cite web|url=http://www.chelseafc.com/news-article/article/1800262|title=Team History – 1905–29 |publisher=Chelsea F.C. official website|accessdate=23 April 2014}}</ref> Chelsea attracted large crowds<ref>{{cite web|url=http://www.chelseafc.com/page/TeamHistory/0,,10268~910883,00.html|title=Between the Wars – Big Names and Big Crowds|publisher=Chelsea F.C. official website|accessdate=7 May 2012}}</ref> and had a reputation for signing big-name players,<ref name="glanville">{{cite news | date=10 January 2004 | url=http://www.timesonline.co.uk/tol/sport/football/article992039.ece | title=Little sign of change for Chelsea and their impossible dreams |work=The Times |location=UK| accessdate=15 March 2009 | author=[[Brian Glanville]]}} {{registration required}}</ref> but success continued to elude the club in the inter-war years.
+
+Former [[Arsenal F.C.|Arsenal]] and England centre-forward [[Ted Drake]] became manager in 1952 and proceeded to modernise the club. He removed the club's [[Chelsea pensioner]] crest, improved the youth set-up and training regime, rebuilt the side with shrewd signings from the lower divisions and amateur leagues, and led Chelsea to their first major trophy success – the League championship – in [[1954–55 Chelsea F.C. season|1954–55]]. The following season saw UEFA create the [[UEFA Champions League|European Champions' Cup]], but after objections from [[The Football League]] and the [[The Football Association|FA]] Chelsea were persuaded to withdraw from the competition before it started.<ref>{{cite news | date=27 April 2005 | url=http://www.thetimes.co.uk/tto/sport/football/europe/article2327902.ece | title=The great Chelsea surrender |work=The Times |location=UK | accessdate=29 December 2006 |author=[[Brian Glanville]] }}</ref> Chelsea failed to build on this success, and spent the remainder of the 1950s in mid-table. Drake was dismissed in 1961 and replaced by player-coach [[Tommy Docherty]].
+
+[[File:Chelsea league progress pic.PNG|thumb|left|Chart showing the progress of Chelsea's league finishes from 1906–2015]]
+
+Docherty built a new team around the group of talented young players emerging from the club's youth set-up and Chelsea challenged for honours throughout the 1960s, enduring several near-misses. They were on course for a treble of League, FA Cup and League Cup going into the final stages of the 1964–65 season, winning the League Cup but faltering late on in the other two.<ref>{{cite book | author=Glanvill, Rick | title=Chelsea FC: The Official Biography – The Definitive Story of the First 100 Years| publisher=Headline Book Publishing Ltd| year=2006| isbn=978-0-7553-1466-9 | page=196}}</ref> In three seasons the side were beaten in three major semi-finals and were FA Cup runners-up. Under Docherty's successor, [[Dave Sexton]], Chelsea won the [[1970 FA Cup Final|FA Cup in 1970]], beating [[Leeds United A.F.C.|Leeds United]] 2–1 in a final replay. Chelsea took their first European honour, a [[UEFA Cup Winners' Cup]] triumph, the following year, with another replayed win, this time over [[Real Madrid C.F.|Real Madrid]] in Athens.
+
+The late 1970s through to the 1980s was a turbulent period for Chelsea. An ambitious redevelopment of Stamford Bridge threatened the financial stability of the club,<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | pages=84–87}}</ref> star players were sold and the team were relegated. Further problems were caused by a notorious [[hooliganism|hooligan]] element among the support, which was to plague the club throughout the decade.<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | pages=143–157}}</ref> In 1982, Chelsea were, at the nadir of their fortunes, acquired by [[Ken Bates]] for the nominal sum of £1, although by now the Stamford Bridge freehold had been sold to property developers, meaning the club faced losing their home.<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | pages=89–90}}</ref> On the pitch, the team had fared little better, coming close to relegation to the [[Football League Third Division|Third Division]] for the first time, but in 1983 manager [[John Neal (footballer)|John Neal]] put together an impressive new team for minimal outlay. Chelsea won the [[Football League Second Division|Second Division]] title in 1983–84 and established themselves in the top division, before being relegated again in 1988. The club bounced back immediately by winning the Second Division championship in 1988–89.
+
+[[File:Chelsea UCL Winners 2012.jpg|thumb|250px|Chelsea players celebrate their first [[2012 UEFA Champions League Final|UEFA Champions League title]] against [[FC Bayern Munich|Bayern Munich]].]]
+
+After a long-running legal battle, Bates reunited the stadium freehold with the club in 1992 by doing a deal with the banks of the property developers, who had been bankrupted by a market crash.<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | pages=90–91}}</ref> Chelsea's form in the new Premier League was unconvincing, although they did reach the [[1994 FA Cup Final]] with [[Glenn Hoddle]]. It was not until the appointment of [[Ruud Gullit]] as player-manager in 1996 that their fortunes changed. He added several top international players to the side, as the club [[1997 FA Cup Final|won the FA Cup in 1997]] and established themselves as one of England's top sides again. Gullit was replaced by [[Gianluca Vialli]], who led the team to victory in the [[1998 Football League Cup Final|League Cup Final]], the [[1998 UEFA Cup Winners' Cup Final|UEFA Cup Winners' Cup Final]] and the [[1998 UEFA Super Cup|UEFA Super Cup]] in 1998, the [[2000 FA Cup Final|FA Cup in 2000]] and their first appearance in the [[UEFA Champions League]]. Vialli was sacked in favour of [[Claudio Ranieri]], who guided Chelsea to the [[2002 FA Cup Final]] and Champions League qualification in 2002–03.
+
+In June 2003, Bates sold Chelsea to Russian billionaire [[Roman Abramovich]] for £140&nbsp;million.<ref name="takeover"/> Over £100&nbsp;million was spent on new players, but Ranieri was unable to deliver any trophies,<ref>{{cite news |title=Chelsea sack Ranieri |url=http://news.bbc.co.uk/sport2/hi/football/teams/c/chelsea/3742477.stm |work=BBC Sport |publisher=British Broadcasting Corporation |date=1 June 2004 |accessdate=20 May 2012 }}</ref> and was replaced by [[José Mourinho]].<ref>{{cite news |title=Chelsea appoint Mourinho |url=http://news.bbc.co.uk/sport2/hi/football/teams/c/chelsea/3765263.stm |work=BBC Sport |publisher=British Broadcasting Corporation |date=2 June 2004 |accessdate=20 May 2012 }}</ref> Under Mourinho, Chelsea became the fifth English team to win back-to-back league championships since the Second World War ([[2004–05 FA Premier League|2004–05]] and [[2005–06 FA Premier League|2005–06]]),<ref>{{cite news | url=http://www.sportinglife.com/story_get.cgi?STORY_NAME=soccer/06/03/12/SOCCER_Chelsea.html&TEAMHD=soccer | archiveurl=https://web.archive.org/web/20120603160253/http://www.sportinglife.com/story_get.cgi?STORY_NAME=soccer/06/03/12/SOCCER_Chelsea.html&TEAMHD=soccer | archivedate=3 June 2012 | title=Terry Eyes Back-to-Back Titles | publisher=Sporting Life | accessdate=22 January 2007 | author=Matt Barlow|date=12 March 2006 }}</ref> in addition to winning an FA Cup ([[2007 FA Cup Final|2007]]) and two League Cups ([[2005 Football League Cup Final|2005]] and [[2007 Football League Cup Final|2007]]). Mourinho was replaced by [[Avram Grant]],<ref>{{cite news |title=Chelsea name Grant as new manager |url=http://news.bbc.co.uk/sport1/hi/football/teams/c/chelsea/7004083.stm |work=BBC Sport |publisher=British Broadcasting Corporation |date=20 September 2007 |accessdate=21 September 2007 }}</ref> who led the club to their first [[2008 UEFA Champions League Final|UEFA Champions League final]], which they lost on penalties to [[Manchester United F.C.|Manchester United]].
+
+In 2009, [[Guus Hiddink]] guided Chelsea to another [[2009 FA Cup Final|FA Cup success]].<ref>{{cite news |title=Chelsea 2–1 Everton |url=http://news.bbc.co.uk/sport2/hi/football/fa_cup/8060989.stm |work=BBC Sport |publisher=British Broadcasting Corporation |date=30 May 2009 |accessdate=1 June 2009 }}</ref> In [[2009–10 in English football|2009–10]], his successor [[Carlo Ancelotti]] led them to their first [[2009–10 Premier League|Premier League]] and [[2010 FA Cup Final|FA Cup]] "[[Double (association football)|Double]]," and becoming the first English top-flight club to score 100 league goals in a season since [[1962–63 in English football|1963]].<ref name="Wigan80">{{cite news |title=Chelsea 8–0 Wigan |url=http://news.bbc.co.uk/sport1/hi/football/eng_prem/8663686.stm |work=BBC Sport |publisher=British Broadcasting Corporation |date=9 May 2010 |accessdate=16 May 2010 }}</ref> In 2012, caretaker manager [[Roberto Di Matteo]] led Chelsea to their seventh [[2012 FA Cup Final|FA Cup]],<ref>{{cite news |title=Chelsea 2–1 Liverpool |first=Phil |last=McNulty |url=http://www.bbc.co.uk/sport/0/football/17878435 |work=BBC Sport |publisher=British Broadcasting Corporation |date=5 May 2012 |accessdate=20 May 2012 }}</ref> and their first [[2012 UEFA Champions League Final|UEFA Champions League title]], beating [[FC Bayern Munich|Bayern Munich]] 4–3 on penalties,<ref name="final2012">{{cite news |title=Bayern Munich 1–1 Chelsea (aet, 4–3 pens) |first=Phil |last=McNulty |url=http://www.bbc.co.uk/sport/0/football/18044385 |work=BBC Sport |publisher=British Broadcasting Corporation |date=19 May 2012 |accessdate=20 May 2012 }}</ref> the first London club to win the trophy.<ref name="final2012"/> In 2013, interim manager [[Rafael Benítez]] guided Chelsea to win the [[2013 UEFA Europa League Final|UEFA Europa League]] against [[S.L. Benfica|Benfica]],<ref>{{cite news |title=Benfica 1–2 Chelsea |url=http://www.bbc.co.uk/sport/0/football/22445388 |work=BBC |publisher=BBC Sport |date=15 May 2013 |accessdate=15 May 2013 }}</ref> becoming the first club to hold two major European titles simultaneously and one of [[UEFA club competition records#List of teams to have won the three main European club competitions|four clubs]], and the only British club, to have won all three of [[UEFA]]'s major club competitions.<ref>{{cite news |title=Chelsea claim last-gasp Europa League triumph |url=http://www.google.com/hostednews/afp/article/ALeqM5hvKoBXa2illaBsY08MgEqORVvLkQ?docId=CNG.ed0a8f81bd5745978904d66a17caa38a.721 |archiveurl=https://web.archive.org/web/20140227204142/http://www.google.com/hostednews/afp/article/ALeqM5hvKoBXa2illaBsY08MgEqORVvLkQ?docId=CNG.ed0a8f81bd5745978904d66a17caa38a.721 |archivedate=27 February 2014 |work=AFP |publisher=AFP |date=15 May 2013 |accessdate=3 August 2013 }}</ref> In the summer of 2013, Mourinho returned as manager, leading Chelsea to [[2015 Football League Cup Final|League Cup]] success in March 2015,<ref>{{cite news |title=Chelsea 2–0 Tottenham Hotspur |url=http://www.bbc.co.uk/sport/0/football/31572594 |work=BBC Sport |publisher=BBC|date=1 March 2015 |accessdate=13 April 2015 }}</ref> and their fifth league title two months later.<ref>{{cite news|last1=McNulty|first1=Phil|title=Chelsea 1–0 Crystal Palace|url=http://www.bbc.co.uk/sport/0/football/32471261|accessdate=4 May 2015|work=BBC Sport|date=3 May 2015}}</ref>
+
+==Stadium==
+{{Main|Stamford Bridge (stadium)}}
+[[File:Stamford Bridge - West Stand.jpg|thumb|250px|[[Stamford Bridge (stadium)|Stamford Bridge]]]]
+Chelsea have only had one home ground, Stamford Bridge, where they have played since the team's foundation. It was officially opened on 28 April 1877 and for the first 28 years of its existence it was used almost exclusively by the [[London Athletic Club]] as an arena for athletics meetings and not at all for football. In 1904 the ground was acquired by businessman [[Gus Mears]] and his brother [[Joseph Mears|Joseph]], who had also purchased nearby land (formerly a large market garden) with the aim of staging football matches on the now 12.5&nbsp;acre (51,000&nbsp;m²) site.<ref name = "stadium"/> Stamford Bridge was designed for the Mears family by the noted football architect [[Archibald Leitch]], who had also designed [[Ibrox Stadium|Ibrox]], [[Celtic Park]] and [[Hampden Park]].<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | pages=69–71}}</ref> Most football clubs were founded first, and then sought grounds in which to play, but Chelsea were founded for Stamford Bridge.
+
+Starting with an open bowl-like design and one covered terrace, Stamford Bridge had an original capacity of around 100,000.<ref name = "stadium"/> The early 1930s saw the construction of a terrace on the southern part of the ground with a roof that covered around one fifth of the stand. It eventually became known as the "Shed End", the home of Chelsea's most loyal and vocal supporters, particularly during the 1960s, 70s and 80s. The exact origins of the name are unclear, but the fact that the roof looked like a corrugated iron shed roof played a part.<ref name="stadium">{{cite web
+| url=http://www.chelseafc.com/page/StadiumHistory/0,,10268,00.html
+| title=Stadium History – Introduction
+| work=Chelsea F.C. official website
+| accessdate=20 May 2012}}</ref>
+
+In the early 1970s, the club's owners announced a modernisation of Stamford Bridge with plans for a state-of-the-art 50,000 all-seater stadium.<ref name="stadium"/> Work began on the East Stand in 1972 but the project was beset with problems and was never completed; the cost brought the club close to bankruptcy, culminating in the [[Fee simple|freehold]] being sold to property developers. Following a long legal battle, it was not until the mid-1990s that Chelsea's future at the stadium was secured and renovation work resumed.<ref name="stadium"/> The north, west and southern parts of the ground were converted into all-seater stands and moved closer to the pitch, a process completed by 2001.
+
+When Stamford Bridge was redeveloped in the [[Ken Bates|Bates]] era many additional features were added to the complex including two hotels, apartments, bars, restaurants, the Chelsea Megastore, and an interactive visitor attraction called Chelsea World of Sport. The intention was that these facilities would provide extra revenue to support the football side of the business, but they were less successful than hoped and before the Abramovich takeover in 2003 the debt taken on to finance them was a major burden on the club. Soon after the takeover a decision was taken to drop the "Chelsea Village" brand and refocus on Chelsea as a football club. However, the stadium is sometimes still referred to as part of ''"Chelsea Village"'' or ''"The Village"''.
+[[File:Chelsea-ilkmac.jpg|left|frame|Chelsea ''vs.'' [[West Bromwich Albion F.C.|West Bromwich Albion]] at Stamford Bridge on 23 September 1905; Chelsea won 1–0.]]
+The Stamford Bridge [[Freehold (law)|freehold]], the [[Association football pitch|pitch]], the turnstiles and Chelsea's [[naming rights]] are now owned by [[Chelsea Pitch Owners]], a non-profit organisation in which fans are the shareholders. The CPO was created to ensure the stadium could never again be sold to developers. As a condition for using the Chelsea FC name, the club has to play its first team matches at Stamford Bridge, which means that if the club moves to a new stadium, they may have to change their name.<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | pages=91–92}}</ref>
+Chelsea's [[Cobham Training Centre|training ground]] is located in [[Cobham, Surrey]]. Chelsea moved to Cobham in 2004. Their previous training ground in [[Harlington, London|Harlington]] was taken over by [[Queens Park Rangers F.C.|QPR]] in 2005.<ref>{{cite news |title=QPR take over Chelsea training ground |first=Wayne |last=Veysey |url=http://www.thisislondon.co.uk/sport/article-18829718-qpr-take-over-chelsea-training-ground.do |work=Evening Standard |date=24 May 2005 |accessdate=24 June 2009 }}</ref> The new training facilities in Cobham were completed in 2007.<ref>{{cite news |title=Chelsea's new training ground for the future |url=http://www.bbc.co.uk/london/content/articles/2007/07/05/chelsea_ground_feature.shtml |work=BBC London |publisher=British Broadcasting Corporation |date=5 July 2007 |accessdate=24 June 2009 }}</ref>
+
+Stamford Bridge has been used for a variety of other sporting events since 1905. It hosted the [[FA Cup Final]] from 1920 to 1922,<ref>{{cite web
+| url=http://www.thefa.com/TheFACup/FACompetitions/TheFACup/History/CupFinalResults
+| title=Cup Final Statistics
+| work=The Football Association
+| accessdate=18 February 2011}}</ref> has held ten [[FA Cup Semi-finals|FA Cup semi-finals]] (most recently in [[1977–78 FA Cup|1978]]), ten [[FA Community Shield|FA Charity Shield]] matches (the last in [[1970 FA Charity Shield|1970]]), and three [[England national football team|England international]] matches, the last in 1932; it was also the venue for an unofficial ''Victory International'' in 1946.<ref>{{cite web
+| url=http://www.englandfootballonline.com/MatchRsl/MatchRslUnoff.html
+| title=England's Matches: Unofficial
+| work=Englandfootballonline
+| accessdate=18 February 2011}}</ref> The [[2013 UEFA Women's Champions League Final]] was played at Stamford Bridge.<ref>{{cite web
+| url=http://www.uefa.com/womenschampionsleague/season=2013/finals/index.html
+| title=2013 final: Stamford Bridge
+| work=Uefa.com
+| accessdate=11 March 2014}}</ref> [[File:West Stand Champions.jpg|thumb|230px|right|View from the [[Stamford Bridge (stadium)#West Stand|West Stand]] of [[Stamford Bridge (stadium)|Stamford Bridge]] during a [[UEFA Champions League|Champions League game]], 2008]] In October 1905 it hosted a [[rugby union]] match between the [[The Original All Blacks|All Blacks]] and Middlesex,<ref>{{cite web
+| url=http://www.rugbyfootballhistory.com/allblacks.html
+| title=All Blacks
+| work=Rugbyfootballhistory.com
+| accessdate=18 February 2011}}</ref> and in 1914 hosted a baseball match between the touring [[San Francisco Giants|New York Giants]] and the [[Chicago White Sox]].<ref>{{cite web
+| url=http://www.baseballgb.co.uk/?p=9582
+| title=Countdown to SABR Day 2011
+| work=BaseballGB.co.uk
+| accessdate=18 February 2011}}</ref> It was the venue for a [[boxing]] match between world [[flyweight]] champion [[Jimmy Wilde]] and Joe Conn in 1918.<ref>{{cite web
+| url=http://cyberboxingzone.com/boxing/casey/MC_Wilde.htm
+| title=Jimmy Wilde: The Original Explosive Thin Man
+| work=Cyberboxingzone.com
+| accessdate=18 February 2011}}</ref> The running track was used for [[dirt track racing]] between 1928 and 1932,<ref>{{cite web
+| url=http://www.guskuhn.net/GKuhn/Stamford%20Bridge/StamfordBrdgIndex.htm
+| title=Stamford Bridge Speedway
+| work=guskuhn.net
+| accessdate=18 February 2011}}</ref> [[greyhound racing]] from 1933 to 1968, and [[Midget car racing]] in 1948.<ref>{{cite web | url=http://www.speedcarworld.com.au/default.asp?Page=Release&Id=8958| archiveurl=https://web.archive.org/web/20120325010050/http://www.speedcarworld.com.au/default.asp?Page=Release&Id=8958| archivedate=25 March 2012| title=U.S. Invades England 1948|work=speedcarworld.com| accessdate=19 February 2011}}</ref> In 1980, Stamford Bridge hosted the first international [[Floodlights (sport)|floodlit]] [[cricket]] match in the UK, between [[Essex County Cricket Club|Essex]] and the [[West Indies cricket team|West Indies]].<ref>{{cite web
+| url=http://www.spincricket.com/tag/invention-of-twenty20/
+| archiveurl=https://web.archive.org/web/20120111195717/http://www.spincricket.com/tag/invention-of-twenty20/
+| archivedate=11 January 2012
+| title=Twenty20 before Twenty20
+| work=spincricket.com
+| accessdate=18 February 2011}}</ref> It was also the home stadium of the [[London Monarchs]] [[American Football]] team for the [[1997 London Monarchs season|1997 season]].<ref>{{cite web | url=http://www.britballnow.co.uk/History/Britball%20Teams/LONDONMONARCHS.htm| title=London Monarchs|work=Britballnow.co.uk| accessdate=19 February 2011}}</ref>
+The current club ownership have stated that a larger stadium is necessary in order for Chelsea to stay competitive with rival clubs who have significantly larger stadia, such as Arsenal and Manchester United.<ref>{{cite news
+ | date = 25 April 2012
+ | url = http://www.bbc.co.uk/sport/0/football/17839225
+ | title = Chelsea chief: We will drop out of Europe's elite without new stadium
+ |publisher=BBC
+ | accessdate =6 May 2012}}</ref> Owing to its location next to a main road and two railway lines, fans can only enter the ground via the [[Fulham Road]] exits, which places constraints on expansion due to [[Occupational safety and health|health and safety]] regulations.<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | page=76 }}</ref> The club have consistently affirmed their desire to keep Chelsea at their current home,<ref>{{cite news
+ | date = 12 April 2006
+ | url = http://www.rte.ie/sport/2006/0412/stamfordbridge.html?rss
+ | title = Kenyon confirms Blues will stay at Stamford Bridge
+ | publisher=RTÉ Sport
+ | accessdate =1 January 2007}}</ref><ref>{{cite news
+ | date = 9 November 2008
+ | url = http://www.chelseafc.com/news-article/article/1448876
+ | title = Observer Stadium Story Denied
+ | publisher=Chelsea F.C. official website
+ | accessdate =23 April 2014}}</ref><ref>{{cite news
+ | date = 10 November 2010
+ | url = http://www.dailymail.co.uk/sport/football/article-1328071/Chelsea-deny-Earls-Court-ditch-Stamford-Bridge.html
+ | title = Chelsea deny they're to ditch Stamford Bridge for 60,000 stadium at Earls Court
+ |work=Daily Mail |location=UK | accessdate =19 March 2011}}</ref> but Chelsea have nonetheless been linked with a move to various nearby sites, including the [[Earls Court Exhibition Centre]], [[Battersea Power Station]] and the [[Chelsea Barracks]].<ref>{{cite news
+ | date = 20 January 2006
+ | url = http://news.bbc.co.uk/sport1/hi/football/teams/c/chelsea/4630618.stm
+ | title = Chelsea plan Bridge redevelopment
+ |work=BBC Sport
+ |publisher=British Broadcasting Corporation
+ | accessdate =1 January 2007
+ }}</ref> On 3 October 2011, Chelsea made a proposal to CPO shareholders to buy back the freehold to the land on which Stamford Bridge sits, stating that "buying back the freehold removes a potential hurdle should a suitable site become available in the future".<ref>{{cite web
+| url=http://www.chelseafc.com/news-article/article/2471443
+| title=Chelsea FC Proposal To Chelsea Pitch Owners
+| work=Chelsea F.C. official website
+| accessdate=23 April 2014}}</ref> The proposal was voted down by CPO shareholders.<ref>{{cite news|url=http://www.bbc.co.uk/news/business-15481301|title=Chelsea FC lose fan vote on stadium|publisher=BBC|date=27 October 2011|accessdate=11 March 2012}}</ref> In May 2012, the club made a formal bid to purchase Battersea Power Station, with a view to developing the site into a 60,000 seater stadium,<ref>{{cite news
+ | date = 4 May 2012
+ | url = http://www.guardian.co.uk/football/2012/may/04/chelsea-battersea-power-station-stadium?newsfeed=true
+ | title = Chelsea bid to buy Battersea power station in £1bn stadium plan
+ |work=The Guardian |location=UK | accessdate =6 May 2012}}</ref> but lost out to a Malaysian consortium.<ref>{{cite news
+ | date = 5 July 2012
+ | url = http://www.guardian.co.uk/football/2012/jul/05/chelsea-battersea-malaysian-consortium
+ | title = Chelsea's Battersea hopes end as Malaysian consortium completes deal
+ |work=The Guardian |location=UK | accessdate =10 November 2012}}</ref>
+
+==Crest and colours==
+
+===Crest===
+[[File:Chelsea logo.JPG|thumbnail|right|1953–1986 Chelsea crest]]
+Since the club's foundation, Chelsea have had four main [[crest (sports)|crest]]s, which all underwent minor variations. In 1905, Chelsea adopted as their first crest the image of a [[Chelsea pensioner]], which contributed to the "pensioner" nickname, and remained for the next half-century, though it never appeared on the shirts. As part of [[Ted Drake]]'s modernisation of the club from 1952 onwards, he insisted that the pensioner badge be removed from the match day programme to change the club's image and that a new crest be adopted.<ref name="crests">{{cite web
+| url=http://www.chelseafc.com/page/HistoryDetail/0,,10268~1328582,00.html
+| title=Club Badges
+| work=Chelsea F.C. official website
+| accessdate =24 January 2012}}</ref> As a stop-gap, a temporary emblem comprising simply the initials C.F.C. was adopted for one year.
+In 1953, Chelsea's crest was changed to an upright blue lion looking backwards and holding a [[crosier|staff]], which was to endure for the next three decades. This crest was based on elements in the [[coat of arms]] of the [[Metropolitan Borough of Chelsea]]<ref>{{cite web
+| url=http://www.civicheraldry.co.uk/lcc.html#chelsea%20bc
+| title=Chelsea Metropolitan Borough Council
+| work=Civic Heraldry of England and Wales
+| accessdate = 21 January 2007}}</ref> with the "lion rampant regardant" taken from the arms of then club president [[William Cadogan, 7th Earl Cadogan|Viscount Chelsea]] and the staff from the [[Westminster Abbey|Abbots of Westminster]], former Lords of the Manor of Chelsea. It also featured three red roses, to represent England, and two footballs. This was the first club badge to appear on shirts, since the policy of putting the crest on the shirts was only adopted in the early 1960s.<ref name="crests"/>
+
+In 1986, with [[Ken Bates]] now owner of the club, Chelsea's crest was changed again as part of another attempt to modernise and to capitalise on new marketing opportunities.<ref name="crests"/> The new badge featured a more naturalistic non-heraldic lion, in white and not blue, standing over the C.F.C. initials. It lasted for the next 19 years, with some modifications such as the use of different colours, including red from 1987 to 1995, and yellow from 1995 until 1999, before the white returned.<ref name = "HFK">{{cite web| title = Historical Kits – Chelsea
+| url = http://www.historicalkits.co.uk/Chelsea/Chelsea.htm
+| first = Dave
+| last = Moor
+| publisher = Historical Kits
+| accessdate =28 September 2011}}</ref> With the new ownership of [[Roman Abramovich]], and the club's centenary approaching, combined with demands from fans for the popular 1950s badge to be restored, it was decided that the crest should be changed again in 2005. The new crest was officially adopted for the start of the [[2005–06 in English football|2005–06]] season and marked a return to the older design, used from 1953 to 1986, featuring a blue heraldic lion holding a staff. For the centenary season this was accompanied by the words '100 YEARS' and 'CENTENARY 2005–2006' on the top and bottom of the crest respectively.<ref name="new crest"/>
+
+===Colours===
+{{Football kit box
+| align = right
+| pattern_la =
+| pattern_b =
+| pattern_ra =
+| leftarm = 96C8A2
+| body = 96C8A2
+| rightarm = 96C8A2
+| shorts = FFFFFM
+| socks = 191970
+| title = Chelsea's first home colours, used from 1905 until c. 1912.
+}}
+
+Chelsea have always worn blue shirts, although they originally used the paler [[eton blue]], which was taken from the racing colours of then club president, [[Earl Cadogan]], and was worn with white shorts and dark blue or black socks.<ref>{{cite web
+ | url = http://www.historicalkits.co.uk/Chelsea/Chelsea.htm
+ | title= Chelsea – Historical Football Kits
+ | work=Historical Kits
+ | accessdate =26 June 2012
+ }}</ref> The light blue shirts were replaced by a royal blue version in around 1912.<ref>{{cite book | author=Glanvill, Rick | title=Chelsea Football Club: The Official History in Pictures| year=2006| isbn=0-7553-1467-0}} p. 212</ref> In the 1960s Chelsea manager [[Tommy Docherty]] changed the kit again, switching to blue shorts (which have remained ever since) and white socks, believing it made the club's colours more modern and distinctive, since no other major side used that combination; this kit was first worn during the 1964–65 season.<ref>{{cite book | author=Mears, Brian | title=Chelsea: Football Under the Blue Flag| publisher=Mainstream Sport| year=2002| isbn=1-84018-658-5 | page=42 }}</ref> Since then Chelsea have always worn white socks with their home kit apart from a short spell from 1985 to 1992, when blue socks were reintroduced.
+
+Chelsea's traditional away colours are all yellow or all white with blue trim, but, as with most teams, they have had some more unusual ones. The first away strip consisted of black and white stripes and for one game in the 1960s the team wore blue and black stripes, inspired by [[Inter Milan]]'s kit, again at Docherty's behest.<ref>The "Inter Milan" kit was worn for an FA Cup semi-final against [[Sheffield Wednesday F.C.|Sheffield Wednesday]], on 23 April 1966. Reference: Mears (2002), p. 58</ref> Other memorable away kits include a mint green strip in the 1980s, a red and white checked one in the early 90s<ref>{{cite web |url=http://www.oldfootballshirts.com/en/teams/c/chelsea/old-chelsea-football-shirt-s2132.html|title=Chelsea Away football shirt 1990 – 1992|publisher=Old Football Shirts|accessdate=23 April 2014}}</ref> and a graphite and tangerine edition in the mid-1990s.<ref>{{cite web
+ | url = http://www.chelseafc.com/news-article/article/1092045
+ | title= Be Seen!
+ | first= Giles
+ | last= Smith
+ | work=Chelsea F.C. official website
+ | date= 14 August 2007
+ | accessdate =23 April 2014
+ }}</ref><ref>{{cite web |url=http://espnfc.com/columns/story?id=336980&cc=5739|title=10 of the worst...football kits|first=Dominic|last=Rayner|publisher=ESPN FC|date=12 July 2005|accessdate=23 April 2014}}</ref>
+
+==Support==
+[[File:Chelsea defend corner.jpg|thumb|250px|Chelsea fans at a match against [[Tottenham Hotspur F.C.|Tottenham Hotspur]], on 11 March 2006]]
+Chelsea are one of the most widely supported football clubs in the world.<ref>{{cite news |url=http://www.express.co.uk/sport/football/511644/Chelsea-are-a-more-universally-loved-club-Blues-chief-lauds-400million-fan-base |title=Chelsea are a more universally loved club! Blues chief lauds 400million fan base |author=Anderson, Jamie |work=Daily Express |location=London}}</ref><ref>{{cite web|url=http://talksport.com/magazine/big-picture/2011-10-13/worlds-most-popular-football-club-revealed-man-united-liverpool-arsenal-barca-real-or-chelsea|title=The world's most popular football club revealed: Man United, Liverpool, Arsenal, Barca, Real or Chelsea?|work=talkSPORT}}</ref> They have the fifth highest average all-time attendance in [[Football in England|English football]]<ref name="attendance"/> and regularly attract over 40,000 fans to Stamford Bridge; they were the seventh best-supported [[Premier League]] team in the 2013–14 season, with an average gate of 41,572.<ref name="13/14 attendances">{{cite web|url=http://www.soccerstats.com/attendance.asp?league=england|title=Attendances (at home)|publisher=Soccerstats.com|accessdate=25 February 2015}}</ref> Chelsea's traditional fanbase comes from all over the [[Greater London]] area including working-class parts such as [[Hammersmith]] and [[Battersea]], wealthier areas like Chelsea and [[Kensington]], and from the [[home counties]]. There are also numerous official supporters clubs in the United Kingdom and all over the world.<ref>{{cite web
+| url=http://www.chelseafc.com/supporters-clubs
+| title=Supporters Clubs Map
+| work= Chelsea F.C. official website
+| accessdate=23 March 2014}}</ref> Between 2007 and 2012, Chelsea were ranked fourth worldwide in annual replica kit sales, with an average of 910,000.<ref>{{cite news |title=EXCLUSIVE: Manchester United and Real Madrid top global shirt sale charts |url=http://www.sportingintelligence.com/2012/10/08/exclusive-manchester-united-and-real-madrid-top-global-shirt-sale-charts-081001/ |work=Sporting Intelligence|date=8 October 2012 |accessdate=8 October 2012}}</ref>
+
+At matches, Chelsea fans sing [[football chants|chants]] such as ''"[[Carefree (chant)|Carefree]]"'' (to the tune of [[Lord of the Dance (hymn)|Lord of the Dance]], whose lyrics were probably written by supporter Mick Greenaway<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | page=150}}</ref><ref>{{cite web|url=http://fanchants.com/football-songs/chelsea-chants/carefree/ |title="Carefree" audio sample |publisher=Fanchants.com |accessdate=3 September 2011}}</ref>), ''"Ten Men Went to Mow"'', ''"We All Follow the Chelsea"'' (to the tune of "[[Land of Hope and Glory]]"), ''"Zigga Zagga"'', and the celebratory ''"Celery"'', with the latter often resulting in fans ritually throwing celery. The vegetable was banned inside Stamford Bridge after an incident involving [[Arsenal F.C.|Arsenal]] midfielder [[Cesc Fàbregas]] at the [[2007 Football League Cup Final|2007 League Cup Final]].<ref>{{cite news
+| date=17 April 2002
+| url=http://football.guardian.co.uk/News_Story/0,1563,685859,00.html
+| title=Fans sent spinning after tossing salad |work=The Guardian
+| accessdate=1 January 2007
+| author=Scott Murray}}</ref>
+[[File:Chelsea-Pub-Taschkent.JPG|right|thumb|150px|Mural at a Chelsea pub in [[Tashkent]]]]
+During the 1970s and 1980s in particular, Chelsea supporters were associated with [[Football (soccer) hooliganism|football hooliganism]]. The club's "[[Football hooliganism|football firm]]," originally known as the Chelsea Shed Boys, and subsequently as the [[Chelsea Headhunters]], were nationally notorious for football violence, alongside hooligan firms from other clubs such as [[West Ham United F.C.|West Ham United]]'s [[Inter City Firm]] and [[Millwall F.C.|Millwall]]'s [[Millwall Bushwackers|Bushwackers]], before, during and after matches.<ref>{{cite news
+| url=http://news.bbc.co.uk/1/hi/programmes/hooligans/1962503.stm
+| title=Making a new start
+| work=BBC News
+| accessdate=21 January 2007
+  | date=2 May 2002}}</ref> The increase of hooligan incidents in the 1980s led chairman Ken Bates to propose erecting an electric fence to deter them from invading the pitch, a proposal that the [[Greater London Council]] rejected.<ref>{{cite news
+| url=http://news.bbc.co.uk/sport1/hi/football/teams/c/chelsea/3037508.stm
+| title=Bates: Chelsea's driving force
+| work=BBC Sport
+| publisher=British Broadcasting Corporation
+| accessdate = 21 January 2007 | date=2 July 2003}}</ref>
+
+Since the 1990s, there has been a marked decline in crowd trouble at matches, as a result of stricter policing, [[Closed-circuit television|CCTV]] in grounds and the advent of [[All-seater stadium|all-seater stadia]].<ref>{{cite news |date=2 June 1998 |url=http://news.bbc.co.uk/1/hi/special_report/1998/hooligans/60146.stm | title=Soccer hooliganism: Made in England, but big abroad |publisher=BBC News | accessdate=1 January 2007}}</ref> In 2007, the club launched the [[Back to the Shed campaign|'Back to the Shed' campaign]] to improve the atmosphere at home matches, with notable success. According to [[Home Office]] statistics, 126 Chelsea fans were arrested for football-related offences during the [[2009–10 in English football|2009–10]] season, the third highest in the division, and 27 [[banning order]]s were issued, the fifth-highest in the division.<ref>{{cite web |url=http://www.homeoffice.gov.uk/publications/crime/football-arrests-banning-orders/fbo-2009-10?view=Binary |title=Statistics on football-related arrests and banning orders |accessdate=14 May 2011 |date=November 2010 |publisher=Home Office|format = PDF}}</ref>
+
+===Rivalries===
+{{Main|West London derby|Arsenal F.C.–Chelsea F.C. rivalry|Chelsea F.C.–Leeds United F.C. rivalry}}
+Chelsea do not have a traditional rivalry on the scale of the [[Merseyside derby]] or the [[north London derby]]. Matches against fellow [[West London derby|West London]] sides [[Fulham F.C.|Fulham]] and [[Queens Park Rangers F.C.|Queens Park Rangers]] have only taken place intermittently, due to the clubs often being in separate divisions. A 2004 survey by Planetfootball.com found that Chelsea fans consider their main rivalries to be with (in order): [[Arsenal F.C.|Arsenal]], [[Tottenham Hotspur F.C.|Tottenham Hotspur]] and [[Manchester United F.C.|Manchester United]].<ref>{{cite web
+| url=http://www.thefootballnetwork.net/main/s120/st44186.htm
+| title=Football Rivalries: The Complete Results
+| work=Planetfootball.com
+| accessdate=2 January 2007
+ }}</ref> Their rivalry with [[Tottenham Hotspur F.C.|Tottenham Hotspur]] is said to have developed following the [[1967 FA Cup Final]] which was won 2–1 by Tottenham,<ref>{{cite web|url=http://www.thefa.com/thefacup/more/finals|title=The FA Cup and The England football team|work=The Football Association}}</ref> the first cup final held between two London clubs. Additionally, a [[Chelsea F.C.–Leeds United A.F.C. rivalry|strong rivalry]] with [[Leeds United A.F.C.|Leeds United]] dates back to several heated and controversial matches in the 1960s and 1970s, particularly the [[1970 FA Cup Final]].<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | pages=321–325}}</ref> More recently a rivalry with [[Liverpool F.C.|Liverpool]] has grown following repeated clashes in cup competitions.<ref>{{cite news
+| url=http://www.talksport.co.uk/magazine/features/2011-05-19/peterborough-v-mk-dons-liverpool-v-chelsea-stoke-v-cardiff-six-best-modern-football-rivalries
+| title=Six very modern football rivalries
+| work=TalkSport
+| accessdate=23 May 2011
+| date=19 May 2011}}</ref>
+
+==Records==
+{{details|List of Chelsea F.C. records and statistics}}
+[[File:Frank Lampard'13-14.JPG|thumb|220px|[[Frank Lampard]] is Chelsea's all-time highest goalscorer.]]
+Chelsea's highest appearance-maker is ex-captain [[Ron Harris (footballer)|Ron Harris]], who played in 795 competitive games for the club between 1961 and 1980.<ref name="stats">For the appearance and goalscoring records of all Chelsea players, see {{cite book | author=Glanvill | year = 2006 | title = Chelsea FC: The Official Biography | pages = 399–410 }}</ref> The record for a Chelsea goalkeeper is held by Harris's contemporary, [[Peter Bonetti]], who made 729 appearances (1959–79). With 103 [[Cap (sport)|caps]] (101 while at the club), [[Frank Lampard]] of England is Chelsea's most capped international player.
+
+Frank Lampard is Chelsea's all-time top goalscorer, with 211 goals in 648 games (2001–2014);<ref name="stats"/> he passed [[Bobby Tambling]]'s longstanding record of 202 in May 2013.<ref>{{cite news |url=http://www.bbc.co.uk/sport/0/football/22589526 | title = Chelsea's Frank Lampard given golden boot by Bobby Tambling | publisher=BBC | date = 19 May 2013 | accessdate = 7 September 2013 }}</ref> Seven other players have also scored over 100 goals for Chelsea: [[George Hilsdon]] (1906–12), [[George Mills (footballer)|George Mills]] (1929–39), [[Roy Bentley]] (1948–56), [[Jimmy Greaves]] (1957–61), [[Peter Osgood]] (1964–74 and 1978–79), [[Kerry Dixon]] (1983–92) and [[Didier Drogba]] (2004–12 and 2014–2015). Greaves holds the record for the most goals scored in one season (43 in 1960–61).<ref name = "current player">{{cite web| url = http://www.soccerbase.com/| title = soccerbase.com | accessdate = 13 December 2009 }}</ref>
+
+Chelsea's biggest winning scoreline in a competitive match is 13–0, achieved against [[Jeunesse Hautcharage]] in the [[UEFA Cup Winners' Cup|Cup Winners' Cup]] in 1971.<ref>{{cite web| url = http://www.chelseafc.com/news-article/article/2465594| title = Words on Winning: 21–0| work = Chelsea F.C. official website| accessdate = 23 April 2014 }}</ref> The club's biggest top-flight win was an 8–0 victory against [[Wigan Athletic F.C.|Wigan Athletic]] in 2010, and matched in 2012 against Aston Villa.<ref>{{cite web| url = http://www.chelseafc.com/matchday-live/match/47531| title = Chelsea v Wigan match report
+| work = Chelsea F.C. official website| accessdate = 23 April 2014 }}</ref> Chelsea's biggest loss was an 8–1 reverse against [[Wolverhampton Wanderers F.C.|Wolverhampton Wanderers]] in 1953.<ref>{{cite web| url = http://www.uefa.com/teamsandplayers/teams/club=52914/profile/index.html| title = Chelsea F.C.| work = Union of European Football Associations| accessdate = 15 January 2012 }}</ref><ref>{{cite web |url=http://www.chelseafc.com/chelsea-article/article/3489606/title/ask-statman-37|title=Ask Statsman 37|first=Paul|last=Dutton|publisher=Chelsea F.C.|accessdate=23 April 2014}}</ref> Officially, Chelsea's highest home attendance is 82,905 for a [[Football League First Division|First Division]] match against Arsenal on 12 October 1935. However, an estimated crowd of over 100,000 attended a [[Exhibition game|friendly match]] against [[Soviet Union|Soviet]] team [[FC Dynamo Moscow|Dynamo Moscow]] on 13 November 1945.<ref>{{cite web |url=http://www.chelseafc.com/news-article/article/1800268 |title=Team History – 1940s |publisher=Chelsea F.C. official website |accessdate=23 April 2014}}</ref><ref>{{cite news |title=Brian Viner: Diamond days of side who brought touch of glamour to post-war Britain |first=Brian |last=Viner |url=http://www.independent.co.uk/sport/football/news-and-comment/brian-viner-diamond-days-of-side-who-brought-touch-of-glamour-to-postwar-britain-6143279.html |work=The Independent |publisher=Independent Print Limited |date=29 October 2005 |accessdate=20 May 2012}}</ref> The modernisation of Stamford Bridge during the 1990s and the introduction of all-seater stands mean that neither record will be broken for the foreseeable future. The current legal capacity of Stamford Bridge is 41,837.<ref name="capacity"/> Every starting player in Chelsea’s 57 games of the 2013–14 season was a full international – a new club record.<ref>{{cite web|url=http://www.chelseafc.com/news/latest-news/2014/08/pre-match-briefing--burnley-v-chelsea.html|title=Pre-Match Briefing: Burnley v Chelsea – part one|publisher=Chelsea F.C.|accessdate=18 August 2014}}</ref>
+
+[[File:Fernando Torres 03 Chelsea vs AS-Roma 10AUG2013.jpg|thumb|left|150px|Chelsea signed [[Fernando Torres]] for £50 million, then the record for a purchase by a British club.]]
+Chelsea hold the English record for the highest ever points total for a league season (95), the fewest goals conceded during a league season (15), the highest number of Premier League victories in a season (29), the highest number of clean sheets overall in a Premier League season (25) (all set during the [[FA Premier League 2004-05|2004–05 season]]),<ref name="records">{{cite news
+| date=13 May 2005| url=http://news.bbc.co.uk/sport2/hi/football/teams/c/chelsea/4545045.stm| title=Mourinho proud of battling finish |work=BBC Sport |publisher=British Broadcasting Corporation accessdate=29 August 2010}}</ref> and the most consecutive clean sheets from the start of a league season (6, set during the [[2005–06 FA Premier League|2005–06 season]]).<ref>{{cite news| date=17 September 2005
+| title=Charlton 0–2 Chelsea| url=http://news.bbc.co.uk/sport1/hi/football/eng_prem/4232354.stm |work=BBC Sport |publisher=British Broadcasting Corporation| accessdate=12 November 2007 }}</ref> The club's 21–0 [[Playoff format#Total points series (aggregate)|aggregate]] victory over [[UN Käerjéng 97|Jeunesse Hautcharage]] in the [[1971–72 European Cup Winners' Cup|UEFA Cup Winners' Cup in 1971]] remains a record in European competition.<ref>{{cite web | url=http://www.rsssf.com/miscellaneous/cwc.html#rec
+| title=Cup Winners' Cup Trivia| work=Rec.Sport.Soccer Statistics Foundation| accessdate = 21 January 2007}}</ref> Chelsea hold the record for the longest streak of unbeaten matches at home in the English top-flight, which lasted 86 matches from 20 March 2004 to 26 October 2008. They secured the record on 12 August 2007, beating the previous record of 63 matches unbeaten set by Liverpool between 1978 and 1980.<ref>{{cite news| date=12 August 2007| url=http://news.bbc.co.uk/sport1/hi/football/eng_prem/6931067.stm| title=Chelsea 3–2 Birmingham |work=BBC Sport |publisher=British Broadcasting Corporation| accessdate=9 October 2007}}</ref><ref>{{cite news|url=http://news.bbc.co.uk/sport1/hi/football/eng_prem/7674108.stm|title=Chelsea 0–1 Liverpool|work=BBC Sport |publisher=British Broadcasting Corporation |accessdate =26 October 2008 | date=26 October 2008}}</ref> Chelsea's streak of eleven consecutive away league wins, set between 5 April 2008 and 6 December 2008, is also a record for the English top flight.<ref>{{cite news |title=Chelsea in eleven heaven |url=http://www.premierleague.com/page/Magazinedettail/0,,12306~1491763,00.html |work=Premier League |date=8 December 2008 |accessdate =18 January 2009 |archiveurl=https://web.archive.org/web/20081219192857/http://www.premierleague.com/page/Magazinedettail/0,,12306~1491763,00.html |archivedate=19 December 2008 }}</ref> Their £50 million purchase of [[Fernando Torres]] in January 2011 was the [[Progression of British football transfer fee record|record transfer fee paid by a British club]]<ref>{{cite news| date=31 January 2011
+| title=Torres makes record move from Liverpool to Chelsea| url=http://news.bbc.co.uk/sport1/hi/football/teams/c/chelsea/9380389.stm |work=BBC| accessdate=12 March 2012 }}</ref> for three years (2011–2014) until [[Ángel Di María]] was purchased by [[Manchester United F.C.|Manchester United]] on 26 August 2014 for transfer fee of £59.7 million.<ref>{{cite web |url=http://www1.skysports.com/football/news/12691/9441613/transfer-news-manchester-united-complete-signing-of-angel-di-maria.html
+|title=Transfer news: Manchester United sign Angel di Maria from Real Madrid
+|work=Sky Sports
+|archivedate=26 August 2014 }}</ref>
+
+Chelsea, along with Arsenal, were the first club to play with shirt numbers, on 25 August 1928 in their match against [[Swansea City A.F.C.|Swansea Town]].<ref>{{cite web| url=http://www.englandfootballonline.com/TeamUnif/UnifNosNames.html| title=Shirt Numbers
+| work=England Football Online| accessdate = 1 October 2006 }}</ref> They were the first English side to travel by aeroplane to a domestic away match, when they visited [[Newcastle United F.C.|Newcastle United]] on 19 April 1957,<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | page=96}}</ref> and the first First Division side to play a match on a Sunday, when they faced [[Stoke City F.C.|Stoke City]] on 27 January 1974. On 26 December 1999, Chelsea became the first British side to field an entirely foreign [[starting line-up]] (no British or Irish players) in a Premier League match against [[Southampton F.C.|Southampton]].<ref>{{cite news
+| date=27 December 1999| url=http://www.sportinglife.com/football/premiership/chelsea/reports/story_get.cgi?STORY_NAME=soccer/99/12/26/SOCCER_Southampton_Nightlead.html&TEAMHD=chelsea&DIV=prem&TEAM=CHELSEA&RH=Chelsea&PREV_SEASON=1998
+| archiveurl=https://web.archive.org/web/20120603160304/http://www.sportinglife.com/football/premiership/chelsea/reports/story_get.cgi?STORY_NAME=soccer/99/12/26/SOCCER_Southampton_Nightlead.html&TEAMHD=chelsea&DIV=prem&TEAM=CHELSEA&RH=Chelsea&PREV_SEASON=1998
+| archivedate=3 June 2012| title=Southampton 1 Chelsea 2| work=Sporting Life| accessdate=27 January 2007| author=Bradley, Mark}}</ref>
+
+In May 2007, Chelsea were the first team to win the FA Cup at the new [[Wembley Stadium]], having also been the last to win it at the old Wembley.<ref>{{cite news| date=20 May 2007| title=Something old, new and Blue| url=http://www.guardian.co.uk/sport/blog/2007/may/19/somethingoldnewandblue |work=The Observer| accessdate=14 July 2011| author=Mitchell, Kevin}}</ref> They were the first English club to be ranked #1 under [[UEFA coefficient|UEFA's five-year coefficient]] system in the 21st century.<ref>{{cite web | url=http://www.xs4all.nl/~kassiesa/bert/uefa/data/method3/trank2008.html| title=UEFA Team Ranking 2008
+| work=UEFA European Cup Football: Results and Qualification| author=Kassies, Bert| accessdate = 2 June 2008 }}</ref> They were the first team in Premier League history to score at least 100 goals in a single season, reaching the milestone on the final day of the 2009–10 season.<ref name=Wigan80/> Chelsea are the only London club to win the [[UEFA Champions League]], after beating Bayern Munich in the [[2012 UEFA Champions League Final|2012 final]].<ref name="Chelsea win breaks London duck"/><ref name="Chelsea etch new name on trophy">{{cite news |title=Chelsea etch new name on trophy |url=http://www.uefa.com/uefachampionsleague/news/newsid=1798280.html#chelsea+etch+name+trophy |work=Union of European Football Associations |date=19 May 2012 |accessdate=20 May 2012 }}</ref> Upon winning the [[2012–13 UEFA Europa League]], Chelsea became the first English club to [[European football records|win all four European trophies]] and the only club to hold the Champions League and the Europa League at the same time.<ref>{{cite news| date=15 May 2013| title=Chelsea first team to hold Champions, Europa League titles | url=http://www.vanguardngr.com/2013/05/chelsea-first-team-to-hold-champions-europa-league-titles/ |work=Vanguard}}</ref>
+
+==Ownership and finances==
+[[File:Roman Abramovich 2.jpg|thumb|200px|Chelsea owner [[Roman Abramovich]]]]
+Chelsea Football Club were founded by [[Gus Mears]] in 1905. After his death in 1912, his descendents continued to own the club until 1982, when [[Ken Bates]] bought the club from Mears' great-nephew [[Brian Mears]] for £1. Bates bought a controlling stake in the club and floated Chelsea on the [[Alternative Investment Market|AIM]] stock exchange in March 1996.<ref>{{cite web |title=UK Football Clubs on the UK Stock Markets |url=http://www.footballeconomy.com/stats/stats_turnover_09.htm |publisher=Football Economy |accessdate=26 June 2012}}</ref> In July 2003, [[Roman Abramovich]] purchased just over 50% of Chelsea Village plc's share capital, including Bates' 29.5% stake, for £30&nbsp;million and over the following weeks bought out most of the remaining 12,000 shareholders at 35 pence per share, completing a £140&nbsp;million takeover. Other shareholders at the time of the takeover included the [[Matthew Harding]] estate (21%), [[BSkyB]] (9.9%) and various anonymous offshore trusts.<ref>{{cite news |title=Bates sells off Chelsea to a Russian billionaire |url=http://www.telegraph.co.uk/sport/football/2406994/Bates-sells-off-Chelsea-to-a-Russian-billionaire.html |publisher=The Telegraph|date=7 February 2003 |accessdate=27 June 2012}}</ref> After passing the 90% share threshold, Abramovich took the club back into private hands, delisting it from the AIM on 22 August 2003. He also took on responsibility for the club's debt of £80 million, quickly paying most of it.<ref>{{cite news |title=Chelsea tycoon to clear club's debt |url=http://news.bbc.co.uk/1/hi/business/3102819.stm |publisher=BBC|date=28 July 2003 |accessdate=26 June 2012}}</ref>
+
+Thereafter, Abramovich changed the ownership name to Chelsea FC plc, whose ultimate parent company is Fordstam Limited, which is controlled by him.<ref>{{cite web |title=Club Information|url=http://www.chelseafc.com/page/ClubInfo/0,,10268,00.html |publisher=Chelseafc.com |accessdate=26 June 2012}}</ref> Chelsea are additionally funded by Abramovich via interest free [[soft loan]]s channelled through his holding company Fordstam Limited. The loans stood at £709 million in December 2009, when they were all converted to [[Equity (finance)|equity]] by Abramovich, leaving the club themselves debt free,<ref>{{cite news |title=Roman Abramovich turns £340m of debt into equity as Chelsea loss falls |url=http://www.guardian.co.uk/football/2009/dec/30/roman-abramovich-chelsea-debts-accounts |work=The Guardian|date=30 December 2009 |accessdate=27 June 2012}}</ref><ref>{{cite web |title=Statement on Club Finance|url=http://www.chelseafc.com/news-article/article/2055740 |publisher=Chelseafc.com |accessdate=23 April 2014}}</ref> although the debt remains with Fordstam.<ref>{{cite news |title=Roman Abramovich still owed £726m under complex Chelsea structure |url=http://www.guardian.co.uk/football/2010/may/19/roman-abramovich-chelsea-loan-debt |work=The Guardian|date=19 May 2010 |accessdate=27 June 2012}}</ref> Since 2008 the club have had no external debt.<ref>{{cite news |title=Chelsea and United debts at record £1.5bn |url=http://www.guardian.co.uk/football/2008/may/20/premierleague.chelsea |work=The Guardian|date=20 May 2008 |accessdate=27 June 2012}}</ref>
+
+Chelsea did not turn a profit in the first nine years of Abramovich's ownership, and made record losses of £140m in June 2005.<ref name="first profit">{{cite news |title=Chelsea FC record first Abramovich-era profit|url=http://www.bbc.co.uk/news/20270934 |work=BBC|date=9 November 2012 |accessdate=25 February 2015}}</ref> In November 2012, Chelsea announced a profit of £1.4 million for the year ending 30 June 2012, the first time the club had made a profit under Abramovich's ownership.<ref name="first profit"/><ref>{{cite news |title=CHELSEA FC ANNOUNCES ANNUAL PROFIT |url=http://www.chelseafc.com/news-article/article/2975285/title/chelsea-fc-announces-annual-profit |work=Chelsea F.C.|date=9 November 2012 |accessdate=9 November 2012}}</ref> This was followed by a loss in 2013 and then their highest ever profit of £18.4 million for the year to June 2014.<ref>{{cite news|title=Chelsea FC reports a record £18m in annual profit|url=http://www.bbc.com/news/business-30045978|accessdate=14 November 2014|work=BBC|publisher=BBC|date=14 November 2014}}</ref>
+
+Chelsea have been described as a global brand; a 2012 report by [[Brand Finance]] ranked Chelsea fifth among football brands and valued the club's brand value at US $398&nbsp;million – an increase of 27% from the previous year, also valuing them at US $10&nbsp;million more than the sixth best brand, London rivals Arsenal – and gave the brand a strength rating of AA (very strong).<ref>{{cite web |title=Top 20 most Valuable Football Club Brands |url=http://www.brandfinance.com/images/upload/top_30_european_football_brands_2011_final_website.pdf |publisher=Brand Finance |accessdate=26 June 2012 |date=May 2012 |format=PDF }}</ref><ref>{{cite web |title=Top 30 Football Club Brands |url=http://www.brandfinance.com/images/upload/brandfinance_football_brands_2012.pdf |publisher=Brand Finance |accessdate=4 October 2011 |date=September 2011 |format=PDF }}</ref> In 2012, [[Forbes]] magazine ranked Chelsea seventh in their list of the ten most valuable football clubs in the world, valuing the club's brand at £473&nbsp;million ($761&nbsp;million).<ref name="Forbes List"/> Chelsea are currently ranked sixth in the [[Deloitte Football Money League]]<ref name="Deloitte_money_league">{{cite news |title=Chelsea – Deloitte Football Money League 2012  |url=http://www.deloitte.com/assets/Dcom-Sweden/Local%20Assets/Documents/FootballMoneyLeague%202012-uk-sbg-dfml-2012-final120209.pdf |work=Deloitte |accessdate=26 June 2010 }}</ref> with an annual commercial revenue of £225.6&nbsp;million.<ref>{{cite news |title=Fan power Football Money League |url=http://www.deloitte.com/assets/Dcom-UnitedKingdom/Local%20Assets/Documents/Industries/Sports%20Business%20Group/uk-sbg-dfml-2012-final.pdf#page=18 |work=Deloitte |accessdate=23 April 2014 }}</ref>
+
+===Sponsorship===
+{| class="wikitable" style="text-align:center;margin-left:1em;float:right"
+|-
+!Period
+!Kit manufacturer
+!Shirt sponsor
+|-
+|1975–1981
+|[[Umbro]]
+|rowspan=2|<small>''none''</small>
+|-
+|1981–1983
+|rowspan=3|[[Le Coq Sportif]]
+|-
+|1983–1984
+|[[Gulf Air]]
+|-
+|1984–1986
+|rowspan=2|<small>''none''</small>
+|-
+|1986–1987
+|Chelsea Collection
+|-
+|1987–1993
+|rowspan="6"|[[Umbro]]
+|[[Commodore International|Commodore]]
+|-
+|1993–1994
+|[[Amiga]]
+|-
+|1994–1997
+|[[Coors Brewing Company|Coors]]
+|-
+|1997–2001
+|[[Belron|Autoglass]]
+|-
+|2001–2005
+|[[Emirates Airline|Fly Emirates]]
+|-
+|2005–2006
+|rowspan="2"|[[Samsung Telecommunications|Samsung Mobile]]
+|-
+|2006–2008
+|rowspan="4"|[[Adidas]]
+|-
+|2008–2015
+|[[Samsung]]
+|-
+|2015–2020
+|[[Yokohama Rubber Company|Yokohama Tyres]]
+|-
+|2020–2023
+|<small>''TBD''</small>
+|}
+Chelsea's kit has been manufactured by [[Adidas]] since 2006, which is contracted to supply the club's kit from 2006 to 2018. The partnership was extended in October 2010 in a deal worth £160 million over eight years.<ref>{{cite news |date=22 October 2010 |title=Chelsea manager Carlo Ancelotti puts his faith in elder statesman Didier Drogba
+| url=http://www.telegraph.co.uk/sport/football/teams/chelsea/8081823/Chelsea-manager-Carlo-Ancelotti-puts-his-faith-in-elder-statesman-Didier-Drogba.html | publisher=The Telegraph| accessdate=27 June 2012}}</ref> This deal was again extended in June 2013 in a deal worth £300 million over another ten years.<ref>{{cite news |date=22 June 2013 |title=Chelsea agree whopping £300m kit deal with sportswear giants adidas | url=http://www.dailymail.co.uk/sport/football/article-2346083/Chelsea-agree-record-300m-kit-deal-sportswear-giants-adidas.html |work=Daily Mail |location=London |accessdate=22 June 2013}}</ref><ref>{{cite news |date=22 June 2013 |title=CHELSEA AND ADIDAS ANNOUNCE EXTENSION OF GLOBAL PARTNERSHIP |url=http://www.chelseafc.com/news-article/article/3216081/title/chelsea-and-adidas-announce-extension-of-global-partnership | publisher=Chelsea FC| accessdate=22 June 2013}}</ref> Previously, the kit was manufactured by [[Umbro]] (1975–81), [[Le Coq Sportif]] (1981–86), The Chelsea Collection (1986–87) and Umbro again (1987–2006). Chelsea's first shirt sponsor was [[Gulf Air]], agreed during the 1983–84 season. The club were then sponsored by Grange Farms, [[Peter Foster|Bai Lin Tea]] and [[Simod]] before a long-term deal was signed with [[Commodore International]] in 1989; [[Amiga]], an offshoot of Commodore, also appeared on the shirts. Chelsea were subsequently sponsored by [[Coors Brewing Company|Coors]] beer (1994–97), [[Autoglass]] (1997–2001) and [[Emirates Airline]] (2001–05). Samsung Mobile (2005–08) and [[Samsung Group|Samsung]] (2008–15).<ref name=yokohama/><ref>{{cite news |date=2 May 2005 |url=http://www.timesonline.co.uk/tol/sport/football/article387503.ece|title=Clubs to cash in on mobile advertising |work=The Times | location=UK | accessdate=21 January 2010 | author=Ashling O'Connor}}</ref> Chelsea's current shirt sponsor is the [[Yokohama Rubber Company]]. Worth £40 million-per-year, the deal is second in English football to [[Chevrolet]]'s £50 million-per-year sponsorship of Manchester United.<ref name=yokohama>{{cite news|title=Chelsea sign £40m-per-year shirt deal with Japanese tyre company|url=http://www.bbc.co.uk/sport/0/football/31653343|accessdate=27 February 2015|work=BBC Sport|date=26 February 2015}}</ref>
+
+[[File:Sergio Perez 2012 Canadian GP - Crop.jpg|thumb|right|The [[Sauber|Sauber F1 Team]], an official partner of the club, displaying the Chelsea crest]]
+
+In 2012, [[Gazprom]] became the club's official Global Energy Partner on a three-year sponsorship deal.<ref>{{cite web|url=http://www.chelseafc.com/chelsea-article/article/2852061/title/gazprom |title=Sponsors & Partners – GAZPROM |publisher=Chelsea F.C. official website}}</ref> The club also has a variety of other sponsors and partners, which include [[Delta Air Lines]],<ref>[http://uk.reuters.com/article/2012/06/25/idUS93546+25-Jun-2012+PRN20120625 Delta and Chelsea Football Club Strike Sponsorship Deal – Reuters]</ref> [[Sauber]], [[Audi]], [[Singha]], [[EA Sports]], [[Dolce & Gabbana]]<ref>{{cite news |url=http://fashion.telegraph.co.uk/news-features/TMG7913107/Dolce-and-Gabbana-and-Chelsea-Football-Club.html |title=Dolce & Gabbana and Chelsea Football Club |work=The Daily Telegraph |location=London |date=27 July 2010}}</ref> Barbados Tourism Authority, [[Atlas Group|Atlas]], [[AZIMUT Hotels Company|AZIMUT Hotels]], [[Bank Negara Indonesia|BNI]], [[Vietinbank]], [[Toyo Tire & Rubber Company|Nitto Tire]], Orico, [[Guangzhou R&F F.C.|Guangzhou R&F]], [[Coca Cola]], Grand Royal, [[Digicel]], [[Lucozade Sport]], and [[Viagogo]].<ref>{{cite web|url=http://www.chelseafc.com/the-club/sponsors.html|title=Sponsors and Partners |publisher=Chelsea F.C. official website|accessdate=4 November 2014}}</ref>
+
+==Popular culture==
+[[File:Chelsea double winner 2009-10.JPG|left|thumb|200px|Chelsea parade through the streets of Fulham and Chelsea after winning their league and cup double, May 2010]]
+In 1930, Chelsea featured in one of the earliest football films, ''[[The Great Game (1930 film)|The Great Game]]''.<ref>{{cite web
+| url=http://www.imdb.com/title/tt0020936/
+| title=The Great Game
+| work=IMDb
+| accessdate = 1 October 2007 }}</ref> One-time Chelsea centre forward, [[Jack Cock]], who by then was playing for [[Millwall F.C.|Millwall]], was the star of the film and several scenes were shot at [[Stamford Bridge (stadium)|Stamford Bridge]], including the pitch, the boardroom, and the [[dressing room]]s. It included guest appearances by then-Chelsea players [[Andrew Nesbit Wilson|Andrew Wilson]], [[George Mills (footballer)|George Mills]], and [[Sam Millington]].<ref>{{cite book | author=Glanvill | year=2006 | title=Chelsea FC: The Official Biography | pages=120–121}}</ref> Owing to the notoriety of the [[Chelsea Headhunters]], a [[football firm]] associated with the club, Chelsea have also featured in films about football [[hooliganism]], including 2004's ''[[The Football Factory (film)|The Football Factory]]''.<ref>{{cite news
+| date=10 May 2004
+| url=http://news.bbc.co.uk/1/hi/entertainment/film/3687227.stm
+| title=Football firms hit the film circuit |publisher=BBC Sport
+| accessdate=25 January 2007
+| author=Steve Hawkes}}</ref> Chelsea also appear in the [[Hindi]] film ''[[Jhoom Barabar Jhoom]]''.<ref>{{cite news
+| date=25 September 2006
+| url=http://www.dnaindia.com/report.asp?NewsID=1055099
+| title=Chelsea teams up with Yash Raj Films
+| publisher=DNA India
+| accessdate=1 January 2007 }}</ref> In April 2011, [[Montenegro|Montenegrin]] comedy series ''Nijesmo mi od juče'' made an episode in which Chelsea play against [[FK Sutjeska Nikšić]] for qualification of the [[UEFA Champions League]].<ref>{{cite web |url=http://www.nijesmomiodjuce.com/nijesmo-mi-od-juce-novosti/epizoda-chelsea-u-gledajte-onlajn-sekciji/|archiveurl=https://web.archive.org/web/20130830104319/http://www.nijesmomiodjuce.com/nijesmo-mi-od-juce-novosti/epizoda-chelsea-u-gledajte-onlajn-sekciji/|archivedate=30 August 2013|title= Nijesmo mi od Juce – Novosti – Epizode – Chelsea u "gledajte onlajn" sekciji|publisher=nijesmomiodjuce.com|accessdate=23 April 2014|language=Montenegrin}}</ref>
+
+Up until the 1950s, the club had a long-running association with the [[music hall]]s; their underachievement often provided material for comedians such as [[George Robey]].<ref>{{cite news
+| date=30 September 2002
+| url=http://www.guardian.co.uk/football/2002/sep/30/match.sport7
+| title=Di Canio has last laugh at Chelsea comedy store |work=The Guardian
+| accessdate=14 July 2011
+| author=Scott Murray}}</ref> It culminated in comedian Norman Long's release of a [[Novelty song|comic song]] in 1933, ironically titled "On the Day That Chelsea Went and Won the Cup", the lyrics of which describe a series of bizarre and improbable occurrences on the hypothetical day when Chelsea finally won a trophy.<ref name="glanville"/> In [[Alfred Hitchcock]]'s 1935 film ''[[The 39 Steps (1935 film)|The 39 Steps]]'', Mr Memory claims that Chelsea last won the Cup in 63 BC, "in the presence of the [[List of Roman emperors|Emperor]] [[Nero]]."<ref>{{cite web
+| url=http://www.imdb.com/title/tt0026029/quotes
+| title=The 39 Steps
+| work=IMDB
+| accessdate = 5 May 2014}}</ref> A 1980 episode of ''[[Minder (TV series)|Minder]]'' featured a real match at Stamford Bridge between Chelsea and [[Preston North End F.C.|Preston North End]] with Terry McCann ([[Dennis Waterman]]) in the crowd.<ref>{{cite web
+| url=http://www.minder.org/episodeguide/S02E12_AllAboutScoringInnit.htm
+| title=All About Scoring, Innit?
+| work=Minder.org
+| accessdate = 8 September 2015}}</ref>
+
+The song "[[Blue is the Colour (Chelsea)|Blue is the Colour]]" was released as a single in the build-up to the [[1972 Football League Cup Final|1972 League Cup Final]], with all members of Chelsea's first team squad singing; it reached number five in the [[UK Singles Chart]].<ref>{{cite web
+| url=http://www.chartstats.com/songinfo.php?id=5791
+| title=Blue Is The Colour
+| work=Chart Stats
+| accessdate = 21 January 2007 }}</ref> The song has since been adopted as an anthem by a number of other sports teams around the world, including the [[Vancouver Whitecaps (USL)|Vancouver Whitecaps]] (as "White is the Colour")<ref>{{cite web
+| url=http://www.vancourier.com/issues02/045202/sports.html
+| archiveurl=https://web.archive.org/web/20080103163706/http://www.vancourier.com/issues02/045202/sports.html
+| archivedate=3 January 2008
+| title=Caps' 'Proclaim' season opener
+| work=Vancouver Courier
+| accessdate = 21 January 2007}}</ref> and the [[Saskatchewan Roughriders]] (as "Green is the Colour").<ref>{{cite news
+| date=26 November 2009
+| url=http://www2.canada.com/calgaryherald/news/city/story.html?id=2a537f58-d315-495f-8ba5-0359dd597ed9
+| title=Riders fans enjoy musical edge
+| work=Calgary Herald
+| accessdate=5 May 2014
+| author=Stephen Hunt}}</ref> In the build-up to the [[FA Cup Final 1997|1997 FA Cup Final]], the song "Blue Day", performed by [[Suggs (singer)|Suggs]] and members of the Chelsea squad, reached number 22 in the UK charts.<ref>{{cite web
+| url=http://www.chartstats.com/songinfo.php?id=25206
+| archiveurl=https://web.archive.org/web/20120209214229/http://www.chartstats.com/songinfo.php?id=25206
+| archivedate=9 February 2012
+| title=Blue Day
+| work=Chart Stats
+| accessdate = 21 January 2007 }}</ref> [[Bryan Adams]], a fan of Chelsea,<ref>{{cite news
+| url=http://www.timesonline.co.uk/tol/sport/football/premier_league/chelsea/article2967989.ece
+| title=The soul of Chelsea in 50 moments
+| work=Times Online
+| date = 29 November 2007}}</ref> dedicated the song "We're Gonna Win" from the album ''[[18 Til I Die]]'' to the club.<ref>{{cite news
+| url=http://www.thesun.co.uk/sol/homepage/news/1116450/Countdown-to-the-Champions-League-final-in-Moscow-Who-are-ya.html?offset=2
+| title=Countdown to the Champions League Final in Moscow
+| work=The Sun
+| date = 2 May 2008}}</ref>
+{{clear}}
+
+==Chelsea Ladies==
+[[File:Katie Chapman 2014 (cropped).jpg|right|thumb|180px|[[Katie Chapman]], current captain of Chelsea Ladies]]
+{{details|Chelsea L.F.C.}}
+Chelsea also operate a [[Women's association football|women's football]] team, [[Chelsea L.F.C.|Chelsea Ladies]]. They have been affiliated to the men's team since 2004<ref>{{cite web|url=http://www.femalesoccer.net/show_news_article.php?id=3523|title=Chelsea Moving on Up|publisher=FemaleSoccer.net|accessdate=20 February 2011}}</ref> and are part of the club's Community Development programme. They play their home games at Wheatsheaf Park, the home ground of [[Conference South]] club [[Staines Town F.C.|Staines Town]].<ref>{{cite web | url=http://www.chelseafc.com/chelsea-article/article/2117196 | title=About the Ladies |work=Chelsea F.C. official website | accessdate=11 March 2014}}</ref> The club were promoted to the [[FA Women's Premier League National Division|Premier Division]] for the first time in 2005 as [[FA Women's Premier League Southern Division|Southern Division]] champions and won the Surrey County Cup in 2003–04, 2006–10, 2012, and 2013.<ref>{{cite web|url=https://www.surreyfa.com/previous-winners-and-officials/womens-cup-previous-winners|title=Womens Cup Previous Winners|publisher=surreyfa.com|accessdate=11 March 2014}}</ref> In 2010 Chelsea Ladies were one of the eight founder members of the [[FA WSL|FA Women's Super League]].<ref>{{cite news|url=http://www.fcbusiness.co.uk/news/article/newsitem=195/title=eight+teams+successful+in+women%26%23039%3Bs+super+league+bid|title=Eight teams successful in Women's Super League bid|publisher=fcbusiness.co.uk|accessdate=20 February 2011 | location=London | date=24 March 2010}}</ref> They were [[FA WSL]] runners-up in [[2014 FA WSL|2014]], their best performance in the competition to date. In 2015, Chelsea Ladies won the [[2014–15 FA Women's Cup|FA Women's Cup]] for the first time, beating [[Notts County Ladies F.C.|Notts County Ladies]] at [[Wembley Stadium]].<ref>{{cite web | url=http://shekicks.net/news/view/12007 | title=Chelsea lift FA Cup in front of record crowd | publisher=shekicks.net | date=2 August 2015 | accessdate=2 August 2015}}</ref> [[John Terry]], the current captain of the Chelsea men's team, is the President of [[Chelsea L.F.C.|Chelsea Ladies]].<ref>{{cite news|url=http://www.guardian.co.uk/football/2009/oct/18/john-terry-chelsea-womens-football|title=John Terry digs deep to rescue Chelsea Ladies after funding cuts|work=The Guardian |location=UK |accessdate=20 February 2011  | first=Tony | last=Leighton | date=18 October 2009}}</ref>
+
+==Players==
+
+===First team squad===
+{{Updated|8 October 2015.}}<ref>{{cite web |title=First Team Squad List |url=http://www.chelseafc.com/first-team |publisher=Chelsea F.C |accessdate=8 October 2015 }}</ref>
+<!----------------------------- READ THIS NOTICE FIRST BEFORE EDITING ----------------------------------
+ – Do NOT add new players before their signing is officially announced by the club through their website, including medical and signing the contract. A transfer fee agreed doesn't mean the player will sign.
+ – Do NOT remove players before their exit is officially announced by the club.
+ – Do NOT add or change squad numbers until it is official on the Chelsea F.C. website
+ – Only add numberless players that are likely to become part of the first team
+ – Pre-season numbers can be added temporarily with A REFERENCE
+ – This is Wikipedia, not a football gazette. Anything unconfirmed and unsourced will be removed on sight
+  ------------------------------------------------------------------------------------------------------>
+{{Fs start}}
+{{Fs player|no=1 |nat=BIH|pos=GK|name=[[Asmir Begović]]}}
+{{Fs player|no=2 |nat=SRB|pos=DF|name=[[Branislav Ivanović]]|other=[[Captain (association football)#Club|vice-captain]]}}
+{{Fs player|no=4 |nat=ESP|pos=MF|name=[[Cesc Fàbregas]]}}
+{{Fs player|no=5 |nat=FRA|pos=DF|name=[[Kurt Zouma]]}}
+{{Fs player|no=6 |nat=GHA|pos=DF|name=[[Baba Rahman]]}}
+{{Fs player|no=7 |nat=BRA|pos=MF|name=[[Ramires]]}}
+{{Fs player|no=8 |nat=BRA|pos=MF|name=[[Oscar (footballer, born 1991)|Oscar]]}}
+{{Fs player|no=9 |nat=COL|pos=FW|name=[[Radamel Falcao]]|other=on loan from [[AS Monaco FC|Monaco]]}}
+{{Fs player|no=10|nat=BEL|pos=MF|name=[[Eden Hazard]]}}
+{{Fs player|no=12|nat=NGA|pos=MF|name=[[John Obi Mikel]]}}
+{{Fs player|no=13|nat=BEL|pos=GK|name=[[Thibaut Courtois]]}}
+{{Fs player|no=14|nat=BFA|pos=MF|name=[[Bertrand Traoré]]}}
+{{Fs player|no=15|nat=SEN|pos=DF|name=[[Papy Djilobodji]]}}
+{{Fs mid}}
+{{Fs player|no=16|nat=BRA|pos=FW|name=[[Kenedy (footballer)|Kenedy]]}}
+{{Fs player|no=17|nat=ESP|pos=FW|name=[[Pedro (footballer, born July 1987)|Pedro]]}}
+{{Fs player|no=18|nat=FRA|pos=FW|name=[[Loïc Rémy]]}}
+{{Fs player|no=19|nat=ESP|pos=FW|name=[[Diego Costa]]}}
+{{Fs player|no=21|nat=SRB|pos=MF|name=[[Nemanja Matić]]}}
+{{Fs player|no=22|nat=BRA|pos=MF|name=[[Willian (footballer)|Willian]]}}
+{{Fs player|no=24|nat=ENG|pos=DF|name=[[Gary Cahill]]}}
+{{Fs player|no=26|nat=ENG|pos=DF|name=[[John Terry]]|other=[[Captain (association football)|captain]]}}
+{{Fs player|no=27|nat=ENG|pos=GK|name=[[Jamal Blackman]]}}
+{{Fs player|no=28|nat=ESP|pos=DF|name=[[César Azpilicueta]]}}
+{{Fs player|no=32|nat=ITA|pos=GK|name=[[Marco Amelia]]}}
+{{Fs player|no=34|nat=ENG|pos=DF|name=Ola Aina}}
+{{Fs player|no=36|nat=ENG|pos=MF|name=[[Ruben Loftus-Cheek]]}}
+{{Fs end}}
+''For recent transfers, see [[2015–16 Chelsea F.C. season]].''
+
+===Out on loan===
+<ref>{{cite web|title=On Loan Players|url=https://www.chelseafc.com/teams/on-loan-players.html|publisher=Chelsea Football Club|accessdate=28 October 2015}}</ref>
+{{Fs start}}
+{{Fs player|no=—|nat=CRO|pos=GK|name=[[Matej Delač]]|other=on loan to [[FK Sarajevo|Sarajevo]] until 30 June 2016}}
+{{Fs player|no=—|nat=BRA|pos=DF|name=[[Wallace Oliveira dos Santos|Wallace]]|other=on loan to [[Carpi F.C. 1909|Carpi]] until 30 June 2016}}
+{{Fs player|no=—|nat=CZE|pos=DF|name=[[Tomáš Kalas]]|other=on loan to [[Middlesbrough F.C.|Middlesbrough]] until 30 June 2016}}
+{{Fs player|no=—|nat=DEN|pos=DF|name=[[Andreas Christensen]]|other=on loan to [[Borussia Mönchengladbach]] until 30 June 2016}}
+{{Fs player|no=—|nat=ENG|pos=DF|name=[[Todd Kane]]|other=on loan to [[N.E.C. (football club)|NEC Nijmegen]] until 30 June 2016}}
+{{Fs player|no=—|nat=JAM|pos=DF|name=[[Michael Hector]]|other=on loan to [[Reading F.C.|Reading]] until 30 June 2016}}
+{{Fs player|no=—|nat=NED|pos=DF|name=[[Nathan Aké]]|other=on loan to [[Watford F.C.|Watford]] until 30 June 2016}}
+{{Fs player|no=—|nat=NGA|pos=DF|name=[[Kenneth Omeruo]]|other=on loan to [[Kasımpaşa Spor Kulübü|Kasımpaşa]] until 30 June 2016}}
+{{Fs player|no=—|nat=ROU|pos=DF|name=[[Cristian Manea]]|other=on loan to [[Royal Mouscron-Péruwelz]] until 30 June 2016}}
+{{Fs player|no=—|nat=SCO|pos=DF|name=[[Alex Davey]]|other=on loan to [[Peterborough United F.C.|Peterborough United]] until 2 January 2016}}
+{{Fs player|no=—|nat=BRA|pos=MF|name=[[Lucas Piazon]]|other=on loan to [[Reading F.C.|Reading]] until 30 June 2016}}
+{{Fs player|no=—|nat=BRA|pos=MF|name=[[Nathan Allan de Souza|Nathan]]|other=on loan to [[Vitesse]] until 30 June 2016}}
+{{Fs player|no=—|nat=CHI|pos=MF|name=[[Cristián Cuevas]]|other=on loan to [[Sint-Truidense V.V.|Sint-Truiden]] until 30 June 2016}}
+{{Fs player|no=—|nat=COL|pos=MF|name=[[Juan Cuadrado]]|other=on loan to [[Juventus F.C.|Juventus]] until 30 June 2016}}
+{{Fs player|no=—|nat=CRO|pos=MF|name=[[Mario Pašalić]]|other=on loan to [[AS Monaco FC|Monaco]] until 30 June 2016}}
+{{Fs player|no=—|nat=EGY|pos=MF|name=[[Mohamed Salah]]|other=on loan to [[A.S. Roma|Roma]] until 30 June 2016}}
+{{Fs player|no=—|nat=ENG|pos=MF|name=[[Isaiah Brown]]|other=on loan to [[Vitesse]] until 30 June 2016}}
+{{Fs mid}}
+{{Fs player|no=—|nat=ENG|pos=MF|name=[[John Swift (footballer, born 1995)|John Swift]]|other=on loan to [[Brentford F.C.|Brentford]] until 3 January 2016}}
+{{Fs player|no=—|nat=ENG|pos=MF|name=[[Jordan Houghton]]|other=on loan to [[Gillingham F.C.|Gillingham]] until 3 January 2016}}
+{{Fs player|no=—|nat=ENG|pos=MF|name=[[Lewis Baker (footballer)|Lewis Baker]]|other=on loan to [[Vitesse]] until 30 June 2016}}
+{{Fs player|no=—|nat=ENG|pos=MF|name=[[Nathaniel Chalobah]]|other=on loan to [[S.S.C. Napoli|Napoli]] until 30 June 2016}}
+{{Fs player|no=—|nat=FRA|pos=MF|name=[[Jeremie Boga]]|other=on loan to [[Stade Rennais F.C.|Rennes]] until 30 June 2016}}
+{{Fs player|no=—|nat=GER|pos=MF|name=[[Marko Marin]]|other=on loan to [[Trabzonspor]] until 30 June 2016}}
+{{Fs player|no=—|nat=GHA|pos=MF|name=[[Christian Atsu]]|other=on loan to [[A.F.C. Bournemouth|Bournemouth]] until 30 June 2016}}
+{{Fs player|no=—|nat=CIV|pos=MF|name=[[Victorien Angban]]|other=on loan to [[Sint-Truidense V.V.|Sint-Truiden]] until 30 June 2016}}
+{{Fs player|no=—|nat=MEX|pos=MF|name=[[Ulises Dávila]]|other=on loan to [[Vitória F.C.|Vitória]] until 30 June 2016}}
+{{Fs player|no=—|nat=NED|pos=MF|name=[[Marco van Ginkel]]|other=on loan to [[Stoke City F.C.|Stoke City]] until 30 June 2016}}
+{{Fs player|no=—|nat=NGA|pos=MF|name=[[Victor Moses]]|other=on loan to [[West Ham United F.C.|West Ham United]] until 30 June 2016}}
+{{Fs player|no=—|nat=SRB|pos=MF|name=[[Danilo Pantić]]|other=on loan to [[Vitesse]] until 30 June 2016}}
+{{Fs player|no=—|nat=COL|pos=FW|name=[[Joao Rodríguez (footballer)|Joao Rodríguez]]|other=on loan to [[Sint-Truidense V.V.|Sint-Truiden]] until 30 June 2016}}
+{{Fs player|no=—|nat=CRO|pos=FW|name=[[Stipe Perica]]|other=on loan to [[Udinese Calcio|Udinese]] until 30 June 2016}}
+{{Fs player|no=—|nat=ENG|pos=FW|name=[[Dominic Solanke]]|other=on loan to [[Vitesse]] until 30 June 2016}}
+{{Fs player|no=—|nat=ENG|pos=FW|name=[[Patrick Bamford]]|other=on loan to [[Crystal Palace F.C.|Crystal Palace]] until 30 June 2016}}
+{{Fs player|no=—|nat=SCO|pos=FW|name=[[Islam Feruz]]|other=on loan to [[Hibernian F.C.|Hibernian]] until 30 June 2016}}
+{{Fs end}}
+
+===Reserves and Academy===
+''For further information: [[Chelsea F.C. Reserves and Academy]]''
+
+==Player of the Year==
+[[File:Frank Lampard v PSG 2014.jpg|175px|thumb|Right|Frank Lampard was named Chelsea's Player of the Year a record three times.]]
+{|
+|-
+|valign="top"|
+{| class="wikitable"
+|-
+! Year
+! Winner
+|-
+|1967||{{flagicon|England}} [[Peter Bonetti]]
+|-
+|1968||{{flagicon|Scotland}} [[Charlie Cooke (footballer)|Charlie Cooke]]
+|-
+|1969||{{flagicon|England}} [[David Webb (footballer)|David Webb]]
+|-
+|1970||{{flagicon|England}} [[John Hollins]]
+|-
+|1971||{{flagicon|England}} [[John Hollins]]
+|-
+|1972||{{flagicon|England}} [[David Webb (footballer)|David Webb]]
+|-
+|1973||{{flagicon|England}} [[Peter Osgood]]
+|-
+|1974||{{flagicon|England}} [[Gary Locke (English footballer)|Gary Locke]]
+|-
+|1975||{{flagicon|Scotland}} [[Charlie Cooke (footballer)|Charlie Cooke]]
+|-
+|1976||{{flagicon|England}} [[Ray Wilkins]]
+|-
+|1977||{{flagicon|England}} [[Ray Wilkins]]
+|-
+|1978||{{flagicon|England}} [[Micky Droy]]
+|-
+|1979||{{flagicon|England}} [[Tommy Langley]]
+|-
+|}
+|width="1"|&nbsp;
+|valign="top"|
+{| class="wikitable"
+|-
+! Year
+! Winner
+|-
+|1980||{{flagicon|England}} [[Clive Walker]]
+|-
+|1981||{{flagicon|Yugoslavia}} [[Petar Borota]]
+|-
+|1982||{{flagicon|England}} [[Mike Fillery]]
+|-
+|1983||{{flagicon|Wales}} [[Joey Jones]]
+|-
+|1984||{{flagicon|Scotland}} [[Pat Nevin]]
+|-
+|1985||{{flagicon|Scotland}} [[David Speedie]]
+|-
+|1986||{{flagicon|Wales}} [[Eddie Niedzwiecki]]
+|-
+|1987||{{flagicon|Scotland}} [[Pat Nevin]]
+|-
+|1988||{{flagicon|England}} [[Tony Dorigo]]
+|-
+|1989||{{flagicon|England}} [[Graham Roberts (footballer)|Graham Roberts]]
+|-
+|1990||{{flagicon|Netherlands}} [[Ken Monkou]]
+|-
+|1991||{{flagicon|Ireland}} [[Andy Townsend]]
+|-
+|}
+|width="1"|&nbsp;
+|valign="top"|
+{| class="wikitable"
+|-
+! Year
+! Winner
+|-
+|1992||{{flagicon|England}} [[Paul Elliott (footballer)|Paul Elliott]]
+|-
+|1993||{{flagicon|Jamaica}} [[Frank Sinclair]]
+|-
+|1994||{{flagicon|Scotland}} [[Steve Clarke]]
+|-
+|1995||{{flagicon|Norway}} [[Erland Johnsen]]
+|-
+|1996||{{flagicon|Netherlands}} [[Ruud Gullit]]
+|-
+|1997||{{flagicon|Wales}} [[Mark Hughes]]
+|-
+|1998||{{flagicon|England}} [[Dennis Wise]]
+|-
+|1999||{{flagicon|Italy}} [[Gianfranco Zola]]
+|-
+|2000||{{flagicon|England}} [[Dennis Wise]]
+|-
+|2001||{{flagicon|England}} [[John Terry]]
+|-
+|2002||{{flagicon|Italy}} [[Carlo Cudicini]]
+|-
+|2003||{{flagicon|Italy}} [[Gianfranco Zola]]
+|}
+|width="1"|&nbsp;
+|valign="top"|
+{| class="wikitable"
+|-
+! Year
+! Winner
+|-
+|2004||{{flagicon|England}} [[Frank Lampard]]
+|-
+|2005||{{flagicon|England}} [[Frank Lampard]]
+|-
+|2006||{{flagicon|England}} [[John Terry]]
+|-
+|2007||{{flagicon|Ghana}} [[Michael Essien]]
+|-
+|2008||{{flagicon|England}} [[Joe Cole]]
+|-
+|2009||{{flagicon|England}} [[Frank Lampard]]
+|-
+|2010||{{flagicon|Ivory Coast}} [[Didier Drogba]]
+|-
+|2011||{{flagicon|Czech Republic}} [[Petr Čech]]
+|-
+|2012||{{flagicon|Spain}} [[Juan Mata]]
+|-
+|2013||{{flagicon|Spain}} [[Juan Mata]]
+|-
+|2014||{{flagicon|Belgium}} [[Eden Hazard]]
+|-
+|2015||{{flagicon|Belgium}} [[Eden Hazard]]
+|-
+|}
+|}
+* Source:<ref>{{cite web|title=Player of the Year|url=http://www.chelseafc.com/teams/player-of-the-year-2015.html|publisher=Chelsea F.C.|accessdate=27 May 2015}}</ref>
+
+==Notable managers==
+{{Details|List of Chelsea F.C. managers}}
+The following managers won at least one trophy when in charge of Chelsea:
+{| class="wikitable"
+|-
+! Name
+! Period
+! Trophies
+|-
+|{{flagicon|England}} [[Ted Drake]]
+|1952–1961
+|[[Football League First Division|First Division Championship]], [[FA Community Shield|Charity Shield]]
+|-
+|{{flagicon|Scotland}} [[Tommy Docherty]]
+|1962–1967
+|[[Football League Cup|League Cup]]
+|-
+|{{flagicon|England}} [[Dave Sexton]]
+|1967–1974
+|[[FA Cup]], [[UEFA Cup Winners' Cup]]
+|-
+|{{flagicon|England}} [[John Neal (footballer)|John Neal]]
+|1981–1985
+|[[Football League Second Division|Second Division Championship]]
+|-
+|{{flagicon|England}} [[John Hollins]]
+|1985–1988
+|[[Full Members Cup]]
+|-
+|{{flagicon|England}} [[Bobby Campbell (footballer born 1937)|Bobby Campbell]]
+|1988–1991
+|[[Football League Second Division|Second Division Championship]], [[Full Members Cup]]
+|-
+|{{flagicon|Netherlands}} [[Ruud Gullit]]
+|1996–1998
+|[[FA Cup]]
+|-
+|{{flagicon|Italy}} [[Gianluca Vialli]]
+|1998–2000
+|[[FA Cup]], [[Football League Cup|League Cup]], [[FA Community Shield|Charity Shield]], [[UEFA Cup Winners' Cup]], [[UEFA Super Cup]]
+|-
+|{{flagicon|Portugal}} [[José Mourinho]]
+|2004–2007<br>2013–
+|3 [[Premier League]]s, 3 [[Football League Cup|League Cups]], [[FA Cup]], [[FA Community Shield|Community Shield]]
+|-
+|{{Flagicon|Netherlands}} [[Guus Hiddink]]
+|2009<ref group="nb">Includes [[Caretaker manager]]</ref>
+|[[FA Cup]]
+|-
+|{{flagicon|Italy}} [[Carlo Ancelotti]]
+|2009–2011
+|[[Premier League]], [[FA Cup]], [[FA Community Shield|Community Shield]]
+|-
+|{{flagicon|Italy}} [[Roberto Di Matteo]]
+|2012<ref group="nb">Won as [[Interim management|Interim first team coach]]</ref>
+|[[FA Cup]], [[UEFA Champions League]]
+|-
+|{{flagicon|Spain}} [[Rafael Benítez]]
+|2012–2013<ref group="nb">Includes [[Interim management|Interim manager]]</ref>
+|[[UEFA Europa League]]
+|}
+<!-- NOTE: PLEASE DISCUSS CONTROVERSIAL CHANGES ON THE ARTICLE'S TALK PAGE. PLEASE DO NOT EDIT WAR -->
+
+==Management team==
+[[File:Mourinho in Moscow.jpg|thumb|right|200px|José Mourinho, the current manager of Chelsea]]
+
+{|class="wikitable"
+|-
+!Position
+!Staff
+|-
+|Manager||{{flagicon|POR}} [[José Mourinho]]
+|-
+|rowspan="4"|Assistant Manager||{{flagicon|ENG}} [[Steve Holland (footballer)|Steve Holland]]
+|-
+|{{flagicon|POR}} [[Silvino Louro]]
+|-
+|{{flagicon|POR}} [[Rui Faria]]
+|-
+|{{flagicon|POR}} [[José Morais]]
+|-
+|Technical Director||{{flagicon|NGR}} [[Michael Emenalo]]
+|-
+|rowspan="2"|Goalkeeper Coach||{{flagicon|FRA}} Christophe Lollichon
+|-
+|{{flagicon|POR}} [[Henrique Hilário]]
+|-
+|Fitness Coach||{{flagicon|ENG}} Chris Jones
+|-
+|Assistant Fitness Coach||{{flagicon|ESP}} Carlos Lalin
+|-
+|Senior Opposition Scout||{{flagicon|ENG}} [[Mick McGiven]]
+|-
+|Medical Director||{{flagicon|ESP}} Paco Biosca
+|-
+|Head of Youth Development||{{flagicon|ENG}} Neil Bath
+|-
+|Under-21 Team Manager||{{flagicon|ENG}} [[Adrian Viveash|Adi Viveash]]
+|-
+|Under-18 Team Manager||{{flagicon|ENG}} Joe Edwards
+|-
+|Head of Match Analysis/Scout||{{flagicon|ENG}} James Melbourne
+|-
+|International Head Coach||{{flagicon|ENG}} [[Dermot Drummy]]
+|-
+{{Fb oi footer|s=[http://www.chelseafc.com/management Chelsea F.C.]|date=August 2015}}
+
+==Club personnel==
+Chelsea FC plc is the company which owns Chelsea Football Club. The ultimate parent company of Chelsea FC plc is Fordstam Limited and the ultimate controlling party of Fordstam Limited is [[Roman Abramovich]].<ref name="Club Personnel">{{cite web|title=Club Personnel|url=http://www.chelseafc.com/the-club/about-chelsea-football-club/club-personnel.html|work=chelseafc.com|date=1 July 2015}}</ref>
+
+On 22 October 2014, Chelsea announced that [[Ron Gourlay]], after ten successful years at the club including five as Chief Executive, is leaving Chelsea in order to pursue new business opportunities.<ref>{{cite web|title=Club statement|url=http://www.chelseafc.com/news/latest-news/2014/10/club-statement.html|work=chelseafc.com|accessdate=22 October 2014|date=22 October 2014}}</ref> On 27 October 2014, Chelsea announced that [[Christian Purslow]] is joining the club to run global commercial activities and the club do not expect to announce any other senior appointments in the near future having Chairman [[Bruce Buck]] and Director Marina Granovskaia assumed the executive responsibilities.<ref>{{cite web|url=http://www.chelseafc.com/news/latest-news/2014/10/chelsea-statement.html|title=Chelsea Statement|work=chelseafc.com|accessdate=27 October 2014|date=27 October 2014}}</ref>
+
+'''Chelsea Ltd.'''
+:Owner: [[Roman Abramovich]]
+
+'''Chelsea F.C. plc Board'''<ref name="Club Personnel"/>
+:Chairman: [[Bruce Buck]]
+:Directors: Eugene Tenenbaum<ref>{{cite web|url=http://www.chelseafc.com/the-club/about-chelsea-football-club/club-personnel/eugene-tenenbaum.html|title=Eugene Tenenbaum|work=chelseafc.com|date=1 July 2015}}</ref> and Marina Granovskaia<ref>{{cite web|url=http://www.chelseafc.com/the-club/about-chelsea-football-club/club-personnel/marina-granovskaia.html|title=Marina Granovskaia|work=chelseafc.com|date=1 July 2015}}</ref><ref>{{cite web|last=Fifield|first=Dominic|title=Chelsea give formal role to Abramovich aide Marina Granovskaia|url=http://www.guardian.co.uk/football/2013/jun/14/chelsea-abramovich-aide-marina-granovskaia|publisher=Daily Mail|accessdate=15 June 2013|date=14 June 2013}}</ref>
+
+'''Executive Board'''<ref name="Club Personnel"/>
+:Club Secretary: David Barnard
+:Chairman: [[Bruce Buck]]
+:Directors: Eugene Tenenbaum and Marina Granovskaia
+:Head of Global Commercial Activities: [[Christian Purslow]]
+
+'''Life President'''
+:[[Richard Attenborough|Lord Attenborough]] (1923–2014)
+
+'''Vice-Presidents'''
+:Peter Digby
+:Sir Peter Harrison
+:Joe Hemani
+:John Leigh
+:Anthony Reeves
+:Alan Spence
+
+Source: [http://www.chelseafc.com/the-club/about-chelsea-football-club/club-personnel.html Chelsea F.C.]
+
+==Honours==
+Upon winning the [[2012–13 UEFA Europa League]], Chelsea became the fourth club in history to have won the "[[European football records|European Treble]]" of [[UEFA Champions League|European Cup/UEFA Champions League]], [[UEFA Cup Winners' Cup|European Cup Winners' Cup/UEFA Cup Winners' Cup]], and [[UEFA Europa League|UEFA Cup/UEFA Europa League]] after [[Juventus F.C.|Juventus]], [[AFC Ajax|Ajax]] and [[FC Bayern Munich|Bayern Munich]]. Chelsea are the first English club to have won all three major UEFA trophies.<ref>{{cite news| date=15 May 2013| title=Chelsea join illustrious trio | url=http://www.uefa.com/uefaeuropaleague/news/newsid=1947872.html |work=uefa.com}}</ref>
+
+===Domestic===
+
+====Leagues====
+* '''[[List of English football champions|First Division/Premier League]]'''<ref name="premier_league" group = "nb">Upon its formation in 1992, the [[Premier League]] became the top tier of [[Football in England|English football]]; the [[Football League First Division|First]] and [[Football League Second Division|Second Divisions]] then became the second and third tiers, respectively. The First Division is now known as the [[Football League Championship]] and the Second Division is now known as [[Football League One]].</ref>
+: '''Winners (5):'''  [[1954–55 Football League#First Division|1954–55]], [[2004–05 FA Premier League|2004–05]], [[2005–06 FA Premier League|2005–06]], [[2009–10 Premier League|2009–10]], [[2014-15 Premier League|2014–15]]'''
+* '''[[List of winners of English Football League Championship and predecessors|Second Division]]'''<ref name="premier_league" group = "nb"/>
+: '''Winners (2):'''  [[1983–84 Football League#Second Division|1983–84]], [[1988–89 Football League#Second Division|1988–89]]'''
+
+====Cups====
+* '''[[FA Cup]]'''
+: '''Winners (7):'''  [[1970 FA Cup Final|1970]], [[1997 FA Cup Final|1997]], [[2000 FA Cup Final|2000]], [[2007 FA Cup Final|2007]], [[2009 FA Cup Final|2009]], [[2010 FA Cup Final|2010]], [[2012 FA Cup Final|2012]]'''
+* '''[[Football League Cup]]'''
+: '''Winners (5):'''  [[1965 Football League Cup Final|1965]], [[1998 Football League Cup Final|1998]], [[2005 Football League Cup Final|2005]], [[2007 Football League Cup Final|2007]], [[2015 Football League Cup Final|2015]]
+* '''[[FA Community Shield]]'''<ref group = "nb">The trophy was known as the Charity Shield until 2002, and as the Community Shield ever since.</ref>
+: '''Winners (4):'''  [[1955 FA Charity Shield|1955]], [[2000 FA Charity Shield|2000]], [[2005 FA Community Shield|2005]], [[2009 FA Community Shield|2009]]'''
+* '''[[Full Members Cup]]'''
+: '''Winners (2):'''  [[1986 Full Members Cup Final|1986]], [[1990 Full Members Cup Final|1990]]'''
+
+===European===
+* '''[[UEFA Champions League]]'''
+: '''Winners (1):'''  [[2011–12 UEFA Champions League|2011–12]]'''
+* '''[[UEFA Europa League]]'''
+: '''Winners (1):'''  [[2012–13 UEFA Europa League|2012–13]]'''
+* '''[[UEFA Cup Winners' Cup]]'''
+: '''Winners (2):'''  [[1970–71 European Cup Winners' Cup|1970–71]], [[1997–98 UEFA Cup Winners' Cup|1997–98]]'''
+* '''[[UEFA Super Cup]]'''
+: '''Winners (1):'''  [[1998 UEFA Super Cup|1998]]'''
+
+Source: [http://www.chelseafc.com/the-club/history/style/trophy-cabinet.html Chelsea F.C.]
+
+===Doubles===
+*[[1997–98 in English football|1997–98]]: League Cup and European Cup Winners Cup
+*[[2004–05 in English football|2004–05]]: League and League Cup
+*[[2006-07 in English football|2006–07]]: FA Cup and League Cup
+*[[2009–10 in English football|2009–10]]: League and FA Cup
+*[[2011–12 in English football|2011–12]]: FA Cup and UEFA Champions League
+*[[2014-15 in English football|2014–15]]: League and League Cup
+
+==Notes==
+<references group="nb" />
+
+==Footnotes==
+{{Reflist|4}}
+
+==References==
+* {{Cite book | author=Batty, Clive | title=Kings of the King's Road: The Great Chelsea Team of the 60s and 70s| publisher=Vision Sports Publishing Ltd| year=2004| isbn=0-9546428-1-3}}
+* {{Cite book | author=Batty, Clive | title=A Serious Case of the Blues: Chelsea in the 80s| publisher=Vision Sports Publishing Ltd| year=2005| isbn=1-905326-02-5}}
+* {{Cite book | author=Glanvill, Rick | title=Chelsea FC: The Official Biography – The Definitive Story of the First 100 Years| publisher=Headline Book Publishing Ltd| year=2006| isbn=0-7553-1466-2}}
+* {{Cite book | author=Hadgraft, Rob | title=Chelsea: Champions of England 1954–55| publisher=Desert Island Books Limited| year=2004| isbn=1-874287-77-5}}
+* {{Cite book | author=Harris, Harry | title=Chelsea's Century| publisher=Blake Publishing| year=2005| isbn=1-84454-110-X}}
+* {{Cite book | author=Ingledew, John | title=And Now Are You Going to Believe Us: Twenty-five Years Behind the Scenes at Chelsea FC| publisher=John Blake Publishing Ltd| year=2006| isbn=1-84454-247-5}}
+* {{Cite book | author=Matthews, Tony | title=Who's Who of Chelsea | publisher=Mainstream Publishing| year=2005| isbn=1-84596-010-6}}
+* {{Cite book | author=Mears, Brian | title=Chelsea: A 100-year History | publisher=Mainstream Sport| year=2004| isbn=1-84018-823-5}}
+* {{Cite book | author=Mears, Brian | title=Chelsea: Football Under the Blue Flag| publisher=Mainstream Sport| year=2002| isbn=1-84018-658-5}}
+
+==External links==
+{{Portal|London|English football|Association football}}
+{{Commons category}}
+{{Spoken Wikipedia|Chelsea_FC.ogg|7 April 2007}}
+<!--Please explain your reasoning on the talk page before adding fansites etc.-->
+* {{Official website|http://www.chelseafc.com/}} {{En icon}} {{Th icon}} {{Ko icon}} {{Ru icon}} {{Ja icon}} {{Id icon}} {{Zh icon}}
+* [http://www.premierleague.com/page/chelsea-fc Chelsea F.C.] at Premier League
+{{BBC football info|c/chelsea}}
+
+{{Chelsea F.C.}}
+{{Chelsea F.C. seasons}}
+{{Navboxes|titlestyle=background:#034694;color:white;|list1=</span>
+{{Premier League}}
+{{FIFA Club World Cup finalists}}
+{{UEFA Champions League winners}}
+{{UEFA Europa League winners}}
+{{UEFA Cup Winners' Cup winners}}
+{{UEFA Super Cup winners}}
+{{Football in London}}
+{{ECA}}
+}}
+{{Featured article}}
+
+{{Authority control}}
+
+[[Category:Football clubs in England]]
+[[Category:Chelsea F.C.| ]]
+[[Category:Association football clubs established in 1905]]
+[[Category:Premier League clubs]]
+[[Category:Former Football League clubs]]
+[[Category:FA Cup winners]]
+[[Category:Football League Cup winners]]
+[[Category:Edwardian era]]
+[[Category:Football clubs in London]]
+[[Category:1905 establishments in England]]
+[[Category:Fulham]]

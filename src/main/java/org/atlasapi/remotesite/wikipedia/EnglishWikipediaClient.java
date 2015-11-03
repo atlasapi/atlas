@@ -76,6 +76,8 @@ public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleS
             builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Premier League").getMediaWikiSource()));
             builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League One").getMediaWikiSource()));
             builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Championship").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Two").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("National League (division)").getMediaWikiSource()));
             return builder.build();
         } catch (Exception ex) {
             log.error("Failed to load EPL football teams list!", ex);

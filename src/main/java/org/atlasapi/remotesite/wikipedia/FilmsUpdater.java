@@ -48,7 +48,7 @@ public class FilmsUpdater extends ScheduledTask {
     private UpdateProgress progress;
     private int totalTitles;
     
-    public FilmsUpdater(FilmArticleTitleSource titleSource, FetchMeister fetcher, FilmExtractor extractor, ContentWriter writer, int simultaneousness, int threadsToStart) {
+    public FilmsUpdater(FilmArticleTitleSource titleSource, FetchMeister fetcher, FilmExtractor extractor, ContentWriter writer,  int simultaneousness, int threadsToStart) {
         this.titleSource = checkNotNull(titleSource);
         this.fetchMeister = checkNotNull(fetcher);
         this.extractor = checkNotNull(extractor);

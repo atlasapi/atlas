@@ -1,8 +1,9 @@
 package org.atlasapi.remotesite.wikipedia.football;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import de.fau.cs.osr.ptk.common.ast.AstNode;
+import org.atlasapi.remotesite.wikipedia.SwebleHelper.ListItemResult;
 import org.atlasapi.remotesite.wikipedia.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,8 +14,6 @@ import xtc.parser.ParseException;
 
 import java.io.IOException;
 import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
 
 public class TeamInfoboxScrapper {
     private final static Logger log = LoggerFactory.getLogger(TeamInfoboxScrapper.class);
@@ -22,7 +21,7 @@ public class TeamInfoboxScrapper {
     public static class Result {
         public String name;
         public String fullname;
-        public String nicknames;
+        public ImmutableList<ListItemResult> nicknames;
         public String image;
         public String website;
     }
@@ -50,12 +49,20 @@ public class TeamInfoboxScrapper {
                 return;
             }
             Template t = (Template) n;
-
-            String name = SwebleHelper.flattenTextNodeList(t.getName());
-            if ("Infobox football club".equalsIgnoreCase(name)) {
+            String name = SwebleHelper.flattenTextNodeList(t.getName()).toLowerCase();
+            boolean isFootballInfobox = name.contains("infobox") &&  name.contains("football");
+            boolean isOfficialWebsite = name.contains("official") && name.contains("website");
+            if (isFootballInfobox) {
                 Iterator<AstNode> children = t.getArgs().iterator();
                 while(children.hasNext()) {
                     consumeAttribute(children.next());
+                }
+            } else if (isOfficialWebsite) {
+                try {
+                    String website = SwebleHelper.extractArgument(t, 0);
+                    attrs.website = website;
+                } catch (Exception e) {
+                    log.warn("Failed to extract official website from \"" + SwebleHelper.unparse(t) + "\"", e);
                 }
             }
         }
@@ -65,17 +72,16 @@ public class TeamInfoboxScrapper {
                 return;
             }
             TemplateArgument a = (TemplateArgument) n;
-            final String key = SwebleHelper.normalizeAndFlattenTextNodeList(a.getName());
-
+            final String key = SwebleHelper.flattenTextNodeList(a.getName());
             if ("clubname".equalsIgnoreCase(key)) {
                 attrs.name = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             } else if ("nickname".equalsIgnoreCase(key)) {
-                attrs.nicknames = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+                attrs.nicknames = SwebleHelper.extractFootballList(a.getValue());
             } else if ("image".equalsIgnoreCase(key)) {
-                attrs.image = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+                attrs.image = SwebleHelper.flattenTextNodeList(a.getValue());
             } else if ("fullname".equalsIgnoreCase(key)) {
                 attrs.fullname = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
-            }else if ("website".equalsIgnoreCase(key)) {
+            }else if ("website".equalsIgnoreCase(key) && Strings.isNullOrEmpty(attrs.website)) {
                 attrs.website = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             }
         }

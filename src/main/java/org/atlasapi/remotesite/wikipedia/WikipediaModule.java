@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.wikipedia;
 import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.organisation.OrganisationWriter;
@@ -32,11 +33,14 @@ public class WikipediaModule {
     private @Autowired SimpleScheduler scheduler;
     private @Value("${updaters.wikipedia.films.enabled}") Boolean filmTaskEnabled;
     private @Value("${updaters.wikipedia.tv.enabled}") Boolean tvTaskEnabled;
+    private @Value("${updaters.wikipedia.football.enabled}") Boolean footballTaskEnabled;
     
     private @Value("${updaters.wikipedia.films.simultaneousness}") int filmsSimultaneousness;
     private @Value("${updaters.wikipedia.films.threads}") int filmsThreads;
     private @Value("${updaters.wikipedia.tv.simultaneousness}") int tvSimultaneousness;
     private @Value("${updaters.wikipedia.tv.threads}") int tvThreads;
+    private @Value("${updaters.wikipedia.football.simultaneousness}") int footballSimultaneousness;
+    private @Value("${updaters.wikipedia.football.threads}") int footballThreads;
 
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
 	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
@@ -75,10 +79,6 @@ public class WikipediaModule {
     public FilmsUpdater allFilmsUpdater() {
         return new FilmsUpdater(allFilmsTitleSource, fetchMeister, filmExtractor, contentWriter, filmsSimultaneousness, filmsThreads);
     }
-
-    public FootballTeamsUpdater teamsUpdater() {
-        return new FootballTeamsUpdater(teamsNamesSource, fetchMeister, footballTeamsExtractor, organisationWriter, filmsSimultaneousness, filmsThreads);
-    }
     
     public FilmsUpdater filmsUpdaterForTitles(FilmArticleTitleSource titleSource) {
         return new FilmsUpdater(titleSource, fetchMeister, filmExtractor, contentWriter, filmsSimultaneousness, filmsThreads);
@@ -90,5 +90,13 @@ public class WikipediaModule {
     
     public TvBrandHierarchyUpdater tvBrandsUpdaterForTitles(TvBrandArticleTitleSource titleSource) {
         return new TvBrandHierarchyUpdater(titleSource, fetchMeister, tvBrandHierarchyExtractor, contentWriter, tvSimultaneousness, tvThreads);
+    }
+
+    public FootballTeamsUpdater allTeamsUpdater() {
+        return new FootballTeamsUpdater(teamsNamesSource, fetchMeister, footballTeamsExtractor, organisationWriter, footballSimultaneousness, footballThreads);
+    }
+
+    public FootballTeamsUpdater teamsUpdater(TeamsNamesSource titleSource) {
+        return new FootballTeamsUpdater(titleSource, fetchMeister, footballTeamsExtractor, organisationWriter, footballSimultaneousness, footballThreads);
     }
 }

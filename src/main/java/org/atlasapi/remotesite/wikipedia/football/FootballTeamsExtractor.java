@@ -1,10 +1,9 @@
 package org.atlasapi.remotesite.wikipedia.football;
 
-import com.google.common.base.Strings;
-import static com.google.common.base.Preconditions.checkNotNull;
 import org.atlasapi.media.entity.*;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.wikipedia.Article;
+import org.atlasapi.remotesite.wikipedia.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xtc.parser.ParseException;
@@ -24,13 +23,21 @@ public class FootballTeamsExtractor implements ContentExtractor<Article, Organis
             team.setPublisher(Publisher.WIKIPEDIA);
             team.setLastUpdated(article.getLastModified());
             team.setCanonicalUri(url);
-            team.setTitle(info.name);
-            team.setImage(info.image);
-
+            addLink(team, info.website);
+            if (info.name != null ) {
+                team.setTitle(info.name);
+            } else {
+                team.setTitle(article.getTitle());
+            }
+            team.setImage(SwebleHelper.getWikiImage(info.image));
             return team;
         } catch (IOException | ParseException ex) {
             throw new RuntimeException(ex);
         }
     }
 
+    private void addLink(Organisation team, String website) {
+        RelatedLink link = new RelatedLink.Builder(RelatedLink.LinkType.UNKNOWN, website).build();
+        team.addRelatedLink(link);
+    }
 }

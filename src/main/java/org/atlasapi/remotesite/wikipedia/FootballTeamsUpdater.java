@@ -6,6 +6,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.util.concurrent.*;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import org.atlasapi.media.entity.Organisation;
+import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.organisation.OrganisationWriter;
 import org.atlasapi.remotesite.wikipedia.football.FootballTeamsExtractor;
 import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;

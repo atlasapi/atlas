@@ -211,7 +211,7 @@ public class FetchMeister {
         }
     }
     
-    private static final Pattern redirectPattern = Pattern.compile("^\\s*\\#REDIRECT\\s*\\[\\[([^\\]]*)\\]\\]", Pattern.CASE_INSENSITIVE);
+    private static final Pattern redirectPattern = Pattern.compile("^\\s*\\#REDIRECT\\s*\\[\\[([^\\]]*)\\]\\]\\n*.*", Pattern.CASE_INSENSITIVE);
     
     private ListenableFuture<Article> followRedirects(ListenableFuture<Article> articleThatMightBeARedirect, final int maxRemainingRedirects) {
         return Futures.transform(articleThatMightBeARedirect, new AsyncFunction<Article, Article>() {

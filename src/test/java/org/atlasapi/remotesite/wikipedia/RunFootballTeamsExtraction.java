@@ -18,10 +18,7 @@ public class RunFootballTeamsExtraction {
 
                     @Override
                     public void updateOrganisationItems(Organisation organisation) {
-                        System.out.println(organisation.getTitle());
-                        System.out.println(organisation.getPublisher());
-                        System.out.println(organisation.getCanonicalUri());
-                        System.out.println(organisation.getImage());
+
                     }
 
                     @Override
@@ -30,6 +27,8 @@ public class RunFootballTeamsExtraction {
                         System.out.println(organisation.getPublisher());
                         System.out.println(organisation.getCanonicalUri());
                         System.out.println(organisation.getImage());
+                        System.out.println(organisation.getRelatedLinks());
+                        System.out.println(organisation.getAliases());
                     }
                 },
                 5,

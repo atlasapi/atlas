@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
@@ -28,7 +29,14 @@ import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Event;
+import org.atlasapi.media.entity.EventRef;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.simple.*;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -125,8 +133,6 @@ public class ContentWriteController {
         if (Strings.isNullOrEmpty(content.getCanonicalUri())) {
             return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
-
-        content = updateEventPublisher(content);
 
         try {
             content = merge(resolveExisting(content), content, merge);
@@ -241,7 +247,8 @@ public class ContentWriteController {
     }
 
     private Content complexify(Description inputContent) {
-        return transformer.transform(inputContent);
+        Content content = transformer.transform(inputContent);
+        return updateEventPublisher(content);
     }
 
     private Description deserialize(Reader input) throws IOException, ReadException {
@@ -255,13 +262,14 @@ public class ContentWriteController {
     }
 
     private Content updateEventPublisher(Content content) {
-        for(EventRef eventRef: content.events()) {
+        List<EventRef> eventRefs = content.events();
+        for(EventRef eventRef: eventRefs) {
             Event event = eventResolver.fetch(eventRef.id()).orNull();
-            if(event != null && event.publisher() != null) {
-                eventRef.setPublisher(event.publisher());
-            }
+            checkNotNull(event);
+            checkNotNull(event.publisher());
+            eventRef.setPublisher(event.publisher());
         }
+        content.setEventRefs(ImmutableList.copyOf(eventRefs));
         return content;
     }
-
 }

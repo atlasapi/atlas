@@ -71,7 +71,10 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         Set<String> containerIds = ImmutableSet.of();
 
         try {
+            reportStatus("Doing the discovery call");
             ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(query);
+
+            reportStatus(String.format("Got %d items from discovery", fetched.size()));
 
             episodeIds = ImmutableSet.copyOf(Iterables.transform(fetched,
                     new Function<Item, String>() {
@@ -82,8 +85,12 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     }));
             containerIds = topLevelContainerIds(fetched);
 
+            reportStatus("Locking item IDs");
+
             lock.lock(episodeIds);
             lock.lock(containerIds);
+
+            reportStatus("Resolving items from Atlas");
 
             ResolveOrFetchResult<Item> items = localOrRemoteFetcher.resolveItems(fetched);
 
@@ -92,6 +99,8 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
             Iterable<Series> series = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Series.class);
             Iterable<Brand> brands = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Brand.class);
+
+            reportStatus("Writing items");
             writeContent(items, series, brands);
         } catch (NitroException e) {
             throw Throwables.propagate(e);

@@ -3,10 +3,14 @@ package org.atlasapi.remotesite.wikipedia;
 import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.organisation.OrganisationWriter;
 import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.film.FilmExtractor;
+import org.atlasapi.remotesite.wikipedia.football.FootballTeamsExtractor;
+import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchyExtractor;
 import org.joda.time.LocalTime;
@@ -29,15 +33,19 @@ public class WikipediaModule {
     private @Autowired SimpleScheduler scheduler;
     private @Value("${updaters.wikipedia.films.enabled}") Boolean filmTaskEnabled;
     private @Value("${updaters.wikipedia.tv.enabled}") Boolean tvTaskEnabled;
+    private @Value("${updaters.wikipedia.football.enabled}") Boolean footballTaskEnabled;
     
     private @Value("${updaters.wikipedia.films.simultaneousness}") int filmsSimultaneousness;
     private @Value("${updaters.wikipedia.films.threads}") int filmsThreads;
     private @Value("${updaters.wikipedia.tv.simultaneousness}") int tvSimultaneousness;
     private @Value("${updaters.wikipedia.tv.threads}") int tvThreads;
+    private @Value("${updaters.wikipedia.football.simultaneousness}") int footballSimultaneousness;
+    private @Value("${updaters.wikipedia.football.threads}") int footballThreads;
 
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
-	private @Autowired ContentWriter contentWriter;
-    
+	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
+    private @Autowired @Qualifier("organisationWriter") OrganisationWriter organisationWriter;
+
     private final EnglishWikipediaClient ewc = new EnglishWikipediaClient();
     protected final ArticleFetcher fetcher = ewc;
     protected final FetchMeister fetchMeister = new FetchMeister(fetcher);
@@ -47,6 +55,9 @@ public class WikipediaModule {
     
     protected final TvBrandHierarchyExtractor tvBrandHierarchyExtractor = new TvBrandHierarchyExtractor();
     protected final TvBrandArticleTitleSource allTvBrandsTitleSource = ewc;
+
+    protected final FootballTeamsExtractor footballTeamsExtractor = new FootballTeamsExtractor();
+    protected final TeamsNamesSource teamsNamesSource = ewc;
     
     @PostConstruct
     public void setUp() {
@@ -79,5 +90,13 @@ public class WikipediaModule {
     
     public TvBrandHierarchyUpdater tvBrandsUpdaterForTitles(TvBrandArticleTitleSource titleSource) {
         return new TvBrandHierarchyUpdater(titleSource, fetchMeister, tvBrandHierarchyExtractor, contentWriter, tvSimultaneousness, tvThreads);
+    }
+
+    public FootballTeamsUpdater allTeamsUpdater() {
+        return new FootballTeamsUpdater(teamsNamesSource, fetchMeister, footballTeamsExtractor, organisationWriter, footballSimultaneousness, footballThreads);
+    }
+
+    public FootballTeamsUpdater teamsUpdater(TeamsNamesSource titleSource) {
+        return new FootballTeamsUpdater(titleSource, fetchMeister, footballTeamsExtractor, organisationWriter, footballSimultaneousness, footballThreads);
     }
 }

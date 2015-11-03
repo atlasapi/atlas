@@ -1,9 +1,13 @@
 package org.atlasapi.remotesite.wikipedia;
 
+import com.google.common.collect.ImmutableSet;
 import net.sourceforge.jwbf.mediawiki.bots.MediaWikiBot;
 
 import org.atlasapi.remotesite.FetchException;
 import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
+import org.atlasapi.remotesite.wikipedia.football.EnglishTeamListScraper;
+import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
+import org.atlasapi.remotesite.wikipedia.football.EuropeanTeamListScraper;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +16,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleSource, TvBrandArticleTitleSource {
+public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleSource, TvBrandArticleTitleSource, TeamsNamesSource {
     private static final Logger log = LoggerFactory.getLogger(EnglishWikipediaClient.class);
     
     private static final MediaWikiBot bot = new MediaWikiBot("http://en.wikipedia.org/w/");
@@ -58,6 +62,26 @@ public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleS
             return IndexScraper.extractNames(fetchArticle("List of television programs by name").getMediaWikiSource());
         } catch (Exception ex) {
             throw new TvIndexingException(ex);
+        }
+    }
+
+    @Override
+    public Iterable<String> getAllTeamNames() {
+        ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+        try {
+            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Champions League group stage").getMediaWikiSource()));
+            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Champions League qualifying phase and play-off round").getMediaWikiSource()));
+            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Europa League group stage").getMediaWikiSource()));
+            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Europa League qualifying phase and play-off round").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Premier League").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League One").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Championship").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Two").getMediaWikiSource()));
+            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("National League (division)").getMediaWikiSource()));
+            return builder.build();
+        } catch (Exception ex) {
+            log.error("Failed to load EPL football teams list!", ex);
+            throw new RuntimeException();
         }
     }
 

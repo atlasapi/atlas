@@ -18,12 +18,9 @@ public class ArticleDownloader {
     private static final EnglishWikipediaClient ewc = new EnglishWikipediaClient();
     
     public static void main(String... args) throws IOException {
-        File titleList = new File(args[0]);
-        String outputDir = System.getProperty("user.home") + "/atlasTestCaches/wikipedia/films";
-        List<String> readLines = Files.readLines(titleList, Charsets.UTF_8);
-        for (String title : readLines) {
-            System.out.println(title);
-            Article fetchArticle;
+        String outputDir = "/Users/dias/atlas/src/test/resources/org/atlasapi/remotesite/wikipedia/teams";
+        String title = "Arsenal F.C.";
+        Article fetchArticle;
             try {
                 fetchArticle = ewc.fetchArticle(title);
                 String safeTitle = title.replaceAll("/", "-");
@@ -32,5 +29,5 @@ public class ArticleDownloader {
                 log.error("Failed to download \""+ title +"\"");
             }
         }
-    }
+
 }

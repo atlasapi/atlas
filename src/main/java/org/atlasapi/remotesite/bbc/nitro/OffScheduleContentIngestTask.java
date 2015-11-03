@@ -1,38 +1,33 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 import java.util.Set;
 
-import javax.annotation.Nullable;
-
 import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.ScheduleEntry;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.atlasapi.util.GroupLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
+import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
+import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.common.scheduling.ScheduledTask;
@@ -66,6 +61,10 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 .withMixins(ProgrammesMixin.TITLES, ProgrammesMixin.PEOPLE)
                 .withAvailability(AvailabilityOption.AVAILABLE)
                 .withPageSize(pageSize)
+                .withAvailabilityEntityType(AvailabilityEntityTypeOption.EPISODE)
+                .withEntityType(EntityTypeOption.EPISODE)
+                .withMediaSet("iptv-all")
+                .withMediaType(MediaTypeOption.AUDIO_VIDEO)
                 .build();
 
         Set<String> episodeIds = ImmutableSet.of();

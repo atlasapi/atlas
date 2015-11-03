@@ -111,6 +111,7 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
         if (from == null) {
             return;
         }
+
         for (ListItemResult person : from) {
             if (person.articleTitle.isPresent()) {
                 into.add(new CrewMember(Article.urlFromTitle(person.articleTitle.get()), null, Publisher.WIKIPEDIA).withRole(role).withName(person.name));

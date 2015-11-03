@@ -44,7 +44,7 @@ public class WikipediaModule {
 
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
 	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
-    private @Autowired @Qualifier("organisationWriter") OrganisationWriter organisationWriter;
+    private OrganisationWriter organisationWriter;
 
     private final EnglishWikipediaClient ewc = new EnglishWikipediaClient();
     protected final ArticleFetcher fetcher = ewc;

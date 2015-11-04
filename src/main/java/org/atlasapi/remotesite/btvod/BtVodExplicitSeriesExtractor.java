@@ -1,16 +1,22 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.api.client.util.Maps;
-import com.google.common.collect.ImmutableMap;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.TopicRef;
-import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.atlasapi.media.entity.Certificate;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.TopicRef;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
+
+import com.google.api.client.util.Maps;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.intl.Countries;
 
 public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
@@ -67,6 +73,13 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
         series.addAliases(getDescribedFieldsExtractor().aliasesFrom(row));
         series.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
         getDescribedFieldsExtractor().setDescribedFieldsFrom(row, series);
+
+        BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
+        if (rating != null) {
+            series.setCertificates(ImmutableList.of(
+                    new Certificate(rating.getProductRating(), Countries.GB)
+            ));
+        }
     }
 
     public Map<String, Series> getExplicitSeries() {

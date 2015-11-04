@@ -137,8 +137,10 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     contentWriter.createOrUpdate(sery);
                 }
                 contentWriter.createOrUpdate(item);
+                written++;
             } catch (Exception e) {
                 log.error(item.getCanonicalUri(), e);
+                failed++;
             }
             reportStatus(String.format("Written %d / %d items; %d failed", written, total, failed));
         }

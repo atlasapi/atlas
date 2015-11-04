@@ -121,7 +121,11 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
         ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
 
-        for (Item item : items.getAll()) {
+        ImmutableSet<Item> allItems = items.getAll();
+        int written = 0;
+        int failed = 0;
+        int total = allItems.size();
+        for (Item item : allItems) {
             try {
                 Brand brand = getBrand(item, brandIndex);
                 if (brand != null) {
@@ -136,6 +140,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
             } catch (Exception e) {
                 log.error(item.getCanonicalUri(), e);
             }
+            reportStatus(String.format("Written %d / %d items; %d failed", written, total, failed));
         }
     }
 

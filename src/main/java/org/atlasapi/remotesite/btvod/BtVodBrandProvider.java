@@ -17,14 +17,15 @@ public class BtVodBrandProvider {
     private final BrandUriExtractor brandUriExtractor;
     private final Map<String, Brand> brands;
     private final BrandDescriptionUpdater brandDescriptionUpdater;
+    private final CertificateUpdater certificateUpdater;
 
-    public BtVodBrandProvider(
-            BrandUriExtractor brandUriExtractor,
-            Map<String, Brand> brands, BrandDescriptionUpdater brandDescriptionUpdater
-    ) {
+    public BtVodBrandProvider(BrandUriExtractor brandUriExtractor,
+            Map<String, Brand> brands, BrandDescriptionUpdater brandDescriptionUpdater,
+            CertificateUpdater certificateUpdater) {
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.brands = ImmutableMap.copyOf(brands);
         this.brandDescriptionUpdater = checkNotNull(brandDescriptionUpdater);
+        this.certificateUpdater = checkNotNull(certificateUpdater);
     }
 
 
@@ -53,7 +54,7 @@ public class BtVodBrandProvider {
         );
     }
 
-    public void updateDescriptions(BtVodEntry seriesRow, Series series) {
+    public void updateBrandFromSeries(BtVodEntry seriesRow, Series series) {
         Optional<Brand> brandOptional = brandFor(seriesRow);
         if(!brandOptional.isPresent()) {
             return;
@@ -61,5 +62,6 @@ public class BtVodBrandProvider {
         Brand brand = brandOptional.get();
 
         brandDescriptionUpdater.updateDescriptions(brand, series);
+        certificateUpdater.updateCertificates(brand, series);
     }
 }

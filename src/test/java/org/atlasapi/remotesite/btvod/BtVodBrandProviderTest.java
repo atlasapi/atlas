@@ -20,6 +20,7 @@ public class BtVodBrandProviderTest {
 
     private @Mock BrandUriExtractor brandUriExtractor;
     private @Mock BrandDescriptionUpdater brandDescriptionUpdater;
+    private @Mock CertificateUpdater certificateUpdater;
 
     private BtVodBrandProvider brandProvider;
 
@@ -35,17 +36,25 @@ public class BtVodBrandProviderTest {
         brandProvider = new BtVodBrandProvider(
                 brandUriExtractor,
                 ImmutableMap.of(brand.getCanonicalUri(), brand),
-                brandDescriptionUpdater
+                brandDescriptionUpdater,
+                certificateUpdater
         );
+
+        when(brandUriExtractor.extractBrandUri(seriesRow))
+                .thenReturn(Optional.of(brand.getCanonicalUri()));
     }
 
     @Test
     public void testUpdateDescription() throws Exception {
-        when(brandUriExtractor.extractBrandUri(seriesRow))
-                .thenReturn(Optional.of(brand.getCanonicalUri()));
-
-        brandProvider.updateDescriptions(seriesRow, series);
+        brandProvider.updateBrandFromSeries(seriesRow, series);
 
         verify(brandDescriptionUpdater).updateDescriptions(brand, series);
+    }
+
+    @Test
+    public void testUpdateCertificates() throws Exception {
+        brandProvider.updateBrandFromSeries(seriesRow, series);
+
+        verify(certificateUpdater).updateCertificates(brand, series);
     }
 }

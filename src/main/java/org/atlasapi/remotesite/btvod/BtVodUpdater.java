@@ -230,7 +230,9 @@ public class BtVodUpdater extends ScheduledTask {
 
             Map<String, Series> synthesizedSeries = synthesizedSeriesExtractor.getSynthesizedSeries();
 
-            BtVodSeriesProvider seriesProvider = new BtVodSeriesProvider(explicitSeries, synthesizedSeries, seriesUriExtractor);
+            BtVodSeriesProvider seriesProvider = new BtVodSeriesProvider(
+                    explicitSeries, synthesizedSeries, seriesUriExtractor, new CertificateUpdater()
+            );
 
             BtVodItemExtractor itemExtractor = new BtVodItemExtractor(
                     brandProvider,

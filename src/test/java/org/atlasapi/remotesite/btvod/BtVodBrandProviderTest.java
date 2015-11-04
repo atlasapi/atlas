@@ -4,6 +4,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Before;
@@ -26,6 +27,10 @@ public class BtVodBrandProviderTest {
 
     private @Mock BtVodEntry seriesRow;
     private @Mock Series series;
+
+    private @Mock BtVodEntry episodeRow;
+    private @Mock Episode episode;
+
     private Brand brand;
 
     @Before
@@ -42,19 +47,28 @@ public class BtVodBrandProviderTest {
 
         when(brandUriExtractor.extractBrandUri(seriesRow))
                 .thenReturn(Optional.of(brand.getCanonicalUri()));
+        when(brandUriExtractor.extractBrandUri(episodeRow))
+                .thenReturn(Optional.of(brand.getCanonicalUri()));
     }
 
     @Test
-    public void testUpdateDescription() throws Exception {
+    public void testUpdateDescriptionFromSeries() throws Exception {
         brandProvider.updateBrandFromSeries(seriesRow, series);
 
         verify(brandDescriptionUpdater).updateDescriptions(brand, series);
     }
 
     @Test
-    public void testUpdateCertificates() throws Exception {
+    public void testUpdateCertificatesFromSeries() throws Exception {
         brandProvider.updateBrandFromSeries(seriesRow, series);
 
         verify(certificateUpdater).updateCertificates(brand, series);
+    }
+
+    @Test
+    public void testUpdateCertificatesFromEpisode() throws Exception {
+        brandProvider.updateBrandFromEpisode(episodeRow, episode);
+
+        verify(certificateUpdater).updateCertificates(brand, episode);
     }
 }

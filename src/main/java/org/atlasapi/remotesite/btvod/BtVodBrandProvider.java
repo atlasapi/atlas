@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 
 import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
@@ -63,5 +64,15 @@ public class BtVodBrandProvider {
 
         brandDescriptionUpdater.updateDescriptions(brand, series);
         certificateUpdater.updateCertificates(brand, series);
+    }
+
+    public void updateBrandFromEpisode(BtVodEntry episodeRow, Episode episode) {
+        Optional<Brand> brandOptional = brandFor(episodeRow);
+        if(!brandOptional.isPresent()) {
+            return;
+        }
+        Brand brand = brandOptional.get();
+
+        certificateUpdater.updateCertificates(brand, episode);
     }
 }

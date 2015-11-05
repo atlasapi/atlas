@@ -3,16 +3,22 @@ package org.atlasapi.remotesite.wikipedia;
 import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.mongo.MongoPersonStore;
 import org.atlasapi.persistence.content.organisation.OrganisationWriter;
+import org.atlasapi.persistence.content.people.PersonWriter;
 import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.film.FilmExtractor;
 import org.atlasapi.remotesite.wikipedia.football.FootballTeamsExtractor;
 import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.ArticleFetcher;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchyExtractor;
+import org.atlasapi.remotesite.wikipedia.updaters.FilmsUpdater;
+import org.atlasapi.remotesite.wikipedia.updaters.FootballTeamsUpdater;
+import org.atlasapi.remotesite.wikipedia.updaters.TvBrandHierarchyUpdater;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,7 +50,9 @@ public class WikipediaModule {
 
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
 	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
+    //TODO wired bean for organisationWriter
     private OrganisationWriter organisationWriter;
+    private PersonWriter personStore;
 
     private final EnglishWikipediaClient ewc = new EnglishWikipediaClient();
     protected final ArticleFetcher fetcher = ewc;

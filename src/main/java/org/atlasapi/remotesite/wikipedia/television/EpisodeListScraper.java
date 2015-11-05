@@ -1,7 +1,7 @@
 package org.atlasapi.remotesite.wikipedia.television;
 
-import org.atlasapi.remotesite.wikipedia.Callback;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Callback;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sweble.wikitext.lazy.parser.LazyParsedPage;

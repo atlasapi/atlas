@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.wikipedia;
+package org.atlasapi.remotesite.wikipedia.updaters;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -7,7 +7,9 @@ import java.util.concurrent.Executors;
 
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.wikipedia.FetchMeister.PreloadedArticlesQueue;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister.PreloadedArticlesQueue;
 import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.film.FilmExtractor;
 import org.slf4j.Logger;

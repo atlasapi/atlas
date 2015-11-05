@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.wikipedia;
+package org.atlasapi.remotesite.wikipedia.wikiparsers;
 
 import org.joda.time.DateTime;
 

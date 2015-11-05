@@ -2,7 +2,7 @@ package org.atlasapi.remotesite.wikipedia.football;
 
 import de.fau.cs.osr.ptk.common.AstVisitor;
 import de.fau.cs.osr.ptk.common.ast.AstNode;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.sweble.wikitext.lazy.parser.*;
 import xtc.parser.ParseException;
 

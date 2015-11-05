@@ -9,7 +9,7 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.ContentExtractor;
-import org.atlasapi.remotesite.wikipedia.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

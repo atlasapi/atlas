@@ -2,8 +2,8 @@ package org.atlasapi.remotesite.wikipedia.football;
 
 import org.atlasapi.media.entity.*;
 import org.atlasapi.remotesite.ContentExtractor;
-import org.atlasapi.remotesite.wikipedia.Article;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import xtc.parser.ParseException;

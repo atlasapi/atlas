@@ -8,8 +8,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.atlasapi.remotesite.wikipedia.SwebleHelper;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper.ListItemResult;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper.ListItemResult;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;

@@ -1,6 +1,7 @@
-package org.atlasapi.remotesite.wikipedia;
+package org.atlasapi.remotesite.wikipedia.wikiparsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+
 import org.joda.time.DateTime;
 
 public class JwbfArticle extends Article {

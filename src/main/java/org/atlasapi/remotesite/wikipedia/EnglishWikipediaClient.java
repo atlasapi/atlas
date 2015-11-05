@@ -8,7 +8,14 @@ import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.football.EnglishTeamListScraper;
 import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
 import org.atlasapi.remotesite.wikipedia.football.EuropeanTeamListScraper;
+import org.atlasapi.remotesite.wikipedia.people.ActorsNamesListScrapper;
+import org.atlasapi.remotesite.wikipedia.people.PeopleNamesSource;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.ArticleFetcher;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.IndexScraper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.JwbfArticle;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,11 +23,11 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 
-public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleSource, TvBrandArticleTitleSource, TeamsNamesSource {
+public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleSource, TvBrandArticleTitleSource, TeamsNamesSource , PeopleNamesSource {
     private static final Logger log = LoggerFactory.getLogger(EnglishWikipediaClient.class);
     
     private static final MediaWikiBot bot = new MediaWikiBot("http://en.wikipedia.org/w/");
-    
+
     private static Iterable<String> filmIndexPageTitles() {
         return Lists.transform(ImmutableList.of(
             "numbers", "A", "B", "C", "D", "E", "F", "G", "H", "I",
@@ -69,20 +76,35 @@ public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleS
     public Iterable<String> getAllTeamNames() {
         ImmutableSet.Builder<String> builder = ImmutableSet.builder();
         try {
-            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Champions League group stage").getMediaWikiSource()));
-            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Champions League qualifying phase and play-off round").getMediaWikiSource()));
-            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Europa League group stage").getMediaWikiSource()));
-            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Europa League qualifying phase and play-off round").getMediaWikiSource()));
-            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Premier League").getMediaWikiSource()));
-            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League One").getMediaWikiSource()));
-            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Championship").getMediaWikiSource()));
-            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Two").getMediaWikiSource()));
-            builder.addAll(EnglishTeamListScraper.extractNames(fetchArticle("National League (division)").getMediaWikiSource()));
+            builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Champions League group stage").getMediaWikiSource()))
+            .addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Champions League qualifying phase and play-off round").getMediaWikiSource()))
+            .addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Europa League group stage").getMediaWikiSource()))
+            .addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Europa League qualifying phase and play-off round").getMediaWikiSource()))
+            .addAll(EnglishTeamListScraper.extractNames(fetchArticle("Premier League").getMediaWikiSource()))
+            .addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League One").getMediaWikiSource()))
+            .addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Championship").getMediaWikiSource()))
+            .addAll(EnglishTeamListScraper.extractNames(fetchArticle("Football League Two").getMediaWikiSource()))
+            .addAll(EnglishTeamListScraper.extractNames(fetchArticle("National League (division)").getMediaWikiSource()));
             return builder.build();
         } catch (Exception ex) {
-            log.error("Failed to load EPL football teams list!", ex);
+            log.error("Failed to load football teams list!", ex);
             throw new RuntimeException();
         }
     }
 
+    @Override
+    public Iterable<String> getAllPeopleNames() {
+        ImmutableSet.Builder<String> builder = ImmutableSet.builder();
+        try {
+            builder.addAll(ActorsNamesListScrapper.extractNames("Category:American_male_film_actors"));
+            builder.addAll(ActorsNamesListScrapper.extractNames("Category:American_film_actresses"));
+            builder.addAll(ActorsNamesListScrapper.extractNames("Category:American_male_television_actors"));
+            builder.addAll(ActorsNamesListScrapper.extractNames("Category:American_television_actresses"));
+            builder.addAll(IndexScraper.extractNames(fetchArticle("List of British actors and actresses").getMediaWikiSource()));
+            return builder.build();
+        } catch (Exception ex) {
+            log.error("Failed to load people names list!", ex);
+            throw new RuntimeException();
+        }
+    }
 }

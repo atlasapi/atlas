@@ -110,6 +110,12 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             }
 
             Item item = itemFrom(row);
+
+            if(item instanceof Episode) {
+                seriesProvider.updateSeriesFromEpisode(row, (Episode) item);
+                brandProvider.updateBrandFromEpisode(row, (Episode) item);
+            }
+
             processedItems.put(itemKeyForDeduping(row), item);
             processedRows.add(row.getGuid());
             listener.onContent(item, row);
@@ -121,8 +127,6 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         }
         return true;
     }
-
-
 
     private boolean shouldProcess(BtVodEntry row) {
         return !COLLECTION_TYPE.equals(row.getProductType()) 

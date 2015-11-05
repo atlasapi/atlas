@@ -1,13 +1,15 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 
 public class BtVodSeriesProvider {
 
@@ -22,17 +24,18 @@ public class BtVodSeriesProvider {
     private final Map<String, Series> synthesizedSeries;
 
     private final BtVodSeriesUriExtractor seriesUriExtractor;
+    private final CertificateUpdater certificateUpdater;
 
     public BtVodSeriesProvider(
             Map<String, Series> explicitSeries,
             Map<String, Series> synthesizedSeries,
-            BtVodSeriesUriExtractor seriesUriExtractor
-    ) {
+            BtVodSeriesUriExtractor seriesUriExtractor,
+            CertificateUpdater certificateUpdater) {
         this.explicitSeries = ImmutableMap.copyOf(explicitSeries);
         this.synthesizedSeries = ImmutableMap.copyOf(synthesizedSeries);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
+        this.certificateUpdater = checkNotNull(certificateUpdater);
     }
-
 
     public Optional<Series> seriesFor(BtVodEntry row) {
         if (row.getParentGuid() != null && explicitSeries.containsKey(row.getParentGuid())) {
@@ -48,5 +51,15 @@ public class BtVodSeriesProvider {
         }
 
         return Optional.absent();
+    }
+
+    public void updateSeriesFromEpisode(BtVodEntry episodeRow, Episode episode) {
+        Optional<Series> seriesOptional = seriesFor(episodeRow);
+        if(!seriesOptional.isPresent()) {
+            return;
+        }
+        Series series = seriesOptional.get();
+
+        certificateUpdater.updateCertificates(series, episode);
     }
 }

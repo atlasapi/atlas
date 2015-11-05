@@ -94,6 +94,7 @@ public class EquivTaskModule {
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(3, 00));
     private static final RepetitionRule BT_SPORT_EBS_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule RED_BEE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(3, 00));
     
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
     private @Value("${equiv.stream-updater.enabled}") Boolean streamedChangesUpdateEquiv;
@@ -144,6 +145,7 @@ public class EquivTaskModule {
             taskScheduler.schedule(publisherUpdateTask(AMAZON_UNBOX).withName("Amazon Unbox Equivalence Updater"), AMAZON_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(UKTV).withName("UKTV Equivalence Updater"), UKTV_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(BT_SPORT_EBS).withName("BT Sport EBS Equivalence Updater"), BT_SPORT_EBS_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(REDBEE_MEDIA).withName("RedBee Equivalence Updater"), RED_BEE_EQUIVALENCE_REPETITION);
 
             taskScheduler.schedule(publisherUpdateTask(Publisher.BBC_MUSIC).withName("Music Equivalence Updater"), RepetitionRules.every(Duration.standardHours(6)));
             

@@ -260,6 +260,7 @@ public class BtVodExplicitSeriesExtractorTest {
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
         entry.setProductScopes(ImmutableList.<BtVodProductScope>of());
+        entry.setProductRatings(ImmutableList.<BtVodProductRating>of());
         return entry;
     }
 }

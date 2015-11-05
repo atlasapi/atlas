@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.wikipedia;
+package org.atlasapi.remotesite.wikipedia.wikiparsers;
 
 public interface Callback<T> {
     /** As in "here, have this thing". */

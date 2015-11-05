@@ -1,29 +1,16 @@
 package org.atlasapi.remotesite.wikipedia;
 
 import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
 import com.google.common.io.Resources;
 import org.apache.commons.io.IOUtils;
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Organisation;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.wikipedia.football.FootballTeamsExtractor;
-import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
-import org.atlasapi.remotesite.wikipedia.television.ScrapedFlatHierarchy;
-import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
-import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchy;
-import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchyExtractor;
-import org.atlasapi.remotesite.wikipedia.testutils.FilesystemArticlesSource;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 import org.joda.time.DateTime;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
-import java.net.URISyntaxException;
-import java.nio.file.Paths;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;

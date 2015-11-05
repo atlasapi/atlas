@@ -2,10 +2,9 @@ package org.atlasapi.remotesite.wikipedia.testutils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
-import org.atlasapi.remotesite.wikipedia.Article;
-import org.atlasapi.remotesite.wikipedia.ArticleFetcher.FetchFailedException;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.ArticleFetcher.FetchFailedException;
 import org.atlasapi.remotesite.wikipedia.EnglishWikipediaClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +17,8 @@ public class ArticleDownloader {
     private static final EnglishWikipediaClient ewc = new EnglishWikipediaClient();
     
     public static void main(String... args) throws IOException {
-        String outputDir = "/Users/dias/atlas/src/test/resources/org/atlasapi/remotesite/wikipedia/teams";
-        String title = "Arsenal F.C.";
+        String outputDir = "/Users/dias/atlas/src/test/resources/org/atlasapi/remotesite/wikipedia/people";
+        String title = "Category:American male actors";
         Article fetchArticle;
             try {
                 fetchArticle = ewc.fetchArticle(title);

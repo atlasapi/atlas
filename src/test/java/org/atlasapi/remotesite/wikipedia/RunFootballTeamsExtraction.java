@@ -2,7 +2,9 @@ package org.atlasapi.remotesite.wikipedia;
 import org.atlasapi.media.entity.Organisation;
 import org.atlasapi.persistence.content.organisation.OrganisationWriter;
 import org.atlasapi.remotesite.wikipedia.football.FootballTeamsExtractor;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
 import org.atlasapi.remotesite.wikipedia.testutils.LocallyCachingArticleFetcher;
+import org.atlasapi.remotesite.wikipedia.updaters.FootballTeamsUpdater;
 
 import java.net.URISyntaxException;
 

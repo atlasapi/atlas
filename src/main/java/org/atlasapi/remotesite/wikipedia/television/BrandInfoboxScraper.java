@@ -1,9 +1,7 @@
 package org.atlasapi.remotesite.wikipedia.television;
 
-import info.bliki.wiki.filter.PlainTextConverter;
-import info.bliki.wiki.model.WikiModel;
-import org.atlasapi.remotesite.wikipedia.Callback;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Callback;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sweble.wikitext.lazy.parser.LazyParsedPage;

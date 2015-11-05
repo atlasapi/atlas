@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.wikipedia;
+package org.atlasapi.remotesite.wikipedia.updaters;
 
 import java.util.LinkedList;
 import java.util.List;
@@ -8,7 +8,11 @@ import java.util.concurrent.Executors;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.wikipedia.FetchMeister.PreloadedArticlesQueue;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Callback;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister.PreloadedArticlesQueue;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.atlasapi.remotesite.wikipedia.television.BrandInfoboxScraper;
 import org.atlasapi.remotesite.wikipedia.television.EpisodeListScraper;
 import org.atlasapi.remotesite.wikipedia.television.ScrapedBrandInfobox;

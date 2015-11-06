@@ -5,7 +5,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import javax.servlet.http.HttpServletResponse;
 
 import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
+import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
+import org.atlasapi.remotesite.wikipedia.people.PeopleNamesSource;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
+import org.atlasapi.remotesite.wikipedia.updaters.FootballTeamsUpdater;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -36,6 +39,24 @@ public class WikipediaUpdatesController {
         module.tvBrandsUpdaterForTitles(new TvBrandArticleTitleSource() {
             @Override
             public Iterable<String> getAllTvBrandArticleTitles() {
+                return ImmutableList.of(articleName);
+            }
+        }).run();
+    }
+
+    @RequestMapping(value="/system/update/wikipedia/football", method=RequestMethod.POST)
+    public void updateFootballTeam(HttpServletResponse response, @RequestParam("name") final String articleName) {
+        module.teamsUpdaterForTitles(new TeamsNamesSource() {
+            @Override public Iterable<String> getAllTeamNames() {
+                return ImmutableList.of(articleName);
+            }
+        }).run();
+    }
+
+    @RequestMapping(value="/system/update/wikipedia/people", method=RequestMethod.POST)
+    public void updatePeople(HttpServletResponse response, @RequestParam("name") final String articleName) {
+        module.peopleUpdaterForTitles(new PeopleNamesSource() {
+            @Override public Iterable<String> getAllPeopleNames() {
                 return ImmutableList.of(articleName);
             }
         }).run();

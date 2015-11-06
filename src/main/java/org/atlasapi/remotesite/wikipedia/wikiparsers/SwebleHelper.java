@@ -63,6 +63,7 @@ public class SwebleHelper {
             return (LazyPreprocessedPage) preprocessor.parseArticle(mediaWikiSource, "", includeOnly);
         } catch (IOException|ParseException ex) {
             throw new RuntimeException(ex);
+
         }
     }
     
@@ -155,7 +156,7 @@ public class SwebleHelper {
     /**
      * Returns a positional template argument, passed through {@link #flattenTextNodeList(NodeList)}.
      */
-    public static String extractArgument(Template t, int pos) throws IndexOutOfBoundsException {
+    public static String extractArgument(Template t, int pos) {
         NodeList args = t.getArgs();
         return flattenTextNodeList(((TemplateArgument) args.get(pos)).getValue());
     }

@@ -10,6 +10,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -71,11 +72,9 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
             title = guessBrandNameFromArticleTitle(brandArticle.getTitle());
         }
         brand.setTitle(title);
-
-
-        String image = info.image;
-        if (!Strings.isNullOrEmpty(image)) {
-           brand.setImage(image);
+        if (!Strings.isNullOrEmpty(info.image)) {
+            String image = SwebleHelper.getWikiImage(info.image);
+            brand.setImage(image);
         }
 
         if (info.firstAired.isPresent()) {

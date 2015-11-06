@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.wikipedia.people;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import de.fau.cs.osr.ptk.common.ast.AstNode;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.slf4j.Logger;
@@ -19,10 +17,12 @@ public class PeopleInfoboxScrapper {
 
     public static class Result {
         public String name;
-        public String secondName;
+        public String fullname;
         public String alias;
         public String image;
         public String website;
+        public String birthDate;
+        public String birthPlace;
     }
 
     public static Result getInfoboxAttrs(String articleText) throws IOException, ParseException {
@@ -71,7 +71,20 @@ public class PeopleInfoboxScrapper {
             }
             TemplateArgument a = (TemplateArgument) n;
             final String key = SwebleHelper.flattenTextNodeList(a.getName());
-            //TODO implement consuming
+
+            if ("name".equalsIgnoreCase(key)) {
+                attrs.name = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            } else if ("birth_name".equalsIgnoreCase(key)) {
+                attrs.fullname = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            } else if ("image".equalsIgnoreCase(key)) {
+                attrs.image = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            } else if ("birth_place".equalsIgnoreCase(key)) {
+                attrs.birthPlace = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            } else if ("website".equalsIgnoreCase(key)) {
+                attrs.website = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            } else if ("birth_date".equalsIgnoreCase(key)) {
+                attrs.birthDate = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+            }
         }
     }
 }

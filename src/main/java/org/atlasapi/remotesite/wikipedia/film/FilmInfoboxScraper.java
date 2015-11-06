@@ -75,6 +75,7 @@ public final class FilmInfoboxScraper {
         public ImmutableList<ListItemResult> productionStudios;
         public ImmutableList<ListItemResult> distributors;
         public ImmutableList<ReleaseDateResult> releaseDates;
+        public String image;
         public Integer runtimeInMins;
         public ImmutableList<ListItemResult> countries;
         public ImmutableList<ListItemResult> language;
@@ -204,6 +205,8 @@ public final class FilmInfoboxScraper {
                 attrs.countries = SwebleHelper.extractList(a.getValue());
             } else if ("language".equalsIgnoreCase(key)) {
                 attrs.language = SwebleHelper.extractList(a.getValue());
+            } else if ("image".equalsIgnoreCase(key)) {
+                attrs.image = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             }
         }
     }

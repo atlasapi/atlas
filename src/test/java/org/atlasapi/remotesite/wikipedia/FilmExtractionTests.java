@@ -28,6 +28,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.metabroadcast.common.intl.Countries;
 
+import info.bliki.api.Page;
+import info.bliki.api.User;
+
 public class FilmExtractionTests {
     FilmExtractor extractor;
     String articleText;
@@ -128,7 +131,8 @@ public class FilmExtractionTests {
                 IOUtils.toString(Resources.getResource(getClass(), "film/Hackers.mediawiki").openStream(), Charsets.UTF_8.name())
         ));
         assertEquals("Hackers", flim.getTitle());
-        
+
+        assertEquals("http://upload.wikimedia.org/wikipedia/en/6/67/Hackersposter.jpg", flim.getImage());
         assertTrue(flim.getAliases().contains(new Alias("imdb:url", "http://imdb.com/title/tt0113243")));
         assertTrue(flim.getAliases().contains(new Alias("imdb:title", "0113243")));
         assertTrue(flim.getAliases().contains(new Alias("rottentomatoes:movie", "hackers")));

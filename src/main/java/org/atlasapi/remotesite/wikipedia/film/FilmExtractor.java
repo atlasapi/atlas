@@ -15,6 +15,7 @@ import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper.ListItemResult;
 import org.atlasapi.remotesite.wikipedia.film.FilmInfoboxScraper.ReleaseDateResult;
 import org.atlasapi.remotesite.wikipedia.film.FilmInfoboxScraper.Result;
@@ -90,6 +91,10 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
                 Version v = new Version();
                 v.setDuration(new Duration(info.runtimeInMins * 60000));
                 flim.addVersion(v);
+            }
+
+            if (info.image != null) {
+                flim.setImage(SwebleHelper.getWikiImage(info.image));
             }
             
             return flim;

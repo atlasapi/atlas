@@ -40,6 +40,7 @@ public class RunPeopleExtraction {
                         System.out.println(person.getAliases());
                         System.out.println(person.getImage());
                         System.out.println(person.getTitle());
+                        System.out.println(person.getBirthDate());
                     }
                 },
                 5,

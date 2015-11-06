@@ -36,6 +36,7 @@ public class TvExtractionTests {
                 public TvBrandHierarchy extract(ScrapedFlatHierarchy source) {
                     Assert.assertEquals(145, source.getEpisodes().size()); // TODO should the pilot count?
                     Assert.assertEquals("Buffy the Vampire Slayer", source.getBrandInfo().title);
+                    Assert.assertEquals("", source.getBrandInfo().image);
                     return super.extract(source);
                 }
             },
@@ -47,8 +48,6 @@ public class TvExtractionTests {
 
                 @Override
                 public Item createOrUpdate(Item item) {
-                    System.out.println(item.getTitle());
-                    System.out.println(item.getCanonicalUri());
                     return item;
                 }
             },

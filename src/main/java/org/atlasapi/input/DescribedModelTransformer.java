@@ -48,8 +48,8 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         if (inputContent.getPriority() != null) {
             result.setPriority(new Priority(inputContent.getPriority().getScore(),
                     new PriorityScoreReasons(
-                            content.getPriority().getReasons().getPositive(),
-                            content.getPriority().getReasons().getNegative()
+                            inputContent.getPriority().getReasons().getPositive(),
+                            inputContent.getPriority().getReasons().getNegative()
                     )
             ));
         }

@@ -28,6 +28,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.metabroadcast.common.intl.Countries;
 
+import info.bliki.api.Page;
+import info.bliki.api.User;
+
 public class FilmExtractionTests {
     FilmExtractor extractor;
     String articleText;

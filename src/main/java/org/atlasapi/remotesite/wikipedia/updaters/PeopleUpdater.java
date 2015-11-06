@@ -1,17 +1,4 @@
-package org.atlasapi.remotesite.wikipedia;
-
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executors;
-
-import org.atlasapi.media.entity.Film;
-import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.wikipedia.FetchMeister.PreloadedArticlesQueue;
-import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
-import org.atlasapi.remotesite.wikipedia.film.FilmExtractor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+package org.atlasapi.remotesite.wikipedia.updaters;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -23,32 +10,41 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.atlasapi.media.entity.Person;
+import org.atlasapi.persistence.content.mongo.MongoPersonStore;
+import org.atlasapi.persistence.content.people.PersonWriter;
+import org.atlasapi.remotesite.wikipedia.people.PeopleExtractor;
+import org.atlasapi.remotesite.wikipedia.people.PeopleNamesSource;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-/**
- * A task which iterates over all films from a {@link FilmArticleTitleSource}, adding each of them in turn.
- */
-public class FilmsUpdater extends ScheduledTask {
-    private static Logger log = LoggerFactory.getLogger(FilmsUpdater.class);
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
 
-    /** How many films we try to process at once. */
+import static com.google.common.base.Preconditions.checkNotNull;
+
+public class PeopleUpdater extends ScheduledTask {
+    private static Logger log = LoggerFactory.getLogger(FootballTeamsUpdater.class);
+
     private int simultaneousness;
-    /** How many threads we use for all the deferred processing. */
     private int threadsToStart;
 
     private ListeningExecutorService executor;
     private final CountDownLatch countdown;
 
     private FetchMeister fetchMeister;
-    private FilmArticleTitleSource titleSource;
-    private PreloadedArticlesQueue articleQueue;
-    
-    private FilmExtractor extractor;
-    private ContentWriter writer;
-    
+    private PeopleNamesSource titleSource;
+    private FetchMeister.PreloadedArticlesQueue articleQueue;
+
+    private PeopleExtractor extractor;
+    private PersonWriter writer;
+
     private UpdateProgress progress;
     private int totalTitles;
-    
-    public FilmsUpdater(FilmArticleTitleSource titleSource, FetchMeister fetcher, FilmExtractor extractor, ContentWriter writer, int simultaneousness, int threadsToStart) {
+
+    public PeopleUpdater(PeopleNamesSource titleSource, FetchMeister fetcher, PeopleExtractor extractor, PersonWriter writer, int simultaneousness, int threadsToStart) {
         this.titleSource = checkNotNull(titleSource);
         this.fetchMeister = checkNotNull(fetcher);
         this.extractor = checkNotNull(extractor);
@@ -63,7 +59,7 @@ public class FilmsUpdater extends ScheduledTask {
         reportStatus("Starting...");
         progress = UpdateProgress.START;
         fetchMeister.start();
-        Iterable<String> titles = titleSource.getAllFilmArticleTitles();
+        Iterable<String> titles = titleSource.getAllPeopleNames();
         articleQueue = fetchMeister.queueForPreloading(titles);
         totalTitles = Iterables.size(titles);
         executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(threadsToStart));
@@ -83,14 +79,14 @@ public class FilmsUpdater extends ScheduledTask {
         articleQueue = null;
         fetchMeister.stop();
 
-        reportStatus(String.format("Processed: %d films (%d failed)", progress.getTotalProgress(), progress.getFailures()));
+        reportStatus(String.format("Processed: %d people (%d failed)", progress.getTotalProgress(), progress.getFailures()));
     }
-    
+
     private void reduceProgress(UpdateProgress occurrence) {
         synchronized (this) {
             progress = progress.reduce(occurrence);
         }
-        reportStatus(String.format("Processing: %d/%d films so far (%d failed)", progress.getTotalProgress(), totalTitles, progress.getFailures()));
+        reportStatus(String.format("Processing: %d/%d people so far (%d failed)", progress.getTotalProgress(), totalTitles, progress.getFailures()));
     }
 
     private void processNext() {
@@ -99,7 +95,7 @@ public class FilmsUpdater extends ScheduledTask {
             countdown.countDown();
             return;
         }
-        Futures.addCallback(updateFilm(next.get()), new FutureCallback<Void>() {
+        Futures.addCallback(updateFootballTeam(next.get()), new FutureCallback<Void>() {
             @Override
             public void onSuccess(Void result) {
                 reduceProgress(UpdateProgress.SUCCESS);
@@ -107,19 +103,19 @@ public class FilmsUpdater extends ScheduledTask {
             }
             @Override
             public void onFailure(Throwable t) {
-                log.warn("Failed to process a film", t);
+                log.warn("Failed to process a ", t);
                 reduceProgress(UpdateProgress.FAILURE);
                 processNext();
             }
         });
     }
-    
-    private ListenableFuture<Void> updateFilm(ListenableFuture<Article> article) {
+
+    private ListenableFuture<Void> updateFootballTeam(ListenableFuture<Article> article) {
         return Futures.transform(article, new Function<Article, Void>() {
             public Void apply(Article article) {
-                log.info("Processing film article \"" + article.getTitle() + "\"");
-                Film flim = extractor.extract(article);
-                writer.createOrUpdate(flim);
+                log.info("Processing person's article \"" + article.getTitle() + "\"");
+                Person person = extractor.extract(article);
+                writer.createOrUpdatePerson(person);
                 return null;
             }
         }, executor);

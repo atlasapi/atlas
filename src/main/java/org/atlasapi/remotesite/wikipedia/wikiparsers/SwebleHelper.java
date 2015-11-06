@@ -1,12 +1,17 @@
-package org.atlasapi.remotesite.wikipedia;
+package org.atlasapi.remotesite.wikipedia.wikiparsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.Iterables;
+import info.bliki.api.Connector;
+import info.bliki.api.Page;
+import info.bliki.api.User;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +28,9 @@ import org.sweble.wikitext.lazy.preprocessor.LazyPreprocessedPage;
 import org.sweble.wikitext.lazy.preprocessor.Template;
 import org.sweble.wikitext.lazy.preprocessor.TemplateArgument;
 import org.sweble.wikitext.lazy.utils.SimpleParserConfig;
+
+import info.bliki.wiki.filter.PlainTextConverter;
+import info.bliki.wiki.model.WikiModel;
 
 import xtc.parser.ParseException;
 
@@ -41,6 +49,8 @@ public class SwebleHelper {
     private static final Logger log = LoggerFactory.getLogger(SwebleHelper.class);
     private static final ParserConfigInterface cfg = new SimpleParserConfig();
     private static final LazyPreprocessor preprocessor = new LazyPreprocessor(cfg);
+    private static final Connector connector = new Connector();
+    private static final User user = connector.login(new User("", "", "http://en.wikipedia.org/w/api.php"));
 
     /**
      * Performs the first half of the Mediawiki parsing process -- the resulting AST includes templates and their arguments (the usual intention being to expand and include these before the remaining parse) but no awareness of formatting or any other textual abnormalities.
@@ -121,7 +131,27 @@ public class SwebleHelper {
         }
         return b.toString().trim();
     }
-    
+
+    public static String normalizeAndFlattenTextNodeList(NodeList l) {
+        String markUp = flattenTextNodeList(l);
+        return normalize(markUp);
+    }
+
+    public static String normalize(String markup) {
+        WikiModel model = new WikiModel("http://wikipedia.org/${image}","http://wikipedia.org/${title}");
+        String noMarkUp = model.render(new PlainTextConverter(), markup);
+        return noMarkUp;
+    }
+
+    public static String getWikiImage(String name) {
+        name = filePattern.matcher(name).replaceAll("");
+        name = "File:" + name;
+        List<Page> pages = user.queryImageinfo(new String[]{name});
+        return Iterables.getFirst(pages, new Page()).getImageUrl();
+    }
+
+    private final static Pattern filePattern = Pattern.compile("\\[\\[|\\]\\]|\\|.+|File:");
+
     /**
      * Returns a positional template argument, passed through {@link #flattenTextNodeList(NodeList)}.
      */
@@ -185,6 +215,8 @@ public class SwebleHelper {
             this.name = checkNotNull(name);
             this.articleTitle = articleTitle;
         }
+
+
         @Override
         public String toString() {
             return name + (articleTitle.isPresent() ? " (=> " + articleTitle.get() + ")" : "");
@@ -203,10 +235,20 @@ public class SwebleHelper {
         new ListVisitor(builder).go(parse(unparsed));
         return builder.build();
     }
+
+    public static ImmutableList<ListItemResult> extractFootballList(AstNode node) {
+        ImmutableList.Builder<ListItemResult> builder = ImmutableList.builder();
+        String unparsed = unparse(node);
+        unparsed = normalize(unparsed);
+        unparsed = bracesPattern.matcher(unparsed).replaceAll("");
+        new ListVisitor(builder).go(parse(unparsed));
+        return builder.build();
+    }
     
     private static final Pattern plainlistTemplatePattern = Pattern.compile("\\s*\\{\\{\\s*(end)?plainlist\\s*(\\}\\}|\\|)\\s*", Pattern.CASE_INSENSITIVE);
     private static final Pattern stupidBracesPattern = Pattern.compile("\\s*\\}\\}\\s*");
-    
+    private static final Pattern bracesPattern = Pattern.compile("\\{\\{.*\\}\\}");
+
     protected static class ListVisitor extends AstVisitor {
         private final ImmutableList.Builder<ListItemResult> builder;
         public ListVisitor(ImmutableList.Builder<ListItemResult> builder) {
@@ -251,7 +293,5 @@ public class SwebleHelper {
 
         @Override
         protected Object visitNotFound(AstNode node) { return null; }
-
     }
-
 }

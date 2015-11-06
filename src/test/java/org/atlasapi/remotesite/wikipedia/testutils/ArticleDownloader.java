@@ -2,10 +2,9 @@ package org.atlasapi.remotesite.wikipedia.testutils;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 
-import org.atlasapi.remotesite.wikipedia.Article;
-import org.atlasapi.remotesite.wikipedia.ArticleFetcher.FetchFailedException;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.ArticleFetcher.FetchFailedException;
 import org.atlasapi.remotesite.wikipedia.EnglishWikipediaClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,12 +17,9 @@ public class ArticleDownloader {
     private static final EnglishWikipediaClient ewc = new EnglishWikipediaClient();
     
     public static void main(String... args) throws IOException {
-        File titleList = new File(args[0]);
-        String outputDir = System.getProperty("user.home") + "/atlasTestCaches/wikipedia/films";
-        List<String> readLines = Files.readLines(titleList, Charsets.UTF_8);
-        for (String title : readLines) {
-            System.out.println(title);
-            Article fetchArticle;
+        String outputDir = "/Users/dias/atlas/src/test/resources/org/atlasapi/remotesite/wikipedia/people";
+        String title = "Category:American male actors";
+        Article fetchArticle;
             try {
                 fetchArticle = ewc.fetchArticle(title);
                 String safeTitle = title.replaceAll("/", "-");
@@ -32,5 +28,5 @@ public class ArticleDownloader {
                 log.error("Failed to download \""+ title +"\"");
             }
         }
-    }
+
 }

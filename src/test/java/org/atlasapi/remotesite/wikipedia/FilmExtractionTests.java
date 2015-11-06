@@ -16,6 +16,7 @@ import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.remotesite.wikipedia.film.FilmExtractor;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.junit.Before;

@@ -6,11 +6,13 @@ import java.nio.file.Paths;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
 import org.atlasapi.remotesite.wikipedia.television.ScrapedFlatHierarchy;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchy;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchyExtractor;
 import org.atlasapi.remotesite.wikipedia.testutils.FilesystemArticlesSource;
+import org.atlasapi.remotesite.wikipedia.updaters.TvBrandHierarchyUpdater;
 import org.junit.Assert;
 import org.junit.Test;
 
@@ -42,9 +44,11 @@ public class TvExtractionTests {
                 public void createOrUpdate(Container container) {
                     // TODO mock
                 }
-                
+
                 @Override
                 public Item createOrUpdate(Item item) {
+                    System.out.println(item.getTitle());
+                    System.out.println(item.getCanonicalUri());
                     return item;
                 }
             },

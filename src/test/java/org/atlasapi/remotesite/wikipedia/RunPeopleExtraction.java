@@ -33,7 +33,13 @@ public class RunPeopleExtraction {
 
                     @Override
                     public void createOrUpdatePerson(org.atlasapi.media.entity.Person person) {
-                        System.out.println(person);
+                        System.out.println(person.getBirthPlace());
+                        System.out.println(person.getGivenName());
+                        System.out.println(person.profileLinks());
+                        System.out.println(person.name());
+                        System.out.println(person.getAliases());
+                        System.out.println(person.getImage());
+                        System.out.println(person.getTitle());
                     }
                 },
                 5,

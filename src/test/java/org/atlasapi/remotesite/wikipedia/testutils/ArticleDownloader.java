@@ -18,7 +18,7 @@ public class ArticleDownloader {
     
     public static void main(String... args) throws IOException {
         String outputDir = "/Users/dias/atlas/src/test/resources/org/atlasapi/remotesite/wikipedia/people";
-        String title = "Category:American male actors";
+        String title = "Cesc Fàbregas";
         Article fetchArticle;
             try {
                 fetchArticle = ewc.fetchArticle(title);

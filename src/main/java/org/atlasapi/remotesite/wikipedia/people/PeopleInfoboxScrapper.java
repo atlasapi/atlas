@@ -27,7 +27,6 @@ public class PeopleInfoboxScrapper {
 
     public static Result getInfoboxAttrs(String articleText) throws IOException, ParseException {
         LazyPreprocessedPage ast = SwebleHelper.preprocess(articleText, false);
-
         InfoboxVisitor v = new InfoboxVisitor();
         Iterator<AstNode> topLevelEls = ast.getContent().iterator();
         while(topLevelEls.hasNext()) {
@@ -49,7 +48,7 @@ public class PeopleInfoboxScrapper {
             }
             Template t = (Template) n;
             String name = SwebleHelper.flattenTextNodeList(t.getName()).toLowerCase();
-            boolean isFootballInfobox = name.contains("infobox") &&  name.contains("person");
+            boolean isFootballInfobox = name.contains("infobox");
             if (isFootballInfobox) {
                 Iterator<AstNode> children = t.getArgs().iterator();
                 while(children.hasNext()) {
@@ -71,7 +70,6 @@ public class PeopleInfoboxScrapper {
             }
             TemplateArgument a = (TemplateArgument) n;
             final String key = SwebleHelper.flattenTextNodeList(a.getName());
-
             if ("name".equalsIgnoreCase(key)) {
                 attrs.name = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             } else if ("birth_name".equalsIgnoreCase(key)) {
@@ -83,7 +81,7 @@ public class PeopleInfoboxScrapper {
             } else if ("website".equalsIgnoreCase(key)) {
                 attrs.website = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             } else if ("birth_date".equalsIgnoreCase(key)) {
-                attrs.birthDate = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
+                attrs.birthDate = SwebleHelper.flattenBirthdate(a.getValue());
             }
         }
     }

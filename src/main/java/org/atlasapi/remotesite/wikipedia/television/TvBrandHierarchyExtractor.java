@@ -43,12 +43,11 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
                 episode = new Episode(brand.getCanonicalUri() + ":ep:" + episodeNumber, null, Publisher.WIKIPEDIA);
                 episode.setEpisodeNumber(scrapedEpisode.numberInSeason);
                 episodes.put(episodeNumber, episode);
-                // TODO somehow extract (accurate, final) episode count for each season (better not to guess!)
             }
             
-            episode.setContainer(brand);  // TODO this should be done only after writing and re-resolving the brand
+            episode.setContainer(brand);
             if (season != null) {  // in case we scraped the same episode both within and without a season, we don't want to stupidly wipe out the series ref during this merge!
-                episode.setSeries(season);  // TODO this should be done only after writing and re-resolving the season
+                episode.setSeries(season);
             }
             episode.setTitle(Strings.emptyToNull(scrapedEpisode.title));
         }
@@ -106,7 +105,7 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
             seasons.put(name, season);
         }
         season.setTitle(name);
-        season.setParent(brand);  // TODO this should be done only after writing and re-resolving the brand
+        season.setParent(brand);
         return season;
     }
     

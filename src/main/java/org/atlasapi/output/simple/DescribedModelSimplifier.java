@@ -96,8 +96,10 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
                 simpleDescription.setPriority(
                         new Priority(
                                 content.getPriority().getScore(),
-                                new PriorityScoreReasons(content.getPriority().getReasons().getPositive(),
-                                        content.getPriority().getReasons().getNegative())
+                                new PriorityScoreReasons(
+                                    content.getPriority().getReasons().getPositive(),
+                                    content.getPriority().getReasons().getNegative()
+                                )
                         )
                 );
             }

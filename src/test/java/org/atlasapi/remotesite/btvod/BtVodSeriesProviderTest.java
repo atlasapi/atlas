@@ -6,6 +6,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Before;
@@ -26,18 +27,27 @@ public class BtVodSeriesProviderTest {
     private @Mock Series EXPLICIT_SERIES;
     private @Mock Series SYNTHESIZED_SERIES;
 
+    private @Mock ParentRef parentRef;
+
     private @Mock BtVodSeriesUriExtractor seriesUriExtractor;
     private @Mock CertificateUpdater certificateUpdater;
+    private @Mock BtVodBrandProvider brandProvider;
 
     private BtVodSeriesProvider objectUnderTest;
+    private int seriesNumber;
 
     @Before
     public void setUp() throws Exception {
+        when(EXPLICIT_SERIES.getParent()).thenReturn(parentRef);
+        seriesNumber = 4;
+        when(EXPLICIT_SERIES.getSeriesNumber()).thenReturn(seriesNumber);
+
         objectUnderTest = new BtVodSeriesProvider(
                 ImmutableMap.of(EXPLICIT_SERIES_GUID, EXPLICIT_SERIES),
                 ImmutableMap.of(SUNTHESIZED_SERIES_URI, SYNTHESIZED_SERIES),
                 seriesUriExtractor,
-                certificateUpdater
+                certificateUpdater,
+                brandProvider
         );
     }
 
@@ -62,10 +72,24 @@ public class BtVodSeriesProviderTest {
     }
 
     @Test
-    public void testDontReturnSeriesIfItsNotThere() throws Exception {
+    public void testSeriesForEpisodeInExplicitSeriesButWithoutParentGuid() throws Exception {
+        BtVodEntry row = new BtVodEntry();
+
+        when(seriesUriExtractor.seriesUriFor(row)).thenReturn(Optional.of("some other uri"));
+        when(brandProvider.brandRefFor(row)).thenReturn(Optional.of(parentRef));
+        when(seriesUriExtractor.extractSeriesNumber(row)).thenReturn(Optional.of(seriesNumber));
+
+        Series series = objectUnderTest.seriesFor(row).get();
+
+        assertThat(series, is(EXPLICIT_SERIES));
+    }
+
+    @Test
+    public void testDoNotReturnSeriesIfItsNotThere() throws Exception {
         BtVodEntry row = new BtVodEntry();
 
         when(seriesUriExtractor.seriesUriFor(row)).thenReturn(Optional.<String>absent());
+        when(brandProvider.brandRefFor(row)).thenReturn(Optional.<ParentRef>absent());
 
         assertThat(objectUnderTest.seriesFor(row).isPresent(), is(false));
     }

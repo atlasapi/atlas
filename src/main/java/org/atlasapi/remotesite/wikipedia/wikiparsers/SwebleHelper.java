@@ -133,6 +133,43 @@ public class SwebleHelper {
         return b.toString().trim();
     }
 
+    public static String flattenBirthdate(NodeList l) {
+        StringBuilder b = new StringBuilder(600);
+        Iterator<AstNode> children = l.iterator();
+        AstNode n;
+        while (children.hasNext()) {
+            n = children.next();
+            if (n instanceof Text) {
+                b.append(((Text) n).getContent());
+            }
+            if (n instanceof Template) {
+                b.append(getBirthDate((Template) n));
+            }
+        }
+        return b.toString().trim();
+    }
+
+    private static String getBirthDate(Template t) {
+        NodeList args = t.getArgs();
+        String year;
+        String month;
+        String day;
+        String arg0 = flattenTextNodeList(((TemplateArgument) args.get(0)).getValue());
+        String arg1 = flattenTextNodeList(((TemplateArgument) args.get(1)).getValue());
+        String arg2 = flattenTextNodeList(((TemplateArgument) args.get(2)).getValue());
+        String arg3 = flattenTextNodeList(((TemplateArgument) args.get(3)).getValue());
+        if (arg0.startsWith("y")) {
+            year = arg1;
+            month = arg2;
+            day = arg3;
+        } else {
+            year = arg0;
+            month = arg1;
+            day = arg2;
+        }
+        return new LocalDate(Integer.valueOf(year),Integer.valueOf(month),Integer.valueOf(day)).toString();
+    }
+
     public static String normalizeAndFlattenTextNodeList(NodeList l) {
         String markUp = flattenTextNodeList(l);
         return normalize(markUp);
@@ -140,8 +177,7 @@ public class SwebleHelper {
 
     public static String normalize(String markup) {
         WikiModel model = new WikiModel("http://wikipedia.org/${image}","http://wikipedia.org/${title}");
-        String noMarkUp = model.render(new PlainTextConverter(), markup);
-        return noMarkUp;
+        return model.render(new PlainTextConverter(), markup);
     }
 
     public static String getWikiImage(String name) {

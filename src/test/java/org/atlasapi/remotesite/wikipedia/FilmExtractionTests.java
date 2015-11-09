@@ -25,6 +25,7 @@ import org.junit.Test;
 import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
 import com.metabroadcast.common.intl.Countries;
 
@@ -132,7 +133,8 @@ public class FilmExtractionTests {
         ));
         assertEquals("Hackers", flim.getTitle());
 
-        assertEquals("http://upload.wikimedia.org/wikipedia/en/6/67/Hackersposter.jpg", flim.getImage());
+        assertEquals("http://upload.wikimedia.org/wikipedia/en/6/67/Hackersposter.jpg",
+                Iterables.getOnlyElement(flim.getImages()).getCanonicalUri());
         assertTrue(flim.getAliases().contains(new Alias("imdb:url", "http://imdb.com/title/tt0113243")));
         assertTrue(flim.getAliases().contains(new Alias("imdb:title", "0113243")));
         assertTrue(flim.getAliases().contains(new Alias("rottentomatoes:movie", "hackers")));
@@ -141,6 +143,7 @@ public class FilmExtractionTests {
         
         assertAllPresentAndCorrect(flim.getPeople(), ImmutableList.of(
                 new CrewMemberTestFields("Iain Softley", Role.DIRECTOR),
+                new CrewMemberTestFields("Andrzej Sekuła", Role.DIRECTOR_OF_PHOTOGRAPHY),
                 new CrewMemberTestFields("Michael Peyser", Role.PRODUCER, null),
                 new CrewMemberTestFields("Rafael Moreu", Role.WRITER),
                 new CrewMemberTestFields("Simon Boswell", Role.COMPOSER),
@@ -173,6 +176,8 @@ public class FilmExtractionTests {
         
         assertAllPresentAndCorrect(flim.getPeople(), ImmutableList.of(
                 new CrewMemberTestFields("Michael Curtiz", Role.DIRECTOR),
+                new CrewMemberTestFields("Tony Gaudio", Role.DIRECTOR_OF_PHOTOGRAPHY),
+                new CrewMemberTestFields("Sol Polito", Role.DIRECTOR_OF_PHOTOGRAPHY),
                 new CrewMemberTestFields("William Keighley", Role.DIRECTOR),
                 new CrewMemberTestFields("Hal B. Wallis", Role.PRODUCER),
                 new CrewMemberTestFields("Henry Blanke", Role.PRODUCER),

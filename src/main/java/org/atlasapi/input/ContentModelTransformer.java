@@ -17,11 +17,9 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.Topic.Type;
 import org.atlasapi.media.entity.TopicRef;
+import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.TopicRef.Relationship;
-import org.atlasapi.media.entity.simple.Description;
-import org.atlasapi.media.entity.simple.Person;
-import org.atlasapi.media.entity.simple.PublisherDetails;
-import org.atlasapi.media.entity.simple.SameAs;
+import org.atlasapi.media.entity.simple.*;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
@@ -38,6 +36,8 @@ import com.google.common.collect.Lists;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.time.Clock;
+
+import javax.annotation.Nullable;
 
 public abstract class ContentModelTransformer<F extends Description,T extends Content> extends DescribedModelTransformer<F, T> {
     private final TopicStore topicStore;
@@ -98,6 +98,7 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         result.setKeyPhrases(keyPhrases(inputContent.getKeyPhrases(), inputContent.getPublisher()));
         result.setGenres(inputContent.getGenres());
         result.setClips(transformClips(inputContent));
+        result.setEventRefs(eventRefs(inputContent.getEventRefs()));
         return result;
     }
 
@@ -182,6 +183,15 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
                 }
             }
             
+        }));
+    }
+
+    private Iterable<EventRef> eventRefs(Set<org.atlasapi.media.entity.simple.EventRef> eventRef){
+        return ImmutableSet.copyOf(Iterables.transform(eventRef, new Function<org.atlasapi.media.entity.simple.EventRef, EventRef>() {
+            @Override
+            public EventRef apply(org.atlasapi.media.entity.simple.EventRef input) {
+                return new EventRef(Long.valueOf(input.getId()), getPublisher(input.getPublisher()));
+            }
         }));
     }
 

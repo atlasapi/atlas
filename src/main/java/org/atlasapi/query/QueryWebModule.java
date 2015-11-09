@@ -313,7 +313,7 @@ public class QueryWebModule {
         return new ContentWriteController(configFetcher, contentResolver, contentWriter, 
                 new DefaultGsonModelReader(),
                 new DelegatingModelTransformer(brandTransformer(), itemTransformer(), seriesTransformer()), 
-                scheduleWriter, channelResolver);
+                scheduleWriter, channelResolver, eventResolver);
     }
     
     TopicWriteController topicWriteController() {

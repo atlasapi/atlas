@@ -157,11 +157,10 @@ public class SwebleHelper {
         String arg0 = flattenTextNodeList(((TemplateArgument) args.get(0)).getValue());
         String arg1 = flattenTextNodeList(((TemplateArgument) args.get(1)).getValue());
         String arg2 = flattenTextNodeList(((TemplateArgument) args.get(2)).getValue());
-        String arg3 = flattenTextNodeList(((TemplateArgument) args.get(3)).getValue());
         if (arg0.startsWith("y")) {
             year = arg1;
             month = arg2;
-            day = arg3;
+            day = flattenTextNodeList(((TemplateArgument) args.get(3)).getValue());
         } else {
             year = arg0;
             month = arg1;

@@ -59,7 +59,15 @@ public class PeopleExtractor implements ContentExtractor<Article, Person> {
     }
 
     private DateTime parseBirthDate(String date) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+        DateTimeFormatter formatter;
+        if (date.contains("-")) {
+            formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+        } else if (date.contains(",")) {
+            formatter = DateTimeFormat.forPattern("MMM dd, yyyy");
+        } else {
+            formatter = DateTimeFormat.forPattern("dd MMM yyyy");
+        }
+
         DateTime dt = formatter.parseDateTime(date);
         return dt;
     }

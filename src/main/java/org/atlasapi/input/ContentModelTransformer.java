@@ -190,7 +190,7 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         return ImmutableSet.copyOf(Iterables.transform(eventRef, new Function<org.atlasapi.media.entity.simple.EventRef, EventRef>() {
             @Override
             public EventRef apply(org.atlasapi.media.entity.simple.EventRef input) {
-                return new EventRef(Long.valueOf(input.getId()), getPublisher(input.getPublisher()));
+                return new EventRef(idCodec.decode(input.getId()).longValue(), getPublisher(input.getPublisher()));
             }
         }));
     }

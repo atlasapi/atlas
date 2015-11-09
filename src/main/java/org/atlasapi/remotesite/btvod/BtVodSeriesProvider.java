@@ -23,6 +23,11 @@ public class BtVodSeriesProvider {
 
     /**
      * parentRef, series number -> series
+     *
+     * Some episodes in MPX should belong to a hierarchy, but do not have a parent guid set.
+     * If the respective series was explicitly created from MPX then we will not be able to
+     * resolve it. To work around that we have this table to allow for resolving an explicit
+     * series by parent ref and series number.
      */
     private final Table<ParentRef, Integer, Series> explicitSeriesTable;
 

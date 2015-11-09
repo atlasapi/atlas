@@ -1,9 +1,10 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Map;
+import java.util.Set;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -12,32 +13,26 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import java.util.Map;
-import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 
 public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor<UpdateProgress> {
 
     private static final Logger log = LoggerFactory.getLogger(AbstractBtVodSeriesExtractor.class);
 
     private final BtVodBrandProvider brandProvider;
-
     private final Publisher publisher;
     private final Map<String, Series> processedSeries = Maps.newHashMap();
     private final BtVodContentListener listener;
-
     private final Set<String> processedRows;
-
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
-
     private final ImageExtractor imageExtractor;
-
     private final BtVodSeriesUriExtractor seriesUriExtractor;
+    private final ImmutableSet<TopicRef> topicsToPropagateToParents;
+
     private UpdateProgress progress = UpdateProgress.START;
-
-    private final TopicRef newTopic;
-
 
     protected AbstractBtVodSeriesExtractor(
             BtVodBrandProvider brandProvider,
@@ -47,7 +42,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             BtVodSeriesUriExtractor seriesUriExtractor,
             ImageExtractor imageExtractor,
-            final TopicRef newTopic
+            Iterable<TopicRef> topicsToPropagateToParents
     ) {
         this.processedRows = checkNotNull(processedRows);
         this.listener = checkNotNull(listener);
@@ -59,7 +54,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
         //      Added as a collaborator for Alias extraction, but should be used more
         //      widely
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
-        this.newTopic = checkNotNull(newTopic);
+        this.topicsToPropagateToParents = ImmutableSet.copyOf(topicsToPropagateToParents);
     }
 
     @Override
@@ -77,12 +72,13 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             } else {
                 series = seriesFrom(row);
             }
+            setFields(series, row);
             setAdditionalFields(series, row);
-            if (series.getTopicRefs().contains((newTopic))) {
-                Brand brand = brandProvider.brandFor(row).get();
-                brand.addTopicRef(newTopic);
-            }
+            addTopicsToParents(series, row);
             onSeriesProcessed(series, row);
+
+            brandProvider.updateBrandFromSeries(row, series);
+
             // This allows a lookup by series title. Note that the only reference from an episode to a series is the series title.
             // Consequently this map will be used to lookup SeriesRef when processing episodes
             // TODO: is there a better approach than this ^?
@@ -96,6 +92,24 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             progress = progress.reduce(thisProgress);
         }
         return true;
+    }
+
+    private void setFields(Series series, BtVodEntry row) {
+        VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
+        series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
+    }
+    
+    //TODO Factor this out rather than duplicate from BtVodItemExtractor
+    private void addTopicsToParents(Series series, BtVodEntry row) {
+        for (TopicRef topicRef : topicsToPropagateToParents) {
+            if (series.getTopicRefs().contains(topicRef)) {
+                if (series.getParent() != null) {
+                    Brand brand = brandProvider.brandFor(row).get();
+                    brand.addTopicRef(topicRef);
+                    listener.onContent(brand, row);
+                }
+            }
+        }
     }
 
     @Override

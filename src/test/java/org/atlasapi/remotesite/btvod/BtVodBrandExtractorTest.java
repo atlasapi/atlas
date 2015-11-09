@@ -88,7 +88,7 @@ public class BtVodBrandExtractorTest {
     
     @Test
     public void testCreatesSyntheticBrandFromEpisodeData() {
-        BtVodEntry row = row();
+        BtVodEntry row = row(FULL_EPISODE_TITLE);
         
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(URI_PREFIX + "synthesized/brands/brand-title")))
@@ -101,6 +101,22 @@ public class BtVodBrandExtractorTest {
         assertThat(extracted.getCanonicalUri(), is(URI_PREFIX + "synthesized/brands/brand-title"));
         assertThat(extracted.getTitle(), is(BRAND_TITLE));
     }
+    
+    @Test
+    public void testCreatesSyntheticBrandFromEpisodeDataWithoutEpisodeTitle() {
+        BtVodEntry row = row("Mad Men S01 E01");
+        
+        when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(URI_PREFIX + "synthesized/brands/mad-men")))
+                .thenReturn(ResolvedContent.builder().build());
+
+        brandExtractor.process(row);
+
+
+        Brand extracted = Iterables.getOnlyElement(brandExtractor.getProcessedBrands().values());
+        assertThat(extracted.getCanonicalUri(), is(URI_PREFIX + "synthesized/brands/mad-men"));
+        assertThat(extracted.getTitle(), is("Mad Men"));
+    }
 
 
     @Test
@@ -109,7 +125,7 @@ public class BtVodBrandExtractorTest {
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(URI_PREFIX + "synthesized/brands/brand-title")))
                 .thenReturn(ResolvedContent.builder().build());
 
-        BtVodEntry entry = row();
+        BtVodEntry entry = row(FULL_EPISODE_TITLE);
         entry.setProductType("film");
 
         brandExtractor.process(entry);
@@ -118,12 +134,12 @@ public class BtVodBrandExtractorTest {
 
     }
 
-    private BtVodEntry row() {
+    private BtVodEntry row(String title) {
         
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(PRODUCT_ID);
         entry.setId("12345");
-        entry.setTitle(FULL_EPISODE_TITLE);
+        entry.setTitle(title);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         entry.setProductType("episode");

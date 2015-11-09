@@ -45,7 +45,7 @@ public class SeriesSequenceItemScorer implements EquivalenceScorer<Item> {
         
         if (!(candidate instanceof Episode)) {
             desc.appendText("%s not episode", candidate);
-            return Score.NULL_SCORE;
+            return Score.nullScore();
         }
 
         Episode candidateEpisode = (Episode) candidate;
@@ -54,8 +54,10 @@ public class SeriesSequenceItemScorer implements EquivalenceScorer<Item> {
         Integer candSeriesNumber = candidateEpisode.getSeriesNumber();
         
         Score score;
-        if (subjSeriesNumber == null && candSeriesNumber == null) {
-            score = Score.NULL_SCORE;
+        if (subjSeriesNumber == null) {
+            score = Score.nullScore();
+        } else if (subjSeriesNumber == null && candSeriesNumber == null) {
+            score = Score.nullScore();
         } else if (Objects.equal(subjSeriesNumber, candSeriesNumber)) {
             score = Score.ONE;
         } else {

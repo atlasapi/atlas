@@ -29,6 +29,7 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
+import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
 
 import java.util.Set;
 
@@ -121,6 +122,7 @@ public class EquivTaskModule {
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(3, 00));
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(3, 00));
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(20, 00));
+    private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(18, 00));
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
     private @Value("${equiv.stream-updater.enabled}") Boolean streamedChangesUpdateEquiv;
@@ -170,7 +172,7 @@ public class EquivTaskModule {
             taskScheduler.schedule(publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1).withName("BT TVE VOD (systest2, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(AMAZON_UNBOX).withName("Amazon Unbox Equivalence Updater"), AMAZON_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(UKTV).withName("UKTV Equivalence Updater"), UKTV_EQUIVALENCE_REPETITION);
-
+            taskScheduler.schedule(publisherUpdateTask(WIKIPEDIA).withName("Wikipedia Equivalence Updater"), WIKIPEDIA_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(Publisher.BBC_MUSIC).withName("Music Equivalence Updater"), RepetitionRules.every(Duration.standardHours(6)));
             
             taskScheduler.schedule(taskBuilder(0, 7)

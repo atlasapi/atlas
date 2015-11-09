@@ -42,7 +42,8 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private static final String FILM_TYPE = "film";
     private static final String MUSIC_TYPE = "music";
     static final String EPISODE_TYPE = "episode";
-    private static final String COLLECTION_TYPE = "collection";
+    public static final String COLLECTION_TYPE = "collection";
+    private static final String SEASON_TYPE = "season";
     private static final String HELP_TYPE = "help";
 
     private static final Logger log = LoggerFactory.getLogger(BtVodItemExtractor.class);
@@ -64,6 +65,8 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final BtVodVersionsExtractor versionsExtractor;
 
     private final ImmutableSet<TopicRef> topicsToPropagateToParents;
+    private final BtVodEpisodeNumberExtractor episodeNumberExtractor;
+    private final BtMpxVodClient mpxClient;
 
     public BtVodItemExtractor(
             BtVodBrandProvider brandProvider,
@@ -76,10 +79,9 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            TopicRef newTopic,
-            TopicRef kidsTopic,
-            TopicRef tvTopic,
-            TopicRef subscriptionCatchupTopic
+            Iterable<TopicRef> topicsToPropagateToParents,
+            BtVodEpisodeNumberExtractor episodeNumberExtractor,
+            BtMpxVodClient mpxClient
     ) {
         this.brandProvider = checkNotNull(brandProvider);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
@@ -92,7 +94,9 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.processedItems = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
-        this.topicsToPropagateToParents = ImmutableSet.of(newTopic, kidsTopic, tvTopic, subscriptionCatchupTopic);
+        this.topicsToPropagateToParents = ImmutableSet.copyOf(topicsToPropagateToParents);
+        this.episodeNumberExtractor = checkNotNull(episodeNumberExtractor);
+        this.mpxClient = checkNotNull(mpxClient);
     }
 
     @Override
@@ -106,6 +110,12 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             }
 
             Item item = itemFrom(row);
+
+            if(item instanceof Episode) {
+                seriesProvider.updateSeriesFromEpisode(row, (Episode) item);
+                brandProvider.updateBrandFromEpisode(row, (Episode) item);
+            }
+
             processedItems.put(itemKeyForDeduping(row), item);
             processedRows.add(row.getGuid());
             listener.onContent(item, row);
@@ -118,10 +128,10 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         return true;
     }
 
-
-
     private boolean shouldProcess(BtVodEntry row) {
-        return !COLLECTION_TYPE.equals(row.getProductType()) && !HELP_TYPE.equals(row.getProductType());
+        return !COLLECTION_TYPE.equals(row.getProductType()) 
+                    && !HELP_TYPE.equals(row.getProductType())
+                    && !SEASON_TYPE.equals(row.getProductType());
     }
 
     private boolean isEpisode(BtVodEntry row) {
@@ -174,7 +184,22 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private String itemKeyForDeduping(BtVodEntry row) {
-        return row.getProductType() + ":" + titleSanitiser.sanitiseTitle(row.getTitle());
+        ParentRef brandRef = getBrandRefOrNull(row);
+        String brandUri = brandRef != null ? brandRef.getUri() : "";
+        String title = titleSanitiser.sanitiseTitle(row.getTitle());
+        
+        ParentRef seriesRef = getSeriesRefOrNull(row);
+        String seriesUri = seriesRef != null ? seriesRef.getUri() : "";
+        
+        // An empty title may happen, in which case we don't want to 
+        // merge all items with empty titles into the same item. 
+        // To avoid that, we use the GUID as the item's key, so it'll
+        // not be found as a merge candidate by another item
+        if (Strings.isNullOrEmpty(title)) {
+            title = row.getGuid();
+        }
+        
+        return row.getProductType() + ":" + brandUri + seriesUri + title;
     }
 
     private Item createSong(BtVodEntry row) {
@@ -196,6 +221,12 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
     public Integer extractSeriesNumber(BtVodEntry row) {
+        if (!Strings.isNullOrEmpty(row.getParentGuid())) {
+            Optional<BtVodEntry> parent = mpxClient.getItem(row.getParentGuid());
+            if (parent.isPresent() && BtVodItemExtractor.COLLECTION_TYPE.equalsIgnoreCase(parent.get().getProductType())) {
+                return null;
+            }
+        }
         Optional<Series> seriesRef = seriesProvider.seriesFor(row);
         if(!seriesRef.isPresent()) {
             return null;
@@ -204,14 +235,8 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
 
-    public static Integer extractEpisodeNumber(BtVodEntry row) {
-        String episodeNumber = Iterables.getOnlyElement(
-                row.getProductScopes()
-        ).getProductMetadata().getEpisodeNumber();
-        if (episodeNumber == null) {
-            return null;
-        }
-        return Ints.tryParse(episodeNumber);
+    public Integer extractEpisodeNumber(BtVodEntry row) {
+        return episodeNumberExtractor.extractEpisodeNumber(row);
     }
 
     private ParentRef getSeriesRefOrNull(BtVodEntry row) {

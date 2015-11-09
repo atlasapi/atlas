@@ -9,11 +9,15 @@ import java.io.Reader;
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
@@ -24,19 +28,22 @@ import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.*;
 import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Event;
+import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
-import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.simple.*;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.persistence.event.EventResolver;
+import org.atlasapi.remotesite.wikipedia.television.ScrapedFlatHierarchy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -67,13 +74,14 @@ public class ContentWriteController {
     private final ModelReader reader;
     private final ScheduleWriter scheduleWriter;
     private final ChannelResolver channelResolver;
+    private final EventResolver eventResolver;
 
     private ModelTransformer<Description, Content> transformer;
 
     public ContentWriteController(ApplicationConfigurationFetcher appConfigFetcher,
             ContentResolver resolver, ContentWriter writer, ModelReader reader, 
             ModelTransformer<Description, Content> transformer, ScheduleWriter scheduleWriter,
-            ChannelResolver channelResolver) {
+            ChannelResolver channelResolver, EventResolver eventResolver) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(writer);
@@ -81,6 +89,7 @@ public class ContentWriteController {
         this.transformer = checkNotNull(transformer);
         this.scheduleWriter = checkNotNull(scheduleWriter);
         this.channelResolver = checkNotNull(channelResolver);
+        this.eventResolver = checkNotNull(eventResolver);
     }
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
@@ -124,7 +133,7 @@ public class ContentWriteController {
         if (Strings.isNullOrEmpty(content.getCanonicalUri())) {
             return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
-        
+
         try {
             content = merge(resolveExisting(content), content, merge);
             if (content instanceof Item) {
@@ -188,7 +197,7 @@ public class ContentWriteController {
         existing.setKeyPhrases(update.getKeyPhrases());
         existing.setClips(merge ? merge(existing.getClips(), update.getClips()) : update.getClips());
         existing.setPriority(update.getPriority());
-
+        existing.setEventRefs(merge ? merge(existing.events(), update.events()) : update.events());
         if (existing instanceof Item && update instanceof Item) {
             return mergeItems((Item)existing, (Item) update);
         }
@@ -238,7 +247,8 @@ public class ContentWriteController {
     }
 
     private Content complexify(Description inputContent) {
-        return transformer.transform(inputContent);
+        Content content = transformer.transform(inputContent);
+        return updateEventPublisher(content);
     }
 
     private Description deserialize(Reader input) throws IOException, ReadException {
@@ -250,5 +260,16 @@ public class ContentWriteController {
         response.setContentLength(0);
         return null;
     }
-    
+
+    private Content updateEventPublisher(Content content) {
+        List<EventRef> eventRefs = content.events();
+        for(EventRef eventRef: eventRefs) {
+            Event event = eventResolver.fetch(eventRef.id()).orNull();
+            checkNotNull(event);
+            checkNotNull(event.publisher());
+            eventRef.setPublisher(event.publisher());
+        }
+        content.setEventRefs(ImmutableList.copyOf(eventRefs));
+        return content;
+    }
 }

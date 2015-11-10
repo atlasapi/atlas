@@ -88,7 +88,9 @@ public class BtVodSeriesProvider {
         ImmutableTable.Builder<ParentRef, Integer, Series> builder = ImmutableTable.builder();
 
         for (Series series : seriesMap.values()) {
-            builder.put(series.getParent(), series.getSeriesNumber(), series);
+            if (series.getParent() != null && series.getSeriesNumber() != null) {
+                builder.put(series.getParent(), series.getSeriesNumber(), series);
+            }
         }
 
         return builder.build();

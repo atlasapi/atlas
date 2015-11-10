@@ -125,6 +125,11 @@ public class BbcNitroModule {
     }
 
     @Bean
+    PidUpdateController pidUpdateController() {
+        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter);
+    }
+
+    @Bean
     ScheduleDayUpdateController nitroScheduleUpdateController() {
         return new ScheduleDayUpdateController(channelResolver, 
                             nitroChannelDayProcessor(nitroTodayRateLimit, 

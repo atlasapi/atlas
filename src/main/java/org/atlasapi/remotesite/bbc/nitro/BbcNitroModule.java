@@ -77,7 +77,7 @@ public class BbcNitroModule {
     
     private final ThreadFactory nitroThreadFactory
         = new ThreadFactoryBuilder().setNameFormat("nitro %s").build();
-    private final GroupLock<String> pidLock = GroupLock.<String>natural();
+    private final GroupLock<String> pidLock = GroupLock.natural();
     
     @PostConstruct
     public void configure() {
@@ -117,11 +117,6 @@ public class BbcNitroModule {
                     Optional.of(Predicates.<Item>alwaysTrue())
                 )
         );
-    }
-
-    @Bean
-    PidUpdateController pidUpdateController() {
-        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter);
     }
 
     @Bean

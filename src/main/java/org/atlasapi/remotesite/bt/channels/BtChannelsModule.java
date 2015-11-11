@@ -42,25 +42,25 @@ public class BtChannelsModule {
     private String baseUri;
 
     @Value("${bt.channels.ingestAdvertiseFrom.production}")
-    private boolean productionIngestAdvertiseFrom;
+    private String productionIngestAdvertiseFrom;
 
     @Value("${bt.channels.baseUri.test1}")
     private String test1BaseUri;
 
     @Value("${bt.channels.ingestAdvertiseFrom.test1}")
-    private boolean test1IngestAdvertiseFrom;
+    private String test1IngestAdvertiseFrom;
 
     @Value("${bt.channels.baseUri.test2}")
     private String test2BaseUri;
 
     @Value("${bt.channels.ingestAdvertiseFrom.test2}")
-    private boolean test2IngestAdvertiseFrom;
+    private String test2IngestAdvertiseFrom;
 
     @Value("${bt.channels.baseUri.reference}")
     private String test3BaseUri;
 
     @Value("${bt.channels.ingestAdvertiseFrom.reference}")
-    private boolean test3IngestAdvertiseFrom;
+    private String test3IngestAdvertiseFrom;
 
     @Value("${bt.channels.freeviewPlatformChannelGroupId}")
     private String freeviewPlatformChannelGroupId;
@@ -106,22 +106,22 @@ public class BtChannelsModule {
     
     @Bean 
     public BtMpxChannelDataIngester productionChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS, ALIAS_NAMESPACE_PREFIX, baseUri, productionIngestAdvertiseFrom, productionNamespace);
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS, ALIAS_NAMESPACE_PREFIX, baseUri, Boolean.parseBoolean(productionIngestAdvertiseFrom), productionNamespace);
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev1ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST1, ALIAS_NAMESPACE_PREFIX, test1BaseUri, test1IngestAdvertiseFrom, test1Namespace);
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST1, ALIAS_NAMESPACE_PREFIX, test1BaseUri, Boolean.parseBoolean(test1IngestAdvertiseFrom), test1Namespace);
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev2ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST2, ALIAS_NAMESPACE_PREFIX, test2BaseUri, test2IngestAdvertiseFrom, test2Namespace);
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST2, ALIAS_NAMESPACE_PREFIX, test2BaseUri, Boolean.parseBoolean(test2IngestAdvertiseFrom), test2Namespace);
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev3ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_REFERENCE, ALIAS_NAMESPACE_PREFIX, test3BaseUri, test3IngestAdvertiseFrom, test3Namespace);
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_REFERENCE, ALIAS_NAMESPACE_PREFIX, test3BaseUri, Boolean.parseBoolean(test3IngestAdvertiseFrom), test3Namespace);
     }
     
     private BtMpxChannelDataIngester perEnvironmentChannelGroupUpdater(Publisher publisher,

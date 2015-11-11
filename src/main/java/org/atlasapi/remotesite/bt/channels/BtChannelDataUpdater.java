@@ -25,7 +25,7 @@ public class BtChannelDataUpdater {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BtChannelDataUpdater.class);
 
-    private final SubstitutionTableNumberCodec codec = new SubstitutionTableNumberCodec();
+    private final SubstitutionTableNumberCodec codec = new SubstitutionTableNumberCodec().lowerCaseOnly();
     private final ChannelResolver channelResolver;
     private final ChannelWriter channelWriter;
     private final String aliasNamespace;

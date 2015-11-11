@@ -36,7 +36,6 @@ public class BtChannelDataUpdaterTest {
     private final SubstitutionTableNumberCodec codec = new SubstitutionTableNumberCodec();
 
     private static final Channel CHANNEL1 = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
-    private static final Channel EXPECTED_CHANNEL_WITH_ALIAS = new Channel(Publisher.METABROADCAST, "Channel 2", "b", true, MediaType.VIDEO, "http://channel2.com");
 
     private static final String ALIAS_NAMESPACE = "namespace";
     private static final String LINEAR_CHANNEL_ID = "urn:BT:linear:service:751764";
@@ -91,7 +90,7 @@ public class BtChannelDataUpdaterTest {
 
         Channel expectedChannelWithAvailableDate = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
 
-        //Turn this on to test when you turn it on in BtChannelDataUpdater.
+
         //expectedChannelWithAlias.addAdvertiseFrom(DateTime.now());
 
         long currentGuid = codec.decode(entry1.getGuid()).longValue();

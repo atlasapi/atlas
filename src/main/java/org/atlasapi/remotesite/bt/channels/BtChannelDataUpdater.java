@@ -50,7 +50,7 @@ public class BtChannelDataUpdater {
             Maybe<Channel> channelMaybe = channelResolver.fromId(channelId);
 
             if (!channelMaybe.hasValue()) {
-                LOGGER.debug("There is missing channel for this channel id: " + currentEntry.getGuid());
+                LOGGER.error("There is missing channel for this channel id: " + currentEntry.getGuid());
                 continue;
             }
 
@@ -62,6 +62,8 @@ public class BtChannelDataUpdater {
             );
 
             if (!Strings.isNullOrEmpty(linearEpgChannelId)) {
+                LOGGER.error("Aliases is added");
+                LOGGER.info("Aliases is added.")
                 channel.addAlias(new Alias(aliasNamespace, linearEpgChannelId));
                 channelWriter.createOrUpdate(channel);
                 updatedChannels.add(channelId);
@@ -84,13 +86,15 @@ public class BtChannelDataUpdater {
             Maybe<Channel> channelMaybe = channelResolver.fromId(channelId);
 
             if(!channelMaybe.hasValue()) {
-                LOGGER.debug("There is missing channel for this channel id: " + currentEntry.getGuid());
+                LOGGER.error("There is missing channel for this channel id: " + currentEntry.getGuid());
                 continue;
             }
 
             Channel channel = channelMaybe.requireValue();
 
             if (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) {
+                LOGGER.info("availableDate is added.");
+                LOGGER.error("availableDate is added.");
                 channel.setAdvertiseFrom(advertiseAvailableDate);
             } else {
                 channel.setAdvertiseFrom(null);

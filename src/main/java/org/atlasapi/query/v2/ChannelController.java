@@ -22,6 +22,7 @@ import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
+import org.joda.time.DateTime;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -97,13 +98,14 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             @RequestParam(value = "media_type", required = false) String mediaTypeKey, 
             @RequestParam(value = "available_from", required = false) String availableFromKey,
             @RequestParam(value = "order_by", required = false) String orderBy,
-            @RequestParam(value = "genres", required = false) String genresString) throws IOException {
+            @RequestParam(value = "genres", required = false) String genresString,
+            @RequestParam(value = "advertise_from", required = false) String advertiseFromKey) throws IOException {
         try {
             final ApplicationConfiguration appConfig = appConfig(request); 
             
             Selection selection = SELECTION_BUILDER.build(request);
             
-            ChannelQuery query = constructQuery(platformKey, regionKeys, broadcasterKey, mediaTypeKey, availableFromKey, genresString);
+            ChannelQuery query = constructQuery(platformKey, regionKeys, broadcasterKey, mediaTypeKey, availableFromKey, genresString, advertiseFromKey);
             
             Iterable<Channel> channels = channelResolver.allChannels(query);
 
@@ -167,7 +169,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     
     private ChannelQuery constructQuery(String platformId, String regionIds,
             String broadcasterKey, String mediaTypeKey, String availableFromKey,
-            String genresString) {
+            String genresString, String advertiseFromKey) {
         ChannelQuery.Builder query = ChannelQuery.builder();
         
         Set<Long> channelGroups = getChannelGroups(platformId, regionIds);
@@ -190,6 +192,10 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         if (!Strings.isNullOrEmpty(genresString)) {
             Iterable<String> genres = SPLIT_ON_COMMA.split(genresString);
             query.withGenres(ImmutableSet.copyOf(genres));
+        }
+
+        if (!Strings.isNullOrEmpty(advertiseFromKey)) {
+            query.withAdvertiseFrom(DateTime.parse(advertiseFromKey));
         }
         
         return query.build();

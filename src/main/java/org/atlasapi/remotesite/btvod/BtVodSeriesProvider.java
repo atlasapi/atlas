@@ -3,15 +3,14 @@ package org.atlasapi.remotesite.btvod;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
-import java.util.Set;
 
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
-import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
@@ -87,20 +86,15 @@ public class BtVodSeriesProvider {
     }
 
     private Table<ParentRef, Integer, Series> getSeriesTable(Map<String, Series> seriesMap) {
-        ImmutableTable.Builder<ParentRef, Integer, Series> builder = ImmutableTable.builder();
+        HashBasedTable<ParentRef, Integer, Series> table = HashBasedTable.create();
 
-        Set<String> seenSeriesUris = Sets.newHashSet();
-        
         for (Series series : seriesMap.values()) {
-            if (seenSeriesUris.contains(series.getCanonicalUri())) {
-                continue;
-            }
-            if (series.getParent() != null && series.getSeriesNumber() != null) {
-                seenSeriesUris.add(series.getCanonicalUri());
-                builder.put(series.getParent(), series.getSeriesNumber(), series);
+            if (series.getParent() != null && series.getSeriesNumber() != null
+                    && !table.contains(series.getParent(), series.getSeriesNumber())) {
+                table.put(series.getParent(), series.getSeriesNumber(), series);
             }
         }
 
-        return builder.build();
+        return ImmutableTable.copyOf(table);
     }
 }

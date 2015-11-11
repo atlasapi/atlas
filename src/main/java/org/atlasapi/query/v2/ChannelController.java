@@ -195,7 +195,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         }
 
         if (!Strings.isNullOrEmpty(advertiseFromKey)) {
-            query.withAdvertiseFrom(DateTime.parse(advertiseFromKey));
+            query.withAdvertisedOn(DateTime.parse(advertiseFromKey));
         }
         
         return query.build();

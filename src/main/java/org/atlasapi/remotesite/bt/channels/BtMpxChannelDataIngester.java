@@ -1,11 +1,14 @@
 package org.atlasapi.remotesite.bt.channels;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.scheduling.ScheduledTask;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -20,15 +23,11 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.scheduling.ScheduledTask;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class BtMpxChannelDataIngester extends ScheduledTask {
@@ -89,8 +88,7 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
             }
             ImmutableSet<String> allCurrentChannelGroupsBuilt = allCurrentChannelGroups.build();
 
-            channelDataUpdater.addAliasesAndAvailableDateToChannel(entries,
-                                                                    channelResolver);
+            channelDataUpdater.addAliasesToChannel(entries);
 
             removeOldChannelGroupChannels(allCurrentChannelGroupsBuilt);
             allChannelsGroupUpdater.update();
@@ -132,6 +130,15 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
                 return !groupsToRemove.contains(input.getChannelGroup());
             }
         };
+    }
+
+    private void addingAvailableDateToChannelPerEnvironment(PaginatedEntries entries) {
+
+        //Only ingest availableDate if it is from prod. Can be configured later on.
+        if(allChannelsGroupUpdater.getPublisher() == Publisher.BT_TV_CHANNELS) {
+            channelDataUpdater.addAvailableDateToChannel(entries);
+        }
+
     }
 
 }

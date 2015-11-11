@@ -80,8 +80,8 @@ public class BtChannelsModule {
     }
 
     @Bean
-    public BtChannelDataUpdater channelDataUpdater() {
-        return new BtChannelDataUpdater();
+    public BtChannelDataUpdater channelDataUpdater(ChannelResolver channelResolver) {
+        return new BtChannelDataUpdater(channelResolver);
     }
     
     private SimpleHttpClient httpClient() {
@@ -119,7 +119,7 @@ public class BtChannelsModule {
         
         return new BtMpxChannelDataIngester(mpxClient, publisher, uriPrefixFromPublisher(publisher),
                 aliasNamespacePrefix, channelGroupResolver, channelGroupWriter, 
-                channelResolver, channelWriter, btAllChannelsChannelGroupUpdater, channelWriterLock, channelDataUpdater());
+                channelResolver, channelWriter, btAllChannelsChannelGroupUpdater, channelWriterLock, channelDataUpdater(channelResolver));
         
     }
     

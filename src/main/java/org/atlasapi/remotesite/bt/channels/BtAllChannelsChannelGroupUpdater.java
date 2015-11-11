@@ -102,7 +102,4 @@ public class BtAllChannelsChannelGroupUpdater {
         return group;
     }
 
-    public Publisher getPublisher() {
-        return publisher;
-    }
 }

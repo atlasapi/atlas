@@ -44,12 +44,14 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
     private final ChannelWriter channelWriter;
     private final Lock channelWriterLock;
     private final BtChannelDataUpdater channelDataUpdater;
+    private boolean ingestAdvertiseFromField;
     
     public BtMpxChannelDataIngester(BtMpxClient btMpxClient, Publisher publisher, String aliasUriPrefix,
                                     String aliasNamespacePrefix, ChannelGroupResolver channelGroupResolver,
                                     ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver,
                                     ChannelWriter channelWriter, BtAllChannelsChannelGroupUpdater allChannelsGroupUpdater,
-                                    Lock channelWriterLock, BtChannelDataUpdater channelDateUpdater) {
+                                    Lock channelWriterLock, BtChannelDataUpdater channelDateUpdater,
+                                    boolean ingestAdvertiseFromField) {
         
         this.channelWriter = channelWriter;
         this.channelResolver = checkNotNull(channelResolver);
@@ -57,6 +59,7 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
         this.publisher = checkNotNull(publisher);
         this.channelGroupResolver = checkNotNull(channelGroupResolver);
         this.allChannelsGroupUpdater = checkNotNull(allChannelsGroupUpdater);
+        this.ingestAdvertiseFromField = checkNotNull(ingestAdvertiseFromField);
         channelGroupSavers = ImmutableList.of(
                 new SubscriptionChannelGroupSaver(publisher, aliasUriPrefix, aliasNamespacePrefix, 
                         channelGroupResolver, channelGroupWriter, channelResolver, channelWriter),
@@ -89,6 +92,10 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
             ImmutableSet<String> allCurrentChannelGroupsBuilt = allCurrentChannelGroups.build();
 
             channelDataUpdater.addAliasesToChannel(entries);
+
+            if (ingestAdvertiseFromField) {
+                channelDataUpdater.addAvailableDateToChannel(entries);
+            }
 
             removeOldChannelGroupChannels(allCurrentChannelGroupsBuilt);
             allChannelsGroupUpdater.update();
@@ -131,14 +138,4 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
             }
         };
     }
-
-    private void addingAvailableDateToChannelPerEnvironment(PaginatedEntries entries) {
-
-        //Only ingest availableDate if it is from prod. Can be configured later on.
-        if(allChannelsGroupUpdater.getPublisher() == Publisher.BT_TV_CHANNELS) {
-            channelDataUpdater.addAvailableDateToChannel(entries);
-        }
-
-    }
-
 }

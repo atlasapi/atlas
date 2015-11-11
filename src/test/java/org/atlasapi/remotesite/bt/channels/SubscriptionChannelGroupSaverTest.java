@@ -24,6 +24,7 @@ import org.atlasapi.query.v2.ChannelGroupController;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Category;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Content;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -107,7 +108,7 @@ public class SubscriptionChannelGroupSaverTest {
         return new Entry(channelId, 0, "Title", 
                     ImmutableList.of(category), 
                     ImmutableList.<Content>of(), 
-                    true, null, null, true, false);
+                    true, null, null, true, false, DateTime.now(), "urn:BT:linear:service:751764");
     }
     
     private ChannelGroup channelGroup(String remoteId, long atlasId) {

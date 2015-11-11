@@ -61,6 +61,7 @@ public class BtChannelDataUpdater {
             );
 
             channel.addAlias(new Alias(aliasNamespace, linearEpgChannelId));
+            channelWriter.createOrUpdate(channel);
             updatedChannels.add(channelId);
         }
 
@@ -91,6 +92,8 @@ public class BtChannelDataUpdater {
             } else {
                 channel.setAdvertiseFrom(null);
             }
+
+            channelWriter.createOrUpdate(channel);
             channelIdsThatHaveAvailableDateAdded.add(channelId);
         }
 

@@ -86,8 +86,7 @@ public class BtChannelDataUpdater {
 
             Channel channel = channelMaybe.requireValue();
 
-            //Turned off for now until it is added to atlas model and atlas deer. Did a git pull but couldn't get dias' changes probably because it is only on stage. (my branch is based off master)
-            //(advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) ? channel.setAdvertiseFrom(advertiseAvailableDate) : channel.setAdvertiseFrom(null);
+            (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) ? channel.setAdvertiseFrom(advertiseAvailableDate) : channel.setAdvertiseFrom(null);
             channelIdsThatHaveAvailableDateAdded.add(channelId);
         }
 
@@ -111,7 +110,7 @@ public class BtChannelDataUpdater {
 
         for(Channel channel : channels) {
             if(!channelIdsThatHaveAvailableDateAdded.contains(channel.getId())) {
-                //channel.setAdvertiseFrom(null);
+                channel.setAdvertiseFrom(null);
             }
             channelWriter.createOrUpdate(channel);
         }

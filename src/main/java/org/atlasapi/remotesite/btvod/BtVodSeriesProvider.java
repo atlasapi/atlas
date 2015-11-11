@@ -10,6 +10,7 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
@@ -85,12 +86,15 @@ public class BtVodSeriesProvider {
     }
 
     private Table<ParentRef, Integer, Series> getSeriesTable(Map<String, Series> seriesMap) {
-        ImmutableTable.Builder<ParentRef, Integer, Series> builder = ImmutableTable.builder();
+        HashBasedTable<ParentRef, Integer, Series> table = HashBasedTable.create();
 
         for (Series series : seriesMap.values()) {
-            builder.put(series.getParent(), series.getSeriesNumber(), series);
+            if (series.getParent() != null && series.getSeriesNumber() != null
+                    && !table.contains(series.getParent(), series.getSeriesNumber())) {
+                table.put(series.getParent(), series.getSeriesNumber(), series);
+            }
         }
 
-        return builder.build();
+        return ImmutableTable.copyOf(table);
     }
 }

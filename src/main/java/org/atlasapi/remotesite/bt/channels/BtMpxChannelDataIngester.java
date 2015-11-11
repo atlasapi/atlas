@@ -1,11 +1,14 @@
 package org.atlasapi.remotesite.bt.channels;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.locks.Lock;
-
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.scheduling.ScheduledTask;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -20,20 +23,16 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.scheduling.ScheduledTask;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
-public class BtChannelGroupUpdater extends ScheduledTask {
+public class BtMpxChannelDataIngester extends ScheduledTask {
 
-    private static final Logger log = LoggerFactory.getLogger(BtChannelGroupUpdater.class);
+    private static final Logger log = LoggerFactory.getLogger(BtMpxChannelDataIngester.class);
     
     private final BtMpxClient btMpxClient;
     private final List<AbstractBtChannelGroupSaver> channelGroupSavers;
@@ -44,12 +43,15 @@ public class BtChannelGroupUpdater extends ScheduledTask {
     private final ChannelResolver channelResolver;
     private final ChannelWriter channelWriter;
     private final Lock channelWriterLock;
+    private final BtChannelDataUpdater channelDataUpdater;
+    private boolean ingestAdvertiseFromField;
     
-    public BtChannelGroupUpdater(BtMpxClient btMpxClient, Publisher publisher, String aliasUriPrefix, 
-            String aliasNamespacePrefix, ChannelGroupResolver channelGroupResolver, 
-            ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
-            ChannelWriter channelWriter, BtAllChannelsChannelGroupUpdater allChannelsGroupUpdater,
-            Lock channelWriterLock) {
+    public BtMpxChannelDataIngester(BtMpxClient btMpxClient, Publisher publisher, String aliasUriPrefix,
+                                    String aliasNamespacePrefix, ChannelGroupResolver channelGroupResolver,
+                                    ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver,
+                                    ChannelWriter channelWriter, BtAllChannelsChannelGroupUpdater allChannelsGroupUpdater,
+                                    Lock channelWriterLock, BtChannelDataUpdater channelDateUpdater,
+                                    boolean ingestAdvertiseFromField) {
         
         this.channelWriter = channelWriter;
         this.channelResolver = checkNotNull(channelResolver);
@@ -57,6 +59,7 @@ public class BtChannelGroupUpdater extends ScheduledTask {
         this.publisher = checkNotNull(publisher);
         this.channelGroupResolver = checkNotNull(channelGroupResolver);
         this.allChannelsGroupUpdater = checkNotNull(allChannelsGroupUpdater);
+        this.ingestAdvertiseFromField = checkNotNull(ingestAdvertiseFromField);
         channelGroupSavers = ImmutableList.of(
                 new SubscriptionChannelGroupSaver(publisher, aliasUriPrefix, aliasNamespacePrefix, 
                         channelGroupResolver, channelGroupWriter, channelResolver, channelWriter),
@@ -71,6 +74,7 @@ public class BtChannelGroupUpdater extends ScheduledTask {
                 );
         this.btMpxClient = checkNotNull(btMpxClient);
         this.channelWriterLock = checkNotNull(channelWriterLock);
+        this.channelDataUpdater = checkNotNull(channelDateUpdater);
     }
     
     @Override
@@ -80,11 +84,20 @@ public class BtChannelGroupUpdater extends ScheduledTask {
             channelWriterLock.lock();
             log.debug("Acquired channel writer lock");
             PaginatedEntries entries = btMpxClient.getChannels(Optional.<Selection>absent());
+
             ImmutableSet.Builder<String> allCurrentChannelGroups = ImmutableSet.builder();
             for (AbstractBtChannelGroupSaver saver : channelGroupSavers) {
                 allCurrentChannelGroups.addAll(saver.update(entries.getEntries()));
             }
-            removeOldChannelGroupChannels(allCurrentChannelGroups.build());
+            ImmutableSet<String> allCurrentChannelGroupsBuilt = allCurrentChannelGroups.build();
+
+            channelDataUpdater.addAliasesToChannel(entries);
+
+            if (ingestAdvertiseFromField) {
+                channelDataUpdater.addAvailableDateToChannel(entries);
+            }
+
+            removeOldChannelGroupChannels(allCurrentChannelGroupsBuilt);
             allChannelsGroupUpdater.update();
         } catch (BtMpxClientException e) {
             throw Throwables.propagate(e);
@@ -125,5 +138,4 @@ public class BtChannelGroupUpdater extends ScheduledTask {
             }
         };
     }
-
 }

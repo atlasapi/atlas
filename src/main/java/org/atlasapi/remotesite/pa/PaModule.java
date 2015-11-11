@@ -28,6 +28,7 @@ import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
+import org.atlasapi.remotesite.bt.channels.BtChannelDataUpdater;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.remotesite.pa.channels.PaChannelDataHandler;
@@ -94,7 +95,7 @@ public class PaModule {
     private @Autowired DatabasedMongo mongo;
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
-    
+
     private @Value("${pa.ftp.username}") String ftpUsername;
     private @Value("${pa.ftp.password}") String ftpPassword;
     private @Value("${pa.ftp.host}") String ftpHost;
@@ -215,4 +216,5 @@ public class PaModule {
     public @Bean ReentrantLock channelWriterLock() {
         return new ReentrantLock();
     }
+
 }

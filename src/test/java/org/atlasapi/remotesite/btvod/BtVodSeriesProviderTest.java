@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.btvod;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -103,5 +104,38 @@ public class BtVodSeriesProviderTest {
         objectUnderTest.updateSeriesFromEpisode(episodeRow, episode);
 
         verify(certificateUpdater).updateCertificates(EXPLICIT_SERIES, episode);
+    }
+
+    @Test
+    public void testCanConstructProviderFromSeriesWithNullParentAndNullSeriesNumber()
+            throws Exception {
+        Series series = mock(Series.class);
+
+        when(series.getParent()).thenReturn(null);
+        when(series.getSeriesNumber()).thenReturn(null);
+
+        new BtVodSeriesProvider(
+                ImmutableMap.of("guid", series),
+                ImmutableMap.<String, Series>of(),
+                seriesUriExtractor,
+                certificateUpdater,
+                brandProvider
+        );
+    }
+
+    @Test
+    public void testCanConstructProviderWithDuplicateSeries() throws Exception {
+        Series series = mock(Series.class);
+
+        when(series.getParent()).thenReturn(mock(ParentRef.class));
+        when(series.getSeriesNumber()).thenReturn(5);
+
+        new BtVodSeriesProvider(
+                ImmutableMap.of("guid1", series, "guid2", series),
+                ImmutableMap.<String, Series>of(),
+                seriesUriExtractor,
+                certificateUpdater,
+                brandProvider
+        );
     }
 }

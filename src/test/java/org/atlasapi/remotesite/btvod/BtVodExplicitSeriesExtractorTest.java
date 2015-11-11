@@ -1,12 +1,18 @@
 package org.atlasapi.remotesite.btvod;
 
-import com.google.api.client.util.Sets;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
+
+import java.util.Set;
+
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -15,6 +21,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
+import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
@@ -22,15 +29,12 @@ import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Matchers;
 
-import java.util.Set;
-
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.api.client.util.Sets;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.intl.Countries;
 
 public class BtVodExplicitSeriesExtractorTest {
 
@@ -117,6 +121,37 @@ public class BtVodExplicitSeriesExtractorTest {
         assertThat(series.getAliases(), CoreMatchers.<Set<Alias>>is(ImmutableSet.of(alias1, alias2)));
         assertThat(series.getGenres(), CoreMatchers.<Set<String>>is(ImmutableSet.of(genre)));
         assertThat(seriesExtractor.getExplicitSeries().get(PRODUCT_ID), is(series));
+    }
+
+    @Test
+    public void testExtractCertificatesFromSeason() throws Exception {
+        BtVodEntry entry = row();
+        entry.setProductType("season");
+
+        BtVodProductRating rating = new BtVodProductRating();
+        rating.setProductScheme("scheme");
+        rating.setProductRating("15");
+
+        entry.setProductRatings(ImmutableList.of(rating));
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of("seriesUri")))
+                .thenReturn(ResolvedContent.builder().build());
+
+        when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("seriesUri"));
+        when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
+        when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(mock(ParentRef.class)));
+        when(describedFieldsExtractor.aliasesFrom(entry)).thenReturn(ImmutableSet.of(mock(Alias.class)));
+        when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of("genre"));
+
+        seriesExtractor.process(entry);
+
+        Series series = Iterables.getOnlyElement(seriesExtractor.getExplicitSeries().values());
+
+        assertThat(series.getCertificates().size(), is(1));
+
+        Certificate certificate = Iterables.getOnlyElement(series.getCertificates());
+        assertThat(certificate.country(), is(Countries.GB));
+        assertThat(certificate.classification(), is("15"));
     }
 
     @Test
@@ -225,6 +260,7 @@ public class BtVodExplicitSeriesExtractorTest {
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
         entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
         entry.setProductScopes(ImmutableList.<BtVodProductScope>of());
+        entry.setProductRatings(ImmutableList.<BtVodProductRating>of());
         return entry;
     }
 }

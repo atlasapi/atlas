@@ -3,8 +3,8 @@ package org.atlasapi.remotesite.wikipedia.television;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.atlasapi.remotesite.wikipedia.Callback;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Callback;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sweble.wikitext.lazy.parser.LazyParsedPage;
@@ -59,7 +59,6 @@ public final class SeasonSectionScraper extends AstVisitor {
     
     @Override
     protected Object visitNotFound(AstNode node) {
-        log.debug("Skipping node " + node.getNodeName());
         return null;
     }
     

@@ -2,7 +2,7 @@ package org.atlasapi.remotesite.wikipedia.television;
 
 import java.util.List;
 
-import org.atlasapi.remotesite.wikipedia.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableCollection;

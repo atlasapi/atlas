@@ -3,8 +3,10 @@ package org.atlasapi.remotesite.wikipedia;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchyExtractor;
 import org.atlasapi.remotesite.wikipedia.testutils.LocallyCachingArticleFetcher;
+import org.atlasapi.remotesite.wikipedia.updaters.TvBrandHierarchyUpdater;
 
 public class RunTvExtraction {
     public static void main(String... args) {
@@ -16,7 +18,7 @@ public class RunTvExtraction {
                 new ContentWriter() {
                     @Override
                     public Item createOrUpdate(Item item) {
-                        System.out.println(item.toString());
+                        System.out.println(item.getTitle());
                         return item;
                     }
 

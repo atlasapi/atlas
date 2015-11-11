@@ -1,7 +1,7 @@
 package org.atlasapi.remotesite.wikipedia.television;
 
-import org.atlasapi.remotesite.wikipedia.Callback;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Callback;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.sweble.wikitext.lazy.parser.LazyParsedPage;
@@ -56,18 +56,21 @@ public final class BrandInfoboxScraper extends AstVisitor {
     }
 
     public void visit(TemplateArgument a) {
+
         String name = SwebleHelper.flattenTextNodeList(a.getName());
         // http://en.wikipedia.org/wiki/Template:Infobox_television
         if ("show_name".equalsIgnoreCase(name)) {
-            result.title = SwebleHelper.flattenTextNodeList(a.getValue());
+            result.title = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
         } else if ("creator".equalsIgnoreCase(name)) {
-            result.creator = SwebleHelper.flattenTextNodeList(a.getValue());
+            result.creator = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
         } else if ("list_episodes".equalsIgnoreCase(name)) {
-            result.episodeListLinkTarget = SwebleHelper.flattenTextNodeList(a.getValue());
+            result.episodeListLinkTarget = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
         } else if ("first_aired".equalsIgnoreCase(name) && result.firstAired == null) {
             result.firstAired = SwebleHelper.extractDate(a.getValue());
         } else if ("last_aired".equalsIgnoreCase(name) && result.lastAired == null) {
             result.lastAired = SwebleHelper.extractDate(a.getValue());
+        } else if ("image".equalsIgnoreCase(name)) {
+            result.image = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
         }
     }
 

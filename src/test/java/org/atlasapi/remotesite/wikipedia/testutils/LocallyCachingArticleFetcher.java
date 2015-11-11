@@ -3,8 +3,8 @@ package org.atlasapi.remotesite.wikipedia.testutils;
 import java.io.File;
 import java.io.IOException;
 
-import org.atlasapi.remotesite.wikipedia.Article;
-import org.atlasapi.remotesite.wikipedia.ArticleFetcher;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.ArticleFetcher;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

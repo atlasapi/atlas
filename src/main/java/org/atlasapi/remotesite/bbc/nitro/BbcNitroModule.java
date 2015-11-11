@@ -101,7 +101,12 @@ public class BbcNitroModule {
         return new ChannelDayProcessingTask(executor, drcds, nitroChannelDayProcessor(rateLimit, fullFetchPermittedPredicate),
                 null, jobFailureThresholdPercent);
     }
-    
+
+    @Bean
+    PidUpdateController pidUpdateController() {
+        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter);
+    }
+
     @Bean
     ScheduleDayUpdateController nitroScheduleUpdateController() {
         return new ScheduleDayUpdateController(channelResolver, 
@@ -160,7 +165,9 @@ public class BbcNitroModule {
     
 
     GlycerinNitroContentAdapter nitroContentAdapter(Glycerin glycerin) {
-        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), peopleWriter, new SystemClock(), nitroRequestPageSize);
+        SystemClock clock = new SystemClock();
+        GlycerinNitroClipsAdapter clipsAdapter = new GlycerinNitroClipsAdapter(glycerin, clock, nitroRequestPageSize);
+        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), clipsAdapter, peopleWriter, clock, nitroRequestPageSize);
     }
 
     private Supplier<Range<LocalDate>> dayRangeSupplier(int back, int forward) {

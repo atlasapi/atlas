@@ -8,8 +8,8 @@ import java.util.TreeMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.atlasapi.remotesite.wikipedia.SwebleHelper;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper.ListItemResult;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper.ListItemResult;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormat;
 import org.slf4j.Logger;
@@ -75,6 +75,7 @@ public final class FilmInfoboxScraper {
         public ImmutableList<ListItemResult> productionStudios;
         public ImmutableList<ListItemResult> distributors;
         public ImmutableList<ReleaseDateResult> releaseDates;
+        public String image;
         public Integer runtimeInMins;
         public ImmutableList<ListItemResult> countries;
         public ImmutableList<ListItemResult> language;
@@ -189,7 +190,7 @@ public final class FilmInfoboxScraper {
             } else if ("released".equalsIgnoreCase(key)) {
                 attrs.releaseDates = extractFilmReleaseDates(a.getValue());
             } else if ("runtime".equalsIgnoreCase(key)) {
-                String runtimeText = SwebleHelper.flattenTextNodeList(a.getValue());;
+                String runtimeText = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
                 try {
                     attrs.runtimeInMins = Integer.parseInt(runtimeText.split(" ", 2)[0]);
                     if (attrs.runtimeInMins < 10 || attrs.runtimeInMins > 300) {
@@ -204,6 +205,8 @@ public final class FilmInfoboxScraper {
                 attrs.countries = SwebleHelper.extractList(a.getValue());
             } else if ("language".equalsIgnoreCase(key)) {
                 attrs.language = SwebleHelper.extractList(a.getValue());
+            } else if ("image".equalsIgnoreCase(key)) {
+                attrs.image = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             }
         }
     }
@@ -221,7 +224,7 @@ public final class FilmInfoboxScraper {
         
         // Otherwise, we fall back on the plain text method...
         //
-        String maybeDateText = SwebleHelper.flattenTextNodeList(a);
+        String maybeDateText = SwebleHelper.normalizeAndFlattenTextNodeList(a);
         String y, m, d;
         Matcher americanMatcher = americanDatePattern.matcher(maybeDateText);
         if (americanMatcher.find()) {

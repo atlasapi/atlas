@@ -71,12 +71,14 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
                 series = processedSeries.get(seriesUriExtractor.seriesUriFor(row).get());
             } else {
                 series = seriesFrom(row);
-                brandProvider.updateDescriptions(row, series);
             }
             setFields(series, row);
             setAdditionalFields(series, row);
             addTopicsToParents(series, row);
             onSeriesProcessed(series, row);
+
+            brandProvider.updateBrandFromSeries(row, series);
+
             // This allows a lookup by series title. Note that the only reference from an episode to a series is the series title.
             // Consequently this map will be used to lookup SeriesRef when processing episodes
             // TODO: is there a better approach than this ^?

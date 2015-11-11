@@ -1,0 +1,897 @@
+{{About|the men's football club|the women's football club|Arsenal L.F.C.|the Ghanaian football club|Berekum Arsenal|other uses|Arsenal (disambiguation)}}
+{{Distinguish|Arsenal de Sarandí|Arsenal Kyiv}}
+{{pp-semi|small=yes}}
+{{Use British English|date=May 2013}}
+{{Use dmy dates|date=November 2014}}
+{{Infobox football club
+| clubname    = Arsenal
+| current     = 2015–16 Arsenal F.C. season
+| image       = Arsenal FC.svg
+| fullname    = Arsenal Football Club
+| nickname    = The Gunners
+| founded     = {{Start date and age|df=yes|1886}} as ''Dial Square''
+| ground      = [[Emirates Stadium]]
+| capacity    = 60,260<ref>{{cite web|url=http://www.premierleague.com/content/dam/premierleague/site-content/News/publications/handbooks/premier-league-handbook-2015-16.pdf|title=Premier League Handbook 2015/16 |format=PDF |accessdate=15 August 2015 |work=[[Premier League]]}}</ref>
+| owner       = [[#Ownership and finances|Arsenal Holdings plc]]
+| chairman    = [[Chips Keswick|Sir Chips Keswick]]
+| manager     = [[Arsène Wenger]]
+| league      = [[Premier League]]
+| season      = [[2014–15 Premier League|2014–15]]
+| position    = Premier League, 3rd
+<!--Can somebody improve these kits please? The socks on all three kits are missing the gold line at the top. Also, there should be some slightly dark red hoops on the home shirt. Thanks -->
+<!-- Home kit -->
+| pattern_la1   = _arsenal1516h
+| pattern_b1    = _arsenal1516h
+| pattern_ra1   = _arsenal1516h
+| pattern_sh1   = _arsenal1516h
+| pattern_so1   = _arsenal1516h
+| leftarm1       = FFFFFF
+| body1          = FF0000
+| rightarm1      = FFFFFF
+| shorts1        = FFFFFF
+| socks1         = FFFFFF
+<!-- Away kit -->
+| pattern_la2  = _arsenal1516a
+| pattern_b2   = _arsenal1516a
+| pattern_ra2  = _arsenal1516a
+| pattern_sh2  = _arsenalfc1516a
+| pattern_so2  = _arsenal1516a
+| leftarm2     = 121E52
+| body2        = D2B55B
+| rightarm2    = 121E52
+| shorts2      = 121E52
+| socks2       = 121E52
+<!-- Third kit -->
+| pattern_la3 = _arsfc1516t
+| pattern_b3  = _arsenal1516third
+| pattern_ra3 = _arsfc1516t
+| pattern_sh3 = _arsenal1516t
+| pattern_so3 = _arsenal1516t
+| leftarm3    = 0F0F0F
+| body3       = 0F0F0F
+| rightarm3   = 0F0F0F
+| shorts3     = 0F0F0F
+| socks3      = 0F0F0F
+<!-- Do not add kits that display logos or crests as this is against Wikipedia 's copyright policies.
+A discussion is happening at Wikipedia_talk:WikiProject_Football/Archive_71#Logos_on_kits
+-->
+| website     = http://www.arsenal.com/
+}}
+<!--PLEASE NOTE: This section is the introduction. Please do not add too much detail here. Instead add it in the relevant section below or in the relevant daughter article. This especially applies to details of recent events.-->
+
+'''Arsenal Football Club ''' is a professional [[association football|football]] club based in [[Holloway, London]]. The club play in the [[Premier League]], the top flight of English football. One of the [[Football records in England#Total titles won (1871–present)|most successful clubs]] in English football, they have won 13 [[Football League First Division|First Division]] and Premier League titles and a record 12 [[FA Cup]]s.
+
+Founded in 1886, Arsenal became the first club from the south of England to join [[the Football League]] in 1893. They won five League Championships  and two FA Cups in the 1930s and became the second club to win the [[Double (association football)|League and FA Cup Double]] in the 20th century in the [[1970-71 in English football|1971]]. In the 1990s and 2000s, Arsenal won a Cup Double, two further League and FA Cup Doubles, went through the [[2003–04 Arsenal F.C. season|2003–04 league season]] undefeated and became the first London club to reach the [[2006 UEFA Champions League Final|UEFA Champions League Final]].
+
+The club's colours are traditionally red and white. Founded in [[Woolwich]], south-east London, in 1913 they moved north across the city to [[Arsenal Stadium]] in [[Highbury]]. In 2006, they moved to the [[Emirates Stadium]] in nearby Holloway. Arsenal contest the [[North London derby]] with rivals [[Tottenham Hotspur F.C.|Tottenham Hotspur]].
+
+Arsenal has one of the highest incomes and largest fanbases in the world.<ref>{{cite news|last1=O'Connor|first1=Ashling|title=Liverpool lag in fight for global fan supremacy as TV row grows|url=http://www.thetimes.co.uk/tto/sport/football/premierleague/article3192868.ece|accessdate=25 June 2014|publisher=The Times|date=13 October 2011}}</ref><ref>{{cite web|title=Football Money League|url=http://www.deloitte.com/view/en_GB/uk/industries/sportsbusinessgroup/sports/football/deloitte-football-money-league/|website=deloitte.com|publisher=Deloitte|accessdate=25 June 2014|date=January 2014}}</ref> The club was named the [[Forbes' list of the most valuable football clubs|seventh most valuable association football club]], valued at $1.3 billion, in 2015.<ref>{{cite web|title=Soccer Team Values|url=http://www.forbes.com/soccer-valuations/list/|website=forbes.com|publisher=Forbes|accessdate=October 15, 2015|date=May 2014}}</ref>
+
+==History==
+{{details3|[[History of Arsenal F.C. (1886–1966)]] and [[History of Arsenal F.C. (1966–present)]]}}
+<!--
+This section is meant to be just a summary. Please do not add too much detail&nbsp;— the "History of Arsenal" articles are intended for detailed additions.
+-->
+[[File:Woolwich Arsenal v. Newcastle United, April 1906.jpg|thumb|left|Woolwich Arsenal (in dark shirts) playing [[Newcastle United F.C.|Newcastle United]] (in striped shirts) in an [[FA Cup]] semi-final&nbsp;— the club's first ever&nbsp;– at the [[Victoria Ground (Stoke)|Victoria Ground]], [[Stoke-on-Trent|Stoke]].]]
+Arsenal Football Club were formed as Dial Square in 1886 by workers at the [[Royal Arsenal]] in [[Woolwich]], south-east London, and were renamed Royal Arsenal shortly afterwards.<ref name="soartyler23">{{cite book |first1=Phil |last1=Soar |first2=Martin |last2=Tyler |title=The Official Illustrated History of Arsenal | publisher=Hamlyn | year=2005 | page=23 | isbn=978-0-600-61344-2 |last-author-amp=y}}</ref> The club were renamed again to Woolwich Arsenal after becoming a [[limited company]] in 1893.<ref>{{cite web | url=http://homepage.ntlworld.com/andy.kelly/arsenal/record/namechange.htm
+ | title=Royal Arsenal becomes Woolwich Arsenal
+ | work=Andy Kelly's Arsenal Resource Website
+ | accessdate=13 October 2010
+
+}}</ref> The club became the first southern member of [[the Football League]] in 1893, starting out in the [[Football League Second Division|Second Division]], and won promotion to the [[Football League First Division|First Division]] in 1904. The club's relative geographic isolation resulted in lower attendances than those of other clubs, which led to the club becoming mired in financial problems and effectively bankrupt by 1910, when they were taken over by businessmen [[Henry Norris (businessman)|Henry Norris]] and William Hall.<ref>{{cite book |last=Soar & Tyler | year=2005 | title=The Official Illustrated History of Arsenal | pages=32–33 }}</ref> Norris sought to move the club elsewhere, and in 1913, soon after relegation back to the Second Division, Arsenal moved to the new [[Arsenal Stadium]] in [[Highbury]], North London; they dropped "Woolwich" from their name the following year.<ref>{{cite book |last=Soar & Tyler | year=2005 | title=The Official Illustrated History of Arsenal | page=40 }}</ref> Arsenal only finished in fifth place in the second division during the last pre-war competitive season of 1914–15, but were nevertheless elected to rejoin the First Division when competitive football resumed in 1919–20, at the expense of local rivals [[Tottenham Hotspur F.C.|Tottenham Hotspur]]. Some books have reported that this election to division 1 was achieved by dubious means.<ref>It has been alleged that Arsenal's promotion, on historical grounds rather than merit, was thanks to underhand actions by Norris, who was chairman of the club at the time; see [[History of Arsenal F.C. (1886–1966)]] for more details. These allegations range from political machinations to outright bribery; no firm proof of any wrongdoing has ever been found. A brief account is given in {{cite book |last=Soar & Tyler | year=2005 | title=The Official Illustrated History of Arsenal| page=40 }} A more detailed account can be found in {{cite book| last=Spurling |first=Jon| title=Rebels for the Cause: The Alternative History of Arsenal Football Club| publisher=Mainstream| year=2004| isbn=978-1-84018-900-1| pages=38–41}}</ref>
+
+Arsenal appointed [[Herbert Chapman]] as manager in 1925. Having already won the league twice with [[Huddersfield Town F.C.|Huddersfield Town]] in [[1923–24 Football League|1923–24]] and [[1924–25 Football League|1924–25]] (see [[Football in England#Seasons in English football|Seasons in English football]]), Chapman brought Arsenal their first period of major success. His revolutionary tactics and training, along with the signings of star players such as [[Alex James (footballer)|Alex James]] and [[Cliff Bastin]], laid the foundations of the club's domination of English football in the 1930s.<ref>{{cite book | last=Soar & Tyler | year=2005 | title=The Official Illustrated History of Arsenal | page=18 }}</ref> Under his guidance Arsenal won their first major trophies&nbsp;– victory in the [[1930 FA Cup Final]] preceded two League Championships, in [[1930–31 Football League|1930–31]] and [[1932–33 Football League|1932–33]]. In addition, Chapman was behind the 1932 renaming of the local [[London Underground]] station from "Gillespie Road" to "[[Arsenal tube station|Arsenal]]", making it the only Tube station to be named specifically after a football club.<ref>{{cite web | url=http://www.tfl.gov.uk/static/corporate/media/newscentre/archive/3709.html | title=London Underground and Arsenal present The Final Salute to Highbury | publisher=Transport for London | date=12 January 2006 | accessdate=12 August 2011 }}</ref>
+
+[[File:Arsenal FC Football and Premier League performance.PNG|thumb|right|Chart showing the progress of Arsenal's league finishes since the 1893–94 season]]
+
+Chapman died suddenly of [[pneumonia]] in early 1934, leaving [[Joe Shaw (footballer born 1883)|Joe Shaw]] and [[George Allison]] to carry on his successful work. Under their guidance, Arsenal won three more titles, in [[1933–34 Football League|1933–34]], [[1934–35 Football League|1934–35]] and [[1937–38 Football League|1937–38]], and the [[1935–36 FA Cup|1936 FA Cup]] while also becoming known as the "[[Bank of England club]]." As key players retired, Arsenal had started to fade by the decade's end, and then the intervention of the Second World War meant competitive professional football in England was suspended.<ref>{{cite web
+| url=http://www.arsenal.com/history/herbert-chapman/arsenal-clinch-a-hat-trick-of-titles
+| title=Arsenal clinch a hat-trick of titles
+| publisher=Arsenal F.C
+| accessdate=27 November 2009 | archiveurl= https://web.archive.org/web/20100106081811/http://www.arsenal.com/history/herbert-chapman/arsenal-clinch-a-hat-trick-of-titles| archivedate= 6 January 2010 | deadurl= no}}</ref><ref>{{cite book
+| title=Champions all!
+| first=Tony |last=Brown
+| publisher=SoccerData |location=Nottingham
+| isbn=1-905891-02-4
+| year=2007
+| pages=6–7
+| url=http://www.soccer.mistral.co.uk/books/ch6-10.pdf }}</ref><ref name=FCHD/>
+
+After the war, Arsenal enjoyed a second period of success under Allison's successor [[Tom Whittaker (footballer)|Tom Whittaker]], winning the league in [[1947–48 Football League|1947–48]] and [[1952–53 Football League|1952–53]], and the FA Cup in [[1949–50 FA Cup|1950]]. Their fortunes waned thereafter; unable to attract players of the same calibre as they had in the 1930s, the club spent most of the 1950s and 1960s in trophyless mediocrity. Even former [[England national football team|England]] captain [[Billy Wright (footballer born 1924)|Billy Wright]] could not bring the club any success as manager, in a stint between 1962 and 1966.<ref name=FCHD/><ref>{{cite web
+| url=http://www.arsenal.com/history/post-war-arsenal/post-war-arsenal-overview
+| title=Post-War Arsenal&nbsp;– Overview
+| publisher=Arsenal F.C
+| accessdate=27 November 2009 }}</ref><ref>{{cite book
+| title=Champions all!
+| last=Brown
+| year=2007
+| page=7}}</ref>
+
+Arsenal began winning silverware again with the surprise appointment of club [[physiotherapist]] [[Bertie Mee]] as manager in 1966. After losing two [[Football League Cup|League Cup]] finals, they won their first European trophy, the [[1969–70 Inter-Cities Fairs Cup]]. This was followed by an even greater triumph: their first [[1970–71 Football League|League]] and [[1970–71 FA Cup|FA Cup]] [[Double (association football)|double]] in [[1970–71 in English football|1970–71]].<ref>{{cite web
+|url=http://www.nationalfootballmuseum.com/hall-of-fame/profiles/entry/bertie-mee/
+|title=Bertie Mee
+|work=Football Hall of Fame
+|publisher=National Football Museum
+|first=Robert |last=Galvin
+|accessdate=23 October 2009}}</ref> This marked a premature high point of the decade; the Double-winning side was soon broken up and the following decade was characterised by a series of near misses, starting with Arsenal finishing as FA Cup runners up in [[1971–72 FA Cup|1972]], and First Division runners-up in [[1972–73 Football League|1972–73]].
+
+[[Terry Neill]] was recruited by the Arsenal board to replace [[Bertie Mee]] on 9 July 1976 and at the age of 34 he became the youngest Arsenal manager to date. With new signings like [[Malcolm Macdonald]] and [[Pat Jennings]], and a crop of talent in the side such as [[Liam Brady]] and [[Frank Stapleton]], the club enjoyed their best form since the 1971 double, reaching a trio of FA Cup finals ([[1977–78 FA Cup|1978]], [[1978–79 FA Cup|1979]] and [[1979–80 FA Cup|1980]]), and losing the [[1980 European Cup Winners' Cup Final]] on [[penalty shootout (association football)|penalties]]. The club's only success during this time was a last-minute 3–2 victory over Manchester United in the [[1979 FA Cup Final]], widely regarded as a classic.<ref name=FCHD>{{cite web
+|url=http://www.fchd.info/ARSENAL.HTM
+|title=Arsenal
+|work=Football Club History Database
+|publisher=Richard Rundle
+|accessdate=23 October 2009| archiveurl= https://web.archive.org/web/20091106003337/http://fchd.info/ARSENAL.HTM| archivedate= 6 November 2009 | deadurl= no}}</ref><ref>A 2005 poll of English football fans rated the 1979 FA Cup Final the 15th greatest game of all time. Reference: {{cite news
+| url=http://www.telegraph.co.uk/sport/main.jhtml?xml=/sport/2005/04/19/sfnwin19.xml
+| title= Classic final? More like a classic five minutes
+| last=Winter |first=Henry
+| work=Daily Telegraph
+| date=19 April 2005
+| accessdate=11 August 2008
+ | location=London
+}}</ref>
+
+The return of former player [[George Graham (footballer)|George Graham]] as manager in 1986 brought a third period of glory. Arsenal won the League Cup in [[1986–87 Football League Cup|1987]], Graham's first season in charge. This was followed by a League title win in [[1988–89 Football League|1988–89]], won with a last-minute goal in the [[Liverpool 0–2 Arsenal (26 May 1989)|final game of the season]] against fellow title challengers [[Liverpool F.C.|Liverpool]]. Graham's Arsenal won another title in [[1990–91 Football League|1990–91]], losing only one match, won the [[1992–93 FA Cup|FA Cup]] and [[1992–93 Football League Cup|League Cup]] double in 1993, and a second European trophy, the [[European Cup Winners' Cup]], in [[1993–94 European Cup Winners' Cup|1994]].<ref name=FCHD/><ref>{{cite news
+|url=http://www.skysports.com/story/0,19528,11670_3335042,00.html
+|title=Top Ten: Title Run-ins
+|first=Andy |last=Clarke
+|publisher=Sky Sports
+|date=26 March 2009 |accessdate=7 December 2009
+
+}}</ref> Graham's reputation was tarnished when he was found to have taken kickbacks from agent [[Rune Hauge]] for signing certain players,<ref>Graham was banned for a year by the Football Association for his involvement in the scandal after he admitted he had received an "unsolicited gift" from Hauge. Reference: {{cite news
+|  url=http://football.guardian.co.uk/News_Story/0,,148114,00.html
+|  title=Rune Hauge, international man of mystery
+|  work=The Guardian
+|  last=Collins |first=Roy
+|  date=18 March 2000
+|  accessdate=11 August 2008
+ | location=London
+}} The case is given a detailed treatment in {{cite book
+|  last=Bower |first=Tom
+|  title=Broken Dreams
+|  publisher=Simon & Schuster
+|  year=2003
+|  isbn=978-0-7434-4033-2}}</ref> and he was dismissed in 1995. His replacement, [[Bruce Rioch]], lasted for only one season, leaving the club after a dispute with the board of directors.<ref>{{cite news  |url=http://www.independent.co.uk/sport/rioch-at-odds-with-the-system-1309564.html
+  |title=Rioch at odds with the system
+  |work=The Independent
+  |last=Moore |first=Glenn
+  |date=13 August 1996
+  |accessdate=23 October 2009
+  |location=London}}</ref>
+
+[[File:Arsenal open top bus parade 2004.jpg|right|thumb|Arsenal's players and fans celebrate their 2004 League title win with an open-top bus parade.|alt=A group of people on a red open-topped bus wave to a crowd of onlookers.]]
+The club's success in the late 1990s and first decade of the 21st century owed a great deal to the 1996 appointment of [[Arsène Wenger]] as manager. Wenger brought new tactics, a new training regime and several foreign players who complemented the existing English talent. Arsenal won a second League and Cup double in [[1997–98 Arsenal F.C. season|1997–98]] and a third in [[2001–02 Arsenal F.C. season|2001–02]]. In addition, the club reached the final of the [[1999–2000 UEFA Cup]] (losing on penalties to [[Galatasaray S.K. (football team)|Galatasaray]]), were victorious in the [[2002–03 FA Cup|2003]] and [[2004–05 FA Cup|2005]] FA Cups, and won the Premier League in [[2003–04 FA Premier League|2003–04]] without losing a single match, an achievement which earned the side the nickname "[[The Invincibles (football)|The Invincibles]]".<ref name="invincibles">{{cite news
+| url=http://news.bbc.co.uk/sport1/hi/football/teams/a/arsenal/3713537.stm
+| title=Arsenal the Invincibles
+|publisher=BBC Sport
+| last=Hughes |first=Ian
+| date=15 May 2004
+| accessdate=11 August 2008
+}}</ref> The feat came within a run of 49 league matches unbeaten from 7 May 2003 to 24 October 2004, a [[Football records in England|national record]].<ref name="49unbeaten">{{cite news
+| url=http://news.bbc.co.uk/sport1/hi/football/teams/a/arsenal/3950453.stm
+| title=Arsenal run ends at 49
+| last=Fraser |first=Andrew
+|publisher=BBC Sport
+| date=25 October 2004
+| accessdate=27 August 2008 }}</ref>
+
+Arsenal finished in either first or second place in the league in eight of Wenger's first eleven seasons at the club, although on no occasion were they able to retain the title.<ref name=FCHD/> As of July 2013, they were one of only five teams, the others being Manchester United, [[Blackburn Rovers F.C.|Blackburn Rovers]], [[Chelsea F.C.|Chelsea]], and [[Manchester City F.C.|Manchester City]], to have won the Premier League since its formation in 1992.<ref>{{cite web
+ | url=http://www.rsssf.com/tablese/engchamp.html#c1993
+ | title=FA Premier League Champions 1993–2007
+ | publisher=Rec.Sport.Soccer Statistics Foundation
+ | last=Ross |first=James M
+ | accessdate=11 August 2008
+
+| archiveurl= https://web.archive.org/web/20080922085028/http://www.rsssf.com/tablese/engchamp.html| archivedate= 22 September 2008 | deadurl= no}}</ref> Arsenal had never progressed beyond the quarter-finals of the [[UEFA Champions League|Champions League]] until [[2005–06 UEFA Champions League|2005–06]]; in that season they became the first club from London in the competition's fifty-year history to reach [[2006 UEFA Champions League Final|the final]], in which they were beaten 2–1 by [[FC Barcelona|Barcelona]].<ref name="2006ucl"/> In July 2006, they moved into the [[Emirates Stadium]], after 93 years at Highbury.<ref>{{cite news
+ | url=http://www.timesonline.co.uk/tol/sport/football/article691484.ece
+ | title=Farewell Bergkamp, hello future
+ |work=The Times |location=UK
+ | last=Aizlewood |first=John
+ | date=23 July 2006
+ | accessdate=23 October 2009 }}</ref>
+
+Arsenal reached the final of the [[2007 Football League Cup Final|2007]] and [[2011 Football League Cup Final|2011]] League Cups, losing 2–1 to Chelsea and [[Birmingham City F.C.|Birmingham City]] respectively. The club had not gained a major trophy since the 2005 FA Cup until 17 May 2014, when Arsenal beat [[Hull City A.F.C.|Hull City]] in the [[2014 FA Cup Final]], coming back from a 2–0 deficit to win the match 3–2.<ref>{{cite news|url=http://www.theguardian.com/football/2014/may/18/arsene-wenger-fa-cup-arsenal-hull-trophy-drought
+ |title= Arséne Wenger savours FA Cup win over Hull as Arsenal end drought
+ |work=The Guardian |location=UK
+ | last= Hytner |first=David
+ | date=18 May 2014
+ | accessdate=21 May 2014}}</ref> This qualified them for the [[2014 FA Community Shield]] where they would play Premier League champions Manchester City. They recorded a resounding 3–0 win in the game, winning their second trophy in three months.<ref>{{cite news|url=http://www.theguardian.com/football/2014/aug/10/arsenal-manchester-city-community-shield
+ |title= Arsenal cruise to Community Shield win over weakened Manchester City
+ |work=The Guardian |location=UK
+ | last= Ronay |first=Barney
+ | date=10 August 2014
+ | accessdate=1 November 2014}}</ref> Nine months after their Community Shield triumph, Arsenal appeared in the FA Cup final for the second year in a row, thrashing [[Aston Villa F.C.|Aston Villa]] 4–0 in the [[2015 FA Cup Final|final]] and becoming the most successful club in the tournament's history with 12 titles.<ref>{{cite news|url=http://www.theguardian.com/football/2015/may/30/fa-cup-final-arsenal-aston-villa-alexis-sanchez
+ |title= Alexis Sánchez inspires Arsenal to win over Aston Villa
+ |work=The Guardian |location=UK
+ | last= Taylor |first=Daniel
+ | date=30 May 2015
+ | accessdate=30 May 2015}}</ref> On 2 August 2015 Arsenal beat Chelsea 1–0 at [[Wembley Stadium]] to retain the Community Shield and earn their 14th Community Shield title.<ref>{{cite news|url=http://www.bbc.com/sport/0/football/33667216
+ |title= Arsenal 1–0 Chelsea
+ |work=BBC |location=UK
+ | last= Cryer |first=Andy
+ | date=2 August 2015
+ | accessdate=4 August 2015}}</ref>
+
+<!--
+PLEASE NOTE:
+
+This section is meant to be just a summary. Please do not add too much detail&nbsp;— the "History of Arsenal" articles are intended for detailed additions. If you wish to mention events that have happened very recently, such as Arsenal's most recent results, please remember this is an encyclopedia, not a news service. Your contribution may be more suitable for addition to Wikinews (http://en.wikinews.org/) instead. Thank you.
+-->
+
+==Crest==
+[[File:Arsenal crest 1888.png|thumb|right|Arsenal's first crest from 1888]]
+
+Unveiled in 1888, Royal Arsenal's first [[crest (sports)|crest]] featured three [[cannon]] viewed from above, pointing northwards, similar to the [[coat of arms]] of the [[Metropolitan Borough of Woolwich]] (nowadays transferred to the [[coat of arms of the Royal Borough of Greenwich]]). These can sometimes be mistaken for chimneys, but the presence of a carved lion's head and a [[cascabel (artillery)|cascabel]] on each are clear indicators that they are cannon.<ref name="crest">{{cite web | url=http://www.arsenal.com/history/the-crest | title=The Crest | publisher=Arsenal F.C | accessdate=11 August 2008| archiveurl= https://web.archive.org/web/20080812085724/http://www.arsenal.com/history/the-crest| archivedate= 12 August 2008 | deadurl= no}}</ref> This was dropped after the move to Highbury in 1913, only to be reinstated in 1922, when the club adopted a crest featuring a single cannon, pointing eastwards, with the club's nickname, ''The Gunners'', inscribed alongside it; this crest only lasted until 1925, when the cannon was reversed to point westward and its barrel slimmed down.<ref name="crest"/>
+
+In 1949, the club unveiled a modernised crest featuring the same style of cannon below the club's name, set in [[blackletter]], and above the coat of arms of the [[Metropolitan Borough of Islington]] and a scroll inscribed with the club's newly adopted Latin [[motto]], ''Victoria Concordia Crescit''  "victory comes from harmony", coined by the club's programme editor Harry Homer.<ref name="crest"/> For the first time, the crest was rendered in colour, which varied slightly over the crest's lifespan, finally becoming red, gold and green. Because of the numerous revisions of the crest, Arsenal were unable to [[copyright]] it. Although the club had managed to register the crest as a trademark, and had fought (and eventually won) a long legal battle with a local street trader who sold "unofficial" Arsenal merchandise,<ref>{{cite web
+| title=''Arsenal v. Reed'' in the Court of Appeal
+| publisher=Michael Simkins LLP
+| url=http://www.simkins.co.uk/ebulletins/DAFArsenalReed.aspx
+| last=Free |first=Dominic
+| date=4 June 2003
+| accessdate=11 August 2008
+}}</ref> Arsenal eventually sought a more comprehensive legal protection. Therefore, in 2002 they introduced a new crest featuring more modern curved lines and a simplified style, which was copyrightable.<ref>{{cite news
+| title=Arsenal go for a makeover
+|publisher=BBC Sport
+| url=http://news.bbc.co.uk/sport1/hi/football/teams/a/arsenal/1795444.stm
+| date=1 February 2004
+| accessdate=11 August 2008
+
+}}</ref> The cannon once again faces east and the club's name is written in a [[sans-serif]] typeface above the cannon. Green was replaced by dark blue. The new crest was criticised by some supporters; the Arsenal Independent Supporters' Association claimed that the club had ignored much of Arsenal's history and tradition with such a radical modern design, and that fans had not been properly consulted on the issue.<ref>{{cite web
+| title=Crestfallen
+| url=http://www.aisa.org/pdfs/crest_leaflet.pdf
+| publisher=Arsenal Independent Supporters' Association
+| accessdate=11 August 2008
+| archiveurl=https://web.archive.org/web/20061108191039/http://www.aisa.org/pdfs/crest_leaflet.pdf
+| archivedate=8 November 2006
+| format=PDF}}</ref>
+
+Until the 1960s, a badge was worn on the playing shirt only for high-profile matches such as FA Cup finals, usually in the form of a [[monogram]] of the club's initials in red on a white background.<ref name="shirt badge">{{cite web
+| url=http://www.arsenal.com/news/news-archive/the-arsenal-shirt-badge
+| title=The Arsenal shirt badge
+| publisher=Arsenal F.C
+| accessdate=24 January 2010
+
+}}</ref>
+
+The monogram theme was developed into an [[Art Deco]]-style badge on which the letters A and C framed a football rather than the letter F, the whole set within a hexagonal border. This early example of a corporate logo, introduced as part of Herbert Chapman's rebranding of the club in the 1930s, was used not only on Cup Final shirts but as a design feature throughout Highbury Stadium, including above the main entrance and inlaid in the floors.<ref name="artdeco">{{cite web
+| url=http://www.arsenal.com/news/news-archive/the-art-deco-crest
+| title=The Art Deco crest
+| publisher=Arsenal F.C
+| accessdate=24 January 2010
+
+}}</ref> From 1967, a white cannon was regularly worn on the shirts, until replaced by the club crest, sometimes with the addition of the nickname "The Gunners", in the 1990s.<ref name="shirt badge"/>
+
+In the 2011–12 season, Arsenal celebrated their 125th year anniversary. The celebrations included a modified version of the current crest worn on their jerseys for the season. The crest was all white, surrounded by 15 [[oak]] leaves to the right and 15 [[Laurel wreath|laurel]] leaves to the left. The oak leaves represent the 15 founding members of the club who met at the Royal Oak pub. The 15 laurel leaves represent the design detail on the six pence pieces paid by the founding fathers to establish the club. The laurel leaves also represent strength. To complete the crest, 1886 and 2011 are shown on either sides of the motto "Forward" at the bottom of the crest.<ref name="125th anniversary crest">{{cite web
+| url=http://www.arsenal.com/news/news-archive/125-years-in-the-making-anniversary-crest
+| title=125th anniversary crest
+| publisher=Arsenal F.C
+| accessdate=1 May 2011 }}</ref>
+
+==Colours==
+{{Football kit box
+|  align      = right
+|  pattern_la =
+|  pattern_b  = _collar
+|  pattern_ra =
+|  pattern_so = _hoops_navy
+|  leftarm    = 800000
+|  body       = 800000
+|  rightarm   = 800000
+|  shorts     = FFFFFF
+|  socks      = FFFFFF
+|  alt        = Dark red shirt, white shorts, socks with blue and white stripes
+| kit_alt     = A dark-red shirt, white shorts and socks with blue and white stripes
+|  title      = Arsenal's original home colours. The team wore a similar kit (but with redcurrant socks) during the [[2005–06 Arsenal F.C. season|2005–06]] season.
+}}
+
+For much of Arsenal's history, their home colours have been bright red shirts with white sleeves and white shorts, though this has not always been the case. The choice of red is in recognition of a charitable donation from [[Nottingham Forest F.C.|Nottingham Forest]], soon after Arsenal's foundation in 1886. Two of Dial Square's founding members, [[Fred Beardsley]] and [[Morris Bates]], were former Forest players who had moved to Woolwich for work. As they put together the first team in the area, no kit could be found, so Beardsley and Bates wrote home for help and received a set of kit and a ball.<ref name="soartyler23"/> The shirt was redcurrant, a dark shade of red, and was worn with white shorts and socks with blue and white hoops.<ref>{{cite web|title=The Arsenal home kit|url=http://www.arsenal.com/news/news-archive/the-arsenal-kit|accessdate=28 October 2012}}</ref><ref name="historicalkits">{{cite web
+
+| url=http://www.historicalkits.co.uk/Arsenal/Arsenal.htm
+| title=Arsenal
+| work=Historical Football Kits
+| publisher=D & M Moor
+| accessdate=8 December 2006
+
+}}</ref>
+
+In 1933, Herbert Chapman, wanting his players to be more distinctly dressed, updated the kit, adding white sleeves and changing the shade to a brighter [[pillar box]] red. Two possibilities have been suggested for the origin of the white sleeves. One story reports that Chapman noticed a supporter in the stands wearing a red sleeveless sweater over a white shirt; another was that he was inspired by a similar outfit worn by the cartoonist [[Tom Webster (cartoonist)|Tom Webster]], with whom Chapman played golf.<ref name="kitdesign">{{cite web
+
+| url=http://www.arsenal.com/history/kit-design
+| title=Arsenal Kit Design
+| publisher=Arsenal F.C
+| accessdate=8 November 2008
+
+| archiveurl= https://web.archive.org/web/20081019003758/http://www.arsenal.com/history/kit-design| archivedate= 19 October 2008 | deadurl= no}}</ref>
+Regardless of which story is true, the red and white shirts have come to define Arsenal and the team have worn the combination ever since, aside from two seasons. The first was 1966–67, when Arsenal wore all-red shirts;<ref name="historicalkits" /> this proved unpopular and the white sleeves returned the following season. The second was 2005–06, the last season that Arsenal played at Highbury, when the team wore commemorative redcurrant shirts similar to those worn in 1913, their first season in the stadium; the club reverted to their normal colours at the start of the next season.<ref name="kitdesign"/> In the 2008–09 season, Arsenal replaced the traditional all-white sleeves with red sleeves with a broad white stripe.<ref name="historicalkits" />
+
+Arsenal's home colours have been the inspiration for at least three other clubs. In 1909, [[AC Sparta Prague|Sparta Prague]] adopted a dark red kit like the one Arsenal wore at the time;<ref name="kitdesign"/> in 1938, [[Hibernian F.C.|Hibernian]] adopted the design of the Arsenal shirt sleeves in their own green and white strip.<ref>{{cite web
+
+| url=http://www.historicalkits.co.uk/Scottish_Football_League/Hibernian/hibernian.htm
+| title=Hibernian
+| work=Historical Football Kits
+| publisher=D & M Moor
+| accessdate=11 August 2008
+
+| archiveurl= https://web.archive.org/web/20080821120715/http://historicalkits.co.uk/Scottish_Football_League/Hibernian/hibernian.htm| archivedate= 21 August 2008 | deadurl= no}}</ref> In 1920, [[S.C. Braga|Sporting Clube de Braga]]'s manager returned from a game at Highbury and changed his team's green kit to a duplicate of Arsenal's red with white sleeves and shorts, giving rise to the team's nickname of ''Os Arsenalistas''.<ref>{{cite news
+
+|  url=https://video.uefa.com/news/newsid=356684.html
+|  title=Secret of Braga's success
+|  publisher=UEFA
+|  date=21 October 2005
+|  author=Rui Matos Pereira
+|  accessdate=23 January 2011 }}</ref> These teams still wear those designs to this day.
+
+For many years Arsenal's away colours were white shirts and either black or white shorts. In the 1969–70 season, Arsenal introduced an away kit of yellow shirts with blue shorts. This kit was worn in the [[1971 FA Cup Final]] as Arsenal beat Liverpool to secure the [[Double (association football)|double]] for the first time in their history.<ref name=cupfinal>{{cite news|url=http://www.historicalkits.co.uk/English_Football_League/FA_Cup_Finals/index.html|title=FA Cup Finals|accessdate=4 October 2013|work=Historical Football Kits}}</ref> Arsenal reached the [[1972 FA Cup Final|FA Cup final]] again the following year wearing the red and white home strip and were beaten by [[Leeds United A.F.C.|Leeds United]]. Arsenal then competed in three consecutive FA Cup finals between [[1978 FA Cup Final|1978]] and [[1980 FA Cup Final|1980]] wearing their "lucky" yellow and blue strip,<ref name=cupfinal/> which remained the club's away strip until the release of a green and navy away kit in 1982–83. The following season, Arsenal returned to the yellow and blue scheme, albeit with a darker shade of blue than before.
+
+When [[Nike, Inc.|Nike]] took over from [[Adidas]] as Arsenal's kit provider in 1994, Arsenal's away colours were again changed to two-tone blue shirts and shorts. Since the advent of the lucrative replica kit market, the away kits have been changed regularly, with Arsenal usually releasing both away and third choice kits. During this period the designs have been either all blue designs, or variations on the traditional yellow and blue, such as the metallic gold and navy strip used in the 2001–02 season, the yellow and dark grey used from 2005 to 2007, and the yellow and maroon of 2010 to 2013.<ref>{{cite web
+
+| url=http://www.historicalkits.co.uk/Arsenal/Arsenal-change-kits.html
+| title=Arsenal Change Kits
+| work=Historical Football Kits
+| publisher=D & M Moor
+| accessdate=27 November 2009
+
+}}</ref>
+As of 2009, the away kit is changed every season, and the outgoing away kit becomes the third-choice kit if a new home kit is being introduced in the same year.<ref>{{cite web
+| url=http://www.arsenal.com/the-club/corporate-info/the-club-charter
+| title=Club Charter
+| publisher=Arsenal F.C
+| accessdate=23 October 2009
+}}</ref>
+
+===Kit manufacturers and shirt sponsors===
+Arsenal's shirts have been made by manufacturers including [[Bukta]] (from the 1930s until the early 1970s), [[Umbro]] (from the 1970s until 1986), [[Adidas]] (1986–1994), [[Nike, Inc.|Nike]] (1994–2014), and [[Puma SE|Puma]] (from 2014).<ref name="Puma deal">{{cite news|title=Arsenal agree £30m-a-year deal with Puma in most lucrative kit contract in Britain|url=http://www.dailymail.co.uk/sport/football/article-2321029/Arsenal-sign-30m-year-deal-Puma-years-2013-14.html|accessdate=9 September 2013|newspaper=Daily Mail|date=8 May 2013|location=London|first=David|last=Kent}}</ref> Like those of most other major football clubs, Arsenal's shirts have featured sponsors' logos since the 1980s; sponsors include [[JVC]] (1982–1999), [[Sega]] (1999–2002), [[Telefónica Europe|O2]] (2002–2006), and [[Emirates (airline)|Emirates]] (from 2006).<ref name="historicalkits"/><ref name="kitdesign"/>
+
+==Stadiums==
+{{Main|Emirates Stadium}}
+[[File:Arsenal Stadium interior North Bank.jpg|thumb|left|The North Bank Stand, [[Arsenal Stadium]], [[Highbury]]|alt=A grandstand at a sports stadium. The seats are predominantly red.]]
+For most of their time in south-east London, Arsenal played at the [[Manor Ground, Plumstead|Manor Ground]] in [[Plumstead]], apart from a three-year period at the nearby [[Invicta Ground]] between 1890 and 1893. The Manor Ground was initially just a field, until the club installed stands and [[terrace (stadium)|terracing]] for their first Football League match in September 1893. They played their home games there for the next twenty years (with two exceptions in the 1894–95 season), until the move to North London in 1913.<ref>{{cite book |last=Inglis |first=Simon |authorlink=Simon Inglis |title=Football Grounds of Britain |origyear=1985 |edition=3rd |year=1996 |publisher=CollinsWillow |location=London |isbn=0-00-218426-5 |pages=16–17}}</ref><ref>{{cite news |title=Suspension of the Plumstead Ground |newspaper=The Times |date=7 February 1895 |page=6}}</ref>
+
+Widely referred to as Highbury, [[Arsenal Stadium]] was the club's home from September 1913 until May 2006. The original stadium was designed by the renowned football architect [[Archibald Leitch]], and had a design common to many football grounds in the UK at the time, with a single covered stand and three open-air banks of terracing.<ref name="conservation_plan">{{cite web | url=http://www.islington.gov.uk/DownloadableDocuments/Environment/Pdf/highburyconservationplan_2005.pdf
+|    title=A Conservation Plan for Highbury Stadium, London
+|    publisher=Islington Council
+|date=February 2005
+|    accessdate=11 August 2008|format=PDF| archiveurl= https://web.archive.org/web/20080910062128/http://www.islington.gov.uk/DownloadableDocuments/Environment/Pdf/highburyconservationplan_2005.pdf| archivedate= 10 September 2008 | deadurl= no}}</ref> The entire stadium was given a massive overhaul in the 1930s: new [[Art Deco]] West and East stands were constructed, opening in 1932 and 1936 respectively, and a roof was added to the North Bank terrace, which was bombed during the Second World War and not restored until 1954.<ref name="conservation_plan"/>
+
+Highbury could hold more than 60,000 spectators at its peak, and had a capacity of 57,000 until the early 1990s. The [[Taylor Report]] and Premier League regulations obliged Arsenal to convert Highbury to an all-seater stadium in time for the 1993–94 season, thus reducing the capacity to 38,419 seated spectators.<ref>{{cite web
+ | url=http://www.arsenal.com/article.asp?thisNav=The+Club&article=344883&Title=Highbury
+ | archiveurl=https://web.archive.org/web/20080111223345/http://www.arsenal.com/article.asp?thisNav=The+Club&article=344883&Title=Highbury
+ | archivedate=11 January 2008
+ | title=Highbury
+ | publisher=Arsenal F.C
+}}</ref> This capacity had to be reduced further during [[UEFA Champions League|Champions League]] matches to accommodate additional advertising boards, so much so that for two seasons, from 1998 to 2000, Arsenal played Champions League home matches at [[Wembley Stadium (1923)|Wembley]], which could house more than 70,000 spectators.<ref>{{cite news | url=http://news.bbc.co.uk/1/hi/sport/football/138932.stm | title=Arsenal get Wembley go-ahead |publisher=BBC Sport  | date=24 July 1998 | accessdate=11 August 2008 }}</ref>
+
+[[File:Emirates Stadium Arsenal.jpg|thumb|right|The [[Emirates Stadium]] filling up on the day of [[Dennis Bergkamp]]'s testimonial|alt=An interior view of a football stadium. There are no players on the pitch but there are spectators in the stands.]]
+Expansion of Highbury was restricted because the East Stand had been designated as a Grade II [[listed building]] and the other three stands were close to residential properties.<ref name="conservation_plan"/> These limitations prevented the club from maximising matchday revenue during the 1990s and first decade of the 21st century, putting them in danger of being left behind in the football boom of that time.<ref>{{cite news
+|url=http://www.independent.co.uk/sport/arsenal-consider-leaving-hallowed-marble-halls-1246012.html |title=Arsenal consider leaving hallowed marble halls |work=The Independent |first=Clare |last=Garner |date=18 August 1997 |accessdate=23 October 2009 |location=London}}</ref>
+After considering various options, in 2000 Arsenal proposed building a new 60,361-capacity stadium at Ashburton Grove, since named the [[Emirates Stadium]], about 500&nbsp;metres south-west of Highbury.<ref>{{cite news
+| url=http://news.bbc.co.uk/sport1/hi/football/teams/a/arsenal/1011234.stm | title=Arsenal unveil new stadium plans |publisher=BBC Sport  | date=7 November 2000 | accessdate=11 August 2008 }}</ref>
+The project was initially delayed by red tape and rising costs,<ref>{{cite news
+| url=http://news.bbc.co.uk/sport1/hi/football/teams/a/arsenal/2953273.stm | title=Arsenal stadium delay |publisher=BBC Sport  | date=16 April 2003 | accessdate=11 August 2008 }}</ref>
+and construction was completed in July 2006, in time for the start of the 2006–07 season.<ref>{{cite news
+| title= Bergkamp given rousing farewell |publisher=BBC Sport  | url=http://news.bbc.co.uk/sport2/hi/football/teams/a/arsenal/5203954.stm |date=22 July 2006 | accessdate=23 August 2007 }}</ref>
+The stadium was named after its sponsors, the airline company [[Emirates (airline)|Emirates]], with whom the club signed the largest sponsorship deal in English football history, worth around £100&nbsp;million;<ref name="emiratesdeal">{{cite news | url=http://news.bbc.co.uk/sport1/hi/football/teams/a/arsenal/3715678.stm | title=Arsenal name new ground |publisher=BBC Sport  | date=5 October 2004 | accessdate=11 August 2008 }}</ref>
+some fans referred to the ground as Ashburton Grove, or the Grove, as they did not agree with corporate sponsorship of stadium names.<ref>{{cite web | url=http://www.arsenal-world.co.uk/news/loadnews.asp?cid=TMNW&id=283908
+| title=The 'E' Word | work=Arsenal World | last=Dawes |first=Brian | year=2006 | publisher=Footymad | accessdate=11 August 2008 }}</ref>
+The stadium will be officially known as Emirates Stadium until at least 2028, and the airline will be the club's shirt sponsor until the end of the 2018–19 season.<ref>{{cite news|last=Riach|first=James|title=Arsenal's new Emirates sponsorship deal to fund transfers and salaries|url=http://www.guardian.co.uk/football/2012/nov/23/arsenal-emirates-airline-sponsorship-deal|accessdate=17 December 2012|newspaper=The Guardian|date=23 November 2012|location=London}}</ref> From the start of the 2010–11 season on, the stands of the stadium have been officially known as North Bank, East Stand, West Stand and Clock end.<ref>[http://www.arsenal.com/news/news-archive/emirates-stadium-stands-to-be-re-named Emirates Stadium stands to be renamed] Arsenal FC, 19 July 2010</ref>
+
+Arsenal's players train at the [[Shenley Training Centre]] in Hertfordshire, a purpose-built facility which opened in 1999.<ref>{{cite news
+ | url=http://www.architectsjournal.co.uk/arsenal-gets-a-complex/774448.article
+ | title=Arsenal gets a complex
+ | magazine=The Architects' Journal
+ | first=David |last=Taylor
+ | date=21 October 1999 |accessdate=20 January 2010}}</ref> Before that the club used facilities on a nearby site owned by the [[University College London Union|University College of London Students' Union]]. Until 1961 they had trained at Highbury.<ref>{{cite web
+ | url=http://www.arsenal.com/the-club/training-centre
+ | title=The Training Centre
+ | publisher=Arsenal F.C
+ | accessdate=11 August 2008 | archiveurl= https://web.archive.org/web/20080812090836/http://www.arsenal.com/the-club/training-centre| archivedate= 12 August 2008 | deadurl= no}}</ref> Arsenal's [[Arsenal F.C. Academy|Academy under-18]] teams play their home matches at Shenley, while the [[Arsenal F.C. Reserves|reserves]] play their games at [[Meadow Park (Borehamwood)|Meadow Park]],<ref>{{cite web|url=http://www.arsenal.com/news/news-archive/youth-sides-set-to-play-at-meadow-park|title=Youth sides to play at Meadow Park|date=30 July 2013}}</ref> which is also the home of [[Borehamwood F.C.|Boreham Wood F.C.]].
+
+==Supporters==
+{{details|Arsenal F.C. supporters}}
+[[File:Laurent Koscielny clashes with Heurelho Gomes.jpg|thumb|left|Arsenal against rivals Tottenham, known as the [[North London derby]], in November 2010.]]
+Arsenal fans often refer to themselves as "Gooners", the name derived from the team's nickname, "The Gunners". The fanbase is large and generally loyal, and virtually all home matches sell out; in 2007–08 Arsenal had the second-highest average League attendance for an English club (60,070, which was 99.5% of available capacity),<ref>{{cite web | url=http://www.tonykempster.co.uk/prematt.htm?comp=1 | title=Attendances 2007/08 | author=Kempster, Tony | accessdate=11 August 2008 }}</ref> and as of 2006, the fourth-highest all-time average attendance.<ref>{{cite web
+| url=http://www.nufc.com/html/attendance-all-time.html
+| archiveurl=https://web.archive.org/web/20071029153705/http://www.nufc.com/html/attendance-all-time.html
+| archivedate=29 October 2007
+| title=All Time League Attendance Records
+| publisher=NUFC.com
+| accessdate=11 August 2008}} Please note that some pre-war attendance figures used by this source were estimates and may not be entirely accurate.</ref> Arsenal have the seventh highest [[Average attendances of European football clubs|average attendance of European football clubs]] only behind [[Borussia Dortmund]], [[FC Barcelona]], [[Manchester United F.C.|Manchester United]], [[Real Madrid C.F.|Real Madrid]], [[FC Bayern Munich|Bayern Munich]], and [[FC Schalke 04|Schalke]].<ref>{{cite web|url=http://soccernet.espn.go.com/stats/attendance/_/league/ger.1/year/2010/german-bundesliga?cc=5901 |title=German Bundesliga Stats: Team Attendance&nbsp;– 2010–11 |work=[[ESPNsoccernet]] }}</ref><ref>{{cite web|url=http://arxiu.fcbarcelona.cat/web/english/noticies/club/temporada10-11/05/17/n110517117527.html |title=Camp Nou: Average attendance 79,390 &#124; FCBarcelona.cat |publisher=Arxiu.fcbarcelona.cat |date=17 May 2011 |accessdate=13 August 2012}}</ref><ref>{{cite web|url=http://soccernet.espn.go.com/stats/attendance/_/league/eng.1/year/2010/barclays-premier-league?cc=5901 |title= Barclays Premier League Stats: Team Attendance&nbsp;– 2010–11 |work=[[ESPNsoccernet]] }}</ref><ref>{{cite web|url=http://soccernet.espn.go.com/stats/attendance/_/league/ESP.1/year/2010/spanish-primera-division?cc=5901 |title=Spanish La Liga Stats: Team Attendance&nbsp;– 2010–11 |work=[[ESPNsoccernet]] }}</ref> The club's location, adjoining wealthy areas such as [[Canonbury]] and [[Barnsbury]], mixed areas such as [[Islington]], [[Holloway, London|Holloway]], [[Highbury]], and the adjacent [[London Borough of Camden]], and largely working-class areas such as [[Finsbury Park, London|Finsbury Park]] and [[Stoke Newington]], has meant that Arsenal's supporters have come from a variety of social classes.
+
+[[File:Arsenal Flag (7100433493).jpg|thumb|Arsenal supporters]]
+Like all major English football clubs, Arsenal have a number of domestic supporters' clubs, including the Arsenal Football Supporters' Club, which works closely with the club, and the Arsenal Independent Supporters' Association, which maintains a more independent line. The [[Arsenal Supporters' Trust]] promotes greater participation in ownership of the club by fans. The club's supporters also publish [[fanzine]]s such as ''The Gooner'', ''Gunflash'' and the satirical ''Up The Arse!''. In addition to the usual English [[football chant]]s, supporters sing "One-Nil to the Arsenal" (to the tune of "[[Go West (song)|Go West]]") and "Boring, Boring Arsenal", which used to be a common taunt from opposition fans but is now sung ironically by Arsenal supporters when the team is playing well.<ref name="noble">{{cite news
+|  url=http://www.time.com/time/magazine/article/0,9171,353528,00.html
+|  title=Boring, Boring Arsenal
+|  work=Time
+|  date=22 September 2002
+|  last=Noble |first=Kate
+|  accessdate=11 August 2008}}</ref>
+
+There have always been Arsenal supporters outside of London, and since the advent of satellite television, a supporter's attachment to a football club has become less dependent on geography. Consequently, Arsenal have a significant number of fans from beyond London and all over the world; in 2007, 24 UK, 37 Irish and 49 other overseas supporters clubs were affiliated with the club.<ref>{{cite web | url=http://www.arsenal.com/assets/_files/documents/jul_08/gun__1215526755_charter_report_20062007.doc |format=Word document | title=Fans Report 2006/2007 | publisher=Arsenal F.C | accessdate=7 September 2008 | archiveurl= https://web.archive.org/web/20080910062129/http://www.arsenal.com/assets/_files/documents/jul_08/gun__1215526755_charter_report_20062007.doc| archivedate= 10 September 2008 | deadurl= no}}</ref> A 2005 report by Granada Ventures, which at the time owned a 9.9% stake in the club, estimated Arsenal's global fanbase at 27&nbsp;million.<ref>{{cite web
+| title=Arsenal FC&nbsp;– the Premiership's fastest growing football brand
+| publisher=Granada Ventures
+| url=http://www.granadaventures.co.uk/newsdocs/doc28.doc
+| archiveurl=https://web.archive.org/web/20070604205337/http://www.granadaventures.co.uk/newsdocs/doc28.doc
+| archivedate=4 June 2007
+| format=Word document
+| date=5 August 2005
+}}</ref>
+
+Arsenal's longest-running and deepest rivalry is with their nearest major neighbours, [[Tottenham Hotspur F.C.|Tottenham Hotspur]]; matches between the two are referred to as [[North London derby|North London derbies]].<ref>{{cite web | url=http://www.premierleague.com/page/Magazinedettail/0,,12306~1195275,00.html | title=The North London derby |first=Stewart |last=Coggin | publisher=Premier League | accessdate=7 September 2008 | archiveurl= https://web.archive.org/web/20080808134127/http://www.premierleague.com/page/Magazinedettail/0,,12306~1195275,00.html| archivedate= 8 August 2008 | deadurl= no}}</ref> Other rivalries within London include those with [[Chelsea F.C.|Chelsea]], [[Fulham F.C.|Fulham]] and [[West Ham United F.C.|West Ham United]]. In addition, Arsenal and Manchester United developed a strong on-pitch rivalry in the late 1980s, which intensified in recent years when both clubs were competing for the Premier League title<ref>{{cite web | url=http://www.fifa.com/worldfootball/clubfootball/news/newsid=109924.html
+|  title=The Classic: Arsenal-Manchester Utd
+|  publisher=FIFA
+|  date=17 January 2007 | accessdate=23 October 2009}}</ref>&nbsp;– so much so that a 2003 [[online poll]] by the [[Football Fans Census]] listed Manchester United as Arsenal's biggest rivals, followed by Tottenham and Chelsea.<ref>{{cite web | url=http://www.footballfanscensus.com/issueresults/Club_Rivalries_Uncovered_Results.pdf | title=Club Rivalries Uncovered | publisher=[[Football Fans Census]] | accessdate=7 September 2008 |format=PDF| archiveurl= https://web.archive.org/web/20080910061502/http://www.footballfanscensus.com/issueresults/Club_Rivalries_Uncovered_Results.pdf| archivedate= 10 September 2008 | deadurl= no}}</ref> A 2008 poll listed the Tottenham rivalry as more important.<ref>{{cite web | url=http://www.footballpools.com/football-fever/rivalries-league.html | title=Football Rivalries Report 2008 | publisher=The New Football Pools | accessdate=7 September 2008}}</ref>
+
+==Ownership and finances==
+{{details|Ownership of Arsenal F.C.}}
+Arsenal's parent company, Arsenal Holdings plc, operates as a [[financial quote|non-quoted]] [[public limited company]], whose ownership is considerably different from that of other football clubs. Only 62,217 shares in Arsenal have been issued,<ref name="annualreport2007">{{cite web | url=http://www.arsenal.com/assets/_files/documents/jul_08/gun__1215525940_Arsenal_Annual_Report_May_2007.pdf |format=PDF| title=Statement of Accounts and Annual Report 2006/2007 (p43) | publisher=Arsenal Holdings plc |date=May 2007 | accessdate=11 August 2008| archiveurl= https://web.archive.org/web/20080910062131/http://www.arsenal.com/assets/_files/documents/jul_08/gun__1215525940_Arsenal_Annual_Report_May_2007.pdf| archivedate= 10 September 2008 | deadurl= no}}</ref><ref name="annualreport2010">{{cite web | url=http://www.arsenal.com/assets/_files/documents/sep_10/gun__1285660177_Arsenal_Holdings_plc_Annual_Re.pdf |format=PDF| title=Statement of Accounts and Annual Report 2009/2010 (p41) | publisher=Arsenal Holdings plc |date=Sep 2010 | accessdate=12 January 2011}}</ref> and they are not traded on a public exchange such as the [[FTSE Group|FTSE]] or [[Alternative Investment Market|AIM]]; instead, they are traded relatively infrequently on the [[ICAP (company)|ICAP]] Securities and Derivatives Exchange, a specialist market. On 6 November 2014, a single share in Arsenal had a [[mid price]] of £14,500, which set the club's [[market capitalisation]] value at approximately £902.2m.<ref>{{cite web
+| title=Arsenal Holdings plc
+| publisher=ICAP
+| url=http://www.isdx.com/forcompanies/ourcompanies/companydetail/default.aspx?securityid=10092
+| accessdate=6 November 2014
+}}</ref> The club made a pre-tax [[operating profit]] (excluding player transfers) of £62.7m in the year ending 31 May 2009, from a turnover of £313.3m.<ref>{{cite web
+| title=Arsenal Holdings plc: 2009 Financial results
+| publisher=Arsenal Holdings plc
+| url=http://www.arsenal.com/news/news-archive/arsenal-holdings-plc-results-for-year-end-ma
+| date=28 September 2009 | accessdate=5 November 2009
+}}</ref>
+
+The largest shareholder on the Arsenal board is American sports tycoon [[Stan Kroenke]], who launched a bid for the club in 2007,<ref name="kroenke">{{cite news | title=Takeover gains pace at Arsenal with 9.9% sale | url=http://football.guardian.co.uk/News_Story/0,,2051488,00.html   |work=The Guardian | author=Scott, Matt and Allen, Katie | date=6 April 2007 | accessdate=11 August 2008 | location=London}}</ref> and in November 2009 increased his holding to 18,594 shares (29.9%).<ref>{{cite web
+ |url=http://www.arsenal.com/news/news-archive/kroenke-increases-stake-in-arsenal-holdings |title=Kroenke increases stake in Arsenal Holdings |publisher=Arsenal F.C |date=5 November 2009 |accessdate=6 December 2009
+| archiveurl= https://web.archive.org/web/20091108092200/http://www.arsenal.com/news/news-archive/kroenke-increases-stake-in-arsenal-holdings| archivedate= 8 November 2009 | deadurl= no}}</ref>
+
+A rival bid to Kroenke's came from Red & White Securities, which is co-owned by Russian billionaire [[Alisher Usmanov]] and Iranian London-based financier [[Farhad Moshiri (businessman)|Farhad Moshiri]].<ref name="usmanov">{{cite news
+| url=http://news.bbc.co.uk/1/hi/business/6971124.stm
+|publisher=BBC News
+| title=Russian buys Dein's Arsenal stake
+| date=30 August 2007
+| accessdate=11 August 2008
+
+}}</ref> Red & White launched its bid in August 2007, buying the stake held by former Arsenal vice-chairman [[David Dein]], and as of October 2013 owned 18,671 shares&nbsp;(30%) in the club.<ref>{{cite web | url=http://www.bloomberg.com/article/2013-10-17/aI.lgF6W0rlo.html | title=Arsenal Holdings PLC: Holding(s) in Company| publisher=Bloomberg | date=17 October 2013 | accessdate=26 January 2015}}</ref> This led to press speculation of a bidding war between Kroenke and Usmanov.<ref name="usmanov"/> However, Kroenke agreed not to purchase more than 29.9% of the club until at least September 2009,<ref name="kroenkeboard">{{cite web | url=http://www.arsenal.com/news/news-archive/other | title=Kroenke joins Arsenal's Board of Directors | publisher=Arsenal F.C |date=19 September 2008 | accessdate=19 September 2008 | archiveurl= https://web.archive.org/web/20080919202625/http://www.arsenal.com/news/news-archive/other| archivedate= 19 September 2008 | deadurl= no}}</ref> while the rest of the board have first option on each other's shares until October 2012.<ref>{{cite news | url=http://www.arsenal.com/news/news-archive/board-announce-revised-lock-down-agreement | title=Arsenal board announce revised 'lock-down' agreement | publisher=Arsenal F.C |date=18 October 2007 | accessdate=11 August 2008 }}</ref>
+
+As of October 2011, Kroenke owns 41,574 shares (66.82%) and Red & White Securities own 18,261 shares (29.35%).<ref>{{cite web|url=http://www.arsenal.com/the-club/corporate-info/the-arsenal-board |title=The Arsenal Board &#124; Corporate Info &#124; The Club |publisher=Arsenal.com |date=13 July 2011 |accessdate=13 August 2012}}</ref> Under company law Kroenke, as majority shareholder, is obliged to make an offer for the remaining shares in the club.
+
+[[Ivan Gazidis]] has been the club's Chief Executive since 2009.<ref>{{cite web|url=http://www.arsenal.com/the-club/corporate-info/the-arsenal-board |title=The Arsenal Board &#124; Corporate Info &#124; The Board |publisher=Arsenal.com |date=5 February 2013 |accessdate=11 August 2014}}</ref>
+
+==In popular culture==
+Arsenal have appeared in a number of media "firsts". On 22 January 1927, their match at Highbury against [[Sheffield United F.C.|Sheffield United]] was the first English League match to be broadcast live on radio.<ref name="FirstsLasts">''Firsts, Lasts & Onlys: Football''&nbsp;– Paul Donnelley (Hamlyn, 2010)</ref><ref>{{cite web
+| url=http://www.arsenal.com/news/news-archive/programme-it-happened-at-highbury
+| title=It Happened at Highbury: First live radio broadcast
+| publisher=Arsenal F.C
+| accessdate=11 August 2008
+}}</ref> A decade later, on 16 September 1937, an exhibition match between Arsenal's first team and the reserves was the first football match in the world to be televised live.<ref name="FirstsLasts" /><ref>{{cite news
+| url=http://news.bbc.co.uk/sport1/hi/funny_old_game/2260280.stm
+| title=Happened on this day&nbsp;– 16&nbsp;September
+|publisher=BBC Sport
+| date=16 September 2002 | accessdate=11 August 2008
+
+}}</ref> Arsenal also featured in the first edition of the [[BBC]]'s ''[[Match of the Day]]'', which screened highlights of their match against Liverpool at [[Anfield]] on 22 August 1964.<ref name="FirstsLasts" /><ref name="bbchist">{{cite news
+
+ | title=History of Match of the Day
+ | url = http://news.bbc.co.uk/sport1/hi/tv_and_radio/match_of_the_day/879960.stm
+ |publisher=BBC Sport
+ | date=14 February 2003 | accessdate=11 August 2008
+
+}}</ref> [[British Sky Broadcasting|BSkyB]]'s coverage of Arsenal's January 2010 match against [[Manchester United F.C.|Manchester United]] was the first live public broadcast of a sports event on [[3D television]].<ref name="FirstsLasts" /><ref>{{cite news
+
+ | title=Fans trial first live 3D sports event
+ | url=http://news.smh.com.au/breaking-news-sport/fans-trial-first-live-3d-sports-event-20100201-n7bo.html
+ | agency=Associated Press
+ | work=Sydney Morning Herald
+ | date=1 February 2010 | accessdate=16 March 2010
+
+}}</ref>
+
+As one of the most successful teams in the country, Arsenal have often featured when football is depicted in the arts in Britain. They formed the backdrop to one of the earliest football-related films, ''[[The Arsenal Stadium Mystery]]'' (1939).<ref>{{cite web
+
+| url=http://www.imdb.com/title/tt0031055/
+| title=The Arsenal Stadium Mystery
+| publisher=IMDb
+| accessdate=11 August 2008
+
+}}</ref> The film centres on a [[friendly match]] between Arsenal and an amateur side, one of whose players is poisoned while playing. Many Arsenal players appeared as themselves and manager [[George Allison]] was given a speaking part.<ref name="atthemovies"/> More recently, the book ''[[Fever Pitch]]'' by [[Nick Hornby]] was an autobiographical account of Hornby's life and relationship with football and Arsenal in particular. Published in 1992, it formed part of the revival and rehabilitation of football in British society during the 1990s.<ref>{{cite news | url=http://www.guardian.co.uk/books/2008/jun/13/nick.hornby | title=Nick Hornby |work=The Guardian | date=22 July 2008 | accessdate=7 September 2008 | quote=Critically acclaimed and commercial dynamite, Fever Pitch helped to make football trendy and explain its appeal to the soccerless | location=London}}</ref> The book was twice adapted for the cinema&nbsp;– the [[Fever Pitch (1997 film)|1997 British film]] focuses on Arsenal's 1988–89 title win,<ref>{{cite web | url=http://www.imdb.com/title/tt0119114/ | title=Fever Pitch (1997) | publisher=IMDb | accessdate=7 September 2008| archiveurl= https://web.archive.org/web/20081015195547/http://imdb.com/title/tt0119114/| archivedate= 15 October 2008 | deadurl= no}}</ref> and a [[Fever Pitch (2005 film)|2005 American version]] features a fan of baseball's [[Boston Red Sox]].<ref>{{cite web | url=http://www.imdb.com/title/tt0332047/ | title=Fever Pitch (2005) | publisher=IMDb | accessdate=7 September 2008 }}</ref>
+
+Arsenal have often been stereotyped as a [[defender (association football)|defensive]] and "boring" side, especially during the 1970s and 1980s;<ref name="noble"/><ref>{{cite news | url=http://news.bbc.co.uk/sport1/hi/football/fa_cup/3037789.stm | title=No more boring, boring Arsenal | first=John |last=May |publisher=BBC Sport  |date=19 May 2003 | accessdate=7 September 2008}}</ref> many comedians, such as [[Eric Morecambe]], made jokes about this at the team's expense. The theme was repeated in the 1997 film ''[[The Full Monty]]'', in a scene where the lead actors move in a line and raise their hands, deliberately mimicking the Arsenal defence's [[offside trap]], in an attempt to co-ordinate their [[striptease]] routine.<ref name="atthemovies">{{cite web
+
+| url=http://www.arseweb.com/other/movies.html
+| title=Arsenal at the movies
+| publisher=Arseweb
+| accessdate=11 August 2008
+
+| archiveurl= https://web.archive.org/web/20080726182708/http://www.arseweb.com/other/movies.html| archivedate= 26 July 2008 | deadurl= no}}</ref> Another film reference to the club's defence comes in the film ''[[Plunkett & Macleane]]'', in which two characters are named Dixon and Winterburn after Arsenal's long-serving full backs&nbsp;– the right-sided [[Lee Dixon]] and the left-sided [[Nigel Winterburn]].<ref name="atthemovies"/>
+
+The 1991 television comedy sketch show ''Harry Enfield & Chums'' featured a sketch from the characters Mr Cholmondly-Warner and Grayson where the Arsenal team of 1933, featuring exaggerated parodies of fictitious amateur players take on the Liverpool team of 1991.<ref>[http://www.youtube.com/watch?v=y4CXY6TVBMc&feature=related Association Football&nbsp;– Harry Enfield&nbsp;– Mr Cholmondley-Warner] YouTube</ref>
+
+==In the community==
+In 1985, Arsenal founded a [[corporate social responsibility|community scheme]], "Arsenal in the Community", which offered sporting, [[social inclusion]], educational and charitable projects. The club support a number of charitable causes directly and in 1992 established The Arsenal Charitable Trust, which by 2006 had raised more than £2&nbsp;million for local causes.<ref>{{cite news | url=http://www.arsenal.com/news/news-archive/arsenal-charity-ball-raises-over-pound-60-000 | title=Arsenal Charity Ball raises over £60,000 | publisher=Arsenal F.C | date=11 May 2006 | accessdate=11 August 2008}}</ref> An ex-professional and celebrity football team associated with the club also raised money by playing charity matches.<ref name="community">{{cite web | url=http://www.arsenal.com/the-club/community/ex-pro-and-celebrity-xi | title=Ex-Pro and Celebrity XI | publisher=Arsenal F.C | accessdate=11 August 2008 |archiveurl = https://web.archive.org/web/20080822031124/http://www.arsenal.com/the-club/community/ex-pro-and-celebrity-xi |archivedate = 22 August 2008}}</ref>
+
+In the 2009–10 season Arsenal announced that they had raised a record breaking £818,897 for the [[Great Ormond Street Hospital Children's Charity]]. The original target was £500,000.<ref>[http://www.arsenal.com/news/community-news/arsenal-smash-fundraising-target-for-gosh Arsenal smash fundraising target for GOSH] Arsenal FC, 2 August 2010</ref>
+
+==Statistics and records==
+{{details|List of Arsenal F.C. records and statistics}}
+[[File:Thierry Henry applauding 2012.jpg|thumb|150px|[[Thierry Henry]] is Arsenal's record goalscorer, with 228 goals in all competitions.]]
+Arsenal's tally of 13 League Championships is the third highest in English football, after Manchester United (20) and Liverpool (18),<ref>{{cite web
+| url=http://www.rsssf.com/tablese/engchamp.html#sall
+| title=England&nbsp;– List of Champions
+| publisher=RSSSF
+| last=Ross |first=James M
+| date=28 August 2009
+| accessdate=23 October 2009
+
+}}</ref> with a record of 12 FA Cup titles.<ref>{{cite web
+| url=http://www.rsssf.com/tablese/engcuphist.html#sall
+| title=England FA Challenge Cup Finals
+| publisher=RSSSF
+| last=Ross |first=James M
+| date=12 June 2009
+| accessdate=23 October 2009
+
+}}</ref> Arsenal have achieved three League and FA Cup "[[Double (association football)#England|Doubles]]" (in 1971, 1998 and 2002), a feat only previously achieved by Manchester United (in 1994, 1996 and 1999),<ref name=FCHD/><ref>{{cite web
+| url=http://www.rsssf.com/miscellaneous/doublerec.html#coun
+| title=Doing the Double: Countrywise Records
+| publisher=RSSSF
+| last=Stokkermans |first=Karel
+| date=24 September 2009
+| accessdate=23 October 2009
+
+}}</ref> and in 1993 were the first side in English football to complete the FA Cup and League Cup double.<ref>{{cite news
+| url=http://www.telegraph.co.uk/sport/football/2313666/Mourinho-collects-his-consolation-prize.html
+| title=Mourinho collects his consolation prize
+| first=Roy |last=Collins
+| newspaper=The Daily Telegraph
+| date=20 May 2007 |accessdate=6 December 2009
+| quote=Chelsea's Cup came wrapped in an extra ribbon, only the second team after Arsenal in 1993 to win both domestic cups.
+ | location=London
+
+}}</ref> Arsenal were also the first London club to reach the final of the UEFA Champions League, in 2006, losing the final 2–1 to [[FC Barcelona|Barcelona]].<ref>{{cite web
+| url=http://www.premierleague.com/page/arsenal
+| title=Arsenal Football Club
+| publisher=Premier League
+| accessdate=11 August 2008 | archiveurl= https://web.archive.org/web/20080913103452/http://www.premierleague.com/page/arsenal| archivedate= 13 September 2008 | deadurl= no}}</ref>
+
+Arsenal have one of the best top-flight records in history, having finished below fourteenth only seven times. Arsenal also have the highest average league finishing position for the 20th century, with an average league placing of 8.5.<ref name="The Independent: Hodgson">{{cite news|title=Football: How consistency and caution made Arsenal England's greatest team of the 20th century|url=http://www.independent.co.uk/sport/football-how-consistency-and-caution-made-arsenal-englands-greatest-team-of-the-20th-century-1133020.html|work=The Independent|accessdate=27 April 2012|location=London|first=Guy|last=Hodgson|date=17 December 1999}}</ref> In addition, they are one of only six clubs to have won the FA Cup twice in succession, in 2002 and 2003, and 2014 and 2015.<ref>{{cite web
+| url=http://www.rsssf.com/tablese/engcuphist.html
+| title=England FA Challenge Cup Finals
+| publisher=RSSSF
+| last=Ross |first=James M
+| date=12 June 2009
+| accessdate=23 October 2009
+
+}}</ref> Arsenal also hold the record for the longest unbeaten run in the Premier League at 49 games, and are the only team to have gone an entire Premier League season unbeaten in 2003–04.<ref>{{cite web|url=http://www.arsenal.com/history/club-records/the-unbeaten-record|title=The Unbeaten Record|publisher=Arsenal Broadband|accessdate=10 December 2011}}</ref>
+
+[[David O'Leary]] holds the record for Arsenal appearances, having played 722 first-team matches between 1975 and 1993. Fellow [[centre half]] and former captain [[Tony Adams (footballer)|Tony Adams]] comes second, having played 669 times. The record for a [[goalkeeper (association football)|goalkeeper]] is held by [[David Seaman]], with 564 appearances.<ref name="clubrecords">{{cite web
+
+| url=http://www.arsenal.com/history/club-records
+| title=Club Records
+| publisher=Arsenal F.C
+| accessdate=23 October 2009 }}</ref>
+
+[[Thierry Henry]] is the club's top goalscorer with 228 goals in all competitions between 1999 and 2012,<ref name="henry">{{cite news
+
+| url=http://www.arsenal.com/history/club-records/goalscoring-records
+| title=Goalscoring Records
+| publisher=Arsenal.com
+| accessdate=13 September 2013
+
+}}</ref> having surpassed [[Ian Wright]]'s total of 185 in October 2005.<ref>{{cite news
+
+| url=http://news.bbc.co.uk/sport1/hi/football/teams/a/arsenal/4356664.stm
+| title=Wright salutes Henry's goal feat
+| publisher=BBC Sport
+| date=19 October 2005
+| accessdate=11 August 2008
+
+}}</ref> Wright's record had stood since September 1997, when he overtook the longstanding total of 178 goals set by winger [[Cliff Bastin]] in 1939.<ref>{{cite web
+
+| url=http://www.arseweb.com/97-98/reports/130997.html
+| title=Arsenal vs Bolton. 13/0<!-- no format change -->9/97
+| publisher=Arseweb
+| author=Ward, Rupert
+| accessdate=11 August 2008
+
+}}</ref> Henry also holds the club record for goals scored in the League, with 175,<ref name="henry"/> a record that had been held by Bastin until February 2006.<ref>{{cite news
+
+| url=http://news.bbc.co.uk/sport1/hi/football/eng_prem/4657206.stm
+| title= Arsenal 2–3 West Ham
+| publisher=BBC Sport
+| date=1 February 2006
+| accessdate=23 October 2009
+
+}}</ref>
+
+Arsenal's record home attendance is 73,707, for a [[UEFA Champions League]] match against [[RC Lens]] on 25 November 1998 at [[Wembley Stadium (1923)|Wembley Stadium]], where the club formerly played home European matches because of the limits on Highbury's capacity. The record attendance for an Arsenal match at Highbury is 73,295, for a 0–0 draw against [[Sunderland A.F.C.|Sunderland]] on 9 March 1935,<ref name="clubrecords"/> while that at Emirates Stadium is 60,161, for a 2–2 draw with Manchester United on 3 November 2007.<ref>{{cite news
+| url=http://www.arsenal.com/news/news-archive/man-utd-game-attracts-record-attendance
+| title=Man Utd game attracts record attendance
+| publisher=Arsenal F.C
+| date=5 November 2007
+| accessdate=11 August 2008
+
+}}</ref>
+
+Arsenal have also set records in English football, including the most consecutive seasons spent in the top flight (87 as of 2013–14) and the longest run of unbeaten League matches (49 between May 2003 and October 2004).<ref name="49unbeaten"/> This included all 38 matches of their title-winning [[2003–04 in English football|2003–04]] season, when Arsenal became only the second club to finish a top-flight campaign unbeaten, after [[Preston North End F.C.|Preston North End]] (who played only 22 matches) in [[1888–89 in English football|1888–89]].<ref name="invincibles"/>
+
+Arsenal also set a Champions League record during the 2005–06 season by going ten matches without conceding a goal, beating the previous best of seven set by [[A.C. Milan]]. They went a record total stretch of 995&nbsp;minutes without letting an opponent score; the streak ended in [[2006 UEFA Champions League Final|the final]], when [[Samuel Eto'o]] scored a 76th-minute equaliser for Barcelona.<ref name="2006ucl">{{cite news
+
+| url=http://www.uefa.com/competitions/ucl/history/season=2005/intro.html
+| title=2005/06: Ronaldinho delivers for Barça
+| publisher=UEFA
+| date=17 May 2007
+| accessdate=11 August 2008
+
+| archiveurl= https://web.archive.org/web/20080915063506/http://www.uefa.com/competitions/ucl/history/season=2005/intro.html| archivedate= 15 September 2008 | deadurl= no}}</ref>
+
+==Players==
+
+===First-team squad===
+[[File:David Ospina Petr Cech Emiliano Martinez Arsenal Members' Day 2015 (20108547412).jpg|thumb|Arsenal goalkeepers [[David Ospina]] and [[Petr Čech]], in July 2015]]
+{{updated|7 August 2015.}}<ref>{{cite web
+| title = Players
+| url = http://www.arsenal.com/first-team/players
+| publisher= Arsenal F.C.
+| accessdate =7 July 2015}}</ref>
+{{about||recent transfers|2015–16 Arsenal F.C. season#Transfers}}
+{{Fs start}}
+<!-- Any changes not listed on http://www.arsenal.com/first-team/players will be removed
+All edits must meet Wikipedia's verifiability policy-->
+{{Fs player|no=2|nat=FRA|pos=DF|name=[[Mathieu Debuchy]]}}
+{{Fs player|no=3|nat=ENG|pos=DF|name=[[Kieran Gibbs]]}}
+{{Fs player|no=4|nat=GER|pos=DF|name=[[Per Mertesacker]]|other=[[Club captain|vice-captain]]}}
+{{Fs player|no=5|nat=BRA|pos=DF|name=[[Gabriel Paulista|Gabriel]]}}
+{{Fs player|no=6|nat=FRA|pos=DF|name=[[Laurent Koscielny]]}}
+{{Fs player|no=7|nat=CZE|pos=MF|name=[[Tomáš Rosický]]}}
+{{Fs player|no=8|nat=ESP|pos=MF|name=[[Mikel Arteta]]|other=[[Captain (association football)|captain]]}}
+{{Fs player|no=10|nat=ENG|pos=MF|name=[[Jack Wilshere]]}}
+{{Fs player|no=11|nat=GER|pos=MF|name=[[Mesut Özil]]}}
+{{Fs player|no=12|nat=FRA|pos=FW|name=[[Olivier Giroud]]}}
+{{Fs player|no=13|nat=COL|pos=GK|name=[[David Ospina]]}}
+{{Fs player|no=14|nat=ENG|pos=FW|name=[[Theo Walcott]]}}
+{{fs mid}}
+{{Fs player|no=15|nat=ENG|pos=MF|name=[[Alex Oxlade-Chamberlain]]}}
+{{Fs player|no=16|nat=WAL|pos=MF|name=[[Aaron Ramsey]]}}
+{{Fs player|no=17|nat=CHI|pos=FW|name=[[Alexis Sánchez]]}}
+{{Fs player|no=18|nat=ESP|pos=DF|name=[[Nacho Monreal]]}}
+{{Fs player|no=19|nat=ESP|pos=MF|name=[[Santi Cazorla]]|other=[[Captain (association football)|3rd captain]]}}
+{{Fs player|no=20|nat=FRA|pos=MF|name=[[Mathieu Flamini]]}}
+{{Fs player|no=21|nat=ENG|pos=DF|name=[[Calum Chambers]]}}
+{{Fs player|no=23|nat=ENG|pos=FW|name=[[Danny Welbeck]]}}
+{{Fs player|no=24|nat=ESP|pos=DF|name=[[Héctor Bellerín]]}}
+{{Fs player|no=28|nat=CRI|pos=FW|name=[[Joel Campbell]]}}
+{{Fs player|no=33|nat=CZE|pos=GK|name=[[Petr Čech]]}}
+{{Fs player|no=34|nat=FRA|pos=MF|name=[[Francis Coquelin]]}}
+{{Fs end}}
+
+===Out on loan===
+{{Fs start}}
+{{Fs player|no=1|nat=POL|pos=GK|name=[[Wojciech Szczęsny]]|other=on loan at [[A.S. Roma|Roma]] until the end of the 2015–16 season}}<ref>{{Cite news |title=Szczesny joins AS Roma on loan |url=http://www.arsenal.com/news/news-archive/20150728/szczesny-joins-as-roma-on-loan |publisher=Arsenal FC |date=29 July 2015}}</ref>
+{{Fs player|no=22|nat=FRA|pos=FW|name=[[Yaya Sanogo]]|other=on loan at [[AFC Ajax|Ajax]] until the end of the 2015–16 season}}<ref>[http://www.arsenal.com/news/news-archive/20150717/yaya-sanogo-to-join-ajax-on-loan Yaya Sanogo to join Ajax on loan | News Archive | News | Arsenal.com<!-- Bot generated title -->]</ref>
+{{Fs player|no=25|nat=ENG|pos=DF|name=[[Carl Jenkinson]]|other=on loan at [[West Ham United F.C.|West Ham United]] until the end of the 2015–16 season}}<ref>[http://www.arsenal.com/news/news-archive/20150714/jenkinson-returns-to-west-ham-on-loan Jenkinson returns to West Ham on loan | News Archive | News | Arsenal.com<!-- Bot generated title -->]</ref>
+{{Fs player|no=26|nat=ARG|pos=GK|name=[[Damián Martínez|Emiliano Martínez]]|other=on loan at [[Wolverhampton Wanderers]] until the end of the 2015–16 season}}
+{{Fs mid}}
+{{Fs player|no=27|nat=GER|pos=FW|name=[[Serge Gnabry]]|other=on loan at [[West Bromwich Albion F.C.|West Bromwich Albion]] until the end of the 2015–16 season}}<ref>{{Cite news |title=Serge Gnabry joins West Brom on loan |url=http://www.arsenal.com/news/news-archive/20150807/serge-gnabry-joins-west-brom-on-loan |publisher=Arsenal FC |date=7 August 2015}}</ref>
+{{Fs player|no=32|nat=ENG|pos=FW|name=[[Chuba Akpom]]|other=on loan at [[Hull City A.F.C.|Hull City]] until the end of the 2015–16 season}}<ref>{{Cite news |title=Tigers Sign Akpom On Season-Long Loan From Arsenal |url=http://www.hullcitytigers.com/news/article/tigers-sign-akpom-on-season-long-loan-from-arsenal-2592413.aspx |publisher=Hull City AFC |date=4 August 2015}}</ref>
+{{Fs player|no=42|nat=ENG|pos=DF|name=[[Isaac Hayden]]|other=on loan at [[Hull City A.F.C.|Hull City]] until the end of the 2015–16 season}}<ref>{{Cite news |title=Hayden Arrives On Loan |url=http://www.hullcitytigers.com/news/article/hayden-arrives-on-loan-2584894.aspx |publisher=Hull City AFC |date=31 July 2015}}</ref>
+{{Fs end}}
+
+===UEFA Reserve squad===
+{{updated|15 October 2015.}}<ref>{{cite web
+| title = Reserve Players
+| url = http://www.arsenal.com/reserves-youth/players
+| publisher=Arsenal F.C.
+| accessdate =13 August 2009 }}</ref><ref name="Arsenal FC">{{cite web
+| title = Arsenal FC
+| url = http://www.uefa.com/uefachampionsleague/season=2016/clubs/club=52280/squad/index.html
+| publisher= UEFA
+| accessdate =15 October 2015 }}</ref>
+{{See also|Arsenal F.C. Reserves|Arsenal F.C. Academy}}
+{{Fs start}}
+{{Fs player|no=36 |nat=FRA |pos=MF |name=[[Ismaël Bennacer]]}}
+{{Fs player|no=37 |nat=POL |pos=MF |name=[[Krystian Bielik]]}}
+{{Fs player|no=43 |nat=ENG |pos=GK |name=Ryan Huddart}}
+{{Fs player|no=44 |nat=MKD |pos=GK |name=Dejan Iliev}}
+{{Fs player|no=45 |nat=NGR |pos=FW |name=[[Alex Iwobi]]}}
+{{Fs player|no=46 |nat=ENG |pos=DF |name=Chiori Johnson}}
+{{Fs player|no=47 |nat=FIN |pos=MF |name=[[Glen Kamara]]}}
+{{Fs player|no=49 |nat=ENG |pos=GK |name=[[Matt Macey]]}}
+{{Fs mid}}
+{{Fs player|no=50 |nat=ENG |pos=FW |name=Stephy Mavididi}}
+{{Fs player|no=51 |nat=ENG |pos=DF |name=Tafari Moore}}
+{{Fs player|no=52 |nat=ENG |pos=DF |name=[[Stefan O'Connor]]}}
+{{Fs player|no=53 |nat=ESP |pos=DF |name=Julio Pleguezuelo}}
+{{Fs player|no=54 |nat=FRA |pos=MF |name=Jeff Reine-Adélaïde}}
+{{Fs player|no=55 |nat=ENG |pos=MF |name=Tyrell Robinson}}
+{{Fs player|no=59 |nat=ENG |pos=FW |name=Chris Willock}}
+{{Fs end}}
+
+===Former players===
+{{about||a list of every Arsenal player with 100 or more appearances|List of Arsenal F.C. players|record appearance and goalscorer statistics|Arsenal F.C. records#Player records}}
+<!-- Do not list players here; any notable players should instead be detailed in the main List of "Arsenal F.C. players" article -->
+
+==Current technical staff==
+[[File:Arsene-Wenger.jpg|thumb|right|upright|Arsène Wenger, who has been managing Arsenal since 1996.]]
+:''As of August 2014.''<ref>{{cite web | url=http://www.arsenal.com/staff | title=Staff | publisher=Arsenal F.C. | accessdate=11 October 2014 }}</ref>
+
+{| class="wikitable"
+|-
+! Position
+! Name
+|-
+| Manager
+| {{flagicon|FRA}} [[Arsène Wenger]]
+|-
+| Assistant manager
+| {{flagicon|ENG}} [[Steve Bould]]
+|-
+| rowspan="2" | First-team coaches
+| {{flagicon|BIH}} [[Boro Primorac]]
+|-
+| {{flagicon|ENG}} [[Neil Banfield]]
+|-
+| Goalkeeping coach
+| {{flagicon|IRL}} [[Gerry Peyton]]
+|-
+| Head of athletic performance enhancement
+| {{flagicon|USA}} Shad Forsythe
+|-
+| Fitness coach
+| {{flagicon|ENG}} Tony Colbert
+|-
+| Head physiotherapist
+| {{flagicon|ENG}} Colin Lewin
+|-
+| Club doctor
+| {{flagicon|IRL}} Gary O'Driscoll
+|-
+| Kit manager
+| {{flagicon|ENG}} [[Vic Akers]]
+|-
+| Academy director
+| {{flagicon|NED}} [[Andries Jonker]]
+|-
+| rowspan="2" | Under-21s coaches
+| {{flagicon|ENG}} [[Steve Gatting]]
+|-
+| {{flagicon|ENG}} Carl Laraman
+|-
+| Under-18s coach
+| {{flagicon|NED}} Frans de Kat
+|-
+| Under-16s coach
+| {{flagicon|NED}} Jan van Loon
+|}
+{{clear}}
+
+==Managers==
+{{Main|List of Arsenal F.C. managers}}
+There have been eighteen permanent and five [[caretaker manager]]s of Arsenal since the appointment of the club's first professional manager, [[Thomas Mitchell (football manager)|Thomas Mitchell]] in 1897.<ref name="soar">{{cite book | last=Soar & Tyler | title=The Official Illustrated History of Arsenal | year=2005 | page=30 }}</ref> The club's longest-serving manager, in terms of both length of tenure and number of games overseen, is [[Arsène Wenger]], who was appointed in 1996.<ref>{{cite news |url=http://news.bbc.co.uk/sport1/hi/football/eng_prem/8286929.stm |title=Wenger hungry for further success |publisher=BBC Sport  |date=2 October 2009 |accessdate=6 December 2009}}</ref><ref name="700 not out">{{cite news |url=http://www.dailymail.co.uk/sport/football/article-1092959/700-Arsenal-boss-Wenger-looking-celebrate-memorable-day-Porto.html |title=700 and not out: Arsenal boss Wenger looking to celebrate memorable day at Porto |first=Christopher |last=Davies |work=Daily Mail |location=UK|date=8 December 2008 |accessdate=6 December 2009}}</ref> Wenger is also Arsenal's only manager from outside the United Kingdom.<ref name="700 not out"/> Two Arsenal managers have died in the job&nbsp;– [[Herbert Chapman]] and [[Tom Whittaker (footballer)|Tom Whittaker]].<ref>{{cite web | url=http://www.arsenal.com/history/the-managers | title=The Managers | publisher=Arsenal F.C | accessdate=7 September 2008 | archiveurl= https://web.archive.org/web/20080907001043/http://www.arsenal.com/history/the-managers| archivedate= 7 September 2008 | deadurl= no}}</ref>
+
+==Honours==
+{{details|Arsenal F.C. seasons}}
+{{See also|Arsenal F.C. Reserves#Honours|Arsenal F.C. Academy#Honours}}
+
+===Domestic===
+* '''[[Football League First Division|First Division]]''' (until 1992) and '''[[Premier League]]'''<ref name=FCHD/><ref name="Arsenal.comChapman1">{{cite web|publisher=Arsenal.com|author=www.arsenal.com|title=Arsenal win their first league title |url=http://www.arsenal.com/history/herbert-chapman/arsenal-win-their-first-league-title|date=16 Dec 2008|accessdate=26 September 2015|quote="Image at the top of the page shows 1931 team and their Trophy's, including the Football League First Division, FA Charity Shield, Sheriff of London Challenge Cup, London Challenge Cup, London Combination and another}}</ref><ref name="ForwardArsenal">{{Cite book|author1=[[Bernard Joy]] | title =Forward, Arsenal! | publisher=The Sportsmans Book Club | year =1952 | location = | page = | url =https://books.google.co.uk/books?id=zxavt42c3t0C | id = | isbn =0-9559211-1-2 }}</ref><ref name="History1888">{{Cite book|author1=Michael J Slade | title =The History of the English Football League: Part One—1888–1930 | publisher=Strategic Book Publishing | year =2013 | location = | page = | url =https://books.google.co.uk/books?id=DrqdAgAAQBAJ | id = | isbn =1-62516-183-2}}</ref><ref name="divisions">Up until 1992, the top division of [[Football in England|English football]] was the [[Football League First Division]]; since then, it has been the [[Premier League]]. Similarly until 1992, the [[Football League Second Division|Second Division]] was the second tier of league football, which since the 2004–05 season has been known as [[Football League Championship|The Championship]].</ref>
+: '''Winners (13):'''  [[1930–31 in English football|1930–31]], [[1932–33 in English football|1932–33]], [[1933–34 in English football|1933–34]], [[1934–35 in English football|1934–35]], [[1937–38 in English football|1937–38]], [[1947–48 in English football|1947–48]], [[1952–53 in English football|1952–53]], [[1970–71 in English football|1970–71]], [[1988–89 in English football|1988–89]], [[1990–91 in English football|1990–91]], [[1997–98 FA Premier League|1997–98]], [[2001–02 FA Premier League|2001–02]], [[2003–04 FA Premier League|2003–04]]
+* '''[[FA Cup]]'''<ref name=FCHD/><ref name="Arsenal.comChapman1"/><ref name="ForwardArsenal"/><ref name="History1888"/>
+: '''Winners (12):'''  [[1930 FA Cup Final|1929–30]], [[1936 FA Cup Final|1935–36]], [[1950 FA Cup Final|1949–50]], [[1971 FA Cup Final|1970–71]], [[1979 FA Cup Final|1978–79]], [[1993 FA Cup Final|1992–93]], [[1998 FA Cup Final|1997–98]], [[2002 FA Cup Final|2001–02]], [[2003 FA Cup Final|2002–03]], [[2005 FA Cup Final|2004–05]], [[2014 FA Cup Final|2013–14]], [[2015 FA Cup Final|2014–15]] '''(record)'''
+* '''[[Football League Cup|League Cup]]'''<ref name=FCHD/>
+: '''Winners (2):'''  [[1987 Football League Cup Final|1986–87]], [[1993 Football League Cup Final|1992–93]]
+* '''[[FA Community Shield]]''' ('''FA Charity Shield''' before 2002)<ref name="Arsenal.comChapman1"/><ref name="ForwardArsenal"/><ref name="History1888"/><ref>The trophy was known as the [[FA Community Shield|Charity Shield]] until 2001, and as the Community Shield since then. Reference: {{cite web | url=http://www.rsssf.com/tablese/engsupcuphist.html | title=England&nbsp;– List of FA Charity/Community Shield Matches | publisher=RSSSF | last=Ross |first=James | date=28 August 2009 | accessdate=12 January 2010
+| archiveurl= https://web.archive.org/web/20100113115022/http://rsssf.com/tablese/engsupcuphist.html| archivedate= 13 January 2010 | deadurl= no}}</ref>
+: '''Winners (14):'''  1930, [[1931 FA Charity Shield|1931]], 1933, [[1934 FA Charity Shield|1934]], 1938, [[1948 FA Charity Shield|1948]], [[1953 FA Charity Shield|1953]], [[1991 FA Charity Shield|1991]] (shared), [[1998 FA Charity Shield|1998]], [[1999 FA Charity Shield|1999]], [[2002 FA Community Shield|2002]], [[2004 FA Community Shield|2004]], [[2014 FA Community Shield|2014]], [[2015 FA Community Shield|2015]]
+* '''[[Mercantile Credit Centenary Trophy]]'''<ref>{{cite web|title=Is the Europa League history|url=http://talksport.com/europa-league-history-top-10-cups-died-death-zds-intertoto-rous-cup-and-more-11040723238|website=Talksport|accessdate=25 September 2015}}</ref><ref>{{cite web|publisher=FootballDatabase|author=|title=Mercantile Credit Centenary Trophy 1988|url=http://www.footballdatabase.eu/football.competition.mercantile-credit-centenary-trophy.angleterre.1988-1989.finale.0.en.html|accessdate=2 September 2014}}</ref>
+: '''Winners (1):'''  [[Mercantile Credit Centenary Trophy|1988–89]]
+*'''[[London Challenge Cup]]'''<ref name="Arsenal.comChapman1"/><ref name="ForwardArsenal"/><ref>{{cite web|publisher=The History of Arsenal AISA Arsenal History Society: preserving Arsenal's heritage|author=|title=Arsenal in the London Challenge Cup|url=http://www.blog.woolwicharsenal.co.uk/archives/8464|accessdate=2 September 2015}}</ref><ref>{{cite book |last=Haynes |first=Graham |date=1998 |title=A-Z Of Bees: Brentford Encyclopaedia |url= |location= |publisher=Yore Publications |isbn=1-874427-57-7 |accessdate= |page = 82}}</ref><ref>[http://web.archive.org/web/20070313222717/http://www.londonfa.com/countycups/Adult%20Previous%20discon%20cup%20winners.doc List of winners of discontinued County Cups (Word Document)]</ref>
+: '''Winners (10):''' 1921–22, 1923–24, 1930–31, 1933–34, 1935–36, 1953–54, 1957–58, 1961–62, 1962–63, 1969–70 '''(record)'''
+*'''[[Sheriff of London Charity Shield]]'''<ref name="Arsenal.comChapman1"/><ref name="ForwardArsenal"/><ref name="History1888"/><ref>{{cite web|publisher=The Rec.Sport.Soccer Statistics Foundation.|author=|title=England – List of FA Charity/Community Shield Matches|url=http://www.rsssf.com/tablese/engsupcuphist.html|accessdate=2 September 2015}}</ref><ref>{{cite web|publisher=Corinthian-Casuals Football Club|author=|title=The History of the Corinthians|url=http://www.corinthian-casuals.com/history-of-the-corinthians.html|accessdate=2 September 2015}}</ref><ref>{{cite web|publisher=Corinthian-Casuals Football Club|author=|title=Honours and Achievements|url=http://www.corinthian-casuals.com/managers-and-achievements.html|accessdate=2 September 2015}}</ref>
+: '''Winners (4):''' 1931, 1933, 1965, 1966 '''(record)'''
+*'''[[Southern Professional Floodlit Cup]]'''<ref>{{cite web|publisher=The History of Arsenal AISA Arsenal History Society: preserving Arsenal's heritage|author=|title=Arsenal in the Southern Floodlight Challenge Cup (Southern Professional Floodlit Cup)|url=http://www.blog.woolwicharsenal.co.uk/archives/11928|accessdate=2 September 2015}}</ref><ref>{{cite web|title=Dead trophies|url=http://www.fourfourtwo.com/features/dead-trophies-footballs-defunct-competitions-remembered|accessdate=26 September 2015}}</ref>
+:'''Winners (1):''' 1958–59
+*'''[[London Senior Cup]]'''<ref name="ForwardArsenal"/><ref>{{cite web|publisher=Arsenal.com|author=www.arsenal.com|title=Laying the Foundations – Overview |url=http://www.arsenal.com/history/laying-the-foundations/laying-the-foundations-overview|date=16 Dec 2008|accessdate=26 September 2015}}</ref><ref>{{cite web|publisher=The History of Arsenal AISA Arsenal History Society: preserving Arsenal's heritage|author=|title=Royal Arsenal in the London Senior Cup; retiring as cup winners|url=http://www.blog.woolwicharsenal.co.uk/archives/8464|accessdate=2 September 2015}}</ref>
+: '''Winners (1):''' 1890–91
+*'''London Charity Cup<ref name="ForwardArsenal"/><ref>{{cite web|publisher=Arsenal.com|author=|title=125 years of Arsenal history – 1886–1891|url=http://www.arsenal.com/news/news-archive/125-years-of-arsenal-history-1886-1891|accessdate=3 September 2015}}</ref>
+: '''Winners (1):''' 1890
+*'''[[Kent Senior Cup]]<ref name="ForwardArsenal"/><ref>{{cite web|publisher=stevegleiber.com|author=|title=1890 Royal Arsenal win their first trophies |url=http://www.stevegleiber.com/history.htm|accessdate=2 September 2015}}</ref>
+: '''Winners (1):''' 1890
+
+===European===
+* '''[[UEFA Cup Winners' Cup|European Cup Winners' Cup]]'''<ref name=FCHD/>
+: '''Winners (1):'''  [[1994 UEFA Cup Winners' Cup Final|1993–94]]
+* '''[[Inter-Cities Fairs Cup]]'''<ref name=FCHD/>
+: '''Winners (1):'''  [[1970 Inter-Cities Fairs Cup Final|1969–70]]
+
+===Doubles===
+*[[1970–71 in English football|1970–71]]: League and FA Cup
+*[[1992–93 in English football|1992–93]]: FA Cup and League Cup
+*[[1997–98 in English football|1997–98]]: League and FA Cup
+*[[2001–02 in English football|2001–02]]: League and FA Cup
+
+==Arsenal Ladies==
+{{details|Arsenal L.F.C.}} <!-- NOTE: Please make detailed additions to the [[Arsenal L.F.C.]] article -->
+[[Arsenal L.F.C.|Arsenal Ladies]] are the women's football club affiliated to Arsenal. Founded in 1987, they turned [[semi-professional]] in 2002 and are managed by Clare Wheatley.<ref>{{cite web |url=http://www.arsenal.com/ladies/coaching-staff/clare-wheatley |title=Clare Wheatley |publisher=Arsenal FC |accessdate=16 March 2015}}</ref> Arsenal Ladies are the most successful team in [[Women's football in England|English women's football]]. In the 2008–09 season, they won all three major English trophies&nbsp;– the [[FA Women's Premier League]], [[FA Women's Cup]] and [[FA Women's Premier League Cup]],<ref name="ladies honours">{{cite web |  url=http://www.arsenal.com/ladies/ladies-honours | title=Arsenal Ladies Honours | publisher=Arsenal F.C | accessdate=21 May 2007 }}</ref> and, as of 2009, were the only English side to have won the [[UEFA Women's Cup]], having done so in the 2006–07 season as part of a unique [[The Quadruple#Women's Football|quadruple]].<ref>{{cite web | url=http://www.thefa.com/TheFACup/FACompetitions/TheFAWomensCup/NewsandFeatures/2009/FAWCMatchReport.aspx | title=Arsenal clinch quadruple | publisher=The Football Association |first=Stuart |last=Mawhinney |date=7 May 2007 |accessdate=23 October 2009 | archiveurl= https://web.archive.org/web/20091002150527/http://www.thefa.com/TheFACup/FACompetitions/TheFAWomensCup/NewsandFeatures/2009/FAWCMatchReport.aspx| archivedate= 2 October 2009 | deadurl= no}}</ref> The men's and women's clubs are formally separate entities but have quite close ties; Arsenal Ladies are entitled to play once a season at the Emirates Stadium, though they usually play their home matches at [[Boreham Wood F.C.|Boreham Wood]].<ref>{{cite web | url=http://www.arsenal.com/ladies/boreham-wood-directions | title=Get to Boreham Wood | publisher=Arsenal F.C | accessdate=7 September 2008 | archiveurl= https://web.archive.org/web/20080906201612/http://www.arsenal.com/ladies/boreham-wood-directions| archivedate= 6 September 2008 | deadurl= no}}</ref>
+
+==Footnotes==
+{{Reflist|30em}}
+
+==Further reading==
+* {{Cite book
+|   author=Hayes, Dean
+|   title=Arsenal: The Football Facts
+|   publisher=John Blake
+|   year=2007
+|   isbn=978-1-84454-433-2 }}
+* {{Cite book
+|   author=[[Nick Hornby|Hornby, Nick]]
+|   title=[[Fever Pitch]]
+|   publisher=Indigo
+|   year=1992
+|   isbn=978-0-575-40015-3 }}
+* {{Cite book
+|   author=Maidment, Jem
+|   title=The Official Arsenal Encyclopedia
+|   publisher=Hamlyn
+|   year=2006
+|   isbn=978-0-600-61549-1 }}
+* {{Cite book
+|   author=Soar, Phil & Tyler, Martin
+|   title=The Official Illustrated History of Arsenal
+|   publisher=Hamlyn
+|   year=2000
+|   isbn=978-0-600-60175-3 }}
+* {{Cite book
+|   author=Spurling, Jon
+|   title=Rebels for the Cause: The Alternative History of Arsenal Football Club
+|   publisher=Mainstream
+|   year=2004
+|   isbn=978-1-84018-900-1 }}
+* {{Cite book
+|   author=Stammers, Steve
+|   title=Arsenal: The Official Biography&nbsp;– The Compelling Story of an Amazing Club
+|   publisher=Hamlyn
+|   year=2008
+|   isbn=978-0-600-61892-8 }}
+
+==External links==
+<!--
+NOTE TO EDITORS:
+Before adding any external links to this section, please read Wikipedia's external links policy at http://en.wikipedia.org/wiki/WP:EL and the "Links to be avoided" section especially. If the site you are linking to is primarily a blog or forum with little additional content, then it will be removed as it contravenes the agreed conventions for inclusion.
+-->
+{{Spoken Wikipedia|Arsenal_FC.ogg|2007-04-15}}
+{{Commons category|Arsenal F.C.}}
+{{Wikinews category|Arsenal F.C.}}
+{{Portal|Association football|English football|London}}
+
+===Official websites===
+* {{Official website|http://www.arsenal.com/}}
+* [http://www.premierleague.com/en-gb/clubs/profile.overview.html/arsenal Arsenal] at the [[Premier League]] official website
+* [http://www.uefa.com/teamsandplayers/teams/club=52280/profile/index.html Arsenal] at the [[UEFA]] official website
+
+===News sites===
+{{BBC football info|a/arsenal|Arsenal}}
+* [http://www.skysports.com/football/teams/arsenal Arsenal news] from [[Sky Sports]]
+* [http://www.yourdailyarsenal.com/ Arsenal News]
+
+===Other===
+* {{OpenCorp|Arsenal Football Club}}
+
+{{Arsenal F.C.}}
+{{Arsenal F.C. seasons}}
+{{Premier League}}
+{{G-14}}
+{{UEFA Cup Winners' Cup winners}}
+{{Inter-Cities Fairs Cup winners}}
+{{Football in London}}
+
+{{Featured article}}
+
+{{Authority control}}
+
+[[Category:Arsenal F.C.| ]]
+[[Category:Association football clubs established in 1886]]
+[[Category:Companies formerly listed on the Alternative Investment Market]]
+[[Category:FA Cup winners]]
+[[Category:Football clubs in England]]
+[[Category:Football clubs in London]]
+[[Category:Former Football League clubs]]
+[[Category:Football League Cup winners]]
+[[Category:G-14 clubs]]
+[[Category:Premier League clubs]]
+[[Category:1886 establishments in England]]

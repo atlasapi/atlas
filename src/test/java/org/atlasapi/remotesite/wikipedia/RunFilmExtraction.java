@@ -4,7 +4,9 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.wikipedia.film.FilmExtractor;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
 import org.atlasapi.remotesite.wikipedia.testutils.LocallyCachingArticleFetcher;
+import org.atlasapi.remotesite.wikipedia.updaters.FilmsUpdater;
 
 public class RunFilmExtraction {
     public static void main(String... args) {
@@ -16,11 +18,10 @@ public class RunFilmExtraction {
                 new ContentWriter() {
                     @Override
                     public void createOrUpdate(Container container) {
-                        System.out.println(container);
+
                     }
                     @Override
                     public Item createOrUpdate(Item item) {
-                        System.out.println(item);
                         return item;
                     }
                 },

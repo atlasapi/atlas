@@ -284,7 +284,7 @@ public class BtVodModule {
                         feedQParam, 
                         contentGroupsAndCritera
                 ),
-                mpxVodClient(feedBaseUrl, feedQParam)
+                mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam)
         ).withName(
                 String.format(
                         "BT TVE VoD Updater for %s",
@@ -357,7 +357,7 @@ public class BtVodModule {
     }
     
     public DerivingFromSeriesBrandImageExtractor brandImageExtractor(String baseUrl) {
-        return new DerivingFromSeriesBrandImageExtractor(brandUriExtractor(baseUrl), seriesUriExtractor(baseUrl), itemImageExtractor(), new BtVodMpxBackedEpisodeNumberExtractor(mpxVodClient(baseUrl, btVodMpxProdFeedQParam)));
+        return new DerivingFromSeriesBrandImageExtractor(brandUriExtractor(baseUrl), seriesUriExtractor(baseUrl), itemImageExtractor(), new BtVodMpxBackedEpisodeNumberExtractor(mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam)));
     }
     
     public ImageExtractor itemImageExtractor() {

@@ -110,6 +110,12 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             }
 
             Item item = itemFrom(row);
+
+            if(item instanceof Episode) {
+                seriesProvider.updateSeriesFromEpisode(row, (Episode) item);
+                brandProvider.updateBrandFromEpisode(row, (Episode) item);
+            }
+
             processedItems.put(itemKeyForDeduping(row), item);
             processedRows.add(row.getGuid());
             listener.onContent(item, row);
@@ -121,8 +127,6 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         }
         return true;
     }
-
-
 
     private boolean shouldProcess(BtVodEntry row) {
         return !COLLECTION_TYPE.equals(row.getProductType()) 
@@ -137,20 +141,27 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private Item itemFrom(BtVodEntry row) {
         Item item;
         String itemKeyForDeduping = itemKeyForDeduping(row);
+        log.debug("GUID [{}] Key for deduping [{}]", row.getGuid(), itemKeyForDeduping);
         if (processedItems.containsKey(itemKeyForDeduping)) {
             item = processedItems.get(itemKeyForDeduping);
+            log.debug("Already found matching item with same key, its URI is {}", item.getCanonicalUri());
             includeVersionsAndClipsOnAlreadyExtractedItem(item, row);
             return item;
         }
         if (isEpisode(row)) {
+            log.debug("GUID [{}] Creating episode", row.getGuid());
             item = createEpisode(row);
         } else if (FILM_TYPE.equals(row.getProductType())) {
+            log.debug("GUID [{}] Creating film", row.getGuid());
             item = createFilm(row);
         } else if (MUSIC_TYPE.equals(row.getProductType())) {
+            log.debug("GUID [{}] Creating song", row.getGuid());
             item = createSong(row);
         } else {
+            log.debug("GUID [{}] Creating item", row.getGuid());
             item = createItem(row);
         }
+        log.debug("GUID [{}] Created content with URI {}", row.getGuid(), item.getCanonicalUri());
         populateItemFields(item, row);
         addTopicsToParents(item, row);
         return item;

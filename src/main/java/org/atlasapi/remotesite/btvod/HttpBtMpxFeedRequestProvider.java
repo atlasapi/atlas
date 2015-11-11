@@ -45,6 +45,7 @@ public class HttpBtMpxFeedRequestProvider {
                 "btv-prd-search",
                 guid
         );
+        log.debug("Calling {}", url);
         return new SimpleHttpRequest<>(url, new BtVodResponseTransformer());
     }
 

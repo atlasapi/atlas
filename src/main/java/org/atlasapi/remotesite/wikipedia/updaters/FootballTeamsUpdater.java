@@ -108,7 +108,6 @@ public class FootballTeamsUpdater extends ScheduledTask{
     private ListenableFuture<Void> updateFootballTeam(ListenableFuture<Article> article) {
         return Futures.transform(article, new Function<Article, Void>() {
             public Void apply(Article article) {
-                log.info("Processing football team article \"" + article.getTitle() + "\"");
                 Organisation team = extractor.extract(article);
                 writer.createOrUpdateOrganisation(team);
                 return null;

@@ -63,7 +63,7 @@ public class BtChannelDataUpdater {
 
             if (!Strings.isNullOrEmpty(linearEpgChannelId)) {
                 LOGGER.error("Aliases is added");
-                LOGGER.info("Aliases is added.")
+                LOGGER.info("Aliases is added.");
                 channel.addAlias(new Alias(aliasNamespace, linearEpgChannelId));
                 channelWriter.createOrUpdate(channel);
                 updatedChannels.add(channelId);

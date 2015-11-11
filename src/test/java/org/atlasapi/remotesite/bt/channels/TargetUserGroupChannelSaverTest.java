@@ -25,6 +25,7 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.Category;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Content;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -122,8 +123,8 @@ public class TargetUserGroupChannelSaverTest {
     private PaginatedEntries categoryLookups() {
         Builder<Entry> entries = ImmutableList.builder();
         for (Map.Entry<String, String> entry : targetUserGroupKeyToUri.entrySet()) {
-            entries.add(new Entry(entry.getValue(), 0, entry.getKey(), ImmutableList.<Category>of(), 
-                    ImmutableList.<Content>of(), true, "title", "targetUserGroup", true, false));
+            entries.add(new Entry(entry.getValue(), 0, entry.getKey(), ImmutableList.<Category>of(),
+                    ImmutableList.<Content>of(), true, "title", "targetUserGroup", true, false, DateTime.now(), "urn:BT:linear:service:751764"));
         }
         return new PaginatedEntries(0, 100, 2, "", entries.build());
     }
@@ -134,7 +135,7 @@ public class TargetUserGroupChannelSaverTest {
         return new Entry(channelId, 0, "Title", 
                     ImmutableList.of(category), 
                     ImmutableList.<Content>of(), 
-                    true, null, null, true, false);
+                    true, null, null, true, false, DateTime.now(), "urn:BT:linear:service:751764");
     }
     
     private String canonicalUriFor(String key) {

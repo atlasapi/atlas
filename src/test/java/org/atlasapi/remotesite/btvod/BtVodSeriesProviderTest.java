@@ -122,4 +122,20 @@ public class BtVodSeriesProviderTest {
                 brandProvider
         );
     }
+
+    @Test
+    public void testCanConstructProviderWithDuplicateSeries() throws Exception {
+        Series series = mock(Series.class);
+
+        when(series.getParent()).thenReturn(mock(ParentRef.class));
+        when(series.getSeriesNumber()).thenReturn(5);
+
+        new BtVodSeriesProvider(
+                ImmutableMap.of("guid1", series, "guid2", series),
+                ImmutableMap.<String, Series>of(),
+                seriesUriExtractor,
+                certificateUpdater,
+                brandProvider
+        );
+    }
 }

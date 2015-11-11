@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bt.channels;
 
 import com.google.api.client.util.Sets;
 import com.google.common.base.Predicate;
+import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -60,9 +61,11 @@ public class BtChannelDataUpdater {
                             not(isAliasWithNamespace(aliasNamespace)))
             );
 
-            channel.addAlias(new Alias(aliasNamespace, linearEpgChannelId));
-            channelWriter.createOrUpdate(channel);
-            updatedChannels.add(channelId);
+            if (!Strings.isNullOrEmpty(linearEpgChannelId)) {
+                channel.addAlias(new Alias(aliasNamespace, linearEpgChannelId));
+                channelWriter.createOrUpdate(channel);
+                updatedChannels.add(channelId);
+            }
         }
 
         removeStaleAliasesFromChannel(updatedChannels, channelResolver.all());

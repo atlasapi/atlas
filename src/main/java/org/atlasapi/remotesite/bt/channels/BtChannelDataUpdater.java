@@ -86,7 +86,11 @@ public class BtChannelDataUpdater {
 
             Channel channel = channelMaybe.requireValue();
 
-            (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) ? channel.setAdvertiseFrom(advertiseAvailableDate) : channel.setAdvertiseFrom(null);
+            if (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) {
+                channel.setAdvertiseFrom(advertiseAvailableDate);
+            } else {
+                channel.setAdvertiseFrom(null);
+            }
             channelIdsThatHaveAvailableDateAdded.add(channelId);
         }
 

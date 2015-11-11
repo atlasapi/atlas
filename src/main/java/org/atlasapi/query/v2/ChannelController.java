@@ -101,7 +101,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             @RequestParam(value = "available_from", required = false) String availableFromKey,
             @RequestParam(value = "order_by", required = false) String orderBy,
             @RequestParam(value = "genres", required = false) String genresString,
-            @RequestParam(value = "advertise_from", required = false) String advertiseFromKey) throws IOException {
+            @RequestParam(value = "advertised", required = false) String advertiseFromKey) throws IOException {
         try {
             final ApplicationConfiguration appConfig = appConfig(request); 
             

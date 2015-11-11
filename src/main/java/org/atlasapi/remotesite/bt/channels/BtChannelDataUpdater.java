@@ -50,7 +50,7 @@ public class BtChannelDataUpdater {
             Maybe<Channel> channelMaybe = channelResolver.fromId(channelId);
 
             if (!channelMaybe.hasValue()) {
-                LOGGER.debug("There is missing channel for this channel id: " + currentEntry.getGuid());
+                LOGGER.error("There is missing channel for this channel id: " + currentEntry.getGuid());
                 continue;
             }
 
@@ -84,7 +84,7 @@ public class BtChannelDataUpdater {
             Maybe<Channel> channelMaybe = channelResolver.fromId(channelId);
 
             if(!channelMaybe.hasValue()) {
-                LOGGER.debug("There is missing channel for this channel id: " + currentEntry.getGuid());
+                LOGGER.error("There is missing channel for this channel id: " + currentEntry.getGuid());
                 continue;
             }
 

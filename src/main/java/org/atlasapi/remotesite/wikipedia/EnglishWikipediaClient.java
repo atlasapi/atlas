@@ -76,6 +76,7 @@ public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleS
 
     @Override
     public Iterable<String> getAllTeamNames() {
+        log.info("Loading football team names");
         ImmutableSet.Builder<String> builder = ImmutableSet.builder();
         try {
             builder.addAll(EuropeanTeamListScraper.extractNames(fetchArticle("2015–16 UEFA Champions League group stage").getMediaWikiSource()))
@@ -96,6 +97,7 @@ public class EnglishWikipediaClient implements ArticleFetcher, FilmArticleTitleS
 
     @Override
     public Iterable<String> getAllPeopleNames() {
+        log.info("Loading people names");
         ImmutableSet.Builder<String> builder = ImmutableSet.builder();
         try {
             builder.addAll(ActorsNamesListScrapper.extractNames("Category:American_male_film_actors"));

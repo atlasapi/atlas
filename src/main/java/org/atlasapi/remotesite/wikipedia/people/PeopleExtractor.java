@@ -20,7 +20,6 @@ import java.io.IOException;
 import com.google.api.client.util.Strings;
 
 public class PeopleExtractor implements ContentExtractor<Article, Person> {
-    private static final Logger log = LoggerFactory.getLogger(PeopleExtractor.class);
 
     @Override
     public Person extract(Article article) {

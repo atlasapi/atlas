@@ -59,7 +59,6 @@ public final class SeasonSectionScraper extends AstVisitor {
     
     @Override
     protected Object visitNotFound(AstNode node) {
-        log.debug("Skipping node " + node.getNodeName());
         return null;
     }
     

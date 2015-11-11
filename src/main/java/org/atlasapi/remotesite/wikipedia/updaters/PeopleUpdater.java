@@ -113,7 +113,6 @@ public class PeopleUpdater extends ScheduledTask {
     private ListenableFuture<Void> updateFootballTeam(ListenableFuture<Article> article) {
         return Futures.transform(article, new Function<Article, Void>() {
             public Void apply(Article article) {
-                log.info("Processing person's article \"" + article.getTitle() + "\"");
                 Person person = extractor.extract(article);
                 writer.createOrUpdatePerson(person);
                 return null;

@@ -65,9 +65,18 @@ public class BtChannelsModule {
     @Value("${bt.channels.freeviewPlatformChannelGroupId}")
     private String freeviewPlatformChannelGroupId;
 
-    @Value("${bt.channels.namespace}")
-    private String namespace;
-    
+    @Value("${bt.channels.namespace.production}")
+    private String productionNamespace;
+
+    @Value("${bt.channels.namespace.test1}")
+    private String test1Namespace;
+
+    @Value("${bt.channels.namespace.test2}")
+    private String test2Namespace;
+
+    @Value("${bt.channels.namespace.reference}")
+    private String test3Namespace;
+
     @Autowired
     private ChannelGroupResolver channelGroupResolver;
     

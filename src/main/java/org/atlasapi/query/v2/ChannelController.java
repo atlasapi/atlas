@@ -23,6 +23,7 @@ import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Controller;
@@ -197,8 +198,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         }
 
         if (!Strings.isNullOrEmpty(advertiseFromKey)) {
-            DateTimeFormatter format = DateTimeFormat.forPattern("yyyy-MM-dd HH:mm:ss");
-            query.withAdvertisedOn(DateTime.parse(advertiseFromKey,format));
+            query.withAdvertisedOn(DateTime.now(DateTimeZone.UTC));
         }
 
         return query.build();

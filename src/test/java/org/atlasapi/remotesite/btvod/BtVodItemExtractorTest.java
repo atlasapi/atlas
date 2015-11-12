@@ -70,7 +70,7 @@ public class BtVodItemExtractorTest {
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
-    private static final String BT_VOD_CHANNEL_ID_NAMESPACE = "channel id namespace";
+    private static final String BT_VOD_KEYWORD_NAMESPACE = "keyword namespace";
 
     private static final String BT_VOD_VERSION_GUID_NAMESPACE = "version:guid:namespace";
     private static final String BT_VOD_VERSION_ID_NAMESPACE = "version:id:namespace";
@@ -125,7 +125,7 @@ public class BtVodItemExtractorTest {
                     BT_VOD_ID_NAMESPACE,
                     BT_VOD_CONTENT_PROVIDER_NAMESPACE,
                     BT_VOD_GENRE_NAMESPACE,
-                    BT_VOD_CHANNEL_ID_NAMESPACE
+                    BT_VOD_KEYWORD_NAMESPACE
             ),
             Sets.<String>newHashSet(),
             new TitleSanitiser(),

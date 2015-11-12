@@ -1,11 +1,10 @@
 package org.atlasapi.remotesite.bt.channels.mpxclient;
 
-import java.util.List;
-
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.gson.annotations.SerializedName;
-import org.joda.time.DateTime;
+
+import java.util.List;
 
 
 public class Entry {

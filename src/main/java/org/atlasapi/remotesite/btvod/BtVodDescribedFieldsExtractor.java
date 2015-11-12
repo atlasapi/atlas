@@ -42,7 +42,7 @@ public class BtVodDescribedFieldsExtractor {
     private final String idAliasNamespace;
     private final String contentProviderTopicNamespace;
     private final String genreTopicNamespace;
-    private final String channelIdNamespace;
+    private final String keywordTopicNamespace;
 
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
     private final TopicCreatingTopicResolver topicCreatingTopicResolver;
@@ -162,7 +162,7 @@ public class BtVodDescribedFieldsExtractor {
             String idAliasNamespace,
             String contentProviderTopicNamespace,
             String genreTopicNamespace,
-            String channelIdNamespace
+            String keywordTopicNamespace
     ) {
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
@@ -184,7 +184,7 @@ public class BtVodDescribedFieldsExtractor {
         this.idAliasNamespace = checkNotNull(idAliasNamespace);
         this.contentProviderTopicNamespace = checkNotNull(contentProviderTopicNamespace);
         this.genreTopicNamespace = checkNotNull(genreTopicNamespace);
-        this.channelIdNamespace = checkNotNull(channelIdNamespace);
+        this.keywordTopicNamespace = checkNotNull(keywordTopicNamespace);
     }
     
     public void init() {
@@ -269,7 +269,7 @@ public class BtVodDescribedFieldsExtractor {
         topicRefs.addAll(topicFrom(vodAndContent, tvBoxsetTopic, tvBoxsetTopicPredicate).asSet());
         topicRefs.addAll(topicFrom(vodAndContent, subCatchupTopic, subCatchupTopicPredicate).asSet());
         topicRefs.addAll(contentProviderTopicFor(vodAndContent).asSet());
-        topicRefs.addAll(channelTopicFor(vodAndContent));
+        topicRefs.addAll(keywordTopicFor(vodAndContent));
         return topicRefs.build();
     }
 
@@ -323,17 +323,17 @@ public class BtVodDescribedFieldsExtractor {
         );
     }
 
-    private Set<TopicRef> channelTopicFor(VodEntryAndContent vodAndContent) {
-        ImmutableSet<String> channelTags = vodAndContent.getBtVodEntry().getChannelTags();
-        if(channelTags.isEmpty()) {
+    private Set<TopicRef> keywordTopicFor(VodEntryAndContent vodAndContent) {
+        ImmutableSet<String> keywordTags = vodAndContent.getBtVodEntry().getKeywordTags();
+        if(keywordTags.isEmpty()) {
             return ImmutableSet.of();
         }
 
         ImmutableSet.Builder<TopicRef> topicRefBuilder = ImmutableSet.builder();
-        for (String channelTag : channelTags) {
+        for (String keywordTag : keywordTags) {
             topicRefBuilder.add(topicRefFor(
-                    cacheKey(channelIdNamespace, channelTag),
-                    topicCallable(channelIdNamespace, channelTag)
+                    cacheKey(keywordTopicNamespace, keywordTag),
+                    topicCallable(keywordTopicNamespace, keywordTag)
             ));
         }
 

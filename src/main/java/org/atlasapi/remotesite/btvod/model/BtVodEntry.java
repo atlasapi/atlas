@@ -14,7 +14,7 @@ public class BtVodEntry {
     private static final String TRAILER_SERVICE_TYPE_SCHEME = "trailerServiceType";
     private static final String SERVICE_TYPE_SCHEME = "serviceType";
     private static final String MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME = "masterAgreementOtgTvodPlay";
-    private static final String CHANNEL_ID = "keyword";
+    private static final String KEYWORD = "keyword";
     
     private String id;
     private String guid;
@@ -149,8 +149,8 @@ public class BtVodEntry {
         return productTag(MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME);
     }
 
-    public ImmutableSet<String> getChannelTags() {
-        return productTags(CHANNEL_ID);
+    public ImmutableSet<String> getKeywordTags() {
+        return productTags(KEYWORD);
     }
 
     public String getSchedulerChannel() {

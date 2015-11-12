@@ -84,7 +84,7 @@ public class BtChannelDataUpdaterTest {
 
         Set<Alias> channelAliases = testChannel.getAliases();
 
-        assertThat(channelAliases.contains(alias), is(false));
+        assertThat(channelAliases.contains(alias), is(true));
     }
 
     @Test

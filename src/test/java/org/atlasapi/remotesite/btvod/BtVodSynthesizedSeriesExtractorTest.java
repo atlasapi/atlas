@@ -39,7 +39,7 @@ public class BtVodSynthesizedSeriesExtractorTest {
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
-    private static final String BT_VOD_CHANNEL_ID_NAMESPACE = "channel id namespace";
+    private static final String BT_VOD_KEYWORD_NAMESPACE = "keyword namespace";
 
     private final BtVodBrandProvider brandProvider = mock(BtVodBrandProvider.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
@@ -67,7 +67,7 @@ public class BtVodSynthesizedSeriesExtractorTest {
             BT_VOD_ID_NAMESPACE,
             BT_VOD_CONTENT_PROVIDER_NAMESPACE,
             BT_VOD_GENRE_NAMESPACE,
-            BT_VOD_CHANNEL_ID_NAMESPACE
+            BT_VOD_KEYWORD_NAMESPACE
     );
 
     private final TopicRef newTopicRef = new TopicRef(

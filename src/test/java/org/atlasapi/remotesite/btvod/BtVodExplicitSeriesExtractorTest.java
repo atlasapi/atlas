@@ -11,7 +11,6 @@ import static org.mockito.Mockito.when;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
@@ -74,8 +73,7 @@ public class BtVodExplicitSeriesExtractorTest {
                         null
                 ),
                 new TitleSanitiser(),
-                imageExtractor,
-                ImmutableSet.of(newTopic)
+                imageExtractor
         );
     }
 
@@ -217,38 +215,28 @@ public class BtVodExplicitSeriesExtractorTest {
     }
 
     @Test
-    public void testPropagatesNewTagToBrand() {
+    public void testUpdatesBrandFromSeries() {
         BtVodEntry entry = row();
         entry.setProductType("season");// "Apr 30 2014 12:00AM"
         ParentRef brandRef = mock(ParentRef.class);
         Alias alias1 = mock(Alias.class);
         Alias alias2 = mock(Alias.class);
         String genre = "genre1";
-        Brand brand = mock(Brand.class);
-
 
         when(contentResolver.findByCanonicalUris(ImmutableSet.of("seriesUri"))).thenReturn(ResolvedContent.builder().build());
 
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("seriesUri"));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
         when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
-        when(brandProvider.brandFor(entry)).thenReturn(Optional.of(brand));
         when(describedFieldsExtractor.aliasesFrom(entry)).thenReturn(ImmutableSet.of(alias1, alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of(genre));
         when(describedFieldsExtractor.topicsFrom(Matchers.<VodEntryAndContent>anyObject())).thenReturn(ImmutableSet.of(newTopic));
 
-
         seriesExtractor.process(entry);
-
 
         Series series = Iterables.getOnlyElement(seriesExtractor.getExplicitSeries().values());
 
-        verify(describedFieldsExtractor).setDescribedFieldsFrom(entry, series);
-
-        assertThat(series.getTopicRefs().contains(newTopic), is(true));
-
-        verify(brand).addTopicRef(newTopic);
-
+        verify(brandProvider).updateBrandFromSeries(entry, series);
     }
 
     private BtVodEntry row() {

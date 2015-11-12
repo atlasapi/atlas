@@ -8,7 +8,6 @@ import java.util.Set;
 import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 
@@ -39,8 +38,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
             BtVodSeriesUriExtractor seriesUriExtractor,
             BtVodVersionsExtractor versionsExtractor,
             TitleSanitiser titleSanitiser,
-            ImageExtractor imageExtractor,
-            Iterable<TopicRef> topicsToPropagateToParents
+            ImageExtractor imageExtractor
     ) {
         super(
                 btVodBrandProvider, 
@@ -49,8 +47,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
                 processedRows, 
                 describedFieldsExtractor, 
                 seriesUriExtractor, 
-                imageExtractor, 
-                topicsToPropagateToParents
+                imageExtractor
              );
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.versionsExtractor = checkNotNull(versionsExtractor);

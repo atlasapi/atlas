@@ -6,17 +6,15 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.ImmutableMap;
 import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
@@ -57,9 +55,6 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.publisher = checkNotNull(publisher);
         this.processedRows = checkNotNull(processedRows);
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
-        //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
-        //      Added as a collaborator for Alias extraction, but should be used more
-        //      widely
         this.describedFieldExtractor = checkNotNull(describedFieldExtractor);
     }
 

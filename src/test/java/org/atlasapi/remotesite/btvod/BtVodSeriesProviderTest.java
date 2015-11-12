@@ -9,6 +9,7 @@ import static org.mockito.Mockito.when;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Before;
 import org.junit.Test;
@@ -17,6 +18,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -30,9 +32,12 @@ public class BtVodSeriesProviderTest {
 
     private @Mock ParentRef parentRef;
 
+    private @Mock TopicRef topicRef;
+
     private @Mock BtVodSeriesUriExtractor seriesUriExtractor;
     private @Mock CertificateUpdater certificateUpdater;
     private @Mock BtVodBrandProvider brandProvider;
+    private @Mock TopicUpdater topicUpdater;
 
     private BtVodSeriesProvider objectUnderTest;
     private int seriesNumber;
@@ -48,7 +53,8 @@ public class BtVodSeriesProviderTest {
                 ImmutableMap.of(SUNTHESIZED_SERIES_URI, SYNTHESIZED_SERIES),
                 seriesUriExtractor,
                 certificateUpdater,
-                brandProvider
+                brandProvider,
+                topicUpdater
         );
     }
 
@@ -107,6 +113,18 @@ public class BtVodSeriesProviderTest {
     }
 
     @Test
+    public void testUpdateTopicsFromEpisode() throws Exception {
+        BtVodEntry episodeRow = new BtVodEntry();
+        episodeRow.setParentGuid(EXPLICIT_SERIES_GUID);
+        Episode episode = new Episode();
+        episode.addTopicRef(topicRef);
+
+        objectUnderTest.updateSeriesFromEpisode(episodeRow, episode);
+
+        verify(topicUpdater).updateTopics(EXPLICIT_SERIES, episodeRow, ImmutableList.of(topicRef));
+    }
+
+    @Test
     public void testCanConstructProviderFromSeriesWithNullParentAndNullSeriesNumber()
             throws Exception {
         Series series = mock(Series.class);
@@ -119,7 +137,8 @@ public class BtVodSeriesProviderTest {
                 ImmutableMap.<String, Series>of(),
                 seriesUriExtractor,
                 certificateUpdater,
-                brandProvider
+                brandProvider,
+                topicUpdater
         );
     }
 
@@ -135,7 +154,8 @@ public class BtVodSeriesProviderTest {
                 ImmutableMap.<String, Series>of(),
                 seriesUriExtractor,
                 certificateUpdater,
-                brandProvider
+                brandProvider,
+                topicUpdater
         );
     }
 }

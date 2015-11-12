@@ -6,6 +6,7 @@ import static org.mockito.Mockito.when;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Before;
 import org.junit.Test;
@@ -14,6 +15,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -22,6 +24,7 @@ public class BtVodBrandProviderTest {
     private @Mock BrandUriExtractor brandUriExtractor;
     private @Mock BrandDescriptionUpdater brandDescriptionUpdater;
     private @Mock CertificateUpdater certificateUpdater;
+    private @Mock TopicUpdater topicUpdater;
 
     private BtVodBrandProvider brandProvider;
 
@@ -30,6 +33,8 @@ public class BtVodBrandProviderTest {
 
     private @Mock BtVodEntry episodeRow;
     private @Mock Episode episode;
+
+    private @Mock TopicRef topicRef;
 
     private Brand brand;
 
@@ -42,7 +47,8 @@ public class BtVodBrandProviderTest {
                 brandUriExtractor,
                 ImmutableMap.of(brand.getCanonicalUri(), brand),
                 brandDescriptionUpdater,
-                certificateUpdater
+                certificateUpdater,
+                topicUpdater
         );
 
         when(brandUriExtractor.extractBrandUri(seriesRow))
@@ -70,5 +76,23 @@ public class BtVodBrandProviderTest {
         brandProvider.updateBrandFromEpisode(episodeRow, episode);
 
         verify(certificateUpdater).updateCertificates(brand, episode);
+    }
+
+    @Test
+    public void testUpdateTopicsFromSeries() throws Exception {
+        when(series.getTopicRefs()).thenReturn(ImmutableList.of(topicRef));
+
+        brandProvider.updateBrandFromSeries(seriesRow, series);
+
+        verify(topicUpdater).updateTopics(brand, seriesRow, ImmutableList.of(topicRef));
+    }
+
+    @Test
+    public void testUpdateTopicsFromEpisode() throws Exception {
+        when(episode.getTopicRefs()).thenReturn(ImmutableList.of(topicRef));
+
+        brandProvider.updateBrandFromEpisode(episodeRow, episode);
+
+        verify(topicUpdater).updateTopics(brand, episodeRow, ImmutableList.of(topicRef));
     }
 }

@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class BtVodBrandProvider {
@@ -19,14 +20,16 @@ public class BtVodBrandProvider {
     private final Map<String, Brand> brands;
     private final BrandDescriptionUpdater brandDescriptionUpdater;
     private final CertificateUpdater certificateUpdater;
+    private final TopicUpdater topicUpdater;
 
     public BtVodBrandProvider(BrandUriExtractor brandUriExtractor,
             Map<String, Brand> brands, BrandDescriptionUpdater brandDescriptionUpdater,
-            CertificateUpdater certificateUpdater) {
+            CertificateUpdater certificateUpdater, TopicUpdater topicUpdater) {
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.brands = ImmutableMap.copyOf(brands);
         this.brandDescriptionUpdater = checkNotNull(brandDescriptionUpdater);
         this.certificateUpdater = checkNotNull(certificateUpdater);
+        this.topicUpdater = checkNotNull(topicUpdater);
     }
 
 
@@ -46,13 +49,7 @@ public class BtVodBrandProvider {
             return Optional.absent();
         }
 
-        return Optional.fromNullable(
-                ParentRef.parentRefFrom(
-                        brands.get(
-                                optionalUri.get()
-                        )
-                )
-        );
+        return Optional.of(ParentRef.parentRefFrom(brands.get(optionalUri.get())));
     }
 
     public void updateBrandFromSeries(BtVodEntry seriesRow, Series series) {
@@ -64,6 +61,7 @@ public class BtVodBrandProvider {
 
         brandDescriptionUpdater.updateDescriptions(brand, series);
         certificateUpdater.updateCertificates(brand, series);
+        topicUpdater.updateTopics(brand, seriesRow, series.getTopicRefs());
     }
 
     public void updateBrandFromEpisode(BtVodEntry episodeRow, Episode episode) {
@@ -74,5 +72,10 @@ public class BtVodBrandProvider {
         Brand brand = brandOptional.get();
 
         certificateUpdater.updateCertificates(brand, episode);
+        topicUpdater.updateTopics(brand, episodeRow, episode.getTopicRefs());
+    }
+
+    public ImmutableList<Brand> getBrands() {
+        return ImmutableList.copyOf(brands.values());
     }
 }

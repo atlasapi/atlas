@@ -13,9 +13,9 @@ import java.util.Iterator;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
@@ -138,12 +138,6 @@ public class BtVodItemExtractorTest {
                     null,
                     null
             ),
-            ImmutableSet.of(
-                            newTopicRef,
-                            new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
-                            new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
-                            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
-                    ),
             new MockBtVodEpisodeNumberExtractor(),
             mockMpxClient
     );
@@ -459,16 +453,14 @@ public class BtVodItemExtractorTest {
     }
 
     @Test
-    public void testPropagatesNewTagToBrandAndSeries() {
+    public void testUpdatesBrandAndSeriesFromEpisode() {
         BtVodEntry btVodEntry = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         ParentRef parentRef = new ParentRef(BRAND_URI);
         Series series = mock(Series.class);
-        Brand brand = mock(Brand.class);
         when(series.getCanonicalUri()).thenReturn("seriesUri");
         when(series.getSeriesNumber()).thenReturn(1);
 
         when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(series));
-        when(btVodBrandProvider.brandFor(btVodEntry)).thenReturn(Optional.of(brand));
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(btVodBrandProvider.brandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
@@ -479,8 +471,9 @@ public class BtVodItemExtractorTest {
         Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertThat(writtenItem.getTopicRefs().contains(newTopicRef), is(true));
-        verify(series).addTopicRef(newTopicRef);
-        verify(brand).addTopicRef(newTopicRef);
+
+        verify(btVodBrandProvider).updateBrandFromEpisode(btVodEntry, (Episode) writtenItem);
+        verify(seriesProvider).updateSeriesFromEpisode(btVodEntry, (Episode) writtenItem);
     }
     
     @Test

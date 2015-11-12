@@ -7,7 +7,6 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -86,8 +85,7 @@ public class BtVodSynthesizedSeriesExtractorTest {
             Sets.<String>newHashSet(),
             seriesUriExtractor,
             ImmutableSet.of(SERIES_GUID),
-            imageExtractor,
-            ImmutableSet.of(newTopicRef)
+            imageExtractor
     );
 
     @Test
@@ -138,28 +136,22 @@ public class BtVodSynthesizedSeriesExtractorTest {
     }
 
     @Test
-    public void testPropagatesNewTagToBrand() {
+    public void testUpdatesBrandFromSeries() {
         BtVodEntry entry = row();
-        Brand brand = mock(Brand.class);
 
         String brandUri = "http://brand-uri.com";
         ParentRef brandRef = mock(ParentRef.class);
 
         when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
-        when(brandProvider.brandFor(entry)).thenReturn(Optional.of(brand));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of(brandUri + "/series/1"));
-        when(newTopicContentMatchingPredicate.apply(org.mockito.Matchers.<VodEntryAndContent>anyObject())).thenReturn(true);
-
 
         seriesExtractor.process(entry);
 
         Series series = Iterables.getOnlyElement(seriesExtractor.getSynthesizedSeries().values());
-        assertThat(series.getTopicRefs().contains(newTopicRef), is(true));
 
-        verify(brand).addTopicRef(newTopicRef);
+        verify(brandProvider).updateBrandFromSeries(entry, series);
     }
-
 
     private BtVodEntry row() {
         BtVodEntry entry = new BtVodEntry();

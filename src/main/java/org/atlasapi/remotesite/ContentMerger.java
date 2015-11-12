@@ -84,6 +84,8 @@ public class ContentMerger {
                 current = newItem;
             }
         } else if (current instanceof Item) {
+            current.setReleaseDates(extracted.getReleaseDates());
+
             if (extracted instanceof Episode) {
                 Episode newEp = new Episode();
                 Item.copyTo(current, newEp);
@@ -97,7 +99,7 @@ public class ContentMerger {
             Film extractedFilm = (Film) extracted;
             currentFilm.setYear(extractedFilm.getYear());
         }
-        current.setReleaseDates(extracted.getReleaseDates());
+
         return current;
     }
 

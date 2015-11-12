@@ -62,8 +62,6 @@ public class BtChannelDataUpdater {
             );
 
             if (!Strings.isNullOrEmpty(linearEpgChannelId)) {
-                LOGGER.error("Aliases is added");
-                LOGGER.info("Aliases is added.");
                 channel.addAlias(new Alias(aliasNamespace, linearEpgChannelId));
                 channelWriter.createOrUpdate(channel);
                 updatedChannels.add(channelId);
@@ -80,7 +78,7 @@ public class BtChannelDataUpdater {
 
         for(Entry currentEntry : entries) {
 
-            DateTime advertiseAvailableDate = currentEntry.getAvailableDate();
+            DateTime advertiseAvailableDate = new DateTime(currentEntry.getAvailableDate());
             long channelId = codec.decode(currentEntry.getGuid()).longValue();
 
             Maybe<Channel> channelMaybe = channelResolver.fromId(channelId);
@@ -93,8 +91,6 @@ public class BtChannelDataUpdater {
             Channel channel = channelMaybe.requireValue();
 
             if (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) {
-                LOGGER.info("availableDate is added.");
-                LOGGER.error("availableDate is added.");
                 channel.setAdvertiseFrom(advertiseAvailableDate);
             } else {
                 channel.setAdvertiseFrom(null);
@@ -113,7 +109,7 @@ public class BtChannelDataUpdater {
             if(!channelIdsThatHaveAliasesAdded.contains(channel.getId())) {
                 channel.setAliases(
                         Iterables.filter(channel.getAliases(),
-                                not(isAliasWithNamespace(aliasNamespace)))
+                                isAliasWithNamespace(aliasNamespace))
                 );
             }
             channelWriter.createOrUpdate(channel);

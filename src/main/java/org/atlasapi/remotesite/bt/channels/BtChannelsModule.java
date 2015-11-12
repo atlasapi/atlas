@@ -41,29 +41,26 @@ public class BtChannelsModule {
     @Value("${bt.channels.baseUri.production}")
     private String baseUri;
 
-    @Value("${bt.channels.ingestAdvertiseFrom.production}")
-    private String productionIngestAdvertiseFrom;
-
     @Value("${bt.channels.baseUri.test1}")
     private String test1BaseUri;
-
-    @Value("${bt.channels.ingestAdvertiseFrom.test1}")
-    private String test1IngestAdvertiseFrom;
 
     @Value("${bt.channels.baseUri.test2}")
     private String test2BaseUri;
 
-    @Value("${bt.channels.ingestAdvertiseFrom.test2}")
-    private String test2IngestAdvertiseFrom;
-
     @Value("${bt.channels.baseUri.reference}")
     private String test3BaseUri;
 
+    @Value("${bt.channels.ingestAdvertiseFrom.production}")
+    private String productionIngestAdvertiseFrom;
+
+    @Value("${bt.channels.ingestAdvertiseFrom.test1}")
+    private String test1IngestAdvertiseFrom;
+
+    @Value("${bt.channels.ingestAdvertiseFrom.test2}")
+    private String test2IngestAdvertiseFrom;
+
     @Value("${bt.channels.ingestAdvertiseFrom.reference}")
     private String test3IngestAdvertiseFrom;
-
-    @Value("${bt.channels.freeviewPlatformChannelGroupId}")
-    private String freeviewPlatformChannelGroupId;
 
     @Value("${bt.channels.namespace.production}")
     private String productionNamespace;
@@ -76,6 +73,9 @@ public class BtChannelsModule {
 
     @Value("${bt.channels.namespace.reference}")
     private String test3Namespace;
+
+    @Value("${bt.channels.freeviewPlatformChannelGroupId}")
+    private String freeviewPlatformChannelGroupId;
 
     @Autowired
     private ChannelGroupResolver channelGroupResolver;

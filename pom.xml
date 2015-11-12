@@ -17,7 +17,7 @@
                     <target>1.7</target>
                     <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J-Xss1M</arg>
+                        <arg>-J-Xss5M</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -605,9 +605,14 @@
            <version>1.1.0</version>
        </dependency>
         <dependency>
-                <groupId>org.apache.commons</groupId>
-                <artifactId>commons-csv</artifactId>
-                <version>1.1</version>
+            <groupId>info.bliki.wiki</groupId>
+            <artifactId>bliki-core</artifactId>
+            <version>3.0.19</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-csv</artifactId>
+            <version>1.1</version>
         </dependency>
     </dependencies>
     <properties>

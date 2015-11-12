@@ -22,6 +22,7 @@ import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
@@ -96,8 +97,18 @@ public class BtVodVersionsExtractor {
         if (!row.getSubscriptionCodes().isEmpty()) {
             DateTime availabilityStart = new DateTime(row.getProductOfferStartDate(), DateTimeZone.UTC);
             DateTime availabilityEnd = new DateTime(row.getProductOfferEndDate(), DateTimeZone.UTC);
-            locations.add(createLocation(row, new Interval(availabilityStart, availabilityEnd),
-                    ImmutableSet.<BtVodProductPricingTier>of(), Policy.RevenueContract.SUBSCRIPTION, aliases, serviceId));
+            Optional<Location> location = createLocation(
+                    row,
+                    new Interval(availabilityStart, availabilityEnd),
+                    ImmutableSet.<BtVodProductPricingTier>of(),
+                    Policy.RevenueContract.SUBSCRIPTION,
+                    aliases,
+                    serviceId,
+                    row.getSubscriptionCodes()
+            );
+            if(location.isPresent()) {
+                locations.add(location.get());
+            }
         }
 
         //TODO filter for blackout
@@ -125,11 +136,33 @@ public class BtVodVersionsExtractor {
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
         Multimap<Interval, BtVodProductPricingTier> groupAvailabilityPeriods = grouper.groupAvailabilityPeriods(row);
         for (Map.Entry<Interval, Collection<BtVodProductPricingTier>> entry : groupAvailabilityPeriods.asMap().entrySet()) {
-            locations.add(createLocation(row, entry.getKey(), entry.getValue(), subscription, aliases, serviceId));
+            Optional<Location> location = createLocation(
+                    row,
+                    entry.getKey(),
+                    entry.getValue(),
+                    subscription,
+                    aliases,
+                    serviceId,
+                    ImmutableSet.<String>of()
+            );
+            if(location.isPresent()) {
+                locations.add(location.get());
+            }
         }
         
         if (groupAvailabilityPeriods.asMap().entrySet().isEmpty()) {
-            locations.add(createLocation(row, null, ImmutableSet.<BtVodProductPricingTier>of(), subscription, aliases, serviceId));
+            Optional<Location> location = createLocation(
+                    row,
+                    null,
+                    ImmutableSet.<BtVodProductPricingTier>of(),
+                    subscription,
+                    aliases,
+                    serviceId,
+                    ImmutableSet.<String>of()
+            );
+            if(location.isPresent()) {
+                locations.add(location.get());
+            }
         }
         return locations.build();
     }
@@ -142,9 +175,9 @@ public class BtVodVersionsExtractor {
         return !Boolean.FALSE.equals(Boolean.valueOf(row.getMasterAgreementOtgTvodPlay()));
     }
 
-    private Location createLocation(BtVodEntry row, Interval availability, Collection<BtVodProductPricingTier> pricingTiers,
-                                    Policy.RevenueContract subscription, Set<Alias> aliases, Long serviceId) {
-
+    private Optional<Location> createLocation(BtVodEntry row, Interval availability,
+            Collection<BtVodProductPricingTier> pricingTiers, Policy.RevenueContract subscription,
+            Set<Alias> aliases, Long serviceId, ImmutableSet<String> subscriptionCodes) {
         Policy policy = new Policy();
         if (availability != null) {
             policy.setAvailabilityStart(availability.getStart());
@@ -154,7 +187,7 @@ public class BtVodVersionsExtractor {
             policy.setAvailabilityEnd(new DateTime(2035, DateTimeConstants.JANUARY, 1, 0, 0, 0));
         }
         policy.setService(serviceId);
-        ImmutableList.Builder<Pricing> pricings = ImmutableList.builder();
+        ImmutableList.Builder<Pricing> pricingsBuilder = ImmutableList.builder();
         for (BtVodProductPricingTier pricingTier : pricingTiers) {
             DateTime startDate = new DateTime(pricingTier.getProductAbsoluteStart(), DateTimeZone.UTC);
             DateTime endDate = new DateTime(pricingTier.getProductAbsoluteEnd(), DateTimeZone.UTC);
@@ -165,10 +198,19 @@ public class BtVodVersionsExtractor {
                 amount = pricingTier.getProductAmounts().getGBP();
             }
             Price price = new Price(Currency.getInstance("GBP"), amount);
-            pricings.add(new Pricing(startDate, endDate, price));
+
+            if(!policyIsPayToX(subscription) || price.getAmount() > 0) {
+                pricingsBuilder.add(new Pricing(startDate, endDate, price));
+            }
         }
-        policy.setPricing(pricings.build());
-        policy.setSubscriptionPackages(row.getSubscriptionCodes());
+
+        ImmutableList<Pricing> pricings = pricingsBuilder.build();
+        if(policyIsPayToX(subscription) && pricings.isEmpty()) {
+            return Optional.absent();
+        }
+
+        policy.setPricing(pricings);
+        policy.setSubscriptionPackages(subscriptionCodes);
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
         policy.setRevenueContract(subscription);
 
@@ -178,8 +220,7 @@ public class BtVodVersionsExtractor {
         location.setUri(uriFor(row));
         location.setAliases(aliases);
 
-        return location;
-
+        return Optional.of(location);
     }
 
     private String uriFor(BtVodEntry row) {
@@ -190,7 +231,12 @@ public class BtVodVersionsExtractor {
     private String uriFor(BtVodEntry row, Policy.RevenueContract revenueContract, Long serviceId) {
         String id = row.getGuid();
         String serviceIdString = serviceId != null ? serviceId.toString() : "";
-        return uriPrefix + "items/" + id + "/" + revenueContract.toString() 
+        return uriPrefix + "items/" + id + "/" + revenueContract.toString()
                 + "/" + serviceIdString;
+    }
+
+    private boolean policyIsPayToX(Policy.RevenueContract subscription) {
+        return subscription == Policy.RevenueContract.PAY_TO_RENT
+                || subscription == Policy.RevenueContract.PAY_TO_BUY;
     }
 }

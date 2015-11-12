@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.wikipedia;
+package org.atlasapi.remotesite.wikipedia.wikiparsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -11,7 +11,7 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.atlasapi.remotesite.wikipedia.ArticleFetcher.FetchFailedException;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.ArticleFetcher.FetchFailedException;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -211,7 +211,7 @@ public class FetchMeister {
         }
     }
     
-    private static final Pattern redirectPattern = Pattern.compile("^\\s*\\#REDIRECT\\s*\\[\\[([^\\]]*)\\]\\]", Pattern.CASE_INSENSITIVE);
+    private static final Pattern redirectPattern = Pattern.compile("^\\s*\\#REDIRECT\\s*\\[\\[([^\\]]*)\\]\\]\\n*.*", Pattern.CASE_INSENSITIVE);
     
     private ListenableFuture<Article> followRedirects(ListenableFuture<Article> articleThatMightBeARedirect, final int maxRemainingRedirects) {
         return Futures.transform(articleThatMightBeARedirect, new AsyncFunction<Article, Article>() {

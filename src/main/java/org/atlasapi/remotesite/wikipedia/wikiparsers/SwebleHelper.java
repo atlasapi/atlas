@@ -1,12 +1,17 @@
-package org.atlasapi.remotesite.wikipedia;
+package org.atlasapi.remotesite.wikipedia.wikiparsers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.Iterables;
+import info.bliki.api.Connector;
+import info.bliki.api.Page;
+import info.bliki.api.User;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -23,6 +28,9 @@ import org.sweble.wikitext.lazy.preprocessor.LazyPreprocessedPage;
 import org.sweble.wikitext.lazy.preprocessor.Template;
 import org.sweble.wikitext.lazy.preprocessor.TemplateArgument;
 import org.sweble.wikitext.lazy.utils.SimpleParserConfig;
+
+import info.bliki.wiki.filter.PlainTextConverter;
+import info.bliki.wiki.model.WikiModel;
 
 import xtc.parser.ParseException;
 
@@ -41,6 +49,8 @@ public class SwebleHelper {
     private static final Logger log = LoggerFactory.getLogger(SwebleHelper.class);
     private static final ParserConfigInterface cfg = new SimpleParserConfig();
     private static final LazyPreprocessor preprocessor = new LazyPreprocessor(cfg);
+    private static final Connector connector = new Connector();
+    private static final User user = connector.login(new User("", "", "http://en.wikipedia.org/w/api.php"));
 
     /**
      * Performs the first half of the Mediawiki parsing process -- the resulting AST includes templates and their arguments (the usual intention being to expand and include these before the remaining parse) but no awareness of formatting or any other textual abnormalities.
@@ -53,6 +63,7 @@ public class SwebleHelper {
             return (LazyPreprocessedPage) preprocessor.parseArticle(mediaWikiSource, "", includeOnly);
         } catch (IOException|ParseException ex) {
             throw new RuntimeException(ex);
+
         }
     }
     
@@ -121,11 +132,66 @@ public class SwebleHelper {
         }
         return b.toString().trim();
     }
-    
+
+    public static String flattenBirthdate(NodeList l) {
+        StringBuilder b = new StringBuilder(600);
+        Iterator<AstNode> children = l.iterator();
+        AstNode n;
+        while (children.hasNext()) {
+            n = children.next();
+            if (n instanceof Text) {
+                b.append(((Text) n).getContent());
+            }
+            if (n instanceof Template) {
+                b.append(getBirthDate((Template) n));
+            }
+        }
+        return b.toString().trim();
+    }
+
+    private static String getBirthDate(Template t) {
+        NodeList args = t.getArgs();
+        String year;
+        String month;
+        String day;
+        String arg0 = flattenTextNodeList(((TemplateArgument) args.get(0)).getValue());
+        String arg1 = flattenTextNodeList(((TemplateArgument) args.get(1)).getValue());
+        String arg2 = flattenTextNodeList(((TemplateArgument) args.get(2)).getValue());
+        if (arg0.startsWith("y")) {
+            year = arg1;
+            month = arg2;
+            day = flattenTextNodeList(((TemplateArgument) args.get(3)).getValue());
+        } else {
+            year = arg0;
+            month = arg1;
+            day = arg2;
+        }
+        return new LocalDate(Integer.valueOf(year),Integer.valueOf(month),Integer.valueOf(day)).toString();
+    }
+
+    public static String normalizeAndFlattenTextNodeList(NodeList l) {
+        String markUp = flattenTextNodeList(l);
+        return normalize(markUp);
+    }
+
+    public static String normalize(String markup) {
+        WikiModel model = new WikiModel("http://wikipedia.org/${image}","http://wikipedia.org/${title}");
+        return model.render(new PlainTextConverter(), markup);
+    }
+
+    public static String getWikiImage(String name) {
+        name = filePattern.matcher(name).replaceAll("");
+        name = "File:" + name;
+        List<Page> pages = user.queryImageinfo(new String[]{name});
+        return Iterables.getFirst(pages, new Page()).getImageUrl();
+    }
+
+    private final static Pattern filePattern = Pattern.compile("\\[\\[|\\]\\]|\\|.+|File:");
+
     /**
      * Returns a positional template argument, passed through {@link #flattenTextNodeList(NodeList)}.
      */
-    public static String extractArgument(Template t, int pos) throws IndexOutOfBoundsException {
+    public static String extractArgument(Template t, int pos) {
         NodeList args = t.getArgs();
         return flattenTextNodeList(((TemplateArgument) args.get(pos)).getValue());
     }
@@ -185,6 +251,8 @@ public class SwebleHelper {
             this.name = checkNotNull(name);
             this.articleTitle = articleTitle;
         }
+
+
         @Override
         public String toString() {
             return name + (articleTitle.isPresent() ? " (=> " + articleTitle.get() + ")" : "");
@@ -203,10 +271,20 @@ public class SwebleHelper {
         new ListVisitor(builder).go(parse(unparsed));
         return builder.build();
     }
+
+    public static ImmutableList<ListItemResult> extractFootballList(AstNode node) {
+        ImmutableList.Builder<ListItemResult> builder = ImmutableList.builder();
+        String unparsed = unparse(node);
+        unparsed = normalize(unparsed);
+        unparsed = bracesPattern.matcher(unparsed).replaceAll("");
+        new ListVisitor(builder).go(parse(unparsed));
+        return builder.build();
+    }
     
     private static final Pattern plainlistTemplatePattern = Pattern.compile("\\s*\\{\\{\\s*(end)?plainlist\\s*(\\}\\}|\\|)\\s*", Pattern.CASE_INSENSITIVE);
     private static final Pattern stupidBracesPattern = Pattern.compile("\\s*\\}\\}\\s*");
-    
+    private static final Pattern bracesPattern = Pattern.compile("\\{\\{.*\\}\\}");
+
     protected static class ListVisitor extends AstVisitor {
         private final ImmutableList.Builder<ListItemResult> builder;
         public ListVisitor(ImmutableList.Builder<ListItemResult> builder) {
@@ -251,7 +329,5 @@ public class SwebleHelper {
 
         @Override
         protected Object visitNotFound(AstNode node) { return null; }
-
     }
-
 }

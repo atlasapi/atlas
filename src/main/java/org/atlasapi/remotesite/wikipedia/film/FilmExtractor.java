@@ -5,17 +5,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.TreeMap;
 
+import com.google.common.collect.Lists;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.CrewMember.Role;
 import org.atlasapi.media.entity.Film;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
-import org.atlasapi.remotesite.wikipedia.Article;
-import org.atlasapi.remotesite.wikipedia.SwebleHelper.ListItemResult;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper.ListItemResult;
 import org.atlasapi.remotesite.wikipedia.film.FilmInfoboxScraper.ReleaseDateResult;
 import org.atlasapi.remotesite.wikipedia.film.FilmInfoboxScraper.Result;
 import org.joda.time.Duration;
@@ -53,20 +56,20 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
             if (title != null && title.size() == 1) {
                 flim.setTitle(title.get(0).name);
             } else {
-                log.info("Film in Wikipedia article \"" + article.getTitle() + "\" has " + (title == null || title.isEmpty() ? "no title." : "multiple titles.") + " Falling back to guessing from article title.");
+                log.warn("Film in Wikipedia article \"" + article.getTitle() + "\" has " + (title == null || title.isEmpty() ? "no title." : "multiple titles.") + " Falling back to guessing from article title.");
                 flim.setTitle(guessFilmNameFromArticleTitle(article.getTitle()));
             }
             
             List<CrewMember> people = flim.getPeople();
-//            crewify(info.cinematographers, Role., people);  // TODO do we have / do we want a role for cinematographers?
+            crewify(info.cinematographers, Role.DIRECTOR_OF_PHOTOGRAPHY, people);
             crewify(info.composers, Role.COMPOSER, people);
             crewify(info.directors, Role.DIRECTOR, people);
             crewify(info.editors, Role.EDITOR, people);
             crewify(info.narrators, Role.NARRATOR, people);
             crewify(info.producers, Role.PRODUCER, people);
             crewify(info.writers, Role.WRITER, people);
-            crewify(info.storyWriters, Role.SOURCE_WRITER, people);  // TODO is this the right role?
-            crewify(info.screenplayWriters, Role.ADAPTED_BY, people);  // TODO is this the right role?
+            crewify(info.storyWriters, Role.SOURCE_WRITER, people);
+            crewify(info.screenplayWriters, Role.ADAPTED_BY, people);
             crewify(info.starring, Role.ACTOR, people);
             
             if (info.externalAliases != null) {
@@ -90,6 +93,12 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
                 Version v = new Version();
                 v.setDuration(new Duration(info.runtimeInMins * 60000));
                 flim.addVersion(v);
+            }
+
+
+            if (info.image != null) {
+                Image image = new Image(SwebleHelper.getWikiImage(info.image));
+                flim.setImages(ImmutableList.of(image));
             }
             
             return flim;

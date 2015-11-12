@@ -11,7 +11,6 @@ import static org.junit.Assert.assertTrue;
 
 import java.util.Map.Entry;
 import java.util.Set;
-
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 

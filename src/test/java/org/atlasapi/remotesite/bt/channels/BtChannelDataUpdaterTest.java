@@ -69,6 +69,7 @@ public class BtChannelDataUpdaterTest {
         expectedChannelWithAlias.addAlias(alias);
 
         long channelId = codec.decode(entry1.getGuid()).longValue();
+        testChannel.setId(channelId);
         channelMaybe = Maybe.just(testChannel);
 
         when(paginatedEntries.getEntries()).thenReturn(entries);
@@ -106,17 +107,18 @@ public class BtChannelDataUpdaterTest {
 
         expectedChannelWithAvailableDate.setAdvertiseFrom(DateTime.now());
 
-        long currentGuid = codec.decode(entry1.getGuid()).longValue();
+        long channelId = codec.decode(entry1.getGuid()).longValue();
+        testChannel.setId(channelId);
         Maybe<Channel> channelMaybe = Maybe.just(testChannel);
 
         when(paginatedEntries.getEntries()).thenReturn(entries);
-        when(channelResolver.fromId(currentGuid)).thenReturn(channelMaybe);
+        when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
         when(channelResolver.all()).thenReturn(channels);
 
         channelDataUpdater.addAvailableDateToChannel(paginatedEntries);
 
         verify(paginatedEntries).getEntries();
-        verify(channelResolver).fromId(currentGuid);
+        verify(channelResolver).fromId(channelId);
         verify(channelResolver).all();
 
         assertEquals(expectedChannelWithAvailableDate, testChannel);

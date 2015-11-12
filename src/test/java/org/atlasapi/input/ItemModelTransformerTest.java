@@ -3,7 +3,7 @@ package org.atlasapi.input;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
-import static org.mockito.BDDMockito.given;
+import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
 import java.util.Date;
@@ -72,8 +72,8 @@ public class ItemModelTransformerTest {
 
     @Test
     public void testTransformItemWithEventRefs() {
-        given(idCodec.decode("12345")).willReturn(BigInteger.valueOf(12345));
-        given(idCodec.decode("1234")).willReturn(BigInteger.valueOf(1234));
+        when(idCodec.decode("12345")).thenReturn(BigInteger.valueOf(12345));
+        when(idCodec.decode("1234")).thenReturn(BigInteger.valueOf(1234));
         org.atlasapi.media.entity.Item complex = transformer.transform(getItemWithEventRefs());
         assertEquals(1, complex.events().size());
         assertThat(complex.events().get(0).id(), is(1234L));

@@ -126,7 +126,7 @@ public class BtChannelsModule {
     
     private BtMpxChannelDataIngester perEnvironmentChannelGroupUpdater(Publisher publisher,
                                                                        String aliasNamespacePrefix, String mpxUriBase, boolean ingestAdvertiseFrom, String namespace) {
-        GsonBtMpxClient mpxClient = new GsonBtMpxClient(httpClient(), baseUri);
+        GsonBtMpxClient mpxClient = new GsonBtMpxClient(httpClient(), test2BaseUri);
         
         BtAllChannelsChannelGroupUpdater btAllChannelsChannelGroupUpdater 
             = new BtAllChannelsChannelGroupUpdater(channelGroupWriter, 

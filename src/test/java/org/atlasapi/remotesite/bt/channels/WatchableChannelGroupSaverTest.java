@@ -85,7 +85,7 @@ public class WatchableChannelGroupSaverTest {
         return new Entry(channelId, 0, "Title", 
                     ImmutableList.<Category>of(), 
                     ImmutableList.<Content>of(), 
-                    true, null, null, isWatchable, false, DateTime.now(), "urn:BT:linear:service:751764");
+                    true, null, null, isWatchable, false, 0, "urn:BT:linear:service:751764");
     }
     
     private ChannelGroup watchableChannelGroup() {

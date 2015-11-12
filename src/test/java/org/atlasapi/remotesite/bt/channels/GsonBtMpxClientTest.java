@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.bt.channels;
 
 import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -19,7 +20,6 @@ import com.google.common.io.Resources;
 import com.metabroadcast.common.http.FixedResponseHttpClient;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.query.Selection;
-
 
 public class GsonBtMpxClientTest {
 
@@ -59,5 +59,23 @@ public class GsonBtMpxClientTest {
         assertTrue(firstChannel.isApproved());
         assertTrue(firstChannel.isStreamable());
         assertTrue(firstChannel.hasOutputProtection());
+
+    }
+
+    @Test
+    public void testNewValueDeserialization() throws BtMpxClientException {
+        SimpleHttpClient httpClient
+                = FixedResponseHttpClient.respondTo(
+                baseUri + "?form=cjson",
+                Resources.getResource("vole-med-feed-linear.json"));
+        BtMpxClient client = new GsonBtMpxClient(httpClient, baseUri);
+
+        PaginatedEntries channels = client.getChannels(Optional.<Selection>absent());
+
+        Entry firstChannel = Iterables.getFirst(channels.getEntries(), null);
+
+        assertEquals(firstChannel.getAvailableDate(), 0);
+        assertThat(firstChannel.getLinearEpgChannelId(), is("urn:BT:linear:service:769254"));
+
     }
 }

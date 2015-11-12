@@ -16,9 +16,9 @@ public class Entry {
     }
     
     @VisibleForTesting
-    public Entry(String guid, long updated, String title, Iterable<Category> categories, 
+    public Entry(String guid, long updated, String title, Iterable<Category> categories,
             Iterable<Content> content, boolean approved, String label, String scheme, 
-            boolean isStreamable, boolean hasOutputProtection, DateTime availableDate, String linearEpgChannelId) {
+            boolean isStreamable, boolean hasOutputProtection, long availableDate, String linearEpgChannelId) {
         this.guid = guid;
         this.updated = updated;
         this.title = title;
@@ -36,26 +36,27 @@ public class Entry {
     private String guid;
     private long updated;
     private String title;
+
+    @SerializedName("media$availableDate")
+    private long availableDate;
+
     private List<Category> categories;
     private List<Content> content;
     private boolean approved;
     private String scheme;
     private String label;
 
-    @SerializedName("media$availableDate")
-    private DateTime availableDate;
-    
     @SerializedName("plproductmetadata$linearChannelNumber")
     private String linearChannelNumber;
+
+    @SerializedName("plproductmetadata$linearEpgChannelId")
+    private String linearEpgChannelId;
     
     @SerializedName("plproductmetadata$linearIsStreamable")
     private boolean isStreamable;
     
     @SerializedName("plproductmetadata$linearOutputProtection")
     private boolean hasOutputProtection;
-
-    @SerializedName("plproductmetadata$linearEpgChannelId")
-    private String linearEpgChannelId;
 
     public String getGuid() {
         return guid;
@@ -101,7 +102,7 @@ public class Entry {
         return hasOutputProtection;
     }
 
-    public DateTime getAvailableDate() {
+    public long getAvailableDate() {
         return availableDate;
     }
 

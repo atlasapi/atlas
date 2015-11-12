@@ -3,11 +3,12 @@ package org.atlasapi.input;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.when;
 
+import java.math.BigInteger;
 import java.util.Date;
 
 import com.google.common.collect.ImmutableSet;
-import junit.framework.Assert;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
@@ -15,7 +16,6 @@ import org.atlasapi.media.entity.simple.*;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.junit.Before;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
@@ -72,6 +72,8 @@ public class ItemModelTransformerTest {
 
     @Test
     public void testTransformItemWithEventRefs() {
+        when(idCodec.decode("12345")).thenReturn(BigInteger.valueOf(12345));
+        when(idCodec.decode("1234")).thenReturn(BigInteger.valueOf(1234));
         org.atlasapi.media.entity.Item complex = transformer.transform(getItemWithEventRefs());
         assertEquals(1, complex.events().size());
         assertThat(complex.events().get(0).id(), is(1234L));
@@ -95,9 +97,9 @@ public class ItemModelTransformerTest {
 
     private Item getItemWithEventRefs(){
         Item item = new Item();
+        item.setId("12345");
         item.setUri("uri");
         item.setPublisher(new PublisherDetails(Publisher.BBC.key()));
-        item.setId("12345");
 
         EventRef eventRef = new EventRef();
         eventRef.setId("1234");

@@ -50,26 +50,6 @@ public class BtChannelDataUpdaterTest {
 
     }
 
-    /* @Test
-    public void testAddAliasesToChannelWithoutMock() throws BtMpxClientException {
-        SimpleHttpClient httpClient
-                = FixedResponseHttpClient.respondTo(
-                baseUri + "?form=cjson",
-                Resources.getResource("vole-med-feed-linear.json"));
-
-        Alias alias = new Alias("gb:bt:tv:mpx:vole:service", "urn:BT:linear:service:769254");
-
-        BtMpxClient client = new GsonBtMpxClient(httpClient, baseUri);
-
-        PaginatedEntries channels = client.getChannels(Optional.<Selection>absent());
-
-        channelDataUpdater.addAliasesToChannel(channels);
-
-        Entry firstChannel = Iterables.getFirst(channels.getEntries(), null);
-        Channel channel = channelResolver.fromId(codec.decode(firstChannel.getGuid()).longValue()).requireValue();
-        assertTrue(channel.getAliases().contains(alias));
-    }*/
-
     @Test
     public void testAddAliasesToChannel() throws Exception {
         paginatedEntries = mock(PaginatedEntries.class);
@@ -104,7 +84,7 @@ public class BtChannelDataUpdaterTest {
 
         Set<Alias> channelAliases = testChannel.getAliases();
 
-        assertThat(channelAliases.contains(alias), is(true));
+        assertThat(channelAliases.contains(alias), is(false));
     }
 
     @Test

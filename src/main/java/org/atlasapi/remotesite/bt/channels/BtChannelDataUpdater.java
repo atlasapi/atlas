@@ -109,7 +109,7 @@ public class BtChannelDataUpdater {
             if(!channelIdsThatHaveAliasesAdded.contains(channel.getId())) {
                 channel.setAliases(
                         Iterables.filter(channel.getAliases(),
-                                isAliasWithNamespace(aliasNamespace))
+                                not(isAliasWithNamespace(aliasNamespace)))
                 );
             }
             channelWriter.createOrUpdate(channel);

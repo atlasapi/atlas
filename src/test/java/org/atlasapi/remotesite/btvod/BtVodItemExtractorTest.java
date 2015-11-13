@@ -12,11 +12,10 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
 
-import com.google.common.collect.*;
 import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
@@ -24,7 +23,6 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
@@ -47,6 +45,11 @@ import org.junit.Test;
 import org.mockito.Matchers;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 
 
 public class BtVodItemExtractorTest {
@@ -67,6 +70,7 @@ public class BtVodItemExtractorTest {
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
+    private static final String BT_VOD_KEYWORD_NAMESPACE = "keyword namespace";
 
     private static final String BT_VOD_VERSION_GUID_NAMESPACE = "version:guid:namespace";
     private static final String BT_VOD_VERSION_ID_NAMESPACE = "version:id:namespace";
@@ -120,7 +124,8 @@ public class BtVodItemExtractorTest {
                     BT_VOD_GUID_NAMESPACE,
                     BT_VOD_ID_NAMESPACE,
                     BT_VOD_CONTENT_PROVIDER_NAMESPACE,
-                    BT_VOD_GENRE_NAMESPACE
+                    BT_VOD_GENRE_NAMESPACE,
+                    BT_VOD_KEYWORD_NAMESPACE
             ),
             Sets.<String>newHashSet(),
             new TitleSanitiser(),
@@ -133,12 +138,6 @@ public class BtVodItemExtractorTest {
                     null,
                     null
             ),
-            ImmutableSet.of(
-                            newTopicRef,
-                            new TopicRef(new Topic(234L), 1.0f, false, TopicRef.Relationship.ABOUT),
-                            new TopicRef(new Topic(345L), 1.0f, false, TopicRef.Relationship.ABOUT),
-                            new TopicRef(new Topic(456L), 1.0f, false, TopicRef.Relationship.ABOUT)
-                    ),
             new MockBtVodEpisodeNumberExtractor(),
             mockMpxClient
     );
@@ -454,16 +453,14 @@ public class BtVodItemExtractorTest {
     }
 
     @Test
-    public void testPropagatesNewTagToBrandAndSeries() {
+    public void testUpdatesBrandAndSeriesFromEpisode() {
         BtVodEntry btVodEntry = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
         ParentRef parentRef = new ParentRef(BRAND_URI);
         Series series = mock(Series.class);
-        Brand brand = mock(Brand.class);
         when(series.getCanonicalUri()).thenReturn("seriesUri");
         when(series.getSeriesNumber()).thenReturn(1);
 
         when(seriesProvider.seriesFor(btVodEntry)).thenReturn(Optional.of(series));
-        when(btVodBrandProvider.brandFor(btVodEntry)).thenReturn(Optional.of(brand));
 
         when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
         when(btVodBrandProvider.brandRefFor(btVodEntry)).thenReturn(Optional.of(parentRef));
@@ -474,8 +471,9 @@ public class BtVodItemExtractorTest {
         Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
 
         assertThat(writtenItem.getTopicRefs().contains(newTopicRef), is(true));
-        verify(series).addTopicRef(newTopicRef);
-        verify(brand).addTopicRef(newTopicRef);
+
+        verify(btVodBrandProvider).updateBrandFromEpisode(btVodEntry, (Episode) writtenItem);
+        verify(seriesProvider).updateSeriesFromEpisode(btVodEntry, (Episode) writtenItem);
     }
     
     @Test

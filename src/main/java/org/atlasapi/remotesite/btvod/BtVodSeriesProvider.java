@@ -11,6 +11,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.HashBasedTable;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
@@ -40,19 +41,26 @@ public class BtVodSeriesProvider {
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private final CertificateUpdater certificateUpdater;
     private final BtVodBrandProvider brandProvider;
+    private final TopicUpdater topicUpdater;
+    private final BtVodContentListener listener;
 
     public BtVodSeriesProvider(
             Map<String, Series> explicitSeries,
             Map<String, Series> synthesizedSeries,
             BtVodSeriesUriExtractor seriesUriExtractor,
             CertificateUpdater certificateUpdater,
-            BtVodBrandProvider brandProvider) {
+            BtVodBrandProvider brandProvider,
+            TopicUpdater topicUpdater,
+            BtVodContentListener listener
+    ) {
         this.explicitSeries = ImmutableMap.copyOf(explicitSeries);
         this.explicitSeriesTable = getSeriesTable(explicitSeries);
         this.synthesizedSeries = ImmutableMap.copyOf(synthesizedSeries);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
         this.certificateUpdater = checkNotNull(certificateUpdater);
         this.brandProvider = checkNotNull(brandProvider);
+        this.topicUpdater = checkNotNull(topicUpdater);
+        this.listener = checkNotNull(listener);
     }
 
     public Optional<Series> seriesFor(BtVodEntry row) {
@@ -83,6 +91,17 @@ public class BtVodSeriesProvider {
         Series series = seriesOptional.get();
 
         certificateUpdater.updateCertificates(series, episode);
+        topicUpdater.updateTopics(series, episode.getTopicRefs());
+
+        listener.onContent(series, episodeRow);
+    }
+
+    public ImmutableList<Series> getExplicitSeries() {
+        return ImmutableList.copyOf(explicitSeries.values());
+    }
+
+    public ImmutableList<Series> getSynthesisedSeries() {
+        return ImmutableList.copyOf(synthesizedSeries.values());
     }
 
     private Table<ParentRef, Integer, Series> getSeriesTable(Map<String, Series> seriesMap) {

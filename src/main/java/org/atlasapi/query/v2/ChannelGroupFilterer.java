@@ -35,7 +35,7 @@ public class ChannelGroupFilterer {
                         return false;
                     }
                 }
-                
+
                 return true;
             }
         };
@@ -44,7 +44,7 @@ public class ChannelGroupFilterer {
     public static class ChannelGroupFilter {
         private final Optional<ChannelGroupType> type;
         private final Optional<Platform> platform;
-        
+
         private ChannelGroupFilter(Optional<ChannelGroupType> type, Optional<Platform> platform) {
             this.type = type;
             this.platform = platform;

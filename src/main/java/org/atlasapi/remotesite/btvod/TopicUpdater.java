@@ -10,7 +10,6 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
-import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -23,14 +22,12 @@ import com.google.common.collect.ImmutableSet;
 public class TopicUpdater {
 
     private final TopicQueryResolver topicQueryResolver;
-    private final BtVodContentListener listener;
     private final ImmutableSet<Predicate<Topic>> shouldPropagatePredicates;
     private final LoadingCache<TopicRef, Topic> topicCache;
 
-    public TopicUpdater(TopicQueryResolver topicQueryResolver, BtVodContentListener listener,
+    public TopicUpdater(TopicQueryResolver topicQueryResolver,
             Iterable<Topic> topicsToPropagate, Iterable<String> namespacesToPropagate) {
         this.topicQueryResolver = checkNotNull(topicQueryResolver);
-        this.listener = checkNotNull(listener);
         this.shouldPropagatePredicates = getPredicates(
                 checkNotNull(topicsToPropagate),
                 checkNotNull(namespacesToPropagate)
@@ -45,14 +42,13 @@ public class TopicUpdater {
                 });
     }
 
-    public void updateTopics(Content content, BtVodEntry row, Iterable<TopicRef> topicRefs) {
+    public void updateTopics(Content content, Iterable<TopicRef> topicRefs) {
         for (TopicRef topicRef : topicRefs) {
             Topic topic = topicFor(topicRef);
 
             boolean shouldPropagate = Predicates.or(shouldPropagatePredicates).apply(topic);
             if (shouldPropagate && !content.getTopicRefs().contains(topicRef)) {
                 content.addTopicRef(topicRef);
-                listener.onContent(content, row);
             }
         }
     }

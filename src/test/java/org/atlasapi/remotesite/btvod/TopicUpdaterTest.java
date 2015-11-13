@@ -9,7 +9,6 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
-import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -23,14 +22,12 @@ import com.metabroadcast.common.base.Maybe;
 public class TopicUpdaterTest {
 
     private @Mock TopicQueryResolver topicQueryResolver;
-    private @Mock BtVodContentListener listener;
 
     private TopicRef firstTopicRef;
     private TopicRef secondTopicRef;
     private TopicRef thirdTopicRef;
 
     private @Mock Content content;
-    private @Mock BtVodEntry row;
 
     private TopicUpdater topicUpdater;
 
@@ -53,7 +50,6 @@ public class TopicUpdaterTest {
 
         topicUpdater = new TopicUpdater(
                 topicQueryResolver,
-                listener,
                 ImmutableList.of(firstTopic),
                 ImmutableList.of(secondTopic.getNamespace())
         );
@@ -63,38 +59,35 @@ public class TopicUpdaterTest {
     public void testPropagateTopicsThatAreExplicitlyDefinedToBePropagated() throws Exception {
         when(content.getTopicRefs()).thenReturn(ImmutableList.<TopicRef>of());
 
-        topicUpdater.updateTopics(content, row, ImmutableList.of(firstTopicRef));
+        topicUpdater.updateTopics(content, ImmutableList.of(firstTopicRef));
 
         verify(content).addTopicRef(firstTopicRef);
-        verify(listener).onContent(content, row);
     }
 
     @Test
     public void testPropagateTopicsWithNamespaceThatShouldBePropagated() throws Exception {
         when(content.getTopicRefs()).thenReturn(ImmutableList.<TopicRef>of());
 
-        topicUpdater.updateTopics(content, row, ImmutableList.of(secondTopicRef));
+        topicUpdater.updateTopics(content, ImmutableList.of(secondTopicRef));
 
         verify(content).addTopicRef(secondTopicRef);
-        verify(listener).onContent(content, row);
     }
 
     @Test
     public void testDoNotPropagateTopicsThatAreNotDesired() throws Exception {
         when(content.getTopicRefs()).thenReturn(ImmutableList.<TopicRef>of());
 
-        topicUpdater.updateTopics(content, row, ImmutableList.of(thirdTopicRef));
+        topicUpdater.updateTopics(content, ImmutableList.of(thirdTopicRef));
 
         verify(content, never()).addTopicRef(thirdTopicRef);
-        verify(listener, never()).onContent(content, row);
     }
 
     @Test
     public void testTopicCacheIsBeingUsed() throws Exception {
         when(content.getTopicRefs()).thenReturn(ImmutableList.<TopicRef>of());
 
-        topicUpdater.updateTopics(content, row, ImmutableList.of(firstTopicRef));
-        topicUpdater.updateTopics(content, row, ImmutableList.of(firstTopicRef));
+        topicUpdater.updateTopics(content, ImmutableList.of(firstTopicRef));
+        topicUpdater.updateTopics(content, ImmutableList.of(firstTopicRef));
 
         verify(topicQueryResolver, times(1)).topicForId(firstTopicRef.getTopic());
     }
@@ -103,7 +96,7 @@ public class TopicUpdaterTest {
     public void testDoNotPropagateTopicIfItAlreadyExists() throws Exception {
         when(content.getTopicRefs()).thenReturn(ImmutableList.of(firstTopicRef));
 
-        topicUpdater.updateTopics(content, row, ImmutableList.of(firstTopicRef));
+        topicUpdater.updateTopics(content, ImmutableList.of(firstTopicRef));
 
         verify(content, never()).addTopicRef(firstTopicRef);
     }

@@ -42,6 +42,7 @@ public class BtVodSeriesProvider {
     private final CertificateUpdater certificateUpdater;
     private final BtVodBrandProvider brandProvider;
     private final TopicUpdater topicUpdater;
+    private final BtVodContentListener listener;
 
     public BtVodSeriesProvider(
             Map<String, Series> explicitSeries,
@@ -49,7 +50,9 @@ public class BtVodSeriesProvider {
             BtVodSeriesUriExtractor seriesUriExtractor,
             CertificateUpdater certificateUpdater,
             BtVodBrandProvider brandProvider,
-            TopicUpdater topicUpdater) {
+            TopicUpdater topicUpdater,
+            BtVodContentListener listener
+    ) {
         this.explicitSeries = ImmutableMap.copyOf(explicitSeries);
         this.explicitSeriesTable = getSeriesTable(explicitSeries);
         this.synthesizedSeries = ImmutableMap.copyOf(synthesizedSeries);
@@ -57,6 +60,7 @@ public class BtVodSeriesProvider {
         this.certificateUpdater = checkNotNull(certificateUpdater);
         this.brandProvider = checkNotNull(brandProvider);
         this.topicUpdater = checkNotNull(topicUpdater);
+        this.listener = checkNotNull(listener);
     }
 
     public Optional<Series> seriesFor(BtVodEntry row) {
@@ -87,7 +91,9 @@ public class BtVodSeriesProvider {
         Series series = seriesOptional.get();
 
         certificateUpdater.updateCertificates(series, episode);
-        topicUpdater.updateTopics(series, episodeRow, episode.getTopicRefs());
+        topicUpdater.updateTopics(series, episode.getTopicRefs());
+
+        listener.onContent(series, episodeRow);
     }
 
     public ImmutableList<Series> getExplicitSeries() {

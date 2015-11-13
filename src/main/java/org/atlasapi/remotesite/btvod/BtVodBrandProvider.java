@@ -21,15 +21,22 @@ public class BtVodBrandProvider {
     private final BrandDescriptionUpdater brandDescriptionUpdater;
     private final CertificateUpdater certificateUpdater;
     private final TopicUpdater topicUpdater;
+    private final BtVodContentListener listener;
 
-    public BtVodBrandProvider(BrandUriExtractor brandUriExtractor,
-            Map<String, Brand> brands, BrandDescriptionUpdater brandDescriptionUpdater,
-            CertificateUpdater certificateUpdater, TopicUpdater topicUpdater) {
+    public BtVodBrandProvider(
+            BrandUriExtractor brandUriExtractor,
+            Map<String, Brand> brands,
+            BrandDescriptionUpdater brandDescriptionUpdater,
+            CertificateUpdater certificateUpdater,
+            TopicUpdater topicUpdater,
+            BtVodContentListener listener
+    ) {
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.brands = ImmutableMap.copyOf(brands);
         this.brandDescriptionUpdater = checkNotNull(brandDescriptionUpdater);
         this.certificateUpdater = checkNotNull(certificateUpdater);
         this.topicUpdater = checkNotNull(topicUpdater);
+        this.listener = checkNotNull(listener);
     }
 
 
@@ -61,7 +68,9 @@ public class BtVodBrandProvider {
 
         brandDescriptionUpdater.updateDescriptions(brand, series);
         certificateUpdater.updateCertificates(brand, series);
-        topicUpdater.updateTopics(brand, seriesRow, series.getTopicRefs());
+        topicUpdater.updateTopics(brand, series.getTopicRefs());
+
+        listener.onContent(brand, seriesRow);
     }
 
     public void updateBrandFromEpisode(BtVodEntry episodeRow, Episode episode) {
@@ -72,7 +81,9 @@ public class BtVodBrandProvider {
         Brand brand = brandOptional.get();
 
         certificateUpdater.updateCertificates(brand, episode);
-        topicUpdater.updateTopics(brand, episodeRow, episode.getTopicRefs());
+        topicUpdater.updateTopics(brand, episode.getTopicRefs());
+
+        listener.onContent(brand, episodeRow);
     }
 
     public ImmutableList<Brand> getBrands() {

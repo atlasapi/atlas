@@ -103,7 +103,6 @@ public class BtVodUpdater extends ScheduledTask {
 
         TopicUpdater topicUpdater = new TopicUpdater(
                 topicQueryResolver,
-                listeners,
                 topicsToPropagateToParent,
                 topicNamespacesToPropagateToParent
         );
@@ -158,7 +157,8 @@ public class BtVodUpdater extends ScheduledTask {
                     brandExtractor.getProcessedBrands(),
                     new BrandDescriptionUpdater(),
                     new CertificateUpdater(),
-                    topicUpdater
+                    topicUpdater,
+                    listeners
             );
             
             BtVodExplicitSeriesExtractor explicitSeriesExtractor = new BtVodExplicitSeriesExtractor(
@@ -230,7 +230,8 @@ public class BtVodUpdater extends ScheduledTask {
                     seriesUriExtractor,
                     new CertificateUpdater(),
                     brandProvider,
-                    topicUpdater
+                    topicUpdater,
+                    listeners
             );
 
             BtVodItemExtractor itemExtractor = new BtVodItemExtractor(

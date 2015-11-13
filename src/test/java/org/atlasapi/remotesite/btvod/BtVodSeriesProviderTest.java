@@ -38,8 +38,9 @@ public class BtVodSeriesProviderTest {
     private @Mock CertificateUpdater certificateUpdater;
     private @Mock BtVodBrandProvider brandProvider;
     private @Mock TopicUpdater topicUpdater;
+    private @Mock BtVodContentListener listener;
 
-    private BtVodSeriesProvider objectUnderTest;
+    private BtVodSeriesProvider seriesProvider;
     private int seriesNumber;
 
     @Before
@@ -48,13 +49,14 @@ public class BtVodSeriesProviderTest {
         seriesNumber = 4;
         when(EXPLICIT_SERIES.getSeriesNumber()).thenReturn(seriesNumber);
 
-        objectUnderTest = new BtVodSeriesProvider(
+        seriesProvider = new BtVodSeriesProvider(
                 ImmutableMap.of(EXPLICIT_SERIES_GUID, EXPLICIT_SERIES),
                 ImmutableMap.of(SUNTHESIZED_SERIES_URI, SYNTHESIZED_SERIES),
                 seriesUriExtractor,
                 certificateUpdater,
                 brandProvider,
-                topicUpdater
+                topicUpdater,
+                listener
         );
     }
 
@@ -63,7 +65,7 @@ public class BtVodSeriesProviderTest {
         BtVodEntry row = new BtVodEntry();
         row.setParentGuid(EXPLICIT_SERIES_GUID);
 
-        Series explicitSeries = objectUnderTest.seriesFor(row).get();
+        Series explicitSeries = seriesProvider.seriesFor(row).get();
 
         assertThat(explicitSeries, is(EXPLICIT_SERIES));
     }
@@ -73,7 +75,7 @@ public class BtVodSeriesProviderTest {
         BtVodEntry row = new BtVodEntry();
 
         when(seriesUriExtractor.seriesUriFor(row)).thenReturn(Optional.of(SUNTHESIZED_SERIES_URI));
-        Series explicitSeries = objectUnderTest.seriesFor(row).get();
+        Series explicitSeries = seriesProvider.seriesFor(row).get();
 
         assertThat(explicitSeries, is(SYNTHESIZED_SERIES));
     }
@@ -86,7 +88,7 @@ public class BtVodSeriesProviderTest {
         when(brandProvider.brandRefFor(row)).thenReturn(Optional.of(parentRef));
         when(seriesUriExtractor.extractSeriesNumber(row)).thenReturn(Optional.of(seriesNumber));
 
-        Series series = objectUnderTest.seriesFor(row).get();
+        Series series = seriesProvider.seriesFor(row).get();
 
         assertThat(series, is(EXPLICIT_SERIES));
     }
@@ -98,7 +100,7 @@ public class BtVodSeriesProviderTest {
         when(seriesUriExtractor.seriesUriFor(row)).thenReturn(Optional.<String>absent());
         when(brandProvider.brandRefFor(row)).thenReturn(Optional.<ParentRef>absent());
 
-        assertThat(objectUnderTest.seriesFor(row).isPresent(), is(false));
+        assertThat(seriesProvider.seriesFor(row).isPresent(), is(false));
     }
 
     @Test
@@ -107,7 +109,7 @@ public class BtVodSeriesProviderTest {
         episodeRow.setParentGuid(EXPLICIT_SERIES_GUID);
         Episode episode = new Episode();
 
-        objectUnderTest.updateSeriesFromEpisode(episodeRow, episode);
+        seriesProvider.updateSeriesFromEpisode(episodeRow, episode);
 
         verify(certificateUpdater).updateCertificates(EXPLICIT_SERIES, episode);
     }
@@ -119,9 +121,20 @@ public class BtVodSeriesProviderTest {
         Episode episode = new Episode();
         episode.addTopicRef(topicRef);
 
-        objectUnderTest.updateSeriesFromEpisode(episodeRow, episode);
+        seriesProvider.updateSeriesFromEpisode(episodeRow, episode);
 
-        verify(topicUpdater).updateTopics(EXPLICIT_SERIES, episodeRow, ImmutableList.of(topicRef));
+        verify(topicUpdater).updateTopics(EXPLICIT_SERIES, ImmutableList.of(topicRef));
+    }
+
+    @Test
+    public void testCallListenerAfterUpdatingFromEpisode() throws Exception {
+        BtVodEntry episodeRow = new BtVodEntry();
+        episodeRow.setParentGuid(EXPLICIT_SERIES_GUID);
+        Episode episode = new Episode();
+
+        seriesProvider.updateSeriesFromEpisode(episodeRow, episode);
+
+        verify(listener).onContent(EXPLICIT_SERIES, episodeRow);
     }
 
     @Test
@@ -138,7 +151,8 @@ public class BtVodSeriesProviderTest {
                 seriesUriExtractor,
                 certificateUpdater,
                 brandProvider,
-                topicUpdater
+                topicUpdater,
+                listener
         );
     }
 
@@ -155,7 +169,8 @@ public class BtVodSeriesProviderTest {
                 seriesUriExtractor,
                 certificateUpdater,
                 brandProvider,
-                topicUpdater
+                topicUpdater,
+                listener
         );
     }
 }

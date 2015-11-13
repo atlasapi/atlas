@@ -25,6 +25,7 @@ public class BtVodBrandProviderTest {
     private @Mock BrandDescriptionUpdater brandDescriptionUpdater;
     private @Mock CertificateUpdater certificateUpdater;
     private @Mock TopicUpdater topicUpdater;
+    private @Mock BtVodContentListener listener;
 
     private BtVodBrandProvider brandProvider;
 
@@ -48,7 +49,8 @@ public class BtVodBrandProviderTest {
                 ImmutableMap.of(brand.getCanonicalUri(), brand),
                 brandDescriptionUpdater,
                 certificateUpdater,
-                topicUpdater
+                topicUpdater,
+                listener
         );
 
         when(brandUriExtractor.extractBrandUri(seriesRow))
@@ -84,7 +86,7 @@ public class BtVodBrandProviderTest {
 
         brandProvider.updateBrandFromSeries(seriesRow, series);
 
-        verify(topicUpdater).updateTopics(brand, seriesRow, ImmutableList.of(topicRef));
+        verify(topicUpdater).updateTopics(brand, ImmutableList.of(topicRef));
     }
 
     @Test
@@ -93,6 +95,20 @@ public class BtVodBrandProviderTest {
 
         brandProvider.updateBrandFromEpisode(episodeRow, episode);
 
-        verify(topicUpdater).updateTopics(brand, episodeRow, ImmutableList.of(topicRef));
+        verify(topicUpdater).updateTopics(brand, ImmutableList.of(topicRef));
+    }
+
+    @Test
+    public void testCallListenerAfterUpdatingFromSeries() throws Exception {
+        brandProvider.updateBrandFromSeries(seriesRow, series);
+
+        verify(listener).onContent(brand, seriesRow);
+    }
+
+    @Test
+    public void testCallListenerAfterUpdatingFromEpisode() throws Exception {
+        brandProvider.updateBrandFromEpisode(episodeRow, episode);
+
+        verify(listener).onContent(brand, episodeRow);
     }
 }

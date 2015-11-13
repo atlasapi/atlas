@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.api.client.util.Lists;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -68,7 +69,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         .withMessage("Invalid annotation specified. Valid annotations are: " + Joiner.on(',').join(Iterables.transform(validAnnotations, Annotation.TO_KEY)))
         .withErrorCode("Invalid annotation")
         .withStatusCode(HttpStatusCode.BAD_REQUEST);
-    
+
+    private static final String ADVERTISED = "advertised";
     private static final String TYPE_KEY = "type";
     private static final String PLATFORM_ID_KEY = "platform_id";
     private static final String CHANNEL_GENRES_KEY = "channel_genres";
@@ -92,7 +94,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     @RequestMapping(value={"/3.0/channel_groups.*", "/channel_groups.*"})
     public void listChannels(HttpServletRequest request, HttpServletResponse response,
             @RequestParam(value = TYPE_KEY, required = false) String type,
-            @RequestParam(value = PLATFORM_ID_KEY, required = false) String platformId) throws IOException {
+            @RequestParam(value = PLATFORM_ID_KEY, required = false) String platformId,
+            @RequestParam(value = ADVERTISED, required = false) String advertised) throws IOException {
         try {
             final ApplicationConfiguration appConfig = appConfig(request);
             
@@ -106,13 +109,22 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 
             Selection selection = SELECTION_BUILDER.build(request);        
             channelGroups = selection.applyTo(Iterables.filter(
-                filterer.filter(channelGroups, constructFilter(platformId, type)), 
+                filterer.filter(channelGroups, constructFilter(platformId, type, advertised)),
                     new Predicate<ChannelGroup>() {
                         @Override
                         public boolean apply(ChannelGroup input) {
                             return appConfig.isEnabled(input.getPublisher());
                         }
                     }));
+
+            if (!Strings.isNullOrEmpty(advertised)) {
+                ImmutableList.Builder filtered = ImmutableList.builder();
+                for (ChannelGroup channelGroup : channelGroups) {
+                    filtered.add(filterByAdvertised(channelGroup));
+                }
+                channelGroups = filtered.build();
+            }
+
 
             modelAndViewFor(request, response, channelGroups, appConfig);
         } catch (Exception e) {
@@ -123,7 +135,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     @RequestMapping(value={"/3.0/channel_groups/{id}.*", "/channel_groups/{id}.*"})
     public void listChannel(HttpServletRequest request, HttpServletResponse response, 
             @PathVariable("id") String id, 
-            @RequestParam(value = CHANNEL_GENRES_KEY, required = false) String channelGenres) throws IOException {
+            @RequestParam(value = CHANNEL_GENRES_KEY, required = false) String channelGenres,
+            @RequestParam(value = ADVERTISED, required = false) String advertised) throws IOException {
         try {
             Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(idCodec.decode(id).longValue());
             if (!possibleChannelGroup.isPresent()) {
@@ -150,6 +163,10 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             } else {
                 toReturn = possibleChannelGroup.get();
             }
+
+            if (!Strings.isNullOrEmpty(advertised)) {
+                toReturn = filterByAdvertised(toReturn);
+            }
             
             modelAndViewFor(request, response, ImmutableList.of(toReturn), appConfig);
         } catch (Exception e) {
@@ -169,16 +186,33 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         filteredGroup.setChannelNumberings(filtered);
         return filteredGroup;
     }
+
+    private ChannelGroup filterByAdvertised(ChannelGroup channelGroup) {
+        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(), new Predicate<ChannelNumbering>() {
+            @Override
+            public boolean apply(ChannelNumbering input) {
+                Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
+                return isAdvertised(channel);
+            }
+        });
+        ChannelGroup filteredGroup = channelGroup.copy();
+        filteredGroup.setChannelNumberings(filtered);
+        return filteredGroup;
+    }
     
     private boolean hasMatchingGenre(Channel channel, Set<String> genres) {
         return !Sets.intersection(channel.getGenres(), genres).isEmpty();
+    }
+
+    private boolean isAdvertised(Channel channel) {
+        return channel.getAdvertiseFrom().isBeforeNow() || channel.getAdvertiseFrom().isEqualNow();
     }
 
     private boolean validAnnotations(Set<Annotation> annotations) {
         return validAnnotations.containsAll(annotations);
     }
     
-    private ChannelGroupFilter constructFilter(String platformId, String type) {
+    private ChannelGroupFilter constructFilter(String platformId, String type, String advertised) {
         ChannelGroupFilterBuilder filter = ChannelGroupFilter.builder();
         
         if (!Strings.isNullOrEmpty(platformId)) {
@@ -203,7 +237,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                 throw new IllegalArgumentException("type provided was not valid, should be either platform or region");
             }
         }
-        
+
         return filter.build();
     }
 }

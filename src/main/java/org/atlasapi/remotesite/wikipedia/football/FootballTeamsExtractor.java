@@ -15,7 +15,6 @@ import xtc.parser.ParseException;
 import java.io.IOException;
 
 public class FootballTeamsExtractor implements ContentExtractor<Article, Organisation> {
-    private static final Logger log = LoggerFactory.getLogger(FootballTeamsExtractor.class);
 
     @Override
     public Organisation extract(Article article) {

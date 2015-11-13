@@ -271,7 +271,6 @@ public final class TvBrandHierarchyUpdater extends ScheduledTask {
     }
     
     private void writeHierarchy(TvBrandHierarchy hierarchy) {
-        log.info("Processing brand  \"" + hierarchy.getBrand() + "\"");
         writer.createOrUpdate(hierarchy.getBrand());
         for (Series s : hierarchy.getSeasons()) {
             writer.createOrUpdate(s);

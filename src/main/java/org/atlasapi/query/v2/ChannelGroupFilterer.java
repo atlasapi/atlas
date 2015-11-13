@@ -74,6 +74,7 @@ public class ChannelGroupFilterer {
                 this.platform = Optional.of(platform);
                 return this;
             }
+
         }
     }
 }

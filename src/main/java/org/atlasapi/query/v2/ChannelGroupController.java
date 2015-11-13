@@ -29,6 +29,7 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.api.client.util.Lists;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -93,7 +94,8 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     @RequestMapping(value={"/3.0/channel_groups.*", "/channel_groups.*"})
     public void listChannels(HttpServletRequest request, HttpServletResponse response,
             @RequestParam(value = TYPE_KEY, required = false) String type,
-            @RequestParam(value = PLATFORM_ID_KEY, required = false) String platformId) throws IOException {
+            @RequestParam(value = PLATFORM_ID_KEY, required = false) String platformId,
+            @RequestParam(value = ADVERTISED, required = false) String advertised) throws IOException {
         try {
             final ApplicationConfiguration appConfig = appConfig(request);
             
@@ -107,13 +109,22 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 
             Selection selection = SELECTION_BUILDER.build(request);        
             channelGroups = selection.applyTo(Iterables.filter(
-                filterer.filter(channelGroups, constructFilter(platformId, type)),
+                filterer.filter(channelGroups, constructFilter(platformId, type, advertised)),
                     new Predicate<ChannelGroup>() {
                         @Override
                         public boolean apply(ChannelGroup input) {
                             return appConfig.isEnabled(input.getPublisher());
                         }
                     }));
+
+            if (!Strings.isNullOrEmpty(advertised)) {
+                ImmutableList.Builder filtered = ImmutableList.builder();
+                for (ChannelGroup channelGroup : channelGroups) {
+                    filtered.add(filterByAdvertised(channelGroup));
+                }
+                channelGroups = filtered.build();
+            }
+
 
             modelAndViewFor(request, response, channelGroups, appConfig);
         } catch (Exception e) {
@@ -201,7 +212,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         return validAnnotations.containsAll(annotations);
     }
     
-    private ChannelGroupFilter constructFilter(String platformId, String type) {
+    private ChannelGroupFilter constructFilter(String platformId, String type, String advertised) {
         ChannelGroupFilterBuilder filter = ChannelGroupFilter.builder();
         
         if (!Strings.isNullOrEmpty(platformId)) {

@@ -76,14 +76,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private final ListeningExecutorService executor;
 
-    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient, GlycerinNitroClipsAdapter clipsAdapter, QueuingPersonWriter peopleWriter, Clock clock, int pageSize) {
+    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient, GlycerinNitroClipsAdapter clipsAdapter, QueuingPersonWriter peopleWriter, Clock clock, int pageSize, boolean releaseDateIngestEnabled) {
         this.glycerin = checkNotNull(glycerin);
         this.nitroClient = checkNotNull(nitroClient);
         this.pageSize = pageSize;
         this.clipsAdapter = checkNotNull(clipsAdapter);
         this.brandExtractor = new NitroBrandExtractor(clock);
         this.seriesExtractor = new NitroSeriesExtractor(clock);
-        this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
+        this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter, releaseDateIngestEnabled);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
     }
 

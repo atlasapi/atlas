@@ -66,6 +66,7 @@ public class BbcNitroModule {
     private @Value("${bbc.nitro.threadCount.aroundtoday}") Integer nitroAroundTodayThreadCount;
     private @Value("${bbc.nitro.requestPageSize}") Integer nitroRequestPageSize;
     private @Value("${bbc.nitro.jobFailureThresholdPercent}") Integer jobFailureThresholdPercent;
+    private @Value("${bbc.nitro.releaseDateIngest.enabled}") Boolean releaseDateIngestEnabled;
     
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;
@@ -184,7 +185,7 @@ public class BbcNitroModule {
     GlycerinNitroContentAdapter nitroContentAdapter(Glycerin glycerin) {
         SystemClock clock = new SystemClock();
         GlycerinNitroClipsAdapter clipsAdapter = new GlycerinNitroClipsAdapter(glycerin, clock, nitroRequestPageSize);
-        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), clipsAdapter, peopleWriter, clock, nitroRequestPageSize);
+        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), clipsAdapter, peopleWriter, clock, nitroRequestPageSize, releaseDateIngestEnabled);
     }
 
     private Supplier<Range<LocalDate>> dayRangeSupplier(int back, int forward) {

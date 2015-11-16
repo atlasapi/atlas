@@ -142,7 +142,6 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             if (!possibleChannelGroup.isPresent()) {
                 errorViewFor(request, response, NOT_FOUND);
                 return;
-                
             } 
 
             ApplicationConfiguration appConfig = appConfig(request);
@@ -205,7 +204,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     }
 
     private boolean isAdvertised(Channel channel) {
-        return channel.getAdvertiseFrom().isBeforeNow() || channel.getAdvertiseFrom().isEqualNow();
+        return channel.getAdvertiseFrom() == null || channel.getAdvertiseFrom().isBeforeNow() || channel.getAdvertiseFrom().isEqualNow();
     }
 
     private boolean validAnnotations(Set<Annotation> annotations) {

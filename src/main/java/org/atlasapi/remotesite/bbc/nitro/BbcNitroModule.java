@@ -68,7 +68,6 @@ public class BbcNitroModule {
     private @Value("${bbc.nitro.jobFailureThresholdPercent}") Integer jobFailureThresholdPercent;
     
     private @Autowired SimpleScheduler scheduler;
-    private @Autowired ContentWriter contentWriter;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired ScheduleWriter scheduleWriter;
@@ -110,7 +109,7 @@ public class BbcNitroModule {
         return new OffScheduleContentIngestTask(
                 nitroContentAdapter(glycerin),
                 nitroRequestPageSize,
-                contentWriter,
+                contentWriter(),
                 pidLock,
                 localOrRemoteNitroFetcher(
                     glycerin,
@@ -119,9 +118,13 @@ public class BbcNitroModule {
         );
     }
 
+    public ContentWriter contentWriter() {
+        return new LastUpdatedSettingContentWriter(contentResolver, contentWriter());
+    }
+
     @Bean
     PidUpdateController pidUpdateController() {
-        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter);
+        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter());
     }
 
     @Bean
@@ -132,13 +135,12 @@ public class BbcNitroModule {
     }
 
     ChannelDayProcessor nitroChannelDayProcessor(Integer rateLimit, Optional<Predicate<Item>> fullFetchPermitted) {
-        LastUpdatedSettingContentWriter lastUpdatedSettingContentWriter = new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
-        
+        ContentWriter contentWriter = contentWriter();
         ScheduleResolverBroadcastTrimmer scheduleTrimmer
-            = new ScheduleResolverBroadcastTrimmer(Publisher.BBC_NITRO, scheduleResolver, contentResolver, lastUpdatedSettingContentWriter);
+            = new ScheduleResolverBroadcastTrimmer(Publisher.BBC_NITRO, scheduleResolver, contentResolver, contentWriter);
         Glycerin glycerin = glycerin(rateLimit);
         return new NitroScheduleDayUpdater(scheduleWriter, scheduleTrimmer, 
-                nitroBroadcastHandler(glycerin, fullFetchPermitted, lastUpdatedSettingContentWriter), glycerin);
+                nitroBroadcastHandler(glycerin, fullFetchPermitted, contentWriter), glycerin);
     }
 
     Glycerin glycerin(Integer rateLimit) {

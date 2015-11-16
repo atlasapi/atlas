@@ -18,7 +18,6 @@ import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
-import javax.xml.datatype.XMLGregorianCalendar;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Optional;
@@ -37,7 +36,9 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
 import org.joda.time.LocalDate;
+import org.springframework.beans.factory.annotation.Value;
 
+import javax.xml.datatype.XMLGregorianCalendar;
 
 /**
  * <p>
@@ -55,6 +56,7 @@ import org.joda.time.LocalDate;
  */
 public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode, Item> {
 
+    private @Value("${updaters.bbcnitro.releasedateingest.enabled}") Boolean releaseDateIngestIsEnabled;
     private static final String FILM_FORMAT_ID = "PT007";
     private static final Predicate<Format> IS_FILM_FORMAT = new Predicate<Format>() {
         @Override
@@ -148,7 +150,7 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         }
         item.setParentRef(getBrandRef(episode));
         item.setGenres(genresExtractor.extract(source.getGenres()));
-        if (episode.getReleaseDate() != null) {
+        if (releaseDateIngestIsEnabled && episode.getReleaseDate() != null) {
             setReleaseDate(item, source);
         }
         writeAndSetPeople(item, source);

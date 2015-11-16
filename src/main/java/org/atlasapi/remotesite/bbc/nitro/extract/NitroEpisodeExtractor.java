@@ -1,7 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
@@ -13,7 +12,6 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.ReleaseDate;
-import org.atlasapi.persistence.content.people.QueuingItemsPeopleWriter;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;

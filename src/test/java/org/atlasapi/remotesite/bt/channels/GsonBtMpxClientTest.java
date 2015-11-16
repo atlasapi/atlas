@@ -73,8 +73,9 @@ public class GsonBtMpxClientTest {
         PaginatedEntries channels = client.getChannels(Optional.<Selection>absent());
 
         Entry firstChannel = Iterables.getFirst(channels.getEntries(), null);
+        long expectedAvailableDate = Long.valueOf("1446556354000");
 
-        assertEquals(firstChannel.getAvailableDate(), 0);
+        assertEquals(expectedAvailableDate , firstChannel.getAvailableDate());
         assertThat(firstChannel.getLinearEpgChannelId(), is("urn:BT:linear:service:769254"));
 
     }

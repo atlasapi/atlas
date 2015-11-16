@@ -1,0 +1,1091 @@
+{
+  "$xmlns": {
+    "dcterms": "http://purl.org/dc/terms/",
+    "media": "http://search.yahoo.com/mrss/",
+    "pl": "http://xml.theplatform.com/data/object",
+    "pla": "http://xml.theplatform.com/data/object/admin",
+    "plmedia": "http://xml.theplatform.com/media/data/Media",
+    "plfile": "http://xml.theplatform.com/media/data/MediaFile",
+    "plrelease": "http://xml.theplatform.com/media/data/Release",
+    "plproductmetadata": "http://xml.theplatform.com/product/data/ProductMetadata"
+  },
+  "startIndex": 1,
+  "itemsPerPage": 100,
+  "entryCount": 36,
+  "title": "Media Feed for Linear Channel Availability",
+  "entries": [
+    {
+      "guid": "hpdr",
+      "updated": 1446556354000,
+      "title": "AMC from BT",
+      "media$availableDate": 1446556354000,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://images.atlas.metabroadcast.com/pressassociation.com/channels/p2201508271973.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "332",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:769254",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hn6g",
+      "updated": 1446819590000,
+      "title": "Lifetime",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://images.atlas.metabroadcast.com/pressassociation.com/channels/p2201311041845.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "329",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:766078",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk84",
+      "updated": 1446556262000,
+      "title": "H2",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "330",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:757515",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "presigned_testasset",
+      "updated": 1439310156000,
+      "title": "Pre-Signed Test Asset for TVE Playback",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "S0128048",
+          "media$scheme": "subscription",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0156020",
+          "media$scheme": "Subscription",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0128047",
+          "media$scheme": "subscription",
+          "media$label": "tve kinds extra"
+        },
+        {
+          "media$name": "S0219263",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Essential Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0219267",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Sky Sports 4 (Extra TV Channels)"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "file://rm101volelweb14/media_metadata/portal/BT_VOSP_Test_-_VOL-E/528/932/BBJ3107201501A_269864_SP.png"
+        },
+        {
+          "plfile$streamingUrl": "file://rm101volelweb14/media_metadata/portal/BT_VOSP_Test_-_VOL-E/528/932/BBJ3107201501A_269864_SHRP.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearIsStreamable": false,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk7z",
+      "updated": 1446558091000,
+      "title": "Cartoonito",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://i.cdn.turner.com/dr/teg/turner/release/sites/default/files/images/cartoonitologo.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "488",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:755542",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkyb",
+      "updated": 1446557519000,
+      "title": "Cartoon Network",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://images.wikia.com/cartoonnetwork/images/archive/6/6f/20110908182006!180px-CN_logo.svg.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "486",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:157644",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkz6",
+      "updated": 1447081105000,
+      "title": "Boomerang",
+      "media$availableDate": 1446854400000,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://upload.wikimedia.org/wikipedia/en/thumb/8/80/Boomerang_US_logo.svg/428px-Boomerang_US_logo.svg.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "487",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:750650",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk4g",
+      "updated": 1446557428000,
+      "title": "Nick Toons",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0312140",
+          "media$scheme": "subscription",
+          "media$label": "BT Sport Service on Vision"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://publicismedia.files.wordpress.com/2012/09/nicktoons-main.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "485",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:751764",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkz5",
+      "updated": 1446557315000,
+      "title": "Nick Jr",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://3.bp.blogspot.com/-tz0q8U6GdRs/T1zaSjhBMUI/AAAAAAAAAf0/Yd8W6KHIjKA/s1600/Nick+jr+logo.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "484",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:750608",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkzz",
+      "updated": 1446557243000,
+      "title": "Nickelodeon",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://ghonetv.com/images/photos/182.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "483",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:154274",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk9t",
+      "updated": 1446557010000,
+      "title": "Disney XD",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.cattlecallauditions.com/wp-content/uploads/2011/12/disney-audition-pack-of-wolves.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "482",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:751374",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk2q",
+      "updated": 1446556902000,
+      "title": "Disney Jr",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://hd-report.com/wp-content/uploads/2012/07/disney_junior_logo.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "481",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:751537",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hky8",
+      "updated": 1446556810000,
+      "title": "Disney Channel",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.adweek.com/files/imagecache/node-detail/news_article/disney-hed-2014.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "480",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:312906",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hmb8",
+      "updated": 1446558454000,
+      "title": "MTV Music",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "536",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:759433",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hmcf",
+      "updated": 1446558271000,
+      "title": "Movies 24",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0317530",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Kids Extra"
+        }
+      ],
+      "media$thumbnails": [],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "513",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:755618",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk9r",
+      "updated": 1446556727000,
+      "title": "ESPN",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0312140",
+          "media$scheme": "subscription",
+          "media$label": "BT Sport Service on Vision"
+        },
+        {
+          "media$name": "S0333471",
+          "media$scheme": "subscription",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0333831",
+          "media$scheme": "subscription",
+          "media$label": ""
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.disneydreaming.com/wp-content/uploads/2010/01/ESPN-Logo-1024x575.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "411",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:758465",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hn4w",
+      "updated": 1446556603000,
+      "title": "BT Sport 2",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0312140",
+          "media$scheme": "subscription",
+          "media$label": "BT Sport Service on Vision"
+        },
+        {
+          "media$name": "S0333471",
+          "media$scheme": "subscription",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0333831",
+          "media$scheme": "subscription",
+          "media$label": ""
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://sport.bt.com/images/bt-sport-2-logo-136381974821911201-130801120415.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "410",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:764001",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk9d",
+      "updated": 1418381018000,
+      "title": "Investigation Discovery",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0315454",
+          "media$scheme": "subscription",
+          "media$label": "HD Bolt On Vision Service"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.onlinehdtvizle.com/wp-content/uploads/2014/03/Investigation-Discovery-Canl%C4%B1-izle.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "471",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hm27",
+      "updated": 1444648732000,
+      "title": "Sony Entertainment",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219263",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Essential Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.entertainment-iuk.com/wp-content/set.gif"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "454",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk6v",
+      "updated": 1446555965000,
+      "title": "CI",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219263",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Essential Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://3.bp.blogspot.com/-tY2tS4tYTPI/UiW_XrC0QAI/AAAAAAAAADo/mWOdo6wQte0/s1600/Crime-Investigation-Network-Logo.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "433",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:755635",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkyz",
+      "updated": 1446478363000,
+      "title": "History",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219263",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Essential Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://img1.wikia.nocookie.net/__cb20100624030706/indianajones/images/e/e3/History_channel_logo.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "327",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:750470",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkxr",
+      "updated": 1447082165000,
+      "title": "MTV",
+      "media$availableDate": 1448908200000,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219263",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Essential Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://planetwoodmotifs.com/img/MTV_EMA_2013_LOGO.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "309",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:57005",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk6t",
+      "updated": 1446477809000,
+      "title": "Nat Geo Wild",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219264",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Sky Sports 1 (Extra TV Channels)"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.afaqs.com/all/news/images/news_story_grfx/2011/29695_3.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "318",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:750976",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hky4",
+      "updated": 1446477706000,
+      "title": "Nat Geo",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219264",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Sky Sports 1 (Extra TV Channels)"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.digitaltveurope.net/wp-content/uploads/2014/05/National-Geographic-Channel-logo.jpeg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "317",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:610915",
+      "plproductmetadata$linearIsStreamable": false,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk47",
+      "updated": 1444656083000,
+      "title": "FOX",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219264",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Sky Sports 1 (Extra TV Channels)"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://upload.wikimedia.org/wikipedia/commons/thumb/9/95/FOX_wordmark-red.svg/150px-FOX_wordmark-red.svg.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "422",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk4t",
+      "updated": 1446478214000,
+      "title": "E!",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219263",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Essential Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.nor-del.com/images/Channels/E!Logo.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "421",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:752882",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkzn",
+      "updated": 1446478129000,
+      "title": "Universal",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219264",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Sky Sports 1 (Extra TV Channels)"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://i2.cdnds.net/10/35/M/broadcasting_universal_channel_logo.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "420",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:750649",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkzr",
+      "updated": 1446477955000,
+      "title": "syfy",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.readybuzz.com/wp-content/uploads/2013/09/090707syfy_logo1.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "319",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:318488",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkzv",
+      "updated": 1447410418000,
+      "title": "Comedy Central",
+      "media$availableDate": 1425148200000,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219263",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Essential Extra Channels and VoD"
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.broadcastnow.co.uk/pictures/636xAny/2/5/0/1157250_Comedy_Central.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "307",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:750989",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkyf",
+      "updated": 1421317879000,
+      "title": "Animal Planet",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://upload.wikimedia.org/wikipedia/en/3/3a/Animal_Planet_Canada_Logo.PNG"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "415",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkzf",
+      "updated": 1444652105000,
+      "title": "Discovery",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://garrytutte.com/wp-content/uploads/2013/04/Discovery_Channel_logo.800w_600h.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "414",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hn28",
+      "updated": 1421313880000,
+      "title": "TLC",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.ranklogos.com/wp-content/uploads/2012/04/tlc-logo-2.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "413",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hkzk",
+      "updated": 1418381135000,
+      "title": "alibi",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://upload.wikimedia.org/wikipedia/commons/thumb/2/27/Alibi.svg/150px-Alibi.svg.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "409",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hky6",
+      "updated": 1444648496000,
+      "title": "GOLD",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://upload.wikimedia.org/wikipedia/en/thumb/a/a1/G.O.L.D._logo.svg/150px-G.O.L.D._logo.svg.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "408",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hk86",
+      "updated": 1418382130000,
+      "title": "Watch",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0219262",
+          "media$scheme": "subscription",
+          "media$label": "BT Vision Unlimited Extra Channels and VoD"
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://www.televisual.com/images/news/3_1327324574_Picture%205.png"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "407",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    },
+    {
+      "guid": "hn4x",
+      "updated": 1446556501000,
+      "title": "BT Sport 1",
+      "media$availableDate": 0,
+      "media$categories": [
+        {
+          "media$name": "GBR-bt_multicasttrial",
+          "media$scheme": "targetUserGroup",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0312140",
+          "media$scheme": "subscription",
+          "media$label": "BT Sport Service on Vision"
+        },
+        {
+          "media$name": "S0333471",
+          "media$scheme": "subscription",
+          "media$label": ""
+        },
+        {
+          "media$name": "S0333831",
+          "media$scheme": "subscription",
+          "media$label": ""
+        }
+      ],
+      "media$thumbnails": [
+        {
+          "plfile$streamingUrl": "http://static.trustedreviews.com/94/0000286fc/7300/BT-Sport.jpg"
+        }
+      ],
+      "plmedia$approved": true,
+      "plproductmetadata$linearChannelNumber": "408",
+      "plproductmetadata$linearEpgChannelId": "urn:BT:linear:service:763997",
+      "plproductmetadata$linearIsStreamable": true,
+      "plproductmetadata$linearOutputProtection": false
+    }
+  ]
+}

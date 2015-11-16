@@ -56,7 +56,7 @@ public class GlycerinNitroContentAdapterTest {
     @Before
     public void setUp() {
         contentAdapter = new GlycerinNitroContentAdapter(
-                glycerin, nitroClient, clipsAdapter, personWriter, clock, pageSize);
+                glycerin, nitroClient, clipsAdapter, personWriter, clock, pageSize, true);
     }
 
     @Test

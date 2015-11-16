@@ -59,7 +59,7 @@ public class NitroEpisodeExtractorTest {
     private static final String EPISODE_PID = "p01mv8m3";
     private static final ImmutableList<Availability> noAvailability = ImmutableList.<Availability>of();
     private final NitroEpisodeExtractor extractor = new NitroEpisodeExtractor(new SystemClock(),
-            Mockito.mock(QueuingPersonWriter.class));
+            Mockito.mock(QueuingPersonWriter.class), true);
 
     @Test
     public void testParentRefsForExtractedTopLevelItemAreEmpty() {

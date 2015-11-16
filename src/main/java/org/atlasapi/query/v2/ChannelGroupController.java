@@ -142,7 +142,6 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             if (!possibleChannelGroup.isPresent()) {
                 errorViewFor(request, response, NOT_FOUND);
                 return;
-                
             } 
 
             ApplicationConfiguration appConfig = appConfig(request);
@@ -167,7 +166,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             if (!Strings.isNullOrEmpty(advertised)) {
                 toReturn = filterByAdvertised(toReturn);
             }
-            
+
             modelAndViewFor(request, response, ImmutableList.of(toReturn), appConfig);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
@@ -199,13 +198,13 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         filteredGroup.setChannelNumberings(filtered);
         return filteredGroup;
     }
-    
+
     private boolean hasMatchingGenre(Channel channel, Set<String> genres) {
         return !Sets.intersection(channel.getGenres(), genres).isEmpty();
     }
 
     private boolean isAdvertised(Channel channel) {
-        return channel.getAdvertiseFrom().isBeforeNow() || channel.getAdvertiseFrom().isEqualNow();
+        return channel.getAdvertiseFrom() == null || !channel.getAdvertiseFrom().isAfterNow();
     }
 
     private boolean validAnnotations(Set<Annotation> annotations) {

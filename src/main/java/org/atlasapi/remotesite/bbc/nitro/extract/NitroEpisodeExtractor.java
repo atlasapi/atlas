@@ -56,6 +56,7 @@ import javax.xml.datatype.XMLGregorianCalendar;
  */
 public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode, Item> {
 
+    private @Value("${updaters.bbcnitro.releasedateingest.enabled}") Boolean releaseDateIngestIsEnabled;
     private static final String FILM_FORMAT_ID = "PT007";
     private static final Predicate<Format> IS_FILM_FORMAT = new Predicate<Format>() {
         @Override
@@ -63,7 +64,6 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
             return FILM_FORMAT_ID.equals(input.getFormatId());
         }
     };
-    private @Value("${updaters.bbcnitro.releasedateingest.enabled}") Boolean releaseDateIngestIsEnabled;
 
     private final ContentExtractor<List<NitroGenreGroup>, Set<String>> genresExtractor
         = new NitroGenresExtractor();

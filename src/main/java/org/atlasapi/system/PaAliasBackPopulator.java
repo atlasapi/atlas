@@ -94,6 +94,11 @@ public class PaAliasBackPopulator {
                     contentWriter.createOrUpdate((Item) content);
                     return;
                 }
+                if (content instanceof Item && !aliases.contains(generateAliasFor((Item) content))) {
+                    aliases.add(generateAliasFor((Item) content));
+                    contentWriter.createOrUpdate((Item) content);
+                    return;
+                }
                 LOG.warn("Could not back populate Alias for content of type {} ", content.getClass());
             }
         };
@@ -113,6 +118,10 @@ public class PaAliasBackPopulator {
 
     private Alias generateAliasFor(Film content) {
         return PaHelper.getFilmAlias(content.getId().toString());
+    }
+
+    private Alias generateAliasFor(Item content) {
+        return PaHelper.getAliasItem(content.getId().toString());
     }
 
     private ContentListingCriteria createListingCriteria() {

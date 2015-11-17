@@ -71,6 +71,7 @@ public class BbcNitroModule {
     private @Value("${bbc.nitro.releaseDateIngest.enabled}") Boolean releaseDateIngestEnabled;
     
     private @Autowired SimpleScheduler scheduler;
+    private @Autowired ContentWriter contentWriter;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired ScheduleWriter scheduleWriter;
@@ -124,7 +125,7 @@ public class BbcNitroModule {
     }
 
     public ContentWriter contentWriter() {
-        return new LastUpdatedSettingContentWriter(contentResolver, contentWriter());
+        return new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
     }
 
     @Bean

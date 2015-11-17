@@ -99,7 +99,7 @@ public class BbcNitroModule {
         if (offScheduleIngestEnabled) {
             scheduler.schedule(
                     nitroOffScheduleIngestTask().withName("Nitro off-schedule content updater"),
-                    RepetitionRules.every(Duration.standardDays(1)));
+                    RepetitionRules.every(Duration.standardHours(3)));
         }
     }
 

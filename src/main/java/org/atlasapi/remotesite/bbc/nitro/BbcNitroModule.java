@@ -53,6 +53,7 @@ import com.metabroadcast.common.time.SystemClock;
 public class BbcNitroModule {
 
     private @Value("${updaters.bbcnitro.enabled}") Boolean tasksEnabled;
+    private @Value("${updaters.bbcnitro.offschedule.enabled}") Boolean offScheduleIngestEnabled;
     private @Value("${bbc.nitro.host}") String nitroHost;
     private @Value("${bbc.nitro.root}") String nitroRoot;
     private @Value("${bbc.nitro.apiKey}") String nitroApiKey;
@@ -91,6 +92,8 @@ public class BbcNitroModule {
                     .withName("Nitro full fetch -8 to -30 day updater"), RepetitionRules.every(Duration.standardHours(12)));
             scheduler.schedule(nitroScheduleUpdateTask(7, 3, nitroAroundTodayThreadCount, nitroAroundTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
                     .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.every(Duration.standardHours(2)));
+        }
+        if (offScheduleIngestEnabled) {
             scheduler.schedule(
                     nitroOffScheduleIngestTask().withName("Nitro off-schedule content updater"),
                     RepetitionRules.every(Duration.standardDays(1)));

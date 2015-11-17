@@ -25,6 +25,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class PaAliasBackPopulator {
 
     private static final Logger LOG = LoggerFactory.getLogger(PaAliasBackPopulator.class);
+    private static final String TASK_NAME = PaAliasBackPopulator.class.getCanonicalName();
 
     private static final int THREADS = 15;
     private final ContentLister contentLister;
@@ -54,8 +55,14 @@ public class PaAliasBackPopulator {
 
     public void backpopulate() throws Exception {
         Iterator<Content> contentItr = contentLister.listContent(createListingCriteria());
+        int counter = 0;
         while (contentItr.hasNext()) {
-            executor.submit(aliasGeneratingRunnable(contentItr.next()));
+            Content content = contentItr.next();
+            executor.submit(aliasGeneratingRunnable(content));
+            counter++;
+            if (counter % 10000 == 0) {
+                progressStore.storeProgress(TASK_NAME, ContentListingProgress.progressFrom(content));
+            }
         }
     }
 
@@ -105,7 +112,7 @@ public class PaAliasBackPopulator {
     }
 
     private ContentListingCriteria createListingCriteria() {
-        ContentListingProgress progress = progressStore.progressForTask(getClass().getCanonicalName());
+        ContentListingProgress progress = progressStore.progressForTask(TASK_NAME);
 
         return new ContentListingCriteria.Builder()
                 .forContent(

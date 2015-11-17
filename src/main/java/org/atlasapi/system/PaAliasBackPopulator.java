@@ -71,7 +71,7 @@ public class PaAliasBackPopulator {
             @Override public void run() {
                 Set<Alias> aliases = content.getAliases();
                 if (content instanceof Brand
-                        && !aliases.contains(PaHelper.getBrandAlias(content.getId().toString()))) {
+                        && !aliases.contains(generateAliasFor((Brand) content))) {
                     aliases.add(generateAliasFor((Brand) content));
                     return;
                 }

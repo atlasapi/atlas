@@ -73,21 +73,25 @@ public class PaAliasBackPopulator {
                 if (content instanceof Brand
                         && !aliases.contains(generateAliasFor((Brand) content))) {
                     aliases.add(generateAliasFor((Brand) content));
+                    contentWriter.createOrUpdate((Container) content);
                     return;
                 }
                 if (content instanceof Series
                         && !aliases.contains(generateAliasFor((Series) content))) {
                     aliases.add(generateAliasFor((Series) content));
+                    contentWriter.createOrUpdate((Container) content);
                     return;
                 }
                 if (content instanceof Episode
                         && !aliases.contains(generateAliasFor((Episode) content))) {
                     aliases.add(generateAliasFor((Episode) content));
+                    contentWriter.createOrUpdate((Item) content);
                     return;
                 }
                 if (content instanceof Film
                         && !aliases.contains(generateAliasFor((Film) content))) {
                     aliases.add(generateAliasFor((Film) content));
+                    contentWriter.createOrUpdate((Item) content);
                     return;
                 }
                 LOG.warn("Could not back populate Alias for content of type {} ", content.getClass());

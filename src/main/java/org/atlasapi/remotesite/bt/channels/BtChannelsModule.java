@@ -33,7 +33,6 @@ public class BtChannelsModule {
 
     //private static final RepetitionRule PROD_INGEST_REPETITION = RepetitionRules.every(Duration.standardHours(2));
     private static final RepetitionRule PROD_INGEST_REPETITION = RepetitionRules.NEVER;
-    private static final LocalTime NON_PROD_BASE_START_TIME = new LocalTime(16,0);
     
     //private static final RepetitionRule TEST1_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME);
     private static final RepetitionRule TEST1_INGEST_REPETITION = RepetitionRules.NEVER;

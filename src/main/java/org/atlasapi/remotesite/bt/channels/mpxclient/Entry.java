@@ -35,15 +35,14 @@ public class Entry {
     private String guid;
     private long updated;
     private String title;
-
-    @SerializedName("media$availableDate")
-    private long availableDate;
-
     private List<Category> categories;
     private List<Content> content;
     private boolean approved;
     private String scheme;
     private String label;
+
+    @SerializedName("availableDate")
+    private long availableDate;
 
     @SerializedName("plproductmetadata$linearChannelNumber")
     private String linearChannelNumber;

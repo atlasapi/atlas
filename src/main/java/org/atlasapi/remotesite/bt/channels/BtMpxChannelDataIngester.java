@@ -85,18 +85,17 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
             log.debug("Acquired channel writer lock");
             PaginatedEntries entries = btMpxClient.getChannels(Optional.<Selection>absent());
 
+            channelDataUpdater.addAliasesToChannel(entries);
+
             if (ingestAdvertiseFromField) {
                 channelDataUpdater.addAvailableDateToChannel(entries);
             }
-
-            channelDataUpdater.addAliasesToChannel(entries);
 
             ImmutableSet.Builder<String> allCurrentChannelGroups = ImmutableSet.builder();
             for (AbstractBtChannelGroupSaver saver : channelGroupSavers) {
                 allCurrentChannelGroups.addAll(saver.update(entries.getEntries()));
             }
             ImmutableSet<String> allCurrentChannelGroupsBuilt = allCurrentChannelGroups.build();
-
 
             removeOldChannelGroupChannels(allCurrentChannelGroupsBuilt);
             allChannelsGroupUpdater.update();

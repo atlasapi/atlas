@@ -51,7 +51,7 @@ public class BtChannelDataUpdater {
                 }
 
             } catch (Exception e) {
-                LOGGER.error("Failure to process rows...", e);
+                LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
             }
 
         }
@@ -71,7 +71,7 @@ public class BtChannelDataUpdater {
                     updatedChannels.add(channel.requireValue().getId());
                 }
             } catch (Exception e) {
-                LOGGER.error("Failed to process row....", e);
+                LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
             }
 
         }

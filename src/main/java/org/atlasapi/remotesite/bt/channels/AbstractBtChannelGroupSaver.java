@@ -81,28 +81,40 @@ public abstract class AbstractBtChannelGroupSaver {
         for (Map.Entry<String, Collection<String>> entry : keys.asMap().entrySet()) {
             String aliasUri = aliasUriFor(entry.getKey());
             Optional<Alias> alias = aliasFor(entry.getKey());
-            
+
             ChannelGroup channelGroup = getOrCreateChannelGroup(aliasUri, alias);
             channelGroup.setPublisher(publisher);
             channelGroup.addTitle(titleFor(entry.getKey()));
-            
+
             Set<Long> currentChannels = Sets.newHashSet();
-            for (String channelId : entry.getValue()) {
-                Long numericId = TO_NUMERIC_ID.apply(channelId);
-                currentChannels.add(numericId);
-                Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(numericId)), null);
-                if (channel != null) {
-                    channel.addChannelNumber(ChannelNumbering.builder().withChannelGroup(channelGroup).build());
-                    channelWriter.createOrUpdate(channel);
-                } else {
-                    log.warn("Could not resolve channel with ID " + channelId);
-                }
+            try {
+                currentChannels = updateChannelNumberingInChannels(entry, channelGroup);
+            } catch (Exception e) {
+                log.error("Failure to process. Channel Id may contain illegal characters that cannot be decoded", e);
             }
+
             removeOldChannelsInGroup(channelGroup, currentChannels);
             channelGroupWriter.createOrUpdate(channelGroup);
             channelGroupUris.add(channelGroup.getCanonicalUri());
         };
         return channelGroupUris.build();
+    }
+
+    private Set<Long> updateChannelNumberingInChannels(Map.Entry<String, Collection<String>> entry, ChannelGroup channelGroup){
+        Set<Long> currentChannels = Sets.newHashSet();
+        for (String channelId : entry.getValue()) {
+            Long numericId = TO_NUMERIC_ID.apply(channelId);
+            currentChannels.add(numericId);
+            Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(numericId)), null);
+            if (channel != null) {
+                channel.addChannelNumber(ChannelNumbering.builder().withChannelGroup(channelGroup).build());
+                channelWriter.createOrUpdate(channel);
+            } else {
+                log.warn("Could not resolve channel with ID " + channelId);
+            }
+        }
+
+        return currentChannels;
     }
     
     private void removeOldChannelsInGroup(final ChannelGroup channelGroup, Set<Long> currentChannels) {

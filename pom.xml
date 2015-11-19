@@ -17,7 +17,7 @@
                     <target>1.7</target>
                     <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J-Xss5M</arg>
+                        <arg>-J-Xss1M</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -481,7 +481,7 @@
         <dependency>
             <groupId>com.google.code.gson</groupId>
             <artifactId>gson</artifactId>
-            <version>2.4</version>
+            <version>2.2.4</version>
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.common.social</groupId>

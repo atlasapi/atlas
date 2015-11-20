@@ -299,7 +299,7 @@ public class EquivModule {
             updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
                 .withItemUpdater(standardItemUpdater)
                 .withTopLevelContainerUpdater(topLevelContainerUpdater)
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         }
         
@@ -400,7 +400,7 @@ public class EquivModule {
         updaters.register(TALK_TALK, SourceSpecificEquivalenceUpdater.builder(TALK_TALK)
                 .withItemUpdater(vodItemUpdater(acceptablePublishers).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(acceptablePublishers))
-                .withNonTopLevelContainerUpdater(vodSeriesUpdater(acceptablePublishers))
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         
         Set<Publisher> btVodPublishers = ImmutableSet.of(PA);
@@ -408,7 +408,7 @@ public class EquivModule {
                 .withItemUpdater(vodItemUpdater(btVodPublishers)
                         .withScorer(new SeriesSequenceItemScorer()).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(btVodPublishers))
-                .withNonTopLevelContainerUpdater(vodSeriesUpdater(btVodPublishers))
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(btVodPublishers))
                 .build());
         
         Set<Publisher> btTveVodPublishers = ImmutableSet.of(PA);
@@ -416,7 +416,7 @@ public class EquivModule {
                 .withItemUpdater(btVodItemUpdater(btTveVodPublishers)
                         .withScorer(new SeriesSequenceItemScorer()).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(btTveVodPublishers))
-                .withNonTopLevelContainerUpdater(vodSeriesUpdater(btTveVodPublishers))
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(btTveVodPublishers))
                 .build());
                 
         Set<Publisher> itunesAndMusicPublishers = Sets.union(musicPublishers, ImmutableSet.of(ITUNES));
@@ -466,7 +466,7 @@ public class EquivModule {
         
     }
 
-    private ContentEquivalenceUpdater<Container> vodSeriesUpdater(
+    private ContentEquivalenceUpdater<Container> standardSeriesUpdater(
             Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Container>builder()
             .withGenerator(new ContainerCandidatesContainerEquivalenceGenerator(contentResolver, equivSummaryStore))
@@ -617,6 +617,7 @@ public class EquivModule {
             .withFilter(this.<Container>standardFilter())
             .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
             .withHandler(containerResultHandlers(sources))
+            
             .build();
     }
 

@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.wikipedia;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
 import org.apache.commons.io.IOUtils;
 import org.atlasapi.media.entity.Organisation;
@@ -51,7 +52,8 @@ public class FootballTeamsExtractionTest {
                 IOUtils.toString(Resources.getResource(getClass(), "teams/Arsenal F.C..mediawiki").openStream(), Charsets.UTF_8.name())
         ));
         assertEquals("Arsenal", teams.getTitle());
-        assertEquals("http://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg", teams.getImage());
+        assertEquals("http://upload.wikimedia.org/wikipedia/en/5/53/Arsenal_FC.svg",
+                Iterables.getOnlyElement(teams.getImages()).getCanonicalUri());
         assertEquals("wikipedia.org", teams.getPublisher().key());
         assertEquals("http://en.wikipedia.org/wiki/Fake_title", teams.getCanonicalUri());
         assertTrue(!teams.getRelatedLinks().isEmpty());
@@ -63,7 +65,7 @@ public class FootballTeamsExtractionTest {
                 IOUtils.toString(Resources.getResource(getClass(), "teams/Chelsea F.C..mediawiki").openStream(), Charsets.UTF_8.name())
         ));
         assertEquals("Chelsea", teams.getTitle());
-        assertEquals("http://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg", teams.getImage());
+        assertEquals("http://upload.wikimedia.org/wikipedia/en/c/cc/Chelsea_FC.svg", Iterables.getOnlyElement(teams.getImages()).getCanonicalUri());
         assertEquals("wikipedia.org", teams.getPublisher().key());
         assertEquals("http://en.wikipedia.org/wiki/Fake_title", teams.getCanonicalUri());
         assertTrue(!teams.getRelatedLinks().isEmpty());

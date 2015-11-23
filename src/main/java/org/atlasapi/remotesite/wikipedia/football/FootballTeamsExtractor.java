@@ -1,6 +1,10 @@
 package org.atlasapi.remotesite.wikipedia.football;
 
-import org.atlasapi.media.entity.*;
+import com.google.common.collect.ImmutableList;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.Organisation;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
@@ -11,7 +15,6 @@ import xtc.parser.ParseException;
 import java.io.IOException;
 
 public class FootballTeamsExtractor implements ContentExtractor<Article, Organisation> {
-    private static final Logger log = LoggerFactory.getLogger(FootballTeamsExtractor.class);
 
     @Override
     public Organisation extract(Article article) {
@@ -29,7 +32,10 @@ public class FootballTeamsExtractor implements ContentExtractor<Article, Organis
             } else {
                 team.setTitle(article.getTitle());
             }
-            team.setImage(SwebleHelper.getWikiImage(info.image));
+            if (info.image != null) {
+                Image image = new Image(SwebleHelper.getWikiImage(info.image));
+                team.setImages(ImmutableList.of(image));
+            }
             return team;
         } catch (IOException | ParseException ex) {
             throw new RuntimeException(ex);

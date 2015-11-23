@@ -63,7 +63,6 @@ public final class EpisodeListScraper extends AstVisitor {
         
         if (! "Episode list".equalsIgnoreCase(name)
          && ! "Episode list/sublist".equalsIgnoreCase(name)) {
-            log.debug("Ignoring template " + name);
             return;
         }
         currentResult = new ScrapedEpisode(){{season = currentSeason;}};
@@ -97,7 +96,6 @@ public final class EpisodeListScraper extends AstVisitor {
 
     @Override
     protected Object visitNotFound(AstNode node) {
-        log.debug("Skipping node " + node.getNodeName());
         return null;
     }
 }

@@ -12,15 +12,14 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Topic;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.topic.TopicQueryResolver;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.scheduling.ScheduledTask;
@@ -40,14 +39,13 @@ public class BtVodUpdater extends ScheduledTask {
     private final BrandImageExtractor brandImageExtractor;
     private final BrandUriExtractor brandUriExtractor;
     private final BtVodContentMatchingPredicate newFeedContentMatchingPredicate;
-    private final Topic newTopic;
-    private final Topic kidsTopic;
-    private final Topic tvBoxsetTopic;
-    private final Topic subscriptionCatchupTopic;
+    private final Set<Topic> topicsToPropagateToParent;
+    private final Set<String> topicNamespacesToPropagateToParent;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
     private final BtVodVersionsExtractor versionsExtractor;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final BtMpxVodClient mpxClient;
+    private final TopicQueryResolver topicQueryResolver;
     
     public BtVodUpdater(
             ContentWriter contentWriter,
@@ -60,21 +58,18 @@ public class BtVodUpdater extends ScheduledTask {
             ImageExtractor imageExtractor,
             BrandUriExtractor brandUriExtractor,
             BtVodContentMatchingPredicate newFeedContentMatchingPredicate,
-            Topic newTopic,
-            Topic kidsTopic,
-            Topic tvBoxsetTopic,
-            Topic subscriptionCatchupTopic,
+            Set<Topic> topicsToPropagateToParent,
+            Set<String> topicNamespacesToPropagateToParent,
             BtVodSeriesUriExtractor seriesUriExtractor,
             BtVodVersionsExtractor versionsExtractor,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
-            BtMpxVodClient mpxClient
+            BtMpxVodClient mpxClient,
+            TopicQueryResolver topicQueryResolver
     ) {
         this.contentWriter = checkNotNull(contentWriter);
         this.newFeedContentMatchingPredicate = checkNotNull(newFeedContentMatchingPredicate);
-        this.newTopic = checkNotNull(newTopic);
-        this.kidsTopic = checkNotNull(kidsTopic);
-        this.tvBoxsetTopic = checkNotNull(tvBoxsetTopic);
-        this.subscriptionCatchupTopic = checkNotNull(subscriptionCatchupTopic);
+        this.topicsToPropagateToParent = checkNotNull(topicsToPropagateToParent);
+        this.topicNamespacesToPropagateToParent = checkNotNull(topicNamespacesToPropagateToParent);
         this.vodData = checkNotNull(vodData);
         this.uriPrefix = checkNotNull(uriPrefix);
         this.publisher = checkNotNull(publisher);
@@ -87,6 +82,7 @@ public class BtVodUpdater extends ScheduledTask {
         this.versionsExtractor = checkNotNull(versionsExtractor);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.mpxClient = checkNotNull(mpxClient);
+        this.topicQueryResolver = checkNotNull(topicQueryResolver);
     }
 
     @Override
@@ -104,6 +100,12 @@ public class BtVodUpdater extends ScheduledTask {
         Set<String> processedRows = Sets.newHashSet();
         
         listeners.beforeContent();
+
+        TopicUpdater topicUpdater = new TopicUpdater(
+                topicQueryResolver,
+                topicsToPropagateToParent,
+                topicNamespacesToPropagateToParent
+        );
         
         BtVodBrandExtractor brandExtractor = new BtVodBrandExtractor(
                 publisher,
@@ -118,14 +120,6 @@ public class BtVodUpdater extends ScheduledTask {
         String explicitSeriesExtractStatus = "[TODO]";
         String synthesizedSeriesExtractStatus = "[TODO]";
         String itemExtractStatus = "[TODO]";
-        
-        ImmutableSet<TopicRef> topicsToPropagateToParents = 
-                ImmutableSet.of(
-                                    describedFieldsExtractor.topicRefFor(newTopic),
-                                    describedFieldsExtractor.topicRefFor(kidsTopic),
-                                    describedFieldsExtractor.topicRefFor(tvBoxsetTopic),
-                                    describedFieldsExtractor.topicRefFor(subscriptionCatchupTopic)
-                                );
 
         try {
             reportStatus("Extracting brand images");
@@ -162,7 +156,9 @@ public class BtVodUpdater extends ScheduledTask {
                     brandUriExtractor,
                     brandExtractor.getProcessedBrands(),
                     new BrandDescriptionUpdater(),
-                    new CertificateUpdater()
+                    new CertificateUpdater(),
+                    topicUpdater,
+                    listeners
             );
             
             BtVodExplicitSeriesExtractor explicitSeriesExtractor = new BtVodExplicitSeriesExtractor(
@@ -174,8 +170,7 @@ public class BtVodUpdater extends ScheduledTask {
                     seriesUriExtractor,
                     versionsExtractor,
                     new TitleSanitiser(),
-                    imageExtractor,
-                    topicsToPropagateToParents
+                    imageExtractor
             );
             
             vodData.processData(explicitSeriesExtractor);
@@ -207,8 +202,7 @@ public class BtVodUpdater extends ScheduledTask {
                     processedRows,
                     seriesUriExtractor,
                     explicitSeries.keySet(),
-                    imageExtractor,
-                    topicsToPropagateToParents
+                    imageExtractor
             );
             vodData.processData(synthesizedSeriesExtractor);
             synthesizedSeriesExtractStatus = String.format(
@@ -231,7 +225,13 @@ public class BtVodUpdater extends ScheduledTask {
             Map<String, Series> synthesizedSeries = synthesizedSeriesExtractor.getSynthesizedSeries();
 
             BtVodSeriesProvider seriesProvider = new BtVodSeriesProvider(
-                    explicitSeries, synthesizedSeries, seriesUriExtractor, new CertificateUpdater()
+                    explicitSeries,
+                    synthesizedSeries,
+                    seriesUriExtractor,
+                    new CertificateUpdater(),
+                    brandProvider,
+                    topicUpdater,
+                    listeners
             );
 
             BtVodItemExtractor itemExtractor = new BtVodItemExtractor(
@@ -245,7 +245,6 @@ public class BtVodUpdater extends ScheduledTask {
                     new TitleSanitiser(),
                     imageExtractor,
                     versionsExtractor,
-                    topicsToPropagateToParents,
                     new BtVodMpxBackedEpisodeNumberExtractor(mpxClient),
                     mpxClient
             );
@@ -269,9 +268,9 @@ public class BtVodUpdater extends ScheduledTask {
 
             writeContent(
                     Iterables.concat(
-                            brandExtractor.getProcessedBrands().values(),
-                            explicitSeriesExtractor.getExplicitSeries().values(),
-                            synthesizedSeriesExtractor.getSynthesizedSeries().values(),
+                            brandProvider.getBrands(),
+                            seriesProvider.getExplicitSeries(),
+                            seriesProvider.getSynthesisedSeries(),
                             itemExtractor.getProcessedItems().values()
                     )
             );
@@ -325,6 +324,4 @@ public class BtVodUpdater extends ScheduledTask {
         }
         oldContentDeactivator.afterContent();
     }
-    
-    
 }

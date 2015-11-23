@@ -1,13 +1,13 @@
 package org.atlasapi.remotesite.wikipedia.people;
 
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Organisation;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
-import org.atlasapi.remotesite.wikipedia.football.TeamInfoboxScrapper;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -20,7 +20,6 @@ import java.io.IOException;
 import com.google.api.client.util.Strings;
 
 public class PeopleExtractor implements ContentExtractor<Article, Person> {
-    private static final Logger log = LoggerFactory.getLogger(PeopleExtractor.class);
 
     @Override
     public Person extract(Article article) {
@@ -40,7 +39,8 @@ public class PeopleExtractor implements ContentExtractor<Article, Person> {
                 person.addAlias(new Alias("imdb:uri", info.alias));
             }
             if (!Strings.isNullOrEmpty(info.image)) {
-                person.setImage(SwebleHelper.getWikiImage(info.image));
+                Image image = new Image(SwebleHelper.getWikiImage(info.image));
+                person.setImages(ImmutableList.of(image));
             }
             if (!Strings.isNullOrEmpty(info.birthDate)) {
                 person.setBirthDate(parseBirthDate(info.birthDate));
@@ -52,15 +52,22 @@ public class PeopleExtractor implements ContentExtractor<Article, Person> {
                 person = person.withProfileLink(info.website);
             }
             return person;
-        } catch (IOException | ParseException ex) {
-            throw new RuntimeException(ex);
+        } catch (IOException | ParseException e) {
+            throw new RuntimeException(e);
         }
     }
 
     private DateTime parseBirthDate(String date) {
-        DateTimeFormatter formatter = DateTimeFormat.forPattern("MMM dd, yyyy");
+        DateTimeFormatter formatter;
+        if (date.contains("-")) {
+            formatter = DateTimeFormat.forPattern("yyyy-MM-dd");
+        } else if (date.contains(",")) {
+            formatter = DateTimeFormat.forPattern("MMM dd, yyyy");
+        } else {
+            formatter = DateTimeFormat.forPattern("dd MMM yyyy");
+        }
+
         DateTime dt = formatter.parseDateTime(date);
         return dt;
     }
-
 }

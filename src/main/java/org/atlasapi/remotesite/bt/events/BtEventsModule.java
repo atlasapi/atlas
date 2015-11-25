@@ -48,7 +48,7 @@ public class BtEventsModule {
     }
     
     private BtEventsDataHandler dataHandler() {
-        return new BtEventsDataHangdler(organisationStore, eventStore, utility());
+        return new BtEventsDataHandler(organisationStore, eventStore, utility());
     }
     
     private BtEventsUtility utility() {

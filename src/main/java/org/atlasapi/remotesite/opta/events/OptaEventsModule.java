@@ -63,7 +63,7 @@ public class OptaEventsModule {
         scheduler.schedule(nonFootballIngestTask().withName("Opta Events (Non Football) Updater"), OTHER_SPORTS_REPETITION_RULE);
     }
     
-    private OptaEventsIngestTask<SportsTeam, SportsMatchData> soccerIngestTask() {
+    private  OptaEventsIngestTask<SportsTeam, SportsMatchData> soccerIngestTask() {
         Map<OptaSportType, OptaSportConfiguration> sportConfig = sportConfig(OPTA_HTTP_SOCCER_CONFIG_PREFIX);
         return new OptaEventsIngestTask<SportsTeam, SportsMatchData>(httpEventsFetcher(sportConfig, soccerTransformer()), dataHandler(sportConfig));
     }

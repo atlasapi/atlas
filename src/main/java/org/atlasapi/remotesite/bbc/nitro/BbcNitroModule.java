@@ -27,6 +27,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 
 import com.google.api.client.util.Strings;
 import com.google.common.base.Function;
@@ -53,6 +54,7 @@ import com.metabroadcast.common.time.SystemClock;
 public class BbcNitroModule {
 
     private @Value("${updaters.bbcnitro.enabled}") Boolean tasksEnabled;
+    private @Value("${updaters.bbcnitro.offschedule.enabled}") Boolean offScheduleIngestEnabled;
     private @Value("${bbc.nitro.host}") String nitroHost;
     private @Value("${bbc.nitro.root}") String nitroRoot;
     private @Value("${bbc.nitro.apiKey}") String nitroApiKey;
@@ -93,9 +95,11 @@ public class BbcNitroModule {
                     .withName("Nitro full fetch -8 to -30 day updater"), RepetitionRules.every(Duration.standardHours(12)));
             scheduler.schedule(nitroScheduleUpdateTask(7, 3, nitroAroundTodayThreadCount, nitroAroundTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
                     .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.every(Duration.standardHours(2)));
+        }
+        if (offScheduleIngestEnabled) {
             scheduler.schedule(
-                    nitroOffScheduleIntestTask().withName("Nitro off-schedule content updater"),
-                    RepetitionRules.every(Duration.standardDays(1)));
+                    nitroOffScheduleIngestTask().withName("Nitro off-schedule content updater"),
+                    RepetitionRules.every(Duration.standardHours(3)));
         }
     }
 
@@ -106,12 +110,12 @@ public class BbcNitroModule {
                 null, jobFailureThresholdPercent);
     }
 
-    private ScheduledTask nitroOffScheduleIntestTask() {
+    private ScheduledTask nitroOffScheduleIngestTask() {
         Glycerin glycerin = glycerin(null);
         return new OffScheduleContentIngestTask(
                 nitroContentAdapter(glycerin),
                 nitroRequestPageSize,
-                contentWriter,
+                contentWriter(),
                 pidLock,
                 localOrRemoteNitroFetcher(
                     glycerin,
@@ -120,9 +124,13 @@ public class BbcNitroModule {
         );
     }
 
+    public ContentWriter contentWriter() {
+        return new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
+    }
+
     @Bean
     PidUpdateController pidUpdateController() {
-        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter);
+        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter());
     }
 
     @Bean
@@ -133,13 +141,12 @@ public class BbcNitroModule {
     }
 
     ChannelDayProcessor nitroChannelDayProcessor(Integer rateLimit, Optional<Predicate<Item>> fullFetchPermitted) {
-        LastUpdatedSettingContentWriter lastUpdatedSettingContentWriter = new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
-        
+        ContentWriter contentWriter = contentWriter();
         ScheduleResolverBroadcastTrimmer scheduleTrimmer
-            = new ScheduleResolverBroadcastTrimmer(Publisher.BBC_NITRO, scheduleResolver, contentResolver, lastUpdatedSettingContentWriter);
+            = new ScheduleResolverBroadcastTrimmer(Publisher.BBC_NITRO, scheduleResolver, contentResolver, contentWriter);
         Glycerin glycerin = glycerin(rateLimit);
         return new NitroScheduleDayUpdater(scheduleWriter, scheduleTrimmer, 
-                nitroBroadcastHandler(glycerin, fullFetchPermitted, lastUpdatedSettingContentWriter), glycerin);
+                nitroBroadcastHandler(glycerin, fullFetchPermitted, contentWriter), glycerin);
     }
 
     Glycerin glycerin(Integer rateLimit) {

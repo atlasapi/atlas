@@ -182,7 +182,7 @@ public class BtVodModule {
                 seriesUriExtractor(URI_PREFIX),
                 versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 describedFieldsExtractor(Publisher.BT_VOD, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG,
-                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, contentGroupsAndCritera),
+                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, btVodMpxProdFeedBaseUrl, contentGroupsAndCritera),
                 mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
                 topicQueryResolver
         );
@@ -292,6 +292,7 @@ public class BtVodModule {
                         feedBaseUrl,
                         newFeedSuffix,
                         feedQParam, 
+                        baseUrlForItemLookup,
                         contentGroupsAndCritera
                 ),
                 mpxVodClient(baseUrlForItemLookup, feedNameForItemLookup, btVodMpxProdFeedQParam),
@@ -343,6 +344,7 @@ public class BtVodModule {
             String baseUrl,
             String newFeedSuffix,
             String qParam,
+            String btVodMpxProdFeedBaseUrlForGuidLookup,
             Map<String, BtVodContentMatchingPredicate> contentGroupsAndCritera
     ) {
         BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(baseUrl, newFeedSuffix, qParam);

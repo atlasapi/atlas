@@ -22,7 +22,7 @@ import com.google.common.collect.ImmutableMap;
 public class BtVodBrandProviderTest {
 
     private @Mock BrandUriExtractor brandUriExtractor;
-    private @Mock BrandDescriptionUpdater brandDescriptionUpdater;
+    private @Mock DescriptionAndImageUpdater descriptionAndImageUpdater;
     private @Mock CertificateUpdater certificateUpdater;
     private @Mock TopicUpdater topicUpdater;
     private @Mock BtVodContentListener listener;
@@ -47,7 +47,7 @@ public class BtVodBrandProviderTest {
         brandProvider = new BtVodBrandProvider(
                 brandUriExtractor,
                 ImmutableMap.of(brand.getCanonicalUri(), brand),
-                brandDescriptionUpdater,
+                descriptionAndImageUpdater,
                 certificateUpdater,
                 topicUpdater,
                 listener
@@ -60,10 +60,17 @@ public class BtVodBrandProviderTest {
     }
 
     @Test
-    public void testUpdateDescriptionFromSeries() throws Exception {
+    public void testUpdateDescriptionsAndImagesFromSeries() throws Exception {
         brandProvider.updateBrandFromSeries(seriesRow, series);
 
-        verify(brandDescriptionUpdater).updateDescriptions(brand, series);
+        verify(descriptionAndImageUpdater).update(brand, series);
+    }
+
+    @Test
+    public void testUpdateDescriptionsAndImagesFromEpisode() throws Exception {
+        brandProvider.updateBrandFromEpisode(seriesRow, episode);
+
+        verify(descriptionAndImageUpdater).update(brand, episode);
     }
 
     @Test

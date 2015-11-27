@@ -155,7 +155,7 @@ public class BtVodUpdater extends ScheduledTask {
             BtVodBrandProvider brandProvider = new BtVodBrandProvider(
                     brandUriExtractor,
                     brandExtractor.getProcessedBrands(),
-                    new BrandDescriptionUpdater(),
+                    new DescriptionAndImageUpdater(),
                     new CertificateUpdater(),
                     topicUpdater,
                     listeners
@@ -228,6 +228,7 @@ public class BtVodUpdater extends ScheduledTask {
                     explicitSeries,
                     synthesizedSeries,
                     seriesUriExtractor,
+                    new DescriptionAndImageUpdater(),
                     new CertificateUpdater(),
                     brandProvider,
                     topicUpdater,

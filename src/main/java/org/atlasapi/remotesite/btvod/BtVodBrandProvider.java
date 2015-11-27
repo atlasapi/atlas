@@ -18,7 +18,7 @@ public class BtVodBrandProvider {
 
     private final BrandUriExtractor brandUriExtractor;
     private final Map<String, Brand> brands;
-    private final BrandDescriptionUpdater brandDescriptionUpdater;
+    private final DescriptionAndImageUpdater descriptionAndImageUpdater;
     private final CertificateUpdater certificateUpdater;
     private final TopicUpdater topicUpdater;
     private final BtVodContentListener listener;
@@ -26,14 +26,14 @@ public class BtVodBrandProvider {
     public BtVodBrandProvider(
             BrandUriExtractor brandUriExtractor,
             Map<String, Brand> brands,
-            BrandDescriptionUpdater brandDescriptionUpdater,
+            DescriptionAndImageUpdater descriptionAndImageUpdater,
             CertificateUpdater certificateUpdater,
             TopicUpdater topicUpdater,
             BtVodContentListener listener
     ) {
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.brands = ImmutableMap.copyOf(brands);
-        this.brandDescriptionUpdater = checkNotNull(brandDescriptionUpdater);
+        this.descriptionAndImageUpdater = checkNotNull(descriptionAndImageUpdater);
         this.certificateUpdater = checkNotNull(certificateUpdater);
         this.topicUpdater = checkNotNull(topicUpdater);
         this.listener = checkNotNull(listener);
@@ -66,7 +66,7 @@ public class BtVodBrandProvider {
         }
         Brand brand = brandOptional.get();
 
-        brandDescriptionUpdater.updateDescriptions(brand, series);
+        descriptionAndImageUpdater.update(brand, series);
         certificateUpdater.updateCertificates(brand, series);
         topicUpdater.updateTopics(brand, series.getTopicRefs());
 
@@ -80,6 +80,7 @@ public class BtVodBrandProvider {
         }
         Brand brand = brandOptional.get();
 
+        descriptionAndImageUpdater.update(brand, episode);
         certificateUpdater.updateCertificates(brand, episode);
         topicUpdater.updateTopics(brand, episode.getTopicRefs());
 

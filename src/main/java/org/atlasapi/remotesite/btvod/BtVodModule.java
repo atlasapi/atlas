@@ -275,7 +275,7 @@ public class BtVodModule {
                 brandImageExtractor(btPortalBaseUri, baseUrlForItemLookup, feedNameForItemLookup),
                 itemImageExtractor(),
                 brandUriExtractor(uriPrefix),
-                newFeedContentMatchingPredicate(feedBaseUrl, newFeedSuffix, feedQParam),
+                newFeedContentMatchingPredicate(baseUrlForItemLookup, feedNameForItemLookup, feedQParam),
                 ImmutableSet.of(
                         topicFor(feedNamepaceFor(envName, conf), BT_VOD_NEW_FEED, publisher),
                         topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_KIDS_TOPIC, publisher),

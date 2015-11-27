@@ -453,7 +453,7 @@ public class BtVodModule {
     }
     
     private BtVodContentMatchingPredicate newFeedContentMatchingPredicate(String baseUri, String feedName, String qParam) {
-        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUri, feedName, qParam), feedName);
+        return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUri, feedName, qParam), NEW_CONTENT_MPX_FEED_NAME);
     }
 
     @Bean

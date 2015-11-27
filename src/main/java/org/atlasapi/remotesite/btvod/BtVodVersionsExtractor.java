@@ -71,7 +71,7 @@ public class BtVodVersionsExtractor {
         
         locations.addAll(createLocations(row, btTvServiceId, aliases));
         
-        if (hasServiceTypeOtg(row)) {
+        if (hasServiceTypeOtg(row) && isItemTvodPlayoutAllowed(row)) {
             locations.addAll(createLocations(row, btTvOtgServiceId, aliases));
         }
 

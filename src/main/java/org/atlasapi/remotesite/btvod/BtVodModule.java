@@ -200,7 +200,7 @@ public class BtVodModule {
                 btVodMpxProdFeedNewSuffix, 
                 btVodMpxProdFeedBaseUrlForGuidLookup,
                 btVodMpxProdFeedNameForGuidLookup,
-                tveContentGroupsAndCriteria(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam)
+                tveContentGroupsAndCriteria(btVodMpxProdFeedBaseUrlForGuidLookup, btVodMpxProdFeedNameForGuidLookup, btVodMpxProdFeedQParam)
         );
     }
 

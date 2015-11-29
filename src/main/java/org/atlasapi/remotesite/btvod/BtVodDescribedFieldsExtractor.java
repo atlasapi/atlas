@@ -238,8 +238,12 @@ public class BtVodDescribedFieldsExtractor {
     }
 
     public void setDescriptionsFrom(BtVodEntry row, Described described) {
-        described.setDescription(row.getDescription());
-        described.setLongDescription(row.getProductLongDescription());
+        if (row.getDescription() != null) {
+            described.setDescription(row.getDescription());
+        }
+        if (row.getProductLongDescription() != null) {
+            described.setLongDescription(row.getProductLongDescription());
+        }
     }
 
     public Set<String> btGenreStringsFrom(BtVodEntry row) {

@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
@@ -27,6 +28,7 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
@@ -321,7 +323,16 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private void setImagesFrom(BtVodEntry row, Item item) {
-        item.setImages(imageExtractor.imagesFor(row));
+        Set<Image> images = imageExtractor.imagesFor(row);
+
+        if (images.isEmpty()) {
+            if (item.getImages() == null) {
+                item.setImages(ImmutableSet.<Image>of());
+            }
+            return;
+        }
+
+        item.setImages(images);
         if (item.getImages() != null && !item.getImages().isEmpty()){
             item.setImage(Iterables.get(item.getImages(), 0).getCanonicalUri());
         }

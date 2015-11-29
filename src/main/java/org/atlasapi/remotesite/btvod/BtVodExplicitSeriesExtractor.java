@@ -6,6 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Certificate;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
@@ -15,6 +16,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.intl.Countries;
 
@@ -98,7 +100,16 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
     }
 
     private void setImagesFrom(BtVodEntry row, Series series) {
-        series.setImages(imageExtractor.imagesFor(row));
+        Set<Image> images = imageExtractor.imagesFor(row);
+
+        if (images.isEmpty()) {
+            if (series.getImages() == null) {
+                series.setImages(ImmutableSet.<Image>of());
+            }
+            return;
+        }
+
+        series.setImages(images);
         if (series.getImages() != null && !series.getImages().isEmpty()) {
             series.setImage(Iterables.get(series.getImages(), 0).getCanonicalUri());
         }

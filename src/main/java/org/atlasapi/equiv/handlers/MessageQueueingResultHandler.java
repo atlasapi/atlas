@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import org.atlasapi.equiv.results.EquivalenceResult;
@@ -52,7 +53,11 @@ public class MessageQueueingResultHandler<T extends Content>
     @Override
     public void handle(EquivalenceResult<T> result) {
         try {
-            sender.sendMessage(messageFrom(result));
+            ContentEquivalenceAssertionMessage message = messageFrom(result);
+            for (AdjacentRef adjacentRef : message.getAdjacent()) {
+                log.trace("Subject: {} Adjacent: {}", result.subject().getCanonicalUri(), adjacentRef.toString());
+            }
+            sender.sendMessage(message);
         } catch (Exception e) {
             log.error("Failed to send equiv update message: " + result.subject(), e);
         }

@@ -35,6 +35,7 @@ public class BtVodSeriesProviderTest {
     private @Mock TopicRef topicRef;
 
     private @Mock BtVodSeriesUriExtractor seriesUriExtractor;
+    private @Mock DescriptionAndImageUpdater descriptionAndImageUpdater;
     private @Mock CertificateUpdater certificateUpdater;
     private @Mock BtVodBrandProvider brandProvider;
     private @Mock TopicUpdater topicUpdater;
@@ -53,6 +54,7 @@ public class BtVodSeriesProviderTest {
                 ImmutableMap.of(EXPLICIT_SERIES_GUID, EXPLICIT_SERIES),
                 ImmutableMap.of(SUNTHESIZED_SERIES_URI, SYNTHESIZED_SERIES),
                 seriesUriExtractor,
+                descriptionAndImageUpdater,
                 certificateUpdater,
                 brandProvider,
                 topicUpdater,
@@ -104,6 +106,17 @@ public class BtVodSeriesProviderTest {
     }
 
     @Test
+    public void testUpdateDescriptionsAndImagesFromEpisode() throws Exception {
+        BtVodEntry episodeRow = new BtVodEntry();
+        episodeRow.setParentGuid(EXPLICIT_SERIES_GUID);
+        Episode episode = new Episode();
+
+        seriesProvider.updateSeriesFromEpisode(episodeRow, episode);
+
+        verify(descriptionAndImageUpdater).update(EXPLICIT_SERIES, episode);
+    }
+
+    @Test
     public void testUpdateCertificatesFromEpisode() throws Exception {
         BtVodEntry episodeRow = new BtVodEntry();
         episodeRow.setParentGuid(EXPLICIT_SERIES_GUID);
@@ -149,6 +162,7 @@ public class BtVodSeriesProviderTest {
                 ImmutableMap.of("guid", series),
                 ImmutableMap.<String, Series>of(),
                 seriesUriExtractor,
+                descriptionAndImageUpdater,
                 certificateUpdater,
                 brandProvider,
                 topicUpdater,
@@ -167,6 +181,7 @@ public class BtVodSeriesProviderTest {
                 ImmutableMap.of("guid1", series, "guid2", series),
                 ImmutableMap.<String, Series>of(),
                 seriesUriExtractor,
+                descriptionAndImageUpdater,
                 certificateUpdater,
                 brandProvider,
                 topicUpdater,

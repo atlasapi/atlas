@@ -180,7 +180,7 @@ public class BtVodUpdater extends ScheduledTask {
                     versionsExtractor,
                     new TitleSanitiser(),
                     imageExtractor,
-                    new DedupedDescriptionAndImageSelector()
+                    new DedupedDescriptionAndImageUpdater()
             );
             
             vodData.processData(explicitSeriesExtractor);
@@ -242,7 +242,7 @@ public class BtVodUpdater extends ScheduledTask {
                     new TitleSanitiser(),
                     imageExtractor,
                     versionsExtractor,
-                    new DedupedDescriptionAndImageSelector(),
+                    new DedupedDescriptionAndImageUpdater(),
                     new BtVodMpxBackedEpisodeNumberExtractor(mpxClient),
                     mpxClient
             );

@@ -29,7 +29,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
     private final BtVodVersionsExtractor versionsExtractor;
     private final TitleSanitiser titleSanitiser;
     private final ImageExtractor imageExtractor;
-    private final DedupedDescriptionAndImageUpdater descriptionAndImageSelector;
+    private final DedupedDescriptionAndImageUpdater descriptionAndImageUpdater;
 
     public BtVodExplicitSeriesExtractor(
             BtVodBrandProvider btVodBrandProvider,
@@ -41,7 +41,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
             BtVodVersionsExtractor versionsExtractor,
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
-            DedupedDescriptionAndImageUpdater descriptionAndImageSelector
+            DedupedDescriptionAndImageUpdater descriptionAndImageUpdater
     ) {
         super(
                 btVodBrandProvider, 
@@ -55,7 +55,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
         this.versionsExtractor = checkNotNull(versionsExtractor);
         this.explicitSeries = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
-        this.descriptionAndImageSelector = checkNotNull(descriptionAndImageSelector);
+        this.descriptionAndImageUpdater = checkNotNull(descriptionAndImageUpdater);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
         Set<Version> currentVersions = versionsExtractor.createVersions(row);
 
         if (updatingExisting) {
-            descriptionAndImageSelector.updateDescriptionsAndImages(
+            descriptionAndImageUpdater.updateDescriptionsAndImages(
                     series, row, imageExtractor.imagesFor(row), currentVersions
             );
         } else {

@@ -2,20 +2,29 @@ package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 import javax.annotation.Nullable;
 
+import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.api.client.util.Maps;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 
-public class DedupedDescriptionAndImageSelector {
+public class DedupedDescriptionAndImageUpdater {
 
     private static final Ordering<Quality> qualityOrdering =
             Ordering.explicit(Quality.FOUR_K, Quality.HD, Quality.SD).nullsFirst();
@@ -46,23 +55,91 @@ public class DedupedDescriptionAndImageSelector {
                 }
             };
 
-    public boolean shouldUpdateDescriptionsAndImages(Iterable<Version> currentVersions,
-            Iterable<Version> existingVersions) {
-        Optional<VersionType> currentBestOptional = getBestVersionType(currentVersions);
-        Optional<VersionType> existingBestOptional = getBestVersionType(existingVersions);
+    private final Map<String, VersionType> descriptionSource = Maps.newHashMap();
+    private final Map<String, VersionType> longDescriptionSource = Maps.newHashMap();
+    private final Map<String, VersionType> imagesSource = Maps.newHashMap();
 
-        if (!existingBestOptional.isPresent()) {
-            return true;
+    public void updateDescriptionsAndImages(Content target, BtVodEntry source, Set<Image> images,
+            Set<Version> currentVersions) {
+        Optional<VersionType> currentType = getBestVersionType(currentVersions);
+
+        updateDescription(target, source, currentType);
+        updateLongDescription(target, source, currentType);
+        updateImages(target, images, currentType);
+    }
+
+    private void updateDescription(Content target, BtVodEntry source,
+            Optional<VersionType> currentType) {
+        if (Strings.isNullOrEmpty(source.getDescription())) {
+            return;
         }
 
-        if (!currentBestOptional.isPresent()) {
-            // We can't decide. Fallback to previous behaviour of keeping the existing fields
-            return false;
+        VersionType existingType = descriptionSource.get(target.getCanonicalUri());
+        if (hasOwn(target.getDescription(), existingType)) {
+            return;
         }
 
-        VersionType currentBest = currentBestOptional.get();
-        VersionType existingBest = existingBestOptional.get();
-        return currentBest.compareTo(existingBest) > 0;
+        if (shouldUpdate(target.getDescription(), existingType, currentType)) {
+            target.setDescription(source.getDescription());
+            descriptionSource.put(target.getCanonicalUri(), currentType.get());
+        }
+    }
+
+    private void updateLongDescription(Content target, BtVodEntry source,
+            Optional<VersionType> currentType) {
+        if (Strings.isNullOrEmpty(source.getProductLongDescription())) {
+            return;
+        }
+
+        VersionType existingType = longDescriptionSource.get(target.getCanonicalUri());
+        if (hasOwn(target.getLongDescription(), existingType)) {
+            return;
+        }
+
+        if (shouldUpdate(target.getLongDescription(), existingType, currentType)) {
+            target.setLongDescription(source.getProductLongDescription());
+            longDescriptionSource.put(target.getCanonicalUri(), currentType.get());
+        }
+    }
+
+    private void updateImages(Content target, Set<Image> images,
+            Optional<VersionType> currentType) {
+        if (images == null || images.isEmpty()) {
+            return;
+        }
+
+        VersionType existingType = imagesSource.get(target.getCanonicalUri());
+        if (hasOwn(target.getImages(), existingType)) {
+            return;
+        }
+
+        if (shouldUpdate(target.getImages(), existingType, currentType)) {
+            target.setImages(images);
+            target.setImage(Iterables.get(images, 0).getCanonicalUri());
+            imagesSource.put(target.getCanonicalUri(), currentType.get());
+        }
+    }
+
+    private boolean hasOwn(String fieldValue, VersionType sourceType) {
+        return !Strings.isNullOrEmpty(fieldValue) && sourceType == null;
+    }
+
+    private boolean shouldUpdate(String fieldValue, VersionType existingType,
+            Optional<VersionType> currentType) {
+        return currentType.isPresent()
+                && (Strings.isNullOrEmpty(fieldValue)
+                || currentType.get().compareTo(existingType) > 0);
+    }
+
+    private <T> boolean hasOwn(Collection<T> fieldValue, VersionType sourceType) {
+        return fieldValue != null && !fieldValue.isEmpty() && sourceType == null;
+    }
+
+    private <T> boolean shouldUpdate(Collection<T> fieldValue, VersionType existingType,
+            Optional<VersionType> currentType) {
+        return currentType.isPresent()
+                && (fieldValue == null || fieldValue.isEmpty()
+                || currentType.get().compareTo(existingType) > 0);
     }
 
     private Optional<VersionType> getBestVersionType(Iterable<Version> versions) {

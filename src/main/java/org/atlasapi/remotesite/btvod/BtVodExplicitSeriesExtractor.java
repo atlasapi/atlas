@@ -29,7 +29,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
     private final BtVodVersionsExtractor versionsExtractor;
     private final TitleSanitiser titleSanitiser;
     private final ImageExtractor imageExtractor;
-    private final DedupedDescriptionAndImageSelector descriptionAndImageSelector;
+    private final DedupedDescriptionAndImageUpdater descriptionAndImageSelector;
 
     public BtVodExplicitSeriesExtractor(
             BtVodBrandProvider btVodBrandProvider,
@@ -41,7 +41,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
             BtVodVersionsExtractor versionsExtractor,
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
-            DedupedDescriptionAndImageSelector descriptionAndImageSelector
+            DedupedDescriptionAndImageUpdater descriptionAndImageSelector
     ) {
         super(
                 btVodBrandProvider, 
@@ -69,12 +69,14 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
     }
 
     @Override
-    protected void setAdditionalFields(Series series, BtVodEntry row) {
+    protected void setAdditionalFields(Series series, BtVodEntry row, boolean updatingExisting) {
         Set<Version> currentVersions = versionsExtractor.createVersions(row);
-        Set<Version> existingVersions = series.getVersions();
 
-        if (descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
-                currentVersions, existingVersions)) {
+        if (updatingExisting) {
+            descriptionAndImageSelector.updateDescriptionsAndImages(
+                    series, row, imageExtractor.imagesFor(row), currentVersions
+            );
+        } else {
             getDescribedFieldsExtractor().setDescriptionsFrom(row, series);
             setImagesFrom(row, series);
         }
@@ -108,7 +110,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
         }
 
         series.setImages(images);
-        if (series.getImages() != null && !series.getImages().isEmpty()) {
+        if (series.getImages() != null && !series.getImages().isEmpty()){
             series.setImage(Iterables.get(series.getImages(), 0).getCanonicalUri());
         }
     }

@@ -61,7 +61,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final ImageExtractor imageExtractor;
     private UpdateProgress progress = UpdateProgress.START;
     private final BtVodVersionsExtractor versionsExtractor;
-    private final DedupedDescriptionAndImageSelector descriptionAndImageSelector;
+    private final DedupedDescriptionAndImageUpdater descriptionAndImageSelector;
 
     private final BtVodEpisodeNumberExtractor episodeNumberExtractor;
     private final BtMpxVodClient mpxClient;
@@ -77,7 +77,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            DedupedDescriptionAndImageSelector descriptionAndImageSelector,
+            DedupedDescriptionAndImageUpdater descriptionAndImageSelector,
             BtVodEpisodeNumberExtractor episodeNumberExtractor,
             BtMpxVodClient mpxClient
     ) {
@@ -165,13 +165,10 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
 
     private void includeMetadataOnExistingItem(Item item, BtVodEntry row) {
         Set<Version> currentVersions = versionsExtractor.createVersions(row);
-        Set<Version> existingVersions = item.getVersions();
 
-        if (descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
-                currentVersions, existingVersions)) {
-            describedFieldsExtractor.setDescriptionsFrom(row, item);
-            setImagesFrom(row, item);
-        }
+        descriptionAndImageSelector.updateDescriptionsAndImages(
+                item, row, imageExtractor.imagesFor(row), currentVersions
+        );
 
         item.addVersions(currentVersions);
 

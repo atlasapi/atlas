@@ -61,7 +61,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final ImageExtractor imageExtractor;
     private UpdateProgress progress = UpdateProgress.START;
     private final BtVodVersionsExtractor versionsExtractor;
-    private final DedupedDescriptionAndImageUpdater descriptionAndImageSelector;
+    private final DedupedDescriptionAndImageUpdater descriptionAndImageUpdater;
 
     private final BtVodEpisodeNumberExtractor episodeNumberExtractor;
     private final BtMpxVodClient mpxClient;
@@ -77,7 +77,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            DedupedDescriptionAndImageUpdater descriptionAndImageSelector,
+            DedupedDescriptionAndImageUpdater descriptionAndImageUpdater,
             BtVodEpisodeNumberExtractor episodeNumberExtractor,
             BtMpxVodClient mpxClient
     ) {
@@ -92,7 +92,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.processedItems = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
-        this.descriptionAndImageSelector = checkNotNull(descriptionAndImageSelector);
+        this.descriptionAndImageUpdater = checkNotNull(descriptionAndImageUpdater);
         this.episodeNumberExtractor = checkNotNull(episodeNumberExtractor);
         this.mpxClient = checkNotNull(mpxClient);
     }
@@ -166,7 +166,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private void includeMetadataOnExistingItem(Item item, BtVodEntry row) {
         Set<Version> currentVersions = versionsExtractor.createVersions(row);
 
-        descriptionAndImageSelector.updateDescriptionsAndImages(
+        descriptionAndImageUpdater.updateDescriptionsAndImages(
                 item, row, imageExtractor.imagesFor(row), currentVersions
         );
 

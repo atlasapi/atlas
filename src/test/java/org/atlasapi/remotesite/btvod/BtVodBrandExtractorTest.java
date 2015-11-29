@@ -1,15 +1,16 @@
 package org.atlasapi.remotesite.btvod;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.util.Map;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
@@ -42,10 +43,8 @@ public class BtVodBrandExtractorTest {
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
     private static final String BT_VOD_CHANNEL_ID_NAMESPACE = "channel id namespace";
 
-    private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
     private final ImageUriProvider imageUriProvider = mock(ImageUriProvider.class);
-    private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BrandUriExtractor brandUriExtractor = new BrandUriExtractor(URI_PREFIX, new TitleSanitiser());
@@ -85,11 +84,9 @@ public class BtVodBrandExtractorTest {
     
     @Test
     public void testCreatesSyntheticBrandFromEpisodeData() {
-        BtVodEntry row = row(FULL_EPISODE_TITLE);
+        BtVodEntry row = row(FULL_EPISODE_TITLE, PRODUCT_ID, "episode", "parentGuid");
         
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
-        when(contentResolver.findByCanonicalUris(ImmutableSet.of(URI_PREFIX + "synthesized/brands/brand-title")))
-                .thenReturn(ResolvedContent.builder().build());
 
         brandExtractor.process(row);
 
@@ -101,11 +98,9 @@ public class BtVodBrandExtractorTest {
     
     @Test
     public void testCreatesSyntheticBrandFromEpisodeDataWithoutEpisodeTitle() {
-        BtVodEntry row = row("Mad Men S01 E01");
+        BtVodEntry row = row("Mad Men S01 E01", PRODUCT_ID, "episode", "parentGuid");
         
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
-        when(contentResolver.findByCanonicalUris(ImmutableSet.of(URI_PREFIX + "synthesized/brands/mad-men")))
-                .thenReturn(ResolvedContent.builder().build());
 
         brandExtractor.process(row);
 
@@ -119,10 +114,8 @@ public class BtVodBrandExtractorTest {
     @Test
     public void testDoesntCreateSyntheticBrandFromNonEpisodeData() {
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
-        when(contentResolver.findByCanonicalUris(ImmutableSet.of(URI_PREFIX + "synthesized/brands/brand-title")))
-                .thenReturn(ResolvedContent.builder().build());
 
-        BtVodEntry entry = row(FULL_EPISODE_TITLE);
+        BtVodEntry entry = row(FULL_EPISODE_TITLE, PRODUCT_ID, "episode", "parentGuid");
         entry.setProductType("film");
 
         brandExtractor.process(entry);
@@ -131,17 +124,50 @@ public class BtVodBrandExtractorTest {
 
     }
 
-    private BtVodEntry row(String title) {
+    @Test
+    public void testCreatesParentGuidToBrandMappingFromEpisode() {
+        BtVodEntry row = row(FULL_EPISODE_TITLE, PRODUCT_ID, "episode", "parentGuid");
+
+        when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
+
+        brandExtractor.process(row);
+
+        Brand extracted = Iterables.getOnlyElement(brandExtractor.getProcessedBrands().values());
+
+        assertThat(brandExtractor.getParentGuidToBrand().get(row.getParentGuid()),
+                sameInstance(extracted));
+    }
+
+    @Test
+    public void testUpdateParentGuidForAlreadyCreatedBrands() throws Exception {
+        BtVodEntry season = row(BRAND_TITLE + " S5", "1", "season", "parentGuidSeason");
+        BtVodEntry episode = row(FULL_EPISODE_TITLE, "2", "episode", "parentGuidEpisode");
+
+        when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
+
+        brandExtractor.process(season);
+        brandExtractor.process(episode);
+
+        Brand extracted = Iterables.getOnlyElement(brandExtractor.getProcessedBrands().values());
+
+        Map<String, Brand> parentGuidToBrand = brandExtractor.getParentGuidToBrand();
+        assertThat(parentGuidToBrand.get(season.getParentGuid()), sameInstance(extracted));
+        assertThat(parentGuidToBrand.get(episode.getParentGuid()), sameInstance(extracted));
+    }
+
+    private BtVodEntry row(String title, String guid, String productType, String parentGuid) {
         
         BtVodEntry entry = new BtVodEntry();
-        entry.setGuid(PRODUCT_ID);
+        entry.setGuid(guid);
         entry.setId("12345");
+        entry.setParentGuid(parentGuid);
         entry.setTitle(title);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"
         entry.setProductOfferEndDate(1398816000000L);// "Apr 30 2014 12:00AM"
-        entry.setProductType("episode");
+        entry.setProductType(productType);
         entry.setProductTags(ImmutableList.<BtVodPlproduct$productTag>of());
         entry.setProductScopes(ImmutableList.<BtVodProductScope>of());
+
         return entry;
     }
     

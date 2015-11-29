@@ -22,8 +22,6 @@ import com.metabroadcast.common.intl.Countries;
 
 public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
-    private static final String SERIES_TYPE = "season";
-
     /**
      * GUID -> series
      */
@@ -62,7 +60,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
     @Override
     protected boolean shouldProcess(BtVodEntry row) {
-        return SERIES_TYPE.equals(row.getProductType());
+        return BtVodProductType.SEASON.isOfType(row.getProductType());
     }
 
     @Override

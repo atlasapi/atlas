@@ -1,6 +1,12 @@
 package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.COLLECTION;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.FILM;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.MUSIC;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.SEASON;
 
 import java.util.List;
 import java.util.Map;
@@ -38,13 +44,6 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
 
 public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     
-    private static final String FILM_TYPE = "film";
-    private static final String MUSIC_TYPE = "music";
-    static final String EPISODE_TYPE = "episode";
-    public static final String COLLECTION_TYPE = "collection";
-    private static final String SEASON_TYPE = "season";
-    private static final String HELP_TYPE = "help";
-
     private static final Logger log = LoggerFactory.getLogger(BtVodItemExtractor.class);
     private static final String OTG_PLATFORM = "OTG";
 
@@ -102,8 +101,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     public boolean process(BtVodEntry row) {
         UpdateProgress thisProgress = UpdateProgress.FAILURE;
         try {
-            if (!shouldProcess(row)
-                    || processedRows.contains(row.getGuid())) {
+            if (!shouldProcess(row) || processedRows.contains(row.getGuid())) {
                 thisProgress = UpdateProgress.SUCCESS;
                 return true;
             }
@@ -128,13 +126,13 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private boolean shouldProcess(BtVodEntry row) {
-        return !COLLECTION_TYPE.equals(row.getProductType()) 
-                    && !HELP_TYPE.equals(row.getProductType())
-                    && !SEASON_TYPE.equals(row.getProductType());
+        return !COLLECTION.isOfType(row.getProductType())
+                    && !HELP.isOfType(row.getProductType())
+                    && !SEASON.isOfType(row.getProductType());
     }
 
     private boolean isEpisode(BtVodEntry row) {
-        return EPISODE_TYPE.equals(row.getProductType()) && getBrandRefOrNull(row) != null;
+        return EPISODE.isOfType(row.getProductType()) && getBrandRefOrNull(row) != null;
     }
 
     private Item itemFrom(BtVodEntry row) {
@@ -150,10 +148,10 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         if (isEpisode(row)) {
             log.debug("GUID [{}] Creating episode", row.getGuid());
             item = createEpisode(row);
-        } else if (FILM_TYPE.equals(row.getProductType())) {
+        } else if (FILM.isOfType(row.getProductType())) {
             log.debug("GUID [{}] Creating film", row.getGuid());
             item = createFilm(row);
-        } else if (MUSIC_TYPE.equals(row.getProductType())) {
+        } else if (MUSIC.isOfType(row.getProductType())) {
             log.debug("GUID [{}] Creating song", row.getGuid());
             item = createSong(row);
         } else {
@@ -221,7 +219,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     public Integer extractSeriesNumber(BtVodEntry row) {
         if (!Strings.isNullOrEmpty(row.getParentGuid())) {
             Optional<BtVodEntry> parent = mpxClient.getItem(row.getParentGuid());
-            if (parent.isPresent() && BtVodItemExtractor.COLLECTION_TYPE.equalsIgnoreCase(parent.get().getProductType())) {
+            if (parent.isPresent() && COLLECTION.isOfType(parent.get().getProductType())) {
                 return null;
             }
         }

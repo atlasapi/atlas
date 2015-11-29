@@ -129,13 +129,13 @@ public class DescriptionAndImageUpdaterTest {
         Brand brand = getBrand("uri", null, null);
 
         BtVodCollection emptyCollection = new BtVodCollection(
-                DateTime.now().minusDays(2), null, null, ImmutableSet.<Image>of()
+                "guid", DateTime.now().minusDays(2), null, null, ImmutableSet.<Image>of()
         );
         BtVodCollection olderCollection = new BtVodCollection(
-                DateTime.now().minusDays(1), "a", "aL", ImmutableSet.of(firstImage)
+                "guid", DateTime.now().minusDays(1), "a", "aL", ImmutableSet.of(firstImage)
         );
         BtVodCollection newerCollection = new BtVodCollection(
-                DateTime.now(), "b", "bL", ImmutableSet.of(secondImage)
+                "guid", DateTime.now(), "b", "bL", ImmutableSet.of(secondImage)
         );
 
         updater.update(brand, newerCollection);
@@ -191,7 +191,7 @@ public class DescriptionAndImageUpdaterTest {
 
         Series series = getSeries("series", "seriesL", 5, firstImage);
         BtVodCollection collection = new BtVodCollection(
-                DateTime.now(), "collection", "collectionL", ImmutableSet.of(secondImage)
+                "guid", DateTime.now(), "collection", "collectionL", ImmutableSet.of(secondImage)
         );
 
         updater.update(brand, series);
@@ -211,7 +211,7 @@ public class DescriptionAndImageUpdaterTest {
         Episode episode = getEpisode("episode", "episodeL", 4, firstImage);
         Series series = getSeries("series", "seriesL", 5, secondImage);
         BtVodCollection collection = new BtVodCollection(
-                DateTime.now(), "collection", "collectionL", ImmutableSet.of(thirdImage)
+                "guid", DateTime.now(), "collection", "collectionL", ImmutableSet.of(thirdImage)
         );
 
         updater.update(brand, collection);

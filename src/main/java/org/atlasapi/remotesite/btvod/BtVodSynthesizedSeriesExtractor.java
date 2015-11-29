@@ -1,5 +1,8 @@
 package org.atlasapi.remotesite.btvod;
 
+import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -13,10 +16,6 @@ import com.google.common.collect.ImmutableSet;
 
 
 public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtractor {
-
-
-    private static final String HELP_TYPE = "help";
-    private static final String EPISODE_TYPE = "episode";
 
     /**
      * GUID -> series
@@ -47,8 +46,8 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
     }
 
     private boolean isPartOfSeries(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getProductType())
-                && EPISODE_TYPE.equals(row.getProductType())
+        return !HELP.isOfType(row.getProductType())
+                && EPISODE.isOfType(row.getProductType())
                 && getSeriesUriExtractor().extractSeriesNumber(row).isPresent();
 
     }

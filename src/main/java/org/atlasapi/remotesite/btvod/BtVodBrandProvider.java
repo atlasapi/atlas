@@ -18,6 +18,7 @@ public class BtVodBrandProvider {
 
     private final BrandUriExtractor brandUriExtractor;
     private final Map<String, Brand> brands;
+    private final Map<String, Brand> parentGuidToBrand;
     private final DescriptionAndImageUpdater descriptionAndImageUpdater;
     private final CertificateUpdater certificateUpdater;
     private final TopicUpdater topicUpdater;
@@ -26,6 +27,7 @@ public class BtVodBrandProvider {
     public BtVodBrandProvider(
             BrandUriExtractor brandUriExtractor,
             Map<String, Brand> brands,
+            Map<String, Brand> parentGuidToBrand,
             DescriptionAndImageUpdater descriptionAndImageUpdater,
             CertificateUpdater certificateUpdater,
             TopicUpdater topicUpdater,
@@ -33,6 +35,7 @@ public class BtVodBrandProvider {
     ) {
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.brands = ImmutableMap.copyOf(brands);
+        this.parentGuidToBrand = ImmutableMap.copyOf(parentGuidToBrand);
         this.descriptionAndImageUpdater = checkNotNull(descriptionAndImageUpdater);
         this.certificateUpdater = checkNotNull(certificateUpdater);
         this.topicUpdater = checkNotNull(topicUpdater);
@@ -85,6 +88,16 @@ public class BtVodBrandProvider {
         topicUpdater.updateTopics(brand, episode.getTopicRefs());
 
         listener.onContent(brand, episodeRow);
+    }
+
+    public void updateBrandFromCollection(BtVodCollection collection) {
+        Brand brand = parentGuidToBrand.get(collection.getGuid());
+
+        if (brand == null) {
+            return;
+        }
+
+        descriptionAndImageUpdater.update(brand, collection);
     }
 
     public ImmutableList<Brand> getBrands() {

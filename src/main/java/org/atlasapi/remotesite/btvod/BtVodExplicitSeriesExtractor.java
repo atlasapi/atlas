@@ -8,6 +8,7 @@ import java.util.Set;
 import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 
@@ -27,7 +28,8 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
     private final Map<String, Series> explicitSeries;
     private final BtVodVersionsExtractor versionsExtractor;
     private final TitleSanitiser titleSanitiser;
-
+    private final ImageExtractor imageExtractor;
+    private final DedupedDescriptionAndImageSelector descriptionAndImageSelector;
 
     public BtVodExplicitSeriesExtractor(
             BtVodBrandProvider btVodBrandProvider,
@@ -38,7 +40,8 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
             BtVodSeriesUriExtractor seriesUriExtractor,
             BtVodVersionsExtractor versionsExtractor,
             TitleSanitiser titleSanitiser,
-            ImageExtractor imageExtractor
+            ImageExtractor imageExtractor,
+            DedupedDescriptionAndImageSelector descriptionAndImageSelector
     ) {
         super(
                 btVodBrandProvider, 
@@ -46,12 +49,13 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
                 listener, 
                 processedRows, 
                 describedFieldsExtractor, 
-                seriesUriExtractor, 
-                imageExtractor
-             );
+                seriesUriExtractor
+        );
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.versionsExtractor = checkNotNull(versionsExtractor);
-        explicitSeries = Maps.newHashMap();
+        this.explicitSeries = Maps.newHashMap();
+        this.imageExtractor = checkNotNull(imageExtractor);
+        this.descriptionAndImageSelector = checkNotNull(descriptionAndImageSelector);
     }
 
     @Override
@@ -66,7 +70,17 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
     @Override
     protected void setAdditionalFields(Series series, BtVodEntry row) {
-        series.addVersions(versionsExtractor.createVersions(row));
+        Set<Version> currentVersions = versionsExtractor.createVersions(row);
+        Set<Version> existingVersions = series.getVersions();
+
+        if (descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
+                currentVersions, existingVersions)) {
+            getDescribedFieldsExtractor().setDescriptionsFrom(row, series);
+            setImagesFrom(row, series);
+        }
+
+        series.addVersions(currentVersions);
+
         series.addAliases(getDescribedFieldsExtractor().aliasesFrom(row));
         series.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
         getDescribedFieldsExtractor().setDescribedFieldsFrom(row, series);
@@ -81,5 +95,12 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
     public Map<String, Series> getExplicitSeries() {
         return ImmutableMap.copyOf(explicitSeries);
+    }
+
+    private void setImagesFrom(BtVodEntry row, Series series) {
+        series.setImages(imageExtractor.imagesFor(row));
+        if (series.getImages() != null && !series.getImages().isEmpty()) {
+            series.setImage(Iterables.get(series.getImages(), 0).getCanonicalUri());
+        }
     }
 }

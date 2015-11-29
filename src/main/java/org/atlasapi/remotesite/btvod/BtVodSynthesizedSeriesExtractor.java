@@ -31,8 +31,7 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            Set<String> explicitSeriesIds,
-            ImageExtractor imageExtractor
+            Set<String> explicitSeriesIds
     ) {
         super(
                 btVodBrandProvider,
@@ -40,8 +39,7 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
                 listener,
                 processedRows,
                 describedFieldsExtractor,
-                seriesUriExtractor,
-                imageExtractor
+                seriesUriExtractor
         );
 
         this.explicitSeriesIds = ImmutableSet.copyOf(explicitSeriesIds);

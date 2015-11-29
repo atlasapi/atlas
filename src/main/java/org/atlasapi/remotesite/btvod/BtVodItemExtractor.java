@@ -60,6 +60,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final ImageExtractor imageExtractor;
     private UpdateProgress progress = UpdateProgress.START;
     private final BtVodVersionsExtractor versionsExtractor;
+    private final DedupedDescriptionAndImageSelector descriptionAndImageSelector;
 
     private final BtVodEpisodeNumberExtractor episodeNumberExtractor;
     private final BtMpxVodClient mpxClient;
@@ -75,6 +76,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
             BtVodVersionsExtractor versionsExtractor,
+            DedupedDescriptionAndImageSelector descriptionAndImageSelector,
             BtVodEpisodeNumberExtractor episodeNumberExtractor,
             BtMpxVodClient mpxClient
     ) {
@@ -89,6 +91,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.processedItems = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
+        this.descriptionAndImageSelector = checkNotNull(descriptionAndImageSelector);
         this.episodeNumberExtractor = checkNotNull(episodeNumberExtractor);
         this.mpxClient = checkNotNull(mpxClient);
     }
@@ -139,7 +142,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         if (processedItems.containsKey(itemKeyForDeduping)) {
             item = processedItems.get(itemKeyForDeduping);
             log.debug("Already found matching item with same key, its URI is {}", item.getCanonicalUri());
-            includeVersionsAndClipsOnAlreadyExtractedItem(item, row);
+            includeMetadataOnExistingItem(item, row);
             return item;
         }
         if (isEpisode(row)) {
@@ -160,8 +163,18 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         return item;
     }
 
-    private void includeVersionsAndClipsOnAlreadyExtractedItem(Item item, BtVodEntry row) {
-        item.addVersions(versionsExtractor.createVersions(row));
+    private void includeMetadataOnExistingItem(Item item, BtVodEntry row) {
+        Set<Version> currentVersions = versionsExtractor.createVersions(row);
+        Set<Version> existingVersions = item.getVersions();
+
+        if (descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
+                currentVersions, existingVersions)) {
+            describedFieldsExtractor.setDescriptionsFrom(row, item);
+            setImagesFrom(row, item);
+        }
+
+        item.addVersions(currentVersions);
+
         item.addClips(extractTrailer(row));
         item.addAliases(describedFieldsExtractor.aliasesFrom(row));
     }
@@ -258,19 +271,19 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private void populateItemFields(Item item, BtVodEntry row) {
         Optional<ParentRef> brandRefFor = brandProvider.brandRefFor(row);
 
-
         if (brandRefFor.isPresent()) {
             item.setParentRef(brandRefFor.get());
         }
 
         describedFieldsExtractor.setDescribedFieldsFrom(row, item);
+        describedFieldsExtractor.setDescriptionsFrom(row, item);
 
         item.setVersions(versionsExtractor.createVersions(row));
         item.setEditorialPriority(row.getProductPriority());
 
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, item);
         item.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-        item.setImages(imageExtractor.imagesFor(row));
+        setImagesFrom(row, item);
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
@@ -305,6 +318,13 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private String uriFor(BtVodEntry row) {
         String id = row.getGuid();
         return uriPrefix + "items/" + id;
+    }
+
+    private void setImagesFrom(BtVodEntry row, Item item) {
+        item.setImages(imageExtractor.imagesFor(row));
+        if (item.getImages() != null && !item.getImages().isEmpty()){
+            item.setImage(Iterables.get(item.getImages(), 0).getCanonicalUri());
+        }
     }
 
     @Override

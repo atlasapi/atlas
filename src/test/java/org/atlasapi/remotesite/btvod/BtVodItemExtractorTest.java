@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.btvod;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyListOf;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -82,6 +83,9 @@ public class BtVodItemExtractorTest {
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
+    private final DedupedDescriptionAndImageSelector descriptionAndImageSelector =
+            mock(DedupedDescriptionAndImageSelector.class);
+
     private final TopicRef newTopicRef = new TopicRef(
             NEW_TOPIC,
             1.0f,
@@ -129,7 +133,7 @@ public class BtVodItemExtractorTest {
             ),
             Sets.<String>newHashSet(),
             new TitleSanitiser(),
-            new NoImageExtractor(),
+            imageExtractor,
             new BtVodVersionsExtractor(
                     new BtVodPricingAvailabilityGrouper(),
                     URI_PREFIX,
@@ -138,10 +142,11 @@ public class BtVodItemExtractorTest {
                     null,
                     null
             ),
+            descriptionAndImageSelector,
             new MockBtVodEpisodeNumberExtractor(),
             mockMpxClient
     );
-    
+
     @Test
     public void testExtractsEpisode() {
         BtVodEntry btVodEntry = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
@@ -231,6 +236,11 @@ public class BtVodItemExtractorTest {
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
         when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.of(parentRef));
 
+        when(descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
+                anyListOf(Version.class), anyListOf(Version.class)
+        ))
+                .thenReturn(false);
+
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
 
@@ -279,6 +289,11 @@ public class BtVodItemExtractorTest {
         when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
         when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.of(parentRef));
 
+        when(descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
+                anyListOf(Version.class), anyListOf(Version.class)
+        ))
+                .thenReturn(false);
+
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
 
@@ -320,6 +335,11 @@ public class BtVodItemExtractorTest {
         when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.<Series>absent());
         when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.<Series>absent());
 
+        when(descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
+                anyListOf(Version.class), anyListOf(Version.class)
+        ))
+                .thenReturn(false);
+
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
 
@@ -355,6 +375,11 @@ public class BtVodItemExtractorTest {
         when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.<Series>absent());
         when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.<Series>absent());
         when(seriesProvider.seriesFor(btVodEntryHDCurzon)).thenReturn(Optional.<Series>absent());
+
+        when(descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
+                anyListOf(Version.class), anyListOf(Version.class)
+        ))
+                .thenReturn(false);
 
         itemExtractor.process(btVodEntrySD);
         itemExtractor.process(btVodEntryHD);
@@ -551,5 +576,56 @@ public class BtVodItemExtractorTest {
                 is(false));
         assertThat(location.getCanonicalUri().contains(RevenueContract.PAY_TO_RENT.toString()),
                 is(false));
+    }
+
+    @Test
+    public void testMergesImagesAndDescriptionsForHDAndSD() {
+        BtVodEntry btVodEntrySD = filmRow("About Alex");
+        btVodEntrySD.setProductTargetBandwidth("SD");
+        btVodEntrySD.setDescription("sd");
+        btVodEntrySD.setProductLongDescription("sdLong");
+
+
+        BtVodEntry btVodEntryHD = filmRow("About Alex - HD");
+        btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
+        btVodEntryHD.setProductTargetBandwidth("HD");
+        btVodEntryHD.setDescription("hd");
+        btVodEntryHD.setProductLongDescription("hdLong");
+
+        Image sdImage = new Image("sdImage");
+        Image hdImage = new Image("hdImage");
+
+        when(imageExtractor.imagesFor(btVodEntrySD)).thenReturn(ImmutableSet.of(sdImage));
+        when(imageExtractor.imagesFor(btVodEntryHD)).thenReturn(ImmutableSet.of(hdImage));
+
+        when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
+        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+
+        when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.<Series>absent());
+        when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.<Series>absent());
+
+        when(descriptionAndImageSelector.shouldUpdateDescriptionsAndImages(
+                anyListOf(Version.class), anyListOf(Version.class)
+        ))
+                .thenReturn(true);
+
+        itemExtractor.process(btVodEntrySD);
+        itemExtractor.process(btVodEntryHD);
+
+        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
+
+        assertThat(writtenItem.getTitle(), is("About Alex"));
+        assertThat(writtenItem.getDescription(), is(btVodEntryHD.getDescription()));
+        assertThat(writtenItem.getLongDescription(), is(btVodEntryHD.getProductLongDescription()));
+        Set<Image> images = ImmutableSet.of(hdImage);
+        assertThat(writtenItem.getImages(), is(images));
+        assertThat(writtenItem.getImage(), is(hdImage.getCanonicalUri()));
+
+        assertThat(writtenItem.getVersions().size(), is(2));
+
+        Version hdVersion = Iterables.get(writtenItem.getVersions(), 0);
+        Version sdVersion = Iterables.get(writtenItem.getVersions(), 1);
+        assertThat(Iterables.getOnlyElement(sdVersion.getManifestedAs()).getHighDefinition(), is(false));
+        assertThat(Iterables.getOnlyElement(hdVersion.getManifestedAs()).getHighDefinition(), is(true));
     }
 }

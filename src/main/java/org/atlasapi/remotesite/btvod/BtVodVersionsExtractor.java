@@ -36,6 +36,7 @@ public class BtVodVersionsExtractor {
     private static final String BT_VOD_ID_NAMESPACE = "bt:vod:id";
     private static final String HD_FLAG = "HD";
     private static final String SD_FLAG = "SD";
+    public static final String PAY_TO_BUY_SUFFIX = "-EST";
 
     private final String uriPrefix;
     private final BtVodPricingAvailabilityGrouper grouper;
@@ -113,7 +114,8 @@ public class BtVodVersionsExtractor {
 
         //TODO filter for blackout
         if (row.getProductPricingPlan() != null && !row.getProductPricingPlan().getProductPricingTiers().isEmpty()) {
-            if (row.getProductOfferingType()!= null && row.getProductOfferingType().contains("-EST")) {
+            if (row.getProductOfferingType() != null
+                    && row.getProductOfferingType().contains(PAY_TO_BUY_SUFFIX)) {
                 locations.addAll(createLocations(row, Policy.RevenueContract.PAY_TO_BUY, aliases, serviceId));
             } else {
                 locations.addAll(createLocations(row, Policy.RevenueContract.PAY_TO_RENT, aliases, serviceId));

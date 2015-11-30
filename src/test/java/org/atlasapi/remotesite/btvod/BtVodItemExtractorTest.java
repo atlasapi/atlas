@@ -42,6 +42,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -106,47 +107,60 @@ public class BtVodItemExtractorTest {
         }
     };
 
-    private final BtVodItemExtractor itemExtractor
-            = new BtVodItemExtractor(
-            btVodBrandProvider,
-            seriesProvider,
-            PUBLISHER, URI_PREFIX,
-            contentListener,
-            new BtVodDescribedFieldsExtractor(
-                    topicResolver,
-                    topicWriter,
-                    Publisher.BT_VOD,
-                    newTopicContentMatchingPredicate,
-                    BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
-                    BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
-                            "TV", ImmutableSet.of("Season", "Season-EST")
-                    ),
-                    BtVodContentMatchingPredicates.schedulerChannelPredicate("TV Replay"),
-                    NEW_TOPIC,
-                    new Topic(234L),
-                    new Topic(345L),
-                    new Topic(456L),
-                    BT_VOD_GUID_NAMESPACE,
-                    BT_VOD_ID_NAMESPACE,
-                    BT_VOD_CONTENT_PROVIDER_NAMESPACE,
-                    BT_VOD_GENRE_NAMESPACE,
-                    BT_VOD_KEYWORD_NAMESPACE
-            ),
-            Sets.<String>newHashSet(),
-            new TitleSanitiser(),
-            imageExtractor,
-            new BtVodVersionsExtractor(
-                    new BtVodPricingAvailabilityGrouper(),
-                    URI_PREFIX,
-                    BT_VOD_VERSION_GUID_NAMESPACE,
-                    BT_VOD_VERSION_ID_NAMESPACE,
-                    null,
-                    null
-            ),
-            descriptionAndImageUpdater,
-            new MockBtVodEpisodeNumberExtractor(),
-            mockMpxClient
-    );
+    private BtVodItemExtractor itemExtractor;
+
+    @Before
+    public void setUp() {
+        itemExtractor = new BtVodItemExtractor(
+                btVodBrandProvider,
+                seriesProvider,
+                PUBLISHER, URI_PREFIX,
+                contentListener,
+                new BtVodDescribedFieldsExtractor(
+                        topicResolver,
+                        topicWriter,
+                        Publisher.BT_VOD,
+                        newTopicContentMatchingPredicate,
+                        BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
+                        BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
+                                "TV", ImmutableSet.of("Season", "Season-EST")
+                        ),
+                        BtVodContentMatchingPredicates.schedulerChannelPredicate("TV Replay"),
+                        NEW_TOPIC,
+                        new Topic(234L),
+                        new Topic(345L),
+                        new Topic(456L),
+                        BT_VOD_GUID_NAMESPACE,
+                        BT_VOD_ID_NAMESPACE,
+                        BT_VOD_CONTENT_PROVIDER_NAMESPACE,
+                        BT_VOD_GENRE_NAMESPACE,
+                        BT_VOD_KEYWORD_NAMESPACE
+                ),
+                Sets.<String>newHashSet(),
+                new TitleSanitiser(),
+                imageExtractor,
+                new BtVodVersionsExtractor(
+                        new BtVodPricingAvailabilityGrouper(),
+                        URI_PREFIX,
+                        BT_VOD_VERSION_GUID_NAMESPACE,
+                        BT_VOD_VERSION_ID_NAMESPACE,
+                        null,
+                        null
+                ),
+                descriptionAndImageUpdater,
+                new MockBtVodEpisodeNumberExtractor(),
+                mockMpxClient,
+                new BtVodEntryMatchingPredicate() {
+                    @Override
+                    public void init() {}
+
+                    @Override
+                    public boolean apply(BtVodEntry input) {
+                        return false;
+                    }
+                }
+        );
+    }
 
     @Test
     public void testExtractsEpisode() {

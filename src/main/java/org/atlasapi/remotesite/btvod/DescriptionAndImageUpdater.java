@@ -23,20 +23,32 @@ public class DescriptionAndImageUpdater {
     private Map<String, MetadataSource> imagesSource = new HashMap<>();
 
     public void update(Content target, Series series) {
-        MetadataSource source = MetadataSource.fromSeries(series.getSeriesNumber());
+        Integer seriesNumber = series.getSeriesNumber();
+        if (seriesNumber == null) {
+            // Set to lowest priority
+            seriesNumber = Integer.MAX_VALUE;
+        }
+
+        MetadataSource source = MetadataSource.fromSeries(seriesNumber);
         Metadata metadata = Metadata.from(series);
         update(target, metadata, source);
     }
 
     public void update(Content target, Episode episode) {
-        MetadataSource source = MetadataSource.fromEpisode(episode.getEpisodeNumber());
+        Integer episodeNumber = episode.getEpisodeNumber();
+        if (episodeNumber == null) {
+            // Set to lowest priority
+            episodeNumber = Integer.MAX_VALUE;
+        }
+
+        MetadataSource source = MetadataSource.fromEpisode(episodeNumber);
         Metadata metadata = Metadata.from(episode);
         update(target, metadata, source);
     }
 
-    public void update(Content target, BtVodCollection btVodCollection) {
-        MetadataSource source = MetadataSource.fromCollection(btVodCollection.getCreated());
-        Metadata metadata = Metadata.from(btVodCollection);
+    public void update(Content target, BtVodCollection collection) {
+        MetadataSource source = MetadataSource.fromCollection(collection.getCreated());
+        Metadata metadata = Metadata.from(collection);
         update(target, metadata, source);
     }
 

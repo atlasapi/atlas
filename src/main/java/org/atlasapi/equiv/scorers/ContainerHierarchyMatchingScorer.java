@@ -1,5 +1,8 @@
 package org.atlasapi.equiv.scorers;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -9,17 +12,22 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
+import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.PeekingIterator;
 
@@ -31,10 +39,13 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
 
     private final ContentResolver contentResolver;
     private final Score mismatchScore;
+    private final SubscriptionCatchupBrandDetector subscriptionCatchupBrandDetector;
 
-    public ContainerHierarchyMatchingScorer(ContentResolver contentResolver, Score mismatchScore) {
+    public ContainerHierarchyMatchingScorer(ContentResolver contentResolver, Score mismatchScore, 
+            SubscriptionCatchupBrandDetector subscriptionCatchupBrandDetector) {
         this.contentResolver = contentResolver;
         this.mismatchScore = mismatchScore;
+        this.subscriptionCatchupBrandDetector = checkNotNull(subscriptionCatchupBrandDetector);
     }
     
     @Override
@@ -44,7 +55,13 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
         // Brands can have full Series hierarchy so compare its Series' hierarchies if present. 
         // If there are no Series treat it as a flat Container
         if (subj instanceof Brand && !((Brand)subj).getSeriesRefs().isEmpty()) {
-            List<Integer> subjSeriesSizes = sortedSeriesSizes(seriesFor((Brand)subj));
+            ImmutableList<Series> series = seriesFor((Brand)subj);
+            if (subscriptionCatchupBrandDetector.couldBeSubscriptionCatchup(subj, series)) {
+                for (Container cand : candidates) {
+                    results.addEquivalent(cand, Score.nullScore());
+                }
+            }
+            List<Integer> subjSeriesSizes = sortedSeriesSizes(series);
             desc.appendText("Subject %s, %s series: %s", subj, subjSeriesSizes.size(), subjSeriesSizes)
                 .startStage("matches:");
             for (Container cand : candidates) {

@@ -29,7 +29,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 
 public class BtVodDescribedFieldsExtractor {
@@ -195,8 +194,6 @@ public class BtVodDescribedFieldsExtractor {
     }
     
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
-        described.setDescription(row.getDescription());
-        described.setLongDescription(row.getProductLongDescription());
         if (row.getProductPriority() != null) {
             Double priority = Double.valueOf(row.getProductPriority());
             if (priority > 0) {
@@ -236,13 +233,17 @@ public class BtVodDescribedFieldsExtractor {
             }
             described.setGenres(genres.build());
         }
-
-        if (described.getImages() != null
-                && !described.getImages().isEmpty()) {
-            described.setImage(Iterables.getFirst(described.getImages(), null).getCanonicalUri());
-        }
         
         described.setAliases(aliasesFrom(row));
+    }
+
+    public void setDescriptionsFrom(BtVodEntry row, Described described) {
+        if (row.getDescription() != null) {
+            described.setDescription(row.getDescription());
+        }
+        if (row.getProductLongDescription() != null) {
+            described.setLongDescription(row.getProductLongDescription());
+        }
     }
 
     public Set<String> btGenreStringsFrom(BtVodEntry row) {

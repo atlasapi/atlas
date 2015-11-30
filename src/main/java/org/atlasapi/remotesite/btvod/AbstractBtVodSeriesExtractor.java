@@ -26,7 +26,6 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
-    private final ImageExtractor imageExtractor;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
 
     private UpdateProgress progress = UpdateProgress.START;
@@ -37,15 +36,13 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
-            BtVodSeriesUriExtractor seriesUriExtractor,
-            ImageExtractor imageExtractor
+            BtVodSeriesUriExtractor seriesUriExtractor
     ) {
         this.processedRows = checkNotNull(processedRows);
         this.listener = checkNotNull(listener);
         this.brandProvider = checkNotNull(brandProvider);
         this.publisher = checkNotNull(publisher);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
-        this.imageExtractor = checkNotNull(imageExtractor);
         //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
         //      Added as a collaborator for Alias extraction, but should be used more
         //      widely
@@ -62,13 +59,16 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             }
 
             Series series;
+            boolean updatingExisting;
             if (processedSeries.containsKey(seriesUriExtractor.seriesUriFor(row).get())) {
                 series = processedSeries.get(seriesUriExtractor.seriesUriFor(row).get());
+                updatingExisting = true;
             } else {
                 series = seriesFrom(row);
+                updatingExisting = false;
             }
             setFields(series, row);
-            setAdditionalFields(series, row);
+            setAdditionalFields(series, row, updatingExisting);
             onSeriesProcessed(series, row);
 
             brandProvider.updateBrandFromSeries(row, series);
@@ -110,7 +110,8 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
 
     protected abstract void onSeriesProcessed(Series series, BtVodEntry row);
 
-    protected abstract void setAdditionalFields(Series series, BtVodEntry row);
+    protected abstract void setAdditionalFields(Series series, BtVodEntry row,
+            boolean updatingExisting);
 
     private Series seriesFrom(BtVodEntry row) {
         Series series = new Series(seriesUriExtractor.seriesUriFor(row).get(), null, publisher);
@@ -120,12 +121,9 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
         series.setGenres(describedFieldsExtractor.btGenreStringsFrom(row));
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-        series.setImages(imageExtractor.imagesFor(row));
 
         return series;
     }
-
-
 
     protected BtVodSeriesUriExtractor getSeriesUriExtractor() {
         return seriesUriExtractor;
@@ -138,5 +136,4 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
     protected Set<String> getProcessedRows() {
         return ImmutableSet.copyOf(processedRows);
     }
-
 }

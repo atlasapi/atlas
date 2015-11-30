@@ -19,6 +19,7 @@ public class BtVodEntry {
     private String id;
     private String guid;
     private String title;
+    private Long added;
     private String description;
 
     @SerializedName("plproduct$longDescription")
@@ -77,6 +78,10 @@ public class BtVodEntry {
 
     public String getTitle() {
         return title;
+    }
+
+    public Long getAdded() {
+        return added;
     }
 
     public String getDescription() {
@@ -180,6 +185,10 @@ public class BtVodEntry {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void setAdded(Long added) {
+        this.added = added;
     }
 
     public void setDescription(String description) {

@@ -6,20 +6,21 @@ import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Certificate;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 
 import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.intl.Countries;
 
 public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
-
-    private static final String SERIES_TYPE = "season";
 
     /**
      * GUID -> series
@@ -27,7 +28,8 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
     private final Map<String, Series> explicitSeries;
     private final BtVodVersionsExtractor versionsExtractor;
     private final TitleSanitiser titleSanitiser;
-
+    private final ImageExtractor imageExtractor;
+    private final DedupedDescriptionAndImageUpdater descriptionAndImageUpdater;
 
     public BtVodExplicitSeriesExtractor(
             BtVodBrandProvider btVodBrandProvider,
@@ -38,7 +40,8 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
             BtVodSeriesUriExtractor seriesUriExtractor,
             BtVodVersionsExtractor versionsExtractor,
             TitleSanitiser titleSanitiser,
-            ImageExtractor imageExtractor
+            ImageExtractor imageExtractor,
+            DedupedDescriptionAndImageUpdater descriptionAndImageUpdater
     ) {
         super(
                 btVodBrandProvider, 
@@ -46,17 +49,18 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
                 listener, 
                 processedRows, 
                 describedFieldsExtractor, 
-                seriesUriExtractor, 
-                imageExtractor
-             );
+                seriesUriExtractor
+        );
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.versionsExtractor = checkNotNull(versionsExtractor);
-        explicitSeries = Maps.newHashMap();
+        this.explicitSeries = Maps.newHashMap();
+        this.imageExtractor = checkNotNull(imageExtractor);
+        this.descriptionAndImageUpdater = checkNotNull(descriptionAndImageUpdater);
     }
 
     @Override
     protected boolean shouldProcess(BtVodEntry row) {
-        return SERIES_TYPE.equals(row.getProductType());
+        return BtVodProductType.SEASON.isOfType(row.getProductType());
     }
 
     @Override
@@ -65,8 +69,20 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
     }
 
     @Override
-    protected void setAdditionalFields(Series series, BtVodEntry row) {
-        series.addVersions(versionsExtractor.createVersions(row));
+    protected void setAdditionalFields(Series series, BtVodEntry row, boolean updatingExisting) {
+        Set<Version> currentVersions = versionsExtractor.createVersions(row);
+
+        if (updatingExisting) {
+            descriptionAndImageUpdater.updateDescriptionsAndImages(
+                    series, row, imageExtractor.imagesFor(row), currentVersions
+            );
+        } else {
+            getDescribedFieldsExtractor().setDescriptionsFrom(row, series);
+            setImagesFrom(row, series);
+        }
+
+        series.addVersions(currentVersions);
+
         series.addAliases(getDescribedFieldsExtractor().aliasesFrom(row));
         series.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
         getDescribedFieldsExtractor().setDescribedFieldsFrom(row, series);
@@ -81,5 +97,21 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
     public Map<String, Series> getExplicitSeries() {
         return ImmutableMap.copyOf(explicitSeries);
+    }
+
+    private void setImagesFrom(BtVodEntry row, Series series) {
+        Set<Image> images = imageExtractor.imagesFor(row);
+
+        if (images.isEmpty()) {
+            if (series.getImages() == null) {
+                series.setImages(ImmutableSet.<Image>of());
+            }
+            return;
+        }
+
+        series.setImages(images);
+        if (series.getImages() != null && !series.getImages().isEmpty()){
+            series.setImage(Iterables.get(series.getImages(), 0).getCanonicalUri());
+        }
     }
 }

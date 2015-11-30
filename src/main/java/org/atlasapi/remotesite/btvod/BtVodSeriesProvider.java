@@ -39,7 +39,7 @@ public class BtVodSeriesProvider {
     private final Map<String, Series> synthesizedSeries;
 
     private final BtVodSeriesUriExtractor seriesUriExtractor;
-    private final DescriptionAndImageUpdater descriptionAndImageUpdater;
+    private final HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater;
     private final CertificateUpdater certificateUpdater;
     private final BtVodBrandProvider brandProvider;
     private final TopicUpdater topicUpdater;
@@ -49,7 +49,7 @@ public class BtVodSeriesProvider {
             Map<String, Series> explicitSeries,
             Map<String, Series> synthesizedSeries,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            DescriptionAndImageUpdater descriptionAndImageUpdater,
+            HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater,
             CertificateUpdater certificateUpdater,
             BtVodBrandProvider brandProvider,
             TopicUpdater topicUpdater,

@@ -25,7 +25,7 @@ import com.google.common.collect.ImmutableSet;
 public class BtVodBrandProviderTest {
 
     private @Mock BrandUriExtractor brandUriExtractor;
-    private @Mock DescriptionAndImageUpdater descriptionAndImageUpdater;
+    private @Mock HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater;
     private @Mock CertificateUpdater certificateUpdater;
     private @Mock TopicUpdater topicUpdater;
     private @Mock BtVodContentListener listener;

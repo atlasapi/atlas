@@ -20,9 +20,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
 @RunWith(MockitoJUnitRunner.class)
-public class DescriptionAndImageUpdaterTest {
+public class HierarchyDescriptionAndImageUpdaterTest {
 
-    private DescriptionAndImageUpdater updater;
+    private HierarchyDescriptionAndImageUpdater updater;
 
     private Image firstImage;
     private Image secondImage;
@@ -30,7 +30,7 @@ public class DescriptionAndImageUpdaterTest {
 
     @Before
     public void setUp() throws Exception {
-        updater = new DescriptionAndImageUpdater();
+        updater = new HierarchyDescriptionAndImageUpdater();
         firstImage = new Image("firstImageUri");
         secondImage = new Image("secondImageUri");
         thirdImage = new Image("thirdImageUri");

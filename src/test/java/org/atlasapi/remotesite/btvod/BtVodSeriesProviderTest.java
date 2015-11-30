@@ -35,7 +35,7 @@ public class BtVodSeriesProviderTest {
     private @Mock TopicRef topicRef;
 
     private @Mock BtVodSeriesUriExtractor seriesUriExtractor;
-    private @Mock DescriptionAndImageUpdater descriptionAndImageUpdater;
+    private @Mock HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater;
     private @Mock CertificateUpdater certificateUpdater;
     private @Mock BtVodBrandProvider brandProvider;
     private @Mock TopicUpdater topicUpdater;

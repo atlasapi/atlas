@@ -59,6 +59,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final TitleSanitiser titleSanitiser;
     private final ImageExtractor imageExtractor;
+    private final BtVodEntryMatchingPredicate kidsPredicate;
     private UpdateProgress progress = UpdateProgress.START;
     private final BtVodVersionsExtractor versionsExtractor;
     private final DedupedDescriptionAndImageUpdater descriptionAndImageUpdater;
@@ -79,7 +80,8 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             BtVodVersionsExtractor versionsExtractor,
             DedupedDescriptionAndImageUpdater descriptionAndImageUpdater,
             BtVodEpisodeNumberExtractor episodeNumberExtractor,
-            BtMpxVodClient mpxClient
+            BtMpxVodClient mpxClient,
+            BtVodEntryMatchingPredicate kidsPredicate
     ) {
         this.brandProvider = checkNotNull(brandProvider);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
@@ -95,6 +97,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.descriptionAndImageUpdater = checkNotNull(descriptionAndImageUpdater);
         this.episodeNumberExtractor = checkNotNull(episodeNumberExtractor);
         this.mpxClient = checkNotNull(mpxClient);
+        this.kidsPredicate = checkNotNull(kidsPredicate);
     }
 
     @Override
@@ -128,7 +131,14 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private boolean shouldProcess(BtVodEntry row) {
         return !COLLECTION.isOfType(row.getProductType())
                     && !HELP.isOfType(row.getProductType())
-                    && !SEASON.isOfType(row.getProductType());
+                    && !SEASON.isOfType(row.getProductType())
+                    && !isKidsEst(row);
+    }
+
+    private boolean isKidsEst(BtVodEntry entry) {
+        return kidsPredicate.apply(entry)
+                && entry.getProductOfferingType() != null
+                && entry.getProductOfferingType().contains(BtVodVersionsExtractor.PAY_TO_BUY_SUFFIX);
     }
 
     private boolean isEpisode(BtVodEntry row) {

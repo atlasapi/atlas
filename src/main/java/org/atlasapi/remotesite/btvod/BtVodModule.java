@@ -20,6 +20,7 @@ import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.HttpClients;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
+import org.atlasapi.remotesite.btvod.contentgroups.BtVodEntryMatchingPredicates;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
 import org.atlasapi.remotesite.btvod.portal.XmlPortalClient;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
@@ -179,7 +180,8 @@ public class BtVodModule {
                 describedFieldsExtractor(Publisher.BT_VOD, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG,
                         btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, contentGroupsAndCritera),
                 mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam),
-                topicQueryResolver
+                topicQueryResolver,
+                BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY)
         );
     }
 
@@ -276,11 +278,12 @@ public class BtVodModule {
                         conf,
                         feedBaseUrl,
                         newFeedSuffix,
-                        feedQParam, 
+                        feedQParam,
                         contentGroupsAndCritera
                 ),
                 mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedQParam),
-                topicQueryResolver
+                topicQueryResolver,
+                BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY)
         ).withName(
                 String.format(
                         "BT TVE VoD Updater for %s",

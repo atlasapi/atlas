@@ -1,25 +1,20 @@
 package org.atlasapi.remotesite.btvod.contentgroups;
 
-import java.io.IOException;
-import java.util.Iterator;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.google.common.base.Strings;
 import org.atlasapi.media.entity.Described;
-import org.atlasapi.media.entity.Film;
 import org.atlasapi.remotesite.btvod.BtMpxVodClient;
 import org.atlasapi.remotesite.btvod.BtVodContentMatchingPredicate;
+import org.atlasapi.remotesite.btvod.BtVodEntryMatchingPredicate;
 import org.atlasapi.remotesite.btvod.VodEntryAndContent;
-import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
 
 
@@ -34,62 +29,54 @@ public class BtVodContentMatchingPredicates {
     private static final String FILM_CATEGORY = "Film";
     
     public static BtVodContentMatchingPredicate schedulerChannelPredicate(final String schedulerChannel) {
+        final BtVodEntryMatchingPredicate delegate =
+                BtVodEntryMatchingPredicates.schedulerChannelPredicate(schedulerChannel);
 
         return new BtVodContentMatchingPredicate() {
 
             @Override
             public boolean apply(VodEntryAndContent input) {
-                return schedulerChannel.equals(
-                        input.getBtVodEntry().getSchedulerChannel()
-                       );
+                return delegate.apply(input.getBtVodEntry());
             }
 
             @Override
-            public void init() {
-
-            }
+            public void init() {}
         };
     }
 
     public static BtVodContentMatchingPredicate schedulerChannelAndOfferingTypePredicate(
             final String schedulerChannel, final Set<String> productOfferingTypes) {
+        final BtVodEntryMatchingPredicate delegate = BtVodEntryMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
+                schedulerChannel,
+                productOfferingTypes);
 
         return new BtVodContentMatchingPredicate() {
 
             @Override
             public boolean apply(VodEntryAndContent input) {
-                return schedulerChannel.equals(input.getBtVodEntry().getSchedulerChannel())
-                       && productOfferingTypes.contains(
-                        Strings.nullToEmpty(input.getBtVodEntry().getProductOfferingType()).toLowerCase()
-                );
+                return delegate.apply(input.getBtVodEntry());
             }
 
             @Override
-            public void init() {
-
-            }
+            public void init() {}
         };
     }
 
     public static BtVodContentMatchingPredicate contentProviderPredicate(final String providerId) {
-        
+        final BtVodEntryMatchingPredicate delegate =
+                BtVodEntryMatchingPredicates.contentProviderPredicate(providerId);
         return new BtVodContentMatchingPredicate() {
 
             @Override
             public boolean apply(VodEntryAndContent input) {
-                return providerId.equals(
-                                    input.getBtVodEntry()
-                                         .getContentProviderId()
-                );
+                return delegate.apply(input.getBtVodEntry());
             }
-            
+
             @Override
-            public void init() {
-                
-            }
+            public void init() {}
         };
     }
-    
+
     @SuppressWarnings("unchecked")
     public static BtVodContentMatchingPredicate buyToOwnPredicate() {
         
@@ -107,9 +94,7 @@ public class BtVodContentMatchingPredicates {
             }
             
             @Override
-            public void init() {
-                
-            }
+            public void init() {}
         };
     };
     
@@ -131,9 +116,7 @@ public class BtVodContentMatchingPredicates {
             }
             
             @Override
-            public void init() {
-                
-            }
+            public void init() {}
         };
     }
     
@@ -166,51 +149,20 @@ public class BtVodContentMatchingPredicates {
     }
     
     public static BtVodContentMatchingPredicate mpxFeedContentMatchingPredicate(final BtMpxVodClient mpxClient, final String feedName) {
-        
+        final BtVodEntryMatchingPredicate delegate = BtVodEntryMatchingPredicates.mpxFeedContentMatchingPredicate(
+                mpxClient,
+                feedName);
+
         return new BtVodContentMatchingPredicate() {
-            
-            private Set<String> ids = null;
-            
             @Override
             public boolean apply(VodEntryAndContent input) {
-                if (ids == null) {
-                    throw new IllegalStateException("Must call init() first");
-                }
-                log.debug("MPX content group predicate testing whether {} is in group", input.getBtVodEntry().getId());
-                return ids.contains(input.getBtVodEntry().getId());
+                return delegate.apply(input.getBtVodEntry());
             }
             
             @Override
             public void init() {
-                ImmutableSet.Builder<String> builder = ImmutableSet.builder();
-                Iterator<BtVodEntry> feed;
-                try {
-                    feed = mpxClient.getFeed(feedName);
-                } catch (IOException e) {
-                    throw Throwables.propagate(e);
-                }
-                while (feed.hasNext()) {
-                    builder.add(feed.next().getId());
-                };
-                ids = builder.build();
-                log.debug("MPX content group predicate initialized with IDs {}", ids);
+                delegate.init();
             }
         };
-    }
-    
-    @SuppressWarnings("unchecked")
-    public static Predicate<VodEntryAndContent> boxOfficePredicate() {
-        
-        return Predicates.and(
-                Predicates.not(buyToOwnPredicate()),
-                Predicates.not(cznPredicate()), 
-                new Predicate<VodEntryAndContent>() {
-
-                    @Override
-                    public boolean apply(VodEntryAndContent input) {
-                        return input.getContent() instanceof Film;
-                    }
-        });
-                
     }
 }

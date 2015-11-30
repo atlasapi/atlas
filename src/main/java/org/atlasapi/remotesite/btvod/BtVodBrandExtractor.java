@@ -66,7 +66,7 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
                 return CONTINUE;
             }
 
-            if (checkIfBrandAlreadyProcessed(row)) {
+            if (updateParentGuidIfBrandAlreadyProcessed(row)) {
                 thisProgress = UpdateProgress.SUCCESS;
                 return CONTINUE;
             }
@@ -87,7 +87,7 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
         return CONTINUE;
     }
 
-    private boolean checkIfBrandAlreadyProcessed(BtVodEntry row) {
+    private boolean updateParentGuidIfBrandAlreadyProcessed(BtVodEntry row) {
         Optional<String> optionalUri = brandUriExtractor.extractBrandUri(row);
         if (optionalUri.isPresent() && processedBrands.containsKey(optionalUri.get())) {
             Brand brand = processedBrands.get(optionalUri.get());

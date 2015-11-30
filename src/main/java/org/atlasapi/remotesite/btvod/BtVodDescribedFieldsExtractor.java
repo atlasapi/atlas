@@ -197,24 +197,25 @@ public class BtVodDescribedFieldsExtractor {
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());
-        if (row.getProductPriority() != null) {
+        if (row.getProductPriority() != null && Double.valueOf(row.getProductPriority()) > 0) {
             Double priority = Double.valueOf(row.getProductPriority());
             if (priority > 0) {
-                described.setPriority(new Priority(priority * 3,
-                        new PriorityScoreReasons(
-                                ImmutableList.of(""),
-                                ImmutableList.of("")
-                        )
-                ));
-            } else {
-                described.setPriority(new Priority(10d,
+                described.setPriority(new Priority(Math.abs(priority) * 0.33,
                         new PriorityScoreReasons(
                                 ImmutableList.of(""),
                                 ImmutableList.of("")
                         )
                 ));
             }
+        } else {
+            described.setPriority(new Priority(100d,
+                    new PriorityScoreReasons(
+                            ImmutableList.of(""),
+                            ImmutableList.of("")
+                    )
+            ));
         }
+
         
         ImmutableList.Builder<String> genres = ImmutableList.builder();
         for (String btGenre : btGenreStringsFrom(row)) {

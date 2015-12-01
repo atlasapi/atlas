@@ -185,7 +185,7 @@ public class BtVodModule {
                 describedFieldsExtractor(Publisher.BT_VOD, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG,
                         btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, btVodMpxProdFeedBaseUrl, contentGroupsAndCritera),
                 mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
-                topicQueryResolver
+                topicQueryResolver,
                 BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY)
         );
     }
@@ -298,7 +298,7 @@ public class BtVodModule {
                         contentGroupsAndCritera
                 ),
                 mpxVodClient(baseUrlForItemLookup, feedNameForItemLookup, btVodMpxProdFeedQParam),
-                topicQueryResolver
+                topicQueryResolver,
                 BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY)
         ).withName(
                 String.format(

@@ -55,7 +55,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     }
     
     public BroadcastMatchingItemEquivalenceGenerator(ScheduleResolver resolver, ChannelResolver channelResolver, Set<Publisher> supportedPublishers) {
-        this(resolver, channelResolver, supportedPublishers, Duration.standardMinutes(10));
+        this(resolver, channelResolver, supportedPublishers, Duration.standardMinutes(5));
     }
 
     @Override

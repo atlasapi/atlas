@@ -16,7 +16,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
 
-public class DescriptionAndImageUpdater {
+public class HierarchyDescriptionAndImageUpdater {
 
     private Map<String, MetadataSource> descriptionSource = new HashMap<>();
     private Map<String, MetadataSource> longDescriptionSource = new HashMap<>();

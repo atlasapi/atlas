@@ -19,7 +19,7 @@ public class BtVodBrandProvider {
     private final BrandUriExtractor brandUriExtractor;
     private final Map<String, Brand> brands;
     private final Map<String, Brand> parentGuidToBrand;
-    private final DescriptionAndImageUpdater descriptionAndImageUpdater;
+    private final HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater;
     private final CertificateUpdater certificateUpdater;
     private final TopicUpdater topicUpdater;
     private final BtVodContentListener listener;
@@ -28,7 +28,7 @@ public class BtVodBrandProvider {
             BrandUriExtractor brandUriExtractor,
             Map<String, Brand> brands,
             Map<String, Brand> parentGuidToBrand,
-            DescriptionAndImageUpdater descriptionAndImageUpdater,
+            HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater,
             CertificateUpdater certificateUpdater,
             TopicUpdater topicUpdater,
             BtVodContentListener listener

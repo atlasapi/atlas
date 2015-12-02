@@ -15,6 +15,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.RelatedLink.Builder;
 import org.atlasapi.media.entity.RelatedLink.LinkType;
+import org.atlasapi.media.entity.Review;
+import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.PublisherDetails;

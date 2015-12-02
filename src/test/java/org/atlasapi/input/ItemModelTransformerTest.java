@@ -10,13 +10,15 @@ import java.util.Date;
 
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.media.entity.simple.*;
 import org.atlasapi.media.entity.simple.Broadcast;
 import org.atlasapi.media.entity.simple.EventRef;
 import org.atlasapi.media.entity.simple.Item;
+import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.atlasapi.media.entity.simple.Restriction;
+import org.atlasapi.media.entity.simple.SeriesSummary;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.junit.Before;

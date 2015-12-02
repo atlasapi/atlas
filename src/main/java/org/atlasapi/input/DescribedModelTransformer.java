@@ -6,7 +6,13 @@ import java.util.Set;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Priority;
+import org.atlasapi.media.entity.PriorityScoreReasons;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.RelatedLink.Builder;
 import org.atlasapi.media.entity.RelatedLink.LinkType;
 import org.atlasapi.media.entity.simple.Description;

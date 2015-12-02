@@ -10,15 +10,9 @@ import java.util.Date;
 
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.media.entity.simple.Broadcast;
-import org.atlasapi.media.entity.simple.EventRef;
-import org.atlasapi.media.entity.simple.Item;
-import org.atlasapi.media.entity.simple.PublisherDetails;
-import org.atlasapi.media.entity.simple.Restriction;
-import org.atlasapi.media.entity.simple.SeriesSummary;
+import org.atlasapi.media.entity.simple.*;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.junit.Before;
@@ -74,33 +68,6 @@ public class ItemModelTransformerTest {
 
         Version version = complex.getVersions().iterator().next();
         checkRestriction(version.getRestriction());
-    }
-
-    @Test
-    public void testCreateOutputForItemTypeEpisode() {
-        Item simpleEpisode = new Item();
-        simpleEpisode.setUri("uri");
-        simpleEpisode.setType("episode");
-        simpleEpisode.setPublisher(new PublisherDetails(Publisher.BBC.key()));
-        simpleEpisode.setBroadcasts(Lists.newArrayList(simpleBroadcast));
-        simpleEpisode.setSeriesNumber(1);
-        simpleEpisode.setEpisodeNumber(2);
-
-        SeriesSummary seriesSummary = new SeriesSummary();
-        seriesSummary.setUri("uri");
-        simpleEpisode.setSeriesSummary(seriesSummary);
-        simpleEpisode.setShortDescription("Hello");
-        simpleEpisode.setMediumDescription("Hello World");
-        simpleEpisode.setLongDescription("Hello World Testing");
-
-        org.atlasapi.media.entity.Episode complexEpisode = (Episode) transformer.createOutput(simpleEpisode);
-
-        assertEquals(simpleEpisode.getSeriesNumber(), complexEpisode.getSeriesNumber());
-        assertEquals(simpleEpisode.getEpisodeNumber(), complexEpisode.getEpisodeNumber());
-        assertEquals(simpleEpisode.getShortDescription(), complexEpisode.getShortDescription());
-        assertEquals(simpleEpisode.getMediumDescription(), complexEpisode.getMediumDescription());
-        assertEquals(simpleEpisode.getLongDescription(), complexEpisode.getLongDescription());
-        assertEquals(simpleEpisode.getSeriesSummary().getUri(), complexEpisode.getSeriesRef().getUri());
     }
 
     @Test

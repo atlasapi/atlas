@@ -22,6 +22,7 @@ import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -59,20 +60,26 @@ public class DedupedDescriptionAndImageUpdaterTest {
     }
 
     @Test
-    public void testShouldNotUpdateIfTargetHasOwnDescriptionsAndImages() throws Exception {
-        Set<Image> images = ImmutableSet.of(new Image("image"));
+    public void testShouldNotUpdateIfSourceHasNoUsefulValues() throws Exception {
+        updater.updateDescriptionsAndImages(
+                target, new BtVodEntry(), ImmutableSet.<Image>of(),
+                getVersions(ImmutableMap.of(HD, SUBSCRIPTION))
+        );
 
+        assertThat(target.getDescription(), is(CoreMatchers.<String>nullValue()));
+        assertThat(target.getLongDescription(), is(CoreMatchers.<String>nullValue()));
+        assertThat(target.getImages(), is(CoreMatchers.<Set<Image>>nullValue()));
+    }
+
+    @Test
+    public void testShouldAlwaysUpdateIfTargetHasNotBeenSeenBefore() throws Exception {
         target.setDescription("desc");
-        target.setLongDescription("longDesc");
-        target.setImages(images);
 
         updater.updateDescriptionsAndImages(
                 target, firstRow, firstImages, getVersions(ImmutableMap.of(HD, SUBSCRIPTION))
         );
 
-        assertThat(target.getDescription(), is("desc"));
-        assertThat(target.getLongDescription(), is("longDesc"));
-        assertThat(target.getImages(), is(images));
+        checkChoice(firstRow, firstImages);
     }
 
     @Test

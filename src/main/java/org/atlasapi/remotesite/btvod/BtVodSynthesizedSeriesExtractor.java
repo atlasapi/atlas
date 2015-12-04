@@ -74,7 +74,7 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
     }
 
     @Override
-    protected void setAdditionalFields(Series series, BtVodEntry row, boolean updatingExisting) {}
+    protected void setAdditionalFields(Series series, BtVodEntry row) {}
 
     public Map<String, Series> getSynthesizedSeries() {
         return ImmutableMap.copyOf(synthesizedSeries);

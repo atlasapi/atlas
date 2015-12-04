@@ -225,7 +225,7 @@ public class EquivModule {
         return ContentEquivalenceUpdater.<Item> builder()
             .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
                 new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver, 
-                    channelResolver, acceptablePublishers, Duration.standardMinutes(10), filter)
+                    channelResolver, acceptablePublishers, Duration.standardMinutes(5), filter)
             ))
             .withScorers(scorers)
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())

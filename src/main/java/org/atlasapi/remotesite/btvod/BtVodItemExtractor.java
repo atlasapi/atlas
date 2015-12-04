@@ -17,7 +17,6 @@ import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
-import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
@@ -34,7 +33,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.primitives.Ints;
@@ -174,13 +172,11 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private void includeMetadataOnExistingItem(Item item, BtVodEntry row) {
-        Set<Version> currentVersions = versionsExtractor.createVersions(row);
-
+        Set<Version> versions = versionsExtractor.createVersions(row);
         descriptionAndImageUpdater.updateDescriptionsAndImages(
-                item, row, imageExtractor.imagesFor(row), currentVersions
+                item, row, imageExtractor.imagesFor(row), versions
         );
-
-        item.addVersions(currentVersions);
+        item.addVersions(versions);
 
         item.addClips(extractTrailer(row));
         item.addAliases(describedFieldsExtractor.aliasesFrom(row));
@@ -283,14 +279,17 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         }
 
         describedFieldsExtractor.setDescribedFieldsFrom(row, item);
-        describedFieldsExtractor.setDescriptionsFrom(row, item);
 
-        item.setVersions(versionsExtractor.createVersions(row));
+        Set<Version> versions = versionsExtractor.createVersions(row);
+        descriptionAndImageUpdater.updateDescriptionsAndImages(
+                item, row, imageExtractor.imagesFor(row), versions
+        );
+        item.setVersions(versions);
+
         item.setEditorialPriority(row.getProductPriority());
 
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, item);
         item.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-        setImagesFrom(row, item);
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {
@@ -325,22 +324,6 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private String uriFor(BtVodEntry row) {
         String id = row.getGuid();
         return uriPrefix + "items/" + id;
-    }
-
-    private void setImagesFrom(BtVodEntry row, Item item) {
-        Set<Image> images = imageExtractor.imagesFor(row);
-
-        if (images.isEmpty()) {
-            if (item.getImages() == null) {
-                item.setImages(ImmutableSet.<Image>of());
-            }
-            return;
-        }
-
-        item.setImages(images);
-        if (item.getImages() != null && !item.getImages().isEmpty()){
-            item.setImage(Iterables.get(item.getImages(), 0).getCanonicalUri());
-        }
     }
 
     @Override

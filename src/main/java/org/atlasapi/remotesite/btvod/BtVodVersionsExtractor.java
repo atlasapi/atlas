@@ -116,7 +116,7 @@ public class BtVodVersionsExtractor {
         DateTime start = new DateTime(pricingTier.getProductAbsoluteStart(), DateTimeZone.UTC);
         DateTime end = new DateTime(pricingTier.getProductAbsoluteEnd(), DateTimeZone.UTC);
 
-        return pricingTier.getIsBlackout()
+        return Boolean.TRUE.equals(pricingTier.getIsBlackout())
                 && PRERELEASE_BLACKOUT_TYPE.equals(pricingTier.getBlackoutType())
                 && isInRange(start, now, end);
     }

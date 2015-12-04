@@ -59,16 +59,13 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             }
 
             Series series;
-            boolean updatingExisting;
             if (processedSeries.containsKey(seriesUriExtractor.seriesUriFor(row).get())) {
                 series = processedSeries.get(seriesUriExtractor.seriesUriFor(row).get());
-                updatingExisting = true;
             } else {
                 series = seriesFrom(row);
-                updatingExisting = false;
             }
             setFields(series, row);
-            setAdditionalFields(series, row, updatingExisting);
+            setAdditionalFields(series, row);
             onSeriesProcessed(series, row);
 
             brandProvider.updateBrandFromSeries(row, series);
@@ -110,8 +107,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
 
     protected abstract void onSeriesProcessed(Series series, BtVodEntry row);
 
-    protected abstract void setAdditionalFields(Series series, BtVodEntry row,
-            boolean updatingExisting);
+    protected abstract void setAdditionalFields(Series series, BtVodEntry row);
 
     private Series seriesFrom(BtVodEntry row) {
         Series series = new Series(seriesUriExtractor.seriesUriFor(row).get(), null, publisher);

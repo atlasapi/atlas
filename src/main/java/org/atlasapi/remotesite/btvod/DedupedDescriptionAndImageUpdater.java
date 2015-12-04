@@ -70,16 +70,9 @@ public class DedupedDescriptionAndImageUpdater {
 
     private void updateDescription(Content target, BtVodEntry source,
             Optional<VersionType> currentType) {
-        if (Strings.isNullOrEmpty(source.getDescription())) {
-            return;
-        }
-
         VersionType existingType = descriptionSource.get(target.getCanonicalUri());
-        if (hasOwn(target.getDescription(), existingType)) {
-            return;
-        }
 
-        if (shouldUpdate(target.getDescription(), existingType, currentType)) {
+        if (hasValue(source.getDescription()) && shouldUpdate(existingType, currentType)) {
             target.setDescription(source.getDescription());
             descriptionSource.put(target.getCanonicalUri(), currentType.get());
         }
@@ -87,16 +80,10 @@ public class DedupedDescriptionAndImageUpdater {
 
     private void updateLongDescription(Content target, BtVodEntry source,
             Optional<VersionType> currentType) {
-        if (Strings.isNullOrEmpty(source.getProductLongDescription())) {
-            return;
-        }
-
         VersionType existingType = longDescriptionSource.get(target.getCanonicalUri());
-        if (hasOwn(target.getLongDescription(), existingType)) {
-            return;
-        }
 
-        if (shouldUpdate(target.getLongDescription(), existingType, currentType)) {
+        if (hasValue(source.getProductLongDescription())
+                && shouldUpdate(existingType, currentType)) {
             target.setLongDescription(source.getProductLongDescription());
             longDescriptionSource.put(target.getCanonicalUri(), currentType.get());
         }
@@ -104,42 +91,25 @@ public class DedupedDescriptionAndImageUpdater {
 
     private void updateImages(Content target, Set<Image> images,
             Optional<VersionType> currentType) {
-        if (images == null || images.isEmpty()) {
-            return;
-        }
-
         VersionType existingType = imagesSource.get(target.getCanonicalUri());
-        if (hasOwn(target.getImages(), existingType)) {
-            return;
-        }
 
-        if (shouldUpdate(target.getImages(), existingType, currentType)) {
+        if (hasValue(images) && shouldUpdate(existingType, currentType)) {
             target.setImages(images);
             target.setImage(Iterables.get(images, 0).getCanonicalUri());
             imagesSource.put(target.getCanonicalUri(), currentType.get());
         }
     }
 
-    private boolean hasOwn(String fieldValue, VersionType sourceType) {
-        return !Strings.isNullOrEmpty(fieldValue) && sourceType == null;
+    private boolean hasValue(String fieldValue) {
+        return !Strings.isNullOrEmpty(fieldValue);
     }
 
-    private boolean shouldUpdate(String fieldValue, VersionType existingType,
-            Optional<VersionType> currentType) {
-        return currentType.isPresent()
-                && (Strings.isNullOrEmpty(fieldValue)
-                || currentType.get().compareTo(existingType) > 0);
+    private <T> boolean hasValue(Collection<T> fieldValue) {
+        return fieldValue != null && !fieldValue.isEmpty();
     }
 
-    private <T> boolean hasOwn(Collection<T> fieldValue, VersionType sourceType) {
-        return fieldValue != null && !fieldValue.isEmpty() && sourceType == null;
-    }
-
-    private <T> boolean shouldUpdate(Collection<T> fieldValue, VersionType existingType,
-            Optional<VersionType> currentType) {
-        return currentType.isPresent()
-                && (fieldValue == null || fieldValue.isEmpty()
-                || currentType.get().compareTo(existingType) > 0);
+    private boolean shouldUpdate(VersionType existingType, Optional<VersionType> currentType) {
+        return currentType.isPresent() && currentType.get().compareTo(existingType) > 0;
     }
 
     private Optional<VersionType> getBestVersionType(Iterable<Version> versions) {
@@ -204,6 +174,11 @@ public class DedupedDescriptionAndImageUpdater {
 
         @Override
         public int compareTo(VersionType that) {
+            if (that == null) {
+                // Any version has higher priority than no version
+                return 1;
+            }
+
             int qualityComparison = qualityOrdering.compare(this.getQuality(), that.getQuality());
             if (qualityComparison != 0) {
                 return qualityComparison;

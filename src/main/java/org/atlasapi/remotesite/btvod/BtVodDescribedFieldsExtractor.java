@@ -240,15 +240,6 @@ public class BtVodDescribedFieldsExtractor {
         described.setAliases(aliasesFrom(row));
     }
 
-    public void setDescriptionsFrom(BtVodEntry row, Described described) {
-        if (row.getDescription() != null) {
-            described.setDescription(row.getDescription());
-        }
-        if (row.getProductLongDescription() != null) {
-            described.setLongDescription(row.getProductLongDescription());
-        }
-    }
-
     public Set<String> btGenreStringsFrom(BtVodEntry row) {
         ImmutableSet.Builder<String> genres = ImmutableSet.builder();
 

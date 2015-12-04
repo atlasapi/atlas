@@ -118,7 +118,6 @@ public class BtVodExplicitSeriesExtractorTest {
         Series series = Iterables.getOnlyElement(seriesExtractor.getExplicitSeries().values());
 
         verify(describedFieldsExtractor).setDescribedFieldsFrom(entry, series);
-        verify(describedFieldsExtractor).setDescriptionsFrom(entry, series);
 
         assertThat(series.getCanonicalUri(), is("seriesUri"));
         assertThat(series.getSeriesNumber(), is(1));

@@ -49,6 +49,9 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         result.setPublisher(publisher);
         result.setTitle(inputContent.getTitle());
         result.setDescription(inputContent.getDescription());
+        result.setShortDescription(inputContent.getShortDescription());
+        result.setMediumDescription(inputContent.getMediumDescription());
+        result.setLongDescription(inputContent.getLongDescription());
         result.setImage(inputContent.getImage());
         result.setThumbnail(inputContent.getThumbnail());
         result.setRelatedLinks(relatedLinks(inputContent.getRelatedLinks()));

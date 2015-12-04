@@ -181,6 +181,9 @@ public class ContentWriteController {
         existing.setEquivalentTo(merge ? merge(existing.getEquivalentTo(), update.getEquivalentTo()) : update.getEquivalentTo());
         existing.setLastUpdated(update.getLastUpdated());
         existing.setTitle(update.getTitle());
+        existing.setShortDescription(update.getShortDescription());
+        existing.setMediumDescription(update.getMediumDescription());
+        existing.setLongDescription(update.getLongDescription());
         existing.setDescription(update.getDescription());
         existing.setImage(update.getImage());
         existing.setThumbnail(update.getThumbnail());

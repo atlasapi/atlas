@@ -16,6 +16,9 @@ public class BtVodProductPricingTier {
     @SerializedName("plproduct$isBlackout")
     private Boolean isBlackout;
 
+    @SerializedName("plproduct$blackoutType")
+    private String blackoutType;
+
     public BtVodProductPricingTier() {
     }
 
@@ -49,5 +52,13 @@ public class BtVodProductPricingTier {
     
     public Boolean getIsBlackout() {
         return isBlackout;
+    }
+
+    public String getBlackoutType() {
+        return blackoutType;
+    }
+
+    public void setBlackoutType(String blackoutType) {
+        this.blackoutType = blackoutType;
     }
 }

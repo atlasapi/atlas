@@ -63,9 +63,11 @@ public class ItemModelTransformerTest {
     @Test
     public void testTransformItemWithBroadcastVersionsTransformsAllVersionFields()
             throws Exception {
+        simpleItem.setShortDescription("H");
         org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
 
         assertThat(complex.getVersions().size(), is(1));
+        assertThat(simpleItem.getShortDescription(), is(complex.getShortDescription()));
 
         Version version = complex.getVersions().iterator().next();
         checkRestriction(version.getRestriction());
@@ -88,7 +90,7 @@ public class ItemModelTransformerTest {
         simpleEpisode.setMediumDescription("Hello World");
         simpleEpisode.setLongDescription("Hello World Testing");
 
-        org.atlasapi.media.entity.Episode complexEpisode = (Episode) transformer.createOutput(simpleEpisode);
+        org.atlasapi.media.entity.Episode complexEpisode = (Episode) transformer.transform(simpleEpisode);
 
         assertEquals(simpleEpisode.getSeriesNumber(), complexEpisode.getSeriesNumber());
         assertEquals(simpleEpisode.getEpisodeNumber(), complexEpisode.getEpisodeNumber());

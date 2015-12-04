@@ -95,9 +95,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         Episode episode = new Episode();
         episode.setSeriesNumber(inputItem.getSeriesNumber());
         episode.setEpisodeNumber(inputItem.getEpisodeNumber());
-        episode.setLongDescription(inputItem.getLongDescription());
-        episode.setMediumDescription(inputItem.getMediumDescription());
-        episode.setShortDescription(inputItem.getShortDescription());
 
         if (inputItem.getSeriesSummary() != null) {
             episode.setSeriesRef(new ParentRef(inputItem.getSeriesSummary().getUri()));

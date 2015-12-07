@@ -25,13 +25,15 @@ import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.*;
 import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -181,6 +183,9 @@ public class ContentWriteController {
         existing.setEquivalentTo(merge ? merge(existing.getEquivalentTo(), update.getEquivalentTo()) : update.getEquivalentTo());
         existing.setLastUpdated(update.getLastUpdated());
         existing.setTitle(update.getTitle());
+        existing.setShortDescription(update.getShortDescription());
+        existing.setMediumDescription(update.getMediumDescription());
+        existing.setLongDescription(update.getLongDescription());
         existing.setDescription(update.getDescription());
         existing.setImage(update.getImage());
         existing.setThumbnail(update.getThumbnail());
@@ -194,6 +199,7 @@ public class ContentWriteController {
         existing.setClips(merge ? merge(existing.getClips(), update.getClips()) : update.getClips());
         existing.setPriority(update.getPriority());
         existing.setEventRefs(merge ? merge(existing.events(), update.events()) : update.events());
+        existing.setImages(merge? merge(existing.getImages(), update.getImages()) : update.getImages());
         if (existing instanceof Item && update instanceof Item) {
             return mergeItems((Item)existing, (Item) update);
         }

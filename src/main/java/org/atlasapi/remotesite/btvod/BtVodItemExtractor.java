@@ -213,6 +213,9 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         episode.setSeriesNumber(extractSeriesNumber(row));
         episode.setEpisodeNumber(extractEpisodeNumber(row));
         episode.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
+        if (Strings.isNullOrEmpty(episode.getTitle()) && episode.getEpisodeNumber() != null) {
+            episode.setTitle(String.format("Episode %d", episode.getEpisodeNumber()));
+        }
         episode.setSeriesRef(getSeriesRefOrNull(row));
         episode.setParentRef(getBrandRefOrNull(row));
         episode.setSpecialization(Specialization.TV);

@@ -45,7 +45,6 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 
-
 import java.io.File;
 import java.util.Set;
 
@@ -91,6 +90,7 @@ import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.SeriesSequenceItemScorer;
 import org.atlasapi.equiv.scorers.SongCrewMemberExtractor;
+import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
@@ -225,7 +225,7 @@ public class EquivModule {
         return ContentEquivalenceUpdater.<Item> builder()
             .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
                 new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver, 
-                    channelResolver, acceptablePublishers, Duration.standardMinutes(10), filter)
+                    channelResolver, acceptablePublishers, Duration.standardMinutes(5), filter)
             ))
             .withScorers(scorers)
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
@@ -539,7 +539,11 @@ public class EquivModule {
             )
             .withScorers(ImmutableSet.of(
                 new TitleMatchingContainerScorer(),
-                new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne())
+                new ContainerHierarchyMatchingScorer(
+                        contentResolver, 
+                        Score.negativeOne(), 
+                        new SubscriptionCatchupBrandDetector(contentResolver)
+                    )
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),

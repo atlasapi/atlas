@@ -3,14 +3,12 @@ package org.atlasapi.remotesite.btvod;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
-import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
@@ -46,7 +44,8 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final BtMpxVodClient mpxClient;
     private final TopicQueryResolver topicQueryResolver;
-    
+    private final BtVodEntryMatchingPredicate kidsPredicate;
+
     public BtVodUpdater(
             ContentWriter contentWriter,
             BtVodData vodData,
@@ -64,7 +63,8 @@ public class BtVodUpdater extends ScheduledTask {
             BtVodVersionsExtractor versionsExtractor,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             BtMpxVodClient mpxClient,
-            TopicQueryResolver topicQueryResolver
+            TopicQueryResolver topicQueryResolver,
+            BtVodEntryMatchingPredicate kidsPredicate
     ) {
         this.contentWriter = checkNotNull(contentWriter);
         this.newFeedContentMatchingPredicate = checkNotNull(newFeedContentMatchingPredicate);
@@ -83,16 +83,14 @@ public class BtVodUpdater extends ScheduledTask {
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
         this.mpxClient = checkNotNull(mpxClient);
         this.topicQueryResolver = checkNotNull(topicQueryResolver);
+        this.kidsPredicate = checkNotNull(kidsPredicate);
     }
 
     @Override
     public void runTask() {
-        
         newFeedContentMatchingPredicate.init();
         describedFieldsExtractor.init();
-        
-        brandImageExtractor.start();
-        
+
         MultiplexingVodContentListener listeners 
             = new MultiplexingVodContentListener(
                 ImmutableList.<BtVodContentListener>of(contentGroupUpdater)
@@ -106,196 +104,38 @@ public class BtVodUpdater extends ScheduledTask {
                 topicsToPropagateToParent,
                 topicNamespacesToPropagateToParent
         );
-        
-        BtVodBrandExtractor brandExtractor = new BtVodBrandExtractor(
-                publisher,
-                listeners,
-                processedRows,
-                describedFieldsExtractor,
-                brandImageExtractor,
-                brandUriExtractor
-        );
 
-        String brandExtractStatus = "[TODO]";
-        String explicitSeriesExtractStatus = "[TODO]";
-        String synthesizedSeriesExtractStatus = "[TODO]";
-        String itemExtractStatus = "[TODO]";
+        ProgressReporter reporter = new ProgressReporter();
 
         try {
-            reportStatus("Extracting brand images");
-            vodData.processData(brandImageExtractor);
-            brandExtractStatus = "[IN PROGRESS]";
-            reportStatus(
-                    String.format(
-                            "Brand extract %s, Explicit series extract %s, Synthesized series extract %s, Item extract %s",
-                            brandExtractStatus,
-                            explicitSeriesExtractStatus,
-                            synthesizedSeriesExtractStatus,
-                            itemExtractStatus
-                    )
+            extractBrandImages(brandImageExtractor, reporter);
+
+            BtVodBrandExtractor brandExtractor = extractBrands(
+                    listeners, processedRows, reporter
             );
-            vodData.processData(brandExtractor);
-            brandExtractStatus = String.format(
-                "[DONE: %d rows successful, %d rows failed, %d brands extracted]",
-                    brandExtractor.getResult().getProcessed(),
-                    brandExtractor.getResult().getFailures(),
-                    brandExtractor.getProcessedBrands().size()
-            );
-            explicitSeriesExtractStatus = "[IN PROGRESS]";
-            reportStatus(
-                    String.format(
-                            "Brand extract %s, Explicit series extract %s, Synthesized series extract %s, Item extract %s",
-                            brandExtractStatus,
-                            explicitSeriesExtractStatus,
-                            synthesizedSeriesExtractStatus,
-                            itemExtractStatus
-                    )
-            );
-            
-            BtVodBrandProvider brandProvider = new BtVodBrandProvider(
-                    brandUriExtractor,
-                    brandExtractor.getProcessedBrands(),
-                    new BrandDescriptionUpdater(),
-                    new CertificateUpdater(),
-                    topicUpdater,
-                    listeners
-            );
-            
-            BtVodExplicitSeriesExtractor explicitSeriesExtractor = new BtVodExplicitSeriesExtractor(
-                    brandProvider,
-                    publisher,
-                    listeners,
-                    describedFieldsExtractor,
-                    processedRows,
-                    seriesUriExtractor,
-                    versionsExtractor,
-                    new TitleSanitiser(),
-                    imageExtractor
-            );
-            
-            vodData.processData(explicitSeriesExtractor);
-            explicitSeriesExtractStatus = String.format(
-                    "[DONE: %d rows successful, %d rows failed, %d series extracted]",
-                    explicitSeriesExtractor.getResult().getProcessed(),
-                    explicitSeriesExtractor.getResult().getFailures(),
-                    explicitSeriesExtractor.getExplicitSeries().size()
-            );
-            synthesizedSeriesExtractStatus = "[IN PROGRESS]";
-            reportStatus(
-                    String.format(
-                            "Brand extract %s, Explicit series extract %s, Synthesized series extract %s, Item extract %s",
-                            brandExtractStatus,
-                            explicitSeriesExtractStatus,
-                            synthesizedSeriesExtractStatus,
-                            itemExtractStatus
-                    )
+            BtVodBrandProvider brandProvider = getBrandProvider(
+                    listeners, topicUpdater, brandExtractor
             );
 
+            extractCollections(brandProvider, reporter);
 
-            Map<String, Series> explicitSeries = explicitSeriesExtractor.getExplicitSeries();
-
-            BtVodSynthesizedSeriesExtractor synthesizedSeriesExtractor = new BtVodSynthesizedSeriesExtractor(
-                    brandProvider,
-                    publisher,
-                    listeners,
-                    describedFieldsExtractor,
-                    processedRows,
-                    seriesUriExtractor,
-                    explicitSeries.keySet(),
-                    imageExtractor
+            BtVodExplicitSeriesExtractor explicitSeriesExtractor = extractExplicitSeries(
+                    brandProvider, listeners, processedRows, reporter
             );
-            vodData.processData(synthesizedSeriesExtractor);
-            synthesizedSeriesExtractStatus = String.format(
-                    "[DONE: %d rows successful, %d rows failed, %d series extracted]",
-                    synthesizedSeriesExtractor.getResult().getProcessed(),
-                    synthesizedSeriesExtractor.getResult().getFailures(),
-                    synthesizedSeriesExtractor.getSynthesizedSeries().size()
+            BtVodSynthesizedSeriesExtractor synthesizedSeriesExtractor = extractSynthesisedSeries(
+                    listeners, processedRows, brandProvider, explicitSeriesExtractor, reporter
             );
-            itemExtractStatus = "[IN PROGRESS]";
-            reportStatus(
-                    String.format(
-                            "Brand extract %s, Explicit series extract %s, Synthesized series extract %s, Item extract %s",
-                            brandExtractStatus,
-                            explicitSeriesExtractStatus,
-                            synthesizedSeriesExtractStatus,
-                            itemExtractStatus
-                    )
+            BtVodSeriesProvider seriesProvider = getSeriesProvider(
+                    listeners, topicUpdater, brandProvider,
+                    explicitSeriesExtractor, synthesizedSeriesExtractor
             );
 
-            Map<String, Series> synthesizedSeries = synthesizedSeriesExtractor.getSynthesizedSeries();
-
-            BtVodSeriesProvider seriesProvider = new BtVodSeriesProvider(
-                    explicitSeries,
-                    synthesizedSeries,
-                    seriesUriExtractor,
-                    new CertificateUpdater(),
-                    brandProvider,
-                    topicUpdater,
-                    listeners
+            BtVodItemExtractor itemExtractor = extractItems(
+                    listeners, processedRows, brandProvider, seriesProvider, reporter
             );
 
-            BtVodItemExtractor itemExtractor = new BtVodItemExtractor(
-                    brandProvider,
-                    seriesProvider,
-                    publisher,
-                    uriPrefix,
-                    listeners,
-                    describedFieldsExtractor,
-                    processedRows,
-                    new TitleSanitiser(),
-                    imageExtractor,
-                    versionsExtractor,
-                    new BtVodMpxBackedEpisodeNumberExtractor(mpxClient),
-                    mpxClient
-            );
-
-            vodData.processData(itemExtractor);
-            itemExtractStatus = String.format(
-                    "[DONE: %d rows successful, %d rows failed, %d items extracted]",
-                    itemExtractor.getResult().getProcessed(),
-                    itemExtractor.getResult().getFailures(),
-                    itemExtractor.getProcessedItems().size()
-            );
-            reportStatus(
-                    String.format(
-                            "Brand extract %s, Explicit series extract %s, Synthesized series extract %s, Item extract %s, writing content... ",
-                            brandExtractStatus,
-                            explicitSeriesExtractStatus,
-                            synthesizedSeriesExtractStatus,
-                            itemExtractStatus
-                    )
-            );
-
-            writeContent(
-                    Iterables.concat(
-                            brandProvider.getBrands(),
-                            seriesProvider.getExplicitSeries(),
-                            seriesProvider.getSynthesisedSeries(),
-                            itemExtractor.getProcessedItems().values()
-                    )
-            );
-
-            reportStatus(
-                    String.format(
-                            "Brand extract %s, Explicit series extract %s, Synthesized series extract %s, Item extract %s, content written. Content group update [IN PROGRESS]",
-                            brandExtractStatus,
-                            explicitSeriesExtractStatus,
-                            synthesizedSeriesExtractStatus,
-                            itemExtractStatus
-                    )
-            );
-
-            listeners.afterContent();
-
-            reportStatus(
-                    String.format(
-                            "Brand extract %s, Explicit series extract %s, Synthesized series extract %s, Item extract %s, content written. content group update [DONE]",
-                            brandExtractStatus,
-                            explicitSeriesExtractStatus,
-                            synthesizedSeriesExtractStatus,
-                            itemExtractStatus
-                    )
-            );
+            writeContent(brandProvider, seriesProvider, itemExtractor, reporter);
+            writeContentGroups(listeners, reporter);
 
             if (brandExtractor.getResult().getFailures() > 0
                     || explicitSeriesExtractor.getResult().getFailures() > 0
@@ -307,7 +147,197 @@ public class BtVodUpdater extends ScheduledTask {
             log.error("Extraction failed", e);
             throw Throwables.propagate(e);
         }
-        
+    }
+
+    private void extractBrandImages(BrandImageExtractor brandImageExtractor,
+            ProgressReporter reporter) throws IOException {
+        reporter.updateBrandImagesExtractStatus(ProgressReporter.IN_PROGRESS);
+
+        brandImageExtractor.start();
+        vodData.processData(brandImageExtractor);
+
+        reporter.updateBrandImagesExtractStatus(ProgressReporter.DONE);
+    }
+
+    private BtVodBrandExtractor extractBrands(MultiplexingVodContentListener listeners,
+            Set<String> processedRows, ProgressReporter reporter) throws IOException {
+        reporter.updateBrandExtractStatus(ProgressReporter.IN_PROGRESS);
+
+        BtVodBrandExtractor brandExtractor = new BtVodBrandExtractor(
+                publisher,
+                listeners,
+                processedRows,
+                describedFieldsExtractor,
+                brandImageExtractor,
+                brandUriExtractor
+        );
+
+        vodData.processData(brandExtractor);
+
+        reporter.updateBrandExtractStatus(String.format(
+                "[DONE: %d rows successful, %d rows failed, %d brands extracted]",
+                brandExtractor.getResult().getProcessed(),
+                brandExtractor.getResult().getFailures(),
+                brandExtractor.getProcessedBrands().size()
+        ));
+
+        return brandExtractor;
+    }
+
+    private BtVodBrandProvider getBrandProvider(MultiplexingVodContentListener listeners,
+            TopicUpdater topicUpdater, BtVodBrandExtractor brandExtractor) {
+        return new BtVodBrandProvider(
+                brandUriExtractor,
+                brandExtractor.getProcessedBrands(),
+                brandExtractor.getParentGuidToBrand(),
+                new HierarchyDescriptionAndImageUpdater(),
+                new CertificateUpdater(),
+                topicUpdater,
+                listeners
+        );
+    }
+
+    private void extractCollections(BtVodBrandProvider brandProvider, ProgressReporter reporter)
+        throws IOException {
+        reporter.updateCollectionExtractStatus(ProgressReporter.IN_PROGRESS);
+
+        BtVodCollectionExtractor collectionExtractor = new BtVodCollectionExtractor(
+                brandProvider, imageExtractor
+        );
+
+        vodData.processData(collectionExtractor);
+
+        reporter.updateCollectionExtractStatus(String.format(
+                "[DONE: %d rows successful, %d rows failed]",
+                collectionExtractor.getResult().getProcessed(),
+                collectionExtractor.getResult().getFailures()
+        ));
+    }
+
+    private BtVodExplicitSeriesExtractor extractExplicitSeries(BtVodBrandProvider brandProvider,
+            MultiplexingVodContentListener listeners, Set<String> processedRows,
+            ProgressReporter reporter)
+        throws IOException {
+        reporter.updateExplicitSeriesExtractStatus(ProgressReporter.IN_PROGRESS);
+
+        BtVodExplicitSeriesExtractor explicitSeriesExtractor = new BtVodExplicitSeriesExtractor(
+                brandProvider,
+                publisher,
+                listeners,
+                describedFieldsExtractor,
+                processedRows,
+                seriesUriExtractor,
+                versionsExtractor,
+                new TitleSanitiser(),
+                imageExtractor,
+                new DedupedDescriptionAndImageUpdater()
+        );
+
+        vodData.processData(explicitSeriesExtractor);
+
+        reporter.updateExplicitSeriesExtractStatus(String.format(
+                "[DONE: %d rows successful, %d rows failed, %d series extracted]",
+                explicitSeriesExtractor.getResult().getProcessed(),
+                explicitSeriesExtractor.getResult().getFailures(),
+                explicitSeriesExtractor.getExplicitSeries().size()
+        ));
+
+        return explicitSeriesExtractor;
+    }
+
+    private BtVodSynthesizedSeriesExtractor extractSynthesisedSeries(
+            MultiplexingVodContentListener listeners, Set<String> processedRows,
+            BtVodBrandProvider brandProvider, BtVodExplicitSeriesExtractor explicitSeriesExtractor,
+            ProgressReporter reporter) throws IOException {
+        reporter.updateSynthesizedSeriesExtractStatus(ProgressReporter.IN_PROGRESS);
+
+        BtVodSynthesizedSeriesExtractor synthesizedSeriesExtractor =
+                new BtVodSynthesizedSeriesExtractor(
+                    brandProvider,
+                    publisher,
+                    listeners,
+                    describedFieldsExtractor,
+                    processedRows,
+                    seriesUriExtractor,
+                    explicitSeriesExtractor.getExplicitSeries().keySet()
+                );
+
+        vodData.processData(synthesizedSeriesExtractor);
+
+        reporter.updateSynthesizedSeriesExtractStatus(String.format(
+                "[DONE: %d rows successful, %d rows failed, %d series extracted]",
+                synthesizedSeriesExtractor.getResult().getProcessed(),
+                synthesizedSeriesExtractor.getResult().getFailures(),
+                synthesizedSeriesExtractor.getSynthesizedSeries().size()
+        ));
+
+        return synthesizedSeriesExtractor;
+    }
+
+    private BtVodSeriesProvider getSeriesProvider(MultiplexingVodContentListener listeners,
+            TopicUpdater topicUpdater, BtVodBrandProvider brandProvider,
+            BtVodExplicitSeriesExtractor explicitSeriesExtractor,
+            BtVodSynthesizedSeriesExtractor synthesizedSeriesExtractor) {
+        return new BtVodSeriesProvider(
+                explicitSeriesExtractor.getExplicitSeries(),
+                synthesizedSeriesExtractor.getSynthesizedSeries(),
+                seriesUriExtractor,
+                new HierarchyDescriptionAndImageUpdater(),
+                new CertificateUpdater(),
+                brandProvider,
+                topicUpdater,
+                listeners
+        );
+    }
+
+    private BtVodItemExtractor extractItems(MultiplexingVodContentListener listeners,
+            Set<String> processedRows, BtVodBrandProvider brandProvider,
+            BtVodSeriesProvider seriesProvider, ProgressReporter reporter) throws IOException {
+        reporter.updateItemExtractStatus(ProgressReporter.IN_PROGRESS);
+
+        BtVodItemExtractor itemExtractor = new BtVodItemExtractor(
+                brandProvider,
+                seriesProvider,
+                publisher,
+                uriPrefix,
+                listeners,
+                describedFieldsExtractor,
+                processedRows,
+                new TitleSanitiser(),
+                imageExtractor,
+                versionsExtractor,
+                new DedupedDescriptionAndImageUpdater(),
+                new BtVodMpxBackedEpisodeNumberExtractor(mpxClient),
+                mpxClient,
+                kidsPredicate
+        );
+
+        vodData.processData(itemExtractor);
+
+        reporter.updateItemExtractStatus(String.format(
+                "[DONE: %d rows successful, %d rows failed, %d items extracted]",
+                itemExtractor.getResult().getProcessed(),
+                itemExtractor.getResult().getFailures(),
+                itemExtractor.getProcessedItems().size()
+        ));
+
+        return itemExtractor;
+    }
+
+    private void writeContent(BtVodBrandProvider brandProvider, BtVodSeriesProvider seriesProvider,
+            BtVodItemExtractor itemExtractor, ProgressReporter reporter) {
+        reporter.updateContentWritingStatus(ProgressReporter.IN_PROGRESS);
+
+        writeContent(
+                Iterables.concat(
+                        brandProvider.getBrands(),
+                        seriesProvider.getExplicitSeries(),
+                        seriesProvider.getSynthesisedSeries(),
+                        itemExtractor.getProcessedItems().values()
+                )
+        );
+
+        reporter.updateContentWritingStatus(ProgressReporter.DONE);
     }
 
     private void writeContent(Iterable<Content> contents) {
@@ -323,5 +353,93 @@ public class BtVodUpdater extends ScheduledTask {
             oldContentDeactivator.onContent(content, null);
         }
         oldContentDeactivator.afterContent();
+    }
+
+    private void writeContentGroups(MultiplexingVodContentListener listeners,
+            ProgressReporter reporter) {
+        reporter.updateContentGroupWritingStatus(ProgressReporter.IN_PROGRESS);
+
+        listeners.afterContent();
+
+        reporter.updateContentGroupWritingStatus(ProgressReporter.DONE);
+    }
+
+    private class ProgressReporter {
+
+        public static final String TODO = "[TODO]";
+        public static final String IN_PROGRESS = "[IN PROGRESS]";
+        public static final String DONE = "[DONE]";
+
+        private String brandImagesExtractStatus = TODO;
+        private String brandExtractStatus = TODO;
+        private String collectionExtractStatus = TODO;
+        private String explicitSeriesExtractStatus = TODO;
+        private String synthesizedSeriesExtractStatus = TODO;
+        private String itemExtractStatus = TODO;
+        private String contentWritingStatus = TODO;
+        private String contentGroupWritingStatus = TODO;
+
+        public void updateBrandImagesExtractStatus(String brandImagesExtractStatus) {
+            this.brandImagesExtractStatus = brandImagesExtractStatus;
+            report();
+        }
+
+        public void updateBrandExtractStatus(String brandExtractStatus) {
+            this.brandExtractStatus = brandExtractStatus;
+            report();
+        }
+
+        public void updateCollectionExtractStatus(String collectionExtractStatus) {
+            this.collectionExtractStatus = collectionExtractStatus;
+            report();
+        }
+
+        public void updateExplicitSeriesExtractStatus(String explicitSeriesExtractStatus) {
+            this.explicitSeriesExtractStatus = explicitSeriesExtractStatus;
+            report();
+        }
+
+        public void updateSynthesizedSeriesExtractStatus(String synthesizedSeriesExtractStatus) {
+            this.synthesizedSeriesExtractStatus = synthesizedSeriesExtractStatus;
+            report();
+        }
+
+        public void updateItemExtractStatus(String itemExtractStatus) {
+            this.itemExtractStatus = itemExtractStatus;
+            report();
+        }
+
+        public void updateContentWritingStatus(String contentWritingStatus) {
+            this.contentWritingStatus = contentWritingStatus;
+            report();
+        }
+
+        public void updateContentGroupWritingStatus(String contentGroupWritingStatus) {
+            this.contentGroupWritingStatus = contentGroupWritingStatus;
+            report();
+        }
+
+        public void report() {
+            reportStatus(
+                    String.format(
+                            "Brand images extract %s, "
+                                    + "Brand extract %s, "
+                                    + "Collection extract %s, "
+                                    + "Explicit series extract %s, "
+                                    + "Synthesized series extract %s, "
+                                    + "Item extract %s, "
+                                    + "Content writing %s, "
+                                    + "Content group writing %s",
+                            brandImagesExtractStatus,
+                            brandExtractStatus,
+                            collectionExtractStatus,
+                            explicitSeriesExtractStatus,
+                            synthesizedSeriesExtractStatus,
+                            itemExtractStatus,
+                            contentWritingStatus,
+                            contentGroupWritingStatus
+                    )
+            );
+        }
     }
 }

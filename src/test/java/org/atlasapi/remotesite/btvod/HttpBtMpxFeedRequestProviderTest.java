@@ -15,7 +15,7 @@ public class HttpBtMpxFeedRequestProviderTest {
     @Test
     public void testBuildRequest() throws Exception {
         HttpBtMpxFeedRequestProvider objectUnderTest = new HttpBtMpxFeedRequestProvider(
-                "https://example.org/base/",
+                "https://example.org/base/", "btv-prd-search",
                 "-(productTagFullTitles:%22schedulerChannel:Music%22%20OR%20productTagFullTitles:%22contentProvider:SKY%22%20OR%20productType:%22help%22)"
         );
 
@@ -29,7 +29,7 @@ public class HttpBtMpxFeedRequestProviderTest {
     @Test
     public void testBuildRequestWithoutQueryParam() throws Exception {
         HttpBtMpxFeedRequestProvider objectUnderTest = new HttpBtMpxFeedRequestProvider(
-                "https://example.org/base/",
+                "https://example.org/base/", "btv-prd-search",
                 ""
         );
 

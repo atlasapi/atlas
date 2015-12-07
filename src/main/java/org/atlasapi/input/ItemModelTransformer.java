@@ -148,37 +148,11 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         setToFirstRestriction(version, restrictions);
     }
 
-    // Since we are coalescing multiple broadcasts each with possibly its own restriction there is
-    // no good way decide which restriction to keep so we are keeping the first one
-    private void setToFirstRestriction(Version version, Set<Restriction> restrictions) {
-        Iterator<Restriction> iterator = restrictions.iterator();
-        if(!iterator.hasNext()) {
-            return;
-        }
-        version.setRestriction(iterator.next());
-    }
-
     private Restriction createRestriction(org.atlasapi.media.entity.simple.Broadcast broadcast) {
         Restriction restriction = new Restriction();
 
         org.atlasapi.media.entity.simple.Restriction simpleRestriction = broadcast.getRestriction();
 
-        restriction = setPropertiesForRestriction(restriction, simpleRestriction);
-
-        return restriction;
-    }
-
-    private Restriction createRestrictionForLocation(org.atlasapi.media.entity.simple.Location location) {
-        Restriction restriction = new Restriction();
-
-        org.atlasapi.media.entity.simple.Restriction simpleRestriction = location.getRestriction();
-
-        restriction = setPropertiesForRestriction(restriction, simpleRestriction);
-
-        return restriction;
-    }
-
-    private Restriction setPropertiesForRestriction(Restriction restriction, org.atlasapi.media.entity.simple.Restriction simpleRestriction) {
         if (simpleRestriction != null) {
             restriction.setRestricted(simpleRestriction.isRestricted());
             restriction.setAuthority(simpleRestriction.getAuthority());
@@ -188,6 +162,16 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         }
 
         return restriction;
+    }
+
+    // Since we are coalescing multiple broadcasts each with possibly its own restriction there is
+    // no good way decide which restriction to keep so we are keeping the first one
+    private void setToFirstRestriction(Version version, Set<Restriction> restrictions) {
+        Iterator<Restriction> iterator = restrictions.iterator();
+        if(!iterator.hasNext()) {
+            return;
+        }
+        version.setRestriction(iterator.next());
     }
 
     private Set<Encoding> encodingsFrom(Set<org.atlasapi.media.entity.simple.Location> locations, DateTime now) {
@@ -224,8 +208,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         encoding.setVideoHorizontalSize(inputLocation.getVideoHorizontalSize());
         encoding.setVideoProgressiveScan(inputLocation.getVideoProgressiveScan());
         encoding.setVideoVerticalSize(inputLocation.getVideoVerticalSize());
-        encoding.setHighDefinition(inputLocation.getHighDefinition());
-
         return encoding;
     }
 
@@ -243,14 +225,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if (inputLocation.getTransportType() != null) {
             location.setTransportType(TransportType.fromString(inputLocation.getTransportType()));
         }
-
-        Set<Restriction> restrictions = Sets.newHashSet();
-        Version version = new Version();
-
-        restrictions.add(createRestrictionForLocation(inputLocation));
-
-        setToFirstRestriction(version, restrictions);
-
         return location;
     }
 

@@ -3,6 +3,8 @@ package org.atlasapi.remotesite.btvod;
 import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.CoreMatchers.sameInstance;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
@@ -12,6 +14,7 @@ import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Certificate;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -51,6 +54,9 @@ public class BtVodExplicitSeriesExtractorTest {
     private final BtVodSeriesUriExtractor seriesUriExtractor = mock(BtVodSeriesUriExtractor.class);
 
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor = mock(BtVodDescribedFieldsExtractor.class);
+    private final DedupedDescriptionAndImageUpdater descriptionAndImageUpdater =
+            mock(DedupedDescriptionAndImageUpdater.class);
+
     private final TopicRef newTopic = mock(TopicRef.class);
 
     private BtVodExplicitSeriesExtractor seriesExtractor;
@@ -73,7 +79,8 @@ public class BtVodExplicitSeriesExtractorTest {
                         null
                 ),
                 new TitleSanitiser(),
-                imageExtractor
+                imageExtractor,
+                descriptionAndImageUpdater
         );
     }
 
@@ -105,7 +112,6 @@ public class BtVodExplicitSeriesExtractorTest {
         when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
         when(describedFieldsExtractor.aliasesFrom(entry)).thenReturn(ImmutableSet.of(alias1, alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of(genre));
-
 
         seriesExtractor.process(entry);
 
@@ -183,8 +189,6 @@ public class BtVodExplicitSeriesExtractorTest {
         when(seriesUriExtractor.extractSeriesNumber(series2)).thenReturn(Optional.of(1));
         when(brandProvider.brandRefFor(series2)).thenReturn(Optional.of(brandRef));
 
-
-
         when(describedFieldsExtractor.aliasesFrom(series1)).thenReturn(ImmutableSet.of(alias1));
         when(describedFieldsExtractor.btGenreStringsFrom(series1)).thenReturn(ImmutableSet.<String>of());
 
@@ -199,8 +203,6 @@ public class BtVodExplicitSeriesExtractorTest {
         seriesExtractor.process(series2);
 
         verify(describedFieldsExtractor, times(2)).setDescribedFieldsFrom(entryCaptor.capture(), seriesCaptor.capture());
-
-
 
         Series savedSeries = seriesCaptor.getAllValues().get(0);
         Series savedSeries2 = seriesCaptor.getAllValues().get(1);
@@ -237,6 +239,62 @@ public class BtVodExplicitSeriesExtractorTest {
         Series series = Iterables.getOnlyElement(seriesExtractor.getExplicitSeries().values());
 
         verify(brandProvider).updateBrandFromSeries(entry, series);
+    }
+
+    @Test
+    public void testMergesImagesAndDescriptionsWhenDeduping() {
+        String seriesUri = "seriesUri";
+
+        BtVodEntry series1 = row();
+        String series1Id = "GUID1";
+        series1.setProductType("season");
+        series1.setParentGuid(series1Id);
+        series1.setGuid(series1Id);
+        series1.setDescription("1");
+        series1.setProductLongDescription("1L");
+
+        BtVodEntry series2 = row();
+        String series2Id = "GUID2";
+        series2.setProductType("season");
+        series2.setParentGuid(series2Id);
+        series2.setGuid(series2Id);
+        series2.setDescription("2");
+        series2.setProductLongDescription("2L");
+
+        Alias alias1 = mock(Alias.class);
+        Alias alias2 = mock(Alias.class);
+
+        ParentRef brandRef = mock(ParentRef.class);
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of(seriesUri))).thenReturn(ResolvedContent.builder().build());
+
+        when(seriesUriExtractor.seriesUriFor(series1)).thenReturn(Optional.of(seriesUri));
+        when(seriesUriExtractor.extractSeriesNumber(series1)).thenReturn(Optional.of(1));
+        when(brandProvider.brandRefFor(series1)).thenReturn(Optional.of(brandRef));
+
+        when(seriesUriExtractor.seriesUriFor(series2)).thenReturn(Optional.of(seriesUri));
+        when(seriesUriExtractor.extractSeriesNumber(series2)).thenReturn(Optional.of(1));
+        when(brandProvider.brandRefFor(series2)).thenReturn(Optional.of(brandRef));
+
+        Image image1 = new Image("image1");
+        Image image2 = new Image("image2");
+        when(imageExtractor.imagesFor(series1)).thenReturn(ImmutableSet.of(image1));
+        when(imageExtractor.imagesFor(series2)).thenReturn(ImmutableSet.of(image2));
+
+        when(describedFieldsExtractor.aliasesFrom(series1)).thenReturn(ImmutableSet.of(alias1));
+        when(describedFieldsExtractor.btGenreStringsFrom(series1)).thenReturn(ImmutableSet.<String>of());
+
+        when(describedFieldsExtractor.aliasesFrom(series2)).thenReturn(ImmutableSet.of(alias2));
+        when(describedFieldsExtractor.btGenreStringsFrom(series2)).thenReturn(ImmutableSet.<String>of());
+
+        seriesExtractor.process(series1);
+        seriesExtractor.process(series2);
+
+        Series series = Iterables.get(seriesExtractor.getExplicitSeries().values(), 0);
+
+        verify(descriptionAndImageUpdater).updateDescriptionsAndImages(
+                eq(series), eq(series2), eq(ImmutableSet.of(image2)), anySet()
+        );
     }
 
     private BtVodEntry row() {

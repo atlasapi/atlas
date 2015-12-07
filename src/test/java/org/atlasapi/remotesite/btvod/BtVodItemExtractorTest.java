@@ -3,6 +3,8 @@ package org.atlasapi.remotesite.btvod;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -40,6 +42,7 @@ import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Matchers;
@@ -82,6 +85,9 @@ public class BtVodItemExtractorTest {
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
+    private final DedupedDescriptionAndImageUpdater descriptionAndImageUpdater =
+            mock(DedupedDescriptionAndImageUpdater.class);
+
     private final TopicRef newTopicRef = new TopicRef(
             NEW_TOPIC,
             1.0f,
@@ -101,47 +107,61 @@ public class BtVodItemExtractorTest {
         }
     };
 
-    private final BtVodItemExtractor itemExtractor
-            = new BtVodItemExtractor(
-            btVodBrandProvider,
-            seriesProvider,
-            PUBLISHER, URI_PREFIX,
-            contentListener,
-            new BtVodDescribedFieldsExtractor(
-                    topicResolver,
-                    topicWriter,
-                    Publisher.BT_VOD,
-                    newTopicContentMatchingPredicate,
-                    BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
-                    BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
-                            "TV", ImmutableSet.of("Season", "Season-EST")
-                    ),
-                    BtVodContentMatchingPredicates.schedulerChannelPredicate("TV Replay"),
-                    NEW_TOPIC,
-                    new Topic(234L),
-                    new Topic(345L),
-                    new Topic(456L),
-                    BT_VOD_GUID_NAMESPACE,
-                    BT_VOD_ID_NAMESPACE,
-                    BT_VOD_CONTENT_PROVIDER_NAMESPACE,
-                    BT_VOD_GENRE_NAMESPACE,
-                    BT_VOD_KEYWORD_NAMESPACE
-            ),
-            Sets.<String>newHashSet(),
-            new TitleSanitiser(),
-            new NoImageExtractor(),
-            new BtVodVersionsExtractor(
-                    new BtVodPricingAvailabilityGrouper(),
-                    URI_PREFIX,
-                    BT_VOD_VERSION_GUID_NAMESPACE,
-                    BT_VOD_VERSION_ID_NAMESPACE,
-                    null,
-                    null
-            ),
-            new MockBtVodEpisodeNumberExtractor(),
-            mockMpxClient
-    );
-    
+    private BtVodItemExtractor itemExtractor;
+
+    @Before
+    public void setUp() {
+        itemExtractor = new BtVodItemExtractor(
+                btVodBrandProvider,
+                seriesProvider,
+                PUBLISHER, URI_PREFIX,
+                contentListener,
+                new BtVodDescribedFieldsExtractor(
+                        topicResolver,
+                        topicWriter,
+                        Publisher.BT_VOD,
+                        newTopicContentMatchingPredicate,
+                        BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
+                        BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
+                                "TV", ImmutableSet.of("Season", "Season-EST")
+                        ),
+                        BtVodContentMatchingPredicates.schedulerChannelPredicate("TV Replay"),
+                        NEW_TOPIC,
+                        new Topic(234L),
+                        new Topic(345L),
+                        new Topic(456L),
+                        BT_VOD_GUID_NAMESPACE,
+                        BT_VOD_ID_NAMESPACE,
+                        BT_VOD_CONTENT_PROVIDER_NAMESPACE,
+                        BT_VOD_GENRE_NAMESPACE,
+                        BT_VOD_KEYWORD_NAMESPACE
+                ),
+                Sets.<String>newHashSet(),
+                new TitleSanitiser(),
+                imageExtractor,
+                new BtVodVersionsExtractor(
+                        new BtVodPricingAvailabilityGrouper(),
+                        URI_PREFIX,
+                        BT_VOD_VERSION_GUID_NAMESPACE,
+                        BT_VOD_VERSION_ID_NAMESPACE,
+                        null,
+                        null
+                ),
+                descriptionAndImageUpdater,
+                new MockBtVodEpisodeNumberExtractor(),
+                mockMpxClient,
+                new BtVodEntryMatchingPredicate() {
+                    @Override
+                    public void init() {}
+
+                    @Override
+                    public boolean apply(BtVodEntry input) {
+                        return false;
+                    }
+                }
+        );
+    }
+
     @Test
     public void testExtractsEpisode() {
         BtVodEntry btVodEntry = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
@@ -242,9 +262,6 @@ public class BtVodItemExtractorTest {
 
         assertThat(writtenItem.getVersions().size(), is(2));
         assertThat(writtenItem.getClips().size(), is(2));
-                
-        
-
     }
 
     @Test
@@ -299,8 +316,6 @@ public class BtVodItemExtractorTest {
                 is(new Clip(TRAILER_URI, TRAILER_URI,Publisher.BT_VOD))
         );
     }
-
-
 
     @Test
     public void testMergesHDandSDforFilms() {
@@ -551,5 +566,40 @@ public class BtVodItemExtractorTest {
                 is(false));
         assertThat(location.getCanonicalUri().contains(RevenueContract.PAY_TO_RENT.toString()),
                 is(false));
+    }
+
+    @Test
+    public void testMergesImagesAndDescriptionsForHDAndSD() {
+        BtVodEntry btVodEntrySD = filmRow("About Alex");
+        btVodEntrySD.setProductTargetBandwidth("SD");
+        btVodEntrySD.setDescription("sd");
+        btVodEntrySD.setProductLongDescription("sdLong");
+
+        BtVodEntry btVodEntryHD = filmRow("About Alex - HD");
+        btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
+        btVodEntryHD.setProductTargetBandwidth("HD");
+        btVodEntryHD.setDescription("hd");
+        btVodEntryHD.setProductLongDescription("hdLong");
+
+        Image sdImage = new Image("sdImage");
+        Image hdImage = new Image("hdImage");
+
+        when(imageExtractor.imagesFor(btVodEntrySD)).thenReturn(ImmutableSet.of(sdImage));
+        when(imageExtractor.imagesFor(btVodEntryHD)).thenReturn(ImmutableSet.of(hdImage));
+
+        when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.<ParentRef>absent());
+        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.<ParentRef>absent());
+
+        when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.<Series>absent());
+        when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.<Series>absent());
+
+        itemExtractor.process(btVodEntrySD);
+        itemExtractor.process(btVodEntryHD);
+
+        Item item = Iterables.get(itemExtractor.getProcessedItems().values(), 0);
+
+        verify(descriptionAndImageUpdater).updateDescriptionsAndImages(
+                eq(item), eq(btVodEntryHD), eq(ImmutableSet.of(hdImage)), anySet()
+        );
     }
 }

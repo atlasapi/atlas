@@ -5,9 +5,11 @@ import static org.mockito.Mockito.when;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,12 +19,13 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodBrandProviderTest {
 
     private @Mock BrandUriExtractor brandUriExtractor;
-    private @Mock BrandDescriptionUpdater brandDescriptionUpdater;
+    private @Mock HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater;
     private @Mock CertificateUpdater certificateUpdater;
     private @Mock TopicUpdater topicUpdater;
     private @Mock BtVodContentListener listener;
@@ -38,16 +41,19 @@ public class BtVodBrandProviderTest {
     private @Mock TopicRef topicRef;
 
     private Brand brand;
+    private String guid;
 
     @Before
     public void setUp() throws Exception {
         brand = new Brand();
         brand.setCanonicalUri("uri");
+        guid = "guid";
 
         brandProvider = new BtVodBrandProvider(
                 brandUriExtractor,
                 ImmutableMap.of(brand.getCanonicalUri(), brand),
-                brandDescriptionUpdater,
+                ImmutableMap.of(guid, brand),
+                descriptionAndImageUpdater,
                 certificateUpdater,
                 topicUpdater,
                 listener
@@ -60,10 +66,29 @@ public class BtVodBrandProviderTest {
     }
 
     @Test
-    public void testUpdateDescriptionFromSeries() throws Exception {
+    public void testUpdateDescriptionsAndImagesFromSeries() throws Exception {
         brandProvider.updateBrandFromSeries(seriesRow, series);
 
-        verify(brandDescriptionUpdater).updateDescriptions(brand, series);
+        verify(descriptionAndImageUpdater).update(brand, series);
+    }
+
+    @Test
+    public void testUpdateDescriptionsAndImagesFromEpisode() throws Exception {
+        brandProvider.updateBrandFromEpisode(seriesRow, episode);
+
+        verify(descriptionAndImageUpdater).update(brand, episode);
+    }
+
+    @Test
+    public void testUpdateDescriptionsAndImagesFromCollection() throws Exception {
+        BtVodCollection collection = new BtVodCollection(guid,
+                DateTime.now(), "desc", "descL", ImmutableSet.<Image>of()
+        );
+        brandProvider.updateBrandFromCollection(
+                collection
+        );
+
+        verify(descriptionAndImageUpdater).update(brand, collection);
     }
 
     @Test

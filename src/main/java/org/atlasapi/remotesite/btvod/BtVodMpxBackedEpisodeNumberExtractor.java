@@ -37,13 +37,14 @@ public class BtVodMpxBackedEpisodeNumberExtractor implements BtVodEpisodeNumberE
 
     @Override
     public Integer extractEpisodeNumber(BtVodEntry row) {
-        if (!Strings.isNullOrEmpty(row.getParentGuid())) {
+        if (!Strings.isNullOrEmpty(row.getParentGuid()) && (row.getTitle() != null && !row.getTitle().contains("Back to Back"))) {
             Optional<BtVodEntry> parent = mpxClient.getItem(row.getParentGuid());
             if (parent.isPresent() && COLLECTION.isOfType(parent.get().getProductType())) {
                 LOG.debug("Row {} is part of a collection, omitting episode number", row.getGuid());
                 return null;
             }
         }
+
         String episodeNumber = Iterables.getOnlyElement(row.getProductScopes()).getProductMetadata().getEpisodeNumber();
         if (episodeNumber == null) {
             for (Pattern regex : EPISODE_NUMBER_EXTRACTION_PATTERNS) {

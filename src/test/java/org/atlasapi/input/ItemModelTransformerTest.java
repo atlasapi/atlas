@@ -62,20 +62,15 @@ public class ItemModelTransformerTest {
     @Test
     public void testTransformItemWithBroadcastVersionsTransformsAllVersionFields()
             throws Exception {
-        simpleItem.setShortDescription("H");
-        simpleItem.setMediumDescription("Hello");
-        simpleItem.setLongDescription("Hello World");
         org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
 
         assertThat(complex.getVersions().size(), is(1));
-        assertThat(simpleItem.getShortDescription(), is(complex.getShortDescription()));
-        assertThat(simpleItem.getMediumDescription(), is(complex.getMediumDescription()));
-        assertThat(simpleItem.getLongDescription(), is(complex.getLongDescription()));
 
         Version version = complex.getVersions().iterator().next();
         checkRestriction(version.getRestriction());
     }
 
+    @Test
     public void testTransformItemWithEventRefs() {
         when(idCodec.decode("12345")).thenReturn(BigInteger.valueOf(12345));
         when(idCodec.decode("1234")).thenReturn(BigInteger.valueOf(1234));

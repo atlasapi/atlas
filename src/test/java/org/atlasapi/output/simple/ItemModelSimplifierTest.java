@@ -138,9 +138,6 @@ public class ItemModelSimplifierTest {
         encoding.setHighDefinition(true);
         fullItem.addVersion(version);
         fullItem.setTitle("Collings and Herrin");
-        fullItem.setShortDescription("Hello");
-        fullItem.setMediumDescription("Hello World");
-        fullItem.setLongDescription("Hello World Test");
         
         CrewMember person = Actor.actor("hisID", "Andrew Collings", "Dirt-bag Humperdink", Publisher.BBC);
         fullItem.addPerson(person);
@@ -183,9 +180,6 @@ public class ItemModelSimplifierTest {
         assertThat(simpleEmbed.getHighDefinition(), is(true));
 
         assertThat(simpleItem.getTitle(), is("Collings and Herrin"));
-        assertThat(simpleItem.getShortDescription(), is("Hello"));
-        assertThat(simpleItem.getMediumDescription(), is("Hello World"));
-        assertThat(simpleItem.getLongDescription(), is("Hello World Test"));
         assertThat(Iterables.getOnlyElement(simpleItem.getReleaseDates()).getDate().getDay(), is(releaseDateDate.toDate().getDay()));
         
         org.atlasapi.media.entity.simple.Channel broadcastChannel = Iterables.getOnlyElement(simpleItem.getBroadcasts()).getChannel();

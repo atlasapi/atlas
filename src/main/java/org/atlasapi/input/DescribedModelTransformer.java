@@ -6,9 +6,17 @@ import java.util.Set;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableList;
-import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Priority;
+import org.atlasapi.media.entity.PriorityScoreReasons;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.RelatedLink.Builder;
 import org.atlasapi.media.entity.RelatedLink.LinkType;
+import org.atlasapi.media.entity.Review;
+import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.PublisherDetails;
@@ -41,6 +49,9 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         result.setPublisher(publisher);
         result.setTitle(inputContent.getTitle());
         result.setDescription(inputContent.getDescription());
+        result.setShortDescription(inputContent.getShortDescription());
+        result.setMediumDescription(inputContent.getMediumDescription());
+        result.setLongDescription(inputContent.getLongDescription());
         result.setImage(inputContent.getImage());
         result.setThumbnail(inputContent.getThumbnail());
         result.setRelatedLinks(relatedLinks(inputContent.getRelatedLinks()));

@@ -130,6 +130,13 @@ public class MergeOnOutputQueryExecutorTest extends TestCase {
                     Iterable<Publisher> publishers, ContentQuery query) {
                 throw new UnsupportedOperationException();
             }
+
+			@Override
+			public Map<String, List<Identified>> executeEventQuery(
+					Iterable<Long> eventIds,
+					ContentQuery query) {
+				throw new UnsupportedOperationException();
+			}
 		};
 	}
 }

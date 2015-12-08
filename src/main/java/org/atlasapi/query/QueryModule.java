@@ -26,6 +26,7 @@ import org.atlasapi.persistence.content.cassandra.CassandraContentStore;
 import org.atlasapi.persistence.content.cassandra.CassandraKnownTypeContentResolver;
 import org.atlasapi.persistence.content.mongo.MongoContentResolver;
 import org.atlasapi.persistence.content.mongo.MongoTopLevelItemsEntry;
+import org.atlasapi.persistence.content.mongo.TopLevelItemsEntry;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.atlasapi.query.content.ApplicationConfigurationQueryExecutor;
@@ -69,7 +70,7 @@ public class QueryModule {
 	    KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
         KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
 
-		MongoTopLevelItemsEntry itemsEntry = new MongoTopLevelItemsEntry(mongo.collection("topLevelItems"), readPreference);
+		TopLevelItemsEntry itemsEntry = new MongoTopLevelItemsEntry(mongo.collection("topLevelItems"), readPreference);
 
 		KnownTypeQueryExecutor queryExecutor = new EventResolvingQueryExecutor(cassandraContentResolver,
 				mongoContentResolver, lookupStore, cassandraEnabled, itemsEntry);

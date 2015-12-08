@@ -114,6 +114,13 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
                 modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executePublisherQuery(publishers, filter).values()),Identified.class)),filter.getConfiguration());
                 return;
 	        }
+
+            List<String> eventIds = getEventRefIds(request);
+
+            if(!eventIds.isEmpty()) {
+                modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executeEventQuery(decode(eventIds), filter).values()),Identified.class)),filter.getConfiguration());
+                return;
+            }
 	            
 	        throw new IllegalArgumentException("Must specify content uri(s) or id(s) or alias(es)");
 			
@@ -145,6 +152,10 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 
     private List<String> getIdList(HttpServletRequest request) {
         return split(request.getParameter("id"));
+    }
+
+    private List<String> getEventRefIds(HttpServletRequest request) {
+        return split(request.getParameter("event_ids"));
     }
 
     private ImmutableList<String> split(String parameter) {

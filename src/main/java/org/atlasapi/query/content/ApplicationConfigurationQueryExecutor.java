@@ -52,7 +52,13 @@ public class ApplicationConfigurationQueryExecutor implements KnownTypeQueryExec
             ContentQuery query) {
         return delegate.executePublisherQuery(publishers, queryForContent(query));
     }
-	
+
+	@Override
+	public Map<String, List<Identified>> executeEventQuery(Iterable<Long> eventIds,
+			ContentQuery query) {
+		return delegate.executeEventQuery(eventIds, query);
+	}
+
 	private ContentQuery queryForContent(ContentQuery query) {
 		Iterable<AtomicQuery> softs = ImmutableList.of(/*(AtomicQuery)
 			mergeAttribute(Attributes.VERSION_PROVIDER, query)

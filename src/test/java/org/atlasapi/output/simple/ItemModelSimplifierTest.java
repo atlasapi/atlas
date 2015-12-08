@@ -4,9 +4,11 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 
 import java.util.Currency;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import com.amazonaws.annotation.Immutable;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
@@ -26,6 +28,7 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Version;
@@ -127,10 +130,19 @@ public class ItemModelSimplifierTest {
         Location location = new Location();
         location.setUri("http://example.com");
         location.setPolicy(new Policy().withRevenueContract(RevenueContract.PAY_TO_BUY).withPrice(new Price(Currency.getInstance("GBP"), 99)).withAvailableCountries(Countries.GB));
+        location.setVat(123.1);
+        location.setRequiredEncryption(true);
+        location.setQuality(Quality.HD);
+        location.setSubtitledLanguages(ImmutableSet.of("english"));
+
         Location embed = new Location();
         embed.setTransportType(TransportType.EMBED);
         embed.setEmbedId("embedId");
         embed.setTransportSubType(TransportSubType.BRIGHTCOVE);
+        embed.setVat(123.1);
+        embed.setRequiredEncryption(true);
+        embed.setQuality(Quality.HD);
+        embed.setSubtitledLanguages(ImmutableSet.of("english"));
         
         encoding.addAvailableAt(location);
         encoding.addAvailableAt(embed);
@@ -160,6 +172,8 @@ public class ItemModelSimplifierTest {
         assertThat(simpleActor.getName(), is("Andrew Collings"));
         
         Set<org.atlasapi.media.entity.simple.Location> simpleLocations = simpleItem.getLocations();
+        Set<String> subtitledLanguages = new HashSet<String>();
+        subtitledLanguages.add("english");
         assertThat(simpleLocations.size(), is(2));
         org.atlasapi.media.entity.simple.Location simpleLocation = Iterables.getFirst(simpleLocations, null);
         
@@ -173,6 +187,8 @@ public class ItemModelSimplifierTest {
         assertThat(simpleLocation.getAvailableCountries().iterator().next(), is("GB"));
         assertThat(simpleLocation.getAudioDescribed(), is(true));
         assertThat(simpleLocation.getSubtitled(), is(true));
+        assertThat(simpleLocation.getSubtitledLanguages(), is(subtitledLanguages));
+        assertThat(simpleLocation.getVat(), is(123.1));
         assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getNamespace(), is(VERSION_ALIAS_NAMESPACE));
         assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getValue(), is(VERSION_ALIAS_VALUE));
         

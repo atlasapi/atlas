@@ -31,6 +31,7 @@ import org.atlasapi.media.entity.simple.BrandSummary;
 import org.atlasapi.media.entity.simple.Channel;
 import org.atlasapi.media.entity.simple.Identified;
 import org.atlasapi.media.entity.simple.Language;
+import org.atlasapi.media.entity.simple.Quality;
 import org.atlasapi.media.entity.simple.Restriction;
 import org.atlasapi.media.entity.simple.SeriesSummary;
 import org.atlasapi.media.product.ProductResolver;
@@ -594,6 +595,10 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         simpleLocation.setEmbedCode(location.getEmbedCode());
         simpleLocation.setEmbedId(location.getEmbedId());
         simpleLocation.setAvailable(location.getAvailable());
+        simpleLocation.setSubtitledLanguages(location.getSubtitledLanguages());
+        simpleLocation.setQuality(Quality.valueOf(location.getQuality().name()));
+        simpleLocation.setRequiredEncryption(location.getRequiredEncryption());
+        simpleLocation.setVat(location.getVat());
 
     }
 }

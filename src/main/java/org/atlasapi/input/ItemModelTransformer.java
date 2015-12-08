@@ -20,6 +20,7 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Policy.RevenueContract;
+import org.atlasapi.media.entity.Quality;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
@@ -236,6 +237,10 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         location.setEmbedId(inputLocation.getEmbedId());
         location.setTransportIsLive(inputLocation.getTransportIsLive());
         location.setUri(inputLocation.getUri());
+        location.setSubtitledLanguages(inputLocation.getSubtitledLanguages());
+        location.setQuality(Quality.valueOf(inputLocation.getQuality().name()));
+        location.setRequiredEncryption(inputLocation.getRequiredEncryption());
+        location.setVat(inputLocation.getVat());
 
         if (inputLocation.getTransportSubType() != null) {
             location.setTransportSubType(TransportSubType.fromString(inputLocation.getTransportSubType()));

@@ -65,6 +65,7 @@ public class ItemModelTransformerTest {
         simpleItem.setShortDescription("H");
         simpleItem.setMediumDescription("Hello");
         simpleItem.setLongDescription("Hello World");
+        simpleItem.addLocation(getLocation());
         org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
 
         assertThat(complex.getVersions().size(), is(1));
@@ -74,6 +75,14 @@ public class ItemModelTransformerTest {
 
         Version version = complex.getVersions().iterator().next();
         checkRestriction(version.getRestriction());
+        org.atlasapi.media.entity.Location complexLocation = complex.getVersions().iterator().next()
+                                                                    .getManifestedAs().iterator().next()
+                                                                    .getAvailableAt().iterator().next();
+        Location simpleLocation = getLocation();
+        assertThat(simpleLocation.getVat(), is(complexLocation.getVat()));
+        assertThat(simpleLocation.getSubtitledLanguages(), is(complexLocation.getSubtitledLanguages()));
+        assertThat(simpleLocation.getQuality(), is(Quality.valueOf(complexLocation.getQuality().name())));
+        assertThat(simpleLocation.getRequiredEncryption() , is(complexLocation.getRequiredEncryption()));
     }
 
     public void testTransformItemWithEventRefs() {
@@ -136,5 +145,16 @@ public class ItemModelTransformerTest {
         restriction.setMessage("message");
 
         return restriction;
+    }
+
+    private Location getLocation() {
+        Location location = new Location();
+
+        location.setVat(123.1);
+        location.setRequiredEncryption(true);
+        location.setSubtitledLanguages(ImmutableSet.of("english"));
+        location.setQuality(Quality.SD);
+
+        return location;
     }
 }

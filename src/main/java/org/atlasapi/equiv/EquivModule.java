@@ -563,7 +563,7 @@ public class EquivModule {
                         new TitleMatchingContainerScorer(),
                         new ContainerHierarchyMatchingScorer(
                                 contentResolver,
-                                Score.valueOf(.49d),
+                                Score.valueOf(-0.49d),
                                 new SubscriptionCatchupBrandDetector(contentResolver)
                         )
                 ))
@@ -572,7 +572,7 @@ public class EquivModule {
                         TitleMatchingContainerScorer.NAME)
                 )
                 .withFilter(this.<Container>standardFilter())
-                .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(49))
+                .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(50))
                 .withHandler(containerResultHandlers(acceptablePublishers))
                 .build();
     }

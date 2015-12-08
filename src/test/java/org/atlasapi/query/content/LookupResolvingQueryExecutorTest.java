@@ -17,6 +17,7 @@ import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.content.mongo.TopLevelItemsEntry;
 import org.atlasapi.persistence.lookup.InMemoryLookupEntryStore;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.jmock.Expectations;
@@ -35,13 +36,13 @@ import org.atlasapi.application.v3.SourceStatus;
 @RunWith(JMock.class)
 public class LookupResolvingQueryExecutorTest extends TestCase {
     private final Mockery context = new Mockery();
-    
+    private TopLevelItemsEntry mongoTopLevelItemsEntry = context.mock(TopLevelItemsEntry.class);
     private KnownTypeContentResolver cassandraContentResolver = context.mock(KnownTypeContentResolver.class, "cassandraContentResolver");
     private KnownTypeContentResolver mongoContentResolver = context.mock(KnownTypeContentResolver.class, "mongoContentResolver");
-    
+
     private final InMemoryLookupEntryStore lookupStore = new InMemoryLookupEntryStore();
-    
-    private final LookupResolvingQueryExecutor executor = new LookupResolvingQueryExecutor(cassandraContentResolver, mongoContentResolver, lookupStore, true);
+    private final EventResolvingQueryExecutor queryExecutor = new EventResolvingQueryExecutor(cassandraContentResolver, mongoContentResolver, lookupStore, true, mongoTopLevelItemsEntry);
+    private final LookupResolvingQueryExecutor executor = new LookupResolvingQueryExecutor(queryExecutor);
 
     @Test
     public void testSetsSameAs() {

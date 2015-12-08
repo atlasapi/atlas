@@ -415,7 +415,7 @@ public class EquivModule {
         updaters.register(BT_TVE_VOD, SourceSpecificEquivalenceUpdater.builder(BT_TVE_VOD)
                 .withItemUpdater(btVodItemUpdater(btTveVodPublishers)
                         .withScorer(new SeriesSequenceItemScorer()).build())
-                .withTopLevelContainerUpdater(vodContainerUpdater(btTveVodPublishers))
+                .withTopLevelContainerUpdater(btTveVodContainerUpdater(btTveVodPublishers))
                 .withNonTopLevelContainerUpdater(standardSeriesUpdater(btTveVodPublishers))
                 .build());
                 
@@ -553,6 +553,28 @@ public class EquivModule {
             .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
             .withHandler(containerResultHandlers(acceptablePublishers))
             .build();
+    }
+
+    private EquivalenceUpdater<Container> btTveVodContainerUpdater(Set<Publisher> acceptablePublishers) {
+        return ContentEquivalenceUpdater.<Container> builder()
+                .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers)
+                )
+                .withScorers(ImmutableSet.of(
+                        new TitleMatchingContainerScorer(),
+                        new ContainerHierarchyMatchingScorer(
+                                contentResolver,
+                                Score.valueOf(.49d),
+                                new SubscriptionCatchupBrandDetector(contentResolver)
+                        )
+                ))
+                .withCombiner(new RequiredScoreFilteringCombiner<Container>(
+                        new NullScoreAwareAveragingCombiner<Container>(),
+                        TitleMatchingContainerScorer.NAME)
+                )
+                .withFilter(this.<Container>standardFilter())
+                .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(49))
+                .withHandler(containerResultHandlers(acceptablePublishers))
+                .build();
     }
 
     private ContentEquivalenceUpdater.Builder<Item> vodItemUpdater(Set<Publisher> acceptablePublishers) {

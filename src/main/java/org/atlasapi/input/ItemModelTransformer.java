@@ -163,6 +163,22 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
 
         org.atlasapi.media.entity.simple.Restriction simpleRestriction = broadcast.getRestriction();
 
+        setPropertiesForRestriction(restriction, simpleRestriction);
+
+
+        return restriction;
+    }
+    private Restriction createRestrictionForLocation(org.atlasapi.media.entity.simple.Location location) {
+        Restriction restriction = new Restriction();
+
+        org.atlasapi.media.entity.simple.Restriction simpleRestriction = location.getRestriction();
+        restriction = setPropertiesForRestriction(restriction, simpleRestriction);
+
+        return restriction;
+    }
+
+    private Restriction setPropertiesForRestriction(Restriction restriction,
+                                                    org.atlasapi.media.entity.simple.Restriction simpleRestriction) {
         restriction = setPropertiesForRestriction(restriction, simpleRestriction);
 
         return restriction;
@@ -225,7 +241,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         encoding.setVideoProgressiveScan(inputLocation.getVideoProgressiveScan());
         encoding.setVideoVerticalSize(inputLocation.getVideoVerticalSize());
         encoding.setHighDefinition(inputLocation.getHighDefinition());
-
         return encoding;
     }
 
@@ -243,14 +258,12 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if (inputLocation.getTransportType() != null) {
             location.setTransportType(TransportType.fromString(inputLocation.getTransportType()));
         }
-
         Set<Restriction> restrictions = Sets.newHashSet();
         Version version = new Version();
 
         restrictions.add(createRestrictionForLocation(inputLocation));
 
         setToFirstRestriction(version, restrictions);
-
         return location;
     }
 

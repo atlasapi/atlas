@@ -203,8 +203,9 @@ public class BtVodVersionsExtractor {
     }
 
     private boolean hasServiceTypeOtg(BtVodEntry row) {
-        return row.getServiceTypes().contains(OTG_PLATFORM)
-                && row.getMasterAgreementServiceTypes().contains(OTG_PLATFORM);
+        return row.getServiceTypes().contains(OTG_PLATFORM);
+                // TODO Change postponed due to proximity to launch
+                // && row.getMasterAgreementServiceTypes().contains(OTG_PLATFORM);
     }
 
     private boolean isItemTvodPlayoutAllowed(BtVodEntry row) {

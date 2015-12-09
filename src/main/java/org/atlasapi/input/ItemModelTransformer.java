@@ -148,16 +148,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         setToFirstRestriction(version, restrictions);
     }
 
-    // Since we are coalescing multiple broadcasts each with possibly its own restriction there is
-    // no good way decide which restriction to keep so we are keeping the first one
-    private void setToFirstRestriction(Version version, Set<Restriction> restrictions) {
-        Iterator<Restriction> iterator = restrictions.iterator();
-        if(!iterator.hasNext()) {
-            return;
-        }
-        version.setRestriction(iterator.next());
-    }
-
     private Restriction createRestriction(org.atlasapi.media.entity.simple.Broadcast broadcast) {
         Restriction restriction = new Restriction();
 
@@ -178,23 +168,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
     }
 
     private Restriction setPropertiesForRestriction(Restriction restriction,
-                                                    org.atlasapi.media.entity.simple.Restriction simpleRestriction) {
-        restriction = setPropertiesForRestriction(restriction, simpleRestriction);
-
-        return restriction;
-    }
-
-    private Restriction createRestrictionForLocation(org.atlasapi.media.entity.simple.Location location) {
-        Restriction restriction = new Restriction();
-
-        org.atlasapi.media.entity.simple.Restriction simpleRestriction = location.getRestriction();
-
-        restriction = setPropertiesForRestriction(restriction, simpleRestriction);
-
-        return restriction;
-    }
-
-    private Restriction setPropertiesForRestriction(Restriction restriction, org.atlasapi.media.entity.simple.Restriction simpleRestriction) {
+            org.atlasapi.media.entity.simple.Restriction simpleRestriction) {
         if (simpleRestriction != null) {
             restriction.setRestricted(simpleRestriction.isRestricted());
             restriction.setAuthority(simpleRestriction.getAuthority());
@@ -204,6 +178,17 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         }
 
         return restriction;
+    }
+
+
+    // Since we are coalescing multiple broadcasts each with possibly its own restriction there is
+    // no good way decide which restriction to keep so we are keeping the first one
+    private void setToFirstRestriction(Version version, Set<Restriction> restrictions) {
+        Iterator<Restriction> iterator = restrictions.iterator();
+        if(!iterator.hasNext()) {
+            return;
+        }
+        version.setRestriction(iterator.next());
     }
 
     private Set<Encoding> encodingsFrom(Set<org.atlasapi.media.entity.simple.Location> locations, DateTime now) {

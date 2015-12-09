@@ -227,6 +227,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         encoding.setVideoProgressiveScan(inputLocation.getVideoProgressiveScan());
         encoding.setVideoVerticalSize(inputLocation.getVideoVerticalSize());
         encoding.setHighDefinition(inputLocation.getHighDefinition());
+        encoding.setQuality(Quality.valueOf(inputLocation.getQuality().name()));
         return encoding;
     }
 
@@ -238,7 +239,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         location.setTransportIsLive(inputLocation.getTransportIsLive());
         location.setUri(inputLocation.getUri());
         location.setSubtitledLanguages(inputLocation.getSubtitledLanguages());
-        location.setQuality(Quality.valueOf(inputLocation.getQuality().name()));
         location.setRequiredEncryption(inputLocation.getRequiredEncryption());
         location.setVat(inputLocation.getVat());
 

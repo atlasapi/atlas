@@ -78,10 +78,14 @@ public class ItemModelTransformerTest {
         org.atlasapi.media.entity.Location complexLocation = complex.getVersions().iterator().next()
                                                                     .getManifestedAs().iterator().next()
                                                                     .getAvailableAt().iterator().next();
+
+        org.atlasapi.media.entity.Quality complexEncodingQuality = complex.getVersions().iterator().next()
+                                                                    .getManifestedAs().iterator().next()
+                                                                    .getQuality();
         Location simpleLocation = getLocation();
         assertThat(simpleLocation.getVat(), is(complexLocation.getVat()));
         assertThat(simpleLocation.getSubtitledLanguages(), is(complexLocation.getSubtitledLanguages()));
-        assertThat(simpleLocation.getQuality(), is(Quality.valueOf(complexLocation.getQuality().name())));
+        assertThat(simpleLocation.getQuality(), is(Quality.valueOf(complexEncodingQuality.name())));
         assertThat(simpleLocation.getRequiredEncryption() , is(complexLocation.getRequiredEncryption()));
     }
 

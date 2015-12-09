@@ -534,6 +534,7 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         simpleLocation.setVideoProgressiveScan(encoding.getVideoProgressiveScan());
         simpleLocation.setVideoVerticalSize(encoding.getVideoVerticalSize());
         simpleLocation.setHighDefinition(encoding.getHighDefinition());
+        simpleLocation.setQuality(Quality.valueOf(encoding.getQuality().name()));
     }
 
     private void copyProperties(Location location, org.atlasapi.media.entity.simple.Location simpleLocation, Set<Annotation> annotations, ApplicationConfiguration config) {
@@ -596,7 +597,6 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         simpleLocation.setEmbedId(location.getEmbedId());
         simpleLocation.setAvailable(location.getAvailable());
         simpleLocation.setSubtitledLanguages(location.getSubtitledLanguages());
-        simpleLocation.setQuality(Quality.valueOf(location.getQuality().name()));
         simpleLocation.setRequiredEncryption(location.getRequiredEncryption());
         simpleLocation.setVat(location.getVat());
 

@@ -205,8 +205,7 @@ public class BtVodModule {
         );
     }
 
-    @Bean
-    public ScheduledTask btTveVodProdConfig1Updater() {
+    private ScheduledTask btTveVodProdConfig1Updater() {
         return btVodUpdater(
                 Publisher.BT_TVE_VOD,
                 "prod",

@@ -31,6 +31,7 @@ import org.atlasapi.media.entity.simple.BrandSummary;
 import org.atlasapi.media.entity.simple.Channel;
 import org.atlasapi.media.entity.simple.Identified;
 import org.atlasapi.media.entity.simple.Language;
+import org.atlasapi.media.entity.simple.Quality;
 import org.atlasapi.media.entity.simple.Restriction;
 import org.atlasapi.media.entity.simple.SeriesSummary;
 import org.atlasapi.media.product.ProductResolver;
@@ -186,9 +187,6 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
 
         if (fullItem instanceof Episode) {
             Episode episode = (Episode) fullItem;
-            simpleItem.setShortDescription(fullItem.getShortDescription());
-            simpleItem.setMediumDescription(fullItem.getMediumDescription());
-            simpleItem.setLongDescription(fullItem.getLongDescription());
 
             if (annotations.contains(Annotation.DESCRIPTION) || annotations.contains(Annotation.EXTENDED_DESCRIPTION) || annotations.contains(Annotation.SERIES_SUMMARY)) {
                 ParentRef series = episode.getSeriesRef();
@@ -597,6 +595,9 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         simpleLocation.setEmbedCode(location.getEmbedCode());
         simpleLocation.setEmbedId(location.getEmbedId());
         simpleLocation.setAvailable(location.getAvailable());
+        simpleLocation.setSubtitledLanguages(location.getSubtitledLanguages());
+        simpleLocation.setRequiredEncryption(location.getRequiredEncryption());
+        simpleLocation.setVat(location.getVat());
 
     }
 }

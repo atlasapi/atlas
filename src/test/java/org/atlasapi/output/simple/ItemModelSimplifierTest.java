@@ -124,25 +124,17 @@ public class ItemModelSimplifierTest {
         Encoding encoding = new Encoding();
         encoding.setDataContainerFormat(MimeType.VIDEO_3GPP);
         encoding.setSubtitled(true);
-        encoding.setQuality(Quality.SD);
         version.addManifestedAs(encoding);
         version.addAlias(new Alias(VERSION_ALIAS_NAMESPACE, VERSION_ALIAS_VALUE));
         
         Location location = new Location();
         location.setUri("http://example.com");
         location.setPolicy(new Policy().withRevenueContract(RevenueContract.PAY_TO_BUY).withPrice(new Price(Currency.getInstance("GBP"), 99)).withAvailableCountries(Countries.GB));
-        location.setVat(123.1);
-        location.setRequiredEncryption(true);
-
-        location.setSubtitledLanguages(ImmutableSet.of("english"));
 
         Location embed = new Location();
         embed.setTransportType(TransportType.EMBED);
         embed.setEmbedId("embedId");
         embed.setTransportSubType(TransportSubType.BRIGHTCOVE);
-        embed.setVat(123.1);
-        embed.setRequiredEncryption(true);
-        embed.setSubtitledLanguages(ImmutableSet.of("english"));
 
         encoding.addAvailableAt(location);
         encoding.addAvailableAt(embed);
@@ -186,10 +178,6 @@ public class ItemModelSimplifierTest {
         assertThat(simpleLocation.getAvailableCountries().size(), is(1));
         assertThat(simpleLocation.getAvailableCountries().iterator().next(), is("GB"));
         assertThat(simpleLocation.getAudioDescribed(), is(true));
-        assertThat(simpleLocation.getSubtitled(), is(true));
-        assertThat(simpleLocation.getSubtitledLanguages(), is(subtitledLanguages));
-        assertThat(simpleLocation.getVat(), is(123.1));
-        assertThat(simpleLocation.getQuality(), is(org.atlasapi.media.entity.simple.Quality.SD));
         assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getNamespace(), is(VERSION_ALIAS_NAMESPACE));
         assertThat(Iterables.getOnlyElement(simpleLocation.getV4Aliases()).getValue(), is(VERSION_ALIAS_VALUE));
         

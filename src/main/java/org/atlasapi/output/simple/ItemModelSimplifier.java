@@ -595,9 +595,6 @@ public class ItemModelSimplifier extends ContentModelSimplifier<Item, org.atlasa
         simpleLocation.setEmbedCode(location.getEmbedCode());
         simpleLocation.setEmbedId(location.getEmbedId());
         simpleLocation.setAvailable(location.getAvailable());
-        simpleLocation.setSubtitledLanguages(location.getSubtitledLanguages());
-        simpleLocation.setRequiredEncryption(location.getRequiredEncryption());
-        simpleLocation.setVat(location.getVat());
 
     }
 }

@@ -32,6 +32,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.http.SimpleHttpClientBuilder;
@@ -82,8 +83,22 @@ public class BtVodModule {
     private static final String TVE_URI_PREFIX_FORMAT = "http://%s/";
     private static final ImmutableSet<String> SEASON_PRODUCT_OFFERING_TYPES = ImmutableSet.of("season", "season-est");
     private static final String SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL = "TV Replay";
-    
+
     private static final RepetitionRule TVE_MPX_REPETITION_RULE = RepetitionRules.every(Duration.standardHours(6));
+
+    // These times were selected to avoid conflicts with MPX maintenance at
+    // 02:22 / 05:22 / 08:22 / 11:22 / 14:22 / 17:22 / 20:22 / 23:22
+    private static final ImmutableList<LocalTime> TVE_MPX_DAILY_INGEST_TIMES = ImmutableList.of(
+            new LocalTime(0, 0),
+            new LocalTime(3, 0),
+            new LocalTime(6, 0),
+            new LocalTime(9, 0),
+            new LocalTime(12, 0),
+            new LocalTime(15, 0),
+            new LocalTime(18, 0),
+            new LocalTime(21, 0)
+    );
+
     private static final RepetitionRule MPX_REPETITION_RULE = RepetitionRules.daily(new LocalTime(11, 0, 0));
 
     @Autowired
@@ -190,8 +205,7 @@ public class BtVodModule {
         );
     }
 
-    @Bean
-    public ScheduledTask btTveVodProdConfig1Updater() {
+    private ScheduledTask btTveVodProdConfig1Updater() {
         return btVodUpdater(
                 Publisher.BT_TVE_VOD,
                 "prod",
@@ -473,9 +487,20 @@ public class BtVodModule {
     @PostConstruct
     public void scheduleTask() {
         scheduler.schedule(btVodUpdater(btVodMpxProdFeedNewSuffix, salesContentGroupsAndCriteria(btVodMpxProdFeedBaseUrlForGuidLookup, btVodMpxProdFeedName, btVodMpxProdFeedQParam)).withName("BT VoD Updater"), MPX_REPETITION_RULE);
-        scheduler.schedule(btTveVodProdConfig1Updater(), TVE_MPX_REPETITION_RULE);
+
+        scheduleBtTveVodProdConfig1Updater();
+
         scheduler.schedule(btTveVodSystest2Config1Updater(), TVE_MPX_REPETITION_RULE);
         scheduler.schedule(btTveVodVoldConfig1Updater(), TVE_MPX_REPETITION_RULE);
         scheduler.schedule(btTveVodVoleConfig1Updater(), TVE_MPX_REPETITION_RULE);
+    }
+
+    private void scheduleBtTveVodProdConfig1Updater() {
+        for (LocalTime ingestTime : TVE_MPX_DAILY_INGEST_TIMES) {
+            ScheduledTask task = btTveVodProdConfig1Updater();
+            String name = task.getName() + " " + ingestTime.toString("HH:mm");
+
+            scheduler.schedule(task.withName(name), RepetitionRules.daily(ingestTime));
+        }
     }
 }

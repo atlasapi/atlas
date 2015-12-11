@@ -20,7 +20,8 @@ public class BrandUriExtractor {
     private static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
 
     private static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
-            Pattern.compile("^(.*):?.*S[0-9]+.*S[0-9]+\\-E.*"),  
+            Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*"),  
+            Pattern.compile("^(.*).*S[0-9]+.*S[0-9]+\\-E.*"),  
             Pattern.compile("^(.*?)-\\s+.*S[0-9]++[\\- ]E.*"),
             Pattern.compile("^(.*).*S[0-9]++[\\- ]E.*"),
             Pattern.compile("^(.*)Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*"),

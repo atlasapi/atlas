@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.btvod;
 
 
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.junit.Test;
 
@@ -107,6 +108,10 @@ public class BrandUriExtractorTest {
 
         BtVodEntry row18 = episodeEntry();
         row18.setTitle("Brickleberry S2 - HD S2-E13 Aparkalypse - HD");
+        
+        BtVodEntry row19 = episodeEntry();
+        row19.setTitle("Brand Title: S1 S1-E9 Real Title");
+        
 
         assertThat(brandUriExtractor.extractBrandUri(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandUriExtractor.extractBrandUri(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));

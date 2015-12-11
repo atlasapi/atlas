@@ -37,6 +37,9 @@ public class BrandUriExtractorTest {
 
         BtVodEntry row7 = seasonEntry();
         row7.setTitle("Transformers Prime: Beast Hunters Series 3");
+        
+        BtVodEntry row8 = seasonEntry();
+        row8.setTitle("Brickleberry: Stuff S2 - HD");
 
         assertThat(brandUriExtractor.extractBrandUri(row1).get(), is(URI_PREFIX + "synthesized/brands/dominion"));
         assertThat(brandUriExtractor.extractBrandUri(row2).get(), is(URI_PREFIX + "synthesized/brands/workaholics"));
@@ -45,6 +48,7 @@ public class BrandUriExtractorTest {
         assertThat(brandUriExtractor.extractBrandUri(row5).get(), is(URI_PREFIX + "synthesized/brands/tom-and-jerry"));
         assertThat(brandUriExtractor.extractBrandUri(row6).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
         assertThat(brandUriExtractor.extractBrandUri(row7).get(), is(URI_PREFIX + "synthesized/brands/transformers-prime-beast-hunters"));
+        assertThat(brandUriExtractor.extractBrandUri(row8).get(), is(URI_PREFIX + "synthesized/brands/brickleberry-stuff"));
     }
 
     //
@@ -101,6 +105,9 @@ public class BrandUriExtractorTest {
         BtVodEntry row17 = episodeEntry();
         row17.setTitle("Peppa's Circus - HD - Peppa's Circus - HD");
 
+        BtVodEntry row18 = episodeEntry();
+        row18.setTitle("Brickleberry S2 - HD S2-E13 Aparkalypse - HD");
+
         assertThat(brandUriExtractor.extractBrandUri(row1).get(), is(URI_PREFIX + "synthesized/brands/cashmere-mafia"));
         assertThat(brandUriExtractor.extractBrandUri(row2).get(), is(URI_PREFIX + "synthesized/brands/brand-title"));
         assertThat(brandUriExtractor.extractBrandUri(row3).get(), is(URI_PREFIX + "synthesized/brands/classic-premiership-rugby"));
@@ -118,6 +125,7 @@ public class BrandUriExtractorTest {
         assertThat(brandUriExtractor.extractBrandUri(row15).get(), is(URI_PREFIX + "synthesized/brands/plankton-invasion"));
         assertThat(brandUriExtractor.extractBrandUri(row16).get(), is(URI_PREFIX + "synthesized/brands/raa-raa-the-noisy-lion"));
         assertThat(brandUriExtractor.extractBrandUri(row17).get(), is(URI_PREFIX + "synthesized/brands/peppas-circus"));
+        assertThat(brandUriExtractor.extractBrandUri(row18).get(), is(URI_PREFIX + "synthesized/brands/brickleberry"));
     }
 
     private BtVodEntry episodeEntry() {

@@ -53,6 +53,9 @@ public class BtVodSeriesUriExtractorTest {
         
         BtVodEntry row8 = new BtVodEntry();
         row8.setTitle("Mad Men S01 E08");
+        
+        BtVodEntry row9 = new BtVodEntry();
+        row9.setTitle("Brickleberry S2 - HD S2-E13 Aparkalypse - HD");
 
         String brandUri = "http://brand-uri.com";
         when(brandUriExtractor.extractBrandUri(row1)).thenReturn(Optional.of(brandUri));
@@ -63,6 +66,7 @@ public class BtVodSeriesUriExtractorTest {
         when(brandUriExtractor.extractBrandUri(row6)).thenReturn(Optional.of(brandUri));
         when(brandUriExtractor.extractBrandUri(row7)).thenReturn(Optional.of(brandUri));
         when(brandUriExtractor.extractBrandUri(row8)).thenReturn(Optional.of(brandUri));
+        when(brandUriExtractor.extractBrandUri(row9)).thenReturn(Optional.of(brandUri));
 
 
         assertThat(seriesUriExtractor.seriesUriFor(row1).get(), Matchers.is(brandUri + "/series/2"));
@@ -73,6 +77,7 @@ public class BtVodSeriesUriExtractorTest {
         assertThat(seriesUriExtractor.seriesUriFor(row6).get(), Matchers.is(brandUri + "/series/2"));
         assertThat(seriesUriExtractor.seriesUriFor(row7).get(), Matchers.is(brandUri + "/series/1"));
         assertThat(seriesUriExtractor.seriesUriFor(row8).get(), Matchers.is(brandUri + "/series/1"));
+        assertThat(seriesUriExtractor.seriesUriFor(row9).get(), Matchers.is(brandUri + "/series/2"));
     }
 
     @Test

@@ -47,12 +47,6 @@ public class CurieResolvingQueryExecutor implements KnownTypeQueryExecutor {
         return delegate.executePublisherQuery(publishers, query);
     }
 
-	@Override
-	public Map<String, List<Identified>> executeEventQuery(Iterable<Long> eventIds,
-			ContentQuery query) {
-		return delegate.executeEventQuery(eventIds, query);
-	}
-
 	private List<String> resolve(Iterable<String> ids) {
 		List<String> resolved = Lists.newArrayList(); 
 		for (String value : ids) {

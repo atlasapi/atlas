@@ -17,6 +17,7 @@ package org.atlasapi.query.v2;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -27,6 +28,7 @@ import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.content.criteria.ContentQuery;
+import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -34,6 +36,7 @@ import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
+import org.atlasapi.persistence.event.EventContentLister;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -61,20 +64,21 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 
     private final ContentWriteController contentWriteController;
     private final IdGenerator idGenerator;
-
-    public QueryController(
-            KnownTypeQueryExecutor executor,
+    private final EventContentLister contentLister;
+	
+    public QueryController(KnownTypeQueryExecutor executor,
             ApplicationConfigurationFetcher configFetcher,
             AdapterLog log,
             AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter,
             ContentWriteController contentWriteController,
-            IdGenerator idGenerator
-    ) {
+            IdGenerator idGenerator,
+            EventContentLister contentLister) {
 	    super(configFetcher, log, outputter, SubstitutionTableNumberCodec.lowerCaseOnly());
         idGenerator = checkNotNull(idGenerator);
         this.idGenerator = idGenerator;
         this.executor = executor;
         this.contentWriteController = contentWriteController;
+        this.contentLister = contentLister;
 	}
     
     @RequestMapping("/")
@@ -136,7 +140,14 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             List<String> eventIds = getEventRefIds(request);
 
             if(!eventIds.isEmpty()) {
-                modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executeEventQuery(decode(eventIds), filter).values()),Identified.class)),filter.getConfiguration());
+                modelAndViewFor(
+                        request,
+                        response,
+                        QueryResult.of(Iterables.filter(
+                                iterable(contentLister.contentForEvent(
+                                        ImmutableList.copyOf(decode(eventIds)), filter)),
+                                Identified.class)),
+                        filter.getConfiguration());
                 return;
             }
 	            
@@ -181,6 +192,15 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             return ImmutableList.of();
         }
         return ImmutableList.copyOf(URI_SPLITTER.split(parameter));
+    }
+
+    private Iterable<Content> iterable(final Iterator<Content> iterator) {
+        return new Iterable<Content>() {
+            @Override
+            public Iterator<Content> iterator() {
+                return iterator;
+            }
+        };
     }
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)

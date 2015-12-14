@@ -25,13 +25,10 @@ import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.cassandra.CassandraContentStore;
 import org.atlasapi.persistence.content.cassandra.CassandraKnownTypeContentResolver;
 import org.atlasapi.persistence.content.mongo.MongoContentResolver;
-import org.atlasapi.persistence.content.mongo.MongoTopLevelItemsEntry;
-import org.atlasapi.persistence.content.mongo.TopLevelItemsEntry;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.atlasapi.query.content.ApplicationConfigurationQueryExecutor;
 import org.atlasapi.query.content.CurieResolvingQueryExecutor;
-import org.atlasapi.query.content.EventResolvingQueryExecutor;
 import org.atlasapi.query.content.FilterActivelyPublishedOnlyQueryExecutor;
 import org.atlasapi.query.content.FilterScheduleOnlyQueryExecutor;
 import org.atlasapi.query.content.LookupResolvingQueryExecutor;
@@ -70,12 +67,8 @@ public class QueryModule {
 	    KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
         KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
 
-		TopLevelItemsEntry itemsEntry = new MongoTopLevelItemsEntry(mongo.collection("topLevelItems"), readPreference);
-
-		KnownTypeQueryExecutor queryExecutor = new EventResolvingQueryExecutor(cassandraContentResolver,
-				mongoContentResolver, lookupStore, cassandraEnabled, itemsEntry);
-
-		queryExecutor = new LookupResolvingQueryExecutor(queryExecutor);
+		KnownTypeQueryExecutor queryExecutor = new LookupResolvingQueryExecutor(cassandraContentResolver,
+				mongoContentResolver, lookupStore, cassandraEnabled);
 
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 		

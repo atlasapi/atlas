@@ -46,12 +46,6 @@ public class FilterScheduleOnlyQueryExecutor implements KnownTypeQueryExecutor {
         return filter(delegate.executePublisherQuery(publishers, query));
     }
 
-    @Override
-    public Map<String, List<Identified>> executeEventQuery(Iterable<Long> eventIds,
-            ContentQuery query) {
-        return filter(delegate.executeEventQuery(eventIds, query));
-    }
-
     private Map<String, List<Identified>> filter(Map<String, List<Identified>> unfiltered) {
         return Maps.filterValues(unfiltered, new Predicate<List<Identified>>() {
             @Override

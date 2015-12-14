@@ -49,12 +49,6 @@ public class FilterActivelyPublishedOnlyQueryExecutor implements KnownTypeQueryE
         return filter(delegate.executePublisherQuery(publishers, query));
     }
 
-    @Override
-    public Map<String, List<Identified>> executeEventQuery(Iterable<Long> eventIds,
-            ContentQuery query) {
-        return filter(delegate.executeEventQuery(eventIds, query));
-    }
-
     public static final Predicate<Identified> IS_ACTIVELY_PUBLISHED = new Predicate<Identified>() {
         @Override public boolean apply(Identified input) {
             if (input instanceof Described) {

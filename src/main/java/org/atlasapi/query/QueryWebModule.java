@@ -102,6 +102,7 @@ import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
 import org.atlasapi.persistence.content.people.PersonStore;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.persistence.event.EventContentLister;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
@@ -193,6 +194,7 @@ public class QueryWebModule {
     private @Autowired KnownTypeQueryExecutor queryExecutor;
     private @Autowired ApplicationConfigurationFetcher configFetcher;
     private @Autowired AdapterLog log;
+    private @Autowired EventContentLister eventContentLister;
 
     @Bean ChannelController channelController() {
         return new ChannelController(configFetcher, log, channelModelWriter(), channelResolver, new SubstitutionTableNumberCodec());
@@ -282,7 +284,7 @@ public class QueryWebModule {
 
     @Bean
     QueryController queryController() {
-        return new QueryController(queryExecutor, configFetcher, log, contentModelOutputter(), contentWriteController(), idGenerator);
+        return new QueryController(queryExecutor, configFetcher, log, contentModelOutputter(), contentWriteController(), idGenerator, eventContentLister);
     }
     
     NumberToShortStringCodec idCodec() {

@@ -90,12 +90,6 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
         return delegate.executePublisherQuery(publishers, query);
     }
 
-	@Override
-	public Map<String, List<Identified>> executeEventQuery(Iterable<Long> eventIds,
-			ContentQuery query) {
-		return delegate.executeEventQuery(eventIds, query);
-	}
-
 	public Map<String, List<Identified>> executeContentQuery(Iterable<String> uris, ContentQuery query) {
 
 		Map<String, List<Identified>> found = delegate.executeUriQuery(uris, query);

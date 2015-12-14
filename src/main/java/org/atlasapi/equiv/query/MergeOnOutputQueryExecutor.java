@@ -50,12 +50,6 @@ public class MergeOnOutputQueryExecutor implements KnownTypeQueryExecutor {
         return mergeResults(query, delegate.executePublisherQuery(publishers, query));
     }
 
-    @Override
-    public Map<String, List<Identified>> executeEventQuery(Iterable<Long> eventIds,
-            ContentQuery query) {
-        return mergeResults(query, delegate.executeEventQuery(eventIds, query));
-    }
-
     private Map<String, List<Identified>> mergeResults(final ContentQuery query, Map<String, List<Identified>> unmergedResult) {
         final ApplicationConfiguration config = query.getConfiguration();
         if (!config.precedenceEnabled()) {

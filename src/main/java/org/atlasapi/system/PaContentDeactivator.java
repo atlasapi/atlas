@@ -79,13 +79,13 @@ public class PaContentDeactivator {
         this.progressStore = checkNotNull(progressStore);
     }
 
-    public void deactivate(File file, Integer threads) throws IOException {
+    public void deactivate(File file, Integer threads, Boolean dryRun) throws IOException {
         List<String> lines = Files.readAllLines(file.toPath(), UTF8);
         ImmutableSetMultimap<String, String> typeToIds = extractAliases(lines);
-        deactivate(typeToIds, threads);
+        deactivate(typeToIds, threads, dryRun);
     }
 
-    public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads) throws IOException {
+    public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads, Boolean dryRun) throws IOException {
         ImmutableSet<Long> activeAtlasContentIds = resolvePaAliasesToIds(paNamespaceToAliases);
         final BloomFilter<Long> filter = bloomFilterFor(activeAtlasContentIds);
         final Iterator<Content> contentIterator = contentLister.listContent(
@@ -100,7 +100,7 @@ public class PaContentDeactivator {
             if (shouldDeactivate.apply(content)) {
                 LOG.info("Content {} - {} not in bloom filter, deactivating...",
                         content.getClass().getSimpleName(), content.getId());
-                executor.submit(contentDeactivatingRunnable(content, deactivatedCount));
+                executor.submit(contentDeactivatingRunnable(content, deactivatedCount, dryRun));
             }
             int count = processedCount.incrementAndGet();
             if (count % 1000 == 0) {
@@ -112,19 +112,21 @@ public class PaContentDeactivator {
             }
         }
         LOG.info("Finished processing {} items", Integer.valueOf(processedCount.get()));
-        LOG.info("Finished deactivating {} items", Integer.valueOf(deactivatedCount.get()));
+        LOG.info("Deactivated {} items", Integer.valueOf(deactivatedCount.get()));
     }
 
-    private Runnable contentDeactivatingRunnable(final Content content, final AtomicInteger progressCount) {
+    private Runnable contentDeactivatingRunnable(final Content content, final AtomicInteger progressCount, final Boolean dryRun) {
         return new Runnable() {
             @Override
             public void run() {
-                content.setActivelyPublished(false);
-                if (content instanceof Container) {
-                    contentWriter.createOrUpdate((Container) content);
-                }
-                if (content instanceof Item) {
-                    contentWriter.createOrUpdate((Item) content);
+                if (!dryRun) {
+                    content.setActivelyPublished(false);
+                    if (content instanceof Container) {
+                        contentWriter.createOrUpdate((Container) content);
+                    }
+                    if (content instanceof Item) {
+                        contentWriter.createOrUpdate((Item) content);
+                    }
                 }
                 int count = progressCount.incrementAndGet();
                 if (count % 1000 == 0) {

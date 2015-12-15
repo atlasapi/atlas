@@ -69,7 +69,7 @@ public class PaContentDeactivatorTest {
                 .build();
 
         typesToIds.put("pa:brand", "10");
-        deactivator.deactivate(typesToIds, 1);
+        deactivator.deactivate(typesToIds, 1, false);
         Thread.sleep(2000);
         assertThat(activeContent.isActivelyPublished(), is(true));
         assertThat(inactiveContent.isActivelyPublished(), is(false));

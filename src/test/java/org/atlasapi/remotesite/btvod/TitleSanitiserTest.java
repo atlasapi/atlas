@@ -124,6 +124,9 @@ public class TitleSanitiserTest {
         
         assertThat(titleSanitiser.sanitiseTitle("Brickleberry S2 - HD S2-E13 Aparkalypse - HD"),
                 is("Aparkalypse"));
+
+        assertThat(titleSanitiser.sanitiseTitle("Brickleberry S2 - HD S2-E13 Aparkalypse - UHD"),
+                is("Aparkalypse"));
         
     }
 

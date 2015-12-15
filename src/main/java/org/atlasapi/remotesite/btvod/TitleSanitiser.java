@@ -10,7 +10,7 @@ import com.google.common.collect.ImmutableMap;
 
 public class TitleSanitiser {
 
-    private static final Pattern HD_SUFFIX_PATTERN = Pattern.compile("\\s\\-\\sHD");
+    private static final Pattern HD_SUFFIX_PATTERN = Pattern.compile("\\s\\-\\s[U]?HD");
 
     private static final List<Pattern> PRE_PROCESSING_PATTERNS = ImmutableList.of(
             Pattern.compile("^.* S[0-9]+[\\- ]E[0-9]+\\s?(.*)"),

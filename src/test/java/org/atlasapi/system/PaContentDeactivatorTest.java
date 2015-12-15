@@ -36,6 +36,7 @@ public class PaContentDeactivatorTest {
     private ProgressStore progressStore;
     private Brand activeContent;
     private Brand inactiveContent;
+    private Brand emptyContainer;
 
     @Before
     public void setUp() throws Exception {
@@ -50,7 +51,9 @@ public class PaContentDeactivatorTest {
         inactiveContent = new Brand("20", "20", Publisher.PA);
         inactiveContent.setId(20l);
         inactiveContent.setGenericDescription(false);
-        setupMocks(activeContent, inactiveContent);
+
+        emptyContainer = new Brand("30", "30", Publisher.PA);
+        setupMocks(activeContent, inactiveContent, emptyContainer);
     }
 
     @Test
@@ -65,9 +68,10 @@ public class PaContentDeactivatorTest {
         Thread.sleep(2000);
         assertThat(activeContent.isActivelyPublished(), is(true));
         assertThat(inactiveContent.isActivelyPublished(), is(false));
+        assertThat(emptyContainer.isActivelyPublished(), is(false));
     }
 
-    private void setupMocks(Content activeContent, Content inactiveContent) {
+    private void setupMocks(Content activeContent, Content inactiveContent, Brand emptyContainer) {
         LookupEntry activeLookup = mock(LookupEntry.class);
         when(activeLookup.id()).thenReturn(10l);
 
@@ -83,7 +87,7 @@ public class PaContentDeactivatorTest {
                 ContentCategory.TOP_LEVEL_ITEM
         );
 
-        Iterator<Content> contentIterator = ImmutableList.of(activeContent, inactiveContent).iterator();
+        Iterator<Content> contentIterator = ImmutableList.of(activeContent, inactiveContent, emptyContainer).iterator();
 
         ContentListingCriteria criteria = ContentListingCriteria.defaultCriteria()
                 .forContent(contentCategories)

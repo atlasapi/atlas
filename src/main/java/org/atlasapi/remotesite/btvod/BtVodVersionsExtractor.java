@@ -34,6 +34,7 @@ public class BtVodVersionsExtractor {
     private static final String OTG_PLATFORM = "OTG";
     private static final String HD_FLAG = "HD";
     private static final String SD_FLAG = "SD";
+    private static final String FOUR_K = "4K";
     public static final String PAY_TO_BUY_SUFFIX = "-EST";
     public static final String PRERELEASE_BLACKOUT_TYPE = "prerelease";
 
@@ -164,6 +165,9 @@ public class BtVodVersionsExtractor {
         } else if (SD_FLAG.equals(entry.getProductTargetBandwidth())) {
             encoding.setHighDefinition(false);
             encoding.setQuality(Quality.SD);
+        } else if (FOUR_K.equals(entry.getProductTargetBandwidth())) {
+            encoding.setHighDefinition(true);
+            encoding.setQuality(Quality.FOUR_K);
         }
     }
 

@@ -4,9 +4,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.*;
 import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -15,6 +13,7 @@ import org.atlasapi.persistence.content.listing.ContentListingProgress;
 import org.atlasapi.persistence.content.listing.ProgressStore;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -46,6 +45,11 @@ public class PaContentDeactivatorTest {
         progressStore = mock(ProgressStore.class);
         deactivator = new PaContentDeactivator(lookup, lister, writer, progressStore);
         activeContent = new Brand("10", "10", Publisher.PA);
+        activeContent.setChildRefs(
+                ImmutableList.of(
+                        new ChildRef(10l, "", "", DateTime.now(), EntityType.CLIP)
+                )
+        );
         activeContent.setId(10l);
 
         inactiveContent = new Brand("20", "20", Publisher.PA);
@@ -65,7 +69,7 @@ public class PaContentDeactivatorTest {
                 .build();
 
         typesToIds.put("pa:brand", "10");
-        deactivator.deactivate(typesToIds, 1);
+        deactivator.deactivate(typesToIds, 1, false);
         Thread.sleep(2000);
         assertThat(activeContent.isActivelyPublished(), is(true));
         assertThat(inactiveContent.isActivelyPublished(), is(false));

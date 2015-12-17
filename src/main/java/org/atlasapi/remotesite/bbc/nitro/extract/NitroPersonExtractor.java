@@ -9,11 +9,12 @@ import com.google.common.base.Optional;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 
 public class NitroPersonExtractor implements
-        ContentExtractor<Brand.People.Contribution, Optional<Person>> {
+        ContentExtractor<Brand.Contributions.Contribution, Optional<Person>> {
 
     @Override
-    public Optional<Person> extract(Brand.People.Contribution contribution) {
-        Brand.People.Contribution.ContributorName contributorName = contribution.getContributorName();
+    public Optional<Person> extract(Brand.Contributions.Contribution contribution) {
+        Brand.Contributions.Contribution.Contributor.Name contributorName = contribution
+                .getContributor().getName();
 
         if (contributorName == null) {
             return Optional.absent();
@@ -23,7 +24,7 @@ public class NitroPersonExtractor implements
         person.setCanonicalUri(NitroUtil.uriFor(contribution));
         person.setCurie(NitroUtil.curieFor(contribution));
         person.setPublisher(Publisher.BBC_NITRO);
-        
+
         if (!Strings.isNullOrEmpty(contributorName.getPresentation())) {
             person.setGivenName(contributorName.getPresentation());
         } else {

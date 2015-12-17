@@ -3,8 +3,8 @@ package org.atlasapi.remotesite.bbc.nitro;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -58,7 +58,6 @@ import com.metabroadcast.common.time.Clock;
 
 /**
  * A {@link NitroContentAdapter} based on a {@link Glycerin}.
- *
  */
 public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
@@ -77,7 +76,9 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private final ListeningExecutorService executor;
 
-    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient, GlycerinNitroClipsAdapter clipsAdapter, QueuingPersonWriter peopleWriter, Clock clock, int pageSize, boolean releaseDateIngestEnabled) {
+    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient,
+            GlycerinNitroClipsAdapter clipsAdapter, QueuingPersonWriter peopleWriter, Clock clock,
+            int pageSize, boolean releaseDateIngestEnabled) {
         this.glycerin = checkNotNull(glycerin);
         this.nitroClient = checkNotNull(nitroClient);
         this.pageSize = pageSize;
@@ -148,7 +149,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         for (List<PidReference> ref : Iterables.partition(refs, NITRO_BATCH_SIZE)) {
             ProgrammesQuery query = ProgrammesQuery.builder()
                     .withPid(toStrings(ref))
-                    .withMixins(TITLES, PEOPLE, GENRE_GROUPINGS)
+                    .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, GENRE_GROUPINGS)
                     .withPageSize(pageSize)
                     .build();
 
@@ -202,6 +203,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                  available here. */
         Iterable<PidReference> episodeRefs = Iterables.transform(episodes,
                 new Function<Episode, PidReference>() {
+
                     @Override
                     public PidReference apply(Episode input) {
                         PidReference pidReference = new PidReference();
@@ -241,6 +243,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private ImmutableList<Episode> getAsEpisodes(ImmutableList<Programme> programmes) {
         return ImmutableList.copyOf(Iterables.filter(Iterables.transform(programmes,
                 new Function<Programme, Episode>() {
+
                     @Override
                     public Episode apply(Programme input) {
                         if (input.isEpisode()) {
@@ -251,7 +254,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                 }), Predicates.notNull()));
     }
 
-    private ImmutableList<Programme> fetchProgrammes(Iterable<ProgrammesQuery> queries) throws GlycerinException {
+    private ImmutableList<Programme> fetchProgrammes(Iterable<ProgrammesQuery> queries)
+            throws GlycerinException {
 
         List<ListenableFuture<ImmutableList<Programme>>> futures = Lists.newArrayList();
 
@@ -274,7 +278,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         ImmutableList.Builder<T> programmes = ImmutableList.builder();
         ImmutableList<T> results = resp.getResults();
         programmes.addAll(results);
-        while(resp.hasNext()) {
+        while (resp.hasNext()) {
             resp = resp.getNext();
             programmes.addAll(resp.getResults());
         }
@@ -283,6 +287,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private Iterable<String> toStrings(Iterable<PidReference> refs) {
         return Iterables.transform(refs, new Function<PidReference, String>() {
+
             @Override
             public String apply(PidReference input) {
                 return input.getPid();
@@ -294,7 +299,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         return nitroClient.genres(episode.getPid());
     }
 
-    private ListMultimap<String, Broadcast> broadcasts(ImmutableList<Episode> episodes) throws GlycerinException {
+    private ListMultimap<String, Broadcast> broadcasts(ImmutableList<Episode> episodes)
+            throws GlycerinException {
         List<ListenableFuture<ImmutableList<Broadcast>>> futures = Lists.newArrayList();
 
         for (List<Episode> episode : Iterables.partition(episodes, NITRO_BATCH_SIZE)) {
@@ -306,12 +312,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
         ListenableFuture<List<ImmutableList<Broadcast>>> successful = Futures.allAsList(futures);
         try {
-            return Multimaps.index(Iterables.concat(successful.get()), new Function<Broadcast, String>() {
-                @Override
-                public String apply(Broadcast input) {
-                    return NitroUtil.programmePid(input).getPid();
-                }
-            });
+            return Multimaps.index(Iterables.concat(successful.get()),
+                    new Function<Broadcast, String>() {
+
+                        @Override
+                        public String apply(Broadcast input) {
+                            return NitroUtil.programmePid(input).getPid();
+                        }
+                    });
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof GlycerinException) {
                 throw (GlycerinException) e.getCause();
@@ -320,7 +328,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
     }
 
-    private ListMultimap<String, Version> versions(ImmutableList<Episode> episodes) throws GlycerinException {
+    private ListMultimap<String, Version> versions(ImmutableList<Episode> episodes)
+            throws GlycerinException {
         List<ListenableFuture<ImmutableList<Version>>> futures = Lists.newArrayList();
 
         for (List<Episode> episode : Iterables.partition(episodes, NITRO_BATCH_SIZE)) {
@@ -334,6 +343,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         ListenableFuture<List<ImmutableList<Version>>> all = Futures.allAsList(futures);
         try {
             return Multimaps.index(Iterables.concat(all.get()), new Function<Version, String>() {
+
                 @Override
                 public String apply(Version input) {
                     return NitroUtil.programmePid(input).getPid();
@@ -347,7 +357,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
     }
 
-    private ListMultimap<String, Availability> availabilities(ImmutableList<Episode> episodes) throws GlycerinException {
+    private ListMultimap<String, Availability> availabilities(ImmutableList<Episode> episodes)
+            throws GlycerinException {
         if (episodes.isEmpty()) {
             return ImmutableListMultimap.of();
         }
@@ -358,7 +369,11 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             AvailabilityQuery query = AvailabilityQuery.builder()
                     .withDescendantsOf(toPids(episode))
                     .withPageSize(pageSize)
-                    .withMediaSet("apple-iphone4-ipad-hls-3g", "apple-iphone4-hls", "pc", "iptv-all", "captions")
+                    .withMediaSet("apple-iphone4-ipad-hls-3g",
+                            "apple-iphone4-hls",
+                            "pc",
+                            "iptv-all",
+                            "captions")
                     .build();
 
             futures.add(executor.submit(exhaustingAvailabilityCallable(query)));
@@ -377,6 +392,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
         return Multimaps.index(list,
                 new Function<Availability, String>() {
+
                     @Override
                     public String apply(Availability input) {
                         return NitroUtil.programmePid(input);
@@ -384,7 +400,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                 });
     }
 
-    private Callable<ImmutableList<Availability>> exhaustingAvailabilityCallable(final AvailabilityQuery query) {
+    private Callable<ImmutableList<Availability>> exhaustingAvailabilityCallable(
+            final AvailabilityQuery query) {
 
         return new Callable<ImmutableList<Availability>>() {
 
@@ -406,7 +423,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         };
     }
 
-    private Callable<ImmutableList<Broadcast>> exhaustingBroadcastsCallable(final BroadcastsQuery query) {
+    private Callable<ImmutableList<Broadcast>> exhaustingBroadcastsCallable(
+            final BroadcastsQuery query) {
 
         return new Callable<ImmutableList<Broadcast>>() {
 
@@ -417,7 +435,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         };
     }
 
-    private Callable<ImmutableList<Programme>> exhaustingProgrammeCallable(final ProgrammesQuery query) {
+    private Callable<ImmutableList<Programme>> exhaustingProgrammeCallable(
+            final ProgrammesQuery query) {
 
         return new Callable<ImmutableList<Programme>>() {
 
@@ -430,6 +449,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private Iterable<String> toPids(List<Episode> episodes) {
         return Iterables.transform(episodes, new Function<Episode, String>() {
+
             @Override
             public String apply(Episode input) {
                 return input.getPid();

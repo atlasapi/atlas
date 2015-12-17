@@ -20,7 +20,7 @@ public class NitroCrewMemberExtractorTest {
 
     @Test
     public void testNonActorExtraction() {
-        Brand.People.Contribution contribution = companyContribution();
+        Brand.Contributions.Contribution contribution = companyContribution();
 
         CrewMember crewMember = extractor.extract(contribution).get();
 
@@ -31,7 +31,7 @@ public class NitroCrewMemberExtractorTest {
 
     @Test
     public void testActorExtraction() {
-        Brand.People.Contribution contribution = actorContribution();
+        Brand.Contributions.Contribution contribution = actorContribution();
 
         CrewMember crewMember = extractor.extract(contribution).get();
 
@@ -40,30 +40,44 @@ public class NitroCrewMemberExtractorTest {
         assertEquals("Carey Mulligan", crewMember.name());
     }
 
-    private Brand.People.Contribution companyContribution() {
-        Brand.People.Contribution contribution = new Brand.People.Contribution();
-        contribution.setContributionBy("p029hdv9");
-        contribution.setCreditRole("Production Company");
-        contribution.setCreditRoleId("V20");
+    private Brand.Contributions.Contribution companyContribution() {
+        Brand.Contributions.Contribution contribution = new Brand.Contributions.Contribution();
 
-        Brand.People.Contribution.ContributorName name = new Brand.People.Contribution.ContributorName();
+        Brand.Contributions.Contribution.Contributor contributor = new Brand.Contributions.Contribution.Contributor();
+        contributor.setHref("p029hdv9");
+
+        Brand.Contributions.Contribution.Contributor.Name name = new Brand.Contributions.Contribution.Contributor.Name();
         name.setFamily("So Television");
-        contribution.setContributorName(name);
+        contributor.setName(name);
+
+        contribution.setContributor(contributor);
+
+        Brand.Contributions.Contribution.CreditRole creditRole = new Brand.Contributions.Contribution.CreditRole();
+        creditRole.setId("V20");
+        creditRole.setValue("Production Company");
+        contribution.setCreditRole(creditRole);
 
         return contribution;
     }
 
-    private Brand.People.Contribution actorContribution() {
-        Brand.People.Contribution contribution = new Brand.People.Contribution();
-        contribution.setContributionBy("p01fvgrh");
+    private Brand.Contributions.Contribution actorContribution() {
+        Brand.Contributions.Contribution contribution = new Brand.Contributions.Contribution();
         contribution.setCharacterName("Irene");
-        contribution.setCreditRole("Actor");
-        contribution.setCreditRoleId("ACTOR");
 
-        Brand.People.Contribution.ContributorName name = new Brand.People.Contribution.ContributorName();
+        Brand.Contributions.Contribution.Contributor contributor = new Brand.Contributions.Contribution.Contributor();
+        contributor.setHref("p01fvgrh");
+
+        Brand.Contributions.Contribution.Contributor.Name name = new Brand.Contributions.Contribution.Contributor.Name();
         name.setGiven("Carey");
         name.setFamily("Mulligan");
-        contribution.setContributorName(name);
+        contributor.setName(name);
+
+        contribution.setContributor(contributor);
+
+        Brand.Contributions.Contribution.CreditRole creditRole = new Brand.Contributions.Contribution.CreditRole();
+        creditRole.setId("ACTOR");
+        creditRole.setValue("Actor");
+        contribution.setCreditRole(creditRole);
 
         return contribution;
     }

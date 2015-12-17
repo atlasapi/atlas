@@ -39,11 +39,8 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.Format;
 import com.metabroadcast.atlas.glycerin.model.FormatsType;
-import com.metabroadcast.atlas.glycerin.model.GenreGroup;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Version;
-import com.metabroadcast.atlas.glycerin.model.Version.VersionTypes.VersionType;
-import com.metabroadcast.atlas.glycerin.model.Version.VersionTypes;
 import com.metabroadcast.atlas.glycerin.model.WarningText;
 import com.metabroadcast.atlas.glycerin.model.Warnings;
 import com.metabroadcast.common.time.SystemClock;
@@ -434,13 +431,13 @@ public class NitroEpisodeExtractorTest {
         Version version = new Version();
         version.setPid(AUDIO_DESCRIBED_VERSION_PID);
 
-        VersionType type = new VersionType();
+        Version.Types.Type type = new Version.Types.Type();
         type.setId("DubbedAudioDescribed");
 
-        VersionTypes types = new VersionTypes();
-        types.getVersionType().add(type);
+        Version.Types types = new Version.Types();
+        types.getType().add(type);
 
-        version.setVersionTypes(types);
+        version.setTypes(types);
         version.setDuration(DatatypeFactory.newInstance().newDuration(VERSION_DURATION.getMillis()));
 
         return version;
@@ -449,12 +446,12 @@ public class NitroEpisodeExtractorTest {
     private Version signedVersion(String versionPid) throws DatatypeConfigurationException {
         Version version = version(versionPid);
 
-        VersionType type = new VersionType();
+        Version.Types.Type type = new Version.Types.Type();
         type.setId("Signed");
 
-        VersionTypes types = new VersionTypes();
-        types.getVersionType().add(type);
-        version.setVersionTypes(types);
+        Version.Types types = new Version.Types();
+        types.getType().add(type);
+        version.setTypes(types);
 
         return version;
     }

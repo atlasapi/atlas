@@ -17,7 +17,7 @@
                     <target>1.7</target>
                     <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J-Xss30M</arg>
+                        <arg>-J-Xss100M</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

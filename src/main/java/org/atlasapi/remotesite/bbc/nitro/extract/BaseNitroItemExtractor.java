@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.model.Version.Types;
 
 import java.util.Collection;
 import java.util.List;
@@ -24,14 +25,12 @@ import org.joda.time.Duration;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSetMultimap.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
 import com.metabroadcast.atlas.glycerin.model.WarningText;
@@ -43,18 +42,19 @@ import com.metabroadcast.common.time.Clock;
 /**
  * Base extractor for extracting common properties of {@link Item}s from a
  * {@link NitroItemSource}.
- * 
+ *
  * @param <SOURCE> - the type of {@link Programme}.
- * @param <ITEM> - the {@link Item} type extracted.
+ * @param <ITEM>   - the {@link Item} type extracted.
  */
 public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
-    extends NitroContentExtractor<NitroItemSource<SOURCE>, ITEM> {
+        extends NitroContentExtractor<NitroItemSource<SOURCE>, ITEM> {
 
     private static final String AUDIO_DESCRIBED_VERSION_TYPE = "DubbedAudioDescribed";
     private static final String SIGNED_VERSION_TYPE = "Signed";
     private static final String WARNING_TEXT_LONG_LENGTH = "long";
 
     private final Predicate<WarningText> IS_LONG_WARNING = new Predicate<WarningText>() {
+
         @Override
         public boolean apply(WarningText input) {
             return WARNING_TEXT_LONG_LENGTH.equals(input.getLength());
@@ -62,18 +62,22 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     };
 
     private final NitroBroadcastExtractor broadcastExtractor
-        = new NitroBroadcastExtractor();
+            = new NitroBroadcastExtractor();
     private final NitroAvailabilityExtractor availabilityExtractor
-        = new NitroAvailabilityExtractor();
+            = new NitroAvailabilityExtractor();
 
     public BaseNitroItemExtractor(Clock clock) {
         super(clock);
     }
 
     @Override
-    protected final void extractAdditionalFields(NitroItemSource<SOURCE> source, ITEM item, DateTime now) {
-        ImmutableSetMultimap<String, Broadcast> broadcasts = extractBroadcasts(source.getBroadcasts(), now);
-        OptionalMap<String, Set<Encoding>> encodings = extractEncodings(source.getAvailabilities(), now, extractMediaType(source));
+    protected final void extractAdditionalFields(NitroItemSource<SOURCE> source, ITEM item,
+            DateTime now) {
+        ImmutableSetMultimap<String, Broadcast> broadcasts = extractBroadcasts(source.getBroadcasts(),
+                now);
+        OptionalMap<String, Set<Encoding>> encodings = extractEncodings(source.getAvailabilities(),
+                now,
+                extractMediaType(source));
 
         ImmutableSet.Builder<Version> versions = ImmutableSet.builder();
 
@@ -82,7 +86,8 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                 Version version = generateVersion(now, broadcasts, encodings, nitroVersion);
                 versions.add(version);
             } catch (Exception e) {
-                throw new RuntimeException("Exception processing version " + nitroVersion.getPid(), e);
+                throw new RuntimeException("Exception processing version " + nitroVersion.getPid(),
+                        e);
             }
         }
 
@@ -133,7 +138,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
          * Even if aspect ratio and the audio described and signed flags are on Version in the Nitro model,
          * in Atlas they naturally belong to Encoding
          */
-        for (Encoding encoding: encodings) {
+        for (Encoding encoding : encodings) {
             encoding.setVideoAspectRatio(nitroVersion.getAspectRatio());
             encoding.setAudioDescribed(isVersionOfType(nitroVersion, AUDIO_DESCRIBED_VERSION_TYPE));
             encoding.setSigned(isVersionOfType(nitroVersion, SIGNED_VERSION_TYPE));
@@ -152,22 +157,24 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         return restriction;
     }
 
-    private boolean isVersionOfType(com.metabroadcast.atlas.glycerin.model.Version nitroVersion, String versionType) {
-        com.metabroadcast.atlas.glycerin.model.Version.VersionTypes versionTypes = nitroVersion.getVersionTypes();
+    private boolean isVersionOfType(com.metabroadcast.atlas.glycerin.model.Version nitroVersion,
+            String versionType) {
+        Types versionTypes = nitroVersion.getTypes();
 
         if (versionTypes == null) {
             return false;
         }
 
-        return Iterables.any(versionTypes.getVersionType(), isOfType(versionType));
+        return Iterables.any(versionTypes.getType(), isOfType(versionType));
     }
 
-    private Predicate<com.metabroadcast.atlas.glycerin.model.Version.VersionTypes.VersionType> isOfType(final String versionType) {
-        return new Predicate<com.metabroadcast.atlas.glycerin.model.Version.VersionTypes.VersionType>() {
+
+    private Predicate<Types.Type> isOfType(final String type) {
+        return new Predicate<Types.Type>() {
+
             @Override
-            public boolean apply(
-                    com.metabroadcast.atlas.glycerin.model.Version.VersionTypes.VersionType input) {
-                return versionType.equals(input.getId());
+            public boolean apply(Types.Type input) {
+                return type.equals(input.getId());
             }
         };
     }
@@ -186,6 +193,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
 
     /**
      * Extract the media type of the source.
+     *
      * @param source
      * @return the media type of the source, or null if not present.
      */
@@ -194,21 +202,24 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     /**
      * Concrete implementations can override this method to perform additional
      * configuration of the extracted content from the source.
-     * 
+     *
      * @param source - the source data.
-     * @param item - the extracted item.
-     * @param now - the current time.
+     * @param item   - the extracted item.
+     * @param now    - the current time.
      */
-    protected void extractAdditionalItemFields(NitroItemSource<SOURCE> source, ITEM item, DateTime now) {
-        
+    protected void extractAdditionalItemFields(NitroItemSource<SOURCE> source, ITEM item,
+            DateTime now) {
+
     }
 
-    private OptionalMap<String, Set<Encoding>> extractEncodings(List<Availability> availabilities, DateTime now,
+    private OptionalMap<String, Set<Encoding>> extractEncodings(List<Availability> availabilities,
+            DateTime now,
             String mediaType) {
         Map<String, Collection<Availability>> byVersion = indexByVersion(availabilities);
         ImmutableMap.Builder<String, Set<Encoding>> results = ImmutableMap.builder();
         for (Entry<String, Collection<Availability>> availability : byVersion.entrySet()) {
-            Set<Encoding> extracted = availabilityExtractor.extract(availability.getValue(), mediaType);
+            Set<Encoding> extracted = availabilityExtractor.extract(availability.getValue(),
+                    mediaType);
             if (!extracted.isEmpty()) {
                 results.put(availability.getKey(), setLastUpdated(extracted, now));
             }
@@ -217,7 +228,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     }
 
     private Set<Encoding> setLastUpdated(Set<Encoding> encodings, DateTime now) {
-        for (Encoding encoding: encodings) {
+        for (Encoding encoding : encodings) {
             encoding.setLastUpdated(now);
             for (Location location : encoding.getAvailableAt()) {
                 location.setLastUpdated(now);
@@ -227,9 +238,10 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         return encodings;
     }
 
-    private Map<String, Collection<Availability>> indexByVersion(List<Availability> availabilities) {
+    private Map<String, Collection<Availability>> indexByVersion(
+            List<Availability> availabilities) {
         ImmutableSetMultimap.Builder<String, Availability> availabilitiesByVersion
-            = ImmutableSetMultimap.builder();
+                = ImmutableSetMultimap.builder();
         for (Availability availability : availabilities) {
             String versionPid = checkNotNull(NitroUtil.versionPid(availability));
             availabilitiesByVersion.put(versionPid, availability);
@@ -243,7 +255,8 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         for (com.metabroadcast.atlas.glycerin.model.Broadcast broadcast : nitroBroadcasts) {
             Optional<Broadcast> extractedBroadcast = broadcastExtractor.extract(broadcast);
             if (extractedBroadcast.isPresent()) {
-                broadcasts.put(versionPid(broadcast), setLastUpdated(extractedBroadcast.get(), now));
+                broadcasts.put(versionPid(broadcast),
+                        setLastUpdated(extractedBroadcast.get(), now));
             }
         }
         return broadcasts.build();
@@ -269,7 +282,8 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         return Duration.millis(xmlDuration.getTimeInMillis(now.toDate()));
     }
 
-    private Optional<WarningText> warningTextFrom(com.metabroadcast.atlas.glycerin.model.Version version) {
+    private Optional<WarningText> warningTextFrom(
+            com.metabroadcast.atlas.glycerin.model.Version version) {
         Warnings warnings = version.getWarnings();
 
         if (warnings == null) {
@@ -278,5 +292,5 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
 
         return Iterables.tryFind(warnings.getWarningText(), IS_LONG_WARNING);
     }
-    
+
 }

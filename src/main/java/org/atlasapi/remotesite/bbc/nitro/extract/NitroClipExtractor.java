@@ -1,20 +1,17 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import com.metabroadcast.atlas.glycerin.model.Brand;
-import com.metabroadcast.atlas.glycerin.model.Brand.Image;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Clip;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
 
-
 /**
  * Extracts a {@link org.atlasapi.media.entity.Clip Atlas Clip} from a
  * {@link Clip}.
- *
+ * <p>
  * The "{@link org.atlasapi.media.entity.Clip#getClipOf clip of}" field is not
  * set.
- *
  */
 public class NitroClipExtractor
         extends BaseNitroItemExtractor<Clip, org.atlasapi.media.entity.Clip> {
@@ -49,8 +46,8 @@ public class NitroClipExtractor
     }
 
     @Override
-    protected Image extractImage(NitroItemSource<Clip> source) {
-        return source.getProgramme().getImage();
+    protected Brand.Images.Image extractImage(NitroItemSource<Clip> source) {
+        return source.getProgramme().getImages().getImage();
     }
 
     @Override

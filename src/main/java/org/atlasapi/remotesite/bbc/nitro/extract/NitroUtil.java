@@ -1,5 +1,14 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
+import java.util.Set;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+
+import org.joda.time.DateTime;
+import org.joda.time.chrono.ISOChronology;
+
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -10,24 +19,17 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.common.time.DateTimeZones;
-import org.joda.time.DateTime;
-import org.joda.time.chrono.ISOChronology;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-import java.util.Set;
-
-import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility methods for extracting Nitro data.
- *
  */
 public final class NitroUtil {
 
     private static final String PERSON_URI_PREFIX = "http://nitro.bbc.co.uk/people/";
     private static final String PERSON_CURIE_PREFIX = "nitro:bbc:person_";
 
-    private NitroUtil() {}
+    private NitroUtil() {
+    }
 
     private static final Set<String> availabilityParentTypes = ImmutableSet.of("episode", "clip");
     private static final Set<String> versionTypes = ImmutableSet.of("version");
@@ -35,10 +37,9 @@ public final class NitroUtil {
     /**
      * Returns the PID of the episode or clip associated with an availability.
      *
-     * @param availability
-     *            - the availability from which to extract the PID.
+     * @param availability - the availability from which to extract the PID.
      * @return - the PID of the availability's programme or null if there is
-     *         none.
+     * none.
      */
     public static String programmePid(Availability availability) {
         checkNotNull(availability, "null availability");
@@ -48,10 +49,9 @@ public final class NitroUtil {
     /**
      * Returns the {@link PidReference} of the version associated with an availability.
      *
-     * @param availability
-     *            - the availability from which to extract the PID.
+     * @param availability - the availability from which to extract the PID.
      * @return - the {@link PidReference} of the availability's version or null if there is
-     *         none.
+     * none.
      */
     public static String versionPid(Availability availability) {
         checkNotNull(availability, "null availability");
@@ -71,10 +71,9 @@ public final class NitroUtil {
     /**
      * Returns the {@link PidReference} of the episode or clip associated with an broadcast.
      *
-     * @param broadcast
-     *            - the broadcast from which to extract the PID.
+     * @param broadcast - the broadcast from which to extract the PID.
      * @return - the {@link PidReference} of the broadcast's programme or null if there is
-     *         none.
+     * none.
      */
     public static PidReference programmePid(Broadcast broadcast) {
         checkNotNull(broadcast, "null broadcast");
@@ -84,10 +83,9 @@ public final class NitroUtil {
     /**
      * Returns the {@link PidReference} of the version associated with a broadcast.
      *
-     * @param broadcast
-     *            - the broadcast from which to extract the PID.
+     * @param broadcast - the broadcast from which to extract the PID.
      * @return - the {@link PidReference} of the broadcast's version or null if there is
-     *         none.
+     * none.
      */
     public static PidReference versionPid(Broadcast broadcast) {
         checkNotNull(broadcast, "null broadcast");
@@ -97,10 +95,9 @@ public final class NitroUtil {
     /**
      * Returns the {@link PidReference} of the programme associated with a version.
      *
-     * @param version
-     *            - the version from which to extract the PID.
+     * @param version - the version from which to extract the PID.
      * @return - the {@link PidReference} of the version's programme or null if there is
-     *         none.
+     * none.
      */
     public static PidReference programmePid(Version version) {
         checkNotNull(version, "null version");
@@ -129,9 +126,9 @@ public final class NitroUtil {
                 .toDateTime(DateTimeZones.UTC);
     }
 
-
     public static Iterable<String> toPids(Iterable<PidReference> refs) {
         return Iterables.transform(refs, new Function<PidReference, String>() {
+
             @Override
             public String apply(PidReference input) {
                 return input.getPid();

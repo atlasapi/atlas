@@ -1,7 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import com.metabroadcast.atlas.glycerin.model.Brand;
-import com.metabroadcast.atlas.glycerin.model.Brand.Image;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
@@ -45,8 +44,8 @@ public class NitroBrandExtractor
     }
 
     @Override
-    protected Image extractImage(Brand source) {
-        return source.getImage();
+    protected Brand.Images.Image extractImage(Brand source) {
+        return source.getImages().getImage();
     }
 
     @Override

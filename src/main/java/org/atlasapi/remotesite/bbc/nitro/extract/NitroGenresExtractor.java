@@ -15,7 +15,7 @@ public class NitroGenresExtractor implements ContentExtractor<List<NitroGenreGro
 
     private static final String PREFIX = "http://www.bbc.co.uk/programmes/genres/";
     private static final String ID_PREFIX = "http://nitro.bbc.co.uk/genres/";
-    
+
     @Override
     public Set<String> extract(List<NitroGenreGroup> genreGroups) {
         ImmutableSet.Builder<String> genres = ImmutableSet.builder();
@@ -25,8 +25,9 @@ public class NitroGenresExtractor implements ContentExtractor<List<NitroGenreGro
         return genres.build();
     }
 
-    private Iterable<String> extractGenres(ImmutableSet.Builder<String> genres, NitroGenreGroup genreGroup) {
-        String parent = null; 
+    private Iterable<String> extractGenres(ImmutableSet.Builder<String> genres,
+            NitroGenreGroup genreGroup) {
+        String parent = null;
         List<NitroGenre> groupGenres = genreGroup.getGenres();
         for (NitroGenre nitroGenre : groupGenres.subList(0, Math.min(groupGenres.size(), 2))) {
             parent = extractGenre(nitroGenre, parent);

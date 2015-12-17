@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.annotation.Nullable;
@@ -20,6 +21,7 @@ import com.google.common.collect.Multimaps;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Format;
+import com.metabroadcast.atlas.glycerin.model.GenreGroup;
 import com.metabroadcast.atlas.glycerin.model.Version;
 
 /**
@@ -48,7 +50,6 @@ public class NitroItemSource<T> {
         return new NitroItemSource<T>(programme, 
             availabilities, 
             ImmutableList.<Broadcast>of(),
-            ImmutableList.<NitroGenreGroup>of(),
             ImmutableList.<Version>of()
         );
     }
@@ -61,11 +62,10 @@ public class NitroItemSource<T> {
      * @param versions - the versions.
      * @return a {@code NitroItemSource} for the programme, availabilities and broadcasts.
      */
-    public static <T> NitroItemSource<T> valueOf(T programme, List<Availability> availabilities, List<Broadcast> broadcasts, List<NitroGenreGroup> genres, List<Version> versions) {
+    public static <T> NitroItemSource<T> valueOf(T programme, List<Availability> availabilities, List<Broadcast> broadcasts, List<Version> versions) {
         return new NitroItemSource<T>(programme, 
             availabilities, 
             broadcasts,
-            genres,
             versions
         );
     }
@@ -73,17 +73,14 @@ public class NitroItemSource<T> {
     private final T programme;
     private final ImmutableList<Availability> availabilities;
     private final ImmutableList<Broadcast> broadcasts;
-    private final ImmutableList<NitroGenreGroup> genres;
     private final ImmutableList<Version> versions;
 
     private NitroItemSource(T programme, Iterable<Availability> availabilities,
             Iterable<Broadcast> broadcasts,
-            Iterable<NitroGenreGroup> genres, 
             Iterable<Version> versions) {
         this.programme = checkNotNull(programme);
         this.availabilities = ImmutableList.copyOf(availabilities);
         this.broadcasts = ImmutableList.copyOf(broadcasts);
-        this.genres = ImmutableList.copyOf(genres);
         this.versions = ImmutableList.copyOf(versions);
     }
 
@@ -109,14 +106,6 @@ public class NitroItemSource<T> {
      */
     public ImmutableList<Broadcast> getBroadcasts() {
         return broadcasts;
-    }
-
-    /**
-     * Get the genre groups related to this source.
-     * @return - the genre groups
-     */
-    public ImmutableList<NitroGenreGroup> getGenres() {
-        return genres;
     }
 
     /**

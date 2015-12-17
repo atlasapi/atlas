@@ -9,7 +9,7 @@ import com.metabroadcast.common.time.Clock;
 /**
  * Extracts a {@link org.atlasapi.media.entity.Brand Atlas Brand} from a
  * {@link Brand Nitro Brand}.
- * 
+ *
  * @see NitroContentExtractor
  */
 public class NitroBrandExtractor
@@ -40,8 +40,8 @@ public class NitroBrandExtractor
     }
 
     @Override
-    protected Brand.People extractPeople(Brand brand) {
-        return brand.getPeople();
+    protected Brand.Contributions extractContributions(Brand brand) {
+        return brand.getContributions();
     }
 
     @Override

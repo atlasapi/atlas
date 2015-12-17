@@ -1,13 +1,20 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSetMultimap.Builder;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.model.WarningText;
+import com.metabroadcast.atlas.glycerin.model.Warnings;
+import com.metabroadcast.common.collect.ImmutableOptionalMap;
+import com.metabroadcast.common.collect.OptionalMap;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
@@ -22,25 +29,14 @@ import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.ImmutableSetMultimap.Builder;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.Brand;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.model.VersionType;
-import com.metabroadcast.atlas.glycerin.model.VersionTypes;
-import com.metabroadcast.atlas.glycerin.model.WarningText;
-import com.metabroadcast.atlas.glycerin.model.Warnings;
-import com.metabroadcast.common.collect.ImmutableOptionalMap;
-import com.metabroadcast.common.collect.OptionalMap;
-import com.metabroadcast.common.time.Clock;
+import java.util.Collection;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.model.Version.Types;
 
 /**
  * Base extractor for extracting common properties of {@link Item}s from a
@@ -155,20 +151,20 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     }
 
     private boolean isVersionOfType(com.metabroadcast.atlas.glycerin.model.Version nitroVersion, String versionType) {
-        VersionTypes versionTypes = nitroVersion.getVersionTypes();
+        Types versionTypes = nitroVersion.getTypes();
 
         if (versionTypes == null) {
             return false;
         }
 
-        return Iterables.any(versionTypes.getVersionType(), isOfType(versionType));
+        return Iterables.any(versionTypes.getType(), isOfType(versionType));
     }
 
-    private Predicate<VersionType> isOfType(final String versionType) {
-        return new Predicate<VersionType>() {
+    private Predicate<Types.Type> isOfType(final String type) {
+        return new Predicate<Types.Type>() {
             @Override
-            public boolean apply(VersionType input) {
-                return versionType.equals(input.getId());
+            public boolean apply(Types.Type input) {
+                return type.equals(input.getId());
             }
         };
     }

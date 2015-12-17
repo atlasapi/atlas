@@ -1,30 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
-
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Clip;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.persistence.content.people.QueuingPersonWriter;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.atlasapi.remotesite.bbc.nitro.v1.NitroClient;
-import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.api.client.util.Lists;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
@@ -54,6 +29,30 @@ import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
 import com.metabroadcast.common.time.Clock;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.persistence.content.people.QueuingPersonWriter;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+import org.atlasapi.remotesite.bbc.nitro.v1.NitroClient;
+import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
 
 /**
  * A {@link NitroContentAdapter} based on a {@link Glycerin}.
@@ -147,7 +146,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         for (List<PidReference> ref : Iterables.partition(refs, NITRO_BATCH_SIZE)) {
             ProgrammesQuery query = ProgrammesQuery.builder()
                     .withPid(toStrings(ref))
-                    .withMixins(TITLES, PEOPLE)
+                    .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS)
                     .withPageSize(pageSize)
                     .build();
 

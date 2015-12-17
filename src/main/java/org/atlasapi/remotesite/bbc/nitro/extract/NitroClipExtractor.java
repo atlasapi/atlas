@@ -11,13 +11,13 @@ import com.metabroadcast.common.time.Clock;
 /**
  * Extracts a {@link org.atlasapi.media.entity.Clip Atlas Clip} from a
  * {@link Clip}.
- * 
+ *
  * The "{@link org.atlasapi.media.entity.Clip#getClipOf clip of}" field is not
  * set.
- * 
+ *
  */
 public class NitroClipExtractor
-    extends BaseNitroItemExtractor<Clip, org.atlasapi.media.entity.Clip> {
+        extends BaseNitroItemExtractor<Clip, org.atlasapi.media.entity.Clip> {
 
     public NitroClipExtractor(Clock clock) {
         super(clock);
@@ -44,8 +44,8 @@ public class NitroClipExtractor
     }
 
     @Override
-    protected Brand.People extractPeople(NitroItemSource<Clip> source) {
-        return source.getProgramme().getPeople();
+    protected Brand.Contributions extractContributions(NitroItemSource<Clip> source) {
+        return source.getProgramme().getContributions();
     }
 
     @Override
@@ -62,5 +62,5 @@ public class NitroClipExtractor
     protected MasterBrand extractMasterBrand(NitroItemSource<Clip> source) {
         return source.getProgramme().getMasterBrand();
     }
-    
+
 }

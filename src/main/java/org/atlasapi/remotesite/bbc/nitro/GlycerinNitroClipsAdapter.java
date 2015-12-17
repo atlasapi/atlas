@@ -130,7 +130,7 @@ public class GlycerinNitroClipsAdapter {
             List<Availability> clipAvailabilities = availabilities.get(clip.getPid());
             
             NitroItemSource<Clip> source = NitroItemSource.valueOf(clip, clipAvailabilities,
-                    ImmutableList.<Broadcast>of(), ImmutableList.<NitroGenreGroup>of(), versions.get(clip.getPid()));
+                    ImmutableList.<Broadcast>of(), versions.get(clip.getPid()));
             extracted.put(BbcFeeds.nitroUriForPid(clip.getClipOf().getPid()), clipExtractor.extract(source));
         }
         return extracted.build();

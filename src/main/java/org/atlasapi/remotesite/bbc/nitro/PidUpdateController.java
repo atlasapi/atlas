@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
 
@@ -44,7 +45,7 @@ public class PidUpdateController {
             items = contentAdapter
                     .fetchEpisodes(ProgrammesQuery.builder()
                             .withPid(pid)
-                            .withMixins(TITLES, PEOPLE)
+                            .withMixins(TITLES, PEOPLE, GENRE_GROUPINGS)
                             .withPageSize(1)
                             .build());
         } catch (NitroException e) {

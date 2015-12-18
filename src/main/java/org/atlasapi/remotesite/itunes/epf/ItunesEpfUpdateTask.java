@@ -113,8 +113,10 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
                     Integer collectionId = row.get(EpfArtistCollection.COLLECTION_ID);
                     Series sery = series.get(collectionId);
                     if (sery != null) {
-                        sery.setParent(brand);
-                        linkedSeries.put(collectionId, sery);
+                        if (!linkedSeries.build().containsKey(collectionId)) {
+                            sery.setParent(brand);
+                            linkedSeries.put(collectionId, sery);
+                        }
                     }
                 }
                 return true;

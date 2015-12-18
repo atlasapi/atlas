@@ -31,6 +31,11 @@ public class ItunesVideoEpisodeExtractor implements ContentExtractor<ItunesEpfVi
         episode.setSpecialization(Specialization.TV);
         
         Version version = new Version();
+        Optional<Integer> maybeDuration = Optional.fromNullable(row.get(EpfVideo.TRACK_LENGTH));
+
+        if (maybeDuration.isPresent()) {
+            version.setDuration(new Duration(maybeDuration.get().longValue()));
+        }
         
         Iterable<Location> locations = source.locations();
         if(locations != null) {

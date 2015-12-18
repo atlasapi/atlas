@@ -13,7 +13,6 @@ import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.itunes.epf.model.EpfVideo;
 import org.joda.time.Duration;
 import com.google.common.base.Optional;
-
 public class ItunesVideoEpisodeExtractor implements ContentExtractor<ItunesEpfVideoSource, Episode> {
 
     @Override
@@ -32,11 +31,6 @@ public class ItunesVideoEpisodeExtractor implements ContentExtractor<ItunesEpfVi
         episode.setSpecialization(Specialization.TV);
         
         Version version = new Version();
-        Optional<Integer> maybeDuration = Optional.of(row.get(EpfVideo.TRACK_LENGTH));
-
-        if (maybeDuration.isPresent()) {
-            version.setDuration(new Duration(maybeDuration.get().longValue()));
-        }
         
         Iterable<Location> locations = source.locations();
         if(locations != null) {

@@ -58,7 +58,8 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
     protected void runTask() {
         ProgrammesQuery query = ProgrammesQuery
                 .builder()
-                .withMixins(ProgrammesMixin.TITLES, ProgrammesMixin.PEOPLE, ProgrammesMixin.GENRE_GROUPINGS)
+                .withMixins(ProgrammesMixin.ANCESTOR_TITLES, ProgrammesMixin.CONTRIBUTIONS,
+                        ProgrammesMixin.GENRE_GROUPINGS, ProgrammesMixin.IMAGES)
                 .withAvailability(AvailabilityOption.AVAILABLE)
                 .withPageSize(pageSize)
                 .withAvailabilityEntityType(AvailabilityEntityTypeOption.EPISODE)

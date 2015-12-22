@@ -112,7 +112,8 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
                 if(brand != null) {
                     Integer collectionId = row.get(EpfArtistCollection.COLLECTION_ID);
                     Series sery = series.get(collectionId);
-                    if (sery != null) {
+                    boolean keyIsInMap = linkedSeries.build().containsKey(collectionId);
+                    if (sery != null && !keyIsInMap) {
                         sery.setParent(brand);
                         linkedSeries.put(collectionId, sery);
                     }

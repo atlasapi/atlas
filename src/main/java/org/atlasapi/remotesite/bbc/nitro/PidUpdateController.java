@@ -1,8 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
 
 import java.io.IOException;
 import java.util.Set;
@@ -44,7 +46,7 @@ public class PidUpdateController {
             items = contentAdapter
                     .fetchEpisodes(ProgrammesQuery.builder()
                             .withPid(pid)
-                            .withMixins(TITLES, PEOPLE)
+                            .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, GENRE_GROUPINGS, IMAGES)
                             .withPageSize(1)
                             .build());
         } catch (NitroException e) {

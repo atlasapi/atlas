@@ -72,7 +72,7 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         com.metabroadcast.atlas.glycerin.model.Brand.Images.Image srcImage = extractImage(source);
         if (srcImage != null && !Strings.isNullOrEmpty(srcImage.getTemplateUrl())) {
             Image image = imageExtractor.extract(srcImage);
-            content.setImage(image.getCanonicalUri());
+            content.setImage("http://" + image.getCanonicalUri());
             content.setImages(ImmutableSet.of(image));
         }
         MasterBrand masterBrand = extractMasterBrand(source);

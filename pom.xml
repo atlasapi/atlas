@@ -5,7 +5,7 @@
     <artifactId>atlas</artifactId>
     <packaging>war</packaging>
     <version>5.0-SNAPSHOT</version>
-    <description>Atlas 3.0 API</description>
+    <description>Atlas 3.0 API</description>BbcIonServices
     <build>
         <finalName>atlas</finalName>
         <plugins>
@@ -17,7 +17,7 @@
                     <target>1.7</target>
                     <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J-Xss5M</arg>
+                        <arg>-J-Xss30M</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

@@ -34,8 +34,6 @@ import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.model.VersionType;
-import com.metabroadcast.atlas.glycerin.model.VersionTypes;
 import com.metabroadcast.atlas.glycerin.model.WarningText;
 import com.metabroadcast.atlas.glycerin.model.Warnings;
 import com.metabroadcast.common.collect.ImmutableOptionalMap;
@@ -155,7 +153,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     }
 
     private boolean isVersionOfType(com.metabroadcast.atlas.glycerin.model.Version nitroVersion, String versionType) {
-        VersionTypes versionTypes = nitroVersion.getVersionTypes();
+        com.metabroadcast.atlas.glycerin.model.Version.VersionTypes versionTypes = nitroVersion.getVersionTypes();
 
         if (versionTypes == null) {
             return false;
@@ -164,10 +162,11 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         return Iterables.any(versionTypes.getVersionType(), isOfType(versionType));
     }
 
-    private Predicate<VersionType> isOfType(final String versionType) {
-        return new Predicate<VersionType>() {
+    private Predicate<com.metabroadcast.atlas.glycerin.model.Version.VersionTypes.VersionType> isOfType(final String versionType) {
+        return new Predicate<com.metabroadcast.atlas.glycerin.model.Version.VersionTypes.VersionType>() {
             @Override
-            public boolean apply(VersionType input) {
+            public boolean apply(
+                    com.metabroadcast.atlas.glycerin.model.Version.VersionTypes.VersionType input) {
                 return versionType.equals(input.getId());
             }
         };

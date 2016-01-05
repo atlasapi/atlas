@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
 
@@ -147,7 +148,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         for (List<PidReference> ref : Iterables.partition(refs, NITRO_BATCH_SIZE)) {
             ProgrammesQuery query = ProgrammesQuery.builder()
                     .withPid(toStrings(ref))
-                    .withMixins(TITLES, PEOPLE)
+                    .withMixins(TITLES, PEOPLE, GENRE_GROUPINGS)
                     .withPageSize(pageSize)
                     .build();
 
@@ -232,7 +233,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                     episode,
                     availabilities.get(episode.getPid()),
                     broadcasts.get(episode.getPid()),
-                    genres(episode),
                     versions.get(episode.getPid())));
         }
         return sources.build();

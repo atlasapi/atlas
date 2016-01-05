@@ -7,9 +7,7 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-import com.google.common.collect.Lists;
-import com.metabroadcast.atlas.glycerin.model.GenreGroup;
-import com.metabroadcast.common.intl.Countries;
+
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
@@ -31,6 +29,7 @@ import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.Format;
+import com.metabroadcast.atlas.glycerin.model.GenreGroup;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.intl.Countries;
@@ -121,6 +120,9 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
     @Override
     protected com.metabroadcast.atlas.glycerin.model.Brand.Images.Image extractImage(
             NitroItemSource<Episode> source) {
+        if (source.getProgramme().getImages() == null) {
+            return null;
+        }
         return source.getProgramme().getImages().getImage();
     }
 

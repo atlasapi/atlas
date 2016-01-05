@@ -12,7 +12,7 @@ public class NitroImageExtractorTest {
     @Test
     public void testImageExtraction() {
         NitroImageExtractor extractor = new NitroImageExtractor(1024, 576);
-        Brand.Image source = new Brand.Image();
+        Brand.Images.Image source = new Brand.Images.Image();
         source.setTemplateUrl("http://hostname/image_$recipe");
 
         Image extracted = extractor.extract(source);

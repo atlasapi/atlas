@@ -9,10 +9,10 @@ import org.atlasapi.remotesite.ContentExtractor;
 /**
  * Extracts an {@link Image} from a
  * {@link com.metabroadcast.atlas.glycerin.model.Image} according to the provided dimensions.
- * 
  */
-public class NitroImageExtractor 
-    implements ContentExtractor<com.metabroadcast.atlas.glycerin.model.Brand.Image, Image> {
+public class NitroImageExtractor
+        implements
+        ContentExtractor<com.metabroadcast.atlas.glycerin.model.Brand.Images.Image, Image> {
 
     private final String recipe;
     private final int width;
@@ -21,8 +21,8 @@ public class NitroImageExtractor
     /**
      * Create a new extractor which extracts {@link Image}s with the provided
      * dimensions.
-     * 
-     * @param width - the width of the image
+     *
+     * @param width  - the width of the image
      * @param height - the height of the image
      */
     public NitroImageExtractor(int width, int height) {
@@ -35,7 +35,7 @@ public class NitroImageExtractor
     }
 
     @Override
-    public Image extract(com.metabroadcast.atlas.glycerin.model.Brand.Image source) {
+    public Image extract(com.metabroadcast.atlas.glycerin.model.Brand.Images.Image source) {
         checkNotNull(source, "null image source");
         checkNotNull(source.getTemplateUrl(), "null image template");
 

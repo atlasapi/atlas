@@ -9,7 +9,6 @@ import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.joda.time.DateTime;
 
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -23,21 +22,22 @@ import com.metabroadcast.atlas.glycerin.model.Ids;
  * Broadcast} from a {@link Broadcast Nitro Broadcast}.
  */
 public class NitroBroadcastExtractor
-    implements ContentExtractor<com.metabroadcast.atlas.glycerin.model.Broadcast, Optional<Broadcast>> {
+        implements
+        ContentExtractor<com.metabroadcast.atlas.glycerin.model.Broadcast, Optional<Broadcast>> {
 
     private static final String TERRESTRIAL_EVENT_LOCATOR_TYPE = "terrestrial_event_locator";
     private static final String TERRESTRIAL_PROGRAM_CRID_TYPE = "terrestrial_programme_crid";
     private static final String BID_TYPE = "bid";
     private static final String PIPS_AUTHORITY = "pips";
     private static final String TELEVIEW_AUTHORITY = "teleview";
-    
+
     private static final Predicate<Alias> PCRID_ALIAS = new Predicate<Alias>() {
 
         @Override
         public boolean apply(Alias input) {
             return input.getNamespace().contains(TERRESTRIAL_PROGRAM_CRID_TYPE);
         }
-        
+
     };
 
     @Override
@@ -49,15 +49,15 @@ public class NitroBroadcastExtractor
         DateTime start = NitroUtil.toDateTime(source.getPublishedTime().getStart());
         DateTime end = NitroUtil.toDateTime(source.getPublishedTime().getEnd());
         Broadcast broadcast = new Broadcast(channel, start, end)
-            .withId("bbc:"+source.getPid());
+                .withId("bbc:" + source.getPid());
         broadcast.setRepeat(source.isIsRepeat());
         broadcast.setAudioDescribed(source.isIsAudioDescribed());
         broadcast.setAliases(extractAliasesFrom(source));
-        
+
         // Adding an alias uri for equivalence between Nitro and YV broadcasts
         Optional<Alias> pcridAlias = Iterables.tryFind(broadcast.getAliases(), PCRID_ALIAS);
         if (pcridAlias.isPresent()) {
-            broadcast.setAliasUrls(ImmutableSet.of("pcrid:" + pcridAlias.get().getValue()));            
+            broadcast.setAliasUrls(ImmutableSet.of("pcrid:" + pcridAlias.get().getValue()));
         }
         broadcast.setAudioDescribed(source.isIsAudioDescribed());
         return Optional.of(broadcast);
@@ -79,6 +79,7 @@ public class NitroBroadcastExtractor
 
     private Predicate<Id> idOfTypeAndAuthority(final TypeAndAuthority typeAndAuthority) {
         return new Predicate<Id>() {
+
             @Override
             public boolean apply(Id input) {
                 return typeAndAuthority.getType().equals(input.getType())
@@ -112,6 +113,7 @@ public class NitroBroadcastExtractor
     }
 
     private static class TypeAndAuthority {
+
         private final String type;
         private final String authority;
 

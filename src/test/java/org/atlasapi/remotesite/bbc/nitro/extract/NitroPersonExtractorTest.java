@@ -16,15 +16,18 @@ public class NitroPersonExtractorTest {
 
     @Test
     public void testPersonExtraction() {
-        Brand.People.Contribution contribution = new Brand.People.Contribution();
-        contribution.setContributionBy("p01fvgrh");
+        Brand.Contributions.Contribution contribution = new Brand.Contributions.Contribution();
         contribution.setCharacterName("Irene");
 
-        Brand.People.Contribution.ContributorName name = new Brand.People.Contribution.ContributorName();
+        Brand.Contributions.Contribution.Contributor.Name name = new Brand.Contributions.Contribution.Contributor.Name();
         name.setGiven("Carey");
         name.setFamily("Mulligan");
 
-        contribution.setContributorName(name);
+        Brand.Contributions.Contribution.Contributor contributor = new Brand.Contributions.Contribution.Contributor();
+        contributor.setHref("p01fvgrh");
+        contributor.setName(name);
+
+        contribution.setContributor(contributor);
 
         Optional<Person> optionalPerson = extractor.extract(contribution);
         assertTrue(optionalPerson.isPresent());

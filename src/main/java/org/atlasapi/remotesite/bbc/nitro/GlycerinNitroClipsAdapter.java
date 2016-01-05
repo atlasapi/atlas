@@ -1,7 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
 
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -14,7 +14,6 @@ import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroClipExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +23,6 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.ListMultimap;
 import com.google.common.collect.Lists;
@@ -40,9 +38,9 @@ import com.metabroadcast.atlas.glycerin.GlycerinResponse;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Clip;
-import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
@@ -193,6 +191,7 @@ public class GlycerinNitroClipsAdapter {
             ProgrammesQuery query = ProgrammesQuery.builder()
                     .withEntityType(EntityTypeOption.CLIP)
                     .withChildrenOf(NitroUtil.toPids(ref))
+                    .withMixins(IMAGES)
                     .withPageSize(pageSize)
                     .build();
             

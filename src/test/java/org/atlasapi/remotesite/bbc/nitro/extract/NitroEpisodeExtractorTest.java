@@ -39,6 +39,7 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.Format;
 import com.metabroadcast.atlas.glycerin.model.FormatsType;
+import com.metabroadcast.atlas.glycerin.model.GenreGroup;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.atlas.glycerin.model.WarningText;
@@ -196,7 +197,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(AUDIO_DESCRIBED_VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(audioDescribedVersion())));
 
         org.atlasapi.media.entity.Version audioDescribedVersion = extractedAudioDescribed.getVersions()
@@ -208,7 +208,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedNonAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(NON_AUDIO_DESCRIBED_VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(nonAudioDescribedVersion())));
 
         org.atlasapi.media.entity.Version nonAudioDescribedVersion = extractedNonAudioDescribed.getVersions()
@@ -236,7 +235,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedSigned = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(signedVersionPid)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(signedVersion(signedVersionPid))));
 
         org.atlasapi.media.entity.Version signedVersion = Iterables.getOnlyElement(extractedSigned.getVersions());
@@ -245,7 +243,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedNonAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(notSignedVersionPid)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(version(notSignedVersionPid))));
 
         org.atlasapi.media.entity.Version nonSignedVersion = Iterables.getOnlyElement(extractedNonAudioDescribed.getVersions());
@@ -266,7 +263,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(WITH_WARNING_VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(versionWithWarning(warningMessage))));
 
         org.atlasapi.media.entity.Version version = extractedAudioDescribed.getVersions()
@@ -288,7 +284,6 @@ public class NitroEpisodeExtractorTest {
         Item extracted = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(sdAvailability(VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(version(VERSION_PID))));
 
         org.atlasapi.media.entity.Version version = Iterables.getOnlyElement(extracted.getVersions());
@@ -309,7 +304,6 @@ public class NitroEpisodeExtractorTest {
         Item extracted = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(hdAvailability(VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(version(VERSION_PID))));
 
         org.atlasapi.media.entity.Version version = Iterables.getOnlyElement(extracted.getVersions());
@@ -331,7 +325,6 @@ public class NitroEpisodeExtractorTest {
         Item audioExtracted = extractor.extract(NitroItemSource.valueOf(audioEpisode,
                 ImmutableList.<Availability>of(),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.<Version>of()));
 
         Assert.assertEquals(MediaType.AUDIO, audioExtracted.getMediaType());
@@ -344,7 +337,6 @@ public class NitroEpisodeExtractorTest {
         Item videoExtracted = extractor.extract(NitroItemSource.valueOf(videoEpisode,
                 ImmutableList.<Availability>of(),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.<Version>of()));
 
         Assert.assertEquals(MediaType.VIDEO, videoExtracted.getMediaType());

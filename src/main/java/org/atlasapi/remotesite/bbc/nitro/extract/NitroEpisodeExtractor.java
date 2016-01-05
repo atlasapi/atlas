@@ -7,7 +7,9 @@ import java.util.List;
 import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
-
+import com.google.common.collect.Lists;
+import com.metabroadcast.atlas.glycerin.model.GenreGroup;
+import com.metabroadcast.common.intl.Countries;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
@@ -17,7 +19,6 @@ import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
-import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -60,8 +61,8 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         }
     };
 
-    private final ContentExtractor<List<NitroGenreGroup>, Set<String>> genresExtractor
-            = new NitroGenresExtractor();
+
+    private final ContentExtractor<List<GenreGroup>, Set<String>> genresExtractor = new NitroGenresExtractor();
 
     private final NitroCrewMemberExtractor crewMemberExtractor = new NitroCrewMemberExtractor();
     private final NitroPersonExtractor personExtractor = new NitroPersonExtractor();
@@ -146,7 +147,9 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
             episodeContent.setSeriesRef(getSeriesRef(episode));
         }
         item.setParentRef(getBrandRef(episode));
-        item.setGenres(genresExtractor.extract(source.getGenres()));
+        if(episode.getGenreGroupings() != null) {
+            item.setGenres(genresExtractor.extract(episode.getGenreGroupings().getGenreGroup()));
+        }
         if (episode.getReleaseDate() != null) {
             setReleaseDate(item, source);
         }

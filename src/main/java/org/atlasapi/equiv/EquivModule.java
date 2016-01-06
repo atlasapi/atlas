@@ -622,7 +622,7 @@ public class EquivModule {
                 ImmutableSet.of(TitleMatchingItemScorer.NAME, SequenceItemScorer.SEQUENCE_SCORER)
             ))
             .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(70))
+            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(50))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.strict(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),

@@ -75,7 +75,7 @@ public class NitroItemSource<T> {
             List<Broadcast> broadcasts,
             String programmeId) {
         this.programme = checkNotNull(programme);
-        this.availableVersions = checkNotNull(availableVersions);
+        this.availableVersions = availableVersions;
         this.broadcasts = ImmutableList.copyOf(broadcasts);
         this.programmeId = checkNotNull(programmeId);
     }

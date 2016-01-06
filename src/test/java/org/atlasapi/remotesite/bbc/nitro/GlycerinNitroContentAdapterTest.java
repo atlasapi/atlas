@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
 import static org.junit.Assert.assertEquals;
@@ -25,6 +27,7 @@ import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
 import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
@@ -66,13 +69,14 @@ public class GlycerinNitroContentAdapterTest {
 
         ProgrammesQuery query = ProgrammesQuery.builder()
                 .withPid(pid)
-                .withMixins(TITLES, PEOPLE)
+                .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS)
                 .withPageSize(pageSize)
                 .build();
 
         Episode episode = new Episode();
         episode.setPid(pid);
         episode.setTitle(title);
+        episode.setAvailableVersions(new AvailableVersions());
 
         when(clipsAdapter.clipsFor(Matchers.<Iterable<PidReference>>any()))
                 .thenReturn(ImmutableListMultimap.<String, Clip>of());
@@ -81,19 +85,12 @@ public class GlycerinNitroContentAdapterTest {
         when(glycerinResponse.getResults())
                 .thenReturn(ImmutableList.of(Programme.valueOf(episode)));
 
-        when(availabilityResponse.hasNext()).thenReturn(false);
-        when(availabilityResponse.getResults()).thenReturn(ImmutableList.<Availability>of());
-
         when(broadcastResponse.hasNext()).thenReturn(false);
         when(broadcastResponse.getResults()).thenReturn(ImmutableList.<Broadcast>of());
 
-        when(versionResponse.hasNext()).thenReturn(false);
-        when(versionResponse.getResults()).thenReturn(ImmutableList.<Version>of());
 
         when(glycerin.execute(query)).thenReturn(glycerinResponse);
-        when(glycerin.execute(any(AvailabilityQuery.class))).thenReturn(availabilityResponse);
         when(glycerin.execute(any(BroadcastsQuery.class))).thenReturn(broadcastResponse);
-        when(glycerin.execute(any(VersionsQuery.class))).thenReturn(versionResponse);
 
         ImmutableSet<Item> items = contentAdapter.fetchEpisodes(query);
         Item item = Iterables.getOnlyElement(items);

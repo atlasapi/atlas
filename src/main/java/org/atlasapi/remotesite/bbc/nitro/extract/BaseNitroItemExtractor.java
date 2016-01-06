@@ -73,18 +73,24 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                 now);
         ImmutableSet.Builder<Version> versions = ImmutableSet.builder();
 
-        for(AvailableVersions.Version nitroVersion : source.getAvailableVersions().getVersion()) {
-            Set<Encoding> encodings = extractEncodings(nitroVersion, now, extractMediaType(source),
-                    source.getProgrammeId());
-            try {
-                Version version = generateVersion(now, broadcasts, encodings, nitroVersion);
-                versions.add(version);
-            } catch (Exception e) {
-                throw new RuntimeException("Exception processing version " + nitroVersion.getPid(), e);
+        if(source.getAvailableVersions() != null) {
+            for (AvailableVersions.Version nitroVersion : source.getAvailableVersions()
+                    .getVersion()) {
+                Set<Encoding> encodings = extractEncodings(nitroVersion,
+                        now,
+                        extractMediaType(source),
+                        source.getProgrammeId());
+                try {
+                    Version version = generateVersion(now, broadcasts, encodings, nitroVersion);
+                    versions.add(version);
+                } catch (Exception e) {
+                    throw new RuntimeException("Exception processing version "
+                            + nitroVersion.getPid(), e);
+                }
             }
-        }
 
-        item.setVersions(versions.build());
+            item.setVersions(versions.build());
+        }
 
         if (item instanceof Film) {
             item.setMediaType(MediaType.VIDEO);

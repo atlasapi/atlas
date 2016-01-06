@@ -287,7 +287,7 @@ public class EquivModule {
         ));
         
         EquivalenceUpdater<Item> standardItemUpdater = standardItemUpdater(MoreSets.add(acceptablePublishers, LOVEFILM), 
-                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer())).build();
+                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer(Score.ONE))).build();
         EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
@@ -494,7 +494,7 @@ public class EquivModule {
                         ))
                         .withScorers(ImmutableSet.of(
                             new TitleMatchingItemScorer(),
-                            new SequenceItemScorer()
+                            new SequenceItemScorer(Score.ONE)
                         ))
                         .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                             new NullScoreAwareAveragingCombiner<Item>(),
@@ -585,7 +585,7 @@ public class EquivModule {
             ))
             .withScorers(ImmutableSet.of(
                 new TitleMatchingItemScorer(),
-                new SequenceItemScorer()
+                new SequenceItemScorer(Score.ONE)
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                 new NullScoreAwareAveragingCombiner<Item>(),
@@ -612,14 +612,17 @@ public class EquivModule {
             ))
             .withScorers(ImmutableSet.of(
                 new TitleMatchingItemScorer(),
-                new SequenceItemScorer()
+                // Hierarchies are known to be inconsistent between the BT VoD
+                // catalogue and others, so we want to ascribe less weight 
+                // to sequence scoring
+                new SequenceItemScorer(Score.valueOf(0.5))
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                 new NullScoreAwareAveragingCombiner<Item>(),
                 ImmutableSet.of(TitleMatchingItemScorer.NAME, SequenceItemScorer.SEQUENCE_SCORER)
             ))
             .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
+            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(70))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.strict(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
@@ -651,7 +654,7 @@ public class EquivModule {
             Predicate<? super Broadcast> filter) {
         return standardItemUpdater(sources, ImmutableSet.of(
             new TitleMatchingItemScorer(), 
-            new SequenceItemScorer(),
+            new SequenceItemScorer(Score.ONE),
             new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
             new BroadcastAliasScorer(Score.nullScore())
         ), filter).build();

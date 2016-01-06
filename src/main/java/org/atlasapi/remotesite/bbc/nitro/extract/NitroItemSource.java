@@ -8,7 +8,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.Version;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+
 
 /**
  * A source which contains all the data required for extracting an
@@ -31,14 +32,16 @@ public class NitroItemSource<T> {
      * Create a source for the given programme and availabilities.
      *
      * @param programme      - the programme.
-     * @param availabilities - the availabilities.
+     * @param availableVersions - the availabilities.
      * @return a {@code NitroItemSource} for the programme and availabilities.
      */
-    public static <T> NitroItemSource<T> valueOf(T programme, Iterable<Availability> availabilities) {
+    public static <T> NitroItemSource<T> valueOf(T programme,
+            AvailableVersions availableVersions,
+            String programmeId) {
         return new NitroItemSource<T>(programme,
-            availabilities,
+                availableVersions,
             ImmutableList.<Broadcast>of(),
-            ImmutableList.<Version>of()
+            programmeId
         );
     }
 
@@ -46,31 +49,35 @@ public class NitroItemSource<T> {
      * Create a source for the given programme, availabilities and broadcasts.
      *
      * @param programme      - the programme.
-     * @param availabilities - the availabilities.
+     * @param availableVersions - the availabilities.
      * @param broadcasts     - the broadcasts.
-     * @param versions       - the versions.
+     * @param programmeId       - the programmeId.
      * @return a {@code NitroItemSource} for the programme, availabilities and broadcasts.
      */
-    public static <T> NitroItemSource<T> valueOf(T programme, List<Availability> availabilities, List<Broadcast> broadcasts, List<Version> versions) {
+    public static <T> NitroItemSource<T> valueOf(T programme,
+            AvailableVersions availableVersions,
+            List<Broadcast> broadcasts,
+            String programmeId) {
         return new NitroItemSource<T>(programme, 
-            availabilities, 
+            availableVersions,
             broadcasts,
-            versions
+            programmeId
         );
     }
 
     private final T programme;
-    private final ImmutableList<Availability> availabilities;
+    private final AvailableVersions availableVersions;
     private final ImmutableList<Broadcast> broadcasts;
-    private final ImmutableList<Version> versions;
+    private final String programmeId;
 
-    private NitroItemSource(T programme, Iterable<Availability> availabilities,
-            Iterable<Broadcast> broadcasts,
-            Iterable<Version> versions) {
+    private NitroItemSource(T programme,
+            AvailableVersions availableVersions,
+            List<Broadcast> broadcasts,
+            String programmeId) {
         this.programme = checkNotNull(programme);
-        this.availabilities = ImmutableList.copyOf(availabilities);
+        this.availableVersions = checkNotNull(availableVersions);
         this.broadcasts = ImmutableList.copyOf(broadcasts);
-        this.versions = ImmutableList.copyOf(versions);
+        this.programmeId = checkNotNull(programmeId);
     }
 
     /**
@@ -85,10 +92,10 @@ public class NitroItemSource<T> {
     /**
      * Get the availabilities related to this source.
      *
-     * @return - the availabilities
+     * @return - the availableVersions
      */
-    public ImmutableList<Availability> getAvailabilities() {
-        return availabilities;
+    public AvailableVersions getAvailableVersions() {
+        return availableVersions;
     }
 
     /**
@@ -101,12 +108,12 @@ public class NitroItemSource<T> {
     }
 
     /**
-     * Get the versions related to this source.
+     * Get the programme id of this source.
      *
-     * @return - the versions
+     * @return - the programmeId
      */
-    public ImmutableList<Version> getVersions() {
-        return ImmutableList.copyOf(versions);
+    public String getProgrammeId() {
+        return programmeId;
     }
 
 }

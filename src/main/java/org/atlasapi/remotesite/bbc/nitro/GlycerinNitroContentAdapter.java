@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.bbc.nitro;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.AVAILABLE_VERSIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
@@ -150,7 +151,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         for (List<PidReference> ref : Iterables.partition(refs, NITRO_BATCH_SIZE)) {
             ProgrammesQuery query = ProgrammesQuery.builder()
                     .withPid(toStrings(ref))
-                    .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS)
+                    .withMixins(ANCESTOR_TITLES,
+                            CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS, AVAILABLE_VERSIONS)
                     .withPageSize(pageSize)
                     .build();
 
@@ -227,16 +229,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private ImmutableList<NitroItemSource<Episode>> toItemSources(ImmutableList<Episode> episodes)
             throws GlycerinException, NitroException {
-        ListMultimap<String, Availability> availabilities = availabilities(episodes);
         ListMultimap<String, Broadcast> broadcasts = broadcasts(episodes);
-        ListMultimap<String, Version> versions = versions(episodes);
         ImmutableList.Builder<NitroItemSource<Episode>> sources = ImmutableList.builder();
         for (Episode episode : episodes) {
             sources.add(NitroItemSource.valueOf(
                     episode,
-                    availabilities.get(episode.getPid()),
+                    episode.getAvailableVersions(),
                     broadcasts.get(episode.getPid()),
-                    versions.get(episode.getPid())));
+                    episode.getPid()));
         }
         return sources.build();
     }

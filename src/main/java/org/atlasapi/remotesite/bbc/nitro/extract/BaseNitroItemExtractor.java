@@ -1,12 +1,12 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.atlas.glycerin.model.Version.Types;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Broadcast;
@@ -25,18 +25,15 @@ import org.joda.time.Duration;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.ImmutableSetMultimap.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.model.WarningText;
-import com.metabroadcast.atlas.glycerin.model.Warnings;
-import com.metabroadcast.common.collect.ImmutableOptionalMap;
-import com.metabroadcast.common.collect.OptionalMap;
+import com.metabroadcast.atlas.glycerin.model.WarningTexts;
 import com.metabroadcast.common.time.Clock;
 
 /**
@@ -53,10 +50,9 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
     private static final String SIGNED_VERSION_TYPE = "Signed";
     private static final String WARNING_TEXT_LONG_LENGTH = "long";
 
-    private final Predicate<WarningText> IS_LONG_WARNING = new Predicate<WarningText>() {
-
+    private final Predicate<WarningTexts.WarningText> IS_LONG_WARNING = new Predicate<WarningTexts.WarningText>() {
         @Override
-        public boolean apply(WarningText input) {
+        public boolean apply(WarningTexts.WarningText input) {
             return WARNING_TEXT_LONG_LENGTH.equals(input.getLength());
         }
     };
@@ -75,19 +71,16 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             DateTime now) {
         ImmutableSetMultimap<String, Broadcast> broadcasts = extractBroadcasts(source.getBroadcasts(),
                 now);
-        OptionalMap<String, Set<Encoding>> encodings = extractEncodings(source.getAvailabilities(),
-                now,
-                extractMediaType(source));
-
         ImmutableSet.Builder<Version> versions = ImmutableSet.builder();
 
-        for (com.metabroadcast.atlas.glycerin.model.Version nitroVersion : source.getVersions()) {
+        for(AvailableVersions.Version nitroVersion : source.getAvailableVersions().getVersion()) {
+            Set<Encoding> encodings = extractEncodings(nitroVersion, now, extractMediaType(source),
+                    source.getProgrammeId());
             try {
                 Version version = generateVersion(now, broadcasts, encodings, nitroVersion);
                 versions.add(version);
             } catch (Exception e) {
-                throw new RuntimeException("Exception processing version " + nitroVersion.getPid(),
-                        e);
+                throw new RuntimeException("Exception processing version " + nitroVersion.getPid(), e);
             }
         }
 
@@ -103,10 +96,11 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         extractAdditionalItemFields(source, item, now);
     }
 
+
     private Version generateVersion(DateTime now,
             ImmutableSetMultimap<String, Broadcast> broadcasts,
-            OptionalMap<String, Set<Encoding>> encodings,
-            com.metabroadcast.atlas.glycerin.model.Version nitroVersion) {
+            Set<Encoding> encodings,
+            AvailableVersions.Version nitroVersion) {
         Version version = new Version();
 
         if (nitroVersion.getDuration() != null) {
@@ -117,21 +111,16 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));
         version.setBroadcasts(broadcasts.get(nitroVersion.getPid()));
 
-        Optional<Set<Encoding>> optEncodings = encodings.get(nitroVersion.getPid());
+        setEncodingDetails(nitroVersion, encodings);
+        version.setManifestedAs(encodings);
 
-        if (optEncodings.isPresent()) {
-            Set<Encoding> versionEncodings = optEncodings.get();
-            setEncodingDetails(nitroVersion, versionEncodings);
-            version.setManifestedAs(versionEncodings);
-        }
-
-        Optional<WarningText> warningText = warningTextFrom(nitroVersion);
+        Optional<WarningTexts.WarningText> warningText = warningTextFrom(nitroVersion);
         version.setRestriction(generateRestriction(warningText));
         return version;
     }
 
     private void setEncodingDetails(
-            com.metabroadcast.atlas.glycerin.model.Version nitroVersion,
+            AvailableVersions.Version nitroVersion,
             Set<Encoding> encodings) {
 
         /**
@@ -139,13 +128,13 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
          * in Atlas they naturally belong to Encoding
          */
         for (Encoding encoding : encodings) {
-            encoding.setVideoAspectRatio(nitroVersion.getAspectRatio());
+            //encoding.setVideoAspectRatio(nitroVersion.getAspectRatio());
             encoding.setAudioDescribed(isVersionOfType(nitroVersion, AUDIO_DESCRIBED_VERSION_TYPE));
             encoding.setSigned(isVersionOfType(nitroVersion, SIGNED_VERSION_TYPE));
         }
     }
 
-    private Restriction generateRestriction(Optional<WarningText> warningText) {
+    private Restriction generateRestriction(Optional<WarningTexts.WarningText> warningText) {
         Restriction restriction = new Restriction();
         restriction.setRestricted(false);
 
@@ -157,23 +146,22 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         return restriction;
     }
 
-    private boolean isVersionOfType(com.metabroadcast.atlas.glycerin.model.Version nitroVersion,
-            String versionType) {
-        Types versionTypes = nitroVersion.getTypes();
+    private boolean isVersionOfType(AvailableVersions.Version nitroVersion, String versionType) {
+        List<AvailableVersions.Version.Types> versionTypes = nitroVersion.getTypes();
 
         if (versionTypes == null) {
             return false;
         }
 
-        return Iterables.any(versionTypes.getType(), isOfType(versionType));
+        return Iterables.any(versionTypes, isOfType(versionType));
     }
 
-    private Predicate<Types.Type> isOfType(final String type) {
-        return new Predicate<Types.Type>() {
-
+    private Predicate<AvailableVersions.Version.Types> isOfType(final String versionType) {
+        return new Predicate<AvailableVersions.Version.Types>() {
             @Override
-            public boolean apply(Types.Type input) {
-                return type.equals(input.getId());
+            public boolean apply(
+                    AvailableVersions.Version.Types input) {
+                return input.getType().contains(versionType);
             }
         };
     }
@@ -211,19 +199,14 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
 
     }
 
-    private OptionalMap<String, Set<Encoding>> extractEncodings(List<Availability> availabilities,
-            DateTime now,
-            String mediaType) {
-        Map<String, Collection<Availability>> byVersion = indexByVersion(availabilities);
-        ImmutableMap.Builder<String, Set<Encoding>> results = ImmutableMap.builder();
-        for (Entry<String, Collection<Availability>> availability : byVersion.entrySet()) {
-            Set<Encoding> extracted = availabilityExtractor.extract(availability.getValue(),
-                    mediaType);
-            if (!extracted.isEmpty()) {
-                results.put(availability.getKey(), setLastUpdated(extracted, now));
-            }
+    private Set<Encoding> extractEncodings(AvailableVersions.Version version, DateTime now, String mediaType, String programmeId) {
+        Set<Encoding> extracted = new HashSet<>();
+        Iterator<AvailableVersions.Version.Availabilities> iterator = version.getAvailabilities().iterator();
+        while (iterator.hasNext()) {
+            extracted.addAll(availabilityExtractor.extract(
+                    iterator.next().getAvailableVersionsAvailability(), mediaType, programmeId));
         }
-        return ImmutableOptionalMap.fromMap(results.build());
+        return setLastUpdated(extracted, now);
     }
 
     private Set<Encoding> setLastUpdated(Set<Encoding> encodings, DateTime now) {
@@ -281,15 +264,14 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         return Duration.millis(xmlDuration.getTimeInMillis(now.toDate()));
     }
 
-    private Optional<WarningText> warningTextFrom(
-            com.metabroadcast.atlas.glycerin.model.Version version) {
-        Warnings warnings = version.getWarnings();
+    private Optional<WarningTexts.WarningText> warningTextFrom(AvailableVersions.Version version) {
+        AvailableVersions.Version.Warnings warnings = version.getWarnings();
 
         if (warnings == null) {
             return Optional.absent();
         }
 
-        return Iterables.tryFind(warnings.getWarningText(), IS_LONG_WARNING);
+        return Iterables.tryFind(warnings.getWarningTexts().getWarningText(), IS_LONG_WARNING);
     }
 
 }

@@ -2,6 +2,9 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,8 +30,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions.Version.Availabilities.Availability;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.time.DateTimeZones;
 
@@ -76,38 +79,49 @@ public class NitroAvailabilityExtractor {
 
     private static final String VIDEO_MEDIA_TYPE = "Video";
 
-    private static final Predicate<Availability> IS_HD = new Predicate<Availability>() {
-
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> IS_HD =
+            new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
         @Override
-        public boolean apply(Availability input) {
-            return !input.getMediaSet().contains("iptv-sd");
+        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
+            return !doesMediaSetContains("iptv-sd", input.getMediaSets().getMediaSet());
         }
     };
 
-    private static final Predicate<Availability> IS_SUBTITLED = new Predicate<Availability>() {
-
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> IS_SUBTITLED =
+            new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
         @Override
-        public boolean apply(Availability input) {
-            return input.getMediaSet().contains("captions");
+        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
+            return doesMediaSetContains("captions", input.getMediaSets().getMediaSet());
         }
     };
 
-    private static final Predicate<Availability> IS_AVAILABLE = new Predicate<Availability>() {
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> IS_AVAILABLE
+            = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
 
         @Override
-        public boolean apply(Availability input) {
+        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
             return AVAILABLE.equals(input.getStatus());
         }
 
     };
 
-    private static final Predicate<Availability> IS_IPTV = new Predicate<Availability>() {
-
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> IS_IPTV =
+            new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
         @Override
-        public boolean apply(Availability input) {
-            return input.getMediaSet().contains("iptv-all");
+        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
+            return doesMediaSetContains("iptv-all", input.getMediaSets().getMediaSet());
         }
     };
+
+    private static final Boolean doesMediaSetContains(String name,
+            List<AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet> mediaSets) {
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : mediaSets) {
+            if(name.equals(mediaSet.getName())) {
+                return true;
+            }
+        }
+        return false;
+    }
 
     private final Map<String, Platform> mediaSetPlatform = ImmutableMap.of(
             PC, Platform.PC,
@@ -129,7 +143,8 @@ public class NitroAvailabilityExtractor {
      * <p>
      * The provided collection of {@link Availability} must all be from the same version.
      */
-    public Set<Encoding> extract(Iterable<Availability> availabilities, String mediaType) {
+    public Set<Encoding> extract(Iterable<Availability> availabilities, String mediaType, String programmeId) {
+        checkNotNull(programmeId);
         Set<Equivalence.Wrapper<Location>> hdLocations = Sets.newHashSet();
         Set<Equivalence.Wrapper<Location>> sdLocations = Sets.newHashSet();
 
@@ -138,7 +153,7 @@ public class NitroAvailabilityExtractor {
 
         for (Availability availability : availabilities) {
             ImmutableList<Wrapper<Location>> locations = FluentIterable.
-                    from(getLocationsFor(availability, mediaType))
+                    from(getLocationsFor(availability, mediaType, programmeId))
                     .transform(TO_WRAPPED_LOCATION)
                     .toList();
 
@@ -184,23 +199,22 @@ public class NitroAvailabilityExtractor {
         encoding.setVideoVerticalSize(isHD ? HD_VERTICAL_SIZE : SD_VERTICAL_SIZE);
     }
 
-    private Set<Location> getLocationsFor(Availability availability, String mediaType) {
+    private Set<Location> getLocationsFor(Availability availability, String mediaType, String programmeId) {
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
-
-        for (String mediaSet : availability.getMediaSet()) {
-            Platform platform = mediaSetPlatform.get(mediaSet);
+        for (Availability.MediaSets.MediaSet mediaSet : availability.getMediaSets().getMediaSet()) {
+            Platform platform = mediaSetPlatform.get(mediaSet.getName());
             if (platform != null) {
                 locations.add(newLocation(availability, platform,
-                        mediaSetNetwork.get(mediaSet), mediaType));
+                        mediaSetNetwork.get(mediaSet.getName()), mediaType, programmeId));
             }
         }
         return locations.build();
     }
 
     private Location newLocation(Availability source, Platform platform, Network network,
-            String mediaType) {
+            String mediaType, String programmeId) {
         Location location = new Location();
-        location.setUri(IPLAYER_URL_BASE + checkNotNull(NitroUtil.programmePid(source)));
+        location.setUri(IPLAYER_URL_BASE + programmeId);
         location.setTransportType(TransportType.LINK);
         location.setPolicy(policy(source, platform, network, mediaType));
         return location;
@@ -209,14 +223,12 @@ public class NitroAvailabilityExtractor {
     private Policy policy(Availability source, Platform platform, Network network,
             String mediaType) {
         Policy policy = new Policy();
-        ScheduledTime scheduledTime = source.getScheduledTime();
-        if (scheduledTime != null) {
-            policy.setAvailabilityStart(toDateTime(scheduledTime.getStart()));
-            policy.setAvailabilityEnd(toDateTime(scheduledTime.getEnd()));
-        }
+        policy.setAvailabilityStart(toDateTime(source.getScheduledStart()));
+        policy.setAvailabilityEnd(toDateTime(source.getScheduledEnd()));
+        DateTime actualStart = getActualStart(source.getMediaSets().getMediaSet());
 
-        if (shouldIngestActualAvailabilityStart(source, mediaType, policy)) {
-            policy.setActualAvailabilityStart(toDateTime(source.getActualStart()));
+        if (shouldIngestActualAvailabilityStart(source, mediaType, policy, actualStart)) {
+            policy.setActualAvailabilityStart(actualStart);
         }
         policy.setPlatform(platform);
         policy.setNetwork(network);
@@ -225,18 +237,17 @@ public class NitroAvailabilityExtractor {
     }
 
     private boolean shouldIngestActualAvailabilityStart(Availability source, String mediaType,
-            Policy policy) {
-        DateTime actualStart = toDateTime(source.getActualStart());
+            Policy policy, DateTime actualStart) {
 
         if (actualStart == null) {
             // Ensures we remove it if not set in Nitro
             return true;
         }
 
-        if (REVOKED.equals(source.getRevocationStatus())) {
+       // if (REVOKED.equals(source.getRevocationStatus())) {
             // A revoked availability isn't actually available
-            return false;
-        }
+       //     return false;
+       // }
 
         if (actualStart.isAfterNow()) {
             // This is not an expected case on the Nitro API, and would cause 
@@ -274,6 +285,20 @@ public class NitroAvailabilityExtractor {
             // when on video content
             return true;
         }
+    }
+
+    private DateTime getActualStart(List<AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet> mediaSets) {
+        Collections.sort(mediaSets, new Comparator<AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet>() {
+            @Override public int compare(
+                    AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet o1,
+                    AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet o2) {
+                if(o1.getActualStart() == null || o2.getActualStart() == null) {
+                    return 0;
+                }
+                return o1.getActualStart().compare(o2.getActualStart());
+            }
+        });
+        return toDateTime(mediaSets.get(mediaSets.size() - 1).getActualStart());
     }
 
     private DateTime toDateTime(XMLGregorianCalendar start) {

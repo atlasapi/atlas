@@ -7,14 +7,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
-import junit.framework.TestCase;
-
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageType;
@@ -70,6 +67,8 @@ import com.metabroadcast.common.time.DateTimeZones;
 import com.metabroadcast.common.time.TimeMachine;
 import com.mongodb.ReadPreference;
 
+import junit.framework.TestCase;
+
 @RunWith(JMock.class)
 public class PaBaseProgrammeUpdaterTest extends TestCase {
 
@@ -89,16 +88,18 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
     
 	private ChannelResolver channelResolver;
 	private ContentBuffer contentBuffer;
-	private MessageSender<ScheduleUpdateMessage> ms
-	    = new MessageSender<ScheduleUpdateMessage>(){
+	private MessageSender<ScheduleUpdateMessage> ms = new MessageSender<ScheduleUpdateMessage>(){
 
-            @Override
-            public void close() throws Exception {
-            }
+        @Override
+        public void close() throws Exception { }
 
-            @Override
-            public void sendMessage(ScheduleUpdateMessage message) throws MessagingException {
-            }};
+        @Override
+        public void sendMessage(ScheduleUpdateMessage message) throws MessagingException { }
+
+        @Override
+        public void sendMessage(ScheduleUpdateMessage scheduleUpdateMessage, byte[] bytes)
+                throws MessagingException { }
+    };
 
     @Override
     @Before
@@ -127,12 +128,12 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
                 will(returnValue(Optional.<Long>absent()));
             oneOf(scheduleVersionStore).store(channel, scheduleDay, 1);
             oneOf(scheduleVersionStore).get(channel, scheduleDay);
-                will(returnValue(Optional.<Long>of(1L)));
+                will(returnValue(Optional.of(1L)));
             oneOf(scheduleVersionStore).store(channel, scheduleDay, 201202251115L);
             oneOf(scheduleVersionStore).get(channel, scheduleDay);
-                will(returnValue(Optional.<Long>of(201202251115L)));
+                will(returnValue(Optional.of(201202251115L)));
             oneOf(scheduleVersionStore).get(channel, scheduleDay);
-                will(returnValue(Optional.<Long>of(201202251115L)));
+                will(returnValue(Optional.of(201202251115L)));
         }});
 
         TestPaProgrammeUpdater updater = new TestPaProgrammeUpdater(programmeProcessor, channelResolver, log, scheduleWriter, ImmutableList.of(

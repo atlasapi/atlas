@@ -126,7 +126,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
             matches = subjTitle.equals(suggTitle);
         }
         
-        return matches ? Score.ONE 
+        return matches ? Score.valueOf(2D) 
                        : scoreOnMismatch;
     }
     

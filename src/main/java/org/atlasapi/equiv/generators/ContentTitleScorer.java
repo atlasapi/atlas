@@ -13,7 +13,7 @@ import com.google.common.base.Function;
 
 public final class ContentTitleScorer<T extends Content> {
     
-    private static final double EXACT_MATCH_SCORE = 1.5;
+    private static final double EXACT_MATCH_SCORE = 2;
     private final Function<String, String> titleTransform;
     private final String name;
 

@@ -185,11 +185,12 @@ public class BtChannelDataUpdaterTest {
 
     public Entry entryForTesting() {
         Category category = new Category("S0312140", "subscription", "BT Sport Service on Vision");
+        long availableDate = Long.valueOf("1446556354000");
 
         return new Entry("hk4g", 0, "Nick Toons",
                 ImmutableList.of(category),
                 ImmutableList.<Content>of(),
-                true, null, null, false, true, 0,
+                true, null, null, false, true, availableDate,
                 LINEAR_CHANNEL_ID);
 
     }

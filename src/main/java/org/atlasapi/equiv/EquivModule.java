@@ -69,6 +69,7 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -572,7 +573,7 @@ public class EquivModule {
                         TitleMatchingContainerScorer.NAME)
                 )
                 .withFilter(this.<Container>standardFilter())
-                .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(50))
+                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container> atLeastNTimesGreater(2))
                 .withHandler(containerResultHandlers(acceptablePublishers))
                 .build();
     }
@@ -622,7 +623,7 @@ public class EquivModule {
                 ImmutableSet.of(TitleMatchingItemScorer.NAME, SequenceItemScorer.SEQUENCE_SCORER)
             ))
             .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(50))
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item> atLeastNTimesGreater(2))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.strict(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),

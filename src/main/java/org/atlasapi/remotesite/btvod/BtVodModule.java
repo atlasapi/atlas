@@ -198,7 +198,7 @@ public class BtVodModule {
                 seriesUriExtractor(URI_PREFIX),
                 versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 describedFieldsExtractor(Publisher.BT_VOD, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG,
-                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, btVodMpxProdFeedBaseUrl, contentGroupsAndCritera),
+                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, btVodMpxProdFeedBaseUrl),
                 mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
                 topicQueryResolver,
                 BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY)
@@ -308,8 +308,7 @@ public class BtVodModule {
                         feedBaseUrl,
                         newFeedSuffix,
                         feedQParam,
-                        baseUrlForItemLookup,
-                        contentGroupsAndCritera
+                        baseUrlForItemLookup
                 ),
                 mpxVodClient(baseUrlForItemLookup, feedNameForItemLookup, btVodMpxProdFeedQParam),
                 topicQueryResolver,
@@ -361,8 +360,7 @@ public class BtVodModule {
             String baseUrl,
             String newFeedSuffix,
             String qParam,
-            String btVodMpxProdFeedBaseUrlForGuidLookup,
-            Map<String, BtVodContentMatchingPredicate> contentGroupsAndCritera
+            String btVodMpxProdFeedBaseUrlForGuidLookup
     ) {
         BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrlForGuidLookup, newFeedSuffix, qParam);
         return new BtVodDescribedFieldsExtractor(
@@ -370,7 +368,7 @@ public class BtVodModule {
                 topicWriter,
                 publisher,
                 newContentPredicate,
-                contentGroupsAndCritera.get(KIDS_CATEGORY.toLowerCase()),
+                BtVodContentMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY),
                 BtVodContentMatchingPredicates.schedulerChannelPredicate(TV_CATEGORY),
                 BtVodContentMatchingPredicates.schedulerChannelPredicate(SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL),
                 topicFor(feedNamepaceFor(env, conf), BT_VOD_NEW_FEED, publisher),

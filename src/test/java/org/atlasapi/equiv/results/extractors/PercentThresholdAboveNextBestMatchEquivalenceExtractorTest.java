@@ -20,7 +20,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
     @Test
     public void testExtractsWhenStrongBeatsNextBestByThreshold() {
 
-        PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item> extractor = new PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item>(2.0);
+        PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item> extractor = PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item>atLeastNTimesGreater(2);
         
         ScoredCandidate<Item> strong = ScoredCandidate.valueOf(new Item("test1","cur1",Publisher.BBC), Score.valueOf(1.0));
         Optional<ScoredCandidate<Item>> extract = extractor.extract(ImmutableList.<ScoredCandidate<Item>>of(
@@ -36,7 +36,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
     @Test
     public void testDoesntExtractWhenStrongBeatsNextBestByThreshold() {
 
-        PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item> extractor = new PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item>(2.0);
+        PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item> extractor = PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item>atLeastNTimesGreater(2);
         
         ScoredCandidate<Item> strong = ScoredCandidate.valueOf(new Item("test1","cur1",Publisher.BBC), Score.valueOf(1.0));
         Optional<ScoredCandidate<Item>> extract = extractor.extract(ImmutableList.<ScoredCandidate<Item>>of(
@@ -50,7 +50,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
     @Test
     public void testExtractsWhenOnlyOneCandidate() {
 
-        PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item> extractor = new PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item>(2.0);
+        PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item> extractor = PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item>atLeastNTimesGreater(2);
         
         ScoredCandidate<Item> strong = ScoredCandidate.valueOf(new Item("test1","cur1",Publisher.BBC), Score.valueOf(1.0));
         Optional<ScoredCandidate<Item>> extract = extractor.extract(ImmutableList.<ScoredCandidate<Item>>of(strong), null, new DefaultDescription());

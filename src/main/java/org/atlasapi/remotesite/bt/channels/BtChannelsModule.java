@@ -31,17 +31,15 @@ public class BtChannelsModule {
     private static final String ALIAS_NAMESPACE_PREFIX = "bt";
     private static final String URI_PREFIX_STRING_FORMAT = "http://%s/";
 
-    //private static final RepetitionRule PROD_INGEST_REPETITION = RepetitionRules.every(Duration.standardHours(2));
-    private static final RepetitionRule PROD_INGEST_REPETITION = RepetitionRules.NEVER;
     private static final LocalTime NON_PROD_BASE_START_TIME = new LocalTime(16,0);
-    
-    //private static final RepetitionRule TEST1_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME);
-    private static final RepetitionRule TEST1_INGEST_REPETITION = RepetitionRules.NEVER;
 
-    //private static final RepetitionRule TEST2_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME.plusHours(1));
-    private static final RepetitionRule TEST2_INGEST_REPETITION = RepetitionRules.NEVER;
-    //private static final RepetitionRule REFERENCE_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME.plusHours(2));
-    private static final RepetitionRule REFERENCE_INGEST_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule PROD_INGEST_REPETITION = RepetitionRules.every(Duration.standardHours(2));
+
+    private static final RepetitionRule TEST1_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME);
+
+    private static final RepetitionRule TEST2_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME.plusHours(1));
+
+    private static final RepetitionRule REFERENCE_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME.plusHours(2));
     
     @Value("${bt.channels.baseUri.production}")
     private String baseUri;

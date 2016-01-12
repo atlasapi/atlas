@@ -11,10 +11,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import kafka.admin.AdminUtils;
-import kafka.utils.TestUtils;
-import kafka.zk.EmbeddedZookeeper;
-
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.atlasapi.equiv.results.EquivalenceResult;
@@ -34,9 +30,6 @@ import org.atlasapi.messaging.v3.MessagingModule;
 import org.junit.Before;
 import org.junit.Test;
 
-import scala.Option;
-import scala.collection.JavaConversions;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -46,6 +39,12 @@ import com.metabroadcast.common.queue.MessageSerializer;
 import com.metabroadcast.common.queue.Worker;
 import com.metabroadcast.common.queue.kafka.KafkaConsumer;
 import com.metabroadcast.common.queue.kafka.KafkaTestBase;
+
+import kafka.admin.AdminUtils;
+import kafka.utils.TestUtils;
+import kafka.zk.EmbeddedZookeeper;
+import scala.Option;
+import scala.collection.JavaConversions;
 
 public class MessageQueueingResultHandlerTest extends KafkaTestBase {
 
@@ -106,7 +105,7 @@ public class MessageQueueingResultHandlerTest extends KafkaTestBase {
                 .build();
         consumer.startAsync().awaitRunning(10, TimeUnit.SECONDS);
 
-        handler.handle(new EquivalenceResult<Item>(subject, scores, combined, strong, desc));
+        handler.handle(new EquivalenceResult<>(subject, scores, combined, strong, desc));
         assertTrue("message not received", latch.await(5, TimeUnit.SECONDS));
         
         ContentEquivalenceAssertionMessage assertionMessage = message.get();

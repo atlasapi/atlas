@@ -44,7 +44,7 @@ public class SpringTest extends TestCase {
     }
 
     @Test
-    public void testCanCreatProcessing() throws Exception {
+    public void testCanCreateProcessing() throws Exception {
         System.setProperty("processing.config", "true");
         ConfigurableAnnotationWebApplicationContext applicationContext = new ConfigurableAnnotationWebApplicationContext();
         applicationContext.setConfigLocation(null);

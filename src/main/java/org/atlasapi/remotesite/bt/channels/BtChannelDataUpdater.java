@@ -44,28 +44,16 @@ public class BtChannelDataUpdater {
 
         for(Entry currentEntry : paginatedEntries.getEntries()) {
 
-            String linearEpgChannelId = currentEntry.getLinearEpgChannelId();
-            long channelId = codec.decode(currentEntry.getGuid()).longValue();
+            try {
+                Maybe<Channel> channel = processEntryForAliases(currentEntry);
+                if(channel.hasValue()) {
+                    updatedChannels.add(channel.requireValue().getId());
+                }
 
-            Maybe<Channel> channelMaybe = channelResolver.fromId(channelId);
-
-            if (!channelMaybe.hasValue()) {
-                LOGGER.error("There is missing channel for this channel id: " + currentEntry.getGuid());
-                continue;
+            } catch (Exception e) {
+                LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
             }
 
-            Channel channel = channelMaybe.requireValue();
-
-            channel.setAliases(
-                    Iterables.filter(channel.getAliases(),
-                            not(isAliasWithNamespace(aliasNamespace)))
-            );
-
-            if (!Strings.isNullOrEmpty(linearEpgChannelId)) {
-                channel.addAlias(new Alias(aliasNamespace, linearEpgChannelId));
-                channelWriter.createOrUpdate(channel);
-                updatedChannels.add(channelId);
-            }
         }
 
         removeStaleAliasesFromChannel(updatedChannels, channelResolver.all());
@@ -74,33 +62,73 @@ public class BtChannelDataUpdater {
     public void addAvailableDateToChannel(PaginatedEntries paginatedEntries) {
         List<Entry> entries = paginatedEntries.getEntries();
 
-        Set<Long> channelIdsThatHaveAvailableDateAdded = Sets.newHashSet();
+        Set<Long> updatedChannels = Sets.newHashSet();
 
         for(Entry currentEntry : entries) {
-
-            DateTime advertiseAvailableDate = new DateTime(currentEntry.getAvailableDate());
-            long channelId = codec.decode(currentEntry.getGuid()).longValue();
-
-            Maybe<Channel> channelMaybe = channelResolver.fromId(channelId);
-
-            if(!channelMaybe.hasValue()) {
-                LOGGER.error("There is missing channel for this channel id: " + currentEntry.getGuid());
-                continue;
+            try {
+                Maybe<Channel> channel = processEntryForAdvertiseFrom(currentEntry);
+                if (channel.hasValue()) {
+                    updatedChannels.add(channel.requireValue().getId());
+                }
+            } catch (Exception e) {
+                LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
             }
 
-            Channel channel = channelMaybe.requireValue();
-
-            if (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) {
-                channel.setAdvertiseFrom(advertiseAvailableDate);
-            } else {
-                channel.setAdvertiseFrom(null);
-            }
-
-            channelWriter.createOrUpdate(channel);
-            channelIdsThatHaveAvailableDateAdded.add(channelId);
         }
 
-        removeStaleAvailableDateFromChannel(channelIdsThatHaveAvailableDateAdded, channelResolver.all());
+        removeStaleAvailableDateFromChannel(updatedChannels, channelResolver.all());
+    }
+
+    private Maybe<Channel> processEntryForAliases(Entry entry) {
+        String linearEpgChannelId = entry.getLinearEpgChannelId();
+
+        Maybe<Channel> channelMaybe = channelFor(entry.getGuid());
+
+        Channel channel = channelMaybe.requireValue();
+
+        channel.setAliases(
+                Iterables.filter(channel.getAliases(),
+                        not(isAliasWithNamespace(aliasNamespace)))
+        );
+
+        if (!Strings.isNullOrEmpty(linearEpgChannelId)) {
+            channel.addAlias(new Alias(aliasNamespace, linearEpgChannelId));
+            channelWriter.createOrUpdate(channel);
+            return Maybe.just(channel);
+        }
+
+        //There can be a channel for a channel id that doesn't have the linearEpgChannelId field.
+        return Maybe.nothing();
+    }
+
+    private Maybe<Channel> processEntryForAdvertiseFrom(Entry entry) {
+        long availableDate = entry.getAvailableDate();
+        DateTime advertiseAvailableDate = new DateTime(entry.getAvailableDate());
+
+        Maybe<Channel> channelMaybe = channelFor(entry.getGuid());
+
+        Channel channel = channelMaybe.requireValue();
+
+        if (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) {
+            channel.setAdvertiseFrom(advertiseAvailableDate);
+        } else {
+            channel.setAdvertiseFrom(null);
+        }
+
+        channelWriter.createOrUpdate(channel);
+        return Maybe.just(channel);
+    }
+
+    private Maybe<Channel> channelFor(String guid) {
+        long channelId = codec.decode(guid).longValue();
+
+        Maybe<Channel> channelMaybe = channelResolver.fromId(channelId);
+
+        if(!channelMaybe.hasValue()) {
+            LOGGER.error("There is missing channel for this channel id: " + guid);
+            return Maybe.nothing();
+        }
+        return channelMaybe;
     }
 
     private void removeStaleAliasesFromChannel(Set<Long> channelIdsThatHaveAliasesAdded, Iterable<Channel> channels) {

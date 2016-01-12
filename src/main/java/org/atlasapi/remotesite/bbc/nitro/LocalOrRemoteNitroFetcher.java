@@ -160,7 +160,12 @@ public class LocalOrRemoteNitroFetcher {
         for (Item existing : existingItems) {
             Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
-                resolved.add(contentMerger.merge((Item) existing, (Item) fetched));
+                try {
+                    resolved.add(contentMerger.merge((Item) existing, (Item) fetched));
+                } catch (Exception e) {
+                    log.info(fetched.getCanonicalUri(), e);
+                }
+
             } else {
                 resolved.add(existing);
             }

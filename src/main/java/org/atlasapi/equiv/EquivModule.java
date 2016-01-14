@@ -37,6 +37,12 @@ import static org.atlasapi.media.entity.Publisher.RTE;
 import static org.atlasapi.media.entity.Publisher.SOUNDCLOUD;
 import static org.atlasapi.media.entity.Publisher.SPOTIFY;
 import static org.atlasapi.media.entity.Publisher.TALK_TALK;
+import static org.atlasapi.media.entity.Publisher.VF_AE;
+import static org.atlasapi.media.entity.Publisher.VF_BBC;
+import static org.atlasapi.media.entity.Publisher.VF_C5;
+import static org.atlasapi.media.entity.Publisher.VF_ITV;
+import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
+import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
 import static org.atlasapi.media.entity.Publisher.YOUTUBE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
@@ -419,6 +425,18 @@ public class EquivModule {
                 .withTopLevelContainerUpdater(btTveVodContainerUpdater(btTveVodPublishers))
                 .withNonTopLevelContainerUpdater(standardSeriesUpdater(btTveVodPublishers))
                 .build());
+
+        Set<Publisher> vfPublishers = ImmutableSet.of(VF_AE, VF_BBC, VF_C5, VF_ITV, VF_VIACOM, VF_VUBIQUITY);
+        Set<Publisher> vfVodPublishers = ImmutableSet.of(PA);
+
+        for (Publisher publisher : vfPublishers) {
+            updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
+                    .withItemUpdater(btVodItemUpdater(vfVodPublishers)
+                            .withScorer(new SeriesSequenceItemScorer()).build())
+                    .withTopLevelContainerUpdater(btTveVodContainerUpdater(btTveVodPublishers))
+                    .withNonTopLevelContainerUpdater(standardSeriesUpdater(btTveVodPublishers))
+                    .build());
+        }
                 
         Set<Publisher> itunesAndMusicPublishers = Sets.union(musicPublishers, ImmutableSet.of(ITUNES));
         ContentEquivalenceUpdater<Item> muiscPublisherUpdater = ContentEquivalenceUpdater.<Item>builder()

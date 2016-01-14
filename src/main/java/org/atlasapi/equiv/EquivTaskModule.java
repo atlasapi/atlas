@@ -30,7 +30,12 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
-
+import static org.atlasapi.media.entity.Publisher.VF_BBC;
+import static org.atlasapi.media.entity.Publisher.VF_C5;
+import static org.atlasapi.media.entity.Publisher.VF_ITV;
+import static org.atlasapi.media.entity.Publisher.VF_AE;
+import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
+import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
 import java.util.Set;
 
 import javax.annotation.PostConstruct;
@@ -123,6 +128,12 @@ public class EquivTaskModule {
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(3, 00));
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(20, 00));
     private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(18, 00));
+    private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule VF_ITV_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule VF_AE_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule VF_VIACOM_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule VF_VUBIQUITY_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
     private @Value("${equiv.stream-updater.enabled}") Boolean streamedChangesUpdateEquiv;
@@ -174,7 +185,13 @@ public class EquivTaskModule {
             taskScheduler.schedule(publisherUpdateTask(UKTV).withName("UKTV Equivalence Updater"), UKTV_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(WIKIPEDIA).withName("Wikipedia Equivalence Updater"), WIKIPEDIA_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(Publisher.BBC_MUSIC).withName("Music Equivalence Updater"), RepetitionRules.every(Duration.standardHours(6)));
-            
+            taskScheduler.schedule(publisherUpdateTask(VF_AE).withName("VF AE Equivalence Updater"), VF_AE_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(VF_BBC).withName("VF BBC Equivalence Updater"), VF_BBC_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(VF_C5).withName("VF C5 Equivalence Updater"), VF_C5_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(VF_ITV).withName("VF ITV Equivalence Updater"), VF_ITV_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(VF_VIACOM).withName("VF VIACOM Equivalence Updater"), VF_VIACOM_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"), VF_VUBIQUITY_EQUIVALENCE_REPETITION);
+
             taskScheduler.schedule(taskBuilder(0, 7)
                     .withPublishers(YOUVIEW)
                     .withChannels(youviewChannelResolver.getAllChannels())

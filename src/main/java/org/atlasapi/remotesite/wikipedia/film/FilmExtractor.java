@@ -78,7 +78,7 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
                     flim.addAlias(new Alias(a.getKey(), a.getValue()));
                     if (a.getKey().equals("imdb:url")) {
                         flim.setWebsiteUrl(a.getValue());
-                        RelatedLink link = RelatedLink.unknownTypeLink(a.getValue()).withTitle(a.getKey()).build()f;
+                        RelatedLink link = RelatedLink.unknownTypeLink(a.getValue()).withTitle(a.getKey()).build();
                         flim.addRelatedLink(link);
                     }
                 }

@@ -8,8 +8,6 @@ import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import xtc.parser.ParseException;
 
 import java.io.IOException;
@@ -26,6 +24,7 @@ public class FootballTeamsExtractor implements ContentExtractor<Article, Organis
             team.setPublisher(Publisher.WIKIPEDIA);
             team.setLastUpdated(article.getLastModified());
             team.setCanonicalUri(url);
+            team.setAlternativeTitles(info.nicknames);
             addLink(team, info.website);
             if (info.name != null ) {
                 team.setTitle(info.name);

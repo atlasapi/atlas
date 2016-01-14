@@ -48,7 +48,4 @@ public class PaginatedEntries {
     public List<Entry> getEntries() {
         return entries;
     }
-    
-    
-    
 }

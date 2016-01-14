@@ -1,7 +1,6 @@
 package org.atlasapi.remotesite.bt.channels;
 
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.annotation.PostConstruct;
 
@@ -32,28 +31,55 @@ public class BtChannelsModule {
     private static final String ALIAS_NAMESPACE_PREFIX = "bt";
     private static final String URI_PREFIX_STRING_FORMAT = "http://%s/";
 
-    private static final RepetitionRule PROD_INGEST_REPETITION = RepetitionRules.every(Duration.standardHours(2));
     private static final LocalTime NON_PROD_BASE_START_TIME = new LocalTime(16,0);
+
+    private static final RepetitionRule PROD_INGEST_REPETITION = RepetitionRules.every(Duration.standardHours(2));
     
     private static final RepetitionRule TEST1_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME);
+
     private static final RepetitionRule TEST2_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME.plusHours(1));
+
     private static final RepetitionRule REFERENCE_INGEST_REPETITION = RepetitionRules.daily(NON_PROD_BASE_START_TIME.plusHours(2));
     
     @Value("${bt.channels.baseUri.production}")
     private String baseUri;
-    
+
     @Value("${bt.channels.baseUri.test1}")
     private String test1BaseUri;
-    
+
     @Value("${bt.channels.baseUri.test2}")
     private String test2BaseUri;
-    
+
     @Value("${bt.channels.baseUri.reference}")
     private String test3BaseUri;
-    
+
+    @Value("${bt.channels.ingestAdvertiseFrom.production}")
+    private String productionIngestAdvertiseFrom;
+
+    @Value("${bt.channels.ingestAdvertiseFrom.test1}")
+    private String test1IngestAdvertiseFrom;
+
+    @Value("${bt.channels.ingestAdvertiseFrom.test2}")
+    private String test2IngestAdvertiseFrom;
+
+    @Value("${bt.channels.ingestAdvertiseFrom.reference}")
+    private String test3IngestAdvertiseFrom;
+
+    @Value("${bt.channels.namespace.production}")
+    private String productionNamespace;
+
+    @Value("${bt.channels.namespace.test1}")
+    private String test1Namespace;
+
+    @Value("${bt.channels.namespace.test2}")
+    private String test2Namespace;
+
+    @Value("${bt.channels.namespace.reference}")
+    private String test3Namespace;
+
     @Value("${bt.channels.freeviewPlatformChannelGroupId}")
     private String freeviewPlatformChannelGroupId;
-    
+
     @Autowired
     private ChannelGroupResolver channelGroupResolver;
     
@@ -82,37 +108,39 @@ public class BtChannelsModule {
     }
     
     @Bean 
-    public BtChannelGroupUpdater productionChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS, ALIAS_NAMESPACE_PREFIX, baseUri);
+    public BtMpxChannelDataIngester productionChannelGroupUpdater() {
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS, ALIAS_NAMESPACE_PREFIX, baseUri, Boolean.parseBoolean(productionIngestAdvertiseFrom), productionNamespace);
     }
     
     @Bean 
-    public BtChannelGroupUpdater dev1ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST1, ALIAS_NAMESPACE_PREFIX, test1BaseUri);
+    public BtMpxChannelDataIngester dev1ChannelGroupUpdater() {
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST1, ALIAS_NAMESPACE_PREFIX, test1BaseUri, Boolean.parseBoolean(test1IngestAdvertiseFrom), test1Namespace);
     }
     
     @Bean 
-    public BtChannelGroupUpdater dev2ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST2, ALIAS_NAMESPACE_PREFIX, test2BaseUri);
+    public BtMpxChannelDataIngester dev2ChannelGroupUpdater() {
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST2, ALIAS_NAMESPACE_PREFIX, test2BaseUri, Boolean.parseBoolean(test2IngestAdvertiseFrom), test2Namespace);
     }
     
     @Bean 
-    public BtChannelGroupUpdater dev3ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_REFERENCE, ALIAS_NAMESPACE_PREFIX, test3BaseUri);
+    public BtMpxChannelDataIngester dev3ChannelGroupUpdater() {
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_REFERENCE, ALIAS_NAMESPACE_PREFIX, test3BaseUri, Boolean.parseBoolean(test3IngestAdvertiseFrom), test3Namespace);
     }
     
-    private BtChannelGroupUpdater perEnvironmentChannelGroupUpdater(Publisher publisher, 
-            String aliasNamespacePrefix, String mpxUriBase) {
-        GsonBtMpxClient mpxClient = new GsonBtMpxClient(httpClient(), baseUri);
+    private BtMpxChannelDataIngester perEnvironmentChannelGroupUpdater(Publisher publisher,
+                                                                       String aliasNamespacePrefix, String mpxUriBase, boolean ingestAdvertiseFrom, String namespace) {
+        GsonBtMpxClient mpxClient = new GsonBtMpxClient(httpClient(), mpxUriBase);
         
         BtAllChannelsChannelGroupUpdater btAllChannelsChannelGroupUpdater 
             = new BtAllChannelsChannelGroupUpdater(channelGroupWriter, 
                 channelGroupResolver, freeviewPlatformChannelGroupId, 
                 uriPrefixFromPublisher(publisher), publisher);
-        
-        return new BtChannelGroupUpdater(mpxClient, publisher, uriPrefixFromPublisher(publisher), 
+
+
+        BtChannelDataUpdater channelDataUpdater = new BtChannelDataUpdater(channelResolver, channelWriter, namespace);
+        return new BtMpxChannelDataIngester(mpxClient, publisher, uriPrefixFromPublisher(publisher),
                 aliasNamespacePrefix, channelGroupResolver, channelGroupWriter, 
-                channelResolver, channelWriter, btAllChannelsChannelGroupUpdater, channelWriterLock);
+                channelResolver, channelWriter, btAllChannelsChannelGroupUpdater, channelWriterLock, channelDataUpdater, ingestAdvertiseFrom);
         
     }
     

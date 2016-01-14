@@ -19,6 +19,7 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.BtMpxClientException;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Category;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Content;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
+import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -84,7 +85,7 @@ public class WatchableChannelGroupSaverTest {
         return new Entry(channelId, 0, "Title", 
                     ImmutableList.<Category>of(), 
                     ImmutableList.<Content>of(), 
-                    true, null, null, isWatchable, false);
+                    true, null, null, isWatchable, false, 0, "urn:BT:linear:service:751764");
     }
     
     private ChannelGroup watchableChannelGroup() {

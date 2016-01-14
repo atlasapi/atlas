@@ -1,9 +1,9 @@
 package org.atlasapi.remotesite.bt.channels;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Set;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
@@ -13,10 +13,9 @@ import org.atlasapi.media.entity.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class BtAllChannelsChannelGroupUpdater {
@@ -102,6 +101,5 @@ public class BtAllChannelsChannelGroupUpdater {
         channelGroupWriter.createOrUpdate(group);
         return group;
     }
-    
-    
+
 }

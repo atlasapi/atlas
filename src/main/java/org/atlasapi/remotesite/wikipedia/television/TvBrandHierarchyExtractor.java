@@ -7,6 +7,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
@@ -82,6 +83,8 @@ public class TvBrandHierarchyExtractor implements ContentExtractor<ScrapedFlatHi
         if (info.imdbID != null) {
             brand.addAlias(new Alias("imdb:title", info.imdbID));
             brand.addAlias(new Alias("imdb:url", "http://imdb.com/title/tt" + info.imdbID));
+            RelatedLink link = RelatedLink.unknownTypeLink("http://imdb.com/title/tt" + info.imdbID).withTitle("imdb").build();
+            brand.addRelatedLink(link);
         }
         return brand;
     }

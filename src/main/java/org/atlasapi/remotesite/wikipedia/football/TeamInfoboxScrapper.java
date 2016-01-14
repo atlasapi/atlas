@@ -2,6 +2,8 @@ package org.atlasapi.remotesite.wikipedia.football;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+
 import de.fau.cs.osr.ptk.common.ast.AstNode;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper.ListItemResult;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.SwebleHelper;
@@ -14,6 +16,7 @@ import xtc.parser.ParseException;
 
 import java.io.IOException;
 import java.util.Iterator;
+import java.util.Set;
 
 public class TeamInfoboxScrapper {
     private final static Logger log = LoggerFactory.getLogger(TeamInfoboxScrapper.class);
@@ -21,7 +24,7 @@ public class TeamInfoboxScrapper {
     public static class Result {
         public String name;
         public String fullname;
-        public ImmutableList<ListItemResult> nicknames;
+        public Set<String> nicknames;
         public String image;
         public String website;
     }
@@ -75,7 +78,7 @@ public class TeamInfoboxScrapper {
             if ("clubname".equalsIgnoreCase(key)) {
                 attrs.name = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             } else if ("nickname".equalsIgnoreCase(key)) {
-                attrs.nicknames = SwebleHelper.extractFootballList(a.getValue());
+                attrs.nicknames = normalizeNicknames(SwebleHelper.extractFootballList(a.getValue()));
             } else if ("image".equalsIgnoreCase(key)) {
                 attrs.image = SwebleHelper.flattenTextNodeList(a.getValue());
             } else if ("fullname".equalsIgnoreCase(key)) {
@@ -83,6 +86,16 @@ public class TeamInfoboxScrapper {
             }else if ("website".equalsIgnoreCase(key) && Strings.isNullOrEmpty(attrs.website)) {
                 attrs.website = SwebleHelper.normalizeAndFlattenTextNodeList(a.getValue());
             }
+        }
+
+        Set<String> normalizeNicknames(Set<String> nicknames) {
+            ImmutableSet.Builder<String> normalizedNicknames = ImmutableSet.builder();
+            for (String nickname : nicknames) {
+                for (String split : nickname.split(",")) {
+                    normalizedNicknames.add(split.trim());
+                }
+            }
+            return normalizedNicknames.build();
         }
     }
 }

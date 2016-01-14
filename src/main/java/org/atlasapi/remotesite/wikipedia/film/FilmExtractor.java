@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.CrewMember.Role;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.media.entity.Version;
@@ -75,6 +76,11 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
             if (info.externalAliases != null) {
                 for (Map.Entry<String, String> a : info.externalAliases.entrySet()) {
                     flim.addAlias(new Alias(a.getKey(), a.getValue()));
+                    if (a.getKey().equals("imdb:url")) {
+                        flim.setWebsiteUrl(a.getValue());
+                        RelatedLink link = RelatedLink.unknownTypeLink(a.getValue()).withTitle(a.getKey()).build();
+                        flim.addRelatedLink(link);
+                    }
                 }
             }
             

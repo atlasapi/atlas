@@ -37,6 +37,10 @@ public class PaHelper {
     public static String getAlias(String id) {
         return PA_BASE_URL + id;
     }
+
+    public static Alias getAliasItem(String id) {
+        return new Alias(PA_BASE_ALIAS, id);
+    }
     
     public static String getBrandUri(String id) {
         return PA_BASE_URL + "brands/" + id;

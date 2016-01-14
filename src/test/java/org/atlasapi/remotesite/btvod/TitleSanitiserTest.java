@@ -121,6 +121,10 @@ public class TitleSanitiserTest {
         
         assertThat(titleSanitiser.sanitiseTitle("Peppa Pig - The Holiday - HD - Holiday in the Sun - HD"),
                 is("Holiday in the Sun"));
+        
+        assertThat(titleSanitiser.sanitiseTitle("Brickleberry S2 - HD S2-E13 Aparkalypse - HD"),
+                is("Aparkalypse"));
+        
     }
 
     @Test

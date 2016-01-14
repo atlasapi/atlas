@@ -1,13 +1,12 @@
 package org.atlasapi.remotesite.btvod;
 
 
-import com.google.api.client.util.Sets;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
-import com.google.common.collect.Iterables;
-import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -21,11 +20,11 @@ import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
 import org.junit.Test;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.api.client.util.Sets;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 
 public class BtVodSynthesizedSeriesExtractorTest {
 
@@ -40,6 +39,7 @@ public class BtVodSynthesizedSeriesExtractorTest {
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
+    private static final String BT_VOD_KEYWORD_NAMESPACE = "keyword namespace";
 
     private final BtVodBrandProvider brandProvider = mock(BtVodBrandProvider.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
@@ -66,7 +66,8 @@ public class BtVodSynthesizedSeriesExtractorTest {
             BT_VOD_GUID_NAMESPACE,
             BT_VOD_ID_NAMESPACE,
             BT_VOD_CONTENT_PROVIDER_NAMESPACE,
-            BT_VOD_GENRE_NAMESPACE
+            BT_VOD_GENRE_NAMESPACE,
+            BT_VOD_KEYWORD_NAMESPACE
     );
 
     private final TopicRef newTopicRef = new TopicRef(
@@ -83,9 +84,7 @@ public class BtVodSynthesizedSeriesExtractorTest {
             describedFieldsExtractor, 
             Sets.<String>newHashSet(),
             seriesUriExtractor,
-            ImmutableSet.of(SERIES_GUID),
-            imageExtractor,
-            ImmutableSet.of(newTopicRef)
+            ImmutableSet.of(SERIES_GUID)
     );
 
     @Test
@@ -136,28 +135,22 @@ public class BtVodSynthesizedSeriesExtractorTest {
     }
 
     @Test
-    public void testPropagatesNewTagToBrand() {
+    public void testUpdatesBrandFromSeries() {
         BtVodEntry entry = row();
-        Brand brand = mock(Brand.class);
 
         String brandUri = "http://brand-uri.com";
         ParentRef brandRef = mock(ParentRef.class);
 
         when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
-        when(brandProvider.brandFor(entry)).thenReturn(Optional.of(brand));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of(brandUri + "/series/1"));
-        when(newTopicContentMatchingPredicate.apply(org.mockito.Matchers.<VodEntryAndContent>anyObject())).thenReturn(true);
-
 
         seriesExtractor.process(entry);
 
         Series series = Iterables.getOnlyElement(seriesExtractor.getSynthesizedSeries().values());
-        assertThat(series.getTopicRefs().contains(newTopicRef), is(true));
 
-        verify(brand).addTopicRef(newTopicRef);
+        verify(brandProvider).updateBrandFromSeries(entry, series);
     }
-
 
     private BtVodEntry row() {
         BtVodEntry entry = new BtVodEntry();

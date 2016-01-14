@@ -10,6 +10,43 @@
         <finalName>atlas</finalName>
         <plugins>
             <plugin>
+                <groupId>org.jacoco</groupId>
+                <artifactId>jacoco-maven-plugin</artifactId>
+                <version>${jacoco.version}</version>
+                <configuration>
+                    <append>true</append>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>default-prepare-agent</id>
+                        <goals>
+                            <goal>prepare-agent</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-prepare-agent-integration</id>
+                        <goals>
+                            <goal>prepare-agent-integration</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report</id>
+                        <goals>
+                            <goal>report</goal>
+                        </goals>
+                    </execution>
+                    <execution>
+                        <id>default-report-integration</id>
+                        <goals>
+                            <goal>report-integration</goal>
+                        </goals>
+                        <configuration>
+                            <dataFile>${project.basedir}/../target/jacoco-it.exec</dataFile>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.1</version>
                 <configuration>
@@ -17,7 +54,7 @@
                     <target>1.7</target>
                     <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J-Xss1M</arg>
+                        <arg>-J-Xss5M</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>
@@ -557,7 +594,7 @@
        <dependency>
           <groupId>com.metabroadcast.atlas.glycerin</groupId>
           <artifactId>glycerin</artifactId>
-          <version>0.1.12</version>
+          <version>1.0.3</version>
        </dependency>
        <dependency>
            <groupId>com.google.http-client</groupId>
@@ -620,7 +657,15 @@
         <common.version>1.0-SNAPSHOT</common.version>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <jetty.version>9.1.0.M0</jetty.version>
+        <jacoco.version>0.7.5.201505241946</jacoco.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+
+        <sonar.jacoco.itReportPath>${project.basedir}/target/jacoco-it.exec</sonar.jacoco.itReportPath>
+        <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
+        <sonar.junit.reportsPath>${project.basedir}/target/surefire-reports</sonar.junit.reportsPath>
+        <sonar.branch>owl</sonar.branch>
+        <sonar.language>java</sonar.language>
+        <sonar.exclusions>**/target/**/*,**/src/main/java/**/generated/**/*</sonar.exclusions>
     </properties>
 
     <scm>

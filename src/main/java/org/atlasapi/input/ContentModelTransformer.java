@@ -186,11 +186,11 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         }));
     }
 
-    private Iterable<EventRef> eventRefs(Set<org.atlasapi.media.entity.simple.EventRef> eventRef){
+    private Iterable<EventRef> eventRefs(final Set<org.atlasapi.media.entity.simple.EventRef> eventRef) {
         return ImmutableSet.copyOf(Iterables.transform(eventRef, new Function<org.atlasapi.media.entity.simple.EventRef, EventRef>() {
             @Override
             public EventRef apply(org.atlasapi.media.entity.simple.EventRef input) {
-                return new EventRef(Long.valueOf(input.getId()), getPublisher(input.getPublisher()));
+                return new EventRef(idCodec.decode(input.getId()).longValue(), getPublisher(input.getPublisher()));
             }
         }));
     }

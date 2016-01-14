@@ -14,10 +14,12 @@ public class BtVodEntry {
     private static final String TRAILER_SERVICE_TYPE_SCHEME = "trailerServiceType";
     private static final String SERVICE_TYPE_SCHEME = "serviceType";
     private static final String MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME = "masterAgreementOtgTvodPlay";
+    private static final String KEYWORD = "keyword";
     
     private String id;
     private String guid;
     private String title;
+    private Long added;
     private String description;
 
     @SerializedName("plproduct$longDescription")
@@ -76,6 +78,10 @@ public class BtVodEntry {
 
     public String getTitle() {
         return title;
+    }
+
+    public Long getAdded() {
+        return added;
     }
 
     public String getDescription() {
@@ -148,6 +154,10 @@ public class BtVodEntry {
         return productTag(MASTER_AGREEMENT_OTG_TVOD_PLAY_SCHEME);
     }
 
+    public ImmutableSet<String> getKeywordTags() {
+        return productTags(KEYWORD);
+    }
+
     public String getSchedulerChannel() {
         for (BtVodPlproduct$productTag plproduct$productTag : productTags) {
             if (plproduct$productTag.getPlproduct$scheme().equals(SCHEDULER_CHANNEL)) {
@@ -175,6 +185,10 @@ public class BtVodEntry {
 
     public void setTitle(String title) {
         this.title = title;
+    }
+
+    public void setAdded(Long added) {
+        this.added = added;
     }
 
     public void setDescription(String description) {

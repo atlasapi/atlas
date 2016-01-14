@@ -1,23 +1,21 @@
 package org.atlasapi.remotesite.btvod;
 
+import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
+
 import java.util.Map;
 import java.util.Set;
+
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.TopicRef;
-import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-
 
 public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtractor {
-
-
-    private static final String HELP_TYPE = "help";
-    private static final String EPISODE_TYPE = "episode";
 
     /**
      * GUID -> series
@@ -32,9 +30,7 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            Set<String> explicitSeriesIds,
-            ImageExtractor imageExtractor,
-            Iterable<TopicRef> topicsToPropagateToParents
+            Set<String> explicitSeriesIds
     ) {
         super(
                 btVodBrandProvider,
@@ -42,9 +38,7 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
                 listener,
                 processedRows,
                 describedFieldsExtractor,
-                seriesUriExtractor,
-                imageExtractor,
-                topicsToPropagateToParents
+                seriesUriExtractor
         );
 
         this.explicitSeriesIds = ImmutableSet.copyOf(explicitSeriesIds);
@@ -52,8 +46,8 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
     }
 
     private boolean isPartOfSeries(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getProductType())
-                && EPISODE_TYPE.equals(row.getProductType())
+        return !HELP.isOfType(row.getProductType())
+                && EPISODE.isOfType(row.getProductType())
                 && getSeriesUriExtractor().extractSeriesNumber(row).isPresent();
 
     }

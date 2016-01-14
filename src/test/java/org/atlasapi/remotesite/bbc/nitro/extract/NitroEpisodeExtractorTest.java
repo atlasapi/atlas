@@ -32,17 +32,16 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.atlas.glycerin.model.AncestorsTitles;
+import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.AvailabilityOf;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.Format;
 import com.metabroadcast.atlas.glycerin.model.FormatsType;
+import com.metabroadcast.atlas.glycerin.model.GenreGroup;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Version;
-import com.metabroadcast.atlas.glycerin.model.VersionType;
-import com.metabroadcast.atlas.glycerin.model.VersionTypes;
 import com.metabroadcast.atlas.glycerin.model.WarningText;
 import com.metabroadcast.atlas.glycerin.model.Warnings;
 import com.metabroadcast.common.time.SystemClock;
@@ -83,7 +82,7 @@ public class NitroEpisodeExtractorTest {
         brandEpisode.setPid("p017m2vg");
         brandEpisode.setTitle("01/01/2004");
         brandEpisode.setEpisodeOf(pidRef("brand", "b006m86d"));
-        brandEpisode.setAncestorsTitles(ancestorsTitles("b006m86d", "EastEnders"));
+        brandEpisode.setAncestorTitles(ancestorTitles("b006m86d", "EastEnders"));
         
         Item extracted = extractor.extract(NitroItemSource.valueOf(brandEpisode, noAvailability));
         
@@ -101,7 +100,7 @@ public class NitroEpisodeExtractorTest {
         brandEpisode.setPid("b012cl84");
         brandEpisode.setTitle("Destiny");
         brandEpisode.setEpisodeOf(pidRef("series", "b00zdhtg"));
-        brandEpisode.setAncestorsTitles(ancestorsTitles(null, null,
+        brandEpisode.setAncestorTitles(ancestorTitles(null, null,
             ImmutableMap.of("b00zdhtg", "Wonders of the Universe")
         ));
         
@@ -122,7 +121,7 @@ public class NitroEpisodeExtractorTest {
         brandSeriesEpisode.setTitle("Asylum of the Daleks");
         brandSeriesEpisode.setPresentationTitle("Episode 1");
         brandSeriesEpisode.setEpisodeOf(pidRef("series", "p00wqr12"));
-        brandSeriesEpisode.setAncestorsTitles(ancestorsTitles("b006q2x0", "Doctor Who",
+        brandSeriesEpisode.setAncestorTitles(ancestorTitles("b006q2x0", "Doctor Who",
             ImmutableMap.of("p00wqr12","Series 7 Part 1")
         ));
         
@@ -143,7 +142,7 @@ public class NitroEpisodeExtractorTest {
         brandSeriesSeriesEpisode.setTitle("Part 2");
         brandSeriesSeriesEpisode.setPresentationTitle("Part 2");
         brandSeriesSeriesEpisode.setEpisodeOf(pidRef("series", "b01h8xs7"));
-        brandSeriesSeriesEpisode.setAncestorsTitles(ancestorsTitles("b007y6k8", "Silent Witness",
+        brandSeriesSeriesEpisode.setAncestorTitles(ancestorTitles("b007y6k8", "Silent Witness",
             ImmutableMap.of("b01fltqv","Series 15", "b01h8xs7", "Fear")
         ));
         
@@ -163,7 +162,7 @@ public class NitroEpisodeExtractorTest {
         seriesSeriesEpisode.setPid("b011pq1v");
         seriesSeriesEpisode.setPresentationTitle("Part 3");
         seriesSeriesEpisode.setEpisodeOf(pidRef("series", "b011s30z"));
-        seriesSeriesEpisode.setAncestorsTitles(ancestorsTitles(null, null,
+        seriesSeriesEpisode.setAncestorTitles(ancestorTitles(null, null,
             ImmutableMap.of("b011cdng","The Complete Smiley",
                     "b011s30z","Tinker, Tailor, Soldier, Spy")
         ));
@@ -198,7 +197,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(AUDIO_DESCRIBED_VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(audioDescribedVersion())));
 
         org.atlasapi.media.entity.Version audioDescribedVersion = extractedAudioDescribed.getVersions()
@@ -210,7 +208,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedNonAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(NON_AUDIO_DESCRIBED_VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(nonAudioDescribedVersion())));
 
         org.atlasapi.media.entity.Version nonAudioDescribedVersion = extractedNonAudioDescribed.getVersions()
@@ -238,7 +235,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedSigned = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(signedVersionPid)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(signedVersion(signedVersionPid))));
 
         org.atlasapi.media.entity.Version signedVersion = Iterables.getOnlyElement(extractedSigned.getVersions());
@@ -247,7 +243,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedNonAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(notSignedVersionPid)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(version(notSignedVersionPid))));
 
         org.atlasapi.media.entity.Version nonSignedVersion = Iterables.getOnlyElement(extractedNonAudioDescribed.getVersions());
@@ -268,7 +263,6 @@ public class NitroEpisodeExtractorTest {
         Item extractedAudioDescribed = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(availability(WITH_WARNING_VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(versionWithWarning(warningMessage))));
 
         org.atlasapi.media.entity.Version version = extractedAudioDescribed.getVersions()
@@ -290,7 +284,6 @@ public class NitroEpisodeExtractorTest {
         Item extracted = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(sdAvailability(VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(version(VERSION_PID))));
 
         org.atlasapi.media.entity.Version version = Iterables.getOnlyElement(extracted.getVersions());
@@ -311,7 +304,6 @@ public class NitroEpisodeExtractorTest {
         Item extracted = extractor.extract(NitroItemSource.valueOf(tli,
                 ImmutableList.of(hdAvailability(VERSION_PID)),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.of(version(VERSION_PID))));
 
         org.atlasapi.media.entity.Version version = Iterables.getOnlyElement(extracted.getVersions());
@@ -333,7 +325,6 @@ public class NitroEpisodeExtractorTest {
         Item audioExtracted = extractor.extract(NitroItemSource.valueOf(audioEpisode,
                 ImmutableList.<Availability>of(),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.<Version>of()));
 
         Assert.assertEquals(MediaType.AUDIO, audioExtracted.getMediaType());
@@ -346,7 +337,6 @@ public class NitroEpisodeExtractorTest {
         Item videoExtracted = extractor.extract(NitroItemSource.valueOf(videoEpisode,
                 ImmutableList.<Availability>of(),
                 ImmutableList.<Broadcast>of(),
-                ImmutableList.<NitroGenreGroup>of(),
                 ImmutableList.<Version>of()));
 
         Assert.assertEquals(MediaType.VIDEO, videoExtracted.getMediaType());
@@ -363,21 +353,21 @@ public class NitroEpisodeExtractorTest {
         return formatsType;
     }
 
-    private AncestorsTitles ancestorsTitles(String brandPid, String brandTitle) {
-        return ancestorsTitles(brandPid, brandTitle, ImmutableMap.<String,String>of());
+    private AncestorTitles ancestorTitles(String brandPid, String brandTitle) {
+        return ancestorTitles(brandPid, brandTitle, ImmutableMap.<String,String>of());
     }
 
-    private AncestorsTitles ancestorsTitles(String brandPid, String brandTitle,
+    private AncestorTitles ancestorTitles(String brandPid, String brandTitle,
             ImmutableMap<String, String> series) {
-        AncestorsTitles titles = new AncestorsTitles();
+        AncestorTitles titles = new AncestorTitles();
         if (!Strings.isNullOrEmpty(brandPid) && !Strings.isNullOrEmpty(brandTitle)) {
-            AncestorsTitles.Brand brand = new AncestorsTitles.Brand();
+            AncestorTitles.Brand brand = new AncestorTitles.Brand();
             brand.setPid(brandPid);
             brand.setTitle(brandTitle);
             titles.setBrand(brand);
         }
         for (Entry<String, String> sery : series.entrySet()) {
-            AncestorsTitles.Series ancestorSeries = new AncestorsTitles.Series();
+            AncestorTitles.Series ancestorSeries = new AncestorTitles.Series();
             ancestorSeries.setPid(sery.getKey());
             ancestorSeries.setTitle(sery.getValue());
             titles.getSeries().add(ancestorSeries);
@@ -442,13 +432,13 @@ public class NitroEpisodeExtractorTest {
         Version version = new Version();
         version.setPid(AUDIO_DESCRIBED_VERSION_PID);
 
-        VersionType type = new VersionType();
+        Version.Types.Type type = new Version.Types.Type();
         type.setId("DubbedAudioDescribed");
 
-        VersionTypes types = new VersionTypes();
-        types.getVersionType().add(type);
+        Version.Types types = new Version.Types();
+        types.getType().add(type);
 
-        version.setVersionTypes(types);
+        version.setTypes(types);
         version.setDuration(DatatypeFactory.newInstance().newDuration(VERSION_DURATION.getMillis()));
 
         return version;
@@ -457,12 +447,12 @@ public class NitroEpisodeExtractorTest {
     private Version signedVersion(String versionPid) throws DatatypeConfigurationException {
         Version version = version(versionPid);
 
-        VersionType type = new VersionType();
+        Version.Types.Type type = new Version.Types.Type();
         type.setId("Signed");
 
-        VersionTypes types = new VersionTypes();
-        types.getVersionType().add(type);
-        version.setVersionTypes(types);
+        Version.Types types = new Version.Types();
+        types.getType().add(type);
+        version.setTypes(types);
 
         return version;
     }

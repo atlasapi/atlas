@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.scorers;
 
+import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -18,13 +19,17 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.EntityType;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.content.ResolvedContent.ResolvedContentBuilder;
+import org.hamcrest.core.IsNull;
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -41,8 +46,9 @@ import com.metabroadcast.common.time.DateTimeZones;
 public class ContainerHierarchyMatchingScorerTest {
 
     private final ContentResolver contentResolver = mock(ContentResolver.class);
+    private SubscriptionCatchupBrandDetector subscriptionCatchupBrandDetector = mock(SubscriptionCatchupBrandDetector.class);
     
-    private final ContainerHierarchyMatchingScorer scorer = new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne());
+    private final ContainerHierarchyMatchingScorer scorer = new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne(), subscriptionCatchupBrandDetector);
     
     @Test
     @SuppressWarnings("unchecked")
@@ -184,7 +190,7 @@ public class ContainerHierarchyMatchingScorerTest {
     private Map<String, ? extends Identified> series(int seriesCount) {
         Builder<String, Series> builder = ImmutableMap.builder();
         for (int j = 0; j < seriesCount; j++) {
-            Series series = new Series("uri"+j, "curie", Publisher.BBC);
+            Series series = series("uri"+j, null);
             builder.put(series.getCanonicalUri(), series);
         };
         return builder.build();
@@ -204,6 +210,11 @@ public class ContainerHierarchyMatchingScorerTest {
 
     public void setChildren(int children, Container brand) {
         brand.setChildRefs(Iterables.limit(Iterables.cycle(new ChildRef(1234L, "uri", "sk", new DateTime(DateTimeZones.UTC), EntityType.EPISODE)), children));
+    }
+    
+    private Series series(String uri, Integer seriesNumber) {
+        Series series = new Series(uri, null, Publisher.METABROADCAST);
+        return series.withSeriesNumber(seriesNumber);
     }
 
 }

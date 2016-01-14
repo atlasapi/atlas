@@ -11,22 +11,35 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 
 public class BtVodBrandProvider {
 
     private final BrandUriExtractor brandUriExtractor;
     private final Map<String, Brand> brands;
-    private final BrandDescriptionUpdater brandDescriptionUpdater;
+    private final Map<String, Brand> parentGuidToBrand;
+    private final HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater;
     private final CertificateUpdater certificateUpdater;
+    private final TopicUpdater topicUpdater;
+    private final BtVodContentListener listener;
 
-    public BtVodBrandProvider(BrandUriExtractor brandUriExtractor,
-            Map<String, Brand> brands, BrandDescriptionUpdater brandDescriptionUpdater,
-            CertificateUpdater certificateUpdater) {
+    public BtVodBrandProvider(
+            BrandUriExtractor brandUriExtractor,
+            Map<String, Brand> brands,
+            Map<String, Brand> parentGuidToBrand,
+            HierarchyDescriptionAndImageUpdater descriptionAndImageUpdater,
+            CertificateUpdater certificateUpdater,
+            TopicUpdater topicUpdater,
+            BtVodContentListener listener
+    ) {
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.brands = ImmutableMap.copyOf(brands);
-        this.brandDescriptionUpdater = checkNotNull(brandDescriptionUpdater);
+        this.parentGuidToBrand = ImmutableMap.copyOf(parentGuidToBrand);
+        this.descriptionAndImageUpdater = checkNotNull(descriptionAndImageUpdater);
         this.certificateUpdater = checkNotNull(certificateUpdater);
+        this.topicUpdater = checkNotNull(topicUpdater);
+        this.listener = checkNotNull(listener);
     }
 
 
@@ -46,13 +59,7 @@ public class BtVodBrandProvider {
             return Optional.absent();
         }
 
-        return Optional.fromNullable(
-                ParentRef.parentRefFrom(
-                        brands.get(
-                                optionalUri.get()
-                        )
-                )
-        );
+        return Optional.of(ParentRef.parentRefFrom(brands.get(optionalUri.get())));
     }
 
     public void updateBrandFromSeries(BtVodEntry seriesRow, Series series) {
@@ -62,8 +69,11 @@ public class BtVodBrandProvider {
         }
         Brand brand = brandOptional.get();
 
-        brandDescriptionUpdater.updateDescriptions(brand, series);
+        descriptionAndImageUpdater.update(brand, series);
         certificateUpdater.updateCertificates(brand, series);
+        topicUpdater.updateTopics(brand, series.getTopicRefs());
+
+        listener.onContent(brand, seriesRow);
     }
 
     public void updateBrandFromEpisode(BtVodEntry episodeRow, Episode episode) {
@@ -73,6 +83,24 @@ public class BtVodBrandProvider {
         }
         Brand brand = brandOptional.get();
 
+        descriptionAndImageUpdater.update(brand, episode);
         certificateUpdater.updateCertificates(brand, episode);
+        topicUpdater.updateTopics(brand, episode.getTopicRefs());
+
+        listener.onContent(brand, episodeRow);
+    }
+
+    public void updateBrandFromCollection(BtVodCollection collection) {
+        Brand brand = parentGuidToBrand.get(collection.getGuid());
+
+        if (brand == null) {
+            return;
+        }
+
+        descriptionAndImageUpdater.update(brand, collection);
+    }
+
+    public ImmutableList<Brand> getBrands() {
+        return ImmutableList.copyOf(brands.values());
     }
 }

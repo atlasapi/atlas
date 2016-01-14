@@ -1,12 +1,17 @@
 package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.COLLECTION;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.FILM;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.MUSIC;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.SEASON;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Encoding;
@@ -25,13 +30,15 @@ import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -39,13 +46,6 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
 
 public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     
-    private static final String FILM_TYPE = "film";
-    private static final String MUSIC_TYPE = "music";
-    static final String EPISODE_TYPE = "episode";
-    public static final String COLLECTION_TYPE = "collection";
-    private static final String SEASON_TYPE = "season";
-    private static final String HELP_TYPE = "help";
-
     private static final Logger log = LoggerFactory.getLogger(BtVodItemExtractor.class);
     private static final String OTG_PLATFORM = "OTG";
 
@@ -61,10 +61,11 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final TitleSanitiser titleSanitiser;
     private final ImageExtractor imageExtractor;
+    private final BtVodEntryMatchingPredicate kidsPredicate;
     private UpdateProgress progress = UpdateProgress.START;
     private final BtVodVersionsExtractor versionsExtractor;
+    private final DedupedDescriptionAndImageUpdater descriptionAndImageUpdater;
 
-    private final ImmutableSet<TopicRef> topicsToPropagateToParents;
     private final BtVodEpisodeNumberExtractor episodeNumberExtractor;
     private final BtMpxVodClient mpxClient;
 
@@ -79,9 +80,10 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
             BtVodVersionsExtractor versionsExtractor,
-            Iterable<TopicRef> topicsToPropagateToParents,
+            DedupedDescriptionAndImageUpdater descriptionAndImageUpdater,
             BtVodEpisodeNumberExtractor episodeNumberExtractor,
-            BtMpxVodClient mpxClient
+            BtMpxVodClient mpxClient,
+            BtVodEntryMatchingPredicate kidsPredicate
     ) {
         this.brandProvider = checkNotNull(brandProvider);
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
@@ -94,17 +96,17 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         this.processedItems = Maps.newHashMap();
         this.imageExtractor = checkNotNull(imageExtractor);
         this.versionsExtractor = checkNotNull(versionsExtractor);
-        this.topicsToPropagateToParents = ImmutableSet.copyOf(topicsToPropagateToParents);
+        this.descriptionAndImageUpdater = checkNotNull(descriptionAndImageUpdater);
         this.episodeNumberExtractor = checkNotNull(episodeNumberExtractor);
         this.mpxClient = checkNotNull(mpxClient);
+        this.kidsPredicate = checkNotNull(kidsPredicate);
     }
 
     @Override
     public boolean process(BtVodEntry row) {
         UpdateProgress thisProgress = UpdateProgress.FAILURE;
         try {
-            if (!shouldProcess(row)
-                    || processedRows.contains(row.getGuid())) {
+            if (!shouldProcess(row) || processedRows.contains(row.getGuid())) {
                 thisProgress = UpdateProgress.SUCCESS;
                 return true;
             }
@@ -129,60 +131,93 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     }
 
     private boolean shouldProcess(BtVodEntry row) {
-        return !COLLECTION_TYPE.equals(row.getProductType()) 
-                    && !HELP_TYPE.equals(row.getProductType())
-                    && !SEASON_TYPE.equals(row.getProductType());
+        return !COLLECTION.isOfType(row.getProductType())
+                    && !HELP.isOfType(row.getProductType())
+                    && !SEASON.isOfType(row.getProductType())
+                    && !isKidsEst(row);
+    }
+
+    private boolean isKidsEst(BtVodEntry entry) {
+        return kidsPredicate.apply(entry)
+                && entry.getProductOfferingType() != null
+                && entry.getProductOfferingType().contains(BtVodVersionsExtractor.PAY_TO_BUY_SUFFIX);
     }
 
     private boolean isEpisode(BtVodEntry row) {
-        return EPISODE_TYPE.equals(row.getProductType()) && getBrandRefOrNull(row) != null;
+        return EPISODE.isOfType(row.getProductType()) && getBrandRefOrNull(row) != null;
     }
 
     private Item itemFrom(BtVodEntry row) {
         Item item;
         String itemKeyForDeduping = itemKeyForDeduping(row);
+        log.debug("GUID [{}] Key for deduping [{}]", row.getGuid(), itemKeyForDeduping);
         if (processedItems.containsKey(itemKeyForDeduping)) {
             item = processedItems.get(itemKeyForDeduping);
-            includeVersionsAndClipsOnAlreadyExtractedItem(item, row);
+            log.debug("Already found matching item with same key, its URI is {}", item.getCanonicalUri());
+            includeMetadataOnExistingItem(item, row);
             return item;
         }
         if (isEpisode(row)) {
+            log.debug("GUID [{}] Creating episode", row.getGuid());
             item = createEpisode(row);
-        } else if (FILM_TYPE.equals(row.getProductType())) {
+        } else if (FILM.isOfType(row.getProductType())) {
+            log.debug("GUID [{}] Creating film", row.getGuid());
             item = createFilm(row);
-        } else if (MUSIC_TYPE.equals(row.getProductType())) {
+        } else if (MUSIC.isOfType(row.getProductType())) {
+            log.debug("GUID [{}] Creating song", row.getGuid());
             item = createSong(row);
         } else {
+            log.debug("GUID [{}] Creating item", row.getGuid());
             item = createItem(row);
         }
+        log.debug("GUID [{}] Created content with URI {}", row.getGuid(), item.getCanonicalUri());
         populateItemFields(item, row);
-        addTopicsToParents(item, row);
         return item;
     }
 
-    private void addTopicsToParents(Item item, BtVodEntry row) {
-        for (TopicRef topicRef : topicsToPropagateToParents) {
-            if (item.getTopicRefs().contains(topicRef)) {
-                if (item.getContainer() != null) {
-                    Brand brand = brandProvider.brandFor(row).get();
-                    brand.addTopicRef(topicRef);
-                    listener.onContent(brand, row);
-                }
-                if(item instanceof Episode && ((Episode)item).getSeriesRef() != null) {
-                    Series series = seriesProvider.seriesFor(row).get();
-                    series.addTopicRef(topicRef);
-                    listener.onContent(series, row);
-                }
-            }
-        }
-    }
+    private void includeMetadataOnExistingItem(Item item, BtVodEntry row) {
+        Set<Version> versions = versionsExtractor.createVersions(row);
+        descriptionAndImageUpdater.updateDescriptionsAndImages(
+                item, row, imageExtractor.imagesFor(row), versions
+        );
+        item.addVersions(versions);
 
-    private void includeVersionsAndClipsOnAlreadyExtractedItem(Item item, BtVodEntry row) {
-        item.addVersions(versionsExtractor.createVersions(row));
         item.addClips(extractTrailer(row));
         item.addAliases(describedFieldsExtractor.aliasesFrom(row));
+        
+        addMissingTopicRefs(item, row);
+    }
+    
+    private void addMissingTopicRefs(final Item item, BtVodEntry row) {
+        final Set<Long> existingTopicIds = topicIdsOfReferencedTopics(item);
+        
+        VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, item);
+        Iterable<TopicRef> additionalTopicRefs = Iterables.filter(describedFieldsExtractor.topicsFrom(vodEntryAndContent),
+                new Predicate<TopicRef>() {
+
+                    @Override
+                    public boolean apply(final TopicRef newTopic) {
+                        return !existingTopicIds.contains(newTopic.getTopic());
+                    }
+                }
+        );
+        
+        item.addTopicRefs(additionalTopicRefs);
     }
 
+    private Set<Long> topicIdsOfReferencedTopics(final Item item) {
+        return Sets.newHashSet(
+                Iterables.transform(item.getTopicRefs(), 
+                                    new Function<TopicRef, Long>() {
+
+                                        @Override
+                                        public Long apply(TopicRef input) {
+                                            return input.getTopic();
+                                        }
+                                    })
+                              );
+    }
+    
     private String itemKeyForDeduping(BtVodEntry row) {
         ParentRef brandRef = getBrandRefOrNull(row);
         String brandUri = brandRef != null ? brandRef.getUri() : "";
@@ -214,6 +249,9 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         episode.setSeriesNumber(extractSeriesNumber(row));
         episode.setEpisodeNumber(extractEpisodeNumber(row));
         episode.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
+        if (Strings.isNullOrEmpty(episode.getTitle()) && episode.getEpisodeNumber() != null) {
+            episode.setTitle(String.format("Episode %d", episode.getEpisodeNumber()));
+        }
         episode.setSeriesRef(getSeriesRefOrNull(row));
         episode.setParentRef(getBrandRefOrNull(row));
         episode.setSpecialization(Specialization.TV);
@@ -223,7 +261,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     public Integer extractSeriesNumber(BtVodEntry row) {
         if (!Strings.isNullOrEmpty(row.getParentGuid())) {
             Optional<BtVodEntry> parent = mpxClient.getItem(row.getParentGuid());
-            if (parent.isPresent() && BtVodItemExtractor.COLLECTION_TYPE.equalsIgnoreCase(parent.get().getProductType())) {
+            if (parent.isPresent() && COLLECTION.isOfType(parent.get().getProductType())) {
                 return null;
             }
         }
@@ -275,19 +313,22 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
     private void populateItemFields(Item item, BtVodEntry row) {
         Optional<ParentRef> brandRefFor = brandProvider.brandRefFor(row);
 
-
         if (brandRefFor.isPresent()) {
             item.setParentRef(brandRefFor.get());
         }
 
         describedFieldsExtractor.setDescribedFieldsFrom(row, item);
 
-        item.setVersions(versionsExtractor.createVersions(row));
+        Set<Version> versions = versionsExtractor.createVersions(row);
+        descriptionAndImageUpdater.updateDescriptionsAndImages(
+                item, row, imageExtractor.imagesFor(row), versions
+        );
+        item.setVersions(versions);
+
         item.setEditorialPriority(row.getProductPriority());
 
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, item);
         item.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-        item.setImages(imageExtractor.imagesFor(row));
 
         BtVodProductRating rating = Iterables.getFirst(row.getplproduct$ratings(), null);
         if (rating != null) {

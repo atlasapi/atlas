@@ -59,8 +59,7 @@ public class TeamInfoboxScrapper {
                 }
             } else if (isOfficialWebsite) {
                 try {
-                    String website = SwebleHelper.extractArgument(t, 0);
-                    attrs.website = website;
+                    attrs.website = SwebleHelper.extractArgument(t, 0);
                 } catch (Exception e) {
                     log.warn("Failed to extract official website from \"" + SwebleHelper.unparse(t) + "\"", e);
                 }

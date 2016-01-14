@@ -1,19 +1,21 @@
 package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.SEASON;
 
 import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.api.client.util.Maps;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  * Extract brand images from MPX feed.
@@ -69,14 +71,14 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
     public boolean process(BtVodEntry entry) {
         Optional<String> brandUri = brandUriExtractor.extractBrandUri(entry);
         
-        if (!BrandUriExtractor.SERIES_TYPE.equals(entry.getProductType())
-                && !BtVodItemExtractor.EPISODE_TYPE.equals(entry.getProductType())) {
+        if (!SEASON.isOfType(entry.getProductType())
+                && !EPISODE.isOfType(entry.getProductType())) {
             return true;
         }
         
         Integer seriesNumber = seriesUriExtractor.extractSeriesNumber(entry).orNull();
         Integer episodeNumber = null;
-        if (BtVodItemExtractor.EPISODE_TYPE.equals(entry.getProductType())) {
+        if (EPISODE.isOfType(entry.getProductType())) {
             episodeNumber = episodeNumberExtractor.extractEpisodeNumber(entry);
         }
         if (seriesNumber != null || episodeNumber != null) {
@@ -134,13 +136,10 @@ public class DerivingFromSeriesBrandImageExtractor implements BrandImageExtracto
         }
         
         // Prefer the latest episode
-        
-        if (current.seriesNumber == null 
-                && current.episodeNumber < episodeNumber) {
-            return true;
-        }
 
-        return false;
+        return current.seriesNumber == null
+                && current.episodeNumber < episodeNumber;
+
     }
 
     @Override

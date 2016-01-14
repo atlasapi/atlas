@@ -14,13 +14,14 @@ import com.google.common.base.Optional;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 
 public class NitroCrewMemberExtractor implements
-        ContentExtractor<Brand.People.Contribution, Optional<CrewMember>> {
+        ContentExtractor<Brand.Contributions.Contribution, Optional<CrewMember>> {
 
     private static final Publisher PUBLISHER = Publisher.BBC_NITRO;
 
     @Override
-    public Optional<CrewMember> extract(Brand.People.Contribution contribution) {
-        Optional<CrewMember.Role> role = CrewMember.Role.fromPossibleTvaCode(contribution.getCreditRoleId());
+    public Optional<CrewMember> extract(Brand.Contributions.Contribution contribution) {
+        Optional<CrewMember.Role> role = CrewMember.Role.fromPossibleTvaCode(contribution.getCreditRole()
+                .getId());
 
         if (!role.isPresent()) {
             return Optional.absent();
@@ -28,14 +29,15 @@ public class NitroCrewMemberExtractor implements
 
         CrewMember crewMember = crewMemberFor(contribution, role.get()).withRole(role.get());
 
-        if (contribution.getContributorName() != null) {
-            crewMember.withName(fullName(contribution.getContributorName()));
+        if (contribution.getContributor().getName() != null) {
+            crewMember.withName(fullName(contribution.getContributor().getName()));
         }
 
         return Optional.of(crewMember);
     }
 
-    private static CrewMember crewMemberFor(Brand.People.Contribution contribution, CrewMember.Role role) {
+    private static CrewMember crewMemberFor(Brand.Contributions.Contribution contribution,
+            CrewMember.Role role) {
         CrewMember crewMember;
         if (CrewMember.Role.ACTOR.equals(role)) {
             crewMember = createActor(contribution);
@@ -45,16 +47,16 @@ public class NitroCrewMemberExtractor implements
         return crewMember;
     }
 
-    private static CrewMember createCrewMember(Brand.People.Contribution contribution) {
+    private static CrewMember createCrewMember(Brand.Contributions.Contribution contribution) {
         return new CrewMember(uriFor(contribution), curieFor(contribution), PUBLISHER);
     }
 
-    private static CrewMember createActor(Brand.People.Contribution contribution) {
+    private static CrewMember createActor(Brand.Contributions.Contribution contribution) {
         return new Actor(uriFor(contribution), curieFor(contribution), PUBLISHER)
                 .withCharacter(contribution.getCharacterName());
     }
 
-    private static String fullName(Brand.People.Contribution.ContributorName name) {
+    private static String fullName(Brand.Contributions.Contribution.Contributor.Name name) {
         return Joiner.on(" ").skipNulls().join(
                 Strings.emptyToNull(name.getGiven()),
                 Strings.emptyToNull(name.getFamily())

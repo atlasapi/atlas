@@ -31,23 +31,23 @@ final class LocationEquivalence extends Equivalence<Location> {
     @Override
     protected int doHash(Location loc) {
         return Objects.hashCode(
-                loc.getAliases(), 
-                loc.getAliasUrls(), 
-                loc.getEquivalentTo(), 
-                loc.getAvailable(), 
-                loc.getTransportType(), 
-                loc.getCanonicalUri(), 
+                loc.getAliases(),
+                loc.getAliasUrls(),
+                loc.getEquivalentTo(),
+                loc.getAvailable(),
+                loc.getTransportType(),
+                loc.getCanonicalUri(),
                 hashCode(loc.getPolicy())
         );
     }
 
     private int hashCode(Policy policy) {
         return Objects.hashCode(
-                policy.getAvailabilityStart(), 
-                policy.getAvailabilityEnd(), 
-                policy.getActualAvailabilityStart(), 
-                policy.getAvailableCountries(), 
-                policy.getPlatform(), 
+                policy.getAvailabilityStart(),
+                policy.getAvailabilityEnd(),
+                policy.getActualAvailabilityStart(),
+                policy.getAvailableCountries(),
+                policy.getPlatform(),
                 policy.getNetwork()
         );
     }

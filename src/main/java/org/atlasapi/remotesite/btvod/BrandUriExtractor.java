@@ -1,25 +1,27 @@
 package org.atlasapi.remotesite.btvod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.SEASON;
 
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.ImmutableList;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 
 
 public class BrandUriExtractor {
 
-    private static final String HELP_TYPE = "help";
-    private static final String EPISODE_TYPE = "episode";
-    public static final String SERIES_TYPE = "season";
+    private static final Pattern HD_PATTERN = Pattern.compile("^(.*)\\-\\sHD");
 
     private static final List<Pattern> BRAND_TITLE_FROM_EPISODE_PATTERNS = ImmutableList.of(
             Pattern.compile("^(.*):.*S[0-9]+.*S[0-9]+\\-E.*"),  
+            Pattern.compile("^(.*).*S[0-9]+.*S[0-9]+\\-E.*"),  
             Pattern.compile("^(.*?)-\\s+.*S[0-9]++[\\- ]E.*"),
             Pattern.compile("^(.*).*S[0-9]++[\\- ]E.*"),
             Pattern.compile("^(.*)Season\\s[0-9]+\\s-\\sSeason\\s[0-9]+\\sEpisode\\s[0-9]+.*"),
@@ -64,10 +66,10 @@ public class BrandUriExtractor {
     public Optional<String> getSynthesizedKey(BtVodEntry row) {
         String title = row.getTitle();
 
-        if (EPISODE_TYPE.equals(row.getProductType()) && canParseBrandFromEpisode(row)) {
+        if (EPISODE.isOfType(row.getProductType()) && canParseBrandFromEpisode(row)) {
             return Optional.of(Sanitizer.sanitize(brandTitleFromEpisodeTitle(title)));
         }
-        if (SERIES_TYPE.equals(row.getProductType())) {
+        if (SEASON.isOfType(row.getProductType())) {
             return Optional.of(Sanitizer.sanitize(brandTitleFromSeriesTitle(title)));
         }
 
@@ -96,8 +98,9 @@ public class BrandUriExtractor {
     }
 
     public boolean shouldSynthesizeBrand(BtVodEntry row) {
-        return !HELP_TYPE.equals(row.getProductType())
-                && ((EPISODE_TYPE.equals(row.getProductType()) && canParseBrandFromEpisode(row)) || (SERIES_TYPE.equals(row.getProductType())));
+        return !HELP.isOfType(row.getProductType())
+                && ((EPISODE.isOfType(row.getProductType()) && canParseBrandFromEpisode(row))
+                || (SEASON.isOfType(row.getProductType())));
     }
 
     public boolean canParseBrandFromEpisode(BtVodEntry row) {
@@ -128,7 +131,7 @@ public class BrandUriExtractor {
 
 
     private String stripHDSuffix(String title) {
-        Matcher hdMatcher = BtVodBrandExtractor.HD_PATTERN.matcher(title);
+        Matcher hdMatcher = HD_PATTERN.matcher(title);
         if (hdMatcher.matches()) {
             return hdMatcher.group(1).trim().replace("- HD ", "");
         }

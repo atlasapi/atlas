@@ -1,17 +1,9 @@
 package org.atlasapi.system;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.MultimapBuilder;
-import com.google.common.collect.Queues;
-import com.google.common.collect.SetMultimap;
+import com.google.common.collect.*;
 import com.google.common.hash.BloomFilter;
 import com.google.common.hash.Funnel;
 import com.google.common.hash.PrimitiveSink;
@@ -32,14 +24,9 @@ import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.io.ObjectOutputStream;
-import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.nio.file.OpenOption;
-import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -78,12 +65,6 @@ public class PaContentDeactivator {
             return lookupEntry.id();
         }
     };
-    private static final Predicate<String> IS_FILM = new Predicate<String>() {
-        @Override
-        public boolean apply(String s) {
-            return !Strings.isNullOrEmpty(s) && s.startsWith("http://pressassociation.com/films/");
-        }
-    };
 
     private final LookupEntryStore lookupStore;
     private final ContentLister contentLister;
@@ -98,20 +79,15 @@ public class PaContentDeactivator {
         this.progressStore = checkNotNull(progressStore);
     }
 
-    public void deactivate(File file, Integer threads) throws IOException {
+    public void deactivate(File file, Integer threads, Boolean dryRun) throws IOException {
         List<String> lines = Files.readAllLines(file.toPath(), UTF8);
         ImmutableSetMultimap<String, String> typeToIds = extractAliases(lines);
-        deactivate(typeToIds, threads);
+        deactivate(typeToIds, threads, dryRun);
     }
 
-    public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads) throws IOException {
+    public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads, Boolean dryRun) throws IOException {
         ImmutableSet<Long> activeAtlasContentIds = resolvePaAliasesToIds(paNamespaceToAliases);
         final BloomFilter<Long> filter = bloomFilterFor(activeAtlasContentIds);
-        LOG.info("Serializing bloom filter to disk");
-        OutputStream os = Files.newOutputStream(Paths.get("/tmp", "bloom-filter"), StandardOpenOption.CREATE);
-        ObjectOutputStream oos = new ObjectOutputStream(os);
-        oos.writeObject(filter);
-        LOG.info("Serialized bloom filter to disk");
         final Iterator<Content> contentIterator = contentLister.listContent(
                 createListingCriteria(progressStore.progressForTask(getClass().getSimpleName()))
         );
@@ -120,15 +96,11 @@ public class PaContentDeactivator {
         final AtomicInteger processedCount = new AtomicInteger();
         while (contentIterator.hasNext()) {
             Content content = contentIterator.next();
-            if (
-                    !Iterables.any(content.getAllUris(), IS_FILM) &&
-                    !filter.mightContain(content.getId()) &&
-                    content.getGenericDescription() != null &&
-                    !content.getGenericDescription()) {
-
+            Predicate<Content> shouldDeactivate = new PaContentDeactivationPredicate(filter);
+            if (shouldDeactivate.apply(content)) {
                 LOG.info("Content {} - {} not in bloom filter, deactivating...",
                         content.getClass().getSimpleName(), content.getId());
-                executor.submit(contentDeactivatingRunnable(content, deactivatedCount));
+                executor.submit(contentDeactivatingRunnable(content, deactivatedCount, dryRun));
             }
             int count = processedCount.incrementAndGet();
             if (count % 1000 == 0) {
@@ -140,19 +112,21 @@ public class PaContentDeactivator {
             }
         }
         LOG.info("Finished processing {} items", Integer.valueOf(processedCount.get()));
-        LOG.info("Finished deactivating {} items", Integer.valueOf(deactivatedCount.get()));
+        LOG.info("Deactivated {} items", Integer.valueOf(deactivatedCount.get()));
     }
 
-    private Runnable contentDeactivatingRunnable(final Content content, final AtomicInteger progressCount) {
+    private Runnable contentDeactivatingRunnable(final Content content, final AtomicInteger progressCount, final Boolean dryRun) {
         return new Runnable() {
             @Override
             public void run() {
-                content.setActivelyPublished(false);
-                if (content instanceof Container) {
-                    contentWriter.createOrUpdate((Container) content);
-                }
-                if (content instanceof Item) {
-                    contentWriter.createOrUpdate((Item) content);
+                if (!dryRun) {
+                    content.setActivelyPublished(false);
+                    if (content instanceof Container) {
+                        contentWriter.createOrUpdate((Container) content);
+                    }
+                    if (content instanceof Item) {
+                        contentWriter.createOrUpdate((Item) content);
+                    }
                 }
                 int count = progressCount.incrementAndGet();
                 if (count % 1000 == 0) {

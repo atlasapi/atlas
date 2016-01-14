@@ -15,8 +15,10 @@ public class HttpBtMpxFeedRequestProvider {
     private static final Logger log = LoggerFactory.getLogger(HttpBtMpxFeedRequestProvider.class);
     private final String urlBase;
     private final Optional<String> query;
+    private final String singleItemLookupFeedName;
 
-    public HttpBtMpxFeedRequestProvider(String urlBase, String query) {
+    public HttpBtMpxFeedRequestProvider(String urlBase, String singleItemLookupFeedName, String query) {
+        this.singleItemLookupFeedName = checkNotNull(singleItemLookupFeedName);
         this.urlBase = checkNotNull(urlBase);
         this.query = Optional.fromNullable(Strings.emptyToNull(query));
     }
@@ -42,7 +44,7 @@ public class HttpBtMpxFeedRequestProvider {
         String url = String.format(
                 "%s%s?byGuid=%s",
                 urlBase,
-                "btv-prd-search",
+                singleItemLookupFeedName,
                 guid
         );
         log.debug("Calling {}", url);

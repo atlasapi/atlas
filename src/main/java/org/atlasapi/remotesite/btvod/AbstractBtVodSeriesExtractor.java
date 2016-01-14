@@ -5,10 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Map;
 import java.util.Set;
 
-import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,9 +26,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
-    private final ImageExtractor imageExtractor;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
-    private final ImmutableSet<TopicRef> topicsToPropagateToParents;
 
     private UpdateProgress progress = UpdateProgress.START;
 
@@ -40,21 +36,17 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
-            BtVodSeriesUriExtractor seriesUriExtractor,
-            ImageExtractor imageExtractor,
-            Iterable<TopicRef> topicsToPropagateToParents
+            BtVodSeriesUriExtractor seriesUriExtractor
     ) {
         this.processedRows = checkNotNull(processedRows);
         this.listener = checkNotNull(listener);
         this.brandProvider = checkNotNull(brandProvider);
         this.publisher = checkNotNull(publisher);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
-        this.imageExtractor = checkNotNull(imageExtractor);
         //TODO: Use DescribedFieldsExtractor for all described fields, not just aliases.
         //      Added as a collaborator for Alias extraction, but should be used more
         //      widely
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
-        this.topicsToPropagateToParents = ImmutableSet.copyOf(topicsToPropagateToParents);
     }
 
     @Override
@@ -74,7 +66,6 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             }
             setFields(series, row);
             setAdditionalFields(series, row);
-            addTopicsToParents(series, row);
             onSeriesProcessed(series, row);
 
             brandProvider.updateBrandFromSeries(row, series);
@@ -97,19 +88,6 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
     private void setFields(Series series, BtVodEntry row) {
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-    }
-    
-    //TODO Factor this out rather than duplicate from BtVodItemExtractor
-    private void addTopicsToParents(Series series, BtVodEntry row) {
-        for (TopicRef topicRef : topicsToPropagateToParents) {
-            if (series.getTopicRefs().contains(topicRef)) {
-                if (series.getParent() != null) {
-                    Brand brand = brandProvider.brandFor(row).get();
-                    brand.addTopicRef(topicRef);
-                    listener.onContent(brand, row);
-                }
-            }
-        }
     }
 
     @Override
@@ -139,12 +117,9 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
         series.setGenres(describedFieldsExtractor.btGenreStringsFrom(row));
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-        series.setImages(imageExtractor.imagesFor(row));
 
         return series;
     }
-
-
 
     protected BtVodSeriesUriExtractor getSeriesUriExtractor() {
         return seriesUriExtractor;
@@ -157,5 +132,4 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
     protected Set<String> getProcessedRows() {
         return ImmutableSet.copyOf(processedRows);
     }
-
 }

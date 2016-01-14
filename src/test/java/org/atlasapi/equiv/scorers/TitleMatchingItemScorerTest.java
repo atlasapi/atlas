@@ -44,7 +44,7 @@ public class TitleMatchingItemScorerTest extends TestCase {
 
         DefaultDescription desc = new DefaultDescription();
         
-        score(1.0, scorer.score(itemWithTitle("09/10/2011"), of(itemWithTitle("09/10/2011")), desc));
+        score(2.0, scorer.score(itemWithTitle("09/10/2011"), of(itemWithTitle("09/10/2011")), desc));
         
         score(0, scorer.score(itemWithTitle("19/10/2011"), of(itemWithTitle("09/10/2011")), desc));
         score(0, scorer.score(itemWithTitle("Countdown"), of(itemWithTitle("Out of Time")), desc));
@@ -61,9 +61,9 @@ public class TitleMatchingItemScorerTest extends TestCase {
 
         DefaultDescription desc = new DefaultDescription();
         
-        score(1, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2. Kinross")), desc));
-        score(1, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2: Kinross")), desc));
-        score(1, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2 - Kinross")), desc));
+        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2. Kinross")), desc));
+        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2: Kinross")), desc));
+        score(2, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2 - Kinross")), desc));
         score(0, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2. Different")), desc));
         
     }
@@ -73,8 +73,8 @@ public class TitleMatchingItemScorerTest extends TestCase {
         
         DefaultDescription desc = new DefaultDescription();
 
-        score(1, scorer.score(itemWithTitle("Rosencrantz & Guildenstern Are Dead"), of(itemWithTitle("Rosencrantz and Guildenstern Are Dead")), desc));
-        score(1, scorer.score(itemWithTitle("Bill & Ben"), of(itemWithTitle("2. Bill and Ben")), desc));
+        score(2, scorer.score(itemWithTitle("Rosencrantz & Guildenstern Are Dead"), of(itemWithTitle("Rosencrantz and Guildenstern Are Dead")), desc));
+        score(2, scorer.score(itemWithTitle("Bill & Ben"), of(itemWithTitle("2. Bill and Ben")), desc));
         score(0, scorer.score(itemWithTitle("B&Q"), of(itemWithTitle("BandQ")), desc));
 
     }
@@ -83,9 +83,9 @@ public class TitleMatchingItemScorerTest extends TestCase {
     public void testMatchingWithThePrefix() {
         DefaultDescription desc = new DefaultDescription();
 
-        score(1, scorer.score(itemWithTitle("Sports"), of(itemWithTitle("Live Sports")), desc));
-        score(1, scorer.score(itemWithTitle("The Great Escape"), of(itemWithTitle("Great Escape")), desc));
-        score(1, scorer.score(itemWithTitle("the Great Escape"), of(itemWithTitle("Great Escape")), desc));
+        score(2, scorer.score(itemWithTitle("Sports"), of(itemWithTitle("Live Sports")), desc));
+        score(2, scorer.score(itemWithTitle("The Great Escape"), of(itemWithTitle("Great Escape")), desc));
+        score(2, scorer.score(itemWithTitle("the Great Escape"), of(itemWithTitle("Great Escape")), desc));
         score(0, scorer.score(itemWithTitle("Theatreland"), of(itemWithTitle("The atreland")), desc));
         score(0, scorer.score(itemWithTitle("theatreland"), of(itemWithTitle("the atreland")), desc));
         score(0, scorer.score(itemWithTitle("liveandnotlive live"), of(itemWithTitle("live")), desc));
@@ -97,8 +97,8 @@ public class TitleMatchingItemScorerTest extends TestCase {
         DefaultDescription desc = new DefaultDescription();
         
         // score(1, scorer.score(itemWithTitle("Live B' Monchengladbach v Man City"), of(itemWithTitle("Borussia Moenchengladbach v Manchester City")), desc));
-        score(1, scorer.score(itemWithTitle("Live Porto v Chelsea"), of(itemWithTitle("FC Porto v Chelsea")), desc));
-        score(1, scorer.score(itemWithTitle("Live Maccabi Tel-Aviv v D' Kiev"), of(itemWithTitle("Maccabi Tel Aviv v Dynamo Kiev")), desc));
+        score(2, scorer.score(itemWithTitle("Live Porto v Chelsea"), of(itemWithTitle("FC Porto v Chelsea")), desc));
+        score(2, scorer.score(itemWithTitle("Live Maccabi Tel-Aviv v D' Kiev"), of(itemWithTitle("Maccabi Tel Aviv v Dynamo Kiev")), desc));
     }
     
     private void score(double expected, ScoredCandidates<Item> scores) {

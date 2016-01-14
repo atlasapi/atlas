@@ -32,10 +32,10 @@ import com.metabroadcast.common.intl.Countries;
 public class BtVodVersionsExtractor {
 
     private static final String OTG_PLATFORM = "OTG";
-    private static final String BT_VOD_GUID_NAMESPACE = "bt:vod:guid";
-    private static final String BT_VOD_ID_NAMESPACE = "bt:vod:id";
     private static final String HD_FLAG = "HD";
     private static final String SD_FLAG = "SD";
+    public static final String PAY_TO_BUY_SUFFIX = "-EST";
+    public static final String PRERELEASE_BLACKOUT_TYPE = "prerelease";
 
     private final String uriPrefix;
     private final BtVodPricingAvailabilityGrouper grouper;
@@ -62,6 +62,10 @@ public class BtVodVersionsExtractor {
     }
 
     public Set<Version> createVersions(BtVodEntry row) {
+        if (isBlackout(row)) {
+            return ImmutableSet.of();
+        }
+
         Set<Alias> aliases = ImmutableSet.of(
                 new Alias(guidAliasNamespace, row.getGuid()),
                 new Alias(idAliasNamespace, row.getId())
@@ -90,8 +94,39 @@ public class BtVodVersionsExtractor {
 
         return ImmutableSet.of(version);
     }
+
+    private boolean isBlackout(BtVodEntry row) {
+        if (row.getProductPricingPlan() == null
+                || row.getProductPricingPlan().getProductPricingTiers().isEmpty()) {
+            return false;
+        }
+
+        for (BtVodProductPricingTier pricingTier :
+                row.getProductPricingPlan().getProductPricingTiers()) {
+            if (isBlackout(pricingTier)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    private boolean isBlackout(BtVodProductPricingTier pricingTier) {
+        DateTime now = DateTime.now().withZone(DateTimeZone.UTC);
+
+        DateTime start = new DateTime(pricingTier.getProductAbsoluteStart(), DateTimeZone.UTC);
+        DateTime end = new DateTime(pricingTier.getProductAbsoluteEnd(), DateTimeZone.UTC);
+
+        return Boolean.TRUE.equals(pricingTier.getIsBlackout())
+                && PRERELEASE_BLACKOUT_TYPE.equals(pricingTier.getBlackoutType())
+                && isInRange(start, now, end);
+    }
+
+    private boolean isInRange(DateTime start, DateTime dateTime, DateTime end) {
+        return (start.isBefore(dateTime) || start.isEqual(dateTime))
+                && (end.isAfter(dateTime) || end.isEqual(dateTime));
+    }
     
-    public Iterable<Location> createLocations(BtVodEntry row, Long serviceId, Set<Alias> aliases) {
+    private Iterable<Location> createLocations(BtVodEntry row, Long serviceId, Set<Alias> aliases) {
         ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
         
         if (!row.getSubscriptionCodes().isEmpty()) {
@@ -111,9 +146,9 @@ public class BtVodVersionsExtractor {
             }
         }
 
-        //TODO filter for blackout
         if (row.getProductPricingPlan() != null && !row.getProductPricingPlan().getProductPricingTiers().isEmpty()) {
-            if (row.getProductOfferingType()!= null && row.getProductOfferingType().contains("-EST")) {
+            if (row.getProductOfferingType() != null
+                    && row.getProductOfferingType().contains(PAY_TO_BUY_SUFFIX)) {
                 locations.addAll(createLocations(row, Policy.RevenueContract.PAY_TO_BUY, aliases, serviceId));
             } else {
                 locations.addAll(createLocations(row, Policy.RevenueContract.PAY_TO_RENT, aliases, serviceId));

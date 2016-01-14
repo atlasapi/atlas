@@ -45,7 +45,6 @@ import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 
-
 import java.io.File;
 import java.util.Set;
 
@@ -70,6 +69,7 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -91,6 +91,7 @@ import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.SeriesSequenceItemScorer;
 import org.atlasapi.equiv.scorers.SongCrewMemberExtractor;
+import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
@@ -225,7 +226,7 @@ public class EquivModule {
         return ContentEquivalenceUpdater.<Item> builder()
             .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
                 new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver, 
-                    channelResolver, acceptablePublishers, Duration.standardMinutes(10), filter)
+                    channelResolver, acceptablePublishers, Duration.standardMinutes(5), filter)
             ))
             .withScorers(scorers)
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
@@ -287,7 +288,7 @@ public class EquivModule {
         ));
         
         EquivalenceUpdater<Item> standardItemUpdater = standardItemUpdater(MoreSets.add(acceptablePublishers, LOVEFILM), 
-                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer())).build();
+                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer(Score.ONE))).build();
         EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
@@ -299,7 +300,7 @@ public class EquivModule {
             updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
                 .withItemUpdater(standardItemUpdater)
                 .withTopLevelContainerUpdater(topLevelContainerUpdater)
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         }
         
@@ -400,7 +401,7 @@ public class EquivModule {
         updaters.register(TALK_TALK, SourceSpecificEquivalenceUpdater.builder(TALK_TALK)
                 .withItemUpdater(vodItemUpdater(acceptablePublishers).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(acceptablePublishers))
-                .withNonTopLevelContainerUpdater(vodSeriesUpdater(acceptablePublishers))
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         
         Set<Publisher> btVodPublishers = ImmutableSet.of(PA);
@@ -408,15 +409,15 @@ public class EquivModule {
                 .withItemUpdater(vodItemUpdater(btVodPublishers)
                         .withScorer(new SeriesSequenceItemScorer()).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(btVodPublishers))
-                .withNonTopLevelContainerUpdater(vodSeriesUpdater(btVodPublishers))
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(btVodPublishers))
                 .build());
         
         Set<Publisher> btTveVodPublishers = ImmutableSet.of(PA);
         updaters.register(BT_TVE_VOD, SourceSpecificEquivalenceUpdater.builder(BT_TVE_VOD)
                 .withItemUpdater(btVodItemUpdater(btTveVodPublishers)
                         .withScorer(new SeriesSequenceItemScorer()).build())
-                .withTopLevelContainerUpdater(vodContainerUpdater(btTveVodPublishers))
-                .withNonTopLevelContainerUpdater(vodSeriesUpdater(btTveVodPublishers))
+                .withTopLevelContainerUpdater(btTveVodContainerUpdater(btTveVodPublishers))
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(btTveVodPublishers))
                 .build());
                 
         Set<Publisher> itunesAndMusicPublishers = Sets.union(musicPublishers, ImmutableSet.of(ITUNES));
@@ -466,7 +467,7 @@ public class EquivModule {
         
     }
 
-    private ContentEquivalenceUpdater<Container> vodSeriesUpdater(
+    private ContentEquivalenceUpdater<Container> standardSeriesUpdater(
             Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Container>builder()
             .withGenerator(new ContainerCandidatesContainerEquivalenceGenerator(contentResolver, equivSummaryStore))
@@ -494,7 +495,7 @@ public class EquivModule {
                         ))
                         .withScorers(ImmutableSet.of(
                             new TitleMatchingItemScorer(),
-                            new SequenceItemScorer()
+                            new SequenceItemScorer(Score.ONE)
                         ))
                         .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                             new NullScoreAwareAveragingCombiner<Item>(),
@@ -539,7 +540,11 @@ public class EquivModule {
             )
             .withScorers(ImmutableSet.of(
                 new TitleMatchingContainerScorer(),
-                new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne())
+                new ContainerHierarchyMatchingScorer(
+                        contentResolver, 
+                        Score.negativeOne(), 
+                        new SubscriptionCatchupBrandDetector(contentResolver)
+                    )
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),
@@ -551,6 +556,28 @@ public class EquivModule {
             .build();
     }
 
+    private EquivalenceUpdater<Container> btTveVodContainerUpdater(Set<Publisher> acceptablePublishers) {
+        return ContentEquivalenceUpdater.<Container> builder()
+                .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers)
+                )
+                .withScorers(ImmutableSet.of(
+                        new TitleMatchingContainerScorer(),
+                        new ContainerHierarchyMatchingScorer(
+                                contentResolver,
+                                Score.valueOf(-0.49d),
+                                new SubscriptionCatchupBrandDetector(contentResolver)
+                        )
+                ))
+                .withCombiner(new RequiredScoreFilteringCombiner<Container>(
+                        new NullScoreAwareAveragingCombiner<Container>(),
+                        TitleMatchingContainerScorer.NAME)
+                )
+                .withFilter(this.<Container>standardFilter())
+                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container> atLeastNTimesGreater(1.5))
+                .withHandler(containerResultHandlers(acceptablePublishers))
+                .build();
+    }
+
     private ContentEquivalenceUpdater.Builder<Item> vodItemUpdater(Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Item> builder()
             .withGenerators(ImmutableSet.of(
@@ -559,7 +586,7 @@ public class EquivModule {
             ))
             .withScorers(ImmutableSet.of(
                 new TitleMatchingItemScorer(),
-                new SequenceItemScorer()
+                new SequenceItemScorer(Score.ONE)
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                 new NullScoreAwareAveragingCombiner<Item>(),
@@ -586,14 +613,17 @@ public class EquivModule {
             ))
             .withScorers(ImmutableSet.of(
                 new TitleMatchingItemScorer(),
-                new SequenceItemScorer()
+                // Hierarchies are known to be inconsistent between the BT VoD
+                // catalogue and others, so we want to ascribe less weight 
+                // to sequence scoring
+                new SequenceItemScorer(Score.valueOf(0.5))
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                 new NullScoreAwareAveragingCombiner<Item>(),
                 ImmutableSet.of(TitleMatchingItemScorer.NAME, SequenceItemScorer.SEQUENCE_SCORER)
             ))
             .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item> atLeastNTimesGreater(1.5))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.strict(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
@@ -617,6 +647,7 @@ public class EquivModule {
             .withFilter(this.<Container>standardFilter())
             .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
             .withHandler(containerResultHandlers(sources))
+            
             .build();
     }
 
@@ -624,7 +655,7 @@ public class EquivModule {
             Predicate<? super Broadcast> filter) {
         return standardItemUpdater(sources, ImmutableSet.of(
             new TitleMatchingItemScorer(), 
-            new SequenceItemScorer(),
+            new SequenceItemScorer(Score.ONE),
             new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
             new BroadcastAliasScorer(Score.nullScore())
         ), filter).build();

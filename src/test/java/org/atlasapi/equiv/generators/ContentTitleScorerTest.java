@@ -32,7 +32,7 @@ public class ContentTitleScorerTest {
     @Test
     public void testScore() {
         scoreLt(0.01, score("biker", "nothing"));
-        score(1, score("biker", "biker"));
+        score(2, score("biker", "biker"));
         scoreLt(0.1, score("biker", "bike"));
         scoreLt(0.1, score("biker", "bikers"));
     }
@@ -46,17 +46,17 @@ public class ContentTitleScorerTest {
     
     @Test
     public void testScoreWithAmpersands() {
-        score(1, score("Rosencrantz & Guildenstern Are Dead", "Rosencrantz and Guildenstern Are Dead"));
-        score(1, score("Bill & Ben", "Bill and Ben"));
+        score(2, score("Rosencrantz & Guildenstern Are Dead", "Rosencrantz and Guildenstern Are Dead"));
+        score(2, score("Bill & Ben", "Bill and Ben"));
     }
     
     @Test
     public void testScoreWithCommonPrefix() {
-        score(1, score("The Great Escape", "The Great Escape"));
+        score(2, score("The Great Escape", "The Great Escape"));
         scoreLt(0.1, score("The Great Escape", "Italian Job"));
         
-        score(1, score("The Great Escape", "Great Escape"));
-        score(1, score("the Great Escape", "Great Escape"));
+        score(2, score("The Great Escape", "Great Escape"));
+        score(2, score("the Great Escape", "Great Escape"));
         scoreLt(0.1, score("Theatreland", "The atreland"));
         scoreLt(0.1, score("theatreland", "the atreland"));
     }

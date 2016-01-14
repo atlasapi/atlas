@@ -29,7 +29,6 @@ import com.google.common.cache.CacheBuilder;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 
 
 public class BtVodDescribedFieldsExtractor {
@@ -42,6 +41,7 @@ public class BtVodDescribedFieldsExtractor {
     private final String idAliasNamespace;
     private final String contentProviderTopicNamespace;
     private final String genreTopicNamespace;
+    private final String keywordTopicNamespace;
 
     private static final String YOUVIEW_GENRE_PREFIX = "http://youview.com/genres";
     private final TopicCreatingTopicResolver topicCreatingTopicResolver;
@@ -160,7 +160,8 @@ public class BtVodDescribedFieldsExtractor {
             String guidAliasNamespace,
             String idAliasNamespace,
             String contentProviderTopicNamespace,
-            String genreTopicNamespace
+            String genreTopicNamespace,
+            String keywordTopicNamespace
     ) {
         this.topicCreatingTopicResolver = checkNotNull(topicCreatingTopicResolver);
         this.topicWriter = checkNotNull(topicWriter);
@@ -182,6 +183,7 @@ public class BtVodDescribedFieldsExtractor {
         this.idAliasNamespace = checkNotNull(idAliasNamespace);
         this.contentProviderTopicNamespace = checkNotNull(contentProviderTopicNamespace);
         this.genreTopicNamespace = checkNotNull(genreTopicNamespace);
+        this.keywordTopicNamespace = checkNotNull(keywordTopicNamespace);
     }
     
     public void init() {
@@ -194,24 +196,25 @@ public class BtVodDescribedFieldsExtractor {
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());
-        if (row.getProductPriority() != null) {
+        if (row.getProductPriority() != null && Double.valueOf(row.getProductPriority()) > 0) {
             Double priority = Double.valueOf(row.getProductPriority());
             if (priority > 0) {
-                described.setPriority(new Priority(priority * 3,
-                        new PriorityScoreReasons(
-                                ImmutableList.of(""),
-                                ImmutableList.of("")
-                        )
-                ));
-            } else {
-                described.setPriority(new Priority(10d,
+                described.setPriority(new Priority(Math.abs(priority) * 0.33,
                         new PriorityScoreReasons(
                                 ImmutableList.of(""),
                                 ImmutableList.of("")
                         )
                 ));
             }
+        } else {
+            described.setPriority(new Priority(100d,
+                    new PriorityScoreReasons(
+                            ImmutableList.of(""),
+                            ImmutableList.of("")
+                    )
+            ));
         }
+
         
         ImmutableList.Builder<String> genres = ImmutableList.builder();
         for (String btGenre : btGenreStringsFrom(row)) {
@@ -232,11 +235,6 @@ public class BtVodDescribedFieldsExtractor {
                 );
             }
             described.setGenres(genres.build());
-        }
-
-        if (described.getImages() != null
-                && !described.getImages().isEmpty()) {
-            described.setImage(Iterables.getFirst(described.getImages(), null).getCanonicalUri());
         }
         
         described.setAliases(aliasesFrom(row));
@@ -266,16 +264,17 @@ public class BtVodDescribedFieldsExtractor {
         topicRefs.addAll(topicFrom(vodAndContent, tvBoxsetTopic, tvBoxsetTopicPredicate).asSet());
         topicRefs.addAll(topicFrom(vodAndContent, subCatchupTopic, subCatchupTopicPredicate).asSet());
         topicRefs.addAll(contentProviderTopicFor(vodAndContent).asSet());
+        topicRefs.addAll(keywordTopicFor(vodAndContent));
         return topicRefs.build();
     }
-    
+
     private Optional<TopicRef> topicFrom(final VodEntryAndContent vodAndContent, Topic topic, BtVodContentMatchingPredicate predicate) {
         if (predicate.apply(vodAndContent)) {
             return Optional.of(topicRefFor(topic));
         }
         return Optional.absent();
     }
-    
+
     private Set<TopicRef> genreTopicsFrom(final VodEntryAndContent vodAndContent) {
         BtVodEntry row = vodAndContent.getBtVodEntry();
         ImmutableSet.Builder<TopicRef> genres = ImmutableSet.builder();
@@ -284,7 +283,7 @@ public class BtVodDescribedFieldsExtractor {
             genres.add(
                     topicRefFor(
                             cacheKey(genreTopicNamespace, row.getGenre()),
-                            genreCallable(genreTopicNamespace, row.getGenre())
+                            topicCallable(genreTopicNamespace, row.getGenre())
                     )
             );
         }
@@ -296,7 +295,7 @@ public class BtVodDescribedFieldsExtractor {
                     genres.add(
                             topicRefFor(
                                     cacheKey(genreTopicNamespace, subGenre),
-                                    genreCallable(genreTopicNamespace, subGenre)
+                                    topicCallable(genreTopicNamespace, subGenre)
                             )
                     );
                 }
@@ -305,20 +304,35 @@ public class BtVodDescribedFieldsExtractor {
         return genres.build();
     }
 
-    private Callable<Topic> genreCallable(final String namespace, final String genre) {
-        return new Callable<Topic>() {
-            @Override
-            public Topic call() throws Exception {
-                Topic topic = topicCreatingTopicResolver.topicFor(
-                        publisher,
-                        namespace,
-                        genre
-                ).requireValue();
-                topic.setTitle(genre);
-                topicWriter.write(topic);
-                return topic;
-            }
-        };
+    private Optional<TopicRef> contentProviderTopicFor(VodEntryAndContent vodAndContent) {
+        final String contentProviderId = vodAndContent.getBtVodEntry().getContentProviderId();
+        if (contentProviderId == null) {
+            return Optional.absent();
+        }
+
+        return Optional.of(
+                topicRefFor(
+                        cacheKey(contentProviderTopicNamespace, contentProviderId),
+                        topicCallable(contentProviderTopicNamespace, contentProviderId)
+                )
+        );
+    }
+
+    private Set<TopicRef> keywordTopicFor(VodEntryAndContent vodAndContent) {
+        ImmutableSet<String> keywordTags = vodAndContent.getBtVodEntry().getKeywordTags();
+        if(keywordTags.isEmpty()) {
+            return ImmutableSet.of();
+        }
+
+        ImmutableSet.Builder<TopicRef> topicRefBuilder = ImmutableSet.builder();
+        for (String keywordTag : keywordTags) {
+            topicRefBuilder.add(topicRefFor(
+                    cacheKey(keywordTopicNamespace, keywordTag),
+                    topicCallable(keywordTopicNamespace, keywordTag)
+            ));
+        }
+
+        return topicRefBuilder.build();
     }
 
     public Iterable<Alias> aliasesFrom(BtVodEntry row) {
@@ -333,40 +347,28 @@ public class BtVodDescribedFieldsExtractor {
         return ImmutableSet.of();
     }
 
-    private Optional<TopicRef> contentProviderTopicFor(VodEntryAndContent vodAndContent) {
-        final String contentProviderId = vodAndContent.getBtVodEntry().getContentProviderId();
-        if (contentProviderId == null) {
-            return Optional.absent();
-        }
-
-        return Optional.of(
-                topicRefFor(
-                        cacheKey(contentProviderTopicNamespace, contentProviderId),
-                        new Callable<Topic>() {
-                            @Override
-                            public Topic call() throws Exception {
-                                Topic topic = topicCreatingTopicResolver.topicFor(
-                                        publisher,
-                                        contentProviderTopicNamespace,
-                                        contentProviderId
-                                ).requireValue();
-                                topic.setTitle(contentProviderId);
-                                topicWriter.write(topic);
-                                return topic;
-                            }
-                        }
-                )
-
-        );
-
-    }
-
     private String cacheKey(String namespace, String value) {
         return String.format(
                 "%s:%s",
                 namespace,
                 value
         );
+    }
+
+    private Callable<Topic> topicCallable(final String namespace, final String value) {
+        return new Callable<Topic>() {
+            @Override
+            public Topic call() throws Exception {
+                Topic topic = topicCreatingTopicResolver.topicFor(
+                        publisher,
+                        namespace,
+                        value
+                ).requireValue();
+                topic.setTitle(value);
+                topicWriter.write(topic);
+                return topic;
+            }
+        };
     }
 
     private TopicRef topicRefFor(String key, Callable<Topic> callable) {

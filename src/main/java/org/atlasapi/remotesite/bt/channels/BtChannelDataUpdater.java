@@ -50,7 +50,7 @@ public class BtChannelDataUpdater {
                     updatedChannels.add(channel.requireValue().getId());
                 }
 
-            } catch (Exception e) {
+            } catch (IllegalArgumentException e) {
                 LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
             }
 
@@ -70,7 +70,7 @@ public class BtChannelDataUpdater {
                 if (channel.hasValue()) {
                     updatedChannels.add(channel.requireValue().getId());
                 }
-            } catch (Exception e) {
+            } catch (IllegalArgumentException e) {
                 LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
             }
 
@@ -102,14 +102,14 @@ public class BtChannelDataUpdater {
     }
 
     private Maybe<Channel> processEntryForAdvertiseFrom(Entry entry) {
-        long availableDate = entry.getAvailableDate();
+
         DateTime advertiseAvailableDate = new DateTime(entry.getAvailableDate());
 
         Maybe<Channel> channelMaybe = channelFor(entry.getGuid());
 
         Channel channel = channelMaybe.requireValue();
 
-        if (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() > 0) {
+        if (advertiseAvailableDate != null && advertiseAvailableDate.getMillis() >= 0) {
             channel.setAdvertiseFrom(advertiseAvailableDate);
         } else {
             channel.setAdvertiseFrom(null);

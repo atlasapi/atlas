@@ -1,19 +1,24 @@
 package org.atlasapi.remotesite.wikipedia;
 
 import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.common.io.Resources;
 import org.apache.commons.io.IOUtils;
 import org.atlasapi.media.entity.Organisation;
 import org.atlasapi.remotesite.wikipedia.football.FootballTeamsExtractor;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
 import org.joda.time.DateTime;
+import static org.hamcrest.Matchers.is;
 import org.junit.Before;
 import org.junit.Test;
 
 import java.io.IOException;
+import java.util.Set;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
 public class FootballTeamsExtractionTest {
@@ -57,6 +62,8 @@ public class FootballTeamsExtractionTest {
         assertEquals("wikipedia.org", teams.getPublisher().key());
         assertEquals("http://en.wikipedia.org/wiki/Fake_title", teams.getCanonicalUri());
         assertTrue(!teams.getRelatedLinks().isEmpty());
+        Set<String> titles = ImmutableSet.of("The Gunners");
+        assertThat(teams.getAlternativeTitles(), is(titles));
     }
 
     @Test
@@ -69,5 +76,8 @@ public class FootballTeamsExtractionTest {
         assertEquals("wikipedia.org", teams.getPublisher().key());
         assertEquals("http://en.wikipedia.org/wiki/Fake_title", teams.getCanonicalUri());
         assertTrue(!teams.getRelatedLinks().isEmpty());
+        System.out.println(teams.getAlternativeTitles());
+        Set<String> titles = ImmutableSet.of("The Blues", "The Pensioners");
+        assertThat(teams.getAlternativeTitles(), is(titles));
     }
 }

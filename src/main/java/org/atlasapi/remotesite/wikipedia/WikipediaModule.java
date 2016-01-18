@@ -56,8 +56,7 @@ public class WikipediaModule {
 
 	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
 	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
-    //TODO wired bean for organisationWriter
-    private OrganisationWriter organisationWriter;
+    private @Autowired @Qualifier("organisationStore") OrganisationWriter organisationWriter;
     private @Autowired @Qualifier("personStore") PersonWriter personStore;
 
     private final EnglishWikipediaClient ewc = new EnglishWikipediaClient();

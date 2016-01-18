@@ -8,6 +8,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import info.bliki.api.Connector;
 import info.bliki.api.Page;
@@ -272,12 +273,12 @@ public class SwebleHelper {
         return builder.build();
     }
 
-    public static ImmutableList<ListItemResult> extractFootballList(AstNode node) {
-        ImmutableList.Builder<ListItemResult> builder = ImmutableList.builder();
+    public static ImmutableSet<String> extractFootballList(AstNode node) {
+        ImmutableSet.Builder<String> builder = ImmutableSet.builder();
         String unparsed = unparse(node);
         unparsed = normalize(unparsed);
         unparsed = bracesPattern.matcher(unparsed).replaceAll("");
-        new ListVisitor(builder).go(parse(unparsed));
+        new FootballListVisitor(builder).go(parse(unparsed));
         return builder.build();
     }
     
@@ -325,6 +326,52 @@ public class SwebleHelper {
                 return;
             }
             builder.add(new ListItemResult(name, Optional.fromNullable(linkTargetTitle)));
+        }
+
+        @Override
+        protected Object visitNotFound(AstNode node) { return null; }
+    }
+
+    protected static class FootballListVisitor extends AstVisitor {
+        private final ImmutableSet.Builder<String> builder;
+        public FootballListVisitor(ImmutableSet.Builder<String> builder) {
+            this.builder = checkNotNull(builder);
+        }
+
+        // State:
+        public String linkTargetTitle = null;
+
+        public void visit(LazyParsedPage value) {
+            iterate(value.getContent());
+        }
+        public void visit(SemiPre wtf) {
+            iterate(wtf.getContent());
+        }
+        public void visit(SemiPreLine wtf) {
+            iterate(wtf.getContent());
+        }
+        public void visit(Itemization i) {
+            iterate(i.getContent());
+        }
+        public void visit(ItemizationItem i) {
+            iterate(i.getContent());
+        }
+        public void visit(InternalLink link) {
+            NodeList titleContent = link.getTitle().getContent();
+            if(titleContent.isEmpty()) {
+                builder.add(link.getTarget());
+            } else {
+                linkTargetTitle = link.getTarget();
+                iterate(titleContent);
+                linkTargetTitle = null;
+            }
+        }
+        public void visit(Text t) {
+            String name = t.getContent().trim();
+            if (name.isEmpty() || name.startsWith("(")) {  // Things that start with brackets are probably extraneous annotations, not names -- skip them.
+                return;
+            }
+            builder.add(name);
         }
 
         @Override

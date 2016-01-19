@@ -1,18 +1,26 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
-
 import java.io.IOException;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.remotesite.bbc.BbcFeeds;
+
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+import com.metabroadcast.common.http.HttpStatusCode;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -20,10 +28,11 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-import com.metabroadcast.common.http.HttpStatusCode;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
 
 @Controller
 public class PidUpdateController {
@@ -51,10 +60,7 @@ public class PidUpdateController {
                             .build());
         } catch (NitroException e) {
             log.error("Failed to get Nitro item {}", pid, e);
-            String stack = Throwables.getStackTraceAsString(e);
-            response.setStatus(HttpStatusCode.SERVER_ERROR.code());
-            response.setContentLength(stack.length());
-            response.getWriter().write(stack);
+            writeServerErrorWithStack(response, e);
             return;
         }
 
@@ -65,8 +71,13 @@ public class PidUpdateController {
             return;
         }
 
+        Item item = Iterables.getOnlyElement(items);
+
+        updateBrand(response, pid, item);
+        updateSeries(response, pid, item);
+
         try {
-            contentWriter.createOrUpdate(Iterables.getOnlyElement(items));
+            contentWriter.createOrUpdate(item);
             response.setStatus(HttpStatusCode.ACCEPTED.code());
         } catch (IllegalArgumentException e) {
             String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
@@ -75,5 +86,62 @@ public class PidUpdateController {
             response.setContentLength(message.length());
             response.getWriter().write(message);
         }
+    }
+
+    private void updateSeries(HttpServletResponse response, @PathVariable("pid") String pid,
+            Item item) throws IOException {
+        if (!(item instanceof Episode)) {
+            return;
+        }
+
+        ParentRef seriesRef = ((Episode) item).getSeriesRef();
+        String seriesPid = BbcFeeds.pidFrom(seriesRef.getUri());
+        PidReference seriesPidRef = new PidReference();
+        seriesPidRef.setPid(seriesPid);
+        seriesPidRef.setHref(seriesRef.getUri());
+
+        try {
+            ImmutableSet<Series> series = contentAdapter.fetchSeries(
+                    ImmutableList.of(seriesPidRef)
+            );
+            contentWriter.createOrUpdate(Iterables.getOnlyElement(series));
+        } catch (NitroException e) {
+            log.error("Failed to get Nitro parent item {}", pid, e);
+            writeServerErrorWithStack(response, e);
+        }
+    }
+
+    private void updateBrand(
+            HttpServletResponse response,
+            String pid,
+            Item item
+    ) throws IOException {
+        if (!item.isChild()) {
+            return;
+        }
+
+        ParentRef parentRef = item.getContainer();
+        String parentPid = BbcFeeds.pidFrom(parentRef.getUri());
+        PidReference parentPidRef = new PidReference();
+        parentPidRef.setPid(parentPid);
+        parentPidRef.setHref(parentRef.getUri());
+
+        try {
+            ImmutableSet<Brand> brand = contentAdapter.fetchBrands(
+                    ImmutableList.of(parentPidRef)
+            );
+            contentWriter.createOrUpdate(Iterables.getOnlyElement(brand));
+        } catch (NitroException e) {
+            log.error("Failed to get Nitro parent item {}", pid, e);
+            writeServerErrorWithStack(response, e);
+        }
+    }
+
+    private void writeServerErrorWithStack(HttpServletResponse response, Exception e)
+            throws IOException {
+        String stack = Throwables.getStackTraceAsString(e);
+        response.setStatus(HttpStatusCode.SERVER_ERROR.code());
+        response.setContentLength(stack.length());
+        response.getWriter().write(stack);
     }
 }

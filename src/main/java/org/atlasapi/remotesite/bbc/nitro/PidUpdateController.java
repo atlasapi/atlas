@@ -110,6 +110,7 @@ public class PidUpdateController {
         PidReference seriesPidRef = new PidReference();
         seriesPidRef.setPid(seriesPid);
         seriesPidRef.setHref(seriesRef.getUri());
+        seriesPidRef.setResultType("series");
 
         try {
             ImmutableSet<Series> series = contentAdapter.fetchSeries(
@@ -136,6 +137,7 @@ public class PidUpdateController {
         PidReference parentPidRef = new PidReference();
         parentPidRef.setPid(parentPid);
         parentPidRef.setHref(parentRef.getUri());
+        parentPidRef.setResultType("brand");
 
         try {
             ImmutableSet<Brand> brand = contentAdapter.fetchBrands(

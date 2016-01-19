@@ -127,7 +127,7 @@ public class PidUpdateController {
             String pid,
             Item item
     ) throws IOException {
-        if (!item.isChild()) {
+        if (item.getContainer() == null) {
             return;
         }
 

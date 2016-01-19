@@ -88,8 +88,11 @@ public class PidUpdateController {
         }
     }
 
-    private void updateSeries(HttpServletResponse response, @PathVariable("pid") String pid,
-            Item item) throws IOException {
+    private void updateSeries(
+            HttpServletResponse response,
+            String pid,
+            Item item
+    ) throws IOException {
         if (!(item instanceof Episode)) {
             return;
         }

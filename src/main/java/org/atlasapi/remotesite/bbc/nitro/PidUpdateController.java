@@ -98,6 +98,14 @@ public class PidUpdateController {
         }
 
         ParentRef seriesRef = ((Episode) item).getSeriesRef();
+        if (seriesRef == null) {
+            /* this is theoretically possible, there's episodes that are part of a brand but don't,
+               e.g., have a strong ordering, etc. See NitroEpisodeExtractor#isBrandSeriesEpisode
+               vs. NitroEpisodeExtractor#isBrandEpisode
+             */
+            return;
+        }
+
         String seriesPid = BbcFeeds.pidFrom(seriesRef.getUri());
         PidReference seriesPidRef = new PidReference();
         seriesPidRef.setPid(seriesPid);

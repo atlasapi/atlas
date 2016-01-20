@@ -34,6 +34,8 @@ import java.io.InputStreamReader;
 import static com.google.common.base.Predicates.not;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -120,7 +122,7 @@ public class GsonBtMpxClientTest {
     }
 
     @Test
-    public void testNewValueDeserializationDirectFromWebsiteWithGsonBtMpxClient() throws BtMpxClientException {
+    public void testNewValueDeserializationDirectFromTest2WebsiteWithGsonBtMpxClient() throws BtMpxClientException {
         SimpleHttpClient httpClient
                 = new SimpleHttpClientBuilder().build();
 
@@ -134,6 +136,24 @@ public class GsonBtMpxClientTest {
         Entry firstNonZeroEntry = Iterables.getFirst(nonZeroEntries, null);
 
         assertEquals(1446854400000l, firstNonZeroEntry.getAvailableDate());
+        assertEquals("urn:BT:linear:service:750650", firstNonZeroEntry.getLinearEpgChannelId());
+    }
+
+    @Test
+    public void testNewValueDeserializationDirectFromProdWebsiteWithGsonBtMpxClient() throws BtMpxClientException {
+        SimpleHttpClient httpClient
+                = new SimpleHttpClientBuilder().build();
+
+        GsonBtMpxClient client = new GsonBtMpxClient(httpClient,
+                "http://bt.feed.theplatform.eu/f/wzIRPC/btv-med-feed-linear");
+
+        PaginatedEntries channels = client.getChannels(Optional.<Selection>absent());
+
+        Entry firstNonZeroEntry = Iterables.getFirst(channels.getEntries(), null);
+
+        assertNotNull(firstNonZeroEntry.getAvailableDate());
+        //This test needs to be updated once prod environment have the linearEpgChannelId field otherwise it will fail.
+        assertNull(firstNonZeroEntry.getLinearEpgChannelId());
     }
 
     private Predicate<Entry> isZeroAvailableDate(final long availableDate) {

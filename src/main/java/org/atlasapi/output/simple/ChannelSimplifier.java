@@ -90,6 +90,9 @@ public class ChannelSimplifier {
         simple.setRelatedLinks(simplifyRelatedLinks(input.getRelatedLinks()));
         simple.setStartDate(input.getStartDate());            
         simple.setEndDate(input.getEndDate());
+        if(input.getAdvertiseFrom() != null) {
+            simple.setAdvertisedFrom(input.getAdvertiseFrom().toDate());
+        }
         simple.setGenres(input.getGenres());
         
         simple.setPublisherDetails(publisherSimplifier.simplify(input.getSource()));

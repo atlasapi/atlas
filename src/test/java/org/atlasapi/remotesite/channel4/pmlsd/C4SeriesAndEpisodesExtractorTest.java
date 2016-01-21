@@ -6,9 +6,12 @@ import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.startsWith;
 
 import java.util.Map;
+import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import junit.framework.TestCase;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
@@ -66,6 +69,7 @@ public class C4SeriesAndEpisodesExtractorTest {
 		
 		assertThat(firstEpisode.getSeriesNumber(), is(3));
 		assertThat(firstEpisode.getEpisodeNumber(), is(1));
+		assertThat(firstEpisode.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:programmeId", "41337/001"))));
 
 		// since this is not a /4od feed there should be no On Demand entries
 		assertThat(firstEpisode.getVersions().isEmpty(), is(true));

@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.Map;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
@@ -50,6 +51,12 @@ public class C4EpgEpisodeExtractor extends BaseC4EpisodeExtractor {
         String txChannel = channelLookup.get(channelKey);
         String startTime = lookup.get(DC_START_TIME);
         Duration duration = C4AtomApi.durationFrom(lookup);
+
+        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
+        if (programmeId != null) {
+            Alias pid = new Alias("gb:channel4:programmeId", programmeId);
+            episode.addAlias(pid);
+        }
 
         if (txChannel != null) {
             DateTime txStart = fmt.parseDateTime(startTime);

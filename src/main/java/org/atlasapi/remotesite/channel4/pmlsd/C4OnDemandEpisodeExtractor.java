@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Map;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
@@ -32,6 +33,11 @@ final class C4OnDemandEpisodeExtractor extends BaseC4EpisodeExtractor {
     protected Episode setAdditionalEpisodeFields(Entry entry, Map<String, String> lookup,
             Episode episode) {
         String fourOdUri = C4AtomApi.fourOdUri(entry);
+        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
+        if (programmeId != null) {
+            Alias pid = new Alias("gb:channel4:programmeId", programmeId);
+            episode.addAlias(pid);
+        }
         if (fourOdUri != null) {
             episode.addAliasUrl(fourOdUri);
         }

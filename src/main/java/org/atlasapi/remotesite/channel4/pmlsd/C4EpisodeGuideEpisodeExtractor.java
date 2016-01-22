@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Episode;
 import org.jdom.Element;
 
@@ -24,6 +25,11 @@ final class C4EpisodeGuideEpisodeExtractor extends BaseC4EpisodeExtractor {
             Episode episode) {
         episode.addAliasUrl(C4AtomApi.canonicalizeEpisodeFeedId(entry));
         episode.addAliasUrl(entry.getId());
+        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
+        if (programmeId != null) {
+            Alias pid = new Alias("gb:channel4:programmeId", programmeId);
+            episode.addAlias(pid);
+        }
         return episode;
     }
     

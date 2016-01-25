@@ -92,6 +92,8 @@ public class ChannelSimplifier {
         simple.setEndDate(input.getEndDate());
         if(input.getAdvertiseFrom() != null) {
             simple.setAdvertisedFrom(input.getAdvertiseFrom().toDate());
+        } else {
+            simple.setAdvertisedFrom(null);
         }
         simple.setGenres(input.getGenres());
         

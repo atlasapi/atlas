@@ -69,7 +69,7 @@ public class C4SeriesAndEpisodesExtractorTest {
 		
 		assertThat(firstEpisode.getSeriesNumber(), is(3));
 		assertThat(firstEpisode.getEpisodeNumber(), is(1));
-		assertThat(firstEpisode.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:programmeId", "41337/001"))));
+		assertThat(firstEpisode.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:prod:pmlsd:programmeId", "41337/001"))));
 
 		// since this is not a /4od feed there should be no On Demand entries
 		assertThat(firstEpisode.getVersions().isEmpty(), is(true));

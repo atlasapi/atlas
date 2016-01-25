@@ -35,7 +35,7 @@ final class C4OnDemandEpisodeExtractor extends BaseC4EpisodeExtractor {
         String fourOdUri = C4AtomApi.fourOdUri(entry);
         String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
         if (programmeId != null) {
-            episode.addAliasUrl("pid:" + programmeId);
+            episode.addAlias(new Alias("gb:channel4:prod:pmlsd:programmeId", programmeId));
         }
         if (fourOdUri != null) {
             episode.addAliasUrl(fourOdUri);

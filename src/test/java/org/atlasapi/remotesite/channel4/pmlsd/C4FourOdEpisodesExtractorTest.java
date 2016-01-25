@@ -101,7 +101,7 @@ public class C4FourOdEpisodesExtractorTest extends TestCase {
 		assertThat(firstEpisode.getDescription(), startsWith("Gordon Ramsay visits Bonapartes in Silsden, West Yorkshire."));
 		assertThat(firstEpisode.getThumbnail(), is("http://www.channel4.com/assets/programmes/images/ramsays-kitchen-nightmares/series-1/ramsays-kitchen-nightmares-s1-20090617160732_200x113.jpg"));
 		assertThat(firstEpisode.getImage(), is("http://www.channel4.com/assets/programmes/images/ramsays-kitchen-nightmares/series-1/ramsays-kitchen-nightmares-s1-20090617160732_625x352.jpg"));
-		assertThat(firstEpisode.getAliasUrls(), is((Set<String>) ImmutableSet.of("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares/episode-guide/series-1/episode-1", "http://www.channel4.com/programmes/ramsays-kitchen-nightmares/4od#2922045", "pid:36423/001")));
+		assertThat(firstEpisode.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:prod:pmlsd:programmeId", "36423/001"))));
 
 		Version firstEpisodeVersion = Iterables.get(firstEpisode.getVersions(), 0);
 		assertThat(firstEpisodeVersion.getDuration(), is((48 * 60) + 55));

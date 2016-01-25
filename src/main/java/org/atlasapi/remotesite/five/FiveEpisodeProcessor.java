@@ -5,6 +5,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import nu.xom.Element;
 import nu.xom.Elements;
@@ -18,6 +20,8 @@ import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.MediaType;
@@ -46,6 +50,7 @@ import com.metabroadcast.common.intl.Countries;
 public class FiveEpisodeProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(FiveEpisodeProcessor.class);
+    private static final Pattern GENERIC_PATTERN = Pattern.compile("((https://|http://)?i1.ytimg.com/vi/).*\\.jpg");
 
     private final GenreMap genreMap = new FiveGenreMap();
     private final DateTimeFormatter dateParser = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZZ");
@@ -93,9 +98,12 @@ public class FiveEpisodeProcessor {
         }
 
         item.setGenres(getGenres(element));
-        Maybe<String> image = getImage(element);
-        if (image.hasValue()) {
-            item.setImage(image.requireValue());
+        Maybe<Image> imageMaybe = getImage(element);
+
+        if (imageMaybe.hasValue()) {
+            Image image = imageMaybe.requireValue();
+            item.setImage(image.getCanonicalUri());
+            item.setImages(ImmutableSet.of(image));
         }
         
         Version version = getVersion(element);
@@ -200,9 +208,11 @@ public class FiveEpisodeProcessor {
                 series.setParent(brand);
                 series.setGenres(genreMap.mapRecognised(ImmutableSet.of(childValue(seasonElement, "genre"))));
                 
-                Maybe<String> image = getImage(seasonElement);
-                if (image.hasValue()) {
-                    series.setImage(image.requireValue());
+                Maybe<Image> imageMaybe = getImage(seasonElement);
+                if (imageMaybe.hasValue()) {
+                    Image image = imageMaybe.requireValue();
+                    series.setImage(image.getCanonicalUri());
+                    series.setImages(ImmutableSet.of(image));
                 }
                 
                 Maybe<String> description = getDescription(seasonElement);
@@ -269,13 +279,22 @@ public class FiveEpisodeProcessor {
         return genreMap.mapRecognised(ImmutableSet.of("http://www.five.tv/genres/" + element.getFirstChildElement("genre").getValue()));
     }
 
-    private Maybe<String> getImage(Element element) {
+    private Maybe<Image> getImage(Element element) {
         
         Elements imageElements = element.getFirstChildElement("images").getChildElements("image");
+
         if (imageElements.size() > 0) {
             String image = imageElements.get(0).getValue();
+
+            Matcher genericImageUrlMatcher = GENERIC_PATTERN.matcher(image);
+            if(genericImageUrlMatcher.matches()) {
+                Image imageObj = new Image("http://" + image);
+                imageObj.setType(ImageType.GENERIC);
+                return Maybe.just(imageObj);
+            }
             if (!image.contains("api-images.channel5.com/images/default")) {
-                return Maybe.just(image);
+                Image imageObj = new Image("http://" + image);
+                return Maybe.just(imageObj);
             }
         }
 

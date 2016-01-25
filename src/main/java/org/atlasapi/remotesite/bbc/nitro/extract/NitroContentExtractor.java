@@ -7,6 +7,7 @@ import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
@@ -24,6 +25,9 @@ import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
 
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
 /**
  * Template extractor for extracting {@link Content} from Nitro sources.
  * <p>
@@ -37,6 +41,8 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         implements ContentExtractor<SOURCE, CONTENT> {
 
     private static final Logger log = LoggerFactory.getLogger(NitroContentExtractor.class);
+
+    private static final Pattern GENERIC_PATTERN = Pattern.compile("((http://|https://)?ichef.bbci.co.uk/images/ic/1024x576/).*\\.jpg");
 
     private static final String PID_NAMESPACE = "gb:bbc:pid";
     private static final String URI_NAMESPACE = "uri";
@@ -70,11 +76,19 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             content.setLongDescription(synposes.getLong());
         }
         com.metabroadcast.atlas.glycerin.model.Brand.Images.Image srcImage = extractImage(source);
+
+
+        Matcher genericImageMatcher = GENERIC_PATTERN.matcher(srcImage.getTemplateUrl());
         if (srcImage != null && !Strings.isNullOrEmpty(srcImage.getTemplateUrl())) {
             Image image = imageExtractor.extract(srcImage);
+
+            if(genericImageMatcher.matches()) {
+                image.setType(ImageType.GENERIC);
+            }
             content.setImage(image.getCanonicalUri());
             content.setImages(ImmutableSet.of(image));
         }
+
         MasterBrand masterBrand = extractMasterBrand(source);
         content.setMediaType(computeMediaType(masterBrand));
         if (masterBrand != null) {

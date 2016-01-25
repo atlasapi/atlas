@@ -6,10 +6,13 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.TransportType;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Platform;
@@ -63,7 +66,10 @@ public class C4AtomApi {
 
 
 	private static final Pattern IMAGE_PATTERN = Pattern.compile("(http.+?)\\d+x\\d+(\\.[a-zA-Z]+)");
-	
+
+	//TODO update with actual generic pattern once tom confirms
+	private static final Pattern GENERIC_PATTERN = Pattern.compile("((https://|http://)www.channel4.com/assets/programmes/images/channel-4-news/).*\\.jpg");
+
 	private static final String IMAGE_SIZE = "625x352";
 	private static final String THUMBNAIL_SIZE = "200x113";
 	
@@ -89,6 +95,17 @@ public class C4AtomApi {
 		if (! Strings.isNullOrEmpty(anImage)) {
 			Matcher matcher = IMAGE_PATTERN.matcher(anImage);
 			if (matcher.matches()) {
+
+				Matcher genericMatcher = GENERIC_PATTERN.matcher(anImage);
+
+				if(genericMatcher.matches()){
+					content.setThumbnail(matcher.group(1) + THUMBNAIL_SIZE + matcher.group(2));
+					content.setImage((matcher.group(1) + IMAGE_SIZE + matcher.group(2)));
+
+					Image image = new Image(anImage);
+					image.setType(ImageType.GENERIC);
+					content.setImages(ImmutableSet.of(image));
+				}
 				content.setThumbnail(matcher.group(1) + THUMBNAIL_SIZE + matcher.group(2));
 				content.setImage((matcher.group(1) + IMAGE_SIZE + matcher.group(2)));
 			}

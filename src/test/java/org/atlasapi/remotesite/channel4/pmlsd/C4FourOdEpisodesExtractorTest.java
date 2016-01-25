@@ -14,6 +14,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.atlasapi.media.TransportType;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
@@ -100,7 +101,8 @@ public class C4FourOdEpisodesExtractorTest extends TestCase {
 		assertThat(firstEpisode.getDescription(), startsWith("Gordon Ramsay visits Bonapartes in Silsden, West Yorkshire."));
 		assertThat(firstEpisode.getThumbnail(), is("http://www.channel4.com/assets/programmes/images/ramsays-kitchen-nightmares/series-1/ramsays-kitchen-nightmares-s1-20090617160732_200x113.jpg"));
 		assertThat(firstEpisode.getImage(), is("http://www.channel4.com/assets/programmes/images/ramsays-kitchen-nightmares/series-1/ramsays-kitchen-nightmares-s1-20090617160732_625x352.jpg"));
-		
+		assertThat(firstEpisode.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:programmeId", "36423/001"))));
+
 		Version firstEpisodeVersion = Iterables.get(firstEpisode.getVersions(), 0);
 		assertThat(firstEpisodeVersion.getDuration(), is((48 * 60) + 55));
 		
@@ -118,7 +120,6 @@ public class C4FourOdEpisodesExtractorTest extends TestCase {
 		assertThat(firstEpsiodeLocation.getUri(), is("http://www.channel4.com/programmes/ramsays-kitchen-nightmares/4od#2922045"));
 		// TODO new alias
 		assertThat(firstEpsiodeLocation.getAliasUrls(), is((Set<String>) ImmutableSet.of("tag:www.channel4.com,2009:/programmes/ramsays-kitchen-nightmares/4od%232922045")));
-
 		assertThat(firstEpsiodeLocation.getTransportType(), is(TransportType.LINK));
 		
 		Policy firstEpisodePolicy = firstEpsiodeLocation.getPolicy();

@@ -47,6 +47,7 @@ public class C4AtomApi {
 	
 	public static final String DC_EPISODE_NUMBER = "dc:relation.EpisodeNumber";
 	public static final String DC_SERIES_NUMBER = "dc:relation.SeriesNumber";
+    public static final String DC_PROGRAMME_ID = "dc:relation.programmeId";
 	public static final String DC_TERMS_AVAILABLE = "dcterms:available";
 	public static final String DC_TX_DATE = "dc:date.TXDate";
 	public static final String DC_DURATION = "dc:relation.Duration";

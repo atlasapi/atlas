@@ -16,7 +16,6 @@ public abstract class BaseC4EpisodeExtractor extends C4MediaItemExtractor<Episod
 
     private static final String DC_EPISODE_NUMBER = "dc:relation.EpisodeNumber";
     private static final String DC_SERIES_NUMBER = "dc:relation.SeriesNumber";
-    private static final String DC_PROGRAMME_ID = "dc:relation.programmeId";
 
     private final ContentFactory<Feed, Feed, Entry> contentFactory;
     
@@ -35,7 +34,7 @@ public abstract class BaseC4EpisodeExtractor extends C4MediaItemExtractor<Episod
         episode.setEpisodeNumber(Ints.tryParse(Strings.nullToEmpty(lookup.get(DC_EPISODE_NUMBER))));
         episode.setSeriesNumber(Ints.tryParse(Strings.nullToEmpty(lookup.get(DC_SERIES_NUMBER))));
         episode.setIsLongForm(true);
-        String programmeId = lookup.get(DC_PROGRAMME_ID);
+        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
         if (programmeId != null) {
             Alias pid = new Alias("gb:channel4:programmeId", programmeId);
             episode.addAlias(pid);

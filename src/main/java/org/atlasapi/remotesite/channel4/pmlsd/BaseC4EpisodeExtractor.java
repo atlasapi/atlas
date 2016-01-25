@@ -34,11 +34,7 @@ public abstract class BaseC4EpisodeExtractor extends C4MediaItemExtractor<Episod
         episode.setEpisodeNumber(Ints.tryParse(Strings.nullToEmpty(lookup.get(DC_EPISODE_NUMBER))));
         episode.setSeriesNumber(Ints.tryParse(Strings.nullToEmpty(lookup.get(DC_SERIES_NUMBER))));
         episode.setIsLongForm(true);
-        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
-        if (programmeId != null) {
-            Alias pid = new Alias("gb:channel4:programmeId", programmeId);
-            episode.addAlias(pid);
-        }
+
         return setAdditionalEpisodeFields(entry, lookup, episode);
     }
 

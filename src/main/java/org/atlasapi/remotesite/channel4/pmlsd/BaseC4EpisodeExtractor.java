@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.Map;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Episode;
 
 import com.google.common.base.Strings;
@@ -33,6 +34,7 @@ public abstract class BaseC4EpisodeExtractor extends C4MediaItemExtractor<Episod
         episode.setEpisodeNumber(Ints.tryParse(Strings.nullToEmpty(lookup.get(DC_EPISODE_NUMBER))));
         episode.setSeriesNumber(Ints.tryParse(Strings.nullToEmpty(lookup.get(DC_SERIES_NUMBER))));
         episode.setIsLongForm(true);
+
         return setAdditionalEpisodeFields(entry, lookup, episode);
     }
 

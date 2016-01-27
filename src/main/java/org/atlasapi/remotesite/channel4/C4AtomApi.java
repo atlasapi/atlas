@@ -99,8 +99,6 @@ public class C4AtomApi {
 				Matcher genericMatcher = GENERIC_PATTERN.matcher(anImage);
 
 				if(genericMatcher.matches()){
-					content.setThumbnail(matcher.group(1) + THUMBNAIL_SIZE + matcher.group(2));
-					content.setImage((matcher.group(1) + IMAGE_SIZE + matcher.group(2)));
 
 					Image image = new Image(anImage);
 					image.setType(ImageType.GENERIC);

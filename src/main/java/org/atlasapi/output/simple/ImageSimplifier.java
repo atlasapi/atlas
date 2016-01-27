@@ -18,9 +18,7 @@ public class ImageSimplifier extends IdentifiedModelSimplifier<Image, org.atlasa
         }
         org.atlasapi.media.entity.simple.Image simpleImage = new org.atlasapi.media.entity.simple.Image(image.getCanonicalUri());
         if (image.getType() != null) {
-            if(image.getType() != ImageType.GENERIC) {
-                simpleImage.setImageType(image.getType().getName());
-            }
+            simpleImage.setImageType(image.getType().getName());
         }
 
         if (image.getColor() != null) {

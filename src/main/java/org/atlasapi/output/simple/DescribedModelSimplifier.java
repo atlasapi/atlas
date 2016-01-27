@@ -9,6 +9,7 @@ import javax.annotation.Nullable;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.MediaType;
@@ -59,7 +60,13 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setTitle(content.getTitle());
             simpleDescription.setTitles(simplifyLocalizedTitles(content));
             simpleDescription.setDescription(applyWatermark(content, content.getDescription()));
-            simpleDescription.setImage(content.getImage());
+            if(content.getImages().size() > 0 && content.getImages() != null) {
+                for(org.atlasapi.media.entity.Image image: content.getImages()) {
+                    if(image.getType() != ImageType.GENERIC) {
+                        content.setImage(image.getCanonicalUri());
+                    }
+                }
+            }
             simpleDescription.setThumbnail(content.getThumbnail());
             simpleDescription.setShortDescription(content.getShortDescription());
 

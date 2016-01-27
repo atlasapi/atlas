@@ -140,11 +140,12 @@ public class C4BrandExtractorTest extends TestCase {
 		assertThat(firstItem.getCanonicalUri(), is("http://pmlsc.channel4.com/pmlsd/36423/001"));
 
 		// TODO new alias
-		assertThat(firstItem.getAliasUrls().size(), is(3));
+		assertThat(firstItem.getAliasUrls().size(), is(4));
 		assertThat(firstItem.getAliasUrls(), is((Set<String>) ImmutableSet.of(
 	        "http://www.channel4.com/programmes/ramsays-kitchen-nightmares/4od#2922045", 
 	        "http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares/episode-guide/series-1/episode-1",
-	        "tag:pmlsc.channel4.com,2009:/programmes/ramsays-kitchen-nightmares/episode-guide/series-1/episode-1"
+	        "tag:pmlsc.channel4.com,2009:/programmes/ramsays-kitchen-nightmares/episode-guide/series-1/episode-1",
+            "pid:36423/001"
         )));
 		
 		assertThat(firstItem.getTitle(), is(("Series 1 Episode 1")));

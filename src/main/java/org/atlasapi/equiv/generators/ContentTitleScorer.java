@@ -13,13 +13,14 @@ import com.google.common.base.Function;
 
 public final class ContentTitleScorer<T extends Content> {
     
-    private static final double EXACT_MATCH_SCORE = 2;
     private final Function<String, String> titleTransform;
     private final String name;
+    private final double exactMatchScore;
 
-    public ContentTitleScorer(String name, Function<String, String> titleTransform) {
+    public ContentTitleScorer(String name, Function<String, String> titleTransform, double exactMatchScore) {
         this.name = name;
         this.titleTransform = titleTransform;
+        this.exactMatchScore = exactMatchScore;
     }
 
     public ScoredCandidates<T> scoreCandidates(T content, Iterable<? extends T> candidates, ResultDescription desc) {
@@ -72,7 +73,7 @@ public final class ContentTitleScorer<T extends Content> {
         int commonPrefix = commonPrefixLength(shorter, longer);
         int difference = longer.length() - commonPrefix;
         if (difference == 0) {
-            return EXACT_MATCH_SCORE;
+            return exactMatchScore;
         }
         return 1.0 / (Math.exp(Math.pow(difference, 2)) + 8*difference);
     }

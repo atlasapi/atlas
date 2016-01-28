@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xmlns:media="http://search.yahoo.com/mrss/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <id>tag:www.channel4.com,2009:/programmes/glee/epg</id>
+  <title type="text">Glee EPG</title>
+  <subtitle type="html">Musical comedy series that follows an optimistic teacher as he tries to inspire a group of oddball teenagers to realise their true star potential and restore the school's show choir, the  Glee Club, to its former glory</subtitle>
+  <updated>2010-08-11T14:06:33.340Z</updated>
+  <author>
+    <name>Channel 4 Television</name>
+  </author>
+  <link href="http://api.channel4.com/programmes/glee.atom?apikey=mbq3hr7z9dvqwucjne7t79s6" rel="up" type="application/atom+xml" title="Brand Atom Feed"/>
+  <link href="http://api.channel4.com/programmes/glee/epg.atom?apikey=mbq3hr7z9dvqwucjne7t79s6" rel="self" type="application/atom+xml"/>
+  <logo>http://www.channel4.com/static/programmes/images/c4-atom-logo.gif</logo>
+  <entry>
+    <id>tag:www.channel4.com,2009:slot/39861</id>
+    <title type="text">Glee</title>
+    <summary type="html">The Rhodes not Taken: Will brings in his talented friend April to help gee up the glee club. Rachel is peeved when she's not treated like a star at musical rehearsals.</summary>
+    <updated>2010-08-11T14:06:33.341Z</updated>
+    <dc:relation.SeriesNumber>1</dc:relation.SeriesNumber>
+    <dc:relation.EpisodeNumber>5</dc:relation.EpisodeNumber>
+    <dc:relation.TXChannel>E4</dc:relation.TXChannel>
+    <dc:relation.TXStartTime>Sunday 15 August 2010 05:55 PM</dc:relation.TXStartTime>
+    <dc:relation.Duration>55:00</dc:relation.Duration>
+    <dc:relation.Repeat>true</dc:relation.Repeat>
+    <dc:relation.Subtitles>true</dc:relation.Subtitles>
+    <dc:relation.AudioDescription>true</dc:relation.AudioDescription>
+    <link href="http://api.channel4.com/programmes/glee.atom?apikey=mbq3hr7z9dvqwucjne7t79s6" rel="up" type="application/atom+xml" title="Up"/>
+    <link href="http://www.channel4.com/programmes/glee/episode-guide/series-1/episode-5?client=xbox" rel="EpisodeUrl" type="text/html" title="Episode Url"/>
+  </entry>
+</feed>

@@ -18,6 +18,7 @@ import java.util.Set;
 import junit.framework.TestCase;
 
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
@@ -146,6 +147,8 @@ public class C4BrandExtractorTest extends TestCase {
 	        "http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares/episode-guide/series-1/episode-1",
 	        "tag:pmlsc.channel4.com,2009:/programmes/ramsays-kitchen-nightmares/episode-guide/series-1/episode-1"
         )));
+
+        assertThat(firstItem.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:prod:pmlsd:programmeId", "36423/001"))));
 		
 		assertThat(firstItem.getTitle(), is(("Series 1 Episode 1")));
 		

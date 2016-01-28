@@ -27,12 +27,15 @@ public class C4BrandEpgExtractorTest {
     
     private final AtomFeedBuilder gleeAtom = new AtomFeedBuilder(Resources.getResource(getClass(), "glee-epg.atom"));
     private final Feed gleeFeed = gleeAtom.build();
+
+    private final AtomFeedBuilder gleeAtom2 = new AtomFeedBuilder(Resources.getResource(getClass(), "glee-epg2.atom"));
+    private final Feed gleeFeed2 = gleeAtom2.build();
     
     private final C4EpgEpisodeExtractor extractor = new C4EpgEpisodeExtractor(new C4AtomApi(new C4DummyChannelResolver()), 
             contentFactory, new SystemClock());
     
     @Test
-    public void testShouldExtractBroadcast() throws Exception {
+    public void testShouldExtractBroadcastWithNormalEpisodeUrl() throws Exception {
 
         Episode episode = extractor.extract((Entry)gleeFeed.getEntries().get(0));
         
@@ -51,6 +54,12 @@ public class C4BrandEpgExtractorTest {
         
         assertTrue(broadcast.getAliasUrls().contains("tag:www.channel4.com,2009:slot/E439861"));
         assertEquals(Integer.valueOf(55*60), broadcast.getBroadcastDuration());
+    }
+
+    @Test
+    public void testShouldExtractBroadcastWithExtendedEpisodeUrl() throws Exception {
+        Episode episode = extractor.extract((Entry)gleeFeed2.getEntries().get(0));
+        assertEquals("http://pmlsc.channel4.com/pmlsd/glee/episode-guide/series-1/episode-5", episode.getCanonicalUri());
     }
 
 }

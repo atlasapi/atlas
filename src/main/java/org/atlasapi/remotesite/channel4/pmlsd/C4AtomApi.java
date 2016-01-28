@@ -47,9 +47,11 @@ public class C4AtomApi {
 	
 	public static final String DC_EPISODE_NUMBER = "dc:relation.EpisodeNumber";
 	public static final String DC_SERIES_NUMBER = "dc:relation.SeriesNumber";
+    public static final String DC_PROGRAMME_ID = "dc:relation.programmeId";
 	public static final String DC_TERMS_AVAILABLE = "dcterms:available";
 	public static final String DC_TX_DATE = "dc:date.TXDate";
 	public static final String DC_DURATION = "dc:relation.Duration";
+    public static final String ALIAS = "gb:channel4:prod:pmlsd:programmeId";
 
 	private static final Pattern IMAGE_PATTERN = Pattern.compile("https?://.+\\.channel4\\.com/(.+?)\\d+x\\d+(\\.[a-zA-Z]+)");
 	private static final Pattern BIPS_IMAGE_PATTERN = Pattern.compile("https?://.+\\.channel4.com\\/bips/(\\d+x\\d+)/videos/.*");

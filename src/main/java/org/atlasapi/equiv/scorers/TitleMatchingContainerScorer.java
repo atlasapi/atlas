@@ -15,8 +15,8 @@ public class TitleMatchingContainerScorer implements EquivalenceScorer<Container
     
     private final ContentTitleScorer<Container> scorer;
 
-    public TitleMatchingContainerScorer() {
-        this.scorer = new ContentTitleScorer<Container>(NAME, Functions.<String>identity());
+    public TitleMatchingContainerScorer(double exactTitleMatchScore) {
+        this.scorer = new ContentTitleScorer<Container>(NAME, Functions.<String>identity(), exactTitleMatchScore);
     }
     
     @Override

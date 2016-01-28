@@ -260,7 +260,7 @@ public class EquivModule {
                     20)
                 ))
             .withScorers(ImmutableSet.<EquivalenceScorer<Container>> of(
-                new TitleMatchingContainerScorer()
+                new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE)
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),
@@ -559,7 +559,7 @@ public class EquivModule {
             .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
             )
             .withScorers(ImmutableSet.of(
-                new TitleMatchingContainerScorer(),
+                new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE),
                 new ContainerHierarchyMatchingScorer(
                         contentResolver, 
                         Score.negativeOne(), 
@@ -582,7 +582,7 @@ public class EquivModule {
                 .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
                 )
                 .withScorers(ImmutableSet.of(
-                        new TitleMatchingContainerScorer(),
+                        new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE),
                         new ContainerHierarchyMatchingScorer(
                                 contentResolver,
                                 Score.valueOf(-0.49d),
@@ -661,7 +661,7 @@ public class EquivModule {
                 TitleSearchGenerator.create(searchResolver, Container.class, sources, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                 new ContainerChildEquivalenceGenerator(contentResolver, equivSummaryStore)
             ))
-            .withScorers(ImmutableSet.of(new TitleMatchingContainerScorer()))
+            .withScorers(ImmutableSet.of(new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE)))
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),
                 ContainerChildEquivalenceGenerator.NAME))

@@ -24,6 +24,6 @@
     <dc:relation.Subtitles>true</dc:relation.Subtitles>
     <dc:relation.AudioDescription>true</dc:relation.AudioDescription>
     <link href="http://api.channel4.com/programmes/glee.atom?apikey=mbq3hr7z9dvqwucjne7t79s6" rel="up" type="application/atom+xml" title="Up"/>
-    <link href="http://www.channel4.com/programmes/glee/episode-guide/series-1/episode-5?client=xbox" rel="EpisodeUrl" type="text/html" title="Episode Url"/>
+    <link href="http://www.channel4.com/programmes/glee/episode-guide/series-1/episode-5" rel="EpisodeUrl" type="text/html" title="Episode Url"/>
   </entry>
 </feed>

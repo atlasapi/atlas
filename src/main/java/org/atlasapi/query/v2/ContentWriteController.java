@@ -14,7 +14,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 
-import com.google.common.collect.ImmutableList;
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
@@ -41,7 +40,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
-import org.atlasapi.remotesite.wikipedia.television.ScrapedFlatHierarchy;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -49,6 +47,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.base.Maybe;
@@ -58,7 +57,7 @@ import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.properties.Configurer;
 
 public class ContentWriteController {
-    
+
     //TODO: replace with proper merge strategies.
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
@@ -77,7 +76,7 @@ public class ContentWriteController {
     private ModelTransformer<Description, Content> transformer;
 
     public ContentWriteController(ApplicationConfigurationFetcher appConfigFetcher,
-            ContentResolver resolver, ContentWriter writer, ModelReader reader, 
+            ContentResolver resolver, ContentWriter writer, ModelReader reader,
             ModelTransformer<Description, Content> transformer, ScheduleWriter scheduleWriter,
             ChannelResolver channelResolver, EventResolver eventResolver) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
@@ -89,13 +88,13 @@ public class ContentWriteController {
         this.channelResolver = checkNotNull(channelResolver);
         this.eventResolver = checkNotNull(eventResolver);
     }
-    
-    @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
+
+    @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
     public Void postContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
-    @RequestMapping(value="/3.0/content.json", method = RequestMethod.PUT)
+    @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
     public Void putContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
@@ -108,14 +107,16 @@ public class ContentWriteController {
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
             return error(resp, HttpStatusCode.FORBIDDEN.code());
         }
-        
+
         if (possibleConfig.isNothing()) {
             return error(resp, HttpStatus.UNAUTHORIZED.value());
         }
-        
+
         Content content;
+        Description description;
         try {
-            content = complexify(deserialize(new InputStreamReader(req.getInputStream())));
+            description = deserialize(new InputStreamReader(req.getInputStream()));
+            content = complexify(description);
         } catch (IOException ioe) {
             log.error("Error reading input for request " + req.getRequestURL(), ioe);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
@@ -123,17 +124,23 @@ public class ContentWriteController {
             log.error("Error reading input for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
-        
+
         if (!possibleConfig.requireValue().canWrite(content.getPublisher())) {
             return error(resp, HttpStatusCode.FORBIDDEN.code());
         }
-        
+
         if (Strings.isNullOrEmpty(content.getCanonicalUri())) {
             return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
 
         try {
-            content = merge(resolveExisting(content), content, merge);
+            Maybe<Identified> identified = resolveExisting(content);
+
+            if (description.getType().equals("broadcast")) {
+                content = mergeBroadcasts(identified, content);
+            } else {
+                content = merge(identified, content, merge);
+            }
             if (content instanceof Item) {
                 Item item = (Item) content;
                 writer.createOrUpdate(item);
@@ -149,23 +156,26 @@ public class ContentWriteController {
         String hostName = Configurer.get("local.host.name").get();
         resp.setHeader(
                 HttpHeaders.LOCATION,
-                hostName + "/3.0/content.json?id=" + codec.encode(BigInteger.valueOf(content.getId()))
+                hostName
+                        + "/3.0/content.json?id="
+                        + codec.encode(BigInteger.valueOf(content.getId()))
         );
         resp.setStatus(HttpStatusCode.OK.code());
         resp.setContentLength(0);
         return null;
     }
-    
+
     private void updateSchedule(Item item) {
-        Iterable<Broadcast> broadcasts = Iterables.concat(Iterables.transform(item.getVersions(), Version.TO_BROADCASTS));
+        Iterable<Broadcast> broadcasts = Iterables.concat(Iterables.transform(item.getVersions(),
+                Version.TO_BROADCASTS));
         for (Broadcast broadcast : broadcasts) {
             Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
             if (channel.hasValue()) {
-                scheduleWriter.replaceScheduleBlock(item.getPublisher(), 
-                                                    channel.requireValue(), 
-                                                    ImmutableSet.of(new ItemRefAndBroadcast(item, broadcast)));
+                scheduleWriter.replaceScheduleBlock(item.getPublisher(),
+                        channel.requireValue(),
+                        ImmutableSet.of(new ItemRefAndBroadcast(item, broadcast)));
             }
-        }        
+        }
     }
 
     private Content merge(Maybe<Identified> possibleExisting, Content update, boolean merge) {
@@ -176,11 +186,13 @@ public class ContentWriteController {
         if (existing instanceof Content) {
             return merge((Content) existing, update, merge);
         }
-        throw new IllegalStateException("Entity for "+update.getCanonicalUri()+" not Content");
+        throw new IllegalStateException("Entity for " + update.getCanonicalUri() + " not Content");
     }
 
     private Content merge(Content existing, Content update, boolean merge) {
-        existing.setEquivalentTo(merge ? merge(existing.getEquivalentTo(), update.getEquivalentTo()) : update.getEquivalentTo());
+        existing.setEquivalentTo(merge ?
+                                 merge(existing.getEquivalentTo(), update.getEquivalentTo()) :
+                                 update.getEquivalentTo());
         existing.setLastUpdated(update.getLastUpdated());
         existing.setTitle(update.getTitle());
         existing.setShortDescription(update.getShortDescription());
@@ -191,17 +203,27 @@ public class ContentWriteController {
         existing.setThumbnail(update.getThumbnail());
         existing.setMediaType(update.getMediaType());
         existing.setSpecialization(update.getSpecialization());
-        existing.setRelatedLinks(merge ? merge(existing.getRelatedLinks(), update.getRelatedLinks()) : update.getRelatedLinks());
-        existing.setAliases(merge ? merge(existing.getAliases(), update.getAliases()) : update.getAliases());
-        existing.setTopicRefs(merge ? merge(existing.getTopicRefs(), update.getTopicRefs()) : update.getTopicRefs());
+        existing.setRelatedLinks(merge ?
+                                 merge(existing.getRelatedLinks(), update.getRelatedLinks()) :
+                                 update.getRelatedLinks());
+        existing.setAliases(merge ?
+                            merge(existing.getAliases(), update.getAliases()) :
+                            update.getAliases());
+        existing.setTopicRefs(merge ?
+                              merge(existing.getTopicRefs(), update.getTopicRefs()) :
+                              update.getTopicRefs());
         existing.setPeople(merge ? merge(existing.people(), update.people()) : update.people());
         existing.setKeyPhrases(update.getKeyPhrases());
-        existing.setClips(merge ? merge(existing.getClips(), update.getClips()) : update.getClips());
+        existing.setClips(merge ?
+                          merge(existing.getClips(), update.getClips()) :
+                          update.getClips());
         existing.setPriority(update.getPriority());
         existing.setEventRefs(merge ? merge(existing.events(), update.events()) : update.events());
-        existing.setImages(merge? merge(existing.getImages(), update.getImages()) : update.getImages());
+        existing.setImages(merge ?
+                           merge(existing.getImages(), update.getImages()) :
+                           update.getImages());
         if (existing instanceof Item && update instanceof Item) {
-            return mergeItems((Item)existing, (Item) update);
+            return mergeItems((Item) existing, (Item) update);
         }
         return existing;
     }
@@ -216,7 +238,7 @@ public class ContentWriteController {
             mergeVersions(existingVersion, postedVersion);
         }
         if (existing instanceof Song && update instanceof Song) {
-            return mergeSongs((Song)existing, (Song)update);
+            return mergeSongs((Song) existing, (Song) update);
         }
         return existing;
     }
@@ -256,16 +278,36 @@ public class ContentWriteController {
     private Description deserialize(Reader input) throws IOException, ReadException {
         return reader.read(new BufferedReader(input), Description.class);
     }
-    
+
     private Void error(HttpServletResponse response, int code) {
         response.setStatus(code);
         response.setContentLength(0);
         return null;
     }
 
+    private Content mergeBroadcasts(Maybe<Identified> possibleExisting, Content update) {
+        if (possibleExisting.isNothing()) {
+            throw new IllegalStateException("Entity for " + update.getCanonicalUri() + " does not exists");
+        }
+        Identified existing = possibleExisting.requireValue();
+        if (existing instanceof Item) {
+            Item item = (Item) existing;
+            if (!update.getVersions().isEmpty()) {
+                if (Iterables.isEmpty(item.getVersions())) {
+                    item.addVersion(new Version());
+                }
+                Version existingVersion = item.getVersions().iterator().next();
+                Version postedVersion = Iterables.getOnlyElement(update.getVersions());
+                mergeVersions(existingVersion, postedVersion);
+            }
+            return (Content) existing;
+        }
+        throw new IllegalStateException("Entity for " + update.getCanonicalUri() + " not Content");
+    }
+
     private Content updateEventPublisher(Content content) {
         List<EventRef> eventRefs = content.events();
-        for(EventRef eventRef: eventRefs) {
+        for (EventRef eventRef : eventRefs) {
             Event event = eventResolver.fetch(eventRef.id()).orNull();
             checkNotNull(event);
             checkNotNull(event.publisher());

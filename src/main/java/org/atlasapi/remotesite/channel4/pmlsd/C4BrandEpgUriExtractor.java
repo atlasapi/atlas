@@ -75,7 +75,7 @@ class C4BrandEpgUriExtractor implements C4UriExtractor<Feed, Feed, Entry> {
             }
         }
         
-        return Optional.absent();
+        return null;
     }
 
     @Override

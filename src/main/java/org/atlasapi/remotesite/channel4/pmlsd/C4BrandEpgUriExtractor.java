@@ -31,7 +31,7 @@ class C4BrandEpgUriExtractor implements C4UriExtractor<Feed, Feed, Entry> {
                 API_PATTERN_ROOT, C4AtomApi.WEB_SAFE_NAME_PATTERN));
     
     private static final Pattern WEB_EPISODE_URI_PATTERN 
-        = Pattern.compile(String.format("%s(%s)/episode-guide/series-(\\d+)/episode-(\\d+)", 
+        = Pattern.compile(String.format("%s(%s)/episode-guide/series-(\\d+)/episode-(\\d+).*",
                 Pattern.quote(C4AtomApi.WEB_BASE), C4AtomApi.WEB_SAFE_NAME_PATTERN));
 
     
@@ -75,7 +75,7 @@ class C4BrandEpgUriExtractor implements C4UriExtractor<Feed, Feed, Entry> {
             }
         }
         
-        return Optional.absent();
+        return null;
     }
 
     @Override

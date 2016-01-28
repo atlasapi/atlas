@@ -88,6 +88,7 @@ import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoreThreshold;
 import org.atlasapi.equiv.scorers.BroadcastAliasScorer;
 import org.atlasapi.equiv.scorers.ContainerHierarchyMatchingScorer;
 import org.atlasapi.equiv.scorers.CrewMemberScorer;
@@ -143,6 +144,7 @@ import com.metabroadcast.common.time.DateTimeZones;
 @Import({KafkaMessagingModule.class})
 public class EquivModule {
 
+    private static double DEFAULT_EXACT_TITLE_MATCH_SCORE = 2;
 	private @Value("${equiv.results.directory}") String equivResultsDirectory;
 	private @Value("${messaging.destination.equiv.assert}") String equivAssertDest;
 	private @Value("${equiv.excludedUris}") String excludedUris;
@@ -251,7 +253,7 @@ public class EquivModule {
     private EquivalenceUpdater<Container> topLevelContainerUpdater(Set<Publisher> publishers) {
         return ContentEquivalenceUpdater.<Container> builder()
             .withGenerators(ImmutableSet.of(
-                TitleSearchGenerator.create(searchResolver, Container.class, publishers),
+                TitleSearchGenerator.create(searchResolver, Container.class, publishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                 ScalingEquivalenceGenerator.scale(
                     new ContainerChildEquivalenceGenerator(contentResolver, equivSummaryStore),
                     20)
@@ -440,7 +442,7 @@ public class EquivModule {
         Set<Publisher> itunesAndMusicPublishers = Sets.union(musicPublishers, ImmutableSet.of(ITUNES));
         ContentEquivalenceUpdater<Item> muiscPublisherUpdater = ContentEquivalenceUpdater.<Item>builder()
             .withGenerator(
-                new TitleSearchGenerator<Item>(searchResolver, Song.class, itunesAndMusicPublishers, new SongTitleTransform(), 100)
+                new TitleSearchGenerator<Item>(searchResolver, Song.class, itunesAndMusicPublishers, new SongTitleTransform(), 100, DEFAULT_EXACT_TITLE_MATCH_SCORE)
             ).withScorer(new CrewMemberScorer(new SongCrewMemberExtractor()))
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
             .withFilter(AlwaysTrueFilter.<Item>get())
@@ -537,7 +539,7 @@ public class EquivModule {
     private EquivalenceUpdater<Container> facebookContainerEquivalenceUpdater(Set<Publisher> facebookAcceptablePublishers) {
         return ContentEquivalenceUpdater.<Container> builder()
             .withGenerators(ImmutableSet.of(
-                    TitleSearchGenerator.create(searchResolver, Container.class, facebookAcceptablePublishers),
+                    TitleSearchGenerator.create(searchResolver, Container.class, facebookAcceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                     aliasResolvingGenerator(contentResolver, Container.class)
             ))
             .withScorers(ImmutableSet.<EquivalenceScorer<Container>> of())
@@ -553,7 +555,7 @@ public class EquivModule {
 
     private EquivalenceUpdater<Container> vodContainerUpdater(Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Container> builder()
-            .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers)
+            .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
             )
             .withScorers(ImmutableSet.of(
                 new TitleMatchingContainerScorer(),
@@ -565,7 +567,8 @@ public class EquivModule {
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),
-                TitleMatchingContainerScorer.NAME)
+                TitleMatchingContainerScorer.NAME,
+                ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
             )
             .withFilter(this.<Container>standardFilter())
             .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
@@ -575,7 +578,7 @@ public class EquivModule {
 
     private EquivalenceUpdater<Container> btTveVodContainerUpdater(Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Container> builder()
-                .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers)
+                .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
                 )
                 .withScorers(ImmutableSet.of(
                         new TitleMatchingContainerScorer(),
@@ -651,7 +654,7 @@ public class EquivModule {
     private EquivalenceUpdater<Container> broadcastItemContainerEquivalenceUpdater(Set<Publisher> sources) {
         return ContentEquivalenceUpdater.<Container> builder()
             .withGenerators(ImmutableSet.of(
-                TitleSearchGenerator.create(searchResolver, Container.class, sources),
+                TitleSearchGenerator.create(searchResolver, Container.class, sources, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                 new ContainerChildEquivalenceGenerator(contentResolver, equivSummaryStore)
             ))
             .withScorers(ImmutableSet.of(new TitleMatchingContainerScorer()))

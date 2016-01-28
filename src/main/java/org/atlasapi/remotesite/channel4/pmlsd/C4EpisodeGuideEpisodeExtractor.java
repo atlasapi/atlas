@@ -27,7 +27,7 @@ final class C4EpisodeGuideEpisodeExtractor extends BaseC4EpisodeExtractor {
         episode.addAliasUrl(entry.getId());
         String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
         if (programmeId != null) {
-            episode.addAlias(new Alias("gb:channel4:prod:pmlsd:programmeId", programmeId));
+            episode.addAlias(new Alias(C4AtomApi.ALIAS, programmeId));
         }
         return episode;
     }

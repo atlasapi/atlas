@@ -9,6 +9,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.regex.Pattern;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Clip;
@@ -401,10 +402,17 @@ public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
 
     private <T extends Described> T updateDescribed(T existing, T fetched) {
         
-        SetView<String> mergedAliases = Sets.union(existing.getAliasUrls(), fetched.getAliasUrls());
+        SetView<String> mergedAliasUrls = Sets.union(existing.getAliasUrls(), fetched.getAliasUrls());
         
+        if (!mergedAliasUrls.equals(existing.getAliasUrls())) {
+            existing.setAliasUrls(mergedAliasUrls);
+            copyLastUpdated(fetched, existing);
+        }
+
+        SetView<Alias> mergedAliases = Sets.union(existing.getAliases(), fetched.getAliases());
+
         if (!mergedAliases.equals(existing.getAliasUrls())) {
-            existing.setAliasUrls(mergedAliases);
+            existing.setAliases(mergedAliases);
             copyLastUpdated(fetched, existing);
         }
         

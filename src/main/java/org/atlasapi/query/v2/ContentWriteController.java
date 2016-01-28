@@ -287,22 +287,27 @@ public class ContentWriteController {
 
     private Content mergeBroadcasts(Maybe<Identified> possibleExisting, Content update) {
         if (possibleExisting.isNothing()) {
-            throw new IllegalStateException("Entity for " + update.getCanonicalUri() + " does not exists");
+            throw new IllegalStateException("Entity for "
+                    + update.getCanonicalUri()
+                    + " does not exists");
         }
         Identified existing = possibleExisting.requireValue();
-        if (existing instanceof Item) {
-            Item item = (Item) existing;
-            if (!update.getVersions().isEmpty()) {
-                if (Iterables.isEmpty(item.getVersions())) {
-                    item.addVersion(new Version());
-                }
-                Version existingVersion = item.getVersions().iterator().next();
-                Version postedVersion = Iterables.getOnlyElement(update.getVersions());
-                mergeVersions(existingVersion, postedVersion);
-            }
-            return (Content) existing;
+        if (!(existing instanceof Item)) {
+            throw new IllegalStateException("Entity for "
+                    + update.getCanonicalUri()
+                    + " not Content");
         }
-        throw new IllegalStateException("Entity for " + update.getCanonicalUri() + " not Content");
+        Item item = (Item) existing;
+        if (!update.getVersions().isEmpty()) {
+            if (Iterables.isEmpty(item.getVersions())) {
+                item.addVersion(new Version());
+            }
+            Version existingVersion = item.getVersions().iterator().next();
+            Version postedVersion = Iterables.getOnlyElement(update.getVersions());
+            mergeVersions(existingVersion, postedVersion);
+        }
+        return (Content) existing;
+
     }
 
     private Content updateEventPublisher(Content content) {

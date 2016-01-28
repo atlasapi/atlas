@@ -21,7 +21,8 @@ import com.google.common.base.Functions;
 
 public class ContentTitleScorerTest {
 
-    private final ContentTitleScorer<Container> scorer = new ContentTitleScorer<Container>("Title", Functions.<String>identity());
+    private static final double EXACT_MATCH_SCORE = 2;
+    private final ContentTitleScorer<Container> scorer = new ContentTitleScorer<Container>("Title", Functions.<String>identity(), EXACT_MATCH_SCORE);
 
     private final ResultDescription desc = new DefaultDescription();
 
@@ -32,7 +33,7 @@ public class ContentTitleScorerTest {
     @Test
     public void testScore() {
         scoreLt(0.01, score("biker", "nothing"));
-        score(2, score("biker", "biker"));
+        score(EXACT_MATCH_SCORE, score("biker", "biker"));
         scoreLt(0.1, score("biker", "bike"));
         scoreLt(0.1, score("biker", "bikers"));
     }
@@ -46,17 +47,17 @@ public class ContentTitleScorerTest {
     
     @Test
     public void testScoreWithAmpersands() {
-        score(2, score("Rosencrantz & Guildenstern Are Dead", "Rosencrantz and Guildenstern Are Dead"));
-        score(2, score("Bill & Ben", "Bill and Ben"));
+        score(EXACT_MATCH_SCORE, score("Rosencrantz & Guildenstern Are Dead", "Rosencrantz and Guildenstern Are Dead"));
+        score(EXACT_MATCH_SCORE, score("Bill & Ben", "Bill and Ben"));
     }
     
     @Test
     public void testScoreWithCommonPrefix() {
-        score(2, score("The Great Escape", "The Great Escape"));
+        score(EXACT_MATCH_SCORE, score("The Great Escape", "The Great Escape"));
         scoreLt(0.1, score("The Great Escape", "Italian Job"));
         
-        score(2, score("The Great Escape", "Great Escape"));
-        score(2, score("the Great Escape", "Great Escape"));
+        score(EXACT_MATCH_SCORE, score("The Great Escape", "Great Escape"));
+        score(EXACT_MATCH_SCORE, score("the Great Escape", "Great Escape"));
         scoreLt(0.1, score("Theatreland", "The atreland"));
         scoreLt(0.1, score("theatreland", "the atreland"));
     }

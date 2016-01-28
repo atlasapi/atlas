@@ -31,8 +31,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final static float TITLE_WEIGHTING = 1.0f;
     public final static String NAME = "Title";
     
-    public static final <T extends Content> TitleSearchGenerator<T> create(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers) {
-        return new TitleSearchGenerator<T>(searchResolver, cls, publishers);
+    public static final <T extends Content> TitleSearchGenerator<T> create(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, double exactMatchScore) {
+        return new TitleSearchGenerator<T>(searchResolver, cls, publishers, exactMatchScore);
     }
     
     private final SearchResolver searchResolver;
@@ -42,17 +42,18 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final ContentTitleScorer<T> titleScorer;
     private final int searchLimit;
 
-    public TitleSearchGenerator(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers) {
-        this(searchResolver, cls, publishers, Functions.<String>identity(), 20);
+    public TitleSearchGenerator(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, double exactMatchScore) {
+        this(searchResolver, cls, publishers, Functions.<String>identity(), 20, exactMatchScore);
     }
     
-    public TitleSearchGenerator(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, Function<String,String> titleTransform, int searchLimit) {
+    public TitleSearchGenerator(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, Function<String,String> titleTransform, int searchLimit,
+            double exactMatchScore) {
         this.searchResolver = searchResolver;
         this.cls = cls;
         this.searchLimit = searchLimit;
         this.searchPublishers = ImmutableSet.copyOf(publishers);
         this.titleTransform = titleTransform;
-        this.titleScorer = new ContentTitleScorer<T>(NAME, titleTransform);
+        this.titleScorer = new ContentTitleScorer<T>(NAME, titleTransform, exactMatchScore);
     }
 
     @Override

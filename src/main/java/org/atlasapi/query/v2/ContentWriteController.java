@@ -114,8 +114,11 @@ public class ContentWriteController {
         }
         
         Content content;
+        Description description;
+
         try {
-            content = complexify(deserialize(new InputStreamReader(req.getInputStream())));
+            description = deserialize(new InputStreamReader(req.getInputStream()));
+            content = complexify(description);
         } catch (IOException ioe) {
             log.error("Error reading input for request " + req.getRequestURL(), ioe);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
@@ -133,7 +136,13 @@ public class ContentWriteController {
         }
 
         try {
-            content = merge(resolveExisting(content), content, merge);
+            Maybe<Identified> identified = resolveExisting(content);
+
+            if (description.getType().equals("broadcast")) {
+                content = mergeBroadcasts(identified, content);
+            } else {
+                content = merge(identified, content, merge);
+            }
             if (content instanceof Item) {
                 Item item = (Item) content;
                 writer.createOrUpdate(item);
@@ -261,6 +270,31 @@ public class ContentWriteController {
         response.setStatus(code);
         response.setContentLength(0);
         return null;
+    }
+
+    private Content mergeBroadcasts(Maybe<Identified> possibleExisting, Content update) {
+        if (possibleExisting.isNothing()) {
+            throw new IllegalStateException("Entity for "
+                    + update.getCanonicalUri()
+                    + " does not exists");
+        }
+        Identified existing = possibleExisting.requireValue();
+        if (!(existing instanceof Item)) {
+            throw new IllegalStateException("Entity for "
+                    + update.getCanonicalUri()
+                    + " not Content");
+        }
+        Item item = (Item) existing;
+        if (!update.getVersions().isEmpty()) {
+            if (Iterables.isEmpty(item.getVersions())) {
+                item.addVersion(new Version());
+            }
+            Version existingVersion = item.getVersions().iterator().next();
+            Version postedVersion = Iterables.getOnlyElement(update.getVersions());
+            mergeVersions(existingVersion, postedVersion);
+        }
+        return (Content) existing;
+
     }
 
     private Content updateEventPublisher(Content content) {

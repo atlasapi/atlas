@@ -43,7 +43,7 @@ public class TitleSearchGeneratorTest {
             }
         };
         
-        TitleSearchGenerator<Container> generator = TitleSearchGenerator.create(searchResolver, Container.class, Publisher.all());
+        TitleSearchGenerator<Container> generator = TitleSearchGenerator.create(searchResolver, Container.class, Publisher.all(), 2);
         ScoredCandidates<Container> generated = generator.generate(subject, new DefaultDescription());
         
         assertTrue(generated.candidates().keySet().size() == 1);

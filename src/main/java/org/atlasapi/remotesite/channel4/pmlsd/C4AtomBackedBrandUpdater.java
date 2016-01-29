@@ -409,10 +409,8 @@ public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
             copyLastUpdated(fetched, existing);
         }
 
-        SetView<Alias> mergedAliases = Sets.union(existing.getAliases(), fetched.getAliases());
-
-        if (!mergedAliases.equals(existing.getAliasUrls())) {
-            existing.setAliases(mergedAliases);
+        if (fetched.getAliases() != null && !existing.getAliases().isEmpty()) {
+            existing.setAliases(fetched.getAliases());
             copyLastUpdated(fetched, existing);
         }
         

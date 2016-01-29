@@ -409,7 +409,7 @@ public class C4AtomBackedBrandUpdater implements C4BrandUpdater {
             copyLastUpdated(fetched, existing);
         }
 
-        if (fetched.getAliases() != null) {
+        if (!existing.getAliases().equals(fetched.getAliases())) {
             existing.setAliases(fetched.getAliases());
             copyLastUpdated(fetched, existing);
         }

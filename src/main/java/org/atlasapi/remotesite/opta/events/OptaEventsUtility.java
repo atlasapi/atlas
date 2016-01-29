@@ -17,18 +17,26 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
     
     private static final String EVENT_URI_BASE = "http://optasports.com/events/";
     private static final String TEAM_URI_BASE = "http://optasports.com/teams/";
-    private static final Map<OptaSportType, Duration> DURATION_MAPPING = ImmutableMap.of(
-            OptaSportType.RUGBY_AVIVA_PREMIERSHIP, Duration.standardMinutes(100),
-            OptaSportType.FOOTBALL_GERMAN_BUNDESLIGA, Duration.standardMinutes(110),
-            OptaSportType.FOOTBALL_SCOTTISH_PREMIER_LEAGUE, Duration.standardMinutes(110),
-            OptaSportType.FOOTBALL_PREMIER_LEAGUE, Duration.standardMinutes(110)
-    );
-    private static final Map<OptaSportType, DateTimeZone> TIMEZONE_MAPPING = ImmutableMap.of(
-            OptaSportType.RUGBY_AVIVA_PREMIERSHIP, DateTimeZone.forID("Europe/London"),
-            OptaSportType.FOOTBALL_GERMAN_BUNDESLIGA, DateTimeZone.forID("Europe/Berlin"),
-            OptaSportType.FOOTBALL_SCOTTISH_PREMIER_LEAGUE, DateTimeZone.forID("Europe/London"),
-            OptaSportType.FOOTBALL_PREMIER_LEAGUE, DateTimeZone.forID("Europe/London")
-    );
+    private static final Map<OptaSportType, Duration> DURATION_MAPPING = 
+            ImmutableMap.<OptaSportType, Duration>builder()
+                .put(OptaSportType.RUGBY_AVIVA_PREMIERSHIP, Duration.standardMinutes(100))
+                .put(OptaSportType.FOOTBALL_GERMAN_BUNDESLIGA, Duration.standardMinutes(110))
+                .put(OptaSportType.FOOTBALL_SCOTTISH_PREMIER_LEAGUE, Duration.standardMinutes(110))
+                .put(OptaSportType.FOOTBALL_PREMIER_LEAGUE, Duration.standardMinutes(110))
+                .put(OptaSportType.FOOTBALL_CHAMPIONS_LEAGUE, Duration.standardMinutes(110))
+                .put(OptaSportType.FOOTBALL_EUROPA_LEAGUE, Duration.standardMinutes(110))
+                .build();
+    
+    private static final Map<OptaSportType, DateTimeZone> TIMEZONE_MAPPING = 
+            ImmutableMap.<OptaSportType, DateTimeZone>builder()
+                .put(OptaSportType.RUGBY_AVIVA_PREMIERSHIP, DateTimeZone.forID("Europe/London"))
+                .put(OptaSportType.FOOTBALL_GERMAN_BUNDESLIGA, DateTimeZone.forID("Europe/Berlin"))
+                .put(OptaSportType.FOOTBALL_SCOTTISH_PREMIER_LEAGUE, DateTimeZone.forID("Europe/London"))
+                .put(OptaSportType.FOOTBALL_PREMIER_LEAGUE, DateTimeZone.forID("Europe/London"))
+                .put(OptaSportType.FOOTBALL_CHAMPIONS_LEAGUE, DateTimeZone.forID("Europe/London")) 
+                .put(OptaSportType.FOOTBALL_EUROPA_LEAGUE, DateTimeZone.forID("Europe/London"))
+                .build();
+    
     private static final Map<String, String> VENUE_LOOKUP = ImmutableMap.<String, String>builder()
             .put("Recreation Ground", "http://dbpedia.org/resources/Recreation_Ground_(Bath)")
             .put("Adams Park", "http://dbpedia.org/resources/Adams_Park")
@@ -121,6 +129,16 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                     "Association Football", "http://dbpedia.org/resources/Association_football", 
                     "Premier League", "http://dbpedia.org/resources/Premier_League"
             ))
+            .put(OptaSportType.FOOTBALL_CHAMPIONS_LEAGUE, ImmutableMap.of(
+                    "Football", "http://dbpedia.org/resources/Football", 
+                    "Association Football", "http://dbpedia.org/resources/Association_football", 
+                    "Premier League", "http://dbpedia.org/resources/UEFA_Champions_League"
+            ))
+            .put(OptaSportType.FOOTBALL_EUROPA_LEAGUE, ImmutableMap.of(
+                    "Football", "http://dbpedia.org/resources/Football", 
+                    "Association Football", "http://dbpedia.org/resources/Association_football", 
+                    "Premier League", "http://dbpedia.org/resources/UEFA_Europa_League"
+            ))       
             .build();
     private final ImmutableMap<OptaSportType, OptaSportConfiguration> config;
     

@@ -63,7 +63,7 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                        <generatePackage>org.atlasapi.remotesite.pa.profiles.bindings</generatePackage>
+                            <generatePackage>org.atlasapi.remotesite.pa.profiles.bindings</generatePackage>
                             <schemaIncludes>
                                 <schemaInclude>profiles.dtd</schemaInclude>
                             </schemaIncludes>
@@ -238,7 +238,7 @@
         </extensions>
         <pluginManagement>
             <plugins>
-        		<!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
+                <!--This plugin's configuration is used to store Eclipse m2e settings only. It has no influence on the Maven build itself.-->
                 <plugin>
                     <groupId>org.eclipse.m2e</groupId>
                     <artifactId>lifecycle-mapping</artifactId>
@@ -413,21 +413,21 @@
                 </exclusion>
             </exclusions>
         </dependency>
-	    <dependency>
-			<groupId>org.apache.httpcomponents</groupId>
-			<artifactId>httpclient</artifactId>
-			<version>4.2.2</version>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.apache.httpcomponents</groupId>
-	        <artifactId>httpcore-nio</artifactId>
-	        <version>4.1.3</version>
-	    </dependency>
-	    <dependency>
-	        <groupId>org.apache.httpcomponents</groupId>
-	        <artifactId>httpcore</artifactId>
-	        <version>4.2.2</version>
-	    </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.2.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore-nio</artifactId>
+            <version>4.1.3</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpcore</artifactId>
+            <version>4.2.2</version>
+        </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
             <artifactId>slf4j-log4j12</artifactId>
@@ -549,61 +549,61 @@
             <artifactId>slf4j-api</artifactId>
             <version>1.6.1</version>
         </dependency>
-	   <dependency>
-		  <groupId>org.apache.commons</groupId>
-		  <artifactId>commons-compress</artifactId>
-		  <version>1.0</version>
-	   </dependency>
-       <dependency>
-          <groupId>com.metabroadcast.atlas.glycerin</groupId>
-          <artifactId>glycerin</artifactId>
-          <version>1.0.3</version>
-       </dependency>
-       <dependency>
-           <groupId>com.google.http-client</groupId>
-           <artifactId>google-http-client</artifactId>
-           <version>1.17.0-rc</version>
-       </dependency>
-       <dependency>
-           <groupId>com.google.http-client</groupId>
-           <artifactId>google-http-client-jackson</artifactId>
-           <version>1.17.0-rc</version>
-       </dependency>
-       <dependency>
-	       <groupId>com.google.api.client</groupId>
-	       <artifactId>google-api-data-spreadsheet-v3</artifactId>
-	       <version>1.0.10-alpha</version>
-	   </dependency>
-	   <dependency>
-	       <groupId>com.google.gdata</groupId>
-	       <artifactId>core</artifactId>
-	       <version>1.47.1</version>
-	   </dependency>
-	   <dependency>
-	       <groupId>com.google.apis</groupId>
-	       <artifactId>google-api-services-drive</artifactId>
-	       <version>v2-rev123-1.18.0-rc</version>
-	   </dependency>
-       <dependency>
-           <groupId>com.codahale.metrics</groupId>
-           <artifactId>metrics-core</artifactId>
-           <version>3.0.1</version>
-       </dependency>
-       <dependency>
-           <groupId>com.codahale.metrics</groupId>
-           <artifactId>metrics-jetty9</artifactId>
-           <version>3.0.1</version>
-       </dependency>
-       <dependency>
-           <groupId>net.sourceforge</groupId>
-           <artifactId>jwbf</artifactId>
-           <version>2.0.0</version>
-       </dependency>
-       <dependency>
-           <groupId>org.sweble.wikitext</groupId>
-           <artifactId>swc-parser-lazy</artifactId>
-           <version>1.1.0</version>
-       </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-compress</artifactId>
+            <version>1.0</version>
+        </dependency>
+        <dependency>
+            <groupId>com.metabroadcast.atlas.glycerin</groupId>
+            <artifactId>glycerin</artifactId>
+            <version>1.0.3</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client</artifactId>
+            <version>1.17.0-rc</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.http-client</groupId>
+            <artifactId>google-http-client-jackson</artifactId>
+            <version>1.17.0-rc</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.api.client</groupId>
+            <artifactId>google-api-data-spreadsheet-v3</artifactId>
+            <version>1.0.10-alpha</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.gdata</groupId>
+            <artifactId>core</artifactId>
+            <version>1.47.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.google.apis</groupId>
+            <artifactId>google-api-services-drive</artifactId>
+            <version>v2-rev123-1.18.0-rc</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>com.codahale.metrics</groupId>
+            <artifactId>metrics-jetty9</artifactId>
+            <version>3.0.1</version>
+        </dependency>
+        <dependency>
+            <groupId>net.sourceforge</groupId>
+            <artifactId>jwbf</artifactId>
+            <version>2.0.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.sweble.wikitext</groupId>
+            <artifactId>swc-parser-lazy</artifactId>
+            <version>1.1.0</version>
+        </dependency>
         <dependency>
             <groupId>info.bliki.wiki</groupId>
             <artifactId>bliki-core</artifactId>
@@ -666,4 +666,3 @@
         </repository>
     </repositories>
 </project>
-

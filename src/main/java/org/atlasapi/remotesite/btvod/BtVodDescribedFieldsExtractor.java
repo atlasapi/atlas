@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -30,6 +28,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 
 public class BtVodDescribedFieldsExtractor {
 
@@ -57,6 +57,7 @@ public class BtVodDescribedFieldsExtractor {
     private final Topic kidsTopic;
     private final Topic tvBoxsetTopic;
     private final Topic subCatchupTopic;
+    private final BtVodTagMap btVodTagMap;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -184,6 +185,7 @@ public class BtVodDescribedFieldsExtractor {
         this.contentProviderTopicNamespace = checkNotNull(contentProviderTopicNamespace);
         this.genreTopicNamespace = checkNotNull(genreTopicNamespace);
         this.keywordTopicNamespace = checkNotNull(keywordTopicNamespace);
+        this.btVodTagMap = new BtVodTagMap();
     }
     
     public void init() {
@@ -236,7 +238,7 @@ public class BtVodDescribedFieldsExtractor {
             }
             described.setGenres(genres.build());
         }
-        
+        described.setTags(btVodTagMap.map(described.getGenres()));
         described.setAliases(aliasesFrom(row));
     }
 

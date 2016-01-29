@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.pa;
 
-import static org.atlasapi.persistence.logging.AdapterLogEntry.errorEntry;
-import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
-
 import java.util.List;
 import java.util.Set;
 
@@ -43,12 +40,12 @@ import org.atlasapi.remotesite.pa.listings.bindings.PictureUsage;
 import org.atlasapi.remotesite.pa.listings.bindings.Pictures;
 import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 import org.atlasapi.remotesite.pa.listings.bindings.StaffMember;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
-import org.joda.time.Interval;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.text.MoreStrings;
+import com.metabroadcast.common.time.Timestamp;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -58,11 +55,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.text.MoreStrings;
-import com.metabroadcast.common.time.Timestamp;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.joda.time.Interval;
+import org.joda.time.format.DateTimeFormat;
+import org.joda.time.format.DateTimeFormatter;
+
+import static org.atlasapi.persistence.logging.AdapterLogEntry.errorEntry;
+import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
 public class PaProgrammeProcessor implements PaProgDataProcessor {
     
@@ -87,6 +88,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
     private final PaCountryMap countryMap = new PaCountryMap();
     
     private final GenreMap genreMap = new PaGenreMap();
+
+    private final PaTagMap paTagMap = new PaTagMap();
 
     public PaProgrammeProcessor(ContentWriter contentWriter, ContentResolver contentResolver, AdapterLog log) {
         this.contentResolver = contentResolver;
@@ -242,6 +245,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
         brand.setMediaType(channel.getMediaType());
         setCertificate(progData, brand);
         setGenres(progData, brand);
+        setTags(progData, brand);
 
         selectImages(progData.getPictures(), brand, PA_PICTURE_TYPE_BRAND, PA_PICTURE_TYPE_SERIES, Maybe.<String>nothing());
 
@@ -364,6 +368,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
         series.setSpecialization(specialization(progData, channel));
         setCertificate(progData, series);
         setGenres(progData, series);
+        setTags(progData, series);
         
         selectImages(progData.getPictures(), series, PA_PICTURE_TYPE_SERIES, PA_PICTURE_TYPE_BRAND, Maybe.<String>nothing());
         series.setLastUpdated(updatedAt.toDateTimeUTC());
@@ -453,6 +458,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
         episode.setMediaType(channel.getMediaType());
         episode.setSpecialization(specialization(progData, channel));
         setGenres(progData, episode);
+        setTags(progData, episode);
         
         if (progData.getCountry() != null) {
             episode.setCountriesOfOrigin(countryMap.parseCountries(progData.getCountry()));
@@ -495,6 +501,13 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
         extractedGenres.remove("http://pressassociation.com/genres/BE00");
         if(!extractedGenres.isEmpty()) {
             content.setGenres(extractedGenres);
+        }
+    }
+
+    private void setTags(ProgData progData, Content content) {
+        Set<String> tagsFromGenres = paTagMap.map(content.getGenres());
+        if (!tagsFromGenres.isEmpty()) {
+            content.setTags(tagsFromGenres);
         }
     }
 

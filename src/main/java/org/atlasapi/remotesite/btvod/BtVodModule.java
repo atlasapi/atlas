@@ -298,7 +298,9 @@ public class BtVodModule {
                         topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_TV_BOXSETS_TOPIC, publisher),
                         topicFor(btVodAppCategoryNamespaceFor(envName, conf), BT_VOD_CATCHUP_TOPIC, publisher)
                 ),
-                ImmutableSet.of(String.format(BT_VOD_KEYWORD_NAMESPACE_FORMAT, envName, conf)),
+                ImmutableSet.of(String.format(BT_VOD_KEYWORD_NAMESPACE_FORMAT, envName, conf),
+                                String.format(BT_VOD_CONTENT_PROVIDER_NAMESPACE_FORMAT, envName, conf)
+                               ),
                 seriesUriExtractor(uriPrefix),
                 versionsExtractor(uriPrefix, envName, conf),
                 describedFieldsExtractor(

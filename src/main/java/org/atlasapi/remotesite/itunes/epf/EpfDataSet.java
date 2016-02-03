@@ -12,6 +12,7 @@ import org.atlasapi.remotesite.itunes.epf.model.EpfArtistCollection;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollection;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollectionVideo;
 import org.atlasapi.remotesite.itunes.epf.model.EpfPricing;
+import org.atlasapi.remotesite.itunes.epf.model.EpfStorefront;
 import org.atlasapi.remotesite.itunes.epf.model.EpfVideo;
 
 import com.google.common.base.Charsets;
@@ -52,6 +53,10 @@ public class EpfDataSet {
     
     public EpfTable<EpfPricing> getPricingTable() {
         return new EpfTable<EpfPricing>(readerSupplierFor("video_price"), EpfPricing.FROM_ROW_PARTS);
+    }
+
+    public EpfTable<EpfStorefront> getCountryCodes() {
+        return new EpfTable<EpfStorefront>(readerSupplierFor("storefront"), EpfStorefront.FROM_ROW_PARTS);
     }
 
     private InputSupplier<? extends Reader> readerSupplierFor(String fileName) {

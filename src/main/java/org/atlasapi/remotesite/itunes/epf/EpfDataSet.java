@@ -50,17 +50,8 @@ public class EpfDataSet {
         return new EpfTable<EpfVideo>(readerSupplierFor("video"), EpfVideo.FROM_ROW_PARTS);
     }
     
-    public EpfTable<EpfPricing> getPricingTable(Country country) {
-        String filename = String.format("tvEpisode-%s.txt", iso3Code(country));
-        if (new File(datasetDirectory, filename).exists()) {
-            return new EpfTable<EpfPricing>(readerSupplierFor(filename), EpfPricing.FROM_ROW_PARTS, TAB_FIELD_SEPARATOR, EMPTY_ROW_SEPARATOR);
-        } else {
-            return null;
-        }
-    }
-    
-    private String iso3Code(Country country) {
-        return new Locale("en", country.code()).getISO3Country().toLowerCase();
+    public EpfTable<EpfPricing> getPricingTable() {
+        return new EpfTable<EpfPricing>(readerSupplierFor("video_price"), EpfPricing.FROM_ROW_PARTS);
     }
 
     private InputSupplier<? extends Reader> readerSupplierFor(String fileName) {

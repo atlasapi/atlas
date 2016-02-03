@@ -75,7 +75,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             //series id -> series
             final BiMap<Integer, Series> extractedSeries = linkBrandsAndSeries(dataSet.getArtistCollectionTable(), extractedBrands, extractSeries(dataSet.getCollectionTable()));
             
-            Multimap<String, Location> extractedLocations = extractLocations(dataSet, ImmutableSet.of(Countries.GB, Countries.US));
+            Multimap<String, Location> extractedLocations = extractLocations(dataSet, ImmutableSet.of(ItunesEpfPricingSource.GB_CODE, ItunesEpfPricingSource.US_CODE));
             
             //episode id -> trackNumber/series
             Multimap<Series, Episode> extractedEpisodes = linkEpisodesAndSeries(dataSet.getCollectionVideoTable(), extractedSeries, extractVideos(dataSet.getVideoTable(), extractedSeries, extractedLocations));
@@ -128,13 +128,13 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         });
     }
 
-    private Multimap<String, Location> extractLocations(final EpfDataSet dataSet, ImmutableSet<Country> countries) throws IOException {
+    private Multimap<String, Location> extractLocations(final EpfDataSet dataSet, ImmutableSet<Integer> countries) throws IOException {
         reportStatus("Extracting locations...");
-        Iterable<Location> locations = Iterables.concat(Iterables.transform(countries, new Function<Country, Set<Location>>() {
+        Iterable<Location> locations = Iterables.concat(Iterables.transform(countries, new Function<Integer, Set<Location>>() {
             @Override
-            public Set<Location> apply(final Country country) {
+            public Set<Location> apply(final Integer country) {
                 try {
-                    EpfTable<EpfPricing> pricingTable = dataSet.getPricingTable(country);
+                    EpfTable<EpfPricing> pricingTable = dataSet.getPricingTable();
                     if (pricingTable == null) {
                         return ImmutableSet.of();
                     }
@@ -163,21 +163,9 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         }));
         
         return Multimaps.index(locations, new Function<Location, String>() {
-            
-            private final String commonPrefix = "http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewTVSeason?";
-            private final Pattern urlIdPattern = Pattern.compile(Pattern.quote(commonPrefix) + "uo=\\d+&i=(\\d+)&id=\\d+");
-            
             @Override
             public String apply(Location input) {
-                return extractIdFrom(input.getUri());
-            }
-
-            private String extractIdFrom(String uri) {
-                Matcher matcher = urlIdPattern.matcher(uri);
-                if(matcher.matches()) {
-                    return matcher.group(1);
-                }
-                return "";
+                return input.getEmbedId();
             }
         });
     }

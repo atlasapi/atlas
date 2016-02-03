@@ -29,22 +29,20 @@ public class ItunesPricingLocationExtractorTest extends TestCase {
 
     @Test
     public void testExtract() {
-        
-        String locationUri = "http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewTVSeason?uo=5&i=258143336&id=256322090";
-        String locationImg = "http://a1382.phobos.apple.com/us/r1000/004/Features/a1/ac/3d/dj.jblxjkcm.133x100-99.jpg";
+
         EpfPricing pricing = new EpfPricing(ImmutableList.of(
-            "Episode 2","","002","Monarchy, Series 1","2004 10 25","Channel 4",locationUri,locationImg,"","","SD","1.49","","","",""
+            "1453888800445","719590104","1.49","EUR","143444","","1.49","","","",""
         ));
 
-        Maybe<Location> extractedLocation = extractor.extract(new ItunesEpfPricingSource(pricing, Countries.GB));
+        Maybe<Location> extractedLocation = extractor.extract(new ItunesEpfPricingSource(pricing, ItunesEpfPricingSource.GB_CODE));
         
         assertTrue(extractedLocation.hasValue());
         
         Location location = extractedLocation.requireValue();
-        
-        assertThat(location.getUri(), is(equalTo(locationUri)));
+
         assertThat(location.getTransportType(), is(TransportType.APPLICATION));
         assertThat(location.getTransportSubType(), is(TransportSubType.ITUNES));
+        assertThat(location.getEmbedId(), is(String.valueOf(719590104)));
         
         Policy policy = location.getPolicy();
         

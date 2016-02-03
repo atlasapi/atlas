@@ -62,8 +62,9 @@ public class PaAliasBackPopulator {
         while (contentItr.hasNext()) {
             Content content = contentItr.next();
             executor.submit(aliasGeneratingRunnable(content, mutatedCounter, dryRun));
-            reporter.reportStatus(String.format("Processed %d total items, added %d aliases", totalCounter.get(), mutatedCounter.get()));
-            if (mutatedCounter.get() % 10000 == 0) {
+            totalCounter.incrementAndGet();
+            if (mutatedCounter.get() % 1000 == 0) {
+                reporter.reportStatus(String.format("Processed %d total items, added %d aliases", totalCounter.get(), mutatedCounter.get()));
                 progressStore.storeProgress(TASK_NAME, ContentListingProgress.progressFrom(content));
             }
         }

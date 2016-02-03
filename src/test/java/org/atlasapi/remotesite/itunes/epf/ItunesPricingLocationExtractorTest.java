@@ -37,7 +37,7 @@ public class ItunesPricingLocationExtractorTest extends TestCase {
         EpfPricing pricing = new EpfPricing(ImmutableList.of(
             "1453888800445","719590104","1.49","GBP","143444","","1.49","","","",""
         ));
-        Map<String, Integer> countryCodes = ImmutableMap.of("GBR", 143444);
+        Map<String, Integer> countryCodes = ImmutableMap.of("gbr", 143444);
 
         Maybe<Location> extractedLocation = extractor.extract(new ItunesEpfPricingSource(pricing, Countries.GB, countryCodes));
         
@@ -64,7 +64,7 @@ public class ItunesPricingLocationExtractorTest extends TestCase {
         EpfPricing pricing = new EpfPricing(ImmutableList.of(
                 "1453888800445","719590104","1.49","USD","143443","","1.49","","","",""
         ));
-        Map<String, Integer> countryCodes = ImmutableMap.of("USA", 143443);
+        Map<String, Integer> countryCodes = ImmutableMap.of("usa", 143443);
 
         Maybe<Location> extractedLocation = extractor.extract(new ItunesEpfPricingSource(pricing, Countries.US, countryCodes));
 

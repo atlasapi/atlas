@@ -3,6 +3,8 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+import com.google.api.client.util.Lists;
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
@@ -25,6 +27,8 @@ import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -41,8 +45,6 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         implements ContentExtractor<SOURCE, CONTENT> {
 
     private static final Logger log = LoggerFactory.getLogger(NitroContentExtractor.class);
-
-    private static final Pattern GENERIC_PATTERN = Pattern.compile("((http://|https://)?ichef.bbci.co.uk/images/ic/1024x576/).*\\.jpg");
 
     private static final String PID_NAMESPACE = "gb:bbc:pid";
     private static final String URI_NAMESPACE = "uri";
@@ -77,12 +79,12 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         }
         com.metabroadcast.atlas.glycerin.model.Brand.Images.Image srcImage = extractImage(source);
 
+        List<String> genericUrlList = createGenericUrlList();
 
-        Matcher genericImageMatcher = GENERIC_PATTERN.matcher(srcImage.getTemplateUrl());
         if (srcImage != null && !Strings.isNullOrEmpty(srcImage.getTemplateUrl())) {
             Image image = imageExtractor.extract(srcImage);
 
-            if(genericImageMatcher.matches()) {
+            if(genericUrlList.contains(image.getCanonicalUri())) {
                 image.setType(ImageType.GENERIC);
             }
             content.setImage(image.getCanonicalUri());
@@ -193,4 +195,11 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
                MediaType.VIDEO;
     }
 
+    private List<String> createGenericUrlList() {
+        ArrayList<String> list = Lists.newArrayList();
+
+        list.add("http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png");
+
+        return ImmutableList.copyOf(list);
+    }
 }

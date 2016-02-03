@@ -39,6 +39,7 @@ public class OddJobRandomTaskModule {
         scheduler.schedule(lookupRefUpdateTask(), RepetitionRules.NEVER);
         scheduler.schedule(tveChildRefUpdateTask().withName("TVE ChildRef update"), RepetitionRules.NEVER);
         scheduler.schedule(aliasBackPopulationTask(), RepetitionRules.NEVER);
+        scheduler.schedule(dryRunAliasBackPopulationTask(), RepetitionRules.NEVER);
     }
     
     @Bean
@@ -79,6 +80,10 @@ public class OddJobRandomTaskModule {
     }
 
     public PaAliasBackPopulatorTask aliasBackPopulationTask() {
-        return new PaAliasBackPopulatorTask(new PaAliasBackPopulator(lister, writer, progressStore));
+        return new PaAliasBackPopulatorTask(new PaAliasBackPopulator(lister, writer, progressStore), false);
+    }
+
+    public PaAliasBackPopulatorTask dryRunAliasBackPopulationTask() {
+        return new PaAliasBackPopulatorTask(new PaAliasBackPopulator(lister, writer, progressStore), true);
     }
 }

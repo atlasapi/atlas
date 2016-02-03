@@ -2,6 +2,7 @@ package org.atlasapi.system;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.hash.BloomFilter;
 import org.atlasapi.media.entity.Brand;
@@ -9,6 +10,8 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Series;
 
+
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -21,9 +24,9 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         }
     };
 
-    private final BloomFilter<Long> activeContentIds;
+    private final ImmutableSet<Long> activeContentIds;
 
-    public PaContentDeactivationPredicate(BloomFilter<Long> activeContentIds) {
+    public PaContentDeactivationPredicate(ImmutableSet<Long> activeContentIds) {
         this.activeContentIds = checkNotNull(activeContentIds);
     }
 
@@ -46,7 +49,7 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     }
 
     private boolean isNotActiveContentId(Content content) {
-        return !activeContentIds.mightContain(content.getId());
+        return !activeContentIds.contains(content.getId());
     }
 
     private boolean isNotPaFilm(Content content) {

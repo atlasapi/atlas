@@ -83,7 +83,9 @@ public class PaContentDeactivatorTest {
         when(lookup.entriesForAliases(any(Optional.class), anyListOf(String.class)))
                 .thenReturn(ImmutableList.of(activeLookup));
 
-        when(progressStore.progressForTask(PaContentDeactivator.class.getSimpleName()))
+        when(progressStore.progressForTask(PaContentDeactivator.class.getSimpleName()+"containers"))
+                .thenReturn(Optional.<ContentListingProgress>absent());
+        when(progressStore.progressForTask(PaContentDeactivator.class.getSimpleName()+"children"))
                 .thenReturn(Optional.<ContentListingProgress>absent());
 
         ImmutableList<ContentCategory> contentCategories = ImmutableList.of(

@@ -186,6 +186,7 @@ public class PaChannelDataHandler {
             existingChannel.setRegional(newChannel.getRegional());
             existingChannel.setTimeshift(newChannel.getTimeshift());
             existingChannel.setGenres(newChannel.getGenres());
+            existingChannel.setAvailableFrom(Sets.union(existingChannel.getAvailableFrom(), newChannel.getAvailableFrom()));
             // unions new PA numberings with existing non-PA numberings
             existingChannel.setChannelNumbers(Sets.union(
                     newChannel.getChannelNumbers(), 

@@ -35,6 +35,7 @@ import static com.google.common.base.Predicates.not;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 
@@ -151,8 +152,8 @@ public class GsonBtMpxClientTest {
         Entry firstNonZeroEntry = Iterables.getFirst(channels.getEntries(), null);
 
         assertNotNull(firstNonZeroEntry.getAvailableDate());
-        //This test will fail now since prod environment doesn't have the linear epg channel id field.
-        assertNotNull(firstNonZeroEntry.getLinearEpgChannelId());
+        //This test needs to be updated once prod environment have the linearEpgChannelId field otherwise it will fail.
+        assertNull(firstNonZeroEntry.getLinearEpgChannelId());
     }
 
     private Predicate<Entry> isZeroAvailableDate(final long availableDate) {

@@ -16,7 +16,7 @@ public class Entry {
     
     @VisibleForTesting
     public Entry(String guid, long updated, String title, Iterable<Category> categories,
-            Iterable<Content> content, boolean approved, String label, String scheme, 
+            Iterable<Content> content, boolean approved, String label, String scheme,
             boolean isStreamable, boolean hasOutputProtection, long availableDate, String linearEpgChannelId) {
         this.guid = guid;
         this.updated = updated;

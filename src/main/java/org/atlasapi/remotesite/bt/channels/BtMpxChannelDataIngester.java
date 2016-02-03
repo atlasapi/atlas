@@ -97,7 +97,6 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
             }
             ImmutableSet<String> allCurrentChannelGroupsBuilt = allCurrentChannelGroups.build();
 
-
             removeOldChannelGroupChannels(allCurrentChannelGroupsBuilt);
             allChannelsGroupUpdater.update();
         } catch (BtMpxClientException e) {

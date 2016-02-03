@@ -60,6 +60,9 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
                 for (Container cand : candidates) {
                     results.addEquivalent(cand, Score.nullScore());
                 }
+                desc.appendText("Detected as subscription catchup brand, not scoring hierarchies");
+                desc.finishStage();
+                return results.build();
             }
             List<Integer> subjSeriesSizes = sortedSeriesSizes(series);
             desc.appendText("Subject %s, %s series: %s", subj, subjSeriesSizes.size(), subjSeriesSizes)

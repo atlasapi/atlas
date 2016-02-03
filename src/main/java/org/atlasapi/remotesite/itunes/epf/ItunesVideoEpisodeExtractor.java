@@ -42,6 +42,7 @@ public class ItunesVideoEpisodeExtractor implements ContentExtractor<ItunesEpfVi
             Encoding encoding = new Encoding();
             for (Location location : locations) {
                 location.getPolicy().setAvailabilityStart(row.get(EpfVideo.ITUNES_RELEASE_DATE));
+                location.setUri(row.get(EpfVideo.VIEW_URL));
                 encoding.addAvailableAt(location);
             }
             version.addManifestedAs(encoding);

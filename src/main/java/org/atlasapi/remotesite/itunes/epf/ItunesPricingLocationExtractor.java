@@ -14,31 +14,49 @@ import org.atlasapi.remotesite.itunes.epf.model.EpfPricing;
 
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.currency.Price;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.intl.Country;
 
 public class ItunesPricingLocationExtractor implements ContentExtractor<ItunesEpfPricingSource, Maybe<Location>> {
 
     @Override
     public Maybe<Location> extract(ItunesEpfPricingSource source) {
-        BigDecimal sdPrice = source.getRow().get(EpfPricing.SD_PRICE);
-        if (sdPrice == null) {
+        if (source.getRow().get(EpfPricing.STOREFRONT_ID) == source.getCountry()) {
+            BigDecimal sdPrice = source.getRow().get(EpfPricing.SD_PRICE);
+            if (sdPrice == null) {
+                return Maybe.nothing();
+            }
+
+            Country country = convertCountry(source.getCountry());
+
+            Location location = new Location();
+            location.setTransportType(TransportType.APPLICATION);
+            location.setTransportSubType(TransportSubType.ITUNES);
+            location.setEmbedId(source.getRow().get(EpfPricing.VIDEO_ID).toString());
+
+            Policy policy = new Policy();
+            policy.addAvailableCountry(country);
+            policy.setRevenueContract(RevenueContract.PAY_TO_BUY);
+
+            Currency currency = Currency.getInstance(new Locale("en", country.code()));
+            policy.setPrice(new Price(currency, sdPrice.movePointRight(currency.getDefaultFractionDigits()).intValue()));
+
+            location.setPolicy(policy);
+
+            return Maybe.just(location);
+        } else {
             return Maybe.nothing();
         }
-        
-        Location location = new Location();
-        location.setUri(source.getRow().get(EpfPricing.EPISODE_URL));
-        location.setTransportType(TransportType.APPLICATION);
-        location.setTransportSubType(TransportSubType.ITUNES);
+    }
 
-        Policy policy = new Policy();
-        policy.addAvailableCountry(source.getCountry());
-        policy.setRevenueContract(RevenueContract.PAY_TO_BUY);
-
-        Currency currency = Currency.getInstance(new Locale("en", source.getCountry().code()));
-        policy.setPrice(new Price(currency, sdPrice.movePointRight(currency.getDefaultFractionDigits()).intValue()));
-
-        location.setPolicy(policy);
-
-        return Maybe.just(location);
+    private Country convertCountry(int storefrontId) {
+        if (storefrontId == ItunesEpfPricingSource.GB_CODE) {
+            return Countries.GB;
+        } else if (storefrontId == ItunesEpfPricingSource.US_CODE) {
+            return Countries.US;
+        } else {
+            return Countries.ALL;
+        }
     }
 
 }

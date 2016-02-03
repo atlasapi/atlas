@@ -36,6 +36,7 @@ import static org.mockito.internal.verification.VerificationModeFactory.times;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtChannelDataUpdaterTest {
+
     @Captor private ArgumentCaptor<Channel> channelBeingWrittenCaptor;
     @Mock private ChannelWriter channelWriter;
 

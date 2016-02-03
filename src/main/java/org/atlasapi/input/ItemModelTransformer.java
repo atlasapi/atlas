@@ -61,7 +61,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if ("episode".equals(type)) {
             item = createEpisode(inputItem);
         } else if ("film".equals(type)) {
-            item = createFilm(inputItem);
+            item = new Film();
         } else if ("song".equals(type)) {
             item = createSong(inputItem);
         } else if ("broadcast".equals(type)) {
@@ -71,12 +71,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         }
         item.setLastUpdated(now);
         return item;
-    }
-
-    private Item createFilm(org.atlasapi.media.entity.simple.Item inputItem) {
-        Film film = new Film();
-        film.setYear(inputItem.getYear());
-        return film;
     }
 
     private Item createBroadcast(org.atlasapi.media.entity.simple.Item inputItem) {

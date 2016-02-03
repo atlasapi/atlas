@@ -35,8 +35,8 @@ public class NitroItemSource<T> {
      * @return a {@code NitroItemSource} for the programme and availabilities.
      */
     public static <T> NitroItemSource<T> valueOf(T programme, Iterable<Availability> availabilities) {
-        return new NitroItemSource<T>(programme,
-            availabilities,
+        return new NitroItemSource<T>(programme, 
+            availabilities, 
             ImmutableList.<Broadcast>of(),
             ImmutableList.<Version>of()
         );
@@ -52,8 +52,8 @@ public class NitroItemSource<T> {
      * @return a {@code NitroItemSource} for the programme, availabilities and broadcasts.
      */
     public static <T> NitroItemSource<T> valueOf(T programme, List<Availability> availabilities, List<Broadcast> broadcasts, List<Version> versions) {
-        return new NitroItemSource<T>(programme,
-            availabilities,
+        return new NitroItemSource<T>(programme, 
+            availabilities, 
             broadcasts,
             versions
         );

@@ -8,7 +8,6 @@ import java.util.Set;
 
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
-import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
@@ -20,7 +19,7 @@ import com.google.common.collect.ImmutableSet;
 
 public class SequenceItemScorerTest {
 
-    private final SequenceItemScorer scorer = new SequenceItemScorer(Score.ONE);
+    private final SequenceItemScorer scorer = new SequenceItemScorer();
     private final ResultDescription desc = new DefaultDescription();
 
     @Test

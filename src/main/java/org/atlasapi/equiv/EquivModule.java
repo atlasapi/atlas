@@ -75,7 +75,6 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -296,7 +295,7 @@ public class EquivModule {
         ));
         
         EquivalenceUpdater<Item> standardItemUpdater = standardItemUpdater(MoreSets.add(acceptablePublishers, LOVEFILM), 
-                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer(Score.ONE))).build();
+                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer())).build();
         EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
@@ -515,7 +514,7 @@ public class EquivModule {
                         ))
                         .withScorers(ImmutableSet.of(
                             new TitleMatchingItemScorer(),
-                            new SequenceItemScorer(Score.ONE)
+                            new SequenceItemScorer()
                         ))
                         .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                             new NullScoreAwareAveragingCombiner<Item>(),
@@ -594,7 +593,7 @@ public class EquivModule {
                         TitleMatchingContainerScorer.NAME)
                 )
                 .withFilter(this.<Container>standardFilter())
-                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container> atLeastNTimesGreater(1.5))
+                .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(50))
                 .withHandler(containerResultHandlers(acceptablePublishers))
                 .build();
     }
@@ -607,7 +606,7 @@ public class EquivModule {
             ))
             .withScorers(ImmutableSet.of(
                 new TitleMatchingItemScorer(),
-                new SequenceItemScorer(Score.ONE)
+                new SequenceItemScorer()
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                 new NullScoreAwareAveragingCombiner<Item>(),
@@ -634,17 +633,14 @@ public class EquivModule {
             ))
             .withScorers(ImmutableSet.of(
                 new TitleMatchingItemScorer(),
-                // Hierarchies are known to be inconsistent between the BT VoD
-                // catalogue and others, so we want to ascribe less weight
-                // to sequence scoring
-                new SequenceItemScorer(Score.valueOf(0.5))
+                new SequenceItemScorer()
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Item>(
                 new NullScoreAwareAveragingCombiner<Item>(),
                 ImmutableSet.of(TitleMatchingItemScorer.NAME, SequenceItemScorer.SEQUENCE_SCORER)
             ))
             .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item> atLeastNTimesGreater(1.5))
+            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.strict(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
@@ -676,7 +672,7 @@ public class EquivModule {
             Predicate<? super Broadcast> filter) {
         return standardItemUpdater(sources, ImmutableSet.of(
             new TitleMatchingItemScorer(), 
-            new SequenceItemScorer(Score.ONE),
+            new SequenceItemScorer(),
             new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
             new BroadcastAliasScorer(Score.nullScore())
         ), filter).build();

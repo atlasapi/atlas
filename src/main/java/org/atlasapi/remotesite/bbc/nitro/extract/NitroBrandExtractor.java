@@ -45,9 +45,6 @@ public class NitroBrandExtractor
 
     @Override
     protected Brand.Images.Image extractImage(Brand source) {
-        if (source.getImages() == null) {
-            return null;
-        }
         return source.getImages().getImage();
     }
 

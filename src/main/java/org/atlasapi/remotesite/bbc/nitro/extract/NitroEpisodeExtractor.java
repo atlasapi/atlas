@@ -51,6 +51,7 @@ import com.metabroadcast.common.time.Clock;
  */
 public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode, Item> {
 
+    private final boolean releaseDateIngestIsEnabled;
     private static final String FILM_FORMAT_ID = "PT007";
     private static final Predicate<Format> IS_FILM_FORMAT = new Predicate<Format>() {
 
@@ -60,16 +61,17 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         }
     };
 
-
-    private final ContentExtractor<List<GenreGroup>, Set<String>> genresExtractor = new NitroGenresExtractor();
+    private final ContentExtractor<List<GenreGroup>, Set<String>> genresExtractor
+        = new NitroGenresExtractor();
 
     private final NitroCrewMemberExtractor crewMemberExtractor = new NitroCrewMemberExtractor();
     private final NitroPersonExtractor personExtractor = new NitroPersonExtractor();
     private final QueuingPersonWriter personWriter;
 
-    public NitroEpisodeExtractor(Clock clock, QueuingPersonWriter personWriter) {
+    public NitroEpisodeExtractor(Clock clock, QueuingPersonWriter personWriter, boolean releaseDateIngestIsEnabled) {
         super(clock);
         this.personWriter = personWriter;
+        this.releaseDateIngestIsEnabled = releaseDateIngestIsEnabled;
     }
 
     @Override
@@ -120,9 +122,6 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
     @Override
     protected com.metabroadcast.atlas.glycerin.model.Brand.Images.Image extractImage(
             NitroItemSource<Episode> source) {
-        if (source.getProgramme().getImages() == null) {
-            return null;
-        }
         return source.getProgramme().getImages().getImage();
     }
 
@@ -152,7 +151,7 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
         if(episode.getGenreGroupings() != null) {
             item.setGenres(genresExtractor.extract(episode.getGenreGroupings().getGenreGroup()));
         }
-        if (episode.getReleaseDate() != null) {
+        if (releaseDateIngestIsEnabled && episode.getReleaseDate() != null) {
             setReleaseDate(item, source);
         }
         writeAndSetPeople(item, source);

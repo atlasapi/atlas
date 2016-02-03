@@ -23,22 +23,18 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -184,40 +180,8 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
 
         item.addClips(extractTrailer(row));
         item.addAliases(describedFieldsExtractor.aliasesFrom(row));
-        
-        addMissingTopicRefs(item, row);
-    }
-    
-    private void addMissingTopicRefs(final Item item, BtVodEntry row) {
-        final Set<Long> existingTopicIds = topicIdsOfReferencedTopics(item);
-        
-        VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, item);
-        Iterable<TopicRef> additionalTopicRefs = Iterables.filter(describedFieldsExtractor.topicsFrom(vodEntryAndContent),
-                new Predicate<TopicRef>() {
-
-                    @Override
-                    public boolean apply(final TopicRef newTopic) {
-                        return !existingTopicIds.contains(newTopic.getTopic());
-                    }
-                }
-        );
-        
-        item.addTopicRefs(additionalTopicRefs);
     }
 
-    private Set<Long> topicIdsOfReferencedTopics(final Item item) {
-        return Sets.newHashSet(
-                Iterables.transform(item.getTopicRefs(), 
-                                    new Function<TopicRef, Long>() {
-
-                                        @Override
-                                        public Long apply(TopicRef input) {
-                                            return input.getTopic();
-                                        }
-                                    })
-                              );
-    }
-    
     private String itemKeyForDeduping(BtVodEntry row) {
         ParentRef brandRef = getBrandRefOrNull(row);
         String brandUri = brandRef != null ? brandRef.getUri() : "";

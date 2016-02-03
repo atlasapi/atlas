@@ -6,7 +6,6 @@ import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.anySet;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Matchers.isA;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -46,7 +45,6 @@ import org.joda.time.DateTimeZone;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.mockito.ArgumentMatcher;
 import org.mockito.Matchers;
 
 import com.google.common.base.Optional;
@@ -87,7 +85,6 @@ public class BtVodItemExtractorTest {
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
-    private final BtVodContentMatchingPredicate kidsTopicPredicate = mock(BtVodContentMatchingPredicate.class);
     private final DedupedDescriptionAndImageUpdater descriptionAndImageUpdater =
             mock(DedupedDescriptionAndImageUpdater.class);
 
@@ -124,7 +121,7 @@ public class BtVodItemExtractorTest {
                         topicWriter,
                         Publisher.BT_VOD,
                         newTopicContentMatchingPredicate,
-                        kidsTopicPredicate,
+                        BtVodContentMatchingPredicates.schedulerChannelPredicate("Kids"),
                         BtVodContentMatchingPredicates.schedulerChannelAndOfferingTypePredicate(
                                 "TV", ImmutableSet.of("Season", "Season-EST")
                         ),
@@ -265,36 +262,6 @@ public class BtVodItemExtractorTest {
 
         assertThat(writtenItem.getVersions().size(), is(2));
         assertThat(writtenItem.getClips().size(), is(2));
-    }
-    
-    @Test
-    public void testMergesAndDedupesTopicsAcrossVariants() {
-        BtVodEntry btVodEntrySD = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
-        ParentRef parentRef = new ParentRef(BRAND_URI);
-        Series series = new Series();
-        series.setCanonicalUri("seriesUri");
-        series.withSeriesNumber(1);
-
-
-        BtVodEntry btVodEntryHD = episodeRow(FULL_EPISODE_TITLE, PRODUCT_GUID);
-        btVodEntryHD.setTitle(FULL_EPISODE_TITLE + " - HD");
-        btVodEntryHD.setGuid(PRODUCT_GUID + "_HD");
-
-        when(seriesProvider.seriesFor(btVodEntrySD)).thenReturn(Optional.of(series));
-        when(seriesProvider.seriesFor(btVodEntryHD)).thenReturn(Optional.of(series));
-
-        when(imageExtractor.imagesFor(Matchers.<BtVodEntry>any())).thenReturn(ImmutableSet.<Image>of());
-        when(btVodBrandProvider.brandRefFor(btVodEntrySD)).thenReturn(Optional.of(parentRef));
-        when(btVodBrandProvider.brandRefFor(btVodEntryHD)).thenReturn(Optional.of(parentRef));
-        when(newTopicContentMatchingPredicate.apply(isA(VodEntryAndContent.class))).thenReturn(true);
-        when(kidsTopicPredicate.apply(argThat(new VodEntryHasGuid(btVodEntryHD.getGuid())))).thenReturn(true);
-
-        itemExtractor.process(btVodEntrySD);
-        itemExtractor.process(btVodEntryHD);
-
-        Item writtenItem = Iterables.getOnlyElement(itemExtractor.getProcessedItems().values());
-
-        assertThat(writtenItem.getTopicRefs().size(), is(2));
     }
 
     @Test
@@ -634,24 +601,5 @@ public class BtVodItemExtractorTest {
         verify(descriptionAndImageUpdater).updateDescriptionsAndImages(
                 eq(item), eq(btVodEntryHD), eq(ImmutableSet.of(hdImage)), anySet()
         );
-    }
-    
-    private static class VodEntryHasGuid extends ArgumentMatcher<VodEntryAndContent> {
-
-        private final String guid;
-        
-        public VodEntryHasGuid(String guid) {
-            this.guid = guid;
-        }
-        
-        @Override
-        public boolean matches(Object argument) {
-            if (!(argument instanceof VodEntryAndContent)) {
-                return false;
-            }
-            VodEntryAndContent vodEntryAndContent = (VodEntryAndContent) argument;
-            
-            return guid.equals(vodEntryAndContent.getBtVodEntry().getGuid());
-        }
     }
 }

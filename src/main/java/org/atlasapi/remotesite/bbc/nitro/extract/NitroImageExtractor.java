@@ -39,7 +39,7 @@ public class NitroImageExtractor
         checkNotNull(source, "null image source");
         checkNotNull(source.getTemplateUrl(), "null image template");
 
-        String url = "http://" + source.getTemplateUrl().replace("$recipe", recipe);
+        String url = source.getTemplateUrl().replace("$recipe", recipe);
         Image image = new Image(url);
         image.setWidth(width);
         image.setHeight(height);

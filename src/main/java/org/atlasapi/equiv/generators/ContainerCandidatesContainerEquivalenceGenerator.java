@@ -4,7 +4,6 @@ import java.util.List;
 
 import javax.annotation.Nullable;
 
-import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.EquivalenceSummary;
 import org.atlasapi.equiv.EquivalenceSummaryStore;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -23,13 +22,14 @@ import org.atlasapi.persistence.content.ResolvedContent;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.collect.OptionalMap;
 
 /**
- * Generates equivalences for an non-top-level Container based on the children of the equivalences
- * of the Container's container.
+ * Generates equivalences for an non-top-level Container based on the children of the equivalence
+ * candidates of the Container's container.
  */
 public class ContainerCandidatesContainerEquivalenceGenerator implements EquivalenceGenerator<Container> {
 
@@ -62,7 +62,7 @@ public class ContainerCandidatesContainerEquivalenceGenerator implements Equival
                 Optional<EquivalenceSummary> optional = containerSummary.get(parentUri);
                 if (optional.isPresent()) {
                     EquivalenceSummary summary = optional.get();
-                    for (Series candidateSeries : seriesOf(Iterables.transform(summary.getEquivalents().values(), TO_CANONICAL_URI))) {
+                    for (Series candidateSeries : seriesOf(summary.getCandidates())) {
                         result.addEquivalent(candidateSeries, Score.NULL_SCORE);
                     }
                 }
@@ -73,9 +73,8 @@ public class ContainerCandidatesContainerEquivalenceGenerator implements Equival
         return result.build();
     }
 
-    private Iterable<Series> seriesOf(Iterable<String> equivalents) {
-        
-        List<Identified> resolvedContent = contentResolver.findByCanonicalUris(equivalents).getAllResolvedResults();
+    private Iterable<Series> seriesOf(ImmutableList<String> candidates) {
+        List<Identified> resolvedContent = contentResolver.findByCanonicalUris(candidates).getAllResolvedResults();
         Iterable<Brand> resolvedContainers = Iterables.filter(resolvedContent, Brand.class);
         return Iterables.concat(Iterables.transform(resolvedContainers, TO_SERIES));
     }
@@ -88,14 +87,4 @@ public class ContainerCandidatesContainerEquivalenceGenerator implements Equival
     public String toString() {
         return "Container's candidates generator";
     }
-    
-    private static final Function<ContentRef, String> TO_CANONICAL_URI = new Function<ContentRef, String>() {
-
-        @Override
-        public String apply(ContentRef input) {
-            return input.getCanonicalUri();
-        }
-        
-    };
-    
 }

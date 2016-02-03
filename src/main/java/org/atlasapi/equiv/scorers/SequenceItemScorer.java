@@ -1,7 +1,5 @@
 package org.atlasapi.equiv.scorers;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Set;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -18,13 +16,7 @@ import com.google.common.collect.Iterables;
 public class SequenceItemScorer implements EquivalenceScorer<Item> {
 
     public static final String SEQUENCE_SCORER = "Sequence";
-    
-    private final Score matchingScore;
 
-    public SequenceItemScorer(Score matchingScore) {
-        this.matchingScore = checkNotNull(matchingScore);
-    }
-    
     @Override
     public ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates, ResultDescription desc) {
         Builder<Item> equivalents = DefaultScoredCandidates.fromSource(SEQUENCE_SCORER);
@@ -71,7 +63,7 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
         Score score;
         if (nullableSeriesNumbersEqual(subject, candidateEpisode)
             && nonNullEpisodeNumbersEqual(subject, candidateEpisode)) {
-            score = matchingScore;
+            score = Score.ONE;
         } else {
             score = Score.NULL_SCORE;
         }

@@ -18,7 +18,12 @@ import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.intl.Country;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 public class ItunesPricingLocationExtractor implements ContentExtractor<ItunesEpfPricingSource, Maybe<Location>> {
+
+    private static final Logger log = LoggerFactory.getLogger(ItunesPricingLocationExtractor.class);
 
     @Override
     public Maybe<Location> extract(ItunesEpfPricingSource source) {
@@ -27,6 +32,7 @@ public class ItunesPricingLocationExtractor implements ContentExtractor<ItunesEp
         Integer extractedStorefrontId = source.getRow().get(EpfPricing.STOREFRONT_ID);
 
         if (extractedStorefrontId.equals(storefrontId)) {
+            log.debug("Itunes location extracted: "+ extractedStorefrontId);
             BigDecimal sdPrice = source.getRow().get(EpfPricing.SD_PRICE);
             if (sdPrice == null) {
                 return Maybe.nothing();

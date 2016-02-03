@@ -70,6 +70,10 @@ public class ItunesEpfUpdateTaskTest extends TestCase {
         Files.write(Joiner.on("\t").join(ImmutableList.of(
                 "1453888800445","102225077","1.89","GBP","143444","1.89","","","","","","1.89"
         )), new File(parent,"video_price"), Charsets.UTF_8);
+
+        Files.write(Joiner.on("\t").join(ImmutableList.of(
+                "1453888800445","143444","GBR","UK"
+        )), new File(parent,"storefront"), Charsets.UTF_8);
     }
 
     @Test

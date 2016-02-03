@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.itunes.epf;
 
+import java.util.Map;
+
 import org.atlasapi.remotesite.itunes.epf.model.EpfPricing;
 
 import com.metabroadcast.common.intl.Country;
@@ -7,21 +9,23 @@ import com.metabroadcast.common.intl.Country;
 public class ItunesEpfPricingSource {
 
     private final EpfPricing row;
-    private final int country;
-
-    public static final int GB_CODE = 143444;
-    public static final int US_CODE = 143441;
+    private final Country country;
+    private final Map<String, Integer> countryCodes;
     
-    public ItunesEpfPricingSource(EpfPricing row, int country) {
+    public ItunesEpfPricingSource(EpfPricing row, Country country, Map<String, Integer> countryCodes) {
         this.row = row;
         this.country = country;
+        this.countryCodes = countryCodes;
     }
     
     public EpfPricing getRow() {
         return this.row;
     }
-    public int getCountry() {
+    public Country getCountry() {
         return this.country;
+    }
+    public Map<String, Integer> getCountryCodes() {
+        return this.countryCodes;
     }
     
 }

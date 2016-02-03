@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.itunes.epf;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Locale;
+import java.util.Map;
 
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
@@ -21,24 +22,25 @@ public class ItunesPricingLocationExtractor implements ContentExtractor<ItunesEp
 
     @Override
     public Maybe<Location> extract(ItunesEpfPricingSource source) {
-        if (source.getRow().get(EpfPricing.STOREFRONT_ID) == source.getCountry()) {
+        String countryCode = iso3Code(source.getCountry());
+        Integer storefrontId = source.getCountryCodes().get(countryCode);
+        Integer extractedStorefrontId = source.getRow().get(EpfPricing.STOREFRONT_ID);
+
+        if (extractedStorefrontId.equals(storefrontId)) {
             BigDecimal sdPrice = source.getRow().get(EpfPricing.SD_PRICE);
             if (sdPrice == null) {
                 return Maybe.nothing();
             }
-
-            Country country = convertCountry(source.getCountry());
-
             Location location = new Location();
             location.setTransportType(TransportType.APPLICATION);
             location.setTransportSubType(TransportSubType.ITUNES);
             location.setEmbedId(source.getRow().get(EpfPricing.VIDEO_ID).toString());
 
             Policy policy = new Policy();
-            policy.addAvailableCountry(country);
+            policy.addAvailableCountry(source.getCountry());
             policy.setRevenueContract(RevenueContract.PAY_TO_BUY);
 
-            Currency currency = Currency.getInstance(new Locale("en", country.code()));
+            Currency currency = Currency.getInstance(new Locale("en", source.getCountry().code()));
             policy.setPrice(new Price(currency, sdPrice.movePointRight(currency.getDefaultFractionDigits()).intValue()));
 
             location.setPolicy(policy);
@@ -49,14 +51,8 @@ public class ItunesPricingLocationExtractor implements ContentExtractor<ItunesEp
         }
     }
 
-    private Country convertCountry(int storefrontId) {
-        if (storefrontId == ItunesEpfPricingSource.GB_CODE) {
-            return Countries.GB;
-        } else if (storefrontId == ItunesEpfPricingSource.US_CODE) {
-            return Countries.US;
-        } else {
-            return Countries.ALL;
-        }
+    private String iso3Code(Country country) {
+        return new Locale("en", country.code()).getISO3Country().toLowerCase();
     }
 
 }

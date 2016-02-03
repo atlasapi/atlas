@@ -24,6 +24,7 @@ import org.atlasapi.remotesite.itunes.epf.model.EpfArtistCollection;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollection;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollectionVideo;
 import org.atlasapi.remotesite.itunes.epf.model.EpfPricing;
+import org.atlasapi.remotesite.itunes.epf.model.EpfStorefront;
 import org.atlasapi.remotesite.itunes.epf.model.EpfVideo;
 
 import com.google.common.base.Function;
@@ -75,7 +76,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             //series id -> series
             final BiMap<Integer, Series> extractedSeries = linkBrandsAndSeries(dataSet.getArtistCollectionTable(), extractedBrands, extractSeries(dataSet.getCollectionTable()));
             
-            Multimap<String, Location> extractedLocations = extractLocations(dataSet, ImmutableSet.of(ItunesEpfPricingSource.GB_CODE, ItunesEpfPricingSource.US_CODE));
+            Multimap<String, Location> extractedLocations = extractLocations(dataSet, ImmutableSet.of(Countries.GB, Countries.US));
             
             //episode id -> trackNumber/series
             Multimap<Series, Episode> extractedEpisodes = linkEpisodesAndSeries(dataSet.getCollectionVideoTable(), extractedSeries, extractVideos(dataSet.getVideoTable(), extractedSeries, extractedLocations));
@@ -128,23 +129,24 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         });
     }
 
-    private Multimap<String, Location> extractLocations(final EpfDataSet dataSet, ImmutableSet<Integer> countries) throws IOException {
+    private Multimap<String, Location> extractLocations(final EpfDataSet dataSet, ImmutableSet<Country> countries) throws IOException {
         reportStatus("Extracting locations...");
-        Iterable<Location> locations = Iterables.concat(Iterables.transform(countries, new Function<Integer, Set<Location>>() {
+        Iterable<Location> locations = Iterables.concat(Iterables.transform(countries, new Function<Country, Set<Location>>() {
             @Override
-            public Set<Location> apply(final Integer country) {
+            public Set<Location> apply(final Country country) {
                 try {
                     EpfTable<EpfPricing> pricingTable = dataSet.getPricingTable();
                     if (pricingTable == null) {
                         return ImmutableSet.of();
                     }
+                    final Map<String, Integer> countryCodes = extractCountryCodes(dataSet.getCountryCodes());
                     return pricingTable.processRows(new EpfTableRowProcessor<EpfPricing, Set<Location>>() {
 
                         private final ImmutableSet.Builder<Location> countryLocations = ImmutableSet.builder();
 
                         @Override
                         public boolean process(EpfPricing row) {
-                            Maybe<Location> location = locationExtractor.extract(new ItunesEpfPricingSource(row, country));
+                            Maybe<Location> location = locationExtractor.extract(new ItunesEpfPricingSource(row, country, countryCodes));
                             if (location.hasValue()) {
                                 countryLocations.add(location.requireValue());
                             }
@@ -166,6 +168,28 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             @Override
             public String apply(Location input) {
                 return input.getEmbedId();
+            }
+        });
+    }
+
+    public Map<String, Integer> extractCountryCodes(EpfTable<EpfStorefront> storefront) throws IOException {
+        return storefront.processRows(new EpfTableRowProcessor<EpfStorefront, Map<String, Integer>>() {
+
+            ImmutableMap.Builder<String, Integer> results = ImmutableMap.builder();
+
+            @Override
+            public boolean process(EpfStorefront row) {
+                try {
+                    results.put(row.get(EpfStorefront.COUNTRY_CODE).toLowerCase(), row.get(EpfStorefront.STOREFRONT_ID));
+                } catch (Exception e) {
+                    throw Throwables.propagate(e);
+                }
+                return isRunning();
+            }
+
+            @Override
+            public Map<String, Integer> getResult() {
+                return results.build();
             }
         });
     }

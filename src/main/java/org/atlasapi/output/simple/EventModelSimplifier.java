@@ -1,7 +1,5 @@
 package org.atlasapi.output.simple;
 
-import static com.google.api.client.util.Preconditions.checkNotNull;
-
 import java.util.List;
 import java.util.Set;
 
@@ -14,9 +12,12 @@ import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.simple.ContentIdentifier;
 import org.atlasapi.output.Annotation;
 
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
+
+import static com.google.api.client.util.Preconditions.checkNotNull;
 
 
 public class EventModelSimplifier extends IdentifiedModelSimplifier<Event, org.atlasapi.media.entity.simple.Event> {
@@ -44,9 +45,15 @@ public class EventModelSimplifier extends IdentifiedModelSimplifier<Event, org.a
         
         event.setTitle(model.title());
         event.setPublisher(model.publisher());
-        event.setVenue(topicSimplifier.simplify(model.venue(), annotations, config));
-        event.setStartTime(model.startTime().toDate());
-        event.setEndTime(model.endTime().toDate());
+        if (model.venue() != null) {
+            event.setVenue(topicSimplifier.simplify(model.venue(), annotations, config));
+        }
+        if (model.startTime() != null) {
+            event.setStartTime(model.startTime().toDate());
+        }
+        if (model.endTime() != null) {
+            event.setEndTime(model.endTime().toDate());
+        }
         event.setParticipants(simplifyParticipants(model.participants(), annotations, config));
         event.setOrganisations(simplifyOrganisations(model.organisations(), annotations, config));
         event.setEventGroups(simplifyEventGroups(model.eventGroups(), annotations, config));

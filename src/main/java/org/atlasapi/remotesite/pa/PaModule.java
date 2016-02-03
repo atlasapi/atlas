@@ -156,6 +156,7 @@ public class PaModule {
                     .put("General", new ContentGroupDetails(Publisher.PA_FEATURES, "http://pressassocation.com/features/tvpicks"))
                     .put("Ireland", new ContentGroupDetails(Publisher.PA_FEATURES_IRELAND, "http://pressassocation.com/features/ireland"))
                     .put("Soap-Entertainment", new ContentGroupDetails(Publisher.PA_FEATURES_SOAP_ENTERTAINMENT, "http://pressassocation.com/features/soap-entertainment"))
+                    .put("Freeview", new ContentGroupDetails(Publisher.PA_FEATURES_FREEVIEW, "http://pressassocation.com/features/freeview"))
                     .build()
         );
     }

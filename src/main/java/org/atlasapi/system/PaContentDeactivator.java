@@ -92,14 +92,21 @@ public class PaContentDeactivator {
         Predicate<Content> shouldDeactivatePredicate = new PaContentDeactivationPredicate(activeIds);
 
         String childrenTaskName = getClass().getSimpleName() + "children";
+        ImmutableList<ContentCategory> childCategories = ImmutableList.of(
+                ContentCategory.CHILD_ITEM,
+                ContentCategory.TOP_LEVEL_ITEM
+        );
         final Iterator<Content> childItr = contentLister.listContent(
-                createChildListingCriteria(progressStore.progressForTask(childrenTaskName))
+                createListingCriteria(childCategories, progressStore.progressForTask(childrenTaskName))
         );
         deactivateContent(childItr, shouldDeactivatePredicate, dryRun, childrenTaskName);
 
         String containerTaskName = getClass().getSimpleName() + "containers";
         final Iterator<Content> containerItr = contentLister.listContent(
-                createContainerListingCriteria(progressStore.progressForTask(containerTaskName))
+                createListingCriteria(
+                        ImmutableList.of(ContentCategory.CONTAINER),
+                        progressStore.progressForTask(containerTaskName)
+                )
         );
         deactivateContent(containerItr, shouldDeactivatePredicate, dryRun, containerTaskName);
     }
@@ -160,22 +167,10 @@ public class PaContentDeactivator {
         );
     }
 
-    private ContentListingCriteria createContainerListingCriteria(Optional<ContentListingProgress> progress) {
-        ImmutableList<ContentCategory> categories = ImmutableList.of(ContentCategory.CONTAINER);
-        ContentListingCriteria.Builder criteria = ContentListingCriteria.defaultCriteria()
-                .forContent(categories)
-                .forPublisher(Publisher.PA);
-        if (progress.isPresent()) {
-            return criteria.startingAt(progress.get()).build();
-        }
-        return criteria.build();
-    }
-
-    private ContentListingCriteria createChildListingCriteria(Optional<ContentListingProgress> progress) {
-        ImmutableList<ContentCategory> categories = ImmutableList.of(
-                ContentCategory.CHILD_ITEM,
-                ContentCategory.TOP_LEVEL_ITEM
-        );
+    private ContentListingCriteria createListingCriteria(
+            Iterable<ContentCategory> categories,
+            Optional<ContentListingProgress> progress
+    ) {
         ContentListingCriteria.Builder criteria = ContentListingCriteria.defaultCriteria()
                 .forContent(categories)
                 .forPublisher(Publisher.PA);

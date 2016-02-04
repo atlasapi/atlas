@@ -3,10 +3,15 @@ package org.atlasapi.system;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
-import com.google.common.collect.*;
-import com.google.common.hash.BloomFilter;
-import com.google.common.hash.Funnel;
-import com.google.common.hash.PrimitiveSink;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.Queues;
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.Sets;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
@@ -26,12 +31,10 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -53,12 +56,6 @@ public class PaContentDeactivator {
     private static final String PA_SEASON_NAMESPACE = "pa:series";
     private static final String PA_PROGRAMME_NAMESPACE = "pa:episode";
 
-    private static final Funnel<Long> LONG_FUNNEL = new Funnel<Long>() {
-        @Override
-        public void funnel(Long aLong, PrimitiveSink sink) {
-            sink.putLong(aLong);
-        }
-    };
     private static final Function<LookupEntry, Long> LOOKUP_ENTRY_TO_ID = new Function<LookupEntry, Long>() {
         @Override
         public Long apply(LookupEntry lookupEntry) {
@@ -70,67 +67,90 @@ public class PaContentDeactivator {
     private final ContentLister contentLister;
     private final ContentWriter contentWriter;
     private final ProgressStore progressStore;
+    private final ThreadPoolExecutor threadPool;
 
     public PaContentDeactivator(LookupEntryStore lookupStore, ContentLister contentLister,
-            ContentWriter contentWriter, ProgressStore progressStore) {
+                                ContentWriter contentWriter, ProgressStore progressStore) {
         this.lookupStore = checkNotNull(lookupStore);
         this.contentLister = checkNotNull(contentLister);
         this.contentWriter = checkNotNull(contentWriter);
         this.progressStore = checkNotNull(progressStore);
+        this.threadPool = createThreadPool(15);
     }
 
-    public void deactivate(File file, Integer threads, Boolean dryRun) throws IOException {
+    public void deactivate(File file, Boolean dryRun) throws IOException {
         List<String> lines = Files.readAllLines(file.toPath(), UTF8);
         ImmutableSetMultimap<String, String> typeToIds = extractAliases(lines);
-        deactivate(typeToIds, threads, dryRun);
+        deactivate(typeToIds, dryRun);
     }
 
-    public void deactivate(Multimap<String, String> paNamespaceToAliases, Integer threads, Boolean dryRun) throws IOException {
-        ImmutableSet<Long> activeAtlasContentIds = resolvePaAliasesToIds(paNamespaceToAliases);
-        final BloomFilter<Long> filter = bloomFilterFor(activeAtlasContentIds);
-        final Iterator<Content> contentIterator = contentLister.listContent(
-                createListingCriteria(progressStore.progressForTask(getClass().getSimpleName()))
+    public void deactivate(Multimap<String, String> paNamespaceToAliases, Boolean dryRun) throws IOException {
+        final ImmutableSet<Long> activeIds = ImmutableSet.copyOf(
+                Sets.newTreeSet(resolvePaAliasesToIds(paNamespaceToAliases))
         );
-        final ThreadPoolExecutor executor = createThreadPool(threads);
-        final AtomicInteger deactivatedCount = new AtomicInteger();
-        final AtomicInteger processedCount = new AtomicInteger();
-        while (contentIterator.hasNext()) {
-            Content content = contentIterator.next();
-            Predicate<Content> shouldDeactivate = new PaContentDeactivationPredicate(filter);
-            if (shouldDeactivate.apply(content)) {
-                LOG.info("Content {} - {} not in bloom filter, deactivating...",
-                        content.getClass().getSimpleName(), content.getId());
-                executor.submit(contentDeactivatingRunnable(content, deactivatedCount, dryRun));
+
+        Predicate<Content> shouldDeactivatePredicate = new PaContentDeactivationPredicate(activeIds);
+
+        String childrenTaskName = getClass().getSimpleName() + "children";
+        ImmutableList<ContentCategory> childCategories = ImmutableList.of(
+                ContentCategory.CHILD_ITEM,
+                ContentCategory.TOP_LEVEL_ITEM
+        );
+        final Iterator<Content> childItr = contentLister.listContent(
+                createListingCriteria(childCategories, progressStore.progressForTask(childrenTaskName))
+        );
+        deactivateContent(childItr, shouldDeactivatePredicate, dryRun, childrenTaskName);
+
+        String containerTaskName = getClass().getSimpleName() + "containers";
+        final Iterator<Content> containerItr = contentLister.listContent(
+                createListingCriteria(
+                        ImmutableList.of(ContentCategory.CONTAINER),
+                        progressStore.progressForTask(containerTaskName)
+                )
+        );
+        deactivateContent(containerItr, shouldDeactivatePredicate, dryRun, containerTaskName);
+    }
+
+    private void deactivateContent(
+            Iterator<Content> itr,
+            Predicate<Content> shouldDeactivatePredicate,
+            Boolean dryRun,
+            String taskName
+    ) {
+        AtomicInteger deactivated = new AtomicInteger(0);
+        AtomicInteger processed = new AtomicInteger(0);
+        while (itr.hasNext()) {
+            Content content = itr.next();
+            int i = processed.incrementAndGet();
+            LOG.debug("Processing item #{} id: {}", i, content.getId());
+            if (shouldDeactivatePredicate.apply(content)) {
+                if (!dryRun) {
+                    threadPool.submit(contentDeactivatingRunnable(content));
+                }
+                LOG.debug("Deactivating item #{} id: {}", deactivated.incrementAndGet(), content.getId());
             }
-            int count = processedCount.incrementAndGet();
-            if (count % 1000 == 0) {
+            if (i % 1000 == 0) {
                 progressStore.storeProgress(
-                        getClass().getSimpleName(),
+                        taskName,
                         ContentListingProgress.progressFrom(content)
                 );
-                LOG.info("Processed {} items, saving progress", Integer.valueOf(count));
+                LOG.debug("Processed {} items, saving progress", i);
             }
         }
-        LOG.info("Finished processing {} items", Integer.valueOf(processedCount.get()));
-        LOG.info("Deactivated {} items", Integer.valueOf(deactivatedCount.get()));
+        LOG.debug("Deactivated {} pieces of content", deactivated.get());
+        progressStore.storeProgress(taskName, ContentListingProgress.START);
     }
 
-    private Runnable contentDeactivatingRunnable(final Content content, final AtomicInteger progressCount, final Boolean dryRun) {
+    private Runnable contentDeactivatingRunnable(final Content content) {
         return new Runnable() {
             @Override
             public void run() {
-                if (!dryRun) {
-                    content.setActivelyPublished(false);
-                    if (content instanceof Container) {
-                        contentWriter.createOrUpdate((Container) content);
-                    }
-                    if (content instanceof Item) {
-                        contentWriter.createOrUpdate((Item) content);
-                    }
+                content.setActivelyPublished(false);
+                if (content instanceof Container) {
+                    contentWriter.createOrUpdate((Container) content);
                 }
-                int count = progressCount.incrementAndGet();
-                if (count % 1000 == 0) {
-                    LOG.info("Deactivated {} items", Integer.valueOf(count));
+                if (content instanceof Item) {
+                    contentWriter.createOrUpdate((Item) content);
                 }
             }
         };
@@ -147,12 +167,10 @@ public class PaContentDeactivator {
         );
     }
 
-    private ContentListingCriteria createListingCriteria(Optional<ContentListingProgress> progress) {
-        ImmutableList<ContentCategory> categories = ImmutableList.of(
-                ContentCategory.CONTAINER,
-                ContentCategory.CHILD_ITEM,
-                ContentCategory.TOP_LEVEL_ITEM
-        );
+    private ContentListingCriteria createListingCriteria(
+            Iterable<ContentCategory> categories,
+            Optional<ContentListingProgress> progress
+    ) {
         ContentListingCriteria.Builder criteria = ContentListingCriteria.defaultCriteria()
                 .forContent(categories)
                 .forPublisher(Publisher.PA);
@@ -160,12 +178,6 @@ public class PaContentDeactivator {
             return criteria.startingAt(progress.get()).build();
         }
         return criteria.build();
-    }
-
-    private BloomFilter<Long> bloomFilterFor(Set<Long> ids) {
-        BloomFilter<Long> filter = BloomFilter.create(LONG_FUNNEL, ids.size());
-        LOG.info("Creating and populating bloom filter with {} entries", Integer.valueOf(ids.size()));
-        return populateBloomFilter(filter, ids);
     }
 
     /*
@@ -208,20 +220,10 @@ public class PaContentDeactivator {
         return ids.build();
     }
 
-    private BloomFilter<Long> populateBloomFilter(BloomFilter<Long> filter, Iterable<Long> longs) {
-        for (Long id : longs) {
-            filter.put(id);
-        }
-        return filter;
-    }
-
     private ImmutableSet<Long> lookupIdForPaAlias(String namespace, Iterable<String> value) {
         Iterable<LookupEntry> entriesForId = lookupStore.entriesForAliases(
                 Optional.of(namespace), value
         );
-        if (entriesForId.iterator().hasNext()) {
-            return ImmutableSet.copyOf(Iterables.transform(entriesForId, LOOKUP_ENTRY_TO_ID));
-        }
-        return ImmutableSet.of();
+        return ImmutableSet.copyOf(Iterables.transform(entriesForId, LOOKUP_ENTRY_TO_ID));
     }
 }

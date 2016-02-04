@@ -3,6 +3,7 @@ package org.atlasapi.system;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.metabroadcast.common.scheduling.StatusReporter;
 import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.media.entity.*;
 import org.atlasapi.persistence.content.ContentCategory;
@@ -19,6 +20,7 @@ import java.util.Set;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -53,50 +55,68 @@ public class PaAliasBackPopulator {
         this.contentWriter = checkNotNull(contentWriter);
     }
 
-    public void backpopulate() throws Exception {
+    public void backpopulate(StatusReporter reporter, Boolean dryRun) throws Exception {
         Iterator<Content> contentItr = contentLister.listContent(createListingCriteria());
-        int counter = 0;
+        AtomicInteger mutatedCounter = new AtomicInteger(0);
+        AtomicInteger totalCounter = new AtomicInteger(0);
         while (contentItr.hasNext()) {
             Content content = contentItr.next();
-            executor.submit(aliasGeneratingRunnable(content));
-            counter++;
-            if (counter % 10000 == 0) {
+            executor.submit(aliasGeneratingRunnable(content, mutatedCounter, dryRun));
+            totalCounter.incrementAndGet();
+            if (mutatedCounter.get() % 1000 == 0) {
+                reporter.reportStatus(String.format("Processed %d total items, added %d aliases", totalCounter.get(), mutatedCounter.get()));
                 progressStore.storeProgress(TASK_NAME, ContentListingProgress.progressFrom(content));
             }
         }
     }
 
-    private Runnable aliasGeneratingRunnable(final Content content) {
+    private Runnable aliasGeneratingRunnable(final Content content, final AtomicInteger counter, final Boolean dryRun) {
         return new Runnable() {
-            @Override public void run() {
+            @Override
+            public void run() {
                 Set<Alias> aliases = content.getAliases();
                 if (content instanceof Brand
                         && !aliases.contains(generateAliasFor((Brand) content))) {
                     aliases.add(generateAliasFor((Brand) content));
-                    contentWriter.createOrUpdate((Container) content);
+                    if (!dryRun) {
+                        contentWriter.createOrUpdate((Container) content);
+                    }
+                    counter.incrementAndGet();
                     return;
                 }
                 if (content instanceof Series
                         && !aliases.contains(generateAliasFor((Series) content))) {
                     aliases.add(generateAliasFor((Series) content));
-                    contentWriter.createOrUpdate((Container) content);
+                    if (!dryRun) {
+                        contentWriter.createOrUpdate((Container) content);
+                    }
+                    counter.incrementAndGet();
                     return;
                 }
                 if (content instanceof Episode
                         && !aliases.contains(generateAliasFor((Episode) content))) {
                     aliases.add(generateAliasFor((Episode) content));
-                    contentWriter.createOrUpdate((Item) content);
+                    if (!dryRun) {
+                        contentWriter.createOrUpdate((Item) content);
+                    }
+                    counter.incrementAndGet();
                     return;
                 }
                 if (content instanceof Film
                         && !aliases.contains(generateAliasFor((Film) content))) {
                     aliases.add(generateAliasFor((Film) content));
-                    contentWriter.createOrUpdate((Item) content);
+                    if (!dryRun) {
+                        contentWriter.createOrUpdate((Item) content);
+                    }
+                    counter.incrementAndGet();
                     return;
                 }
                 if (content instanceof Item && !aliases.contains(generateAliasFor((Item) content))) {
                     aliases.add(generateAliasFor((Item) content));
-                    contentWriter.createOrUpdate((Item) content);
+                    if (!dryRun) {
+                        contentWriter.createOrUpdate((Item) content);
+                    }
+                    counter.incrementAndGet();
                     return;
                 }
                 LOG.warn("Could not back populate Alias for content of type {} ", content.getClass());

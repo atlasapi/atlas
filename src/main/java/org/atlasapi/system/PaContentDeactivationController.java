@@ -28,7 +28,7 @@ public class PaContentDeactivationController {
             @RequestParam(value = "threads", required = true) String threads,
             @RequestParam(value = "dryRun", required = true) String dryRun
     ) throws IOException {
-        paDeactivator.deactivate(new File(filePath), Integer.valueOf(threads), Boolean.parseBoolean(dryRun));
+        paDeactivator.deactivate(new File(filePath), Boolean.parseBoolean(dryRun));
         response.setStatus(HttpStatusCode.OK.code());
         response.flushBuffer();
     }

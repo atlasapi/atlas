@@ -3,7 +3,6 @@ package org.atlasapi.remotesite.itunes.epf;
 import java.math.BigDecimal;
 import java.util.Currency;
 import java.util.Locale;
-import java.util.Map;
 
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
@@ -15,7 +14,6 @@ import org.atlasapi.remotesite.itunes.epf.model.EpfPricing;
 
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.currency.Price;
-import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.intl.Country;
 
 import org.slf4j.Logger;
@@ -58,7 +56,6 @@ public class ItunesPricingLocationExtractor implements ContentExtractor<ItunesEp
     }
 
     private String iso3Code(Country country) {
-        return new Locale("en", country.code()).getISO3Country().toLowerCase();
+        return new Locale(Locale.ENGLISH.getLanguage(), country.code()).getISO3Country().toLowerCase();
     }
-
 }

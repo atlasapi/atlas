@@ -9,15 +9,17 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class PaAliasBackPopulatorTask extends ScheduledTask {
 
     private final PaAliasBackPopulator backPopulator;
+    private final Boolean dryRun;
 
-    public PaAliasBackPopulatorTask(PaAliasBackPopulator backPopulator) {
+    public PaAliasBackPopulatorTask(PaAliasBackPopulator backPopulator, Boolean dryRun) {
         this.backPopulator = checkNotNull(backPopulator);
+        this.dryRun = checkNotNull(dryRun);
     }
 
     @Override
     protected void runTask() {
         try {
-            backPopulator.backpopulate();
+            backPopulator.backpopulate(reporter(), dryRun);
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }

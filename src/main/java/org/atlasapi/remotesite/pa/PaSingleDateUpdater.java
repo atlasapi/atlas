@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.concurrent.ExecutorService;
 
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 import org.springframework.stereotype.Controller;

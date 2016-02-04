@@ -40,7 +40,7 @@ public class ItunesPricingLocationExtractorTest extends TestCase {
         Map<String, Integer> countryCodes = ImmutableMap.of("gbr", 143444);
 
         Maybe<Location> extractedLocation = extractor.extract(new ItunesEpfPricingSource(pricing, Countries.GB, countryCodes));
-        
+
         assertTrue(extractedLocation.hasValue());
         
         Location location = extractedLocation.requireValue();

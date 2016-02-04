@@ -12,6 +12,7 @@ import org.atlasapi.remotesite.itunes.epf.model.EpfArtistCollection;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollection;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollectionVideo;
 import org.atlasapi.remotesite.itunes.epf.model.EpfPricing;
+import org.atlasapi.remotesite.itunes.epf.model.EpfStorefront;
 import org.atlasapi.remotesite.itunes.epf.model.EpfVideo;
 
 import com.google.common.base.Charsets;
@@ -50,17 +51,12 @@ public class EpfDataSet {
         return new EpfTable<EpfVideo>(readerSupplierFor("video"), EpfVideo.FROM_ROW_PARTS);
     }
     
-    public EpfTable<EpfPricing> getPricingTable(Country country) {
-        String filename = String.format("tvEpisode-%s.txt", iso3Code(country));
-        if (new File(datasetDirectory, filename).exists()) {
-            return new EpfTable<EpfPricing>(readerSupplierFor(filename), EpfPricing.FROM_ROW_PARTS, TAB_FIELD_SEPARATOR, EMPTY_ROW_SEPARATOR);
-        } else {
-            return null;
-        }
+    public EpfTable<EpfPricing> getPricingTable() {
+        return new EpfTable<EpfPricing>(readerSupplierFor("video_price"), EpfPricing.FROM_ROW_PARTS);
     }
-    
-    private String iso3Code(Country country) {
-        return new Locale("en", country.code()).getISO3Country().toLowerCase();
+
+    public EpfTable<EpfStorefront> getCountryCodes() {
+        return new EpfTable<EpfStorefront>(readerSupplierFor("storefront"), EpfStorefront.FROM_ROW_PARTS);
     }
 
     private InputSupplier<? extends Reader> readerSupplierFor(String fileName) {

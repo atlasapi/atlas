@@ -24,6 +24,7 @@ import org.atlasapi.remotesite.itunes.epf.model.EpfArtistCollection;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollection;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollectionVideo;
 import org.atlasapi.remotesite.itunes.epf.model.EpfPricing;
+import org.atlasapi.remotesite.itunes.epf.model.EpfStorefront;
 import org.atlasapi.remotesite.itunes.epf.model.EpfVideo;
 
 import com.google.common.base.Function;
@@ -134,17 +135,18 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             @Override
             public Set<Location> apply(final Country country) {
                 try {
-                    EpfTable<EpfPricing> pricingTable = dataSet.getPricingTable(country);
+                    EpfTable<EpfPricing> pricingTable = dataSet.getPricingTable();
                     if (pricingTable == null) {
                         return ImmutableSet.of();
                     }
+                    final Map<String, Integer> countryCodes = extractCountryCodes(dataSet.getCountryCodes());
                     return pricingTable.processRows(new EpfTableRowProcessor<EpfPricing, Set<Location>>() {
 
                         private final ImmutableSet.Builder<Location> countryLocations = ImmutableSet.builder();
 
                         @Override
                         public boolean process(EpfPricing row) {
-                            Maybe<Location> location = locationExtractor.extract(new ItunesEpfPricingSource(row, country));
+                            Maybe<Location> location = locationExtractor.extract(new ItunesEpfPricingSource(row, country, countryCodes));
                             if (location.hasValue()) {
                                 countryLocations.add(location.requireValue());
                             }
@@ -163,21 +165,31 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         }));
         
         return Multimaps.index(locations, new Function<Location, String>() {
-            
-            private final String commonPrefix = "http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewTVSeason?";
-            private final Pattern urlIdPattern = Pattern.compile(Pattern.quote(commonPrefix) + "uo=\\d+&i=(\\d+)&id=\\d+");
-            
             @Override
             public String apply(Location input) {
-                return extractIdFrom(input.getUri());
+                return input.getEmbedId();
+            }
+        });
+    }
+
+    public Map<String, Integer> extractCountryCodes(EpfTable<EpfStorefront> storefront) throws IOException {
+        return storefront.processRows(new EpfTableRowProcessor<EpfStorefront, Map<String, Integer>>() {
+
+            ImmutableMap.Builder<String, Integer> results = ImmutableMap.builder();
+
+            @Override
+            public boolean process(EpfStorefront row) {
+                try {
+                    results.put(row.get(EpfStorefront.COUNTRY_CODE).toLowerCase(), row.get(EpfStorefront.STOREFRONT_ID));
+                } catch (Exception e) {
+                    throw Throwables.propagate(e);
+                }
+                return isRunning();
             }
 
-            private String extractIdFrom(String uri) {
-                Matcher matcher = urlIdPattern.matcher(uri);
-                if(matcher.matches()) {
-                    return matcher.group(1);
-                }
-                return "";
+            @Override
+            public Map<String, Integer> getResult() {
+                return results.build();
             }
         });
     }

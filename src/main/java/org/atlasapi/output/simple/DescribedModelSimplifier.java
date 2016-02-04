@@ -1,31 +1,35 @@
 package org.atlasapi.output.simple;
 
-import java.math.BigDecimal;
-import java.math.BigInteger;
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.feeds.utils.DescriptionWatermarker;
-import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.media.entity.Described;
-import org.atlasapi.media.entity.ImageType;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.LookupRef;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.simple.*;
-import org.atlasapi.output.Annotation;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import org.atlasapi.feeds.utils.DescriptionWatermarker;
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Specialization;
+import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.media.entity.simple.Image;
+import org.atlasapi.media.entity.simple.LocalizedDescription;
+import org.atlasapi.media.entity.simple.LocalizedTitle;
+import org.atlasapi.media.entity.simple.Priority;
+import org.atlasapi.media.entity.simple.PriorityScoreReasons;
+import org.atlasapi.media.entity.simple.Rating;
+import org.atlasapi.media.entity.simple.RelatedLink;
+import org.atlasapi.media.entity.simple.Review;
+import org.atlasapi.media.entity.simple.SameAs;
+import org.atlasapi.output.Annotation;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.math.BigInteger;
+import java.util.Set;
 
 public abstract class DescribedModelSimplifier<F extends Described, T extends Description> extends IdentifiedModelSimplifier<F,T> {
 
@@ -61,6 +65,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setTitles(simplifyLocalizedTitles(content));
             simpleDescription.setDescription(applyWatermark(content, content.getDescription()));
             simpleDescription.setThumbnail(content.getThumbnail());
+            simpleDescription.setImage(content.getImage());
             simpleDescription.setShortDescription(content.getShortDescription());
 
             MediaType mediaType = content.getMediaType();

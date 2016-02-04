@@ -117,7 +117,9 @@ public class PaContentDeactivator {
             int i = processed.incrementAndGet();
             LOG.debug("Processing item #{} id: {}", i, content.getId());
             if (shouldDeactivatePredicate.apply(content)) {
-                threadPool.submit(contentDeactivatingRunnable(content, dryRun));
+                if (!dryRun) {
+                    threadPool.submit(contentDeactivatingRunnable(content));
+                }
                 LOG.debug("Deactivating item #{} id: {}", deactivated.incrementAndGet(), content.getId());
             }
             if (i % 1000 == 0) {
@@ -132,18 +134,16 @@ public class PaContentDeactivator {
         progressStore.storeProgress(taskName, ContentListingProgress.START);
     }
 
-    private Runnable contentDeactivatingRunnable(final Content content, final Boolean dryRun) {
+    private Runnable contentDeactivatingRunnable(final Content content) {
         return new Runnable() {
             @Override
             public void run() {
-                if (!dryRun) {
-                    content.setActivelyPublished(false);
-                    if (content instanceof Container) {
-                        contentWriter.createOrUpdate((Container) content);
-                    }
-                    if (content instanceof Item) {
-                        contentWriter.createOrUpdate((Item) content);
-                    }
+                content.setActivelyPublished(false);
+                if (content instanceof Container) {
+                    contentWriter.createOrUpdate((Container) content);
+                }
+                if (content instanceof Item) {
+                    contentWriter.createOrUpdate((Item) content);
                 }
             }
         };

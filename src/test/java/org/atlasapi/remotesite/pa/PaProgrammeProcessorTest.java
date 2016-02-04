@@ -1,21 +1,5 @@
 package org.atlasapi.remotesite.pa;
 
-import static com.metabroadcast.common.time.DateTimeZones.UTC;
-import static org.atlasapi.media.entity.MediaType.VIDEO;
-import static org.atlasapi.media.entity.Publisher.METABROADCAST;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.atLeastOnce;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.verifyNoMoreInteractions;
-import static org.mockito.Mockito.when;
-
 import java.util.Iterator;
 
 import org.atlasapi.media.channel.Channel;
@@ -40,6 +24,12 @@ import org.atlasapi.remotesite.pa.listings.bindings.PictureUsage;
 import org.atlasapi.remotesite.pa.listings.bindings.Pictures;
 import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 import org.atlasapi.remotesite.pa.listings.bindings.Season;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.Timestamp;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -49,10 +39,21 @@ import org.mockito.Captor;
 import org.mockito.MockitoAnnotations;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Timestamp;
+import static com.metabroadcast.common.time.DateTimeZones.UTC;
+import static org.atlasapi.media.entity.MediaType.VIDEO;
+import static org.atlasapi.media.entity.Publisher.METABROADCAST;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.atLeastOnce;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PaProgrammeProcessorTest {

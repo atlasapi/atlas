@@ -127,22 +127,6 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>generate-archive-schema</id>
-                        <goals>
-                            <goal>generate</goal>
-                        </goals>
-                        <configuration>
-                            <generatePackage>org.atlasapi.remotesite.pa.archives.bindings</generatePackage>
-                            <schemaIncludes>
-                                <schemaInclude>TVArchive.dtd</schemaInclude>
-                            </schemaIncludes>
-                            <forceRegenerate>true</forceRegenerate>
-                            <generateDirectory>${project.build.directory}/generated-sources</generateDirectory>
-                            <staleFile>${project.build.directory}/generated-sources/.paArchivesStaleFlag</staleFile>
-                            <clearOutputDir>false</clearOutputDir>
-                        </configuration>
-                    </execution>
-                    <execution>
                         <id>generate-tt-vod-schema</id>
                         <goals>
                             <goal>generate</goal>

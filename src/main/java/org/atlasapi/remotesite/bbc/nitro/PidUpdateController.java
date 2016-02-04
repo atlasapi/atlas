@@ -143,7 +143,17 @@ public class PidUpdateController {
             ImmutableSet<Brand> brand = contentAdapter.fetchBrands(
                     ImmutableList.of(parentPidRef)
             );
-            contentWriter.createOrUpdate(Iterables.getOnlyElement(brand));
+
+            /* handle The Curious Case of Top Level Series (In The Night). The container can
+               be a Series, not just a brand, in which case it won't hit the early return
+               guard, but it will also obviously not return any brands for the above query.
+               That's by design, as Nitro's data model is pretty flexible and allows cases like
+               these.
+            */
+            if (!brand.isEmpty()) {
+                contentWriter.createOrUpdate(Iterables.getOnlyElement(brand));
+            }
+
         } catch (NitroException e) {
             log.error("Failed to get Nitro parent item {}", pid, e);
             writeServerErrorWithStack(response, e);

@@ -233,6 +233,7 @@ public class PaProgrammeProcessorTest {
         inputProgData.setTime("11:40");
         Attr threeDAttr = new Attr();
         threeDAttr.setThreeD("true");
+        threeDAttr.setFilm("yes");
         inputProgData.setAttr(threeDAttr);
         inputProgData.setSeriesSummary("This is the series summary!");
         Season season = new Season();

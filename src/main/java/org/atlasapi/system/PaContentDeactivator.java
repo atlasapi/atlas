@@ -105,15 +105,15 @@ public class PaContentDeactivator {
     }
 
     private void deactivateContent(
-            Iterator<Content> childItr,
+            Iterator<Content> itr,
             Predicate<Content> shouldDeactivatePredicate,
             Boolean dryRun,
             String taskName
     ) {
         AtomicInteger deactivated = new AtomicInteger(0);
         AtomicInteger processed = new AtomicInteger(0);
-        while (childItr.hasNext()) {
-            Content content = childItr.next();
+        while (itr.hasNext()) {
+            Content content = itr.next();
             int i = processed.incrementAndGet();
             LOG.debug("Processing item #{} id: {}", i, content.getId());
             if (shouldDeactivatePredicate.apply(content)) {
@@ -129,6 +129,7 @@ public class PaContentDeactivator {
             }
         }
         LOG.debug("Deactivated {} pieces of content", deactivated.get());
+        progressStore.storeProgress(taskName, ContentListingProgress.START);
     }
 
     private Runnable contentDeactivatingRunnable(final Content content, final Boolean dryRun) {
@@ -228,9 +229,6 @@ public class PaContentDeactivator {
         Iterable<LookupEntry> entriesForId = lookupStore.entriesForAliases(
                 Optional.of(namespace), value
         );
-        if (entriesForId.iterator().hasNext()) {
-            return ImmutableSet.copyOf(Iterables.transform(entriesForId, LOOKUP_ENTRY_TO_ID));
-        }
-        return ImmutableSet.of();
+        return ImmutableSet.copyOf(Iterables.transform(entriesForId, LOOKUP_ENTRY_TO_ID));
     }
 }

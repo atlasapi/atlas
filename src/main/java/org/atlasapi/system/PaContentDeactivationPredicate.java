@@ -30,6 +30,9 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         this.activeContentIds = checkNotNull(activeContentIds);
     }
 
+    /**
+     * Returns true if content should be deactivated.
+     */
     @Override
     public boolean apply(Content content) {
         return (isNotPaFilm(content) &&
@@ -44,8 +47,7 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     }
 
     private boolean isNotGenericDescription(Content content) {
-        return content.getGenericDescription() != null &&
-                !content.getGenericDescription();
+        return content.getGenericDescription() == null || !content.getGenericDescription();
     }
 
     private boolean isNotActiveContentId(Content content) {

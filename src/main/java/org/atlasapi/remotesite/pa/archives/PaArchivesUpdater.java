@@ -4,7 +4,6 @@ import java.io.File;
 import java.util.Iterator;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.concurrent.locks.Lock;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -14,31 +13,20 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.atlasapi.feeds.upload.FileUploadResult;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
-import org.atlasapi.remotesite.pa.archives.bindings.ArchiveUpdate;
-import org.atlasapi.remotesite.pa.archives.bindings.ProgData;
-import org.atlasapi.remotesite.pa.archives.bindings.TvData;
-import org.atlasapi.remotesite.pa.channels.PaChannelDataHandler;
-import org.atlasapi.remotesite.pa.channels.bindings.TvChannelData;
+import org.atlasapi.remotesite.pa.PaBaseProgrammeUpdater;
+import org.atlasapi.remotesite.pa.PaProgrammeProcessor;
+import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
-import org.atlasapi.remotesite.pa.features.PaFeaturesContentGroupProcessor;
-import org.atlasapi.remotesite.pa.features.PaFeaturesProcessor;
-import org.atlasapi.remotesite.pa.features.bindings.Feature;
-import org.atlasapi.remotesite.pa.features.bindings.FeatureSet;
-import org.atlasapi.remotesite.pa.features.bindings.Features;
 
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.metabroadcast.common.time.DateTimeZones;
+import com.metabroadcast.common.time.Timestamp;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
-import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
-import org.joda.time.Duration;
-import org.joda.time.Interval;
-import org.joda.time.LocalDate;
-import org.joda.time.LocalTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
@@ -51,40 +39,25 @@ import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
 
 public class PaArchivesUpdater extends ScheduledTask {
 
-    private static final Duration UPCOMING_INTERVAL_DURATION = Duration.standardDays(2);
     private static final String SERVICE = "PA";
-    private static final Pattern FILEDATE = Pattern.compile("^.*(\\d{12})_tvarchive.xml$");
+
+    private static final DateTimeFormatter FILEDATETIME_FORMAT = DateTimeFormat.forPattern("yyyyMMdd-HH:mm").withZone(
+            DateTimeZones.LONDON);
+    private static final Pattern FILEDATETIME = Pattern.compile("^.*(\\d{12})_tvarchive.xml$");
 
     private final Logger log = LoggerFactory.getLogger(PaArchivesUpdater.class);
     private final PaProgrammeDataStore dataStore;
     private final FileUploadResultStore fileUploadResultStore;
-    private final PaArchivesProcessor processor;
-    private final XMLReader reader;
+    private final PaProgrammeProcessor processor;
 
     public PaArchivesUpdater(PaProgrammeDataStore dataStore,
             FileUploadResultStore fileUploadResultStore,
-            PaArchivesProcessor processor) {
+            PaProgrammeProcessor processor) {
         this.dataStore = checkNotNull(dataStore);
         this.fileUploadResultStore = checkNotNull(fileUploadResultStore);
         this.processor = checkNotNull(processor);
-        this.reader = createReader();
     }
 
-    private XMLReader createReader() {
-        try {
-            JAXBContext context = JAXBContext.newInstance(
-                    "org.atlasapi.remotesite.pa.archives.bindings");
-            Unmarshaller unmarshaller = context.createUnmarshaller();
-            SAXParserFactory factory = SAXParserFactory.newInstance();
-            factory.setNamespaceAware(true);
-            XMLReader reader = factory.newSAXParser().getXMLReader();
-            reader.setContentHandler(unmarshaller.getUnmarshallerHandler());
-            unmarshaller.setListener(featuresProcessingListener());
-            return reader;
-        } catch (Exception e) {
-            throw new RuntimeException(e);
-        }
-    }
 
     @Override
     protected void runTask() {
@@ -126,10 +99,21 @@ public class PaArchivesUpdater extends ScheduledTask {
         FileUploadResult result;
         try {
             String filename = file.toURI().toString();
-            Matcher matcher = FILEDATE.matcher(filename);
+            Matcher matcher = FILEDATETIME.matcher(filename);
+
+            JAXBContext context = JAXBContext.newInstance(
+                    "org.atlasapi.remotesite.pa.listings.bindings");
+            Unmarshaller unmarshaller = context.createUnmarshaller();
+            SAXParserFactory factory = SAXParserFactory.newInstance();
+            factory.setNamespaceAware(true);
+            XMLReader reader = factory.newSAXParser().getXMLReader();
+            reader.setContentHandler(unmarshaller.getUnmarshallerHandler());
+
             if (matcher.matches()) {
                 log.info("Processing file " + file.toString());
                 File fileToProcess = dataStore.copyForProcessing(file);
+                final String scheduleDay = matcher.group(1);
+                unmarshaller.setListener(archivesProcessingListener(fileToProcess, scheduleDay));
                 reader.parse(fileToProcess.toURI().toString());
                 result = FileUploadResult.successfulUpload(SERVICE, file.getName());
             } else {
@@ -146,28 +130,32 @@ public class PaArchivesUpdater extends ScheduledTask {
         return result;
     }
 
-    private Unmarshaller.Listener featuresProcessingListener() {
+    private Unmarshaller.Listener archivesProcessingListener(final File fileToProcess, final String fileData) {
         return new Unmarshaller.Listener() {
 
             public void beforeUnmarshal(Object target, Object parent) {
             }
 
             public void afterUnmarshal(Object target, Object parent) {
-                if (target instanceof TvData) {
+                if (target instanceof ProgData) {
                     try {
-                        TvData archiveData = (TvData) target;
-                        List<ArchiveUpdate> archiveUpdates = archiveData.getArchiveUpdate();
-                        for (ArchiveUpdate archiveUpdate : archiveUpdates) {
+                        ProgData progData = (ProgData) target;
                             log.info("Started processing PA updates for: "
-                                    + archiveUpdate.getDate());
-                            processor.process(archiveUpdate.getProgData(), archiveUpdate.getDate());
-                        }
+                                    + progData.getProgId());
+                            processor.process(progData, null, getTimeZone(fileData),Timestamp.of(fileToProcess.lastModified()));
                     } catch (NoSuchElementException e) {
                         log.error("No content found for programme Id: "
-                                + ((Feature) target).getProgrammeID(), e);
+                                + ((ProgData) target).getProgId(), e);
                     }
                 }
             }
         };
+    }
+
+    protected static DateTimeZone getTimeZone(String date) {
+        String timezoneDateString = date + "-11:00";
+        DateTime timezoneDateTime = FILEDATETIME_FORMAT.parseDateTime(timezoneDateString);
+        DateTimeZone zone = timezoneDateTime.getZone();
+        return DateTimeZone.forOffsetMillis(zone.getOffset(timezoneDateTime));
     }
 }

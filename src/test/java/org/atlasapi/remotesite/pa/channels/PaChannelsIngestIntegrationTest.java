@@ -206,4 +206,9 @@ class DummyPaProgrammeDataStore implements PaProgrammeDataStore {
     public List<File> localProfilesFiles(Predicate<File> filter) {
         throw new NotImplementedException();
     }
+
+    @Override
+    public List<File> localArchivesFiles(Predicate<File> filter) {
+        throw new NotImplementedException();
+    }
 }

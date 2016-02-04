@@ -31,6 +31,9 @@ import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
 import org.atlasapi.remotesite.bt.channels.BtChannelDataUpdater;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
+import org.atlasapi.remotesite.pa.archives.PaArchivesUpdater;
+import org.atlasapi.remotesite.pa.archives.PaProgDataUpdatesProcessor;
+import org.atlasapi.remotesite.pa.archives.PaUpdatesProcessor;
 import org.atlasapi.remotesite.pa.channels.PaChannelDataHandler;
 import org.atlasapi.remotesite.pa.channels.PaChannelGroupsIngester;
 import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
@@ -118,6 +121,7 @@ public class PaModule {
         scheduler.schedule(paFileUpdater().withName("PA File Updater"), RECENT_FILE_DOWNLOAD);
         scheduler.schedule(paCompleteUpdater().withName("PA Complete Updater"), COMPLETE_INGEST);
         scheduler.schedule(paRecentUpdater().withName("PA Recent Updater"), RECENT_FILE_INGEST);
+        scheduler.schedule(paArchivesUpdater().withName("PA Archives Updater"), RECENT_FILE_INGEST);
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed").withSource(PaCompleteUpdater.class));
     }
     
@@ -187,6 +191,13 @@ public class PaModule {
                 scheduleWriter, paScheduleVersionStore(), contentBuffer(), contentWriter);
         ExecutorService executor = Executors.newFixedThreadPool(contentUpdaterThreadCount, new ThreadFactoryBuilder().setNameFormat("pa-recent-updater-%s").build());
         PaRecentUpdater updater = new PaRecentUpdater(executor, channelProcessor, paProgrammeDataStore(), channelResolver, fileUploadResultStore(), paScheduleVersionStore());
+        return updater;
+    }
+
+    @Bean PaArchivesUpdater paArchivesUpdater() {
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
+        PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
+        PaArchivesUpdater updater = new PaArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;
     }
     

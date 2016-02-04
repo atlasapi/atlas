@@ -43,16 +43,16 @@ public class PaArchivesUpdater extends ScheduledTask {
 
     private static final DateTimeFormatter FILEDATETIME_FORMAT = DateTimeFormat.forPattern("yyyyMMdd-HH:mm").withZone(
             DateTimeZones.LONDON);
-    private static final Pattern FILEDATETIME = Pattern.compile("^.*(\\d{12})_tvarchive.xml$");
+    private static final Pattern FILEDATETIME = Pattern.compile("^.*(\\d{12})_.+_tvarchive.xml$");
 
     private final Logger log = LoggerFactory.getLogger(PaArchivesUpdater.class);
     private final PaProgrammeDataStore dataStore;
     private final FileUploadResultStore fileUploadResultStore;
-    private final PaProgrammeProcessor processor;
+    private final PaUpdatesProcessor processor;
 
     public PaArchivesUpdater(PaProgrammeDataStore dataStore,
             FileUploadResultStore fileUploadResultStore,
-            PaProgrammeProcessor processor) {
+            PaUpdatesProcessor processor) {
         this.dataStore = checkNotNull(dataStore);
         this.fileUploadResultStore = checkNotNull(fileUploadResultStore);
         this.processor = checkNotNull(processor);
@@ -142,7 +142,7 @@ public class PaArchivesUpdater extends ScheduledTask {
                         ProgData progData = (ProgData) target;
                             log.info("Started processing PA updates for: "
                                     + progData.getProgId());
-                            processor.process(progData, null, getTimeZone(fileData),Timestamp.of(fileToProcess.lastModified()));
+                            processor.process(progData, getTimeZone(fileData),Timestamp.of(fileToProcess.lastModified()));
                     } catch (NoSuchElementException e) {
                         log.error("No content found for programme Id: "
                                 + ((ProgData) target).getProgId(), e);

@@ -265,7 +265,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         brand.setTitle(progData.getTitle());
         brand.setDescription(Strings.emptyToNull(progData.getSeriesSynopsis()));
         if (channel.isPresent()) {
-            brand.setSpecialization(specialization(progData, channel.get()));
+            brand.setSpecialization(specialization(progData, channel));
             brand.setMediaType(channel.get().getMediaType());
         }
         setCertificate(progData, brand);
@@ -391,7 +391,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     
         series.setPublisher(Publisher.PA);
         if (channel.isPresent()) {
-            series.setSpecialization(specialization(progData, channel.get()));
+            series.setSpecialization(specialization(progData, channel));
         }
         setCertificate(progData, series);
         setGenres(progData, series);
@@ -411,7 +411,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
     
     private ItemAndBroadcast getFilmOrEpisode(ProgData progData, Optional<Channel> channel, DateTimeZone zone, boolean isEpisode, Timestamp updatedAt) {
-        return specialization(progData, channel) == Specialization.FILM ? getFilm(progData, channel, zone, updatedAt) : getEpisode(progData, channel, zone, isEpisode, updatedAt);
+        return getBooleanValue(progData.getAttr().getFilm()) ? getFilm(progData, channel, zone, updatedAt) : getEpisode(progData, channel, zone, isEpisode, updatedAt);
     }
     
     private ItemAndBroadcast getFilm(ProgData progData, Optional<Channel> channel, DateTimeZone zone, Timestamp updatedAt) {
@@ -444,8 +444,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         }
 
         if (channel.isPresent()) {
-            setCommonDetails(progData, channel.get(), zone, film, updatedAt);
-            Broadcast broadcast = setCommonDetails(progData, channel.get(), zone, film, updatedAt);
+            Broadcast broadcast = setCommonDetails(progData, channel, zone, film, updatedAt);
             return new ItemAndBroadcast(film, Maybe.just(broadcast));
         } else {
             setCommonDetailsWithoutBroadcast(progData, zone, film, updatedAt);
@@ -456,12 +455,12 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
     }
     
-    private Broadcast setCommonDetails(ProgData progData, Channel channel, DateTimeZone zone, Item episode, Timestamp updatedAt) {
+    private Broadcast setCommonDetails(ProgData progData, Optional<Channel> channel, DateTimeZone zone, Item episode, Timestamp updatedAt) {
                 
         //currently Welsh channels have Welsh titles/descriptions 
         // which flip the English ones, resulting in many writes. We'll only take the Welsh title if we don't
     	// already have a title from another channel
-        if (episode.getTitle() == null || (channel !=null && !channel.getUri().contains("wales"))) {
+        if (episode.getTitle() == null || (channel.isPresent() && !channel.get().getUri().contains("wales"))) {
             if (progData.getEpisodeTitle() != null) {
                 episode.setTitle(progData.getEpisodeTitle());
             } else {
@@ -471,8 +470,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
         setDescription(progData, episode, channel);
 
-        episode.setMediaType(channel.getMediaType());
-        episode.setSpecialization(specialization(progData, channel.));
+        episode.setMediaType(channel.get().getMediaType());
+        episode.setSpecialization(specialization(progData, channel));
         setGenres(progData, episode);
         setTags(progData, episode);
         
@@ -494,7 +493,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         version.setDuration(duration);
         setCertificate(progData, episode);
 
-        Broadcast broadcast = broadcast(progData, channel, zone, updatedAt);
+        Broadcast broadcast = broadcast(progData, channel.get(), zone, updatedAt);
         addBroadcast(version, broadcast);
         return broadcast;
     }
@@ -508,9 +507,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             }
         }
 
-        setDescription(progData, episode, null);
+        setDescription(progData, episode, Optional.<Channel>absent());
 
-        episode.setSpecialization(specialization(progData, null));
         setGenres(progData, episode);
 
         if (progData.getCountry() != null) {
@@ -521,33 +519,29 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             episode.setBlackAndWhite(getBooleanValue(progData.getAttr().getBw()));
         }
 
-        selectImages(progData.getPictures(), episode, PA_PICTURE_TYPE_EPISODE, PA_PICTURE_TYPE_SERIES, Maybe.just(PA_PICTURE_TYPE_BRAND));
-
         episode.setPeople(people(progData));
 
         Version version = findBestVersion(episode.getVersions());
         version.set3d(getBooleanValue(progData.getAttr().getThreeD()));
-        Duration duration = Duration.standardMinutes(Long.valueOf(progData.getDuration()));
-        version.setDuration(duration);
         setCertificate(progData, episode);
     }
 
-    private void setDescription(ProgData progData, Item item, Channel channel) {
+    private void setDescription(ProgData progData, Item item, Optional<Channel> channel) {
         if (progData.getBillings() != null) {
             for (Billing billing : progData.getBillings().getBilling()) {
-                if((item.getDescription() == null || (channel !=null && !channel.getUri().contains("wales")))
+                if((item.getDescription() == null || (channel.isPresent() && !channel.get().getUri().contains("wales")))
                         && billing.getType().equals("synopsis")) {
                     item.setDescription(billing.getvalue());
                 }
-                if ((item.getShortDescription() == null || (channel !=null && !channel.getUri().contains("wales")))
+                if ((item.getShortDescription() == null || (channel.isPresent() && !channel.get().getUri().contains("wales")))
                         && billing.getType().equals("pa_detail1")) {
                     item.setShortDescription(billing.getvalue());
                 }
-                if ((item.getMediumDescription() == null || (channel !=null && !channel.getUri().contains("wales")))
+                if ((item.getMediumDescription() == null || (channel.isPresent() && !channel.get().getUri().contains("wales")))
                         && billing.getType().equals("pa_detail2")) {
                     item.setMediumDescription(billing.getvalue());
                 }
-                if ((item.getLongDescription() == null || (channel !=null && !channel.getUri().contains("wales")))
+                if ((item.getLongDescription() == null || (channel.isPresent() && !channel.get().getUri().contains("wales")))
                         && billing.getType().equals("pa_detail3")) {
                     item.setLongDescription(billing.getvalue());
                 }
@@ -610,7 +604,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         }
 
         if (channel.isPresent()) {
-            Broadcast broadcast = setCommonDetails(progData, channel.get(), zone, item, updatedAt);
+            Broadcast broadcast = setCommonDetails(progData, channel, zone, item, updatedAt);
             return new ItemAndBroadcast(item, Maybe.just(broadcast));
         } else {
             setCommonDetailsWithoutBroadcast(progData, zone, item, updatedAt);
@@ -795,8 +789,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         item.addVersion(version);
     }
     
-    protected Specialization specialization(ProgData progData, Channel channel) {
-        if (MediaType.AUDIO.equals(channel.getMediaType())) {
+    protected Specialization specialization(ProgData progData, Optional<Channel> channel) {
+        if (channel.isPresent() && MediaType.AUDIO.equals(channel.get().getMediaType())) {
             return Specialization.RADIO;
         }
         return Strings.isNullOrEmpty(progData.getRtFilmnumber()) ? Specialization.TV : Specialization.FILM;

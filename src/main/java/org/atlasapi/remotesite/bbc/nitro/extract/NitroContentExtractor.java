@@ -79,13 +79,13 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         }
         com.metabroadcast.atlas.glycerin.model.Brand.Images.Image srcImage = extractImage(source);
 
-        List<String> genericUrlList = createGenericUrlList();
+        List<String> genericBbcUrlList = createGenericBbcUrlList();
 
         if (srcImage != null && !Strings.isNullOrEmpty(srcImage.getTemplateUrl())) {
             Image image = imageExtractor.extract(srcImage);
 
-            if(genericUrlList.contains(image.getCanonicalUri())) {
-                image.setType(ImageType.GENERIC);
+            if(genericBbcUrlList.contains(image.getCanonicalUri())) {
+                image.setType(ImageType.GENERIC_IMAGE_CONTENT_ORIGINATOR);
             }
             content.setImage(image.getCanonicalUri());
             content.setImages(ImmutableSet.of(image));
@@ -195,11 +195,17 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
                MediaType.VIDEO;
     }
 
-    private List<String> createGenericUrlList() {
-        ArrayList<String> list = Lists.newArrayList();
+    private List<String> createGenericBbcUrlList() {
 
-        list.add("http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png");
+        return ImmutableList.of(
+                //BBC Logo
+                "http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png",
 
-        return ImmutableList.copyOf(list);
+                //BBC Radio Station Images
+                "http://ichef.bbci.co.uk/images/ic/1024x576/p01lcnwl.jpg",
+                "http://ichef.bbci.co.uk/images/ic/1024x576/p01ty5y1.jpg",
+                "http://ichef.bbci.co.uk/images/ic/1024x576/p01t0zdl.jpg"
+
+        );
     }
 }

@@ -6,6 +6,7 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.TransportType;
 import org.atlasapi.media.channel.Channel;
@@ -67,9 +68,6 @@ public class C4AtomApi {
 
 	private static final Pattern IMAGE_PATTERN = Pattern.compile("(http.+?)\\d+x\\d+(\\.[a-zA-Z]+)");
 
-	//TODO update with actual generic pattern once tom confirms
-	private static final Pattern GENERIC_PATTERN = Pattern.compile("((https://|http://)www.channel4.com/assets/programmes/images/channel-4-news/).*\\.jpg");
-
 	private static final String IMAGE_SIZE = "625x352";
 	private static final String THUMBNAIL_SIZE = "200x113";
 	
@@ -95,17 +93,25 @@ public class C4AtomApi {
 		if (! Strings.isNullOrEmpty(anImage)) {
 			Matcher matcher = IMAGE_PATTERN.matcher(anImage);
 			if (matcher.matches()) {
+                String url = matcher.group(1) + IMAGE_SIZE + matcher.group(2);
+				Image image = new Image(url);
 
-				Matcher genericMatcher = GENERIC_PATTERN.matcher(anImage);
+                List<String> genericImageUrlList = createGenerateImageUrlList();
 
-				if(genericMatcher.matches()){
-
-					Image image = new Image(anImage);
-					image.setType(ImageType.GENERIC);
-					content.setImages(ImmutableSet.of(image));
+				if(genericImageUrlList.contains(url)){
+					image.setType(ImageType.GENERIC_IMAGE_CONTENT_PLAYER);
 				}
 				content.setThumbnail(matcher.group(1) + THUMBNAIL_SIZE + matcher.group(2));
-				content.setImage((matcher.group(1) + IMAGE_SIZE + matcher.group(2)));
+				content.setImages(ImmutableSet.of(image));
+			}
+		}
+
+		if(content.getImages().size() > 0) {
+			for(Image image : content.getImages()) {
+				if(image.getType() != ImageType.GENERIC_IMAGE_CONTENT_PLAYER) {
+					content.setImage(image.getCanonicalUri());
+                    return;
+				}
 			}
 		}
 	}
@@ -315,4 +321,9 @@ public class C4AtomApi {
 		}
 		return location;
 	}
+
+    private List<String> createGenerateImageUrlList() {
+        //Update this if any generic images for C4 is found.
+        return ImmutableList.of();
+    }
 }

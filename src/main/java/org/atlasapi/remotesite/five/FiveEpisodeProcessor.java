@@ -50,7 +50,6 @@ import com.metabroadcast.common.intl.Countries;
 public class FiveEpisodeProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(FiveEpisodeProcessor.class);
-    private static final Pattern GENERIC_PATTERN = Pattern.compile("((https://|http://)?i1.ytimg.com/vi/).*\\.jpg");
 
     private final GenreMap genreMap = new FiveGenreMap();
     private final DateTimeFormatter dateParser = DateTimeFormat.forPattern("yyyy-MM-dd'T'HH:mm:ssZZ");
@@ -286,16 +285,12 @@ public class FiveEpisodeProcessor {
         if (imageElements.size() > 0) {
             String image = imageElements.get(0).getValue();
 
-            Matcher genericImageUrlMatcher = GENERIC_PATTERN.matcher(image);
-            if(genericImageUrlMatcher.matches()) {
-                Image imageObj = new Image("http://" + image);
-                imageObj.setType(ImageType.GENERIC);
-                return Maybe.just(imageObj);
-            }
+            Image imageObj = new Image("http://" + image);
             if (!image.contains("api-images.channel5.com/images/default")) {
-                Image imageObj = new Image("http://" + image);
-                return Maybe.just(imageObj);
+                imageObj.setType(ImageType.GENERIC_IMAGE_CONTENT_PLAYER);
+
             }
+            return Maybe.just(imageObj);
         }
 
         return Maybe.nothing();

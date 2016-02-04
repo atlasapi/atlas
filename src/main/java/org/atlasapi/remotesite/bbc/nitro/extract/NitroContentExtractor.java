@@ -1,10 +1,13 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import com.google.api.client.util.Lists;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.atlas.glycerin.model.Brand;
+import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
+import com.metabroadcast.atlas.glycerin.model.Synopses;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
@@ -19,18 +22,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.atlas.glycerin.model.Brand;
-import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
-import com.metabroadcast.atlas.glycerin.model.Synopses;
-import com.metabroadcast.common.time.Clock;
-
-import java.util.ArrayList;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 import java.util.List;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
 /**
  * Template extractor for extracting {@link Content} from Nitro sources.

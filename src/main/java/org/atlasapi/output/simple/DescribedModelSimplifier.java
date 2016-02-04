@@ -65,6 +65,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setTitles(simplifyLocalizedTitles(content));
             simpleDescription.setDescription(applyWatermark(content, content.getDescription()));
             simpleDescription.setThumbnail(content.getThumbnail());
+            simpleDescription.setImage(content.getImage());
             simpleDescription.setShortDescription(content.getShortDescription());
 
             MediaType mediaType = content.getMediaType();

@@ -68,8 +68,12 @@ public class ItunesEpfUpdateTaskTest extends TestCase {
         )), new File(parent,"video"), Charsets.UTF_8);
         
         Files.write(Joiner.on("\t").join(ImmutableList.of(
-                "Diversity Day","","R1101","The Office, Season 1","2005 03 29","2005 NBC Universal","http://itunes.apple.com/WebObjects/MZStore.woa/wa/viewTVSeason?uo=5&i=102225077&id=102772946","http://a708.phobos.apple.com/us/r1000/021/Music/c8/1b/65/mzi.qkeekydh.133x100-99.jpg","","","SD","1.89","","","",""
-        )), new File(parent,"tvEpisode-gbr.txt"), Charsets.UTF_8);
+                "1453888800445","102225077","1.89","GBP","143444","1.89","","","","","","1.89"
+        )), new File(parent,"video_price"), Charsets.UTF_8);
+
+        Files.write(Joiner.on("\t").join(ImmutableList.of(
+                "1453888800445","143444","GBR","UK"
+        )), new File(parent,"storefront"), Charsets.UTF_8);
     }
 
     @Test

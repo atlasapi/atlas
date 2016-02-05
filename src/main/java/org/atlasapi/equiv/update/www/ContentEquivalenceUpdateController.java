@@ -20,6 +20,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+
+import com.google.common.collect.ImmutableSet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -78,6 +80,9 @@ public class ContentEquivalenceUpdateController {
     }
 
     private Iterable<String> urisFor(String csvIds) {
+        if (Strings.isNullOrEmpty((csvIds))) {
+            return ImmutableSet.of();
+        }
         Iterable<Long> ids = Iterables.transform(commaSplitter.split(csvIds), new Function<String, Long>() {
 
             @Override public Long apply(String input) {

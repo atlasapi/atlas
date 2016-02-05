@@ -264,7 +264,7 @@ public class EquivModule {
             ))
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),
-                ContainerChildEquivalenceGenerator.NAME
+                            TitleMatchingContainerScorer.NAME
             ))
             .withFilter(this.<Container>standardFilter())
             .withExtractor(PercentThresholdEquivalenceExtractor.<Container>moreThanPercent(90))

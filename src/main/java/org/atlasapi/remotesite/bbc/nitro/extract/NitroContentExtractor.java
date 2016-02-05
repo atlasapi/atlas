@@ -1,12 +1,18 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.atlas.glycerin.model.Brand;
+import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
+import com.metabroadcast.atlas.glycerin.model.Synopses;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
@@ -16,13 +22,9 @@ import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.atlas.glycerin.model.Brand;
-import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
-import com.metabroadcast.atlas.glycerin.model.Synopses;
-import com.metabroadcast.common.time.Clock;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Template extractor for extracting {@link Content} from Nitro sources.
@@ -70,11 +72,19 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             content.setLongDescription(synposes.getLong());
         }
         com.metabroadcast.atlas.glycerin.model.Brand.Images.Image srcImage = extractImage(source);
+
+        List<String> genericBbcUrlList = createGenericBbcUrlList();
+
         if (srcImage != null && !Strings.isNullOrEmpty(srcImage.getTemplateUrl())) {
             Image image = imageExtractor.extract(srcImage);
-            content.setImage("http://" + image.getCanonicalUri());
+
+            if(genericBbcUrlList.contains(image.getCanonicalUri())) {
+                image.setType(ImageType.GENERIC_IMAGE_CONTENT_ORIGINATOR);
+            }
+            content.setImage(image.getCanonicalUri());
             content.setImages(ImmutableSet.of(image));
         }
+
         MasterBrand masterBrand = extractMasterBrand(source);
         content.setMediaType(computeMediaType(masterBrand));
         if (masterBrand != null) {
@@ -179,4 +189,17 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
                MediaType.VIDEO;
     }
 
+    private List<String> createGenericBbcUrlList() {
+
+        return ImmutableList.of(
+                //BBC Logo
+                "http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png",
+
+                //BBC Radio Station Images
+                "http://ichef.bbci.co.uk/images/ic/1024x576/p01lcnwl.jpg",
+                "http://ichef.bbci.co.uk/images/ic/1024x576/p01ty5y1.jpg",
+                "http://ichef.bbci.co.uk/images/ic/1024x576/p01t0zdl.jpg"
+
+        );
+    }
 }

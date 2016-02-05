@@ -278,11 +278,11 @@ public class EquivTaskModule {
     
     //Controllers...
     public @Bean ContentEquivalenceUpdateController contentEquivalenceUpdateController() {
-        return new ContentEquivalenceUpdateController(equivUpdater, contentResolver);
+        return new ContentEquivalenceUpdateController(equivUpdater, contentResolver, lookupStore);
     }
     
     public @Bean EquivalenceResultController resultEquivalenceResultController() {
-        return new EquivalenceResultController(equivalenceResultStore, equivProbeStore(), contentResolver);
+        return new EquivalenceResultController(equivalenceResultStore, equivProbeStore(), contentResolver, lookupStore);
     }
     
     public @Bean RecentResultController recentEquivalenceResultController() {

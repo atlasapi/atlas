@@ -7,13 +7,19 @@ import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Function;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.RootEquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -34,17 +40,29 @@ public class ContentEquivalenceUpdateController {
     private final EquivalenceUpdater<Content> contentUpdater;
     private final ContentResolver contentResolver;
     private final ExecutorService executor;
+    private final SubstitutionTableNumberCodec codec;
+    private final LookupEntryStore lookupEntryStore;
 
-    public ContentEquivalenceUpdateController(EquivalenceUpdater<Content> contentUpdater, ContentResolver contentResolver) {
+    public ContentEquivalenceUpdateController(EquivalenceUpdater<Content> contentUpdater,
+            ContentResolver contentResolver, LookupEntryStore lookupEntryStore) {
         this.contentUpdater = new RootEquivalenceUpdater(contentResolver, contentUpdater);
         this.contentResolver = contentResolver;
         this.executor = Executors.newFixedThreadPool(5);
+        this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
+        this.lookupEntryStore = lookupEntryStore;
     }
 
     @RequestMapping(value = "/system/equivalence/update", method = RequestMethod.POST)
-    public void runUpdate(HttpServletResponse response, @RequestParam(value = "uris", required = true) String uris) throws IOException {
+    public void runUpdate(HttpServletResponse response,
+            @RequestParam("uris") String uris,
+            @RequestParam("ids") String ids) throws IOException {
 
-        ResolvedContent resolved = contentResolver.findByCanonicalUris(commaSplitter.split(uris));
+        if (Strings.isNullOrEmpty(uris) && Strings.isNullOrEmpty(ids)) {
+            throw new IllegalArgumentException("Must specify at least one of 'uris' or 'ids'");
+        }
+
+        Iterable<String> allRequestedUris = Iterables.concat(commaSplitter.split(uris), urisFor(ids));
+        ResolvedContent resolved = contentResolver.findByCanonicalUris(allRequestedUris);
 
         if (resolved.isEmpty()) {
             response.setStatus(NOT_FOUND.code());
@@ -57,6 +75,16 @@ public class ContentEquivalenceUpdateController {
         }
         response.setStatus(OK.code());
 
+    }
+
+    private Iterable<String> urisFor(String csvIds) {
+        Iterable<Long> ids = Iterables.transform(commaSplitter.split(csvIds), new Function<String, Long>() {
+
+            @Override public Long apply(String input) {
+                return codec.decode(input).longValue();
+            }
+        });
+        return Iterables.transform(lookupEntryStore.entriesForIds(ids), LookupEntry.TO_ID);
     }
 
     private Runnable updateFor(final Content content) {

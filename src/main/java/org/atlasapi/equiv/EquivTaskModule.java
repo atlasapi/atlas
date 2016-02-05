@@ -114,7 +114,7 @@ public class EquivTaskModule {
     private static final RepetitionRule TALKTALK_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(11, 15));
     private static final RepetitionRule YOUVIEW_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(15, 00));
     private static final RepetitionRule YOUVIEW_STAGE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(8, 00));
-    private static final RepetitionRule YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(13, 00));
+    private static final RepetitionRule YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(21, 00));
     private static final RepetitionRule YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(9, 00));
     private static final RepetitionRule BBC_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(9, 00));
     private static final RepetitionRule ITV_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(11, 00));
@@ -278,11 +278,11 @@ public class EquivTaskModule {
     
     //Controllers...
     public @Bean ContentEquivalenceUpdateController contentEquivalenceUpdateController() {
-        return new ContentEquivalenceUpdateController(equivUpdater, contentResolver);
+        return new ContentEquivalenceUpdateController(equivUpdater, contentResolver, lookupStore);
     }
     
     public @Bean EquivalenceResultController resultEquivalenceResultController() {
-        return new EquivalenceResultController(equivalenceResultStore, equivProbeStore(), contentResolver);
+        return new EquivalenceResultController(equivalenceResultStore, equivProbeStore(), contentResolver, lookupStore);
     }
     
     public @Bean RecentResultController recentEquivalenceResultController() {

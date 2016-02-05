@@ -267,12 +267,12 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         if (channel.isPresent()) {
             brand.setSpecialization(specialization(progData, channel));
             brand.setMediaType(channel.get().getMediaType());
+            selectImages(progData.getPictures(), brand, PA_PICTURE_TYPE_BRAND, PA_PICTURE_TYPE_SERIES, Maybe.<String>nothing());
         }
         setCertificate(progData, brand);
         setGenres(progData, brand);
         setTags(progData, brand);
 
-        selectImages(progData.getPictures(), brand, PA_PICTURE_TYPE_BRAND, PA_PICTURE_TYPE_SERIES, Maybe.<String>nothing());
 
         if (isClosedBrand(Optional.of(brand))) {
             brand.setScheduleOnly(true);
@@ -392,12 +392,12 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         series.setPublisher(Publisher.PA);
         if (channel.isPresent()) {
             series.setSpecialization(specialization(progData, channel));
+            selectImages(progData.getPictures(), series, PA_PICTURE_TYPE_SERIES, PA_PICTURE_TYPE_BRAND, Maybe.<String>nothing());
         }
         setCertificate(progData, series);
         setGenres(progData, series);
         setTags(progData, series);
-        
-        selectImages(progData.getPictures(), series, PA_PICTURE_TYPE_SERIES, PA_PICTURE_TYPE_BRAND, Maybe.<String>nothing());
+
         series.setLastUpdated(updatedAt.toDateTimeUTC());
 
         return Optional.of(series);

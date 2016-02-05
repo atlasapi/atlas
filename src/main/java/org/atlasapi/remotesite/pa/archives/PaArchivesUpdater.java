@@ -13,10 +13,10 @@ import javax.xml.parsers.SAXParserFactory;
 
 import org.atlasapi.feeds.upload.FileUploadResult;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
-import org.atlasapi.remotesite.pa.PaBaseProgrammeUpdater;
-import org.atlasapi.remotesite.pa.PaProgrammeProcessor;
-import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
+import org.atlasapi.remotesite.pa.archives.bindings.ArchiveUpdate;
+import org.atlasapi.remotesite.pa.archives.bindings.TvData;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
+import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -25,6 +25,7 @@ import com.metabroadcast.common.time.Timestamp;
 
 import com.google.common.base.Predicates;
 import com.google.common.base.Throwables;
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -49,6 +50,7 @@ public class PaArchivesUpdater extends ScheduledTask {
     private final PaProgrammeDataStore dataStore;
     private final FileUploadResultStore fileUploadResultStore;
     private final PaUpdatesProcessor processor;
+    private final PaDataToUpdatesTransformer transformer = new PaDataToUpdatesTransformer();
 
     public PaArchivesUpdater(PaProgrammeDataStore dataStore,
             FileUploadResultStore fileUploadResultStore,
@@ -137,15 +139,19 @@ public class PaArchivesUpdater extends ScheduledTask {
             }
 
             public void afterUnmarshal(Object target, Object parent) {
-                if (target instanceof ProgData) {
+                if (target instanceof TvData) {
                     try {
-                        ProgData progData = (ProgData) target;
+                        TvData tvData = (TvData) target;
+                        ArchiveUpdate archive = Iterables.getOnlyElement(tvData.getArchiveUpdate());
+                        for (org.atlasapi.remotesite.pa.archives.bindings.ProgData progData : archive.getProgData()) {
                             log.info("Started processing PA updates for: "
                                     + progData.getProgId());
-                            processor.process(progData, getTimeZone(fileData),Timestamp.of(fileToProcess.lastModified()));
+                            ProgData listings = transformer.transformToListingProgdata(progData);
+                            processor.process(listings, getTimeZone(fileData),Timestamp.of(fileToProcess.lastModified()));
+                        }
+
                     } catch (NoSuchElementException e) {
-                        log.error("No content found for programme Id: "
-                                + ((ProgData) target).getProgId(), e);
+                        log.error("Failed to process " + fileData , e);
                     }
                 }
             }

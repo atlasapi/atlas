@@ -54,8 +54,8 @@ public class ContentEquivalenceUpdateController {
 
     @RequestMapping(value = "/system/equivalence/update", method = RequestMethod.POST)
     public void runUpdate(HttpServletResponse response,
-            @RequestParam("uris") String uris,
-            @RequestParam("ids") String ids) throws IOException {
+            @RequestParam(value="uris", required=false) String uris,
+            @RequestParam(value="ids", required=false) String ids) throws IOException {
 
         if (Strings.isNullOrEmpty(uris) && Strings.isNullOrEmpty(ids)) {
             throw new IllegalArgumentException("Must specify at least one of 'uris' or 'ids'");

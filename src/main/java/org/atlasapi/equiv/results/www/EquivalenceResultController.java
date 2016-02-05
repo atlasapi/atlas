@@ -55,8 +55,8 @@ public class EquivalenceResultController {
 
     @RequestMapping(value = "/system/equivalence/result", method = RequestMethod.GET)
     public String showResult(Map<String, Object> model, HttpServletResponse response, 
-            @RequestParam(value = "uri") String uri,
-            @RequestParam(value = "id") String id) throws IOException {
+            @RequestParam(value = "uri", required=false) String uri,
+            @RequestParam(value = "id", required=false) String id) throws IOException {
 
         if (!(Strings.isNullOrEmpty(uri) ^ Strings.isNullOrEmpty(id))) {
             throw new IllegalArgumentException("Must specify exactly one of 'uri' parameter or 'id' parameter");

@@ -113,7 +113,7 @@ public class PaArchivesUpdater extends ScheduledTask {
 
             if (matcher.matches()) {
                 log.info("Processing file " + file.toString());
-                File fileToProcess = dataStore.copyForProcessing(file);
+                final File fileToProcess = dataStore.copyForProcessing(file);
                 final String scheduleDay = matcher.group(1);
                 unmarshaller.setListener(archivesProcessingListener(fileToProcess, scheduleDay));
                 reader.parse(fileToProcess.toURI().toString());

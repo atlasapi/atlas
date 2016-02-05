@@ -506,9 +506,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor {
 
     private void setTags(ProgData progData, Content content) {
         Set<String> tagsFromGenres = paTagMap.map(content.getGenres());
-        if (!tagsFromGenres.isEmpty()) {
-            content.setTags(tagsFromGenres);
-        }
+        content.setTags(tagsFromGenres);
     }
 
     private ItemAndBroadcast getEpisode(ProgData progData, Channel channel, DateTimeZone zone, boolean isEpisode, Timestamp updatedAt) {

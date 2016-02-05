@@ -664,7 +664,7 @@ public class EquivModule {
             .withScorers(ImmutableSet.of(new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE)))
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),
-                ContainerChildEquivalenceGenerator.NAME))
+                    TitleMatchingContainerScorer.NAME))
             .withFilter(this.<Container>standardFilter())
             .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
             .withHandler(containerResultHandlers(sources))

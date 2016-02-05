@@ -6,6 +6,9 @@ import java.util.Set;
 import com.google.api.client.util.Maps;
 import com.google.api.client.util.Sets;
 
+/**
+ * This class is used for mapping PA content genres with MetaBroadcast tags.
+ */
 public class PaTagMap {
 
     private final Map<String, String> paTagMap = Maps.newHashMap();
@@ -151,6 +154,11 @@ public class PaTagMap {
         paTagMap.put("http://pressassociation.com/genres/2F06", "news-weather");
     }
 
+    /**
+     * This methods maps PA content genres with MetaBroadcast tags.
+     * @param genres - Content genres for mapping with tags.
+     * @return set of tags for the content
+     */
     public Set<String> map(Set<String> genres) {
         Set<String> tags = Sets.newHashSet();
         for (String genre : genres) {
@@ -159,7 +167,7 @@ public class PaTagMap {
             }
         }
 
-        // Checking if the tags set has only a one tag with the value - film, this means that the
+        // Checking if the tags set has only a one tag with the value - film, this means that it's action film.
         if (tags.size() == 1 && tags.contains("film")) {
             tags.add("action");
         }

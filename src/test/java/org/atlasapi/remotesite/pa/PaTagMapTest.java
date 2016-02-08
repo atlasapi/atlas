@@ -4,11 +4,12 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.atlasapi.media.entity.TopicRef;
+
 import org.junit.Before;
 import org.junit.Test;
 
 import static junit.framework.Assert.assertEquals;
-import static junit.framework.Assert.assertTrue;
 
 public class PaTagMapTest {
 
@@ -39,21 +40,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> filmTags = paTagMap.map(filmGenres);
+        Set<TopicRef> filmTags = paTagMap.map(filmGenres);
         assertEquals(filmTags.size(), 13);
-        assertTrue(filmTags.contains("indie"));
-        assertTrue(filmTags.contains("romance"));
-        assertTrue(filmTags.contains("films"));
-        assertTrue(filmTags.contains("horror"));
-        assertTrue(filmTags.contains("comedy"));
-        assertTrue(filmTags.contains("drama-soap"));
-        assertTrue(filmTags.contains("war"));
-        assertTrue(filmTags.contains("thriller"));
-        assertTrue(filmTags.contains("bollywood-world"));
-        assertTrue(filmTags.contains("family"));
-        assertTrue(filmTags.contains("sport"));
-        assertTrue(filmTags.contains("factual"));
-        assertTrue(filmTags.contains("scifi"));
     }
 
     @Test
@@ -64,9 +52,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> actionFilmTags = paTagMap.map(actionFilmGenres);
+        Set<TopicRef> actionFilmTags = paTagMap.map(actionFilmGenres);
         assertEquals(actionFilmTags.size(), 1);
-        assertTrue(actionFilmTags.contains("films"));
     }
 
     @Test
@@ -95,18 +82,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> factualTags = paTagMap.map(factualGenres);
+        Set<TopicRef> factualTags = paTagMap.map(factualGenres);
         assertEquals(factualTags.size(), 10);
-        assertTrue(factualTags.contains("nature-environment"));
-        assertTrue(factualTags.contains("people-society"));
-        assertTrue(factualTags.contains("religion-ethics"));
-        assertTrue(factualTags.contains("history-biogs"));
-        assertTrue(factualTags.contains("learning"));
-        assertTrue(factualTags.contains("travel"));
-        assertTrue(factualTags.contains("current-affairs-politics"));
-        assertTrue(factualTags.contains("arts"));
-        assertTrue(factualTags.contains("science-tech"));
-        assertTrue(factualTags.contains("factual"));
     }
 
     @Test
@@ -130,16 +107,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> lifestyleTags = paTagMap.map(lifestyleGenres);
+        Set<TopicRef> lifestyleTags = paTagMap.map(lifestyleGenres);
         assertEquals(lifestyleTags.size(), 8);
-        assertTrue(lifestyleTags.contains("home-garden"));
-        assertTrue(lifestyleTags.contains("shopping-fashion"));
-        assertTrue(lifestyleTags.contains("leisure-holidays"));
-        assertTrue(lifestyleTags.contains("family-friends"));
-        assertTrue(lifestyleTags.contains("food-drink"));
-        assertTrue(lifestyleTags.contains("health-beauty"));
-        assertTrue(lifestyleTags.contains("lifestyle"));
-        assertTrue(lifestyleTags.contains("motors-gadgets"));
     }
 
     @Test
@@ -171,20 +140,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> sportTags = paTagMap.map(sportGenres);
+        Set<TopicRef> sportTags = paTagMap.map(sportGenres);
         assertEquals(sportTags.size(), 12);
-        assertTrue(sportTags.contains("news-roundups"));
-        assertTrue(sportTags.contains("motorsport"));
-        assertTrue(sportTags.contains("golf"));
-        assertTrue(sportTags.contains("cricket"));
-        assertTrue(sportTags.contains("winter-extreme-sports"));
-        assertTrue(sportTags.contains("rugby-union"));
-        assertTrue(sportTags.contains("horse-racing"));
-        assertTrue(sportTags.contains("football"));
-        assertTrue(sportTags.contains("sports-events"));
-        assertTrue(sportTags.contains("sport"));
-        assertTrue(sportTags.contains("rugby-league"));
-        assertTrue(sportTags.contains("tennis"));
     }
 
     @Test
@@ -201,15 +158,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> childrensTags = paTagMap.map(childrensGenres);
+        Set<TopicRef> childrensTags = paTagMap.map(childrensGenres);
         assertEquals(childrensTags.size(), 7);
-        assertTrue(childrensTags.contains("drama"));
-        assertTrue(childrensTags.contains("childrens"));
-        assertTrue(childrensTags.contains("pre-school"));
-        assertTrue(childrensTags.contains("cartoons"));
-        assertTrue(childrensTags.contains("games-quizzes"));
-        assertTrue(childrensTags.contains("funnies"));
-        assertTrue(childrensTags.contains("kids-learning"));
     }
 
     @Test
@@ -224,13 +174,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> comedyTags = paTagMap.map(comedyGenres);
+        Set<TopicRef> comedyTags = paTagMap.map(comedyGenres);
         assertEquals(comedyTags.size(), 5);
-        assertTrue(comedyTags.contains("romance"));
-        assertTrue(comedyTags.contains("sitcom-sketch"));
-        assertTrue(comedyTags.contains("comedy"));
-        assertTrue(comedyTags.contains("animated"));
-        assertTrue(comedyTags.contains("stand-up"));
     }
 
     @Test
@@ -247,15 +192,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> dramaSoapTags = paTagMap.map(dramaSoapGenres);
+        Set<TopicRef> dramaSoapTags = paTagMap.map(dramaSoapGenres);
         assertEquals(dramaSoapTags.size(), 7);
-        assertTrue(dramaSoapTags.contains("romance"));
-        assertTrue(dramaSoapTags.contains("medical"));
-        assertTrue(dramaSoapTags.contains("drama-soap"));
-        assertTrue(dramaSoapTags.contains("historical-period"));
-        assertTrue(dramaSoapTags.contains("crime"));
-        assertTrue(dramaSoapTags.contains("soap"));
-        assertTrue(dramaSoapTags.contains("scifi"));
     }
 
     @Test
@@ -270,13 +208,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> entertainmentTags = paTagMap.map(entertainmentGenres);
+        Set<TopicRef> entertainmentTags = paTagMap.map(entertainmentGenres);
         assertEquals(entertainmentTags.size(), 5);
-        assertTrue(entertainmentTags.contains("talent-variety"));
-        assertTrue(entertainmentTags.contains("entertainment"));
-        assertTrue(entertainmentTags.contains("chat-shows"));
-        assertTrue(entertainmentTags.contains("games-quizzes"));
-        assertTrue(entertainmentTags.contains("celeb-reality"));
     }
 
     @Test
@@ -287,9 +220,8 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> musicTags = paTagMap.map(musicGenres);
+        Set<TopicRef> musicTags = paTagMap.map(musicGenres);
         assertEquals(musicTags.size(), 1);
-        assertTrue(musicTags.contains("music"));
     }
 
     @Test
@@ -304,8 +236,7 @@ public class PaTagMapTest {
                 )
         );
 
-        Set<String> newsWeatherTags = paTagMap.map(newsWeatherGenres);
+        Set<TopicRef> newsWeatherTags = paTagMap.map(newsWeatherGenres);
         assertEquals(newsWeatherTags.size(), 1);
-        assertTrue(newsWeatherTags.contains("news-weather"));
     }
 }

@@ -4,6 +4,8 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.atlasapi.media.entity.TopicRef;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -45,7 +47,7 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(filmGenres);
+        Set<TopicRef> filmTags = btVodTagMap.map(filmGenres);
         assertEquals(filmTags.size(), 20);
     }
 
@@ -66,8 +68,8 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(factualGenres);
-        assertEquals(filmTags.size(), 10);
+        Set<TopicRef> factualTags = btVodTagMap.map(factualGenres);
+        assertEquals(factualTags.size(), 10);
     }
 
     @Test
@@ -83,8 +85,8 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(lifestyleGenres);
-        assertEquals(filmTags.size(), 6);
+        Set<TopicRef> lifestyleTags = btVodTagMap.map(lifestyleGenres);
+        assertEquals(lifestyleTags.size(), 6);
     }
 
     @Test
@@ -107,8 +109,8 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(sportGenres);
-        assertEquals(filmTags.size(), 13);
+        Set<TopicRef> sportTags = btVodTagMap.map(sportGenres);
+        assertEquals(sportTags.size(), 13);
     }
 
     @Test
@@ -127,8 +129,8 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(childrensGenres);
-        assertEquals(filmTags.size(), 9);
+        Set<TopicRef> childrensTags = btVodTagMap.map(childrensGenres);
+        assertEquals(childrensTags.size(), 9);
     }
 
     @Test
@@ -145,8 +147,8 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(comedyGenres);
-        assertEquals(filmTags.size(), 7);
+        Set<TopicRef> comedyTags = btVodTagMap.map(comedyGenres);
+        assertEquals(comedyTags.size(), 7);
     }
 
     @Test
@@ -168,8 +170,8 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(dramaGenres);
-        assertEquals(filmTags.size(), 12);
+        Set<TopicRef> dramaTags = btVodTagMap.map(dramaGenres);
+        assertEquals(dramaTags.size(), 12);
     }
 
     @Test
@@ -183,8 +185,8 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(entertainmentGenres);
-        assertEquals(filmTags.size(), 4);
+        Set<TopicRef> entertainmentTags = btVodTagMap.map(entertainmentGenres);
+        assertEquals(entertainmentTags.size(), 4);
     }
 
     @Test
@@ -196,8 +198,8 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(musicGenres);
-        assertEquals(filmTags.size(), 2);
+        Set<TopicRef> musicTags = btVodTagMap.map(musicGenres);
+        assertEquals(musicTags.size(), 2);
     }
 
     @Test
@@ -208,7 +210,7 @@ public class BtVodTagMapTest {
                 )
         );
 
-        Set<String> filmTags = btVodTagMap.map(newsGenres);
-        assertEquals(filmTags.size(), 1);
+        Set<TopicRef> newsTags = btVodTagMap.map(newsGenres);
+        assertEquals(newsTags.size(), 1);
     }
 }

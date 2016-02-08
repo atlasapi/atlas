@@ -321,7 +321,7 @@ public class C4AtomApi {
 		return location;
 	}
 
-    private List<String> createGenerateImageUrlList() {
+    private static List<String> createGenerateImageUrlList() {
         //Update this if any generic images for C4 is found.
         return ImmutableList.of();
     }

@@ -35,7 +35,6 @@ public class PaTagMap {
         mapBuilder.put("http://pressassociation.com/genres/1400", "comedy");
         mapBuilder.put("http://pressassociation.com/genres/1000", "drama");
         mapBuilder.put("http://pressassociation.com/genres/1F19", "factual");
-        mapBuilder.put( "http://pressassociation.com/genres/4000", "sport");
         mapBuilder.put("http://pressassociation.com/genres/1F0A", "thriller");
         mapBuilder.put("http://pressassociation.com/genres/1F10", "war");
 

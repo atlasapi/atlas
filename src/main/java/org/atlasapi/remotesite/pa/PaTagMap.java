@@ -155,7 +155,10 @@ public class PaTagMap {
         Set<String> tags = Sets.newHashSet();
         for (String genre : genres) {
             if (genre.contains("http://pressassociation.com/genres/")) {
-                tags.add(paTagMap.get(genre));
+                String tag = paTagMap.get(genre);
+                if (tag != null) {
+                    tags.add(tag);
+                }
             }
         }
         // Checking if the tags set has only a one tag with the value - film, this means that it's action film.

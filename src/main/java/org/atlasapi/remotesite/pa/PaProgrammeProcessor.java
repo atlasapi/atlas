@@ -25,6 +25,7 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Specialization;
+import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.util.ItemAndBroadcast;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -267,12 +268,12 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         if (channel.isPresent()) {
             brand.setSpecialization(specialization(progData, channel));
             brand.setMediaType(channel.get().getMediaType());
+            selectImages(progData.getPictures(), brand, PA_PICTURE_TYPE_BRAND, PA_PICTURE_TYPE_SERIES, Maybe.<String>nothing());
         }
         setCertificate(progData, brand);
         setGenres(progData, brand);
-        setTags(progData, brand);
+        setTopicRefs(progData, brand);
 
-        selectImages(progData.getPictures(), brand, PA_PICTURE_TYPE_BRAND, PA_PICTURE_TYPE_SERIES, Maybe.<String>nothing());
 
         if (isClosedBrand(Optional.of(brand))) {
             brand.setScheduleOnly(true);
@@ -392,12 +393,12 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         series.setPublisher(Publisher.PA);
         if (channel.isPresent()) {
             series.setSpecialization(specialization(progData, channel));
+            selectImages(progData.getPictures(), series, PA_PICTURE_TYPE_SERIES, PA_PICTURE_TYPE_BRAND, Maybe.<String>nothing());
         }
         setCertificate(progData, series);
         setGenres(progData, series);
-        setTags(progData, series);
-        
-        selectImages(progData.getPictures(), series, PA_PICTURE_TYPE_SERIES, PA_PICTURE_TYPE_BRAND, Maybe.<String>nothing());
+        setTopicRefs(progData, series);
+
         series.setLastUpdated(updatedAt.toDateTimeUTC());
 
         return Optional.of(series);
@@ -473,7 +474,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         episode.setMediaType(channel.get().getMediaType());
         episode.setSpecialization(specialization(progData, channel));
         setGenres(progData, episode);
-        setTags(progData, episode);
+        setTopicRefs(progData, episode);
         
         if (progData.getCountry() != null) {
             episode.setCountriesOfOrigin(countryMap.parseCountries(progData.getCountry()));
@@ -816,11 +817,9 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         return null;
     }
 
-    private void setTags(ProgData progData, Content content) {
-        Set<String> tagsFromGenres = paTagMap.map(content.getGenres());
-        if (!tagsFromGenres.isEmpty()) {
-            content.setTags(tagsFromGenres);
-        }
+    private void setTopicRefs(ProgData progData, Content content) {
+        Set<TopicRef> tagsFromGenres = paTagMap.map(content.getGenres());
+        content.setTopicRefs(tagsFromGenres);
     }
 
 }

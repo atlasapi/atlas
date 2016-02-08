@@ -90,7 +90,7 @@
                         </configuration>
                     </execution>
                     <execution>
-                        <id>generate-archive-schema</id>
+                        <id>generate-archives-schema</id>
                         <goals>
                             <goal>generate</goal>
                         </goals>
@@ -102,7 +102,6 @@
                             <forceRegenerate>true</forceRegenerate>
                             <generateDirectory>${project.build.directory}/generated-sources</generateDirectory>
                             <staleFile>${project.build.directory}/generated-sources/.paArchivesStaleFlag</staleFile>
-                            <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
                     <execution>

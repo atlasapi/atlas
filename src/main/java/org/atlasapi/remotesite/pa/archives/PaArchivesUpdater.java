@@ -104,7 +104,7 @@ public class PaArchivesUpdater extends ScheduledTask {
             Matcher matcher = FILEDATETIME.matcher(filename);
 
             JAXBContext context = JAXBContext.newInstance(
-                    "org.atlasapi.remotesite.pa.listings.bindings");
+                    "org.atlasapi.remotesite.pa.archives.bindings");
             Unmarshaller unmarshaller = context.createUnmarshaller();
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -115,7 +115,7 @@ public class PaArchivesUpdater extends ScheduledTask {
                 log.info("Processing file " + file.toString());
                 final File fileToProcess = dataStore.copyForProcessing(file);
                 final String scheduleDay = matcher.group(1);
-                unmarshaller.setListener(archivesProcessingListener(fileToProcess, scheduleDay));
+                unmarshaller.setListener(archivesProcessingListener(Timestamp.of(file.lastModified()), getTimeZone(scheduleDay)));
                 reader.parse(fileToProcess.toURI().toString());
                 result = FileUploadResult.successfulUpload(SERVICE, file.getName());
             } else {
@@ -132,7 +132,7 @@ public class PaArchivesUpdater extends ScheduledTask {
         return result;
     }
 
-    private Unmarshaller.Listener archivesProcessingListener(final File fileToProcess, final String fileData) {
+    private Unmarshaller.Listener archivesProcessingListener(final Timestamp lastModified, final DateTimeZone zone) {
         return new Unmarshaller.Listener() {
 
             public void beforeUnmarshal(Object target, Object parent) {
@@ -147,11 +147,11 @@ public class PaArchivesUpdater extends ScheduledTask {
                             log.info("Started processing PA updates for: "
                                     + progData.getProgId());
                             ProgData listings = transformer.transformToListingProgdata(progData);
-                            processor.process(listings, getTimeZone(fileData),Timestamp.of(fileToProcess.lastModified()));
+                            processor.process(listings, zone,lastModified);
                         }
 
                     } catch (NoSuchElementException e) {
-                        log.error("Failed to process " + fileData , e);
+                        log.error("Failed to process " + lastModified , e);
                     }
                 }
             }

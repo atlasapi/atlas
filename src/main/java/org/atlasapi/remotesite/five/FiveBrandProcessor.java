@@ -21,6 +21,8 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
@@ -143,7 +145,17 @@ public class FiveBrandProcessor {
         brand.setTitle(childValue(element, "title"));
         brand.setDescription(getDescription(element).valueOrNull());
         brand.setGenres(getGenres(element));
-        brand.setImage(getImage(element).valueOrNull());
+
+        Maybe<Image> imageMaybe = getImage(element);
+
+        if (imageMaybe.hasValue()) {
+            Image image = imageMaybe.requireValue();
+            brand.setImage(image.getCanonicalUri());
+            brand.setImages(ImmutableSet.of(image));
+        } else {
+            brand.setImage(null);
+        }
+
         brand.setMediaType(MediaType.VIDEO);
         brand.setSpecialization(specializationFrom(element));
 
@@ -208,13 +220,17 @@ public class FiveBrandProcessor {
         return genreMap.mapRecognised(ImmutableSet.of("http://www.five.tv/genres/" + element.getFirstChildElement("genre").getValue()));
     }
 
-    private Maybe<String> getImage(Element element) {
+    private Maybe<Image> getImage(Element element) {
         Elements imageElements = element.getFirstChildElement("images").getChildElements("image");
         if (imageElements.size() > 0) {
             String image = imageElements.get(0).getValue();
+
+            Image imageObj = new Image("http://" + image);
             if (!image.contains("api-images.channel5.com/images/default")) {
-                return Maybe.just(image);
+                imageObj.setType(ImageType.GENERIC_IMAGE_CONTENT_PLAYER);
+
             }
+            return Maybe.just(imageObj);
         }
 
         return Maybe.nothing();

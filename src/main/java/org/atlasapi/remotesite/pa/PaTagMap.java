@@ -19,7 +19,7 @@ import com.google.common.collect.ImmutableSet;
 public class PaTagMap {
 
     private final ImmutableMap<String, String> paTagMap;
-    private final String TOPIC = "gb:pa:stage:";
+    private final String TOPIC = "gb:pa:prod:";
 
     public PaTagMap() {
         ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
@@ -32,10 +32,8 @@ public class PaTagMap {
         mapBuilder.put("http://pressassociation.com/genres/1F1A", "indie");
         mapBuilder.put("http://pressassociation.com/genres/1600", "romance");
         mapBuilder.put("http://pressassociation.com/genres/1300", "scifi");
-        mapBuilder.put("http://pressassociation.com/genres/1400", "comedy");
         mapBuilder.put("http://pressassociation.com/genres/1000", "drama");
         mapBuilder.put("http://pressassociation.com/genres/1F19", "factual");
-        mapBuilder.put( "http://pressassociation.com/genres/4000", "sport");
         mapBuilder.put("http://pressassociation.com/genres/1F0A", "thriller");
         mapBuilder.put("http://pressassociation.com/genres/1F10", "war");
 
@@ -112,17 +110,13 @@ public class PaTagMap {
         // Comedy genre mapping
         mapBuilder.put("http://pressassociation.com/genres/1400", "comedy");
         mapBuilder.put("http://pressassociation.com/genres/1F01", "animated");
-        mapBuilder.put("http://pressassociation.com/genres/1600", "romcom");
         mapBuilder.put("http://pressassociation.com/genres/1F12", "sitcom-sketch");
         mapBuilder.put("http://pressassociation.com/genres/3F05", "stand-up");
 
         // Drama genre mapping
-        mapBuilder.put("http://pressassociation.com/genres/1000", "drama-soap");
         mapBuilder.put("http://pressassociation.com/genres/1100", "crime");
         mapBuilder.put("http://pressassociation.com/genres/1F17", "historical-period");
         mapBuilder.put("http://pressassociation.com/genres/1F07", "medical");
-        mapBuilder.put("http://pressassociation.com/genres/1600", "romance");
-        mapBuilder.put("http://pressassociation.com/genres/1300", "scifi");
         mapBuilder.put("http://pressassociation.com/genres/1500", "soap");
 
         // Entertainment genre mapping

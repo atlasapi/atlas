@@ -2,19 +2,24 @@ package org.atlasapi.remotesite.pa;
 
 import java.util.Set;
 
+import org.atlasapi.media.entity.Topic;
+import org.atlasapi.media.entity.TopicRef;
+
 import com.google.api.client.util.Sets;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 
 /** PA genre map for MetaBroadcast tags.
  *
  * This class is used in PaProgrammeProcessor for mapping the PA genres to
  * MetaBroadcast tags for the brand, episode and series content. This is done
- * so that we can use PA content in the prioritization algorithm. This further
- * would allow us to filter the PA content by the priority.
+ * so that we can use PA content in the content prioritization algorithm. This
+ * further would allow us to filter the PA content by the priority.
  */
 public class PaTagMap {
 
     private final ImmutableMap<String, String> paTagMap;
+    private final String TOPIC = "gb:pa:stage:";
 
     public PaTagMap() {
         ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
@@ -140,24 +145,42 @@ public class PaTagMap {
         paTagMap = mapBuilder.build();
     }
 
-    /** This methods maps PA content genres with MetaBroadcast tags.
+    /** This method maps PA content genres with MetaBroadcast tags.
      * This is done to get MetaBroadcast tags for a specific PA content. After that the
-     * PA content tags are added to the PA content tags field.
+     * PA content tags are added to the PA content topicRef field.
      * @param genres - PA content genres that are used for mapping with MetaBroadcast tags.
-     * @return set of MetaBroadcast tags for the PA content.
+     * @return set of MetaBroadcast tags as TopicRef objects for the PA content.
      */
-    public Set<String> map(Set<String> genres) {
+    public Set<TopicRef> map(Set<String> genres) {
         Set<String> tags = Sets.newHashSet();
         for (String genre : genres) {
             if (genre.contains("http://pressassociation.com/genres/")) {
                 tags.add(paTagMap.get(genre));
             }
         }
-
         // Checking if the tags set has only a one tag with the value - film, this means that it's action film.
         if (tags.size() == 1 && tags.contains("film")) {
             tags.add("action");
         }
-        return tags;
+        return getTopicRefFromTags(tags);
+    }
+
+    /** This method is used for creating a set of TopicRefs from mapped tags.
+     * This is done because we store MetaBroadcast tags as TopicRefs to the PA content.
+     * @param mappedTags - mapped tags for the PA content.
+     * @return set of MetaBroadcast tags as TopicRef objects for the PA content.
+     */
+    private Set<TopicRef> getTopicRefFromTags(Set<String> mappedTags) {
+        ImmutableSet<String> tags = ImmutableSet.copyOf(mappedTags);
+        if(tags.isEmpty()) {
+            return ImmutableSet.of();
+        }
+
+        ImmutableSet.Builder<TopicRef> topicRefBuilder = ImmutableSet.builder();
+        for (String tag : tags) {
+            topicRefBuilder.add(new TopicRef(new Topic(null, TOPIC + tag, tag), null, null, null));
+        }
+
+        return topicRefBuilder.build();
     }
 }

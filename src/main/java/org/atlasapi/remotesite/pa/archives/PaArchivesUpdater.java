@@ -42,7 +42,7 @@ public class PaArchivesUpdater extends ScheduledTask {
 
     private static final String SERVICE = "PA";
 
-    private static final DateTimeFormatter FILEDATETIME_FORMAT = DateTimeFormat.forPattern("yyyyMMdd-HH:mm").withZone(
+    private static final DateTimeFormatter FILEDATETIME_FORMAT = DateTimeFormat.forPattern("yyyyMMddHHmm").withZone(
             DateTimeZones.LONDON);
     private static final Pattern FILEDATETIME = Pattern.compile("^.*(\\d{12})_.+_tvarchive.xml$");
 
@@ -139,11 +139,10 @@ public class PaArchivesUpdater extends ScheduledTask {
             }
 
             public void afterUnmarshal(Object target, Object parent) {
-                if (target instanceof TvData) {
+                if (parent instanceof TvData) {
                     try {
-                        TvData tvData = (TvData) target;
-                        ArchiveUpdate archive = Iterables.getOnlyElement(tvData.getArchiveUpdate());
-                        for (org.atlasapi.remotesite.pa.archives.bindings.ProgData progData : archive.getProgData()) {
+                        ArchiveUpdate archiveUpdate = (ArchiveUpdate) target;
+                        for (org.atlasapi.remotesite.pa.archives.bindings.ProgData progData : archiveUpdate.getProgData()) {
                             log.info("Started processing PA updates for: "
                                     + progData.getProgId());
                             ProgData listings = transformer.transformToListingProgdata(progData);
@@ -159,8 +158,7 @@ public class PaArchivesUpdater extends ScheduledTask {
     }
 
     protected static DateTimeZone getTimeZone(String date) {
-        String timezoneDateString = date + "-11:00";
-        DateTime timezoneDateTime = FILEDATETIME_FORMAT.parseDateTime(timezoneDateString);
+        DateTime timezoneDateTime = FILEDATETIME_FORMAT.parseDateTime(date);
         DateTimeZone zone = timezoneDateTime.getZone();
         return DateTimeZone.forOffsetMillis(zone.getOffset(timezoneDateTime));
     }

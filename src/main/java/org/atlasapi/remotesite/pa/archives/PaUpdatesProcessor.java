@@ -26,9 +26,9 @@ public class PaUpdatesProcessor {
 
     public void process(ProgData progData, DateTimeZone zone, Timestamp timestamp) {
         try {
-            ContentHierarchyAndSummaries hierarchy = processor.process(progData, zone, timestamp);
-            Optional<Brand> brandOptional = hierarchy.getBrandSummary();
-            Optional<Series> seriesOptional = hierarchy.getSeriesSummary();
+            ContentHierarchyWithoutBroadcast hierarchy = processor.process(progData, zone, timestamp);
+            Optional<Brand> brandOptional = hierarchy.getBrand();
+            Optional<Series> seriesOptional = hierarchy.getSeries();
             if (brandOptional.isPresent()) {
                 contentWriter.createOrUpdate(brandOptional.get());
             }

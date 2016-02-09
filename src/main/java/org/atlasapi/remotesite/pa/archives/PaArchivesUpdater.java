@@ -38,9 +38,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
 import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
 
-public class PaArchivesUpdater extends ScheduledTask {
+public abstract class PaArchivesUpdater extends ScheduledTask {
 
-    private static final String SERVICE = "PA";
+    protected static final String SERVICE = "PA";
 
     private static final DateTimeFormatter FILEDATETIME_FORMAT = DateTimeFormat.forPattern("yyyyMMddHHmm").withZone(
             DateTimeZones.LONDON);
@@ -60,13 +60,7 @@ public class PaArchivesUpdater extends ScheduledTask {
         this.processor = checkNotNull(processor);
     }
 
-
-    @Override
-    protected void runTask() {
-        processFiles(dataStore.localArchivesFiles(Predicates.<File>alwaysTrue()));
-    }
-
-    private void processFiles(List<File> files) {
+    protected void processFiles(List<File> files) {
         UpdateProgress progress = UpdateProgress.START;
         try {
             Iterator<File> fileIter = files.iterator();

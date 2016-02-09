@@ -129,12 +129,33 @@ public class FiveBrandProcessor {
         String uri = getShowUri(id);
         Maybe<Identified> maybeBrand = contentResolver.findByCanonicalUris(ImmutableSet.of(uri)).getFirstValue();
 
+        Brand brand = createBrand(element);
+
         if (maybeBrand.hasValue()) {
-            return (Brand) maybeBrand.requireValue();
+            return mergeBrand((Brand) maybeBrand.requireValue(), brand);
         } else {
-            return createBrand(element);
+            return brand;
         }
 
+    }
+
+    private Brand mergeBrand(Brand current, Brand extracted) {
+
+        current.setCanonicalUri(extracted.getCanonicalUri());
+        current.setPublisher(extracted.getPublisher());
+        current.setCurie(extracted.getCurie());
+
+        current.setTitle(extracted.getTitle());
+        current.setDescription(extracted.getDescription());
+        current.setGenres(extracted.getGenres());
+
+        current.setImage(extracted.getImage());
+        current.setImages(extracted.getImages());
+
+        current.setMediaType(extracted.getMediaType());
+        current.setSpecialization(extracted.getSpecialization());
+
+        return current;
     }
 
     private Brand createBrand(Element element) {

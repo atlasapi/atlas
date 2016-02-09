@@ -282,7 +282,7 @@ public class FiveEpisodeProcessor {
             String image = imageElements.get(0).getValue();
 
             Image imageObj = new Image("http://" + image);
-            if (!image.contains("api-images.channel5.com/images/default")) {
+            if (image.contains("api-images.channel5.com/images/default")) {
                 imageObj.setType(ImageType.GENERIC_IMAGE_CONTENT_PLAYER);
 
             }

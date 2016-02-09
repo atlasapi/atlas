@@ -4,8 +4,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock.WriteLock;
 
 import javax.annotation.PostConstruct;
 
@@ -28,11 +26,12 @@ import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
-import org.atlasapi.remotesite.bt.channels.BtChannelDataUpdater;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.remotesite.pa.archives.PaArchivesUpdater;
+import org.atlasapi.remotesite.pa.archives.PaCompleteArchivesUpdater;
 import org.atlasapi.remotesite.pa.archives.PaProgDataUpdatesProcessor;
+import org.atlasapi.remotesite.pa.archives.PaRecentArchiveUpdater;
 import org.atlasapi.remotesite.pa.archives.PaUpdatesProcessor;
 import org.atlasapi.remotesite.pa.channels.PaChannelDataHandler;
 import org.atlasapi.remotesite.pa.channels.PaChannelGroupsIngester;
@@ -121,7 +120,8 @@ public class PaModule {
         scheduler.schedule(paFileUpdater().withName("PA File Updater"), RECENT_FILE_DOWNLOAD);
         scheduler.schedule(paCompleteUpdater().withName("PA Complete Updater"), COMPLETE_INGEST);
         scheduler.schedule(paRecentUpdater().withName("PA Recent Updater"), RECENT_FILE_INGEST);
-        scheduler.schedule(paArchivesUpdater().withName("PA Archives Updater"), RECENT_FILE_INGEST);
+        scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
+        scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed").withSource(PaCompleteUpdater.class));
     }
     
@@ -194,10 +194,17 @@ public class PaModule {
         return updater;
     }
 
-    @Bean PaArchivesUpdater paArchivesUpdater() {
+    @Bean PaArchivesUpdater paRecentArchivesUpdater() {
         PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
-        PaArchivesUpdater updater = new PaArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
+        PaArchivesUpdater updater = new PaRecentArchiveUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
+        return updater;
+    }
+
+    @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
+        PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
+        PaArchivesUpdater updater = new PaCompleteArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;
     }
     

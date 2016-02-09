@@ -43,7 +43,7 @@ public class PaArchivesUpdaterTest {
     @Mock
     private ResolvedContent resolvedContent;
     private PaUpdatesProcessor paUpdatesProcessor;
-    private PaArchivesUpdater updater;
+    private PaCompleteArchivesUpdater updater;
     private File file;
 
     @Before
@@ -53,7 +53,7 @@ public class PaArchivesUpdaterTest {
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
         PaProgDataUpdatesProcessor progProcessor = new PaProgrammeProcessor(writer,resolver,log);
         paUpdatesProcessor = new PaUpdatesProcessor(progProcessor, writer);
-        updater = new PaArchivesUpdater(store,resultStore,paUpdatesProcessor);
+        updater = new PaCompleteArchivesUpdater(store,resultStore,paUpdatesProcessor);
         when(store.localArchivesFiles(any(Predicate.class))).thenReturn(ImmutableList.of(file));
         when(store.copyForProcessing(file)).thenReturn(file);
     }

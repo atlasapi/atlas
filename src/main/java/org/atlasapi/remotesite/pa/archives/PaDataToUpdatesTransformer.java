@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.pa.archives;
 
 import java.util.List;
 
+import org.atlasapi.remotesite.pa.listings.bindings.Billings;
 import org.atlasapi.remotesite.pa.listings.bindings.Category;
 import org.atlasapi.remotesite.pa.listings.bindings.Actor;
 import org.atlasapi.remotesite.pa.listings.bindings.CastMember;
@@ -25,11 +26,25 @@ public class PaDataToUpdatesTransformer {
         Attr listingAttr = transformAttributes(archive.getAttr());
         listing.setAttr(listingAttr);
 
-        transformAndSetBillings(archive.getBillings(), listing);
-        transformAndSetStaffMembers(archive.getStaffMember(), listing);
-        transformAndSetCastMembers(archive.getCastMember(),listing);
-        transformAndSetCategories(archive.getCategory(), listing);
-        transformAndSetLinks(archive.getLinks(), listing);
+        if (archive.getBillings() != null) {
+            transformAndSetBillings(archive.getBillings(), listing);
+        }
+
+        if (archive.getStaffMember() != null) {
+            transformAndSetStaffMembers(archive.getStaffMember(), listing);
+        }
+
+        if (archive.getCastMember() != null) {
+            transformAndSetCastMembers(archive.getCastMember(),listing);
+        }
+
+        if (archive.getCategory() != null) {
+            transformAndSetCategories(archive.getCategory(), listing);
+        }
+
+        if (archive.getLinks() != null) {
+            transformAndSetLinks(archive.getLinks(), listing);
+        }
 
         listing.setCertificate(archive.getCertificate());
         listing.setColour(archive.getColour());
@@ -57,35 +72,41 @@ public class PaDataToUpdatesTransformer {
         listing.setStarRating(archive.getStarRating());
         listing.setTitle(archive.getTitle());
 
-        Warning warning = new Warning();
-        warning.setType(archive.getWarning().getType());
-        warning.setvalue(archive.getWarning().getvalue());
-        listing.setWarning(warning);
+        if (archive.getWarning() != null) {
+            Warning warning = new Warning();
+            warning.setType(archive.getWarning().getType());
+            warning.setvalue(archive.getWarning().getvalue());
+            listing.setWarning(warning);
+        }
 
-        Season season = new Season();
-        season.setId(archive.getSeason().getId());
-        season.setNumber(archive.getSeason().getNumber());
-        season.setSeasonSummary(archive.getSeason().getSeasonSummary());
-        season.setSeasonTitle(archive.getSeason().getSeasonTitle());
-        listing.setSeason(season);
+        if (archive.getSeason() != null) {
+            Season season = new Season();
+            season.setId(archive.getSeason().getId());
+            season.setNumber(archive.getSeason().getNumber());
+            season.setSeasonSummary(archive.getSeason().getSeasonSummary());
+            season.setSeasonTitle(archive.getSeason().getSeasonTitle());
+            listing.setSeason(season);
+        }
 
-        RtCategory rtCategory = new RtCategory();
-        rtCategory.setMaincat(archive.getRtCategory().getMaincat());
-        rtCategory.setSubcat(archive.getRtCategory().getSubcat());
-        listing.setRtCategory(rtCategory);
+        if (archive.getRtCategory() != null) {
+            RtCategory rtCategory = new RtCategory();
+            rtCategory.setMaincat(archive.getRtCategory().getMaincat());
+            rtCategory.setSubcat(archive.getRtCategory().getSubcat());
+            listing.setRtCategory(rtCategory);
+        }
 
         return listing;
     }
 
     private void transformAndSetLinks(org.atlasapi.remotesite.pa.archives.bindings.Links links, ProgData listing) {
-
+        Links listingLinks = new Links();
         for (org.atlasapi.remotesite.pa.archives.bindings.Link link : links.getLink()) {
             Link listingLink = new Link();
             listingLink.setType(link.getType());
             listingLink.setvalue(link.getvalue());
-            listing.getLinks().getLink().add(listingLink);
+            listingLinks.getLink().add(listingLink);
         }
-
+        listing.setLinks(listingLinks);
     }
 
     private void transformAndSetCategories(List<org.atlasapi.remotesite.pa.archives.bindings.Category> categories, ProgData listing) {
@@ -160,14 +181,19 @@ public class PaDataToUpdatesTransformer {
     }
 
     private void transformAndSetBillings(org.atlasapi.remotesite.pa.archives.bindings.Billings billings, ProgData progdata) {
+        if (billings.getBilling() != null) {
 
-        for (org.atlasapi.remotesite.pa.archives.bindings.Billing billing : billings.getBilling()) {
-            Billing listingBilling = new Billing();
-            listingBilling.setReviewerInitials(billing.getReviewerInitials());
-            listingBilling.setReviewerName(billing.getReviewerName());
-            listingBilling.setType(billing.getType());
-            listingBilling.setvalue(billing.getvalue());
-            progdata.getBillings().getBilling().add(listingBilling);
+            Billings listingBillings = new Billings();
+            for (org.atlasapi.remotesite.pa.archives.bindings.Billing billing : billings.getBilling()) {
+                Billing listingBilling = new Billing();
+                listingBilling.setReviewerInitials(billing.getReviewerInitials());
+                listingBilling.setReviewerName(billing.getReviewerName());
+                listingBilling.setType(billing.getType());
+                listingBilling.setvalue(billing.getvalue());
+                listingBillings.getBilling().add(listingBilling);
+            }
+
+            progdata.setBillings(listingBillings);
         }
 
     }

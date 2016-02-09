@@ -41,7 +41,7 @@ public class FiveModule {
     
     @Bean
     public FiveUpdater fiveUpdater() {
-        Integer soTimeout = Configurer.get("five.timeout.socket", "180").toInt();
+        Integer soTimeout = Configurer.get("five.timeout.socket", "300").toInt();
         return new FiveUpdater(contentWriter, channelResolver, contentResolver, 
                 fiveLocationPolicyIds(), soTimeout);
     }

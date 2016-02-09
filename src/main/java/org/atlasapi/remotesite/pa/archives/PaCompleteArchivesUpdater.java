@@ -18,7 +18,7 @@ public class PaCompleteArchivesUpdater extends PaArchivesUpdater {
 
     @Override
     public void runTask() {
-        this.processFiles(fileManager.localTvDataFiles(Predicates.<File>alwaysTrue()));
+        this.processFiles(fileManager.localArchivesFiles(Predicates.<File>alwaysTrue()));
     }
 
 }

@@ -22,7 +22,7 @@ public class PaRecentArchiveUpdater extends PaArchivesUpdater {
     @Override
     public void runTask() {
         final Long since = new DateTime(DateTimeZones.UTC).minusDays(10).getMillis();
-        this.processFiles(fileManager.localTvDataFiles(new UnprocessedFileFilter(uploadResultStore, SERVICE, since)));
+        this.processFiles(fileManager.localArchivesFiles(new UnprocessedFileFilter(uploadResultStore, SERVICE, since)));
     }
 
 }

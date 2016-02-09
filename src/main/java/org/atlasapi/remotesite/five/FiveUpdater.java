@@ -10,6 +10,7 @@ import nu.xom.Element;
 import nu.xom.Elements;
 
 import org.apache.commons.httpclient.NoHttpResponseException;
+import org.apache.http.client.HttpResponseException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -102,7 +103,7 @@ public class FiveUpdater extends ScheduledTask {
             Timestamp end = timestamper.timestamp();
             log.info("Five update completed in " + start.durationTo(end).getStandardSeconds() + " seconds");
         }
-        catch (NoHttpResponseException e) {
+        catch (HttpResponseException e) {
             Timestamp end = timestamper.timestamp();
             log.info("Five update failed in " + start.durationTo(end).getStandardSeconds() + " seconds");
             log.error("No response for target server. Could be due to timeout issue.", e);

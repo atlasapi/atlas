@@ -141,7 +141,6 @@ public class FiveBrandProcessor {
 
     private Brand mergeBrand(Brand current, Brand extracted) {
 
-        current.setCanonicalUri(extracted.getCanonicalUri());
         current.setPublisher(extracted.getPublisher());
         current.setCurie(extracted.getCurie());
 

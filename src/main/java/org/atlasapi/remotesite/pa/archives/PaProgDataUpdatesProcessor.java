@@ -9,6 +9,6 @@ import org.joda.time.DateTimeZone;
 
 public interface PaProgDataUpdatesProcessor {
 
-     ContentHierarchyAndSummaries process(ProgData progData, DateTimeZone zone, Timestamp updatedAt);
+     ContentHierarchyWithoutBroadcast process(ProgData progData, DateTimeZone zone, Timestamp updatedAt);
 
 }

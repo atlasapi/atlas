@@ -24,6 +24,16 @@ import org.atlasapi.remotesite.btvod.contentgroups.BtVodEntryMatchingPredicates;
 import org.atlasapi.remotesite.btvod.portal.PortalClient;
 import org.atlasapi.remotesite.btvod.portal.XmlPortalClient;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
+
+import com.metabroadcast.common.http.SimpleHttpClientBuilder;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,15 +41,6 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.http.SimpleHttpClientBuilder;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
 
 @Configuration
 public class BtVodModule {
@@ -185,7 +186,6 @@ public class BtVodModule {
                 Publisher.BT_VOD,
                 oldContentDeactivator(Publisher.BT_VOD),
                 noImageExtractor(),
-                noImageExtractor(),
                 brandUriExtractor(URI_PREFIX),
                 newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam),
                 ImmutableSet.of(
@@ -288,7 +288,6 @@ public class BtVodModule {
                 btVodContentGroupUpdater(publisher, uriPrefix, feedBaseUrl, feedQParam, contentGroupsAndCritera),
                 publisher,
                 oldContentDeactivator(publisher),
-                brandImageExtractor(btPortalBaseUri, baseUrlForItemLookup, feedNameForItemLookup),
                 itemImageExtractor(),
                 brandUriExtractor(uriPrefix),
                 newFeedContentMatchingPredicate(baseUrlForItemLookup, feedNameForItemLookup, feedQParam),
@@ -383,17 +382,6 @@ public class BtVodModule {
                 String.format(BT_VOD_GENRE_NAMESPACE_FORMAT, env, conf),
                 String.format(BT_VOD_KEYWORD_NAMESPACE_FORMAT, env, conf)
         );
-    }
-    
-    public DerivingFromSeriesBrandImageExtractor brandImageExtractor(String baseUrl,
-            String mpxFeedBaseUrl, String mpxFeedName) {
-        return new DerivingFromSeriesBrandImageExtractor(
-                    brandUriExtractor(baseUrl), 
-                    seriesUriExtractor(baseUrl), 
-                    itemImageExtractor(), 
-                    new BtVodMpxBackedEpisodeNumberExtractor(
-                                mpxVodClient(mpxFeedBaseUrl, mpxFeedName, null))
-                   );
     }
     
     public ImageExtractor itemImageExtractor() {

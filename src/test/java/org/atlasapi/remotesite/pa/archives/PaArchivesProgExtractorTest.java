@@ -103,7 +103,7 @@ public class PaArchivesProgExtractorTest {
         DateTime dateTime = DateTime.now();
         ProgData archives = generateArchiveProgdata();
         org.atlasapi.remotesite.pa.listings.bindings.ProgData listing = transformer.transformToListingProgdata(archives);
-        ContentHierarchyWithoutBroadcast hierarchy = progProcessor.process(listing, DateTimeZone.UTC, Timestamp.of(dateTime));
+        ContentHierarchyWithoutBroadcast hierarchy = progProcessor.process(listing, DateTimeZone.UTC, Timestamp.of(dateTime)).get();
         assertThat(hierarchy.getBrand(), is(Optional.<Brand>absent()));
         assertThat(hierarchy.getSeries(), is(Optional.<Series>absent()));
         Item item = hierarchy.getItem();

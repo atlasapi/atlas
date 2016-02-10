@@ -26,18 +26,21 @@ public class PaUpdatesProcessor {
 
     public void process(ProgData progData, DateTimeZone zone, Timestamp timestamp) {
         try {
-            ContentHierarchyWithoutBroadcast hierarchy = processor.process(progData, zone, timestamp);
-            Optional<Brand> brandOptional = hierarchy.getBrand();
-            Optional<Series> seriesOptional = hierarchy.getSeries();
-            if (brandOptional.isPresent()) {
-                contentWriter.createOrUpdate(brandOptional.get());
+            Optional<ContentHierarchyWithoutBroadcast> hierarchy = processor.process(progData, zone, timestamp);
+            if (hierarchy.isPresent()) {
+                Optional<Brand> brandOptional = hierarchy.get().getBrand();
+                Optional<Series> seriesOptional = hierarchy.get().getSeries();
+                if (brandOptional.isPresent()) {
+                    contentWriter.createOrUpdate(brandOptional.get());
+                }
+
+                if (seriesOptional.isPresent()) {
+                    contentWriter.createOrUpdate(seriesOptional.get());
+                }
+
+                contentWriter.createOrUpdate(hierarchy.get().getItem());
             }
 
-            if (seriesOptional.isPresent()) {
-                contentWriter.createOrUpdate(seriesOptional.get());
-            }
-
-            contentWriter.createOrUpdate(hierarchy.getItem());
         } catch (Exception e) {
             log.error(String.format("Error processing prog id %s", progData.getProgId()));
         }

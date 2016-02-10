@@ -12,6 +12,8 @@ import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.pa.PaBaseProgrammeUpdater.PaChannelData;
 import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
+
+import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -51,14 +53,15 @@ public class PaChannelProcessor {
                 String programmeLock = lockIdentifier(programme);
                 lock(currentlyProcessing, programmeLock);
                 try {
-                    
-                    ContentHierarchyAndSummaries hierarchy = processor.process(programme, channel, 
+
+                    Optional<ContentHierarchyAndSummaries> possibleHierarchy = processor.process(programme, channel,
                             channelData.zone(), channelData.lastUpdated());
-                    if(hierarchy != null) {
+                    if (possibleHierarchy.isPresent()) {
+                        ContentHierarchyAndSummaries hierarchy = possibleHierarchy.get();
                         contentBuffer.add(hierarchy);
                         hierarchiesAndSummaries.add(hierarchy);
-	                    broadcasts.add(new ItemRefAndBroadcast(hierarchy.getItem(), hierarchy.getBroadcast()));
-	                    acceptableBroadcastIds.put(hierarchy.getBroadcast().getSourceId(), hierarchy.getItem().getCanonicalUri());
+                        broadcasts.add(new ItemRefAndBroadcast(hierarchy.getItem(), hierarchy.getBroadcast()));
+                        acceptableBroadcastIds.put(hierarchy.getBroadcast().getSourceId(), hierarchy.getItem().getCanonicalUri());
                     }
                     processed++;
                 } catch (Exception e) {

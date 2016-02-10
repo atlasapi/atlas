@@ -38,8 +38,12 @@ public class NitroImageExtractor
     public Image extract(com.metabroadcast.atlas.glycerin.model.Brand.Images.Image source) {
         checkNotNull(source, "null image source");
         checkNotNull(source.getTemplateUrl(), "null image template");
+        String url = source.getTemplateUrl().replace("$recipe", recipe);
 
-        String url = "http://" + source.getTemplateUrl().replace("$recipe", recipe);
+        if(!url.contains("http://")) {
+            url = "http://" + url ;
+        }
+
         Image image = new Image(url);
         image.setWidth(width);
         image.setHeight(height);

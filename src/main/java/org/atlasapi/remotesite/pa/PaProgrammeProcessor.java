@@ -25,7 +25,6 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.util.ItemAndBroadcast;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -92,12 +91,9 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     
     private final GenreMap genreMap = new PaGenreMap();
 
-    private PaTagMap paTagMap;
-
     public PaProgrammeProcessor(ContentWriter contentWriter, ContentResolver contentResolver, AdapterLog log) {
         this.contentResolver = contentResolver;
         this.log = log;
-        this.paTagMap = new PaTagMap();
     }
 
     @Override
@@ -298,9 +294,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         setCertificate(progData, brand);
         setGenres(progData, brand);
 
-        // Need to fix issue for setting the TopicRefs as currently throwing NPE.
-        //setTopicRefs(progData, brand);
-
         if (isClosedBrand(Optional.of(brand))) {
             brand.setScheduleOnly(true);
         }
@@ -430,9 +423,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         setCertificate(progData, series);
         setGenres(progData, series);
 
-        // Need to fix issue for setting the TopicRefs as currently throwing NPE.
-        //setTopicRefs(progData, series);
-
         series.setLastUpdated(updatedAt.toDateTimeUTC());
 
         return Optional.of(series);
@@ -517,8 +507,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         episode.setSpecialization(specialization(progData, channel));
         setGenres(progData, episode);
 
-        // Need to fix issue for setting the TopicRefs as currently throwing NPE.
-        //setTopicRefs(progData, episode);
         if (progData.getCountry() != null) {
             episode.setCountriesOfOrigin(countryMap.parseCountries(progData.getCountry()));
         }
@@ -865,11 +853,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             return value.equalsIgnoreCase(YES);
         }
         return null;
-    }
-
-    private void setTopicRefs(ProgData progData, Content content) {
-        Set<TopicRef> tagsFromGenres = paTagMap.map(content.getGenres());
-        content.setTopicRefs(tagsFromGenres);
     }
 
 }

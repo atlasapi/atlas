@@ -267,7 +267,6 @@ public class SwebleHelper {
     public static ImmutableList<ListItemResult> extractList(AstNode node) {
         ImmutableList.Builder<ListItemResult> builder = ImmutableList.builder();
         String unparsed = unparse(node);
-        unparsed = normalize(unparsed);
         unparsed = plainlistTemplatePattern.matcher(unparsed).replaceAll("");  // Basically since {{plainlist}} is just a wrapper for a normal itemization, we can throw it away.
         unparsed = stupidBracesPattern.matcher(unparsed).replaceAll("");       // See: http://en.wikipedia.org/wiki/Template:Plainlist
         new ListVisitor(builder).go(parse(unparsed));
@@ -326,6 +325,7 @@ public class SwebleHelper {
             if (name.isEmpty() || name.startsWith("(")) {  // Things that start with brackets are probably extraneous annotations, not names -- skip them.
                 return;
             }
+            name = normalize(name);
             builder.add(new ListItemResult(name, Optional.fromNullable(linkTargetTitle)));
         }
 

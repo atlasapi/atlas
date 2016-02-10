@@ -1,11 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.when;
-
 import java.util.Map;
 
 import org.atlasapi.media.entity.Brand;
@@ -17,16 +11,22 @@ import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicate
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Matchers;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodBrandExtractorTest {
@@ -71,15 +71,12 @@ public class BtVodBrandExtractorTest {
             BT_VOD_CHANNEL_ID_NAMESPACE
     );
 
-    private final BtVodBrandExtractor brandExtractor
-            = new BtVodBrandExtractor(
+    private final BtVodBrandExtractor brandExtractor = new BtVodBrandExtractor(
             PUBLISHER,
             contentListener,
             Sets.<String>newHashSet(),
             describedFieldsExtractor,
-            new NoImageExtractor(),
             brandUriExtractor
-
     );
     
     @Test

@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -9,13 +7,16 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Maps;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Create a {@link Brand} from a {@link BtVodEntry}. This may either be
@@ -37,18 +38,16 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final BtVodContentListener listener;
     private final Set<String> processedRows;
     private final BtVodDescribedFieldsExtractor describedFieldExtractor;
-    private final BrandImageExtractor brandImageExtractor;
     private final BrandUriExtractor brandUriExtractor;
     private UpdateProgress progress = UpdateProgress.START;
+
     public BtVodBrandExtractor(
             Publisher publisher,
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldExtractor,
-            BrandImageExtractor brandImageExtractor,
             BrandUriExtractor brandUriExtractor
     ) {
-        this.brandImageExtractor = checkNotNull(brandImageExtractor);
         this.listener = checkNotNull(listener);
         this.publisher = checkNotNull(publisher);
         this.processedRows = checkNotNull(processedRows);
@@ -122,7 +121,6 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
         brand.setAliases(describedFieldExtractor.aliasesFrom(row));
         brand.setGenres(describedFieldExtractor.btGenreStringsFrom(row));
         brand.setSpecialization(Specialization.TV);
-        brand.setImages(brandImageExtractor.imagesFor(row));
 
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, brand);
         brand.addTopicRefs(describedFieldExtractor.topicsFrom(vodEntryAndContent));

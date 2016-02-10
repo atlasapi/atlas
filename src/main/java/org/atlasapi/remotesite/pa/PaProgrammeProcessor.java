@@ -297,7 +297,9 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         brand.setDescription(Strings.emptyToNull(progData.getSeriesSynopsis()));
         setCertificate(progData, brand);
         setGenres(progData, brand);
-        setTopicRefs(progData, brand);
+
+        // Need to fix issue for setting the TopicRefs as currently throwing NPE.
+        //setTopicRefs(progData, brand);
 
         if (isClosedBrand(Optional.of(brand))) {
             brand.setScheduleOnly(true);
@@ -427,7 +429,9 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         series.setPublisher(Publisher.PA);
         setCertificate(progData, series);
         setGenres(progData, series);
-        setTopicRefs(progData, series);
+
+        // Need to fix issue for setting the TopicRefs as currently throwing NPE.
+        //setTopicRefs(progData, series);
 
         series.setLastUpdated(updatedAt.toDateTimeUTC());
 
@@ -512,7 +516,9 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         episode.setMediaType(channel.getMediaType());
         episode.setSpecialization(specialization(progData, channel));
         setGenres(progData, episode);
-        setTopicRefs(progData, episode);
+
+        // Need to fix issue for setting the TopicRefs as currently throwing NPE.
+        //setTopicRefs(progData, episode);
         if (progData.getCountry() != null) {
             episode.setCountriesOfOrigin(countryMap.parseCountries(progData.getCountry()));
         }

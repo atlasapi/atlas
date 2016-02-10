@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 import java.util.Set;
 
@@ -13,14 +11,17 @@ import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.common.scheduling.ScheduledTask;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.scheduling.ScheduledTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class BtVodUpdater extends ScheduledTask {
@@ -34,7 +35,6 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodContentGroupUpdater contentGroupUpdater;
     private final BtVodOldContentDeactivator oldContentDeactivator;
     private final ImageExtractor imageExtractor;
-    private final BrandImageExtractor brandImageExtractor;
     private final BrandUriExtractor brandUriExtractor;
     private final BtVodContentMatchingPredicate newFeedContentMatchingPredicate;
     private final Set<Topic> topicsToPropagateToParent;
@@ -53,7 +53,6 @@ public class BtVodUpdater extends ScheduledTask {
             BtVodContentGroupUpdater contentGroupUpdater,
             Publisher publisher,
             BtVodOldContentDeactivator oldContentDeactivator,
-            BrandImageExtractor brandImageExtractor,
             ImageExtractor imageExtractor,
             BrandUriExtractor brandUriExtractor,
             BtVodContentMatchingPredicate newFeedContentMatchingPredicate,
@@ -75,7 +74,6 @@ public class BtVodUpdater extends ScheduledTask {
         this.publisher = checkNotNull(publisher);
         this.contentGroupUpdater = checkNotNull(contentGroupUpdater);
         this.oldContentDeactivator = checkNotNull(oldContentDeactivator);
-        this.brandImageExtractor = checkNotNull(brandImageExtractor);
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.imageExtractor = checkNotNull(imageExtractor);
         this.seriesUriExtractor = checkNotNull(seriesUriExtractor);
@@ -108,8 +106,6 @@ public class BtVodUpdater extends ScheduledTask {
         ProgressReporter reporter = new ProgressReporter();
 
         try {
-            extractBrandImages(brandImageExtractor, reporter);
-
             BtVodBrandExtractor brandExtractor = extractBrands(
                     listeners, processedRows, reporter
             );
@@ -149,16 +145,6 @@ public class BtVodUpdater extends ScheduledTask {
         }
     }
 
-    private void extractBrandImages(BrandImageExtractor brandImageExtractor,
-            ProgressReporter reporter) throws IOException {
-        reporter.updateBrandImagesExtractStatus(ProgressReporter.IN_PROGRESS);
-
-        brandImageExtractor.start();
-        vodData.processData(brandImageExtractor);
-
-        reporter.updateBrandImagesExtractStatus(ProgressReporter.DONE);
-    }
-
     private BtVodBrandExtractor extractBrands(MultiplexingVodContentListener listeners,
             Set<String> processedRows, ProgressReporter reporter) throws IOException {
         reporter.updateBrandExtractStatus(ProgressReporter.IN_PROGRESS);
@@ -168,7 +154,6 @@ public class BtVodUpdater extends ScheduledTask {
                 listeners,
                 processedRows,
                 describedFieldsExtractor,
-                brandImageExtractor,
                 brandUriExtractor
         );
 
@@ -370,7 +355,6 @@ public class BtVodUpdater extends ScheduledTask {
         public static final String IN_PROGRESS = "[IN PROGRESS]";
         public static final String DONE = "[DONE]";
 
-        private String brandImagesExtractStatus = TODO;
         private String brandExtractStatus = TODO;
         private String collectionExtractStatus = TODO;
         private String explicitSeriesExtractStatus = TODO;
@@ -378,11 +362,6 @@ public class BtVodUpdater extends ScheduledTask {
         private String itemExtractStatus = TODO;
         private String contentWritingStatus = TODO;
         private String contentGroupWritingStatus = TODO;
-
-        public void updateBrandImagesExtractStatus(String brandImagesExtractStatus) {
-            this.brandImagesExtractStatus = brandImagesExtractStatus;
-            report();
-        }
 
         public void updateBrandExtractStatus(String brandExtractStatus) {
             this.brandExtractStatus = brandExtractStatus;
@@ -422,15 +401,13 @@ public class BtVodUpdater extends ScheduledTask {
         public void report() {
             reportStatus(
                     String.format(
-                            "Brand images extract %s, "
-                                    + "Brand extract %s, "
+                            "Brand extract %s, "
                                     + "Collection extract %s, "
                                     + "Explicit series extract %s, "
                                     + "Synthesized series extract %s, "
                                     + "Item extract %s, "
                                     + "Content writing %s, "
                                     + "Content group writing %s",
-                            brandImagesExtractStatus,
                             brandExtractStatus,
                             collectionExtractStatus,
                             explicitSeriesExtractStatus,

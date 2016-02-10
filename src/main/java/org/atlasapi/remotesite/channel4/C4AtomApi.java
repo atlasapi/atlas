@@ -1,15 +1,24 @@
 package org.atlasapi.remotesite.channel4;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
+import com.google.common.base.Preconditions;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.ImmutableBiMap;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
+import com.metabroadcast.common.intl.Country;
+import com.sun.syndication.feed.atom.Entry;
+import com.sun.syndication.feed.atom.Feed;
+import com.sun.syndication.feed.atom.Link;
 import org.atlasapi.media.TransportType;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Platform;
@@ -18,17 +27,11 @@ import org.jdom.Namespace;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
-import com.google.common.base.Preconditions;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.BiMap;
-import com.google.common.collect.ImmutableBiMap;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.metabroadcast.common.intl.Country;
-import com.sun.syndication.feed.atom.Entry;
-import com.sun.syndication.feed.atom.Feed;
-import com.sun.syndication.feed.atom.Link;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class C4AtomApi {
 	
@@ -63,7 +66,7 @@ public class C4AtomApi {
 
 
 	private static final Pattern IMAGE_PATTERN = Pattern.compile("(http.+?)\\d+x\\d+(\\.[a-zA-Z]+)");
-	
+
 	private static final String IMAGE_SIZE = "625x352";
 	private static final String THUMBNAIL_SIZE = "200x113";
 	
@@ -89,10 +92,27 @@ public class C4AtomApi {
 		if (! Strings.isNullOrEmpty(anImage)) {
 			Matcher matcher = IMAGE_PATTERN.matcher(anImage);
 			if (matcher.matches()) {
+                String url = matcher.group(1) + IMAGE_SIZE + matcher.group(2);
+				Image image = new Image(url);
+
+                List<String> genericImageUrlList = createGenerateImageUrlList();
+
+				if(genericImageUrlList.contains(url)){
+					image.setType(ImageType.GENERIC_IMAGE_CONTENT_PLAYER);
+				}
 				content.setThumbnail(matcher.group(1) + THUMBNAIL_SIZE + matcher.group(2));
-				content.setImage((matcher.group(1) + IMAGE_SIZE + matcher.group(2)));
+				content.setImages(ImmutableSet.of(image));
 			}
 		}
+
+
+		for(Image image : content.getImages()) {
+			if(image.getType() != ImageType.GENERIC_IMAGE_CONTENT_PLAYER) {
+				content.setImage(image.getCanonicalUri());
+				return;
+			}
+		}
+
 	}
 
 	public static String canonicaliseEpisodeIdentifier(String uri) {
@@ -300,4 +320,9 @@ public class C4AtomApi {
 		}
 		return location;
 	}
+
+    private static List<String> createGenerateImageUrlList() {
+        //Update this if any generic images for C4 is found.
+        return ImmutableList.of();
+    }
 }

@@ -9,6 +9,7 @@ import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
 
+import org.apache.commons.httpclient.NoHttpResponseException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -92,16 +93,24 @@ public class FiveUpdater extends ScheduledTask {
     
     @Override
     public void runTask() {
+        Timestamp start = timestamper.timestamp();
         try {
-            Timestamp start = timestamper.timestamp();
             log.info("Five update started from " + BASE_API_URL);
             Document document = streamHttpClient.get(new SimpleHttpRequest<Document>(BASE_API_URL + "/shows", TRANSFORMER));
             process(document.getRootElement().getFirstChildElement("shows").getChildElements());
-            
+
             Timestamp end = timestamper.timestamp();
             log.info("Five update completed in " + start.durationTo(end).getStandardSeconds() + " seconds");
         }
+        catch (NoHttpResponseException e) {
+            Timestamp end = timestamper.timestamp();
+            log.info("Five update failed in " + start.durationTo(end).getStandardSeconds() + " seconds");
+            log.error("No response for target server. Could be due to timeout issue.", e);
+            Throwables.propagate(e);
+        }
         catch (Exception e) {
+            Timestamp end = timestamper.timestamp();
+            log.info("Five update failed in " + start.durationTo(end).getStandardSeconds() + " seconds");
             log.error("Exception when processing shows document",e);
             Throwables.propagate(e);
         }

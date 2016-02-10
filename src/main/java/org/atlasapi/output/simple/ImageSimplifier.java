@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.output.Annotation;
 
 
@@ -19,6 +20,7 @@ public class ImageSimplifier extends IdentifiedModelSimplifier<Image, org.atlasa
         if (image.getType() != null) {
             simpleImage.setImageType(image.getType().getName());
         }
+
         if (image.getColor() != null) {
             simpleImage.setColor(image.getColor().getName());
         }

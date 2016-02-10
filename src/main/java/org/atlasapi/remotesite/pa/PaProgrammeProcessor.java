@@ -101,10 +101,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     @Override
-    public ContentHierarchyAndSummaries process(ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
+    public Optional<ContentHierarchyAndSummaries> process(ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
         try {
             if (! Strings.isNullOrEmpty(progData.getSeriesId()) && IGNORED_BRANDS.contains(progData.getSeriesId())) {
-                return null;
+                return Optional.absent();
             }
 
             Optional<Brand> possibleBrand = getBrand(progData, channel, updatedAt);
@@ -127,20 +127,20 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             item.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
             item.setLastUpdated(updatedAt.toDateTimeUTC());
 
-            return new ContentHierarchyAndSummaries(possibleBrand, possibleSeries, item, itemAndBroadcast.getBroadcast().requireValue(),
-                    Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary));
+            return Optional.of(new ContentHierarchyAndSummaries(possibleBrand, possibleSeries, item, itemAndBroadcast.getBroadcast().requireValue(),
+                    Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary)));
         } catch (Exception e) {
             e.printStackTrace();
             log.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
         }
-        return null;
+        return Optional.absent();
     }
 
     @Override
-    public ContentHierarchyWithoutBroadcast process(ProgData progData, DateTimeZone zone, Timestamp updatedAt) {
+    public Optional<ContentHierarchyWithoutBroadcast> process(ProgData progData, DateTimeZone zone, Timestamp updatedAt) {
         try {
             if (! Strings.isNullOrEmpty(progData.getSeriesId()) && IGNORED_BRANDS.contains(progData.getSeriesId())) {
-                return null;
+                return Optional.absent();
             }
 
 
@@ -162,12 +162,11 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             item.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
             item.setLastUpdated(updatedAt.toDateTimeUTC());
 
-            return new ContentHierarchyWithoutBroadcast(Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary), item);
+            return Optional.of(new ContentHierarchyWithoutBroadcast(Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary), item));
         } catch (Exception e) {
-            e.printStackTrace();
             log.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
         }
-        return null;
+        return Optional.absent();
     }
 
     private Boolean isGenericDescription(ProgData progData) {
@@ -500,7 +499,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         //currently Welsh channels have Welsh titles/descriptions 
         // which flip the English ones, resulting in many writes. We'll only take the Welsh title if we don't
     	// already have a title from another channel
-        if (episode.getTitle() == null || (!channel.getUri().contains("wales"))) {
+        if (episode.getTitle() == null || !channel.getUri().contains("wales")) {
             if (progData.getEpisodeTitle() != null) {
                 episode.setTitle(progData.getEpisodeTitle());
             } else {
@@ -568,20 +567,18 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     private void setDescription(ProgData progData, Item item, Channel channel) {
         if (progData.getBillings() != null) {
             for (Billing billing : progData.getBillings().getBilling()) {
-                if((item.getDescription() == null || (channel !=null && !channel.getUri().contains("wales")))
-                        && billing.getType().equals("synopsis")) {
+                boolean channelContainsWales = channel !=null && !channel.getUri().contains("wales");
+
+                if((item.getDescription() == null || !channelContainsWales) && billing.getType().equals("synopsis")) {
                     item.setDescription(billing.getvalue());
                 }
-                if ((item.getShortDescription() == null || (channel !=null && !channel.getUri().contains("wales")))
-                        && billing.getType().equals("pa_detail1")) {
+                if ((item.getShortDescription() == null || !channelContainsWales) && billing.getType().equals("pa_detail1")) {
                     item.setShortDescription(billing.getvalue());
                 }
-                if ((item.getMediumDescription() == null || (channel !=null && !channel.getUri().contains("wales")))
-                        && billing.getType().equals("pa_detail2")) {
+                if ((item.getMediumDescription() == null || !channelContainsWales) && billing.getType().equals("pa_detail2")) {
                     item.setMediumDescription(billing.getvalue());
                 }
-                if ((item.getLongDescription() == null || (channel !=null && !channel.getUri().contains("wales")))
-                        && billing.getType().equals("pa_detail3")) {
+                if ((item.getLongDescription() == null || !channelContainsWales) && billing.getType().equals("pa_detail3")) {
                     item.setLongDescription(billing.getvalue());
                 }
             }

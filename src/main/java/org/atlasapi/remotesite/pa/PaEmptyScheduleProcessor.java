@@ -8,6 +8,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
+
+import com.google.common.base.Optional;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
@@ -27,12 +29,12 @@ public class PaEmptyScheduleProcessor implements PaProgDataProcessor {
     }
 
     @Override
-    public ContentHierarchyAndSummaries process(ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
+    public Optional<ContentHierarchyAndSummaries> process(ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
         if (emptySlot(progData, channel, zone)) {
             return delegate.process(progData, channel, zone, updatedAt);
         }
         else {
-        	return null;
+        	return Optional.absent();
         }
     }
     

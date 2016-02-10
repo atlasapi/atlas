@@ -44,7 +44,7 @@ public class ContentFactory {
         checkShowType(showType);
         
         Class<? extends Content> clazz = showTypeToClass.get(showType);
-        return content.getClass().isAssignableFrom(clazz);
+        return content.getClass().equals(clazz);
     }
 
     private static void checkShowType(RoviShowType showType) {

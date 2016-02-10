@@ -1,6 +1,5 @@
 package org.atlasapi.remotesite.rovi.processing;
 
-import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.remotesite.rovi.RoviCanonicalUriGenerator.canonicalUriForProgram;
 
@@ -57,16 +56,19 @@ public class RoviProgramLineIngestor extends RoviActionLineIngestor<RoviProgramL
     }
 
     @Override
-    protected void populateContent(Content content, RoviProgramLine parsedLine) throws IndexAccessException {
-        // Breaking if the type of the program is different from the one we already have in the database
-        ensureContentMatchesShowType(content, parsedLine);
+    protected Content populateContent(Content content, RoviProgramLine parsedLine) throws IndexAccessException {
+        RoviShowType showType = parsedLine.getShowType().get();
+        
+        if (!ContentFactory.hasCorrectType(content, showType)) {
+            // The content type has been changed, need to create a new content with the correct type
+            Content newTypeContent = ContentFactory.createContent(showType);
+            // Need to copy descriptions from the original content because they aren't in the program line (but in an external file)
+            newTypeContent.setLocalizedDescriptions(content.getLocalizedDescriptions());
+            content = newTypeContent;
+        }
         
         contentPopulator.populateFromProgramAndAuxiliary(content, parsedLine);
-    }
-
-    private void ensureContentMatchesShowType(Content content, RoviProgramLine parsedLine) {
-        RoviShowType showType = parsedLine.getShowType().get();
-        checkArgument(ContentFactory.hasCorrectType(content, showType), "The content type [" + content.getClass().getName() + "] doesn't match with the show type [" + showType + "]");
+        return content;
     }
 
     @Override

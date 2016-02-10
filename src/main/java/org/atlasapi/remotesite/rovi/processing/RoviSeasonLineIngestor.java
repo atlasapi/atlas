@@ -52,9 +52,10 @@ public class RoviSeasonLineIngestor extends RoviActionLineIngestor<RoviSeasonHis
     }
 
     @Override
-    protected void populateContent(Series content, RoviSeasonHistoryLine parsedLine)
+    protected Series populateContent(Series content, RoviSeasonHistoryLine parsedLine)
             throws IndexAccessException {
         populator(parsedLine).populateContent(content);
+        return content;
     }
 
     @Override

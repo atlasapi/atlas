@@ -105,14 +105,14 @@ public class C4AtomApi {
 			}
 		}
 
-		if(content.getImages().size() > 0) {
-			for(Image image : content.getImages()) {
-				if(image.getType() != ImageType.GENERIC_IMAGE_CONTENT_PLAYER) {
-					content.setImage(image.getCanonicalUri());
-                    return;
-				}
+
+		for(Image image : content.getImages()) {
+			if(image.getType() != ImageType.GENERIC_IMAGE_CONTENT_PLAYER) {
+				content.setImage(image.getCanonicalUri());
+				return;
 			}
 		}
+
 	}
 
 	public static String canonicaliseEpisodeIdentifier(String uri) {

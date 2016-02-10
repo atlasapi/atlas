@@ -11,6 +11,8 @@ import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Series;
 import com.metabroadcast.common.time.SystemClock;
 
+import static org.junit.Assert.assertEquals;
+
 public class NitroSeriesExtractorTest {
 
     private NitroSeriesExtractor extractor = new NitroSeriesExtractor(new SystemClock());
@@ -20,8 +22,8 @@ public class NitroSeriesExtractorTest {
         org.atlasapi.media.entity.Series extractedAudio = extractor.extract(audioSeries());
         org.atlasapi.media.entity.Series extractedVideo = extractor.extract(videoSeries());
 
-        Assert.assertEquals(MediaType.AUDIO, extractedAudio.getMediaType());
-        Assert.assertEquals(MediaType.VIDEO, extractedVideo.getMediaType());
+        assertEquals(MediaType.AUDIO, extractedAudio.getMediaType());
+        assertEquals(MediaType.VIDEO, extractedVideo.getMediaType());
     }
 
     @Test
@@ -29,8 +31,8 @@ public class NitroSeriesExtractorTest {
         org.atlasapi.media.entity.Series extractedGenericImage = extractor.extract(seriesWithGenericImage());
         Image genericImage = Iterables.getOnlyElement(extractedGenericImage.getImages());
 
-        Assert.assertEquals("http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png", extractedGenericImage.getImage());
-        Assert.assertEquals(ImageType.GENERIC_IMAGE_CONTENT_ORIGINATOR, genericImage.getType());
+        assertEquals("http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png", extractedGenericImage.getImage());
+        assertEquals(ImageType.GENERIC_IMAGE_CONTENT_ORIGINATOR, genericImage.getType());
     }
 
     private Series audioSeries() {

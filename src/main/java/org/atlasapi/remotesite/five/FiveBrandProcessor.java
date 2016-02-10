@@ -141,7 +141,6 @@ public class FiveBrandProcessor {
 
     private Brand mergeBrand(Brand current, Brand extracted) {
 
-        current.setPublisher(extracted.getPublisher());
         current.setCurie(extracted.getCurie());
 
         current.setTitle(extracted.getTitle());
@@ -245,7 +244,7 @@ public class FiveBrandProcessor {
         if (imageElements.size() > 0) {
             String image = imageElements.get(0).getValue();
 
-            if(!image.contains("http")) {
+            if(!image.contains("http://")) {
                 image = "http://" + image;
             }
 

@@ -215,7 +215,7 @@ public class PaProgrammeProcessorTest {
         
         setupContentResolver(ImmutableSet.<Identified>of(film, expectedItemBrand, expectedItemSeries));
 
-        ContentHierarchyAndSummaries hierarchy = progProcessor.process(inputProgData, channel, UTC, Timestamp.of(0));
+        ContentHierarchyAndSummaries hierarchy = progProcessor.process(inputProgData, channel, UTC, Timestamp.of(0)).get();
 
         assertEquals(expectedSummaryBrand, hierarchy.getBrandSummary().get());
         assertEquals(expectedSummarySeries, hierarchy.getSeriesSummary().get());
@@ -233,6 +233,7 @@ public class PaProgrammeProcessorTest {
         inputProgData.setTime("11:40");
         Attr threeDAttr = new Attr();
         threeDAttr.setThreeD("true");
+        threeDAttr.setFilm("yes");
         inputProgData.setAttr(threeDAttr);
         inputProgData.setSeriesSummary("This is the series summary!");
         Season season = new Season();
@@ -382,7 +383,7 @@ public class PaProgrammeProcessorTest {
         ProgData progData = setupProgData();
         progData.setGeneric(null);
         
-        ContentHierarchyAndSummaries hierarchy = progProcessor.process(progData, channel, UTC, Timestamp.of(0));
+        ContentHierarchyAndSummaries hierarchy = progProcessor.process(progData, channel, UTC, Timestamp.of(0)).get();
         
         assertNull(hierarchy.getItem().getGenericDescription());
     }
@@ -401,7 +402,7 @@ public class PaProgrammeProcessorTest {
         ProgData progData = setupProgData();
         progData.setGeneric("1");
         
-        ContentHierarchyAndSummaries hierarchy = progProcessor.process(progData, channel, UTC, Timestamp.of(0));
+        ContentHierarchyAndSummaries hierarchy = progProcessor.process(progData, channel, UTC, Timestamp.of(0)).get();
         assertTrue(hierarchy.getItem().getGenericDescription());
     }
 }

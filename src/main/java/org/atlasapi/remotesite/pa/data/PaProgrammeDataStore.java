@@ -21,6 +21,8 @@ public interface PaProgrammeDataStore {
     List<File> localProfilesFiles(Predicate<File> filter);
 
     List<File> localChannelsFiles(Predicate<File> filter);
+
+    List<File> localArchivesFiles(Predicate<File> filter);
     
     File copyForProcessing(File file);
 }

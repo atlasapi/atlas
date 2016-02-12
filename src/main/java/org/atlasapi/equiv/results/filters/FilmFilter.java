@@ -37,7 +37,7 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
         boolean shouldRetain = difference <= NUMBER_OF_YEARS_DIFFERENT_TOLERANCE;
 
         if (!shouldRetain) {
-            desc.appendText("%s removed. Candidate film year of %d differs from subject of %d by more than %d years.",
+            desc.appendText("%s removed. Candidate film year of %d differs from subject of %d by more than %d year(s).",
                     subjectFilm, candidateFilm.getYear(), subjectFilm.getYear(),
                     NUMBER_OF_YEARS_DIFFERENT_TOLERANCE);
         }

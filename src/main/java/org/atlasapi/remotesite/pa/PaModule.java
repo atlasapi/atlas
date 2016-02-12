@@ -26,6 +26,7 @@ import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.remotesite.pa.archives.PaArchivesUpdater;
@@ -95,6 +96,7 @@ public class PaModule {
     private @Autowired ChannelResolver channelResolver;
     private @Autowired ChannelWriter channelWriter;
     private @Autowired DatabasedMongo mongo;
+    private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
 

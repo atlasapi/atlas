@@ -2,12 +2,21 @@ package org.atlasapi.remotesite.pa;
 
 import java.util.Set;
 
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
+import org.atlasapi.persistence.ids.MongoSequentialIdGenerator;
+import org.atlasapi.persistence.topic.TopicStore;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.IdGenerator;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 
 import com.google.api.client.util.Sets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import static org.atlasapi.media.entity.Publisher.PA;
 
 /** PA genre map for MetaBroadcast tags.
  *
@@ -19,9 +28,14 @@ import com.google.common.collect.ImmutableSet;
 public class PaTagMap {
 
     private final ImmutableMap<String, String> paTagMap;
-    private final String TOPIC = "gb:pa:prod:";
+    private final String PA_NAMESPACE = "pressassociation";
+    private final String METABROADCAST_TAG = "http://metabroadcast.com/tags/";
+    private TopicStore topicStore;
+    private DatabasedMongo mongo;
 
-    public PaTagMap() {
+    public PaTagMap(TopicStore topicStore, DatabasedMongo mongo) {
+        this.topicStore = topicStore;
+        this.mongo = mongo;
         ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
 
         // Films genre mapping
@@ -175,11 +189,44 @@ public class PaTagMap {
 
         ImmutableSet.Builder<TopicRef> topicRefBuilder = ImmutableSet.builder();
         for (String tag : tags) {
-            topicRefBuilder.add(new TopicRef(
-                    new Topic(0L, TOPIC + tag, tag), 0f, false, TopicRef.Relationship.ABOUT, 0)
-            );
+            Maybe<Topic> resolvedTopic = resolveTopic(tag);
+            if (resolvedTopic.hasValue()) {
+                Topic topic = resolvedTopic.requireValue();
+
+                topic.setPublisher(PA);
+                topic.setTitle(tag);
+                topic.setType(Topic.Type.UNKNOWN);
+                topicStore.write(topic);
+
+                topicRefBuilder.add(new TopicRef(
+                        topic, 0f, false, TopicRef.Relationship.ABOUT, 0)
+                );
+            } else {
+                IdGenerator idGenerator = new MongoSequentialIdGenerator(mongo, "topics");
+                Topic topic = new Topic(
+                        idGenerator.generateRaw(),
+                        PA_NAMESPACE,
+                        METABROADCAST_TAG + tag);
+                topic.setPublisher(PA);
+                topic.setTitle(tag);
+                topic.setType(Topic.Type.UNKNOWN);
+                topicStore.write(topic);
+
+                topicRefBuilder.add(new TopicRef(
+                        topic, 0f, false, TopicRef.Relationship.ABOUT, 0)
+                );
+            }
         }
 
         return topicRefBuilder.build();
+    }
+
+    /**
+     *
+     * @param tag
+     * @return Topic if it exists in db.
+     */
+    public Maybe<Topic> resolveTopic(String tag) {
+        return topicStore.topicFor(Publisher.PA, PA_NAMESPACE, METABROADCAST_TAG + tag);
     }
 }

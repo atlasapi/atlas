@@ -78,6 +78,14 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(0, scorer.score(itemWithTitle("B&Q"), of(itemWithTitle("BandQ")), desc));
 
     }
+
+    @Test
+    public void testNormalizeBackToBacksSpacing() {
+
+        DefaultDescription desc = new DefaultDescription();
+
+        score(2, scorer.score(itemWithTitle("Foo / Bar"), of(itemWithTitle("Foo/Bar")), desc));
+    }
     
     @Test
     public void testMatchingWithThePrefix() {

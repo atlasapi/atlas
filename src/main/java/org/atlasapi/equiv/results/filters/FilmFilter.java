@@ -45,4 +45,9 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
         return shouldFilter;
     }
 
+    @Override
+    public String toString() {
+        return "Film year filter";
+    }
+
 }

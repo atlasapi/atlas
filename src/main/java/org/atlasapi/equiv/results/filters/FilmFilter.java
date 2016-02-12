@@ -25,6 +25,8 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
             return true;
         }
 
+        desc.startStage(toString());
+
         Film subjectFilm = (Film) subject;
         Film candidateFilm = (Film) input.candidate();
 
@@ -42,6 +44,8 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
                     NUMBER_OF_YEARS_DIFFERENT_TOLERANCE);
         }
 
+        desc.finishStage();
+        
         return shouldFilter;
     }
 

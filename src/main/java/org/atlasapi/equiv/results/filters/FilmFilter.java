@@ -25,8 +25,6 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
             return true;
         }
 
-        desc.startStage(toString());
-
         Film subjectFilm = (Film) subject;
         Film candidateFilm = (Film) input.candidate();
 
@@ -36,17 +34,15 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
         }
 
         int difference = Math.abs(subjectFilm.getYear() - candidateFilm.getYear());
-        boolean shouldFilter = difference <= NUMBER_OF_YEARS_DIFFERENT_TOLERANCE;
+        boolean shouldRetain = difference <= NUMBER_OF_YEARS_DIFFERENT_TOLERANCE;
 
-        if (shouldFilter) {
+        if (!shouldRetain) {
             desc.appendText("%s removed. Candidate film year of %d differs from subject of %d by more than %d years.",
                     subjectFilm, candidateFilm.getYear(), subjectFilm.getYear(),
                     NUMBER_OF_YEARS_DIFFERENT_TOLERANCE);
         }
 
-        desc.finishStage();
-        
-        return shouldFilter;
+        return shouldRetain;
     }
 
     @Override

@@ -82,6 +82,7 @@ import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
+import org.atlasapi.equiv.results.filters.FilmFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
@@ -215,7 +216,8 @@ public class EquivModule {
             new MediaTypeFilter<T>(),
             new SpecializationFilter<T>(),
             new PublisherFilter<T>(),
-            new ExclusionListFilter<T>(excludedUrisFromProperties())
+            new ExclusionListFilter<T>(excludedUrisFromProperties()),
+            new FilmFilter<T>()
         ), additional));
     }
     

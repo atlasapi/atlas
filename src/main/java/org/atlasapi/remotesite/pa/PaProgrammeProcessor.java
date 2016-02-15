@@ -33,7 +33,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
-import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.pa.archives.ContentHierarchyWithoutBroadcast;
 import org.atlasapi.remotesite.pa.archives.PaProgDataUpdatesProcessor;
 import org.atlasapi.remotesite.pa.listings.bindings.Attr;
@@ -48,7 +47,6 @@ import org.atlasapi.remotesite.pa.listings.bindings.StaffMember;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.text.MoreStrings;
 import com.metabroadcast.common.time.Timestamp;
 
@@ -96,10 +94,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     private final PaTagMap paTagMap;
 
     public PaProgrammeProcessor(ContentWriter contentWriter, ContentResolver contentResolver,
-            AdapterLog log, TopicStore topicStore, DatabasedMongo mongo) {
+            AdapterLog log, PaTagMap paTagMap) {
         this.contentResolver = contentResolver;
         this.log = log;
-        this.paTagMap = new PaTagMap(topicStore, mongo);
+        this.paTagMap = paTagMap;
     }
 
     @Override

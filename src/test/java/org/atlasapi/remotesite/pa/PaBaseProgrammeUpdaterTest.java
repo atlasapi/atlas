@@ -34,6 +34,7 @@ import org.atlasapi.persistence.logging.SystemOutAdapterLog;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.atlasapi.persistence.player.PlayerResolver;
 import org.atlasapi.persistence.service.ServiceResolver;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
@@ -86,6 +87,8 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
     private final PlayerResolver playerResolver = mock(PlayerResolver.class);
 
     private final PersistenceAuditLog persistenceAuditLog = new NoLoggingPersistenceAuditLog();
+    private final TopicStore topicStore = mock(TopicStore.class);
+    private final DatabasedMongo mongo = mock(DatabasedMongo.class);
     
 	private ChannelResolver channelResolver;
 	private ContentBuffer contentBuffer;
@@ -113,7 +116,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
         channelResolver = new DummyChannelResolver();
         contentWriter = new MongoContentWriter(db, lookupStore, persistenceAuditLog, playerResolver, serviceResolver, clock);
-        programmeProcessor = new PaProgrammeProcessor(contentWriter, resolver, log);
+        programmeProcessor = new PaProgrammeProcessor(contentWriter, resolver, log, topicStore, mongo);
         EquivalentContentResolver equivContentResolver = context.mock(EquivalentContentResolver.class);
         scheduleWriter = new MongoScheduleStore(db, channelResolver, contentBuffer, equivContentResolver, ms);
         contentBuffer = new ContentBuffer(resolver, contentWriter, new DummyItemsPeopleWriter());

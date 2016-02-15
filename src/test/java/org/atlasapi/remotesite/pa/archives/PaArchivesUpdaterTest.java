@@ -9,10 +9,12 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.pa.PaProgrammeProcessor;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
 
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -25,6 +27,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollection;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -45,13 +48,15 @@ public class PaArchivesUpdaterTest {
     private PaUpdatesProcessor paUpdatesProcessor;
     private PaCompleteArchivesUpdater updater;
     private File file;
+    private final TopicStore topicStore = mock(TopicStore.class);
+    private final DatabasedMongo mongo = mock(DatabasedMongo.class);
 
     @Before
     public void setUp() throws URISyntaxException {
         file = new File(Resources.getResource(getClass(), "201601121258_1201_tvarchive.xml").toURI());
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
-        PaProgDataUpdatesProcessor progProcessor = new PaProgrammeProcessor(writer,resolver,log);
+        PaProgDataUpdatesProcessor progProcessor = new PaProgrammeProcessor(writer,resolver,log,topicStore,mongo);
         paUpdatesProcessor = new PaUpdatesProcessor(progProcessor, writer);
         updater = new PaCompleteArchivesUpdater(store,resultStore,paUpdatesProcessor);
         when(store.localArchivesFiles(any(Predicate.class))).thenReturn(ImmutableList.of(file));

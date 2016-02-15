@@ -25,7 +25,6 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Specialization;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.util.ItemAndBroadcast;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -33,7 +32,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
-import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.pa.archives.ContentHierarchyWithoutBroadcast;
 import org.atlasapi.remotesite.pa.archives.PaProgDataUpdatesProcessor;
 import org.atlasapi.remotesite.pa.listings.bindings.Attr;
@@ -48,7 +46,6 @@ import org.atlasapi.remotesite.pa.listings.bindings.StaffMember;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.text.MoreStrings;
 import com.metabroadcast.common.time.Timestamp;
 
@@ -66,8 +63,6 @@ import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 
 import static org.atlasapi.persistence.logging.AdapterLogEntry.errorEntry;
 import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
@@ -96,13 +91,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     
     private final GenreMap genreMap = new PaGenreMap();
 
-    private final PaTagMap paTagMap;
-
     public PaProgrammeProcessor(ContentWriter contentWriter, ContentResolver contentResolver,
-            AdapterLog log, TopicStore topicStore, DatabasedMongo mongo) {
+            AdapterLog log) {
         this.contentResolver = contentResolver;
         this.log = log;
-        this.paTagMap = new PaTagMap(topicStore, mongo);
     }
 
     @Override
@@ -302,7 +294,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         brand.setDescription(Strings.emptyToNull(progData.getSeriesSynopsis()));
         setCertificate(progData, brand);
         setGenres(progData, brand);
-        setTopicRefs(progData, brand);
 
         if (isClosedBrand(Optional.of(brand))) {
             brand.setScheduleOnly(true);
@@ -432,7 +423,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         series.setPublisher(Publisher.PA);
         setCertificate(progData, series);
         setGenres(progData, series);
-        setTopicRefs(progData, series);
 
         series.setLastUpdated(updatedAt.toDateTimeUTC());
 
@@ -517,7 +507,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         episode.setMediaType(channel.getMediaType());
         episode.setSpecialization(specialization(progData, channel));
         setGenres(progData, episode);
-        setTopicRefs(progData, episode);
 
         if (progData.getCountry() != null) {
             episode.setCountriesOfOrigin(countryMap.parseCountries(progData.getCountry()));
@@ -866,11 +855,4 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         }
         return null;
     }
-
-    private void setTopicRefs(ProgData progData, Content content) {
-        Set<TopicRef> tagsFromGenres = paTagMap.map(content.getGenres());
-        content.setTopicRefs(tagsFromGenres);
-    }
-
-
 }

@@ -15,7 +15,6 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
-import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.pa.PaProgrammeProcessor;
 import org.atlasapi.remotesite.pa.archives.bindings.Actor;
 import org.atlasapi.remotesite.pa.archives.bindings.Attr;
@@ -27,7 +26,6 @@ import org.atlasapi.remotesite.pa.archives.bindings.ProgData;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
 
 import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.time.Timestamp;
 
 import com.google.common.base.Optional;
@@ -46,7 +44,6 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyCollection;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -65,14 +62,12 @@ public class PaArchivesProgExtractorTest {
     private ResolvedContent resolvedContent;
     private PaProgDataUpdatesProcessor progProcessor;
     private PaDataToUpdatesTransformer transformer;
-    private final TopicStore topicStore = mock(TopicStore.class);
-    private final DatabasedMongo mongo = mock(DatabasedMongo.class);
 
     @Before
     public void setUp() throws URISyntaxException {
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
-        progProcessor = new PaProgrammeProcessor(writer,resolver,log,topicStore,mongo);
+        progProcessor = new PaProgrammeProcessor(writer,resolver,log);
         transformer = new PaDataToUpdatesTransformer();
     }
 

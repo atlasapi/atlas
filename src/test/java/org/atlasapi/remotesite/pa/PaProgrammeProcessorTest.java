@@ -19,7 +19,6 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.NullAdapterLog;
-import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.pa.listings.bindings.Attr;
 import org.atlasapi.remotesite.pa.listings.bindings.PictureUsage;
 import org.atlasapi.remotesite.pa.listings.bindings.Pictures;
@@ -27,7 +26,6 @@ import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 import org.atlasapi.remotesite.pa.listings.bindings.Season;
 
 import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.time.Timestamp;
 
 import com.google.common.collect.ImmutableList;
@@ -64,8 +62,6 @@ public class PaProgrammeProcessorTest {
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final ItemsPeopleWriter itemsPeopleWriter = mock(ItemsPeopleWriter.class);
     private final Described described = mock(Described.class);
-    private final TopicStore topicStore = mock(TopicStore.class);
-    private final DatabasedMongo mongo = mock(DatabasedMongo.class);
     private final AdapterLog log = new NullAdapterLog();
 
     @SuppressWarnings("deprecation")
@@ -80,7 +76,7 @@ public class PaProgrammeProcessorTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         
-        progProcessor = new PaProgrammeProcessor(contentWriter, contentResolver, log, topicStore, mongo);
+        progProcessor = new PaProgrammeProcessor(contentWriter, contentResolver, log);
     }
     
     @Test 

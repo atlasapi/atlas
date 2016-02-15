@@ -96,7 +96,6 @@ public class PaModule {
     private @Autowired ChannelResolver channelResolver;
     private @Autowired ChannelWriter channelWriter;
     private @Autowired DatabasedMongo mongo;
-    private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
 
@@ -176,7 +175,7 @@ public class PaModule {
     }
     
     @Bean PaProgDataProcessor paProgrammeProcessor() {
-        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log, topicStore, mongo);
+        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
     }
     
     @Bean PaCompleteUpdater paCompleteUpdater() {
@@ -197,14 +196,14 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paRecentArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log, topicStore, mongo);
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaRecentArchiveUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;
     }
 
     @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log, topicStore, mongo);
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaCompleteArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;

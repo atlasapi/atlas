@@ -136,7 +136,7 @@ public class GsonBtMpxClientTest {
         Entry firstNonZeroEntry = Iterables.getFirst(nonZeroEntries, null);
 
         assertNotNull(firstNonZeroEntry.getAvailableDate());
-        assertEquals("urn:BT:linear:service:750650", firstNonZeroEntry.getLinearEpgChannelId());
+        assertNotNull(firstNonZeroEntry.getLinearEpgChannelId());
     }
 
     @Test
@@ -152,8 +152,6 @@ public class GsonBtMpxClientTest {
         Entry firstNonZeroEntry = Iterables.getFirst(channels.getEntries(), null);
 
         assertNotNull(firstNonZeroEntry.getAvailableDate());
-        //This test needs to be updated once prod environment have the linearEpgChannelId field otherwise it will fail.
-        assertNull(firstNonZeroEntry.getLinearEpgChannelId());
     }
 
     private Predicate<Entry> isZeroAvailableDate(final long availableDate) {

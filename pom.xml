@@ -54,7 +54,7 @@
                     <target>1.7</target>
                     <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J-Xss5M</arg>
+                        <arg>-J-Xss5G</arg>
                     </compilerArgs>
                 </configuration>
             </plugin>

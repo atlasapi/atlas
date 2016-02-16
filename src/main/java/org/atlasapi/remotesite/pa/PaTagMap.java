@@ -15,6 +15,7 @@ import com.google.api.client.util.Sets;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.media.entity.Publisher.PA;
 
 /** PA genre map for MetaBroadcast tags.
@@ -34,8 +35,8 @@ public class PaTagMap {
     IdGenerator idGenerator;
 
     public PaTagMap(TopicStore topicStore, MongoSequentialIdGenerator idGenerator) {
-        this.topicStore = topicStore;
-        this.idGenerator = idGenerator;
+        this.topicStore = checkNotNull(topicStore);
+        this.idGenerator = checkNotNull(idGenerator);
         ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
 
         // Films genre mapping

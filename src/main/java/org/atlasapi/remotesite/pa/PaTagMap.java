@@ -10,7 +10,6 @@ import org.atlasapi.persistence.topic.TopicStore;
 
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.IdGenerator;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 
 import com.google.api.client.util.Sets;
 import com.google.common.collect.ImmutableMap;
@@ -29,14 +28,14 @@ import static org.atlasapi.media.entity.Publisher.PA;
 public class PaTagMap {
 
     private final ImmutableMap<String, String> paTagMap;
-    private final String PA_NAMESPACE = "pressassociation";
+    private final String PA_NAMESPACE = "pressassociation.com";
     private final String METABROADCAST_TAG = "http://metabroadcast.com/tags/";
     private TopicStore topicStore;
-    private DatabasedMongo mongo;
+    IdGenerator idGenerator;
 
-    public PaTagMap(TopicStore topicStore, DatabasedMongo mongo) {
+    public PaTagMap(TopicStore topicStore, MongoSequentialIdGenerator idGenerator) {
         this.topicStore = topicStore;
-        this.mongo = mongo;
+        this.idGenerator = idGenerator;
         ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
 
         // Films genre mapping
@@ -220,7 +219,6 @@ public class PaTagMap {
                     topic, 0f, false, TopicRef.Relationship.ABOUT, 0)
             );
         } else {
-            IdGenerator idGenerator = new MongoSequentialIdGenerator(mongo, "topics");
             Topic topic = new Topic(
                     idGenerator.generateRaw(),
                     PA_NAMESPACE,

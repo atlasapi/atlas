@@ -41,6 +41,7 @@ import com.metabroadcast.atlas.glycerin.model.Format;
 import com.metabroadcast.atlas.glycerin.model.FormatsType;
 import com.metabroadcast.atlas.glycerin.model.GenreGroup;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.ProgrammeFormats;
 import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.atlas.glycerin.model.WarningText;
 import com.metabroadcast.atlas.glycerin.model.Warnings;
@@ -181,7 +182,7 @@ public class NitroEpisodeExtractorTest {
         Episode tli = new Episode();
         tli.setPid("b012cl84");
         tli.setTitle("Destiny");
-        tli.setFormats(filmFormatsType());
+        tli.setProgrammeFormats(filmFormatsType());
 
         Item extracted = extractor.extract(NitroItemSource.valueOf(tli, noAvailability));
 
@@ -342,8 +343,8 @@ public class NitroEpisodeExtractorTest {
         Assert.assertEquals(MediaType.VIDEO, videoExtracted.getMediaType());
     }
 
-    private FormatsType filmFormatsType() {
-        FormatsType formatsType = new FormatsType();
+    private ProgrammeFormats filmFormatsType() {
+        ProgrammeFormats formatsType = new ProgrammeFormats();
         Format filmsFormat = new Format();
 
         filmsFormat.setFormatId("PT007");

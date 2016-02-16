@@ -96,6 +96,15 @@ public class ContentMerger {
             Film currentFilm = (Film) current;
             Film extractedFilm = (Film) extracted;
             currentFilm.setYear(extractedFilm.getYear());
+        } else (if current instanceof Item && extracted instanceof Film) {
+
+            // The type is switching from Item to Film; we must use the extracted
+            // Film as a basis of saving, but retain those fields that have been
+            // merged already onto current, according to the employed merge strategy
+            extracted.setVersions(current.getVersions());
+            extracted.setAliases(current.getAliases());
+            extracted.setTopicRefs(current.getTopicRefs());
+            current = extracted;
         }
         current.setReleaseDates(extracted.getReleaseDates());
         return current;

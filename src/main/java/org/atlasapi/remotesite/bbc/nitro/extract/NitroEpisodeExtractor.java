@@ -86,11 +86,11 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
     }
 
     private boolean isFilmFormat(Episode episode) {
-        if (episode.getFormats() == null) {
+        if (episode.getProgrammeFormats() == null) {
             return false;
         }
 
-        return Iterables.any(episode.getFormats().getFormat(), IS_FILM_FORMAT);
+        return Iterables.any(episode.getProgrammeFormats().getFormat(), IS_FILM_FORMAT);
     }
 
     private boolean isEpisode(Episode episode) {

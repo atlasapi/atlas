@@ -177,7 +177,9 @@ public class PaModule {
     }
     
     @Bean PaProgDataProcessor paProgrammeProcessor() {
-        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log, new PaTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")));
+        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log, new PaTagMap(
+                topicStore, new MongoSequentialIdGenerator(mongo, "topics"), log)
+        );
     }
     
     @Bean PaCompleteUpdater paCompleteUpdater() {
@@ -198,14 +200,20 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paRecentArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log, new PaTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")));
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
+                contentWriter, contentBuffer(), log, new PaTagMap(
+                topicStore, new MongoSequentialIdGenerator(mongo, "topics"), log)
+        );
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaRecentArchiveUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;
     }
 
     @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log, new PaTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")));
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
+                contentWriter, contentBuffer(), log, new PaTagMap(
+                topicStore, new MongoSequentialIdGenerator(mongo, "topics"), log)
+        );
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaCompleteArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;

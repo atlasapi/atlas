@@ -6,6 +6,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.ids.MongoSequentialIdGenerator;
+import org.atlasapi.persistence.logging.AdapterLog;
+import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.topic.TopicStore;
 
 import com.metabroadcast.common.base.Maybe;
@@ -32,11 +34,13 @@ public class PaTagMap {
     private final String PA_NAMESPACE = "pressassociation.com";
     private final String METABROADCAST_TAG = "http://metabroadcast.com/tags/";
     private TopicStore topicStore;
-    IdGenerator idGenerator;
+    private IdGenerator idGenerator;
+    private final AdapterLog log;
 
-    public PaTagMap(TopicStore topicStore, MongoSequentialIdGenerator idGenerator) {
+    public PaTagMap(TopicStore topicStore, MongoSequentialIdGenerator idGenerator, AdapterLog log) {
         this.topicStore = checkNotNull(topicStore);
         this.idGenerator = checkNotNull(idGenerator);
+        this.log = log;
         ImmutableMap.Builder<String, String> mapBuilder = ImmutableMap.builder();
 
         // Films genre mapping
@@ -215,7 +219,13 @@ public class PaTagMap {
             topic.setTitle(tag);
             topic.setType(Topic.Type.UNKNOWN);
             topicStore.write(topic);
-
+            log.record(new AdapterLogEntry(AdapterLogEntry.Severity.INFO)
+                    .withSource(PaTagMap.class)
+                    .withDescription(String.format(
+                            "Writing new topic with id - %s; namespace - %s; publisher - %s; value - %s .",
+                            topic.getId(), topic.getNamespace(), topic.getPublisher().key(), topic.getValue())
+                    )
+            );
             topicRefBuilder.add(new TopicRef(
                     topic, 0f, false, TopicRef.Relationship.ABOUT, 0)
             );
@@ -228,7 +238,13 @@ public class PaTagMap {
             topic.setTitle(tag);
             topic.setType(Topic.Type.UNKNOWN);
             topicStore.write(topic);
-
+            log.record(new AdapterLogEntry(AdapterLogEntry.Severity.INFO)
+                    .withSource(PaTagMap.class)
+                    .withDescription(String.format(
+                            "Writing new topic with id - %s; namespace - %s; publisher - %s; value - %s .",
+                            topic.getId(), topic.getNamespace(), topic.getPublisher().key(), topic.getValue())
+                    )
+            );
             topicRefBuilder.add(new TopicRef(
                     topic, 0f, false, TopicRef.Relationship.ABOUT, 0)
             );

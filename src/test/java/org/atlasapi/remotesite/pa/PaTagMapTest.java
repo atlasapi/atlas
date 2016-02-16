@@ -5,6 +5,7 @@ import java.util.Set;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.ids.MongoSequentialIdGenerator;
+import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.topic.TopicStore;
 
 import com.metabroadcast.common.base.Maybe;
@@ -23,11 +24,12 @@ public class PaTagMapTest {
     private final String METABROADCAST_TAG = "http://metabroadcast.com/tags/";
     private TopicStore topicStore = mock(TopicStore.class);
     private MongoSequentialIdGenerator idGenerator = mock(MongoSequentialIdGenerator.class);
+    private AdapterLog log = mock(AdapterLog.class);
     private PaTagMap paTagMap;
 
     @Before
     public void setUp() throws Exception {
-        this.paTagMap = new PaTagMap(topicStore, idGenerator);
+        this.paTagMap = new PaTagMap(topicStore, idGenerator, log);
     }
 
     @Test

@@ -1,12 +1,6 @@
 package org.atlasapi.remotesite.btvod;
 
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
@@ -18,13 +12,19 @@ import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicate
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
-import org.junit.Test;
 
 import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.junit.Test;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class BtVodSynthesizedSeriesExtractorTest {
 
@@ -48,6 +48,7 @@ public class BtVodSynthesizedSeriesExtractorTest {
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
     private final BtVodSeriesUriExtractor seriesUriExtractor = mock(BtVodSeriesUriExtractor.class);
+    private final BtVodTagMap btVodTagMap = mock(BtVodTagMap.class);
 
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(
             topicResolver,
@@ -67,7 +68,8 @@ public class BtVodSynthesizedSeriesExtractorTest {
             BT_VOD_ID_NAMESPACE,
             BT_VOD_CONTENT_PROVIDER_NAMESPACE,
             BT_VOD_GENRE_NAMESPACE,
-            BT_VOD_KEYWORD_NAMESPACE
+            BT_VOD_KEYWORD_NAMESPACE,
+            btVodTagMap
     );
 
     private final TopicRef newTopicRef = new TopicRef(
@@ -84,7 +86,8 @@ public class BtVodSynthesizedSeriesExtractorTest {
             describedFieldsExtractor, 
             Sets.<String>newHashSet(),
             seriesUriExtractor,
-            ImmutableSet.of(SERIES_GUID)
+            ImmutableSet.of(SERIES_GUID),
+            btVodTagMap
     );
 
     @Test

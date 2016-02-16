@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -12,11 +10,14 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 
+import com.metabroadcast.common.intl.Countries;
+
 import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.intl.Countries;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
@@ -39,7 +40,8 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
             BtVodVersionsExtractor versionsExtractor,
             TitleSanitiser titleSanitiser,
             ImageExtractor imageExtractor,
-            DedupedDescriptionAndImageUpdater descriptionAndImageUpdater
+            DedupedDescriptionAndImageUpdater descriptionAndImageUpdater,
+            BtVodTagMap btVodTagMap
     ) {
         super(
                 btVodBrandProvider, 
@@ -47,7 +49,8 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
                 listener, 
                 processedRows, 
                 describedFieldsExtractor, 
-                seriesUriExtractor
+                seriesUriExtractor,
+                btVodTagMap
         );
         this.titleSanitiser = checkNotNull(titleSanitiser);
         this.versionsExtractor = checkNotNull(versionsExtractor);

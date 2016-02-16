@@ -1,11 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Set;
 
 import org.atlasapi.media.entity.Item;
@@ -19,6 +13,12 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
+
+import com.metabroadcast.common.base.Maybe;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,10 +26,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodDescribedFieldsExtractorTest {
@@ -55,6 +56,7 @@ public class BtVodDescribedFieldsExtractorTest {
 
     @Mock
     private BtVodContentMatchingPredicate newTopicContentMatchingPredicate;
+    private final BtVodTagMap btVodTagMap = mock(BtVodTagMap.class);
     
     @Before
     public void setUp() {
@@ -74,7 +76,8 @@ public class BtVodDescribedFieldsExtractorTest {
                 BT_VOD_ID_NAMESPACE,
                 BT_VOD_CONTENT_PROVIDER_NAMESPACE,
                 BT_VOD_GENRE_NAMESPACE,
-                BT_VOD_KEYWORD_NAMESPACE
+                BT_VOD_KEYWORD_NAMESPACE,
+                btVodTagMap
         );
     }
 

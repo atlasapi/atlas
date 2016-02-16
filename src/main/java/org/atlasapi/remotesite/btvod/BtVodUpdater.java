@@ -45,6 +45,7 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtMpxVodClient mpxClient;
     private final TopicQueryResolver topicQueryResolver;
     private final BtVodEntryMatchingPredicate kidsPredicate;
+    private final BtVodTagMap btVodTagMap;
 
     public BtVodUpdater(
             ContentWriter contentWriter,
@@ -63,7 +64,8 @@ public class BtVodUpdater extends ScheduledTask {
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             BtMpxVodClient mpxClient,
             TopicQueryResolver topicQueryResolver,
-            BtVodEntryMatchingPredicate kidsPredicate
+            BtVodEntryMatchingPredicate kidsPredicate,
+            BtVodTagMap btVodTagMap
     ) {
         this.contentWriter = checkNotNull(contentWriter);
         this.newFeedContentMatchingPredicate = checkNotNull(newFeedContentMatchingPredicate);
@@ -82,6 +84,7 @@ public class BtVodUpdater extends ScheduledTask {
         this.mpxClient = checkNotNull(mpxClient);
         this.topicQueryResolver = checkNotNull(topicQueryResolver);
         this.kidsPredicate = checkNotNull(kidsPredicate);
+        this.btVodTagMap = checkNotNull(btVodTagMap);
     }
 
     @Override
@@ -154,7 +157,8 @@ public class BtVodUpdater extends ScheduledTask {
                 listeners,
                 processedRows,
                 describedFieldsExtractor,
-                brandUriExtractor
+                brandUriExtractor,
+                btVodTagMap
         );
 
         vodData.processData(brandExtractor);
@@ -215,7 +219,8 @@ public class BtVodUpdater extends ScheduledTask {
                 versionsExtractor,
                 new TitleSanitiser(),
                 imageExtractor,
-                new DedupedDescriptionAndImageUpdater()
+                new DedupedDescriptionAndImageUpdater(),
+                btVodTagMap
         );
 
         vodData.processData(explicitSeriesExtractor);
@@ -244,7 +249,8 @@ public class BtVodUpdater extends ScheduledTask {
                     describedFieldsExtractor,
                     processedRows,
                     seriesUriExtractor,
-                    explicitSeriesExtractor.getExplicitSeries().keySet()
+                    explicitSeriesExtractor.getExplicitSeries().keySet(),
+                    btVodTagMap
                 );
 
         vodData.processData(synthesizedSeriesExtractor);

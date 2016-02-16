@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.pa;
 
-import static org.mockito.Mockito.mock;
-
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +37,24 @@ import org.atlasapi.persistence.service.ServiceResolver;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.persistence.MongoTestHelper;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.queue.MessagingException;
+import com.metabroadcast.common.time.DateTimeZones;
+import com.metabroadcast.common.time.TimeMachine;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.io.Resources;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.mongodb.ReadPreference;
+import junit.framework.TestCase;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
@@ -51,23 +67,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.io.Resources;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.persistence.MongoTestHelper;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.queue.MessagingException;
-import com.metabroadcast.common.time.DateTimeZones;
-import com.metabroadcast.common.time.TimeMachine;
-import com.mongodb.ReadPreference;
-
-import junit.framework.TestCase;
+import static org.mockito.Mockito.mock;
 
 @RunWith(JMock.class)
 public class PaBaseProgrammeUpdaterTest extends TestCase {
@@ -100,6 +100,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         public void sendMessage(ScheduleUpdateMessage scheduleUpdateMessage, byte[] bytes)
                 throws MessagingException { }
     };
+    private final PaTagMap paTagMap = mock(PaTagMap.class);
 
     @Override
     @Before
@@ -112,7 +113,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
         channelResolver = new DummyChannelResolver();
         contentWriter = new MongoContentWriter(db, lookupStore, persistenceAuditLog, playerResolver, serviceResolver, clock);
-        programmeProcessor = new PaProgrammeProcessor(contentWriter, resolver, log);
+        programmeProcessor = new PaProgrammeProcessor(contentWriter, resolver, log, paTagMap);
         EquivalentContentResolver equivContentResolver = context.mock(EquivalentContentResolver.class);
         scheduleWriter = new MongoScheduleStore(db, channelResolver, contentBuffer, equivContentResolver, ms);
         contentBuffer = new ContentBuffer(resolver, contentWriter, new DummyItemsPeopleWriter());

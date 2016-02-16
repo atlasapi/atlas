@@ -23,9 +23,11 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.persistence.content.people.PersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.persistence.ids.MongoSequentialIdGenerator;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.remotesite.pa.archives.PaArchivesUpdater;
@@ -51,6 +53,15 @@ import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 import org.atlasapi.remotesite.rt.RtFilmModule;
 import org.atlasapi.s3.DefaultS3Client;
 import org.atlasapi.s3.S3Client;
+
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.security.UsernameAndPassword;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,14 +70,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.security.UsernameAndPassword;
 
 @Configuration
 @Import(RtFilmModule.class)
@@ -95,6 +98,7 @@ public class PaModule {
     private @Autowired ChannelResolver channelResolver;
     private @Autowired ChannelWriter channelWriter;
     private @Autowired DatabasedMongo mongo;
+    private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
 
@@ -174,7 +178,8 @@ public class PaModule {
     }
     
     @Bean PaProgDataProcessor paProgrammeProcessor() {
-        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
+        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log, new PaTagMap(topicStore,
+                new MongoSequentialIdGenerator(mongo, "topics")));
     }
     
     @Bean PaCompleteUpdater paCompleteUpdater() {
@@ -195,14 +200,16 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paRecentArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log,
+                new PaTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")));
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaRecentArchiveUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;
     }
 
     @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log);
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter,
+                contentBuffer(), log, new PaTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")));
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaCompleteArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;

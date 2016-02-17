@@ -102,6 +102,9 @@ public class FileEquivalenceResultStore implements EquivalenceResultStore {
         return canonicalUri.replace('/', '-');
     }
 
+    /**
+     * Create a hashed directory for the given filename, creating if necessary
+     */
     private File directoryFor(String filename) {
 
         // Inspired by http://michaelandrews.typepad.com/the_technical_times/2009/10/creating-a-hashed-directory-structure.html
@@ -112,6 +115,10 @@ public class FileEquivalenceResultStore implements EquivalenceResultStore {
 
         File firstPath = new File(baseDirectory, String.format("%03d", firstDir));
         File secondPath = new File(firstPath, String.format("%03d", secondDir));
+
+        if (!secondPath.isDirectory()) {
+            secondPath.mkdirs();
+        }
 
         return secondPath;
     }

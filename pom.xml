@@ -53,6 +53,9 @@
                     <source>1.7</source>
                     <target>1.7</target>
                     <fork>true</fork>
+                    <compilerArgs>
+                        <arg>-J-Xss10M</arg>
+                    </compilerArgs>
                 </configuration>
             </plugin>
             <plugin>

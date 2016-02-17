@@ -1,7 +1,5 @@
 package org.atlasapi.query.v2;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,28 +8,31 @@ import javax.servlet.http.HttpServletResponse;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.feeds.tasks.Action;
+import org.atlasapi.feeds.tasks.Destination.DestinationType;
 import org.atlasapi.feeds.tasks.Status;
 import org.atlasapi.feeds.tasks.TVAElementType;
 import org.atlasapi.feeds.tasks.Task;
 import org.atlasapi.feeds.tasks.TaskQuery;
-import org.atlasapi.feeds.tasks.Destination.DestinationType;
 import org.atlasapi.feeds.tasks.persistence.TaskStore;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
+
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.query.Selection.SelectionBuilder;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.query.Selection.SelectionBuilder;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Controller
 public class TaskController extends BaseController<Iterable<Task>> {
@@ -118,11 +119,12 @@ public class TaskController extends BaseController<Iterable<Task>> {
                 && !contentUri.startsWith(NITRO_URI_PREFIX)) {
             contentUri = NITRO_URI_PREFIX + contentUri;
         }
-        
+
         TaskQuery.Builder query = TaskQuery.builder(selection, publisher, destinationType)
                 .withContentUri(contentUri)
                 .withRemoteId(remoteId)
-                .withElementId(elementId);
+                .withElementId(elementId)
+                .withSort(TaskQuery.Sort.DESC);
         
         if (statusStr != null) {
             Status status = Status.valueOf(statusStr.trim().toUpperCase());

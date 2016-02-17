@@ -75,7 +75,7 @@ public class PaContentDeactivator {
         this.contentLister = checkNotNull(contentLister);
         this.contentWriter = checkNotNull(contentWriter);
         this.progressStore = checkNotNull(progressStore);
-        this.threadPool = createThreadPool(15);
+        this.threadPool = createThreadPool(20);
     }
 
     public void deactivate(File file, Boolean dryRun) throws IOException {

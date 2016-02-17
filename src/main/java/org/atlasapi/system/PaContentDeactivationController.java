@@ -25,7 +25,6 @@ public class PaContentDeactivationController {
     public void purge(
             HttpServletResponse response,
             @RequestParam(value = "filePath", required = true) String filePath,
-            @RequestParam(value = "threads", required = true) String threads,
             @RequestParam(value = "dryRun", required = true) String dryRun
     ) throws IOException {
         paDeactivator.deactivate(new File(filePath), Boolean.parseBoolean(dryRun));

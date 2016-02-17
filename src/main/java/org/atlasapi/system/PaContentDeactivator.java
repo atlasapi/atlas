@@ -12,6 +12,8 @@ import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Queues;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
+import com.mongodb.DBCollection;
+import com.mongodb.DBObject;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
@@ -42,6 +44,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.common.persistence.mongo.MongoBuilders.where;
 
 public class PaContentDeactivator {
 
@@ -66,16 +69,19 @@ public class PaContentDeactivator {
     private final LookupEntryStore lookupStore;
     private final ContentLister contentLister;
     private final ContentWriter contentWriter;
+    private final DBCollection childrenDb;
     private final ProgressStore progressStore;
     private final ThreadPoolExecutor threadPool;
 
     public PaContentDeactivator(LookupEntryStore lookupStore, ContentLister contentLister,
-                                ContentWriter contentWriter, ProgressStore progressStore) {
+                                ContentWriter contentWriter, ProgressStore progressStore,
+                                DBCollection childrenDb) {
         this.lookupStore = checkNotNull(lookupStore);
         this.contentLister = checkNotNull(contentLister);
         this.contentWriter = checkNotNull(contentWriter);
         this.progressStore = checkNotNull(progressStore);
         this.threadPool = createThreadPool(20);
+        this.childrenDb = checkNotNull(childrenDb);
     }
 
     public void deactivate(File file, Boolean dryRun) throws IOException {
@@ -123,7 +129,7 @@ public class PaContentDeactivator {
             Content content = itr.next();
             int i = processed.incrementAndGet();
             LOG.debug("Processing item #{} id: {}", i, content.getId());
-            if (shouldDeactivatePredicate.apply(content)) {
+            if (shouldDeactivatePredicate.apply(content) && hasNoGenericChildren(content)) {
                 if (!dryRun) {
                     threadPool.submit(contentDeactivatingRunnable(content));
                 }
@@ -139,6 +145,18 @@ public class PaContentDeactivator {
         }
         LOG.debug("Deactivated {} pieces of content", deactivated.get());
         progressStore.storeProgress(taskName, ContentListingProgress.START);
+    }
+
+    /*
+        Generically described children are not returned by getChildRefs,
+        thus we must check the DB for any children with this content as its container.
+     */
+    private boolean hasNoGenericChildren(Content content) {
+        if (!(content instanceof Container)) {
+            return true;
+        }
+        DBObject dbQuery = where().fieldEquals("container", content.getCanonicalUri()).build();
+        return childrenDb.find(dbQuery).count() < 1;
     }
 
     private Runnable contentDeactivatingRunnable(final Content content) {

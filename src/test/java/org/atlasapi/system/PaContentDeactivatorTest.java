@@ -4,6 +4,9 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import org.atlasapi.media.entity.*;
 import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -33,9 +36,13 @@ public class PaContentDeactivatorTest {
     private ContentLister lister;
     private ContentWriter writer;
     private ProgressStore progressStore;
-    private Brand activeContent;
-    private Brand inactiveContent;
+    private Brand activeContainer;
+    private Brand inactiveContainer;
     private Brand emptyContainer;
+    private Brand emptyContainerButHasGenericChildren;
+    private Item activeItem;
+    private Item inactiveItem;
+    private DBCollection childCollection;
 
     @Before
     public void setUp() throws Exception {
@@ -43,22 +50,44 @@ public class PaContentDeactivatorTest {
         lister = mock(ContentLister.class);
         writer = mock(ContentWriter.class);
         progressStore = mock(ProgressStore.class);
-        deactivator = new PaContentDeactivator(lookup, lister, writer, progressStore);
-        activeContent = new Brand("10", "10", Publisher.PA);
-        activeContent.setChildRefs(
+        childCollection = mock(DBCollection.class);
+
+        deactivator = new PaContentDeactivator(
+                lookup,
+                lister,
+                writer,
+                progressStore,
+                childCollection
+        );
+        activeContainer = new Brand("10", "10", Publisher.PA);
+        activeContainer.setChildRefs(
                 ImmutableList.of(
                         new ChildRef(10l, "", "", DateTime.now(), EntityType.CLIP)
                 )
         );
-        activeContent.setId(10l);
+        activeContainer.setId(10l);
 
-        inactiveContent = new Brand("20", "20", Publisher.PA);
-        inactiveContent.setId(20l);
-        inactiveContent.setGenericDescription(false);
+        inactiveContainer = new Brand("20", "20", Publisher.PA);
+        inactiveContainer.setId(20l);
+        inactiveContainer.setGenericDescription(true);
 
         emptyContainer = new Brand("30", "30", Publisher.PA);
         emptyContainer.setId(30l);
-        setupMocks(activeContent, inactiveContent, emptyContainer);
+
+        emptyContainerButHasGenericChildren = new Brand("40", "40", Publisher.PA);
+        emptyContainerButHasGenericChildren.setId(40l);
+
+        Item genericChildOfEmptyBrand = new Item("40children", "40children", Publisher.PA);
+        genericChildOfEmptyBrand.setGenericDescription(true);
+        genericChildOfEmptyBrand.setContainer(emptyContainerButHasGenericChildren);
+        writer.createOrUpdate(genericChildOfEmptyBrand);
+
+        activeItem = new Item("50", "50", Publisher.PA);
+        activeItem.setId(50l);
+        inactiveItem = new Item("60", "60", Publisher.PA);
+        inactiveItem.setId(60l);
+
+        setupMocks(activeItem, inactiveItem, activeContainer, inactiveContainer, emptyContainer, emptyContainerButHasGenericChildren);
     }
 
     @Test
@@ -69,16 +98,32 @@ public class PaContentDeactivatorTest {
                 .build();
 
         typesToIds.put("pa:brand", "10");
+        typesToIds.put("pa:episode", "50");
         deactivator.deactivate(typesToIds, false);
         Thread.sleep(2000);
-        assertThat(activeContent.isActivelyPublished(), is(true));
-        assertThat(inactiveContent.isActivelyPublished(), is(false));
+        assertThat(activeItem.isActivelyPublished(), is(true));
+        assertThat(inactiveItem.isActivelyPublished(), is(false));
+
+        assertThat(activeContainer.isActivelyPublished(), is(true));
+
+        assertThat(emptyContainerButHasGenericChildren.isActivelyPublished(), is(true));
+        assertThat(inactiveContainer.isActivelyPublished(), is(false));
         assertThat(emptyContainer.isActivelyPublished(), is(false));
     }
 
-    private void setupMocks(Content activeContent, Content inactiveContent, Brand emptyContainer) {
+    private void setupMocks(
+            Item activeItem,
+            Item inactiveItem,
+            Brand activeContainer,
+            Brand inactiveContainer,
+            Brand emptyContainer,
+            Brand emptyContainerWithGenericChildren
+    ) {
         LookupEntry activeLookup = mock(LookupEntry.class);
-        when(activeLookup.id()).thenReturn(10l);
+        when(activeLookup.id()).thenReturn(10l).thenReturn(50l);
+        DBCursor dbCursor = mock(DBCursor.class);
+        when(childCollection.find(any(DBObject.class))).thenReturn(dbCursor);
+        when(dbCursor.count()).thenReturn(0).thenReturn(0).thenReturn(1);
 
         when(lookup.entriesForAliases(any(Optional.class), anyListOf(String.class)))
                 .thenReturn(ImmutableList.of(activeLookup));
@@ -88,19 +133,32 @@ public class PaContentDeactivatorTest {
         when(progressStore.progressForTask(PaContentDeactivator.class.getSimpleName()+"children"))
                 .thenReturn(Optional.<ContentListingProgress>absent());
 
-        ImmutableList<ContentCategory> contentCategories = ImmutableList.of(
-                ContentCategory.CONTAINER,
+        ImmutableList<ContentCategory> childCats = ImmutableList.of(
                 ContentCategory.CHILD_ITEM,
                 ContentCategory.TOP_LEVEL_ITEM
         );
 
-        Iterator<Content> contentIterator = ImmutableList.of(activeContent, inactiveContent, emptyContainer).iterator();
+        Iterator<Content> childrenItr = ImmutableList.<Content>of(activeItem, inactiveItem).iterator();
 
-        ContentListingCriteria criteria = ContentListingCriteria.defaultCriteria()
-                .forContent(contentCategories)
+        ContentListingCriteria childCriteria = ContentListingCriteria.defaultCriteria()
+                .forContent(childCats)
                 .forPublishers(Publisher.PA)
                 .build();
 
-        when(lister.listContent(criteria)).thenReturn(contentIterator);
+        when(lister.listContent(childCriteria)).thenReturn(childrenItr);
+
+        ImmutableList<ContentCategory> containerCat = ImmutableList.of(
+                ContentCategory.CONTAINER
+        );
+
+        Iterator<Content> containerItr = ImmutableList.<Content>of(
+                activeContainer, inactiveContainer, emptyContainer, emptyContainerWithGenericChildren).iterator();
+
+        ContentListingCriteria containerCriteria = ContentListingCriteria.defaultCriteria()
+                .forContent(containerCat)
+                .forPublishers(Publisher.PA)
+                .build();
+
+        when(lister.listContent(containerCriteria)).thenReturn(containerItr);
     }
 }

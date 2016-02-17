@@ -20,16 +20,15 @@ import static org.atlasapi.media.entity.Publisher.PA;
 
 /** PA genre map for MetaBroadcast tags.
  *
- * This class is used in PaProgrammeProcessor for mapping the PA genres to
- * MetaBroadcast tags for the brand, episode and series content. Tags are stored
- * as a topics as part of the PA content. This is done so that we can use PA content
- * in the content prioritization algorithm. This further would allow us to filter
- * the PA content by the priority.
+ * This class is used for mapping the PA genres to MetaBroadcast tags for the brand,
+ * episode and series content. Tags are stored as a topics as part of the PA content.
+ * This is done so that we can use PA content in the content prioritization algorithm.
+ * This further would allow us to filter the PA content by the priority.
  */
 public class PaTagMap {
 
     private final ImmutableMap<String, String> paTagMap;
-    private final String PA_NAMESPACE = "pressassociation.com";
+    private final String PA_NAMESPACE = "gb:pressassociation:prod:";
     private final String METABROADCAST_TAG = "http://metabroadcast.com/tags/";
     private TopicStore topicStore;
     private IdGenerator idGenerator;
@@ -161,7 +160,7 @@ public class PaTagMap {
      * @param genres - PA content genres that are used for mapping with MetaBroadcast tags.
      * @return set of MetaBroadcast tags as TopicRef objects for the PA content.
      */
-    public Set<TopicRef> map(Set<String> genres) {
+    public Set<TopicRef> mapGenresToTopicRefs(Set<String> genres) {
         Set<String> tags = Sets.newHashSet();
         for (String genre : genres) {
             if (genre.contains("http://pressassociation.com/genres/")) {
@@ -206,7 +205,7 @@ public class PaTagMap {
      * @param topicRefBuilder ImmutableSet that holds all mapped tags TopicRefs
      * @param tag used for creating a TopicRef object.
      */
-    public void addTopicRef(ImmutableSet.Builder<TopicRef> topicRefBuilder, String tag) {
+    private void addTopicRef(ImmutableSet.Builder<TopicRef> topicRefBuilder, String tag) {
         Maybe<Topic> resolvedTopic = resolveTopic(tag);
         if (resolvedTopic.hasValue()) {
             Topic topic = resolvedTopic.requireValue();
@@ -242,7 +241,7 @@ public class PaTagMap {
      * @param tag is used for looking up Topic in db
      * @return Maybe<Topic> resolved tag as a Topic from db
      */
-    public Maybe<Topic> resolveTopic(String tag) {
-        return topicStore.topicFor(Publisher.PA, PA_NAMESPACE, METABROADCAST_TAG + tag);
+    private Maybe<Topic> resolveTopic(String tag) {
+        return topicStore.topicFor(Publisher.PA, PA_NAMESPACE + tag, METABROADCAST_TAG + tag);
     }
 }

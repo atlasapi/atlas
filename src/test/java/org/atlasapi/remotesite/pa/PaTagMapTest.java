@@ -39,8 +39,8 @@ public class PaTagMapTest {
         when(topicStore.topicFor(Publisher.PA, PA_NAMESPACE, METABROADCAST_TAG + tag))
                 .thenReturn(Maybe.fromPossibleNullValue(new Topic(20l, PA_NAMESPACE, METABROADCAST_TAG + tag)));
 
-        assertEquals(paTagMap.map(genres).size(), 1);
-        assertEquals(paTagMap.map(genres).iterator().next().getTopic().longValue(), 20l);
+        assertEquals(paTagMap.mapGenresToTopicRefs(genres).size(), 1);
+        assertEquals(paTagMap.mapGenresToTopicRefs(genres).iterator().next().getTopic().longValue(), 20l);
     }
 
     @Test
@@ -53,8 +53,8 @@ public class PaTagMapTest {
                 .thenReturn(Maybe.<Topic>nothing());
         when(idGenerator.generateRaw()).thenReturn(10l);
 
-        assertEquals(paTagMap.map(genres).size(), 1);
-        assertEquals(paTagMap.map(genres).iterator().next().getTopic().longValue(), 10l);
+        assertEquals(paTagMap.mapGenresToTopicRefs(genres).size(), 1);
+        assertEquals(paTagMap.mapGenresToTopicRefs(genres).iterator().next().getTopic().longValue(), 10l);
     }
 
 

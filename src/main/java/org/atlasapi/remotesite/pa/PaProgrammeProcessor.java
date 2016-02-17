@@ -864,7 +864,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private void setTopicRefs(ProgData progData, Content content) {
-        Set<TopicRef> tagsFromGenres = paTagMap.map(content.getGenres());
+        Set<TopicRef> tagsFromGenres = paTagMap.mapGenresToTopicRefs(content.getGenres());
         content.setTopicRefs(tagsFromGenres);
     }
 }

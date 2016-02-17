@@ -65,6 +65,7 @@ public class PaContentDeactivator {
             return lookupEntry.id();
         }
     };
+    private static final String CONTAINER = "container";
 
     private final LookupEntryStore lookupStore;
     private final ContentLister contentLister;
@@ -155,7 +156,7 @@ public class PaContentDeactivator {
         if (!(content instanceof Container)) {
             return true;
         }
-        DBObject dbQuery = where().fieldEquals("container", content.getCanonicalUri()).build();
+        DBObject dbQuery = where().fieldEquals(CONTAINER, content.getCanonicalUri()).build();
         return childrenDb.find(dbQuery).count() < 1;
     }
 

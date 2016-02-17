@@ -55,9 +55,9 @@ public class PaContentDeactivator {
     private static final Pattern SEASON_ID_PATTERN = Pattern.compile("<season_id>([0-9]*)</season_id>");
     private static final Pattern PROGRAMME_ID_PATTERN = Pattern.compile("<prog_id>([0-9]*)</prog_id>");
 
-    private static final String PA_SERIES_NAMESPACE = "pa:brand";
-    private static final String PA_SEASON_NAMESPACE = "pa:series";
-    private static final String PA_PROGRAMME_NAMESPACE = "pa:episode";
+    public static final String PA_SERIES_NAMESPACE = "pa:brand";
+    public static final String PA_SEASON_NAMESPACE = "pa:series";
+    public static final String PA_PROGRAMME_NAMESPACE = "pa:episode";
 
     private static final Function<LookupEntry, Long> LOOKUP_ENTRY_TO_ID = new Function<LookupEntry, Long>() {
         @Override
@@ -92,11 +92,8 @@ public class PaContentDeactivator {
     }
 
     public void deactivate(Multimap<String, String> paNamespaceToAliases, Boolean dryRun) throws IOException {
-        final ImmutableSet<Long> activeIds = ImmutableSet.copyOf(
-                Sets.newTreeSet(resolvePaAliasesToIds(paNamespaceToAliases))
-        );
-
-        Predicate<Content> shouldDeactivatePredicate = new PaContentDeactivationPredicate(activeIds);
+        Predicate<Content> shouldDeactivatePredicate =
+                new PaContentDeactivationPredicate(paNamespaceToAliases);
 
         String childrenTaskName = getClass().getSimpleName() + "children";
         ImmutableList<ContentCategory> childCategories = ImmutableList.of(
@@ -227,22 +224,5 @@ public class PaContentDeactivator {
             LOG.warn("Line: {} matched no regex for ID extraction, skipping...", line);
         }
         return ImmutableSetMultimap.copyOf(typeToIds);
-    }
-
-    private ImmutableSet<Long> resolvePaAliasesToIds(Multimap<String, String> typeToIds) {
-        ImmutableSet.Builder<Long> ids = ImmutableSet.builder();
-        for (Map.Entry<String, Collection<String>> entry : typeToIds.asMap().entrySet()) {
-            for (List<String> idPartition : Iterables.partition(entry.getValue(), 200)) {
-                ids.addAll(lookupIdForPaAlias(entry.getKey(), idPartition));
-            }
-        }
-        return ids.build();
-    }
-
-    private ImmutableSet<Long> lookupIdForPaAlias(String namespace, Iterable<String> value) {
-        Iterable<LookupEntry> entriesForId = lookupStore.entriesForAliases(
-                Optional.of(namespace), value
-        );
-        return ImmutableSet.copyOf(Iterables.transform(entriesForId, LOOKUP_ENTRY_TO_ID));
     }
 }

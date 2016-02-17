@@ -1,7 +1,16 @@
 package org.atlasapi.system;
 
 import com.google.common.collect.ImmutableSet;
-import org.atlasapi.media.entity.*;
+import com.google.common.collect.MultimapBuilder;
+import com.google.common.collect.SetMultimap;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.ChildRef;
+import org.atlasapi.media.entity.EntityType;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Film;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -15,9 +24,11 @@ public class PaContentDeactivationPredicateTest {
 
     @Before
     public void setUp() throws Exception {
-        predicate = new PaContentDeactivationPredicate(
-                ImmutableSet.of(10L)
-        );
+        SetMultimap<String, String> namespaceToAlias = MultimapBuilder.hashKeys().hashSetValues().build();
+        predicate = new PaContentDeactivationPredicate(namespaceToAlias);
+
+        namespaceToAlias.put("pa:episodes", "activeItem1");
+        namespaceToAlias.put("pa:episodes", "genericEpisode");
     }
 
     @Test

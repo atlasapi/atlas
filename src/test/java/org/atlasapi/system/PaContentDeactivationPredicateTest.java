@@ -40,18 +40,18 @@ public class PaContentDeactivationPredicateTest {
 
     @Test
     public void testDoesDeactivateInactiveContent() throws Exception {
-        Item active = new Item("inactiveItem1", "", Publisher.PA);
+        Item active = new Item("http://pressassociation.com/episodes/103123123", "", Publisher.PA);
         active.setId(20L);
         assertThat(predicate.apply(active), is(true));
     }
 
     @Test
     public void testDoesNotDeactivatePaFilm() throws Exception {
-        Film film = new Film("paFilm1", "", Publisher.PA);
+        Film film = new Film("http://pressassociation.com/films/12312", "", Publisher.PA);
         film.setId(30L);
         assertThat(predicate.apply(film), is(true));
 
-        Film film2 = new Film("paFilm2", "", Publisher.PA);
+        Film film2 = new Film("http://pressassociation.com/films/123123123123", "", Publisher.PA);
         film2.setId(31L);
         assertThat(predicate.apply(film2), is(true));
     }

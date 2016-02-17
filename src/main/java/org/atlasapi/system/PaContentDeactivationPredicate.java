@@ -86,21 +86,21 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         return new Predicate<String>() {
             @Override public boolean apply(@Nullable String s) {
                 if (content instanceof Episode || content instanceof Item) {
-                    return !paNamespaceToAliases
+                    return paNamespaceToAliases
                             .get(PaContentDeactivator.PA_PROGRAMME_NAMESPACE)
                             .contains(s);
                 }
                 if (content instanceof Series) {
-                    return !paNamespaceToAliases
+                    return paNamespaceToAliases
                             .get(PaContentDeactivator.PA_SEASON_NAMESPACE)
                             .contains(s);
                 }
                 if (content instanceof Brand) {
-                    return !paNamespaceToAliases
+                    return paNamespaceToAliases
                             .get(PaContentDeactivator.PA_SERIES_NAMESPACE)
                             .contains(s);
                 }
-                return true;
+                return false;
             }
         };
     }

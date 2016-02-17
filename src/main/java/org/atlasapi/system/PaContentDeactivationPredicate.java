@@ -85,14 +85,11 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     private Predicate<String> shouldDeactivateContent(final Content content) {
         return new Predicate<String>() {
             @Override public boolean apply(@Nullable String s) {
+                /* Series aren't handled here as we lack a reliable mapping from PA's IDs
+                    to their URIs in atlas. They are handled by removing empty Series elsewhere */
                 if (content instanceof Episode || content instanceof Item) {
                     return !paNamespaceToAliases
                             .get(PaContentDeactivator.PA_PROGRAMME_NAMESPACE)
-                            .contains(s);
-                }
-                if (content instanceof Series) {
-                    return !paNamespaceToAliases
-                            .get(PaContentDeactivator.PA_SEASON_NAMESPACE)
                             .contains(s);
                 }
                 if (content instanceof Brand) {

@@ -1,5 +1,6 @@
 package org.atlasapi.system;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
@@ -48,12 +49,14 @@ public class PaContentDeactivationPredicateTest {
     @Test
     public void testDoesNotDeactivatePaFilm() throws Exception {
         Film film = new Film("http://pressassociation.com/films/12312", "", Publisher.PA);
+        film.setAliasUrls(ImmutableList.of("http://pressassociation.com/films/12312"));
         film.setId(30L);
-        assertThat(predicate.apply(film), is(true));
+        assertThat(predicate.apply(film), is(false));
 
         Film film2 = new Film("http://pressassociation.com/films/123123123123", "", Publisher.PA);
         film2.setId(31L);
-        assertThat(predicate.apply(film2), is(true));
+        film2.setAliasUrls(ImmutableList.of("http://pressassociation.com/films/12312"));
+        assertThat(predicate.apply(film2), is(false));
     }
 
     @Test

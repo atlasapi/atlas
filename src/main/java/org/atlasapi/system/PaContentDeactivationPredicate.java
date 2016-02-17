@@ -61,7 +61,7 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     @Override
     public boolean apply(Content content) {
         return (isNotPaFilm(content) &&
-                isNotActiveContentId(content) &&
+                isInactiveContent(content) &&
                 isNotGenericDescription(content) &&
                 isNotSeries(content)) ||
                 isEmptyContainer(content);
@@ -75,7 +75,7 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         return content.getGenericDescription() == null || !content.getGenericDescription();
     }
 
-    private boolean isNotActiveContentId(final Content content) {
+    private boolean isInactiveContent(final Content content) {
         return FluentIterable.from(content.getAllUris())
                 .filter(IS_PA_ALIAS)
                 .transform(PA_ALIAS_EXTRACTOR)
@@ -86,17 +86,17 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         return new Predicate<String>() {
             @Override public boolean apply(@Nullable String s) {
                 if (content instanceof Episode || content instanceof Item) {
-                    return paNamespaceToAliases
+                    return !paNamespaceToAliases
                             .get(PaContentDeactivator.PA_PROGRAMME_NAMESPACE)
                             .contains(s);
                 }
                 if (content instanceof Series) {
-                    return paNamespaceToAliases
+                    return !paNamespaceToAliases
                             .get(PaContentDeactivator.PA_SEASON_NAMESPACE)
                             .contains(s);
                 }
                 if (content instanceof Brand) {
-                    return paNamespaceToAliases
+                    return !paNamespaceToAliases
                             .get(PaContentDeactivator.PA_SERIES_NAMESPACE)
                             .contains(s);
                 }

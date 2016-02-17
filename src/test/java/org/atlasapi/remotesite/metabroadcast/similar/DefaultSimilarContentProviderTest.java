@@ -18,6 +18,7 @@ import org.atlasapi.media.entity.EntityType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.SimilarContentRef;
 import org.atlasapi.media.entity.testing.BrandTestDataBuilder;
+import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.output.AvailableItemsResolver;
@@ -57,6 +58,7 @@ public class DefaultSimilarContentProviderTest {
         ContentListingCriteria expectedCriteria = ContentListingCriteria
                                                     .defaultCriteria()
                                                     .forPublisher(PUBLISHER)
+                                                    .forContent(ContentCategory.TOP_LEVEL_CONTENT)
                                                     .build();
         
         when(contentLister.listContent(expectedCriteria)).thenReturn(ImmutableSet.<Content>of().iterator());
@@ -89,6 +91,7 @@ public class DefaultSimilarContentProviderTest {
         ContentListingCriteria expectedCriteria = ContentListingCriteria
                 .defaultCriteria()
                 .forPublisher(PUBLISHER)
+                .forContent(ContentCategory.TOP_LEVEL_CONTENT)
                 .build();
         
         when(contentLister.listContent(expectedCriteria)).thenReturn(brands.iterator());

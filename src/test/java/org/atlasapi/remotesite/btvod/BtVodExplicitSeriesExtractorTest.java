@@ -1,15 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.hamcrest.CoreMatchers.is;
-import static org.hamcrest.CoreMatchers.sameInstance;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.anySet;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
@@ -25,18 +15,29 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
-import org.hamcrest.CoreMatchers;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Matchers;
+
+import com.metabroadcast.common.intl.Countries;
 
 import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.intl.Countries;
+import org.hamcrest.CoreMatchers;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Matchers;
+
+import static org.hamcrest.CoreMatchers.is;
+import static org.hamcrest.CoreMatchers.sameInstance;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 public class BtVodExplicitSeriesExtractorTest {
 
@@ -58,6 +59,7 @@ public class BtVodExplicitSeriesExtractorTest {
             mock(DedupedDescriptionAndImageUpdater.class);
 
     private final TopicRef newTopic = mock(TopicRef.class);
+    private final BtVodTagMap btVodTagMap = mock(BtVodTagMap.class);
 
     private BtVodExplicitSeriesExtractor seriesExtractor;
 
@@ -80,7 +82,8 @@ public class BtVodExplicitSeriesExtractorTest {
                 ),
                 new TitleSanitiser(),
                 imageExtractor,
-                descriptionAndImageUpdater
+                descriptionAndImageUpdater,
+                btVodTagMap
         );
     }
 

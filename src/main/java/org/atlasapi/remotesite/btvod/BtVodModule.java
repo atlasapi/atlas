@@ -13,10 +13,11 @@ import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
+import org.atlasapi.persistence.ids.MongoSequentialIdGenerator;
 import org.atlasapi.persistence.topic.TopicContentLister;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
-import org.atlasapi.persistence.topic.TopicWriter;
+import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.HttpClients;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentGroupUpdater;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
@@ -26,6 +27,7 @@ import org.atlasapi.remotesite.btvod.portal.XmlPortalClient;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
 
 import com.metabroadcast.common.http.SimpleHttpClientBuilder;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
@@ -122,7 +124,9 @@ public class BtVodModule {
     private TopicQueryResolver topicQueryResolver;
     @Autowired
     @Qualifier("topicStore")
-    private TopicWriter topicWriter;
+    private TopicStore topicStore;
+    @Autowired
+    private DatabasedMongo mongo;
     @Value("${bt.vod.file}")
     private String filename;
     @Value("${bt.portal.baseUri}")
@@ -201,7 +205,8 @@ public class BtVodModule {
                         btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, btVodMpxProdFeedBaseUrl),
                 mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
                 topicQueryResolver,
-                BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY)
+                BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY),
+                new BtVodTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics"))
         );
     }
 
@@ -313,7 +318,8 @@ public class BtVodModule {
                 ),
                 mpxVodClient(baseUrlForItemLookup, feedNameForItemLookup, btVodMpxProdFeedQParam),
                 topicQueryResolver,
-                BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY)
+                BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY),
+                new BtVodTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics"))
         ).withName(
                 String.format(
                         "BT TVE VoD Updater for %s",
@@ -366,7 +372,7 @@ public class BtVodModule {
         BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(btVodMpxProdFeedBaseUrlForGuidLookup, newFeedSuffix, qParam);
         return new BtVodDescribedFieldsExtractor(
                 topicResolver,
-                topicWriter,
+                topicStore,
                 publisher,
                 newContentPredicate,
                 BtVodContentMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY),
@@ -439,7 +445,7 @@ public class BtVodModule {
     
     private Topic topicFor(String namespace, String topicName, Publisher publisher) {
         Topic topic = topicResolver.topicFor(publisher, namespace, topicName).requireValue();
-        topicWriter.write(topic);
+        topicStore.write(topic);
         return topic;
     }
     

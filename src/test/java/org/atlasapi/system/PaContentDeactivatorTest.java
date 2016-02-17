@@ -59,7 +59,7 @@ public class PaContentDeactivatorTest {
                 progressStore,
                 childCollection
         );
-        activeContainer = new Brand("10", "10", Publisher.PA);
+        activeContainer = new Brand("http://pressassociation.com/series/10", "10", Publisher.PA);
         activeContainer.setChildRefs(
                 ImmutableList.of(
                         new ChildRef(10l, "", "", DateTime.now(), EntityType.CLIP)
@@ -67,14 +67,14 @@ public class PaContentDeactivatorTest {
         );
         activeContainer.setId(10l);
 
-        inactiveContainer = new Brand("20", "20", Publisher.PA);
+        inactiveContainer = new Brand("http://pressassociation.com/series/20", "20", Publisher.PA);
         inactiveContainer.setId(20l);
         inactiveContainer.setGenericDescription(true);
 
-        emptyContainer = new Brand("30", "30", Publisher.PA);
+        emptyContainer = new Brand("http://pressassociation.com/series/30", "30", Publisher.PA);
         emptyContainer.setId(30l);
 
-        emptyContainerButHasGenericChildren = new Brand("40", "40", Publisher.PA);
+        emptyContainerButHasGenericChildren = new Brand("http://pressassociation.com/brand/40", "40", Publisher.PA);
         emptyContainerButHasGenericChildren.setId(40l);
 
         Item genericChildOfEmptyBrand = new Item("40children", "40children", Publisher.PA);
@@ -82,9 +82,9 @@ public class PaContentDeactivatorTest {
         genericChildOfEmptyBrand.setContainer(emptyContainerButHasGenericChildren);
         writer.createOrUpdate(genericChildOfEmptyBrand);
 
-        activeItem = new Item("50", "50", Publisher.PA);
+        activeItem = new Item("http://pressassociation.com/episodes/50", "50", Publisher.PA);
         activeItem.setId(50l);
-        inactiveItem = new Item("60", "60", Publisher.PA);
+        inactiveItem = new Item("http://pressassociation.com/episodes/60", "60", Publisher.PA);
         inactiveItem.setId(60l);
 
         setupMocks(activeItem, inactiveItem, activeContainer, inactiveContainer, emptyContainer, emptyContainerButHasGenericChildren);

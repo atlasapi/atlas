@@ -5,16 +5,18 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
+import javax.annotation.Nonnull;
+
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Series;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.Ordering;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 
 public class HierarchyDescriptionAndImageUpdater {
 
@@ -140,7 +142,10 @@ public class HierarchyDescriptionAndImageUpdater {
 
     private boolean isHigherPriority(MetadataSource source,
             Optional<MetadataSource> existingSource) {
-        return !existingSource.isPresent() || source.compareTo(existingSource.get()) > 0;
+        // We return true on equality as well because we may see the same source multiple times
+        // as different BT VoD entries get deduped in it and each time which images and descriptions
+        // have been kept as part of the deduping process may have changed
+        return !existingSource.isPresent() || source.compareTo(existingSource.get()) >= 0;
     }
 
     private enum MetadataSourceType {
@@ -199,7 +204,7 @@ public class HierarchyDescriptionAndImageUpdater {
          * the lowest series/episode number or from the oldest collection
          */
         @Override
-        public int compareTo(MetadataSource that) {
+        public int compareTo(@Nonnull MetadataSource that) {
             return ComparisonChain.start()
                     .compare(
                             this.sourceType.getPriority(),

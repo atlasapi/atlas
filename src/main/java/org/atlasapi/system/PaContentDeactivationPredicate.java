@@ -6,17 +6,9 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
-import com.google.common.primitives.Longs;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Series;
-
+import org.atlasapi.media.entity.*;
 
 import javax.annotation.Nullable;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -28,7 +20,8 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     private static final Pattern ID_EXTRACTION_PATTERN = Pattern.compile(".*/([0-9]+)");
 
     private static final Function<String, String> PA_ALIAS_EXTRACTOR = new Function<String, String>() {
-        @Override public String apply(String s) {
+        @Override
+        public String apply(String s) {
             Matcher matcher = ID_EXTRACTION_PATTERN.matcher(s);
             checkArgument(matcher.matches(), "Not a PA alias");
             return matcher.group(1);
@@ -36,17 +29,26 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     };
 
     private static final Predicate<String> HAS_FILM_URI = new Predicate<String>() {
-        @Override public boolean apply(String s) {
+        @Override
+        public boolean apply(String s) {
             return !Strings.isNullOrEmpty(s) && s.startsWith("http://pressassociation.com/films/");
         }
     };
 
     private static final Predicate<String> IS_PA_ALIAS = new Predicate<String>() {
-        @Override public boolean apply(@Nullable String s) {
+        @Override
+        public boolean apply(@Nullable String s) {
             return !Strings.isNullOrEmpty(s) &&
                     (s.startsWith("http://pressassociation.com/episodes") ||
-                    s.startsWith("http://pressassociation.com/brands") ||
-                    s.startsWith("http://pressassociation.com/series"));
+                            s.startsWith("http://pressassociation.com/brands") ||
+                            s.startsWith("http://pressassociation.com/series"));
+        }
+    };
+    private static final Predicate<String> IS_GENERIC_ID = new Predicate<String>() {
+        @Override
+        public boolean apply(String s) {
+            /* Generics consistently have PA IDs greater than 100 million */
+            return Long.parseLong(s) > 100000000;
         }
     };
 
@@ -74,16 +76,15 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
 
     private boolean isNotGenericDescription(Content content) {
         /* We dont use Content.getGenericDescription here as some generic content predates that field */
-        return FluentIterable.from(content.getAllUris())
-                        .filter(IS_PA_ALIAS)
-                        .transform(PA_ALIAS_EXTRACTOR)
-                        .anyMatch(new Predicate<String>() {
-                            @Override
-                            public boolean apply(@Nullable String s) {
-                                /* Generic consistently have PA IDs greater than 100 million */
-                                return Long.parseLong(s) < 100000000;
-                            }
-                        });
+        boolean hasGenericId = FluentIterable.from(content.getAllUris())
+                .filter(IS_PA_ALIAS)
+                .transform(PA_ALIAS_EXTRACTOR)
+                .anyMatch(IS_GENERIC_ID);
+        boolean hasGenericFlag = content.getGenericDescription() != null && content.getGenericDescription();
+        if (hasGenericId || hasGenericFlag) {
+            return false;
+        }
+        return true;
     }
 
     private boolean isInactiveContent(final Content content) {
@@ -95,7 +96,8 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
 
     private Predicate<String> shouldDeactivateContent(final Content content) {
         return new Predicate<String>() {
-            @Override public boolean apply(@Nullable String s) {
+            @Override
+            public boolean apply(@Nullable String s) {
                 /* Series aren't handled here as we lack a reliable mapping from PA's IDs
                     to their URIs in atlas. They are handled by removing empty Series elsewhere */
                 if (content instanceof Episode || content instanceof Item) {

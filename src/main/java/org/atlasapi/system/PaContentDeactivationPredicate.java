@@ -81,10 +81,8 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
                 .transform(PA_ALIAS_EXTRACTOR)
                 .anyMatch(IS_GENERIC_ID);
         boolean hasGenericFlag = content.getGenericDescription() != null && content.getGenericDescription();
-        if (hasGenericId || hasGenericFlag) {
-            return false;
-        }
-        return true;
+        return !hasGenericId && !hasGenericFlag;
+
     }
 
     private boolean isInactiveContent(final Content content) {

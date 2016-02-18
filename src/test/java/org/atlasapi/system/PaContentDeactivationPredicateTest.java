@@ -61,10 +61,13 @@ public class PaContentDeactivationPredicateTest {
 
     @Test
     public void testDoesNotDeactivateGenericDescriptionContent() throws Exception {
-        Episode episode = new Episode("genericEpisode", "", Publisher.PA);
-        episode.setGenericDescription(true);
+        Episode genericEpisode1 = new Episode("genericEpisode", "", Publisher.PA);
+        genericEpisode1.setGenericDescription(true);
+        assertThat(predicate.apply(genericEpisode1), is(false));
 
-        assertThat(predicate.apply(episode), is(false));
+        Episode genericEpisode2 = new Episode("http://pressassociation.com/episodes/100000001", "", Publisher.PA);
+        assertThat(predicate.apply(genericEpisode2), is(false));
+
     }
 
     @Test

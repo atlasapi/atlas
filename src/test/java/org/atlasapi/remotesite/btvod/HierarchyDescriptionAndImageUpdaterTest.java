@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-
 import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
@@ -10,14 +7,17 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Series;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
 
 @RunWith(MockitoJUnitRunner.class)
 public class HierarchyDescriptionAndImageUpdaterTest {
@@ -225,6 +225,23 @@ public class HierarchyDescriptionAndImageUpdaterTest {
         updater.update(brand, episode);
         checkDescriptionsSource(brand, collection);
         checkImagesSource(brand, collection);
+    }
+
+    @Test
+    public void testUpdateFromSeriesIfBrandHasDescriptionsAndImagesFromSeriesWithSameSeriesNumber()
+            throws Exception {
+        Brand brand = getBrand("uri", null, null);
+
+        Series firstSeries = getSeries("firstSeries", "firstSeriesL", 5, firstImage);
+        Series secondSeries = getSeries("secondSeries", "secondSeriesL", 5, secondImage);
+
+        updater.update(brand, firstSeries);
+        checkDescriptionsSource(brand, firstSeries);
+        checkImagesSource(brand, firstSeries);
+
+        updater.update(brand, secondSeries);
+        checkDescriptionsSource(brand, secondSeries);
+        checkImagesSource(brand, secondSeries);
     }
 
     private Brand getBrand(String uri, String description, String longDescription,

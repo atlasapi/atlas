@@ -81,7 +81,7 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
                             @Override
                             public boolean apply(@Nullable String s) {
                                 /* Generic consistently have PA IDs greater than 100 million */
-                                return !(Long.parseLong(s) > 100000000);
+                                return Long.parseLong(s) < 100000000;
                             }
                         });
     }

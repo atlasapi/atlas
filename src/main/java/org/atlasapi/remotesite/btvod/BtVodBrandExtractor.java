@@ -40,19 +40,22 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
     private final BtVodDescribedFieldsExtractor describedFieldExtractor;
     private final BrandUriExtractor brandUriExtractor;
     private UpdateProgress progress = UpdateProgress.START;
+    private final BtVodTagMap btVodTagMap;
 
     public BtVodBrandExtractor(
             Publisher publisher,
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldExtractor,
-            BrandUriExtractor brandUriExtractor
+            BrandUriExtractor brandUriExtractor,
+            BtVodTagMap btVodTagMap
     ) {
         this.listener = checkNotNull(listener);
         this.publisher = checkNotNull(publisher);
         this.processedRows = checkNotNull(processedRows);
         this.brandUriExtractor = checkNotNull(brandUriExtractor);
         this.describedFieldExtractor = checkNotNull(describedFieldExtractor);
+        this.btVodTagMap = btVodTagMap;
     }
 
     @Override
@@ -124,6 +127,7 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
 
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, brand);
         brand.addTopicRefs(describedFieldExtractor.topicsFrom(vodEntryAndContent));
+        brand.addTopicRefs(btVodTagMap.mapGenresToTopicRefs(brand.getGenres()));
         return brand;
     }
 

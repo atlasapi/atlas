@@ -63,7 +63,9 @@ public class ContainerCandidatesContainerEquivalenceGenerator implements Equival
                 if (optional.isPresent()) {
                     EquivalenceSummary summary = optional.get();
                     for (Series candidateSeries : seriesOf(Iterables.transform(summary.getEquivalents().values(), TO_CANONICAL_URI))) {
-                        result.addEquivalent(candidateSeries, Score.NULL_SCORE);
+                        if (candidateSeries.isActivelyPublished()) {
+                            result.addEquivalent(candidateSeries, Score.NULL_SCORE);
+                        }
                     }
                 }
             }

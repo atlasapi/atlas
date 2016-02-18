@@ -62,7 +62,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     public ScoredCandidates<Item> generate(Item item, ResultDescription desc) {
         Builder<Item> scores = DefaultScoredCandidates.fromSource("Film");
 
-        if (!(item instanceof Film)) {
+        if (!(item instanceof Film)
+                || !item.isActivelyPublished()) {
             return scores.build();
         }
         

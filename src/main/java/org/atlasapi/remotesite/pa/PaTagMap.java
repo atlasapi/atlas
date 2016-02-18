@@ -220,7 +220,7 @@ public class PaTagMap {
         } else {
             Topic topic = new Topic(
                     idGenerator.generateRaw(),
-                    PA_NAMESPACE,
+                    PA_NAMESPACE + tag,
                     METABROADCAST_TAG + tag);
             topic.setPublisher(PA);
             topic.setTitle(tag);

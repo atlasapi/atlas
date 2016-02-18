@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 
 public class PaTagMapTest {
 
-    private final String PA_NAMESPACE = "pressassociation.com";
+    private final String PA_NAMESPACE = "gb:pressassociation:prod:";
     private final String METABROADCAST_TAG = "http://metabroadcast.com/tags/";
     private TopicStore topicStore = mock(TopicStore.class);
     private MongoSequentialIdGenerator idGenerator = mock(MongoSequentialIdGenerator.class);
@@ -36,7 +36,7 @@ public class PaTagMapTest {
         genres.add("http://pressassociation.com/genres/1F03");
         String tag = "horror";
 
-        when(topicStore.topicFor(Publisher.PA, PA_NAMESPACE, METABROADCAST_TAG + tag))
+        when(topicStore.topicFor(Publisher.PA, PA_NAMESPACE + tag, METABROADCAST_TAG + tag))
                 .thenReturn(Maybe.fromPossibleNullValue(new Topic(20l, PA_NAMESPACE, METABROADCAST_TAG + tag)));
 
         assertEquals(paTagMap.mapGenresToTopicRefs(genres).size(), 1);
@@ -49,7 +49,7 @@ public class PaTagMapTest {
         genres.add("http://pressassociation.com/genres/1F03");
         String tag = "horror";
 
-        when(topicStore.topicFor(Publisher.PA, PA_NAMESPACE, METABROADCAST_TAG + tag))
+        when(topicStore.topicFor(Publisher.PA, PA_NAMESPACE + tag, METABROADCAST_TAG + tag))
                 .thenReturn(Maybe.<Topic>nothing());
         when(idGenerator.generateRaw()).thenReturn(10l);
 

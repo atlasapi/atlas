@@ -41,7 +41,7 @@ public class PaContentDeactivationPredicateTest {
 
     @Test
     public void testDoesDeactivateInactiveContent() throws Exception {
-        Item active = new Item("http://pressassociation.com/episodes/103123123", "", Publisher.PA);
+        Item active = new Item("http://pressassociation.com/episodes/103123", "", Publisher.PA);
         active.setId(20L);
         assertThat(predicate.apply(active), is(true));
     }

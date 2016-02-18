@@ -60,7 +60,9 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
             if (optional.isPresent()) {
                 EquivalenceSummary summary = optional.get();
                 for (Item child : childrenOf(summary.getCandidates())) {
-                    result.addEquivalent(child, Score.NULL_SCORE);
+                    if (child.isActivelyPublished()) {
+                        result.addEquivalent(child, Score.NULL_SCORE);
+                    }
                 }
             }
         }

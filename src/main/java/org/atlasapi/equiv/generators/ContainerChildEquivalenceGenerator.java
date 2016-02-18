@@ -63,9 +63,16 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
                 Identified identified = possibledContainer.requireValue();
                 if (identified instanceof Container) {
                     Container container = (Container) identified;
-                    Score score = score(parent.getCount(), children);
-                    candidates.addEquivalent(container, score);
-                    desc.appendText("%s: scored %s (%s)", container.getCanonicalUri(), score, container.getTitle());
+                    if (container.isActivelyPublished()) {
+                        Score score = score(parent.getCount(), children);
+                        candidates.addEquivalent(container, score);
+                        desc.appendText(
+                                "%s: scored %s (%s)",
+                                container.getCanonicalUri(),
+                                score,
+                                container.getTitle()
+                        );
+                    }
                 } else {
                     desc.appendText("%s: %s not container", parent, identified.getClass().getSimpleName());
                 }

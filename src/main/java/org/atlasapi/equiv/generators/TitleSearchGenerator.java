@@ -1,8 +1,5 @@
 package org.atlasapi.equiv.generators;
 
-import static org.atlasapi.application.v3.ApplicationConfiguration.defaultConfiguration;
-
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -12,19 +9,22 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
+import com.metabroadcast.common.query.Selection;
+
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.query.Selection;
+
+import static org.atlasapi.application.v3.ApplicationConfiguration.defaultConfiguration;
 
 public class TitleSearchGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
@@ -79,9 +79,15 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             query.withSpecializations(ImmutableSet.of(content.getSpecialization()));
         }
         
-        desc.appendText("query: %s, specialization: %s, publishers: %s", title, content.getSpecialization(), publishers);
-        List<Identified> search = searchResolver.search(query.build(), appConfig);
-        return Iterables.filter(search, cls);
+        desc.appendText("query: %s, specialization: %s, publishers: %s",
+                title,
+                content.getSpecialization(),
+                publishers);
+
+        Iterable<? extends T> search =
+                Iterables.filter(searchResolver.search(query.build(), appConfig), cls);
+
+        return Iterables.filter(search, IS_ACTIVELY_PUBLISHED);
     }
 
     private Map<Publisher, SourceStatus> enabledPublishers(Set<Publisher> enabledSources) {
@@ -100,5 +106,13 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     public String toString() {
         return "Title-matching Generator";
     }
+
+    private static Predicate<Content> IS_ACTIVELY_PUBLISHED = new Predicate<Content>() {
+
+        @Override
+        public boolean apply(Content input) {
+            return input.isActivelyPublished();
+        }
+    };
     
 }

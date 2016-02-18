@@ -39,8 +39,10 @@ public class AliasResolvingEquivalenceGenerator<T extends Content> implements Eq
        ResolvedContent resolved = resolver.findByCanonicalUris(content.getAliasUrls());
        
        for (T identified : Iterables.filter(resolved.getAllResolvedResults(), cls)) {
+           if (identified.isActivelyPublished()) {
                equivalents.addEquivalent(identified, Score.ONE);
                desc.appendText("Resolved %s", identified.getCanonicalUri());
+           }
        }
        desc.appendText("Missed %s", resolved.getUnresolved().size());
         

@@ -93,7 +93,9 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
         }
         for (ScheduleChannel channel : schedule.scheduleChannels()) {
             for (Item scheduleItem : channel.items()) {
-                if (scheduleItem instanceof Item && hasQualifyingBroadcast(scheduleItem, broadcast)) {
+                if (scheduleItem instanceof Item
+                        && scheduleItem.isActivelyPublished()
+                        && hasQualifyingBroadcast(scheduleItem, broadcast)) {
                     scores.addEquivalent((Item) scheduleItem, Score.valueOf(1.0));
                 }
             }

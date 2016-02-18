@@ -127,7 +127,7 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
 
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, brand);
         brand.addTopicRefs(describedFieldExtractor.topicsFrom(vodEntryAndContent));
-        brand.addTopicRefs(btVodTagMap.map(brand.getGenres()));
+        brand.addTopicRefs(btVodTagMap.mapGenresToTopicRefs(brand.getGenres()));
         return brand;
     }
 

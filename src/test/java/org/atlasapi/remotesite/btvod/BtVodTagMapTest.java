@@ -19,7 +19,7 @@ import static org.mockito.Mockito.when;
 
 public class BtVodTagMapTest {
 
-    private final String BT_VOD_NAMESPACE = "vod.bt.com";
+    private final String BT_VOD_NAMESPACE = "gb:btvod:prod:";
     private final String METABROADCAST_TAG = "http://metabroadcast.com/tags/";
     private TopicStore topicStore = mock(TopicStore.class);
     private MongoSequentialIdGenerator idGenerator = mock(MongoSequentialIdGenerator.class);
@@ -36,12 +36,12 @@ public class BtVodTagMapTest {
         genres.add("http://vod.bt.com/genres/Zombie");
         String tag = "horror";
 
-        when(topicStore.topicFor(Publisher.BT_VOD, BT_VOD_NAMESPACE, METABROADCAST_TAG + tag))
+        when(topicStore.topicFor(Publisher.BT_VOD, BT_VOD_NAMESPACE + tag, METABROADCAST_TAG + tag))
                 .thenReturn(Maybe.fromPossibleNullValue(new Topic(20l,
-                        BT_VOD_NAMESPACE, METABROADCAST_TAG + tag)));
+                        BT_VOD_NAMESPACE + tag, METABROADCAST_TAG + tag)));
 
-        assertEquals(btVodTagMap.map(genres).size(), 1);
-        assertEquals(btVodTagMap.map(genres).iterator().next().getTopic().longValue(), 20l);
+        assertEquals(btVodTagMap.mapGenresToTopicRefs(genres).size(), 1);
+        assertEquals(btVodTagMap.mapGenresToTopicRefs(genres).iterator().next().getTopic().longValue(), 20l);
     }
 
     @Test
@@ -50,11 +50,11 @@ public class BtVodTagMapTest {
         genres.add("http://vod.bt.com/genres/Zombie");
         String tag = "horror";
 
-        when(topicStore.topicFor(Publisher.BT_VOD, BT_VOD_NAMESPACE, METABROADCAST_TAG + tag))
+        when(topicStore.topicFor(Publisher.BT_VOD, BT_VOD_NAMESPACE + tag, METABROADCAST_TAG + tag))
                 .thenReturn(Maybe.<Topic>nothing());
         when(idGenerator.generateRaw()).thenReturn(10l);
 
-        assertEquals(btVodTagMap.map(genres).size(), 1);
-        assertEquals(btVodTagMap.map(genres).iterator().next().getTopic().longValue(), 10l);
+        assertEquals(btVodTagMap.mapGenresToTopicRefs(genres).size(), 1);
+        assertEquals(btVodTagMap.mapGenresToTopicRefs(genres).iterator().next().getTopic().longValue(), 10l);
     }
 }

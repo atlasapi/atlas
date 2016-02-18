@@ -92,7 +92,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
     private void setFields(Series series, BtVodEntry row) {
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
-        series.addTopicRefs(btVodTagMap.map(series.getGenres()));
+        series.addTopicRefs(btVodTagMap.mapGenresToTopicRefs(series.getGenres()));
     }
 
     @Override

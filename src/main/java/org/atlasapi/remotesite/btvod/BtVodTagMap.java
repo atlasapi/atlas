@@ -18,7 +18,7 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 
 /** BT VOD genre map for MetaBroadcast tags.
  *
- * This class is used in BtVodDescribedFieldsExtractor for mapping the BT VOD genres to
+ * This class is used for mapping the BT VOD genres to
  * MetaBroadcast tags for the described object. This is done so that we can use BT VOD
  * content in the content prioritization algorithm. This further would allow us to filter
  * the BT VOD content by the priority.
@@ -26,7 +26,7 @@ import static com.google.gson.internal.$Gson$Preconditions.checkNotNull;
 public class BtVodTagMap {
 
     private final ImmutableMap<String, String> btVodTagMap;
-    private final String BT_VOD_NAMESPACE = "vod.bt.com";
+    private final String BT_VOD_NAMESPACE = "gb:btvod:prod:";
     private final String METABROADCAST_TAG = "http://metabroadcast.com/tags/";
     private TopicStore topicStore;
     private MongoSequentialIdGenerator idGenerator;
@@ -133,7 +133,7 @@ public class BtVodTagMap {
      * @param genres - BT VOD content genres that are used for mapping with MetaBroadcast tags.
      * @return set of MetaBroadcast tags as TopicRef objects for the BT VOD content.
      */
-    public Set<TopicRef> map(Set<String> genres) {
+    public Set<TopicRef> mapGenresToTopicRefs(Set<String> genres) {
         Set<String> tags = Sets.newHashSet();
         for (String genre : genres) {
             if (genre.contains("http://vod.bt.com/genres/")) {
@@ -147,11 +147,6 @@ public class BtVodTagMap {
         return getTopicRefFromTags(tags);
     }
 
-    /** This method is used for creating a set of TopicRefs from mapped tags.
-     * This is done because we store MetaBroadcast tags as TopicRefs to the BT VOD content.
-     * @param mappedTags - mapped tags for the BT VOD content.
-     * @return set of MetaBroadcast tags as TopicRef objects for the BT VOD content.
-     */
     private Set<TopicRef> getTopicRefFromTags(Set<String> mappedTags) {
         ImmutableSet<String> tags = ImmutableSet.copyOf(mappedTags);
         if(tags.isEmpty()) {
@@ -174,7 +169,7 @@ public class BtVodTagMap {
      * @param topicRefBuilder ImmutableSet that holds all mapped tags TopicRefs
      * @param tag used for creating a TopicRef object.
      */
-    public void addTopicRef(ImmutableSet.Builder<TopicRef> topicRefBuilder, String tag) {
+    private void addTopicRef(ImmutableSet.Builder<TopicRef> topicRefBuilder, String tag) {
         Maybe<Topic> resolvedTopic = resolveTopic(tag);
         if (resolvedTopic.hasValue()) {
             Topic topic = resolvedTopic.requireValue();
@@ -190,7 +185,7 @@ public class BtVodTagMap {
         } else {
             Topic topic = new Topic(
                     idGenerator.generateRaw(),
-                    BT_VOD_NAMESPACE,
+                    BT_VOD_NAMESPACE + tag,
                     METABROADCAST_TAG + tag);
             topic.setPublisher(Publisher.BT_VOD);
             topic.setTitle(tag);
@@ -212,7 +207,7 @@ public class BtVodTagMap {
      * @param tag is used for looking up Topic in db
      * @return Maybe<Topic> resolved tag as a Topic from db
      */
-    public Maybe<Topic> resolveTopic(String tag) {
-        return topicStore.topicFor(Publisher.BT_VOD, BT_VOD_NAMESPACE, METABROADCAST_TAG + tag);
+    private Maybe<Topic> resolveTopic(String tag) {
+        return topicStore.topicFor(Publisher.BT_VOD, BT_VOD_NAMESPACE + tag, METABROADCAST_TAG + tag);
     }
 }

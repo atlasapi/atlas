@@ -6,6 +6,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
+import com.google.common.primitives.Longs;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
@@ -72,7 +73,17 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     }
 
     private boolean isNotGenericDescription(Content content) {
-        return content.getGenericDescription() == null || !content.getGenericDescription();
+        /* We dont use Content.getGenericDescription here as some generic content predates that field */
+        return FluentIterable.from(content.getAllUris())
+                        .filter(IS_PA_ALIAS)
+                        .transform(PA_ALIAS_EXTRACTOR)
+                        .anyMatch(new Predicate<String>() {
+                            @Override
+                            public boolean apply(@Nullable String s) {
+                                /* Generic consistently have PA IDs greater than 100 million */
+                                return Long.parseLong(s) > 100000000;
+                            }
+                        });
     }
 
     private boolean isInactiveContent(final Content content) {

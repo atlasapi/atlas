@@ -16,12 +16,16 @@ import org.atlasapi.media.entity.Item;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     
     public static final String NAME = "Title";
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of("the ", "Live ");
     private static final Pattern TRAILING_APOSTROPHE_PATTERN =Pattern.compile("\\w' ");
+
+    private Logger log = LoggerFactory.getLogger(TitleMatchingItemScorer.class);
 
     public enum TitleType {
         
@@ -98,7 +102,10 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
-        
+
+        if (suggestion.getTitle().contains("ight")) {
+            log.debug(String.format("Title: %s, Uri: %s"), suggestion.getTitle(), suggestion.getCanonicalUri());
+        }
         
         Score score = Score.NULL_SCORE;
 

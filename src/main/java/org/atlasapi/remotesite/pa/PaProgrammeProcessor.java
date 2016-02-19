@@ -64,11 +64,16 @@ import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.persistence.logging.AdapterLogEntry.errorEntry;
 import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
 public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpdatesProcessor {
+
+    private static final Logger LOG = LoggerFactory.getLogger(PaProgrammeProcessor.class);
     
     static final String PA_PICTURE_TYPE_EPISODE = "episode";
     static final String PA_PICTURE_TYPE_BRAND   = "series";  // Counter-intuitively PA use 'series' where we use 'brand'
@@ -87,17 +92,17 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     private static final List<String> IGNORED_BRANDS = ImmutableList.of("70214", "84575");    // 70214 is 'TBA' brand, 84575 is 'Film TBA'
     
     private final ContentResolver contentResolver;
-    private final AdapterLog log;
+    private final AdapterLog adapterLog;
     private final PaCountryMap countryMap = new PaCountryMap();
     
     private final GenreMap genreMap = new PaGenreMap();
     private final PaTagMap paTagMap;
 
     public PaProgrammeProcessor(ContentWriter contentWriter, ContentResolver contentResolver,
-            AdapterLog log, PaTagMap paTagMap) {
-        this.contentResolver = contentResolver;
-        this.log = log;
-        this.paTagMap = paTagMap;
+            AdapterLog adapterLog, PaTagMap paTagMap) {
+        this.contentResolver = checkNotNull(contentResolver);
+        this.adapterLog = checkNotNull(adapterLog);
+        this.paTagMap = checkNotNull(paTagMap);
     }
 
     @Override
@@ -130,8 +135,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             return Optional.of(new ContentHierarchyAndSummaries(possibleBrand, possibleSeries, item, itemAndBroadcast.getBroadcast().requireValue(),
                     Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary)));
         } catch (Exception e) {
-            e.printStackTrace();
-            log.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
+            LOG.warn("Failed to process PA programme data", e);
+            adapterLog.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
         }
         return Optional.absent();
     }
@@ -164,7 +169,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
             return Optional.of(new ContentHierarchyWithoutBroadcast(Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary), item));
         } catch (Exception e) {
-            log.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
+            LOG.warn("Failed to process PA programme data update", e);
+            adapterLog.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
         }
         return Optional.absent();
     }
@@ -396,7 +402,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
     private Optional<Series> getSeriesWithoutChannel(ProgData progData, Timestamp updatedAt) {
         if (Strings.isNullOrEmpty(progData.getSeriesNumber()) || Strings.isNullOrEmpty(progData.getSeriesId())) {
-            return Optional.<Series>absent();
+            return Optional.absent();
         }
         String seriesUri = PaHelper.getSeriesUri(progData.getSeriesId(), progData.getSeriesNumber());
         Alias seriesAlias = PaHelper.getSeriesAlias(progData.getSeriesId(), progData.getSeriesNumber());
@@ -412,7 +418,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             try {
                 series.setTotalEpisodes(Integer.parseInt(progData.getEpisodeTotal().trim()));
             } catch (NumberFormatException e) {
-                log.record(warnEntry().withCause(e).withSource(getClass()).withDescription("Couldn't parse episode_total %s", progData.getEpisodeTotal().trim()));
+                adapterLog.record(warnEntry().withCause(e).withSource(getClass()).withDescription("Couldn't parse episode_total %s", progData.getEpisodeTotal().trim()));
             }
         }
 
@@ -420,7 +426,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             try {
                 series.withSeriesNumber(Integer.parseInt(progData.getSeriesNumber().trim()));
             } catch (NumberFormatException e) {
-                log.record(warnEntry().withCause(e).withSource(getClass()).withDescription("Couldn't parse series_number %s", progData.getSeriesNumber().trim()));
+                adapterLog.record(warnEntry().withCause(e).withSource(getClass()).withDescription("Couldn't parse series_number %s", progData.getSeriesNumber().trim()));
             }
         }
 
@@ -631,10 +637,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         if (possiblePrevious.hasValue()) {
             item = (Item) possiblePrevious.requireValue();
             if (!(item instanceof Episode) && isEpisode) {
-                log.record(warnEntry().withSource(getClass()).withDescription("%s resolved as %s being ingested as Episode", episodeUri, item.getClass().getSimpleName()));
+                adapterLog.record(warnEntry().withSource(getClass()).withDescription("%s resolved as %s being ingested as Episode", episodeUri, item.getClass().getSimpleName()));
                 item = convertItemToEpisode(item);
             } else if(item instanceof Episode && !isEpisode) {
-                log.record(errorEntry().withSource(getClass()).withDescription("%s resolved as %s being ingested as Item", episodeUri, item.getClass().getSimpleName()));
+                adapterLog.record(errorEntry().withSource(getClass()).withDescription("%s resolved as %s being ingested as Item", episodeUri, item.getClass().getSimpleName()));
             }
         } else {
             item = getBasicEpisode(progData, isEpisode);

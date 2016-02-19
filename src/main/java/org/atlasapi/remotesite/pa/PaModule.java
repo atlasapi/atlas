@@ -79,6 +79,7 @@ public class PaModule {
     private final static RepetitionRule CHANNELS_INGEST = RepetitionRules.every(Duration.standardHours(12));
     private final static RepetitionRule FEATURES_INGEST = RepetitionRules.daily(LocalTime.MIDNIGHT);
     private final static RepetitionRule RECENT_FILE_INGEST = RepetitionRules.every(Duration.standardMinutes(10)).withOffset(Duration.standardMinutes(15));
+    private final static RepetitionRule RECENT_ALL_FILE_INGEST = RepetitionRules.NEVER;
     private final static RepetitionRule RECENT_FILE_DOWNLOAD = RepetitionRules.every(Duration.standardMinutes(10));
     private final static RepetitionRule COMPLETE_INGEST = RepetitionRules.NEVER;//weekly(DayOfWeek.FRIDAY, new LocalTime(22, 0, 0));
 
@@ -125,7 +126,16 @@ public class PaModule {
         scheduler.schedule(paFeaturesUpdater().withName("PA Features Updater"), FEATURES_INGEST);
         scheduler.schedule(paFileUpdater().withName("PA File Updater"), RECENT_FILE_DOWNLOAD);
         scheduler.schedule(paCompleteUpdater().withName("PA Complete Updater"), COMPLETE_INGEST);
-        scheduler.schedule(paRecentUpdater().withName("PA Recent Updater"), RECENT_FILE_INGEST);
+        scheduler.schedule(
+                paRecentUnprocessedUpdater().withName("PA Recent Unprocessed Updater"),
+                RECENT_FILE_INGEST
+        );
+        scheduler.schedule(
+                paRecentAllUpdater().withName(
+                        "PA Recent All Updater (Will re-ingest even successfully processed)"
+                ),
+                RECENT_ALL_FILE_INGEST
+        );
         scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
         scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed").withSource(PaCompleteUpdater.class));
@@ -196,12 +206,44 @@ public class PaModule {
         return updater;
     }
     
-    @Bean PaRecentUpdater paRecentUpdater() {
-        PaChannelProcessor channelProcessor = new PaChannelProcessor(paProgrammeProcessor(), broadcastTrimmer(), 
-                scheduleWriter, paScheduleVersionStore(), contentBuffer(), contentWriter);
-        ExecutorService executor = Executors.newFixedThreadPool(contentUpdaterThreadCount, new ThreadFactoryBuilder().setNameFormat("pa-recent-updater-%s").build());
-        PaRecentUpdater updater = new PaRecentUpdater(executor, channelProcessor, paProgrammeDataStore(), channelResolver, fileUploadResultStore(), paScheduleVersionStore());
-        return updater;
+    @Bean PaRecentUpdater paRecentUnprocessedUpdater() {
+        PaChannelProcessor channelProcessor = new PaChannelProcessor(
+                paProgrammeProcessor(), broadcastTrimmer(), scheduleWriter,
+                paScheduleVersionStore(), contentBuffer(), contentWriter
+        );
+        ExecutorService executor = Executors.newFixedThreadPool(
+                contentUpdaterThreadCount,
+                new ThreadFactoryBuilder().setNameFormat("pa-recent-unprocessed-updater-%s").build()
+        );
+        return new PaRecentUpdater(
+                executor,
+                channelProcessor,
+                paProgrammeDataStore(),
+                channelResolver,
+                fileUploadResultStore(),
+                paScheduleVersionStore(),
+                true
+        );
+    }
+
+    @Bean PaRecentUpdater paRecentAllUpdater() {
+        PaChannelProcessor channelProcessor = new PaChannelProcessor(
+                paProgrammeProcessor(), broadcastTrimmer(), scheduleWriter,
+                paScheduleVersionStore(), contentBuffer(), contentWriter
+        );
+        ExecutorService executor = Executors.newFixedThreadPool(
+                contentUpdaterThreadCount,
+                new ThreadFactoryBuilder().setNameFormat("pa-recent-all-updater-%s").build()
+        );
+        return new PaRecentUpdater(
+                executor,
+                channelProcessor,
+                paProgrammeDataStore(),
+                channelResolver,
+                fileUploadResultStore(),
+                paScheduleVersionStore(),
+                false
+        );
     }
 
     @Bean PaArchivesUpdater paRecentArchivesUpdater() {

@@ -33,8 +33,7 @@ public class PaRecentUpdater extends PaBaseProgrammeUpdater implements Runnable 
     
     @Override
     public void runTask() {
-        final Long since = new DateTime(DateTimeZones.UTC).minusDays(10).getMillis();
-        Predicate<File> filter = getFileSelectionPredicate(since);
+        Predicate<File> filter = getFileSelectionPredicate();
         this.processFiles(fileManager.localTvDataFiles(filter));
     }
 
@@ -43,18 +42,19 @@ public class PaRecentUpdater extends PaBaseProgrammeUpdater implements Runnable 
         fileUploadResultStore.store(result.filename(), result);
     }
 
-    private Predicate<File> getFileSelectionPredicate(final Long since) {
+    private Predicate<File> getFileSelectionPredicate() {
         if (ignoreProcessedFiles) {
             return new UnprocessedFileFilter(
                     fileUploadResultStore,
                     SERVICE,
-                    since
+                    new DateTime(DateTimeZones.UTC).minusDays(10).getMillis()
             );
         } else {
             return new Predicate<File>() {
                 @Override
                 public boolean apply(File input) {
-                    return input.lastModified() > since;
+                    return input.lastModified() >
+                            new DateTime(DateTimeZones.UTC).minusDays(3).getMillis();
                 }
             };
         }

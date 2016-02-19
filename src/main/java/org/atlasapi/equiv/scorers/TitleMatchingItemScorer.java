@@ -103,7 +103,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
 
-        if (suggestion.getTitle().contains("ight")) {
+        if (suggestion.getCanonicalUri().contains("1721364")) {
             log.debug(String.format("Title: %s, Uri: %s"), suggestion.getTitle(), suggestion.getCanonicalUri());
         }
         

@@ -55,6 +55,7 @@ import com.google.common.io.Resources;
 import com.google.common.util.concurrent.MoreExecutors;
 import com.mongodb.ReadPreference;
 import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
@@ -71,6 +72,8 @@ import static org.mockito.Mockito.mock;
 
 @RunWith(JMock.class)
 public class PaBaseProgrammeUpdaterTest extends TestCase {
+
+    private static final String TMP_TEST_DIRECTORY = "/tmp/atlas_test_data_pa";
 
     private Mockery context = new Mockery();
 
@@ -117,6 +120,13 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         EquivalentContentResolver equivContentResolver = context.mock(EquivalentContentResolver.class);
         scheduleWriter = new MongoScheduleStore(db, channelResolver, contentBuffer, equivContentResolver, ms);
         contentBuffer = new ContentBuffer(resolver, contentWriter, new DummyItemsPeopleWriter());
+
+        File tmpTestDirectory = new File(TMP_TEST_DIRECTORY);
+        if (tmpTestDirectory.exists()) {
+            FileUtils.forceDelete(tmpTestDirectory);
+        }
+        FileUtils.forceMkdir(tmpTestDirectory);
+        FileUtils.forceDeleteOnExit(tmpTestDirectory);
     }
 
     @Test
@@ -200,13 +210,6 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         broadcast1 = broadcasts.next();
         assertEquals("pa:71118471", broadcast1.getSourceId());
         assertTrue(broadcast1.getRepeat());
-
-//        // Test people get created
-//        for (CrewMember crewMember : item.people()) {
-//            content = store.findByCanonicalUri(crewMember.getCanonicalUri());
-//            assertTrue(content instanceof Person);
-//            assertEquals(crewMember.name(), ((Person) content).name());
-//        }
     }
 
     @Test
@@ -266,7 +269,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
                 PaScheduleVersionStore scheduleVersionStore, ContentBuffer contentBuffer, ContentWriter contentWriter) {
 
             super(MoreExecutors.sameThreadExecutor(), new PaChannelProcessor(processor, trimmer, scheduleWriter, scheduleVersionStore, contentBuffer, contentWriter),
-                    new DefaultPaProgrammeDataStore("/data/pa", null), channelResolver, Optional.fromNullable(scheduleVersionStore));
+                    new DefaultPaProgrammeDataStore(TMP_TEST_DIRECTORY, null), channelResolver, Optional.fromNullable(scheduleVersionStore));
             this.files = files;
         }
 

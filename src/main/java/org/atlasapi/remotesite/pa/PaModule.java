@@ -81,7 +81,9 @@ public class PaModule {
     private final static RepetitionRule RECENT_FILE_INGEST = RepetitionRules.every(Duration.standardMinutes(10)).withOffset(Duration.standardMinutes(15));
     private final static RepetitionRule RECENT_FILE_DOWNLOAD = RepetitionRules.every(Duration.standardMinutes(10));
     private final static RepetitionRule COMPLETE_INGEST = RepetitionRules.NEVER;//weekly(DayOfWeek.FRIDAY, new LocalTime(22, 0, 0));
-    
+
+    private static final String TOPICS_COLLECTION = "topics";
+
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;
     private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
@@ -112,9 +114,7 @@ public class PaModule {
     private @Value("${pa.s3.bucket}") String s3bucket;
     private @Value("${pa.people.enabled}") boolean peopleEnabled;
     private @Value("${pa.content.updater.threads}") int contentUpdaterThreadCount;
-    private PaTagMap paTagMap;
-    private final String TOPICS_COLLECTION = "topics";
-    
+
     @PostConstruct
     public void startBackgroundTasks() {
         if (peopleEnabled) {
@@ -129,7 +129,6 @@ public class PaModule {
         scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
         scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed").withSource(PaCompleteUpdater.class));
-        this.paTagMap = new PaTagMap(topicStore, new MongoSequentialIdGenerator(mongo, TOPICS_COLLECTION));
     }
     
     private PaCompletePeopleUpdater paCompletePeopleUpdater() {
@@ -142,6 +141,10 @@ public class PaModule {
     
     private FileUploadResultStore fileUploadResultStore() {
         return new MongoFileUploadResultStore(mongo);
+    }
+
+    @Bean PaTagMap paTagMap() {
+        return new PaTagMap(topicStore, new MongoSequentialIdGenerator(mongo, TOPICS_COLLECTION));
     }
     
     @Bean PaChannelsUpdater paChannelsUpdater() {
@@ -181,7 +184,7 @@ public class PaModule {
     }
     
     @Bean PaProgDataProcessor paProgrammeProcessor() {
-        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log, paTagMap);
+        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log, paTagMap());
     }
     
     @Bean PaCompleteUpdater paCompleteUpdater() {
@@ -202,7 +205,7 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paRecentArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log, paTagMap);
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log, paTagMap());
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaRecentArchiveUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;
@@ -210,7 +213,7 @@ public class PaModule {
 
     @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
         PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter,
-                contentBuffer(), log, paTagMap);
+                contentBuffer(), log, paTagMap());
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaCompleteArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;

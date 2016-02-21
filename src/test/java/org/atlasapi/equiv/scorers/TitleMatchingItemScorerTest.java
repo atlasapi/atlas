@@ -108,6 +108,12 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(2, scorer.score(itemWithTitle("Live Porto v Chelsea"), of(itemWithTitle("FC Porto v Chelsea")), desc));
         score(2, scorer.score(itemWithTitle("Live Maccabi Tel-Aviv v D' Kiev"), of(itemWithTitle("Maccabi Tel Aviv v Dynamo Kiev")), desc));
     }
+
+    @Test
+    public void testMatchingWithApostrophe() {
+        DefaultDescription desc = new DefaultDescription();
+        score(2, scorer.score(itemWithTitle("Girls' Night In"), of(itemWithTitle("Girls' Night In")), desc));
+    }
     
     private void score(double expected, ScoredCandidates<Item> scores) {
         Score value = Iterables.getOnlyElement(scores.candidates().entrySet()).getValue();

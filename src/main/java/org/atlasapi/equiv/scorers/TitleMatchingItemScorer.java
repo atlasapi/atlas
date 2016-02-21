@@ -6,7 +6,6 @@ import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableSet;
 
-import org.apache.commons.codec.language.Soundex;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -115,11 +114,11 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         
         String subjTitle = normalize(subjectTitle);
         String suggTitle = normalize(suggestionTitle);
-        
-        if (appearsToBeAppreviatedWithApostrophe(subjectTitle)) {
+
+        if (appearsToBeWithApostrophe(subjectTitle)) {
             String regexp = normalizeRegularExpression(subjectTitle);
             matches = Pattern.matches(regexp, suggTitle);
-        } else if (appearsToBeAppreviatedWithApostrophe(suggestionTitle)) {
+        } else if (appearsToBeWithApostrophe(suggestionTitle)) {
             String regexp = normalizeRegularExpression(suggestionTitle);
             matches = Pattern.matches(regexp, subjTitle);
         } else {
@@ -137,7 +136,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private String normalizeRegularExpression(String title) {
         return regularExpressionReplaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title).toLowerCase()));
     }
-    private boolean appearsToBeAppreviatedWithApostrophe(String title) {
+    private boolean appearsToBeWithApostrophe(String title) {
         return TRAILING_APOSTROPHE_PATTERN.matcher(title).find();
     }
 
@@ -155,7 +154,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     .replaceAll("fc ", "")
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
                     .replace(" ", "\\-")
-                    .replaceAll("'\\\\-", "\\\\w+\\\\-");
+                    .replaceAll("'\\\\-", "(\\\\w+|\\\\W+)\\-");
     }
     
     private String removeCommonPrefixes(String title) {

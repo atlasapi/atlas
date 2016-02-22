@@ -11,6 +11,7 @@ import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.C4;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
+import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV;
@@ -134,6 +135,7 @@ public class EquivTaskModule {
     private static final RepetitionRule VF_AE_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_VIACOM_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_VUBIQUITY_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule EBMS_VF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
     private @Value("${equiv.stream-updater.enabled}") Boolean streamedChangesUpdateEquiv;
@@ -191,6 +193,7 @@ public class EquivTaskModule {
             taskScheduler.schedule(publisherUpdateTask(VF_ITV).withName("VF ITV Equivalence Updater"), VF_ITV_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(VF_VIACOM).withName("VF VIACOM Equivalence Updater"), VF_VIACOM_EQUIVALENCE_REPETITION);
             taskScheduler.schedule(publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"), VF_VUBIQUITY_EQUIVALENCE_REPETITION);
+            taskScheduler.schedule(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION);
 
             taskScheduler.schedule(taskBuilder(0, 7)
                     .withPublishers(YOUVIEW)

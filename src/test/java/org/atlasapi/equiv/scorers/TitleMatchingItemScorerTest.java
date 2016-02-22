@@ -107,12 +107,29 @@ public class TitleMatchingItemScorerTest extends TestCase {
         // score(1, scorer.score(itemWithTitle("Live B' Monchengladbach v Man City"), of(itemWithTitle("Borussia Moenchengladbach v Manchester City")), desc));
         score(2, scorer.score(itemWithTitle("Live Porto v Chelsea"), of(itemWithTitle("FC Porto v Chelsea")), desc));
         score(2, scorer.score(itemWithTitle("Live Maccabi Tel-Aviv v D' Kiev"), of(itemWithTitle("Maccabi Tel Aviv v Dynamo Kiev")), desc));
+        score(2, scorer.score(itemWithTitle("Live Maccabi Tel-Aviv v D' Kiev"), of(itemWithTitle("Maccabi Tel Aviv v D' Kiev")), desc));
+        score(2, scorer.score(itemWithTitle("Live Maccabi Tel-Aviv v Dynamo Kiev"), of(itemWithTitle("Maccabi Tel Aviv v D' Kiev")), desc));
     }
 
     @Test
     public void testMatchingWithApostrophe() {
         DefaultDescription desc = new DefaultDescription();
         score(2, scorer.score(itemWithTitle("Girls' Night In"), of(itemWithTitle("Girls' Night In")), desc));
+        score(2, scorer.score(itemWithTitle("Girls Night In"), of(itemWithTitle("Girls' Night In")), desc));
+        score(2, scorer.score(itemWithTitle("Girls' Night In"), of(itemWithTitle("Girls Night In")), desc));
+        score(2, scorer.score(itemWithTitle("Girls Night In"), of(itemWithTitle("Girls Night In")), desc));
+    }
+
+    @Test
+    public void testMatchingWithApostropheWithinWord() {
+        DefaultDescription desc = new DefaultDescription();
+        score(2, scorer.score(itemWithTitle("Charlies Big Catch"), of(itemWithTitle("Charlie's Big Catch")), desc));
+        score(2, scorer.score(itemWithTitle("Charlie's Big Catch"), of(itemWithTitle("Charlie's Big Catch")), desc));
+        score(2, scorer.score(itemWithTitle("Charlie's Big Catch"), of(itemWithTitle("Charlies Big Catch")), desc));
+        score(2, scorer.score(itemWithTitle("Charlies Big Catch"), of(itemWithTitle("Charlies Big Catch")), desc));
+        score(2, scorer.score(itemWithTitle("C'harlies Big Catch"), of(itemWithTitle("Charlies Big Catch")), desc));
+        score(2, scorer.score(itemWithTitle("Charlies Big Catch"), of(itemWithTitle("C'harlies Big Catch")), desc));
+        score(2, scorer.score(itemWithTitle("C'harlies Big Catch"), of(itemWithTitle("C'harlies Big Catch")), desc));
     }
     
     private void score(double expected, ScoredCandidates<Item> scores) {

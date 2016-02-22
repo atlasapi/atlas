@@ -152,6 +152,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     .replaceAll("fc ", "")
                     .replaceAll("\\s?\\/\\s?", "-") // normalize spacing around back-to-back titles
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
+                    .replace("'","")
                     .replace(" ", "-");
                     
     }
@@ -161,7 +162,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     .replaceAll("fc ", "")
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
                     .replace(" ", "\\-")
-                    .replaceAll("'\\\\-", "(\\\\w+|\\\\W+)\\-");
+                    .replaceAll("'\\\\-", "(\\\\w+|\\\\W*)\\-");
     }
     
     private String removeCommonPrefixes(String title) {

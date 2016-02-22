@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.pa;
 
-import static org.mockito.Mockito.mock;
-
 import java.io.File;
 import java.util.Iterator;
 import java.util.List;
@@ -39,6 +37,25 @@ import org.atlasapi.persistence.service.ServiceResolver;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.persistence.MongoTestHelper;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.queue.MessagingException;
+import com.metabroadcast.common.time.DateTimeZones;
+import com.metabroadcast.common.time.TimeMachine;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.io.Resources;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.mongodb.ReadPreference;
+import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
@@ -51,26 +68,12 @@ import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.io.Resources;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.persistence.MongoTestHelper;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.queue.MessagingException;
-import com.metabroadcast.common.time.DateTimeZones;
-import com.metabroadcast.common.time.TimeMachine;
-import com.mongodb.ReadPreference;
-
-import junit.framework.TestCase;
+import static org.mockito.Mockito.mock;
 
 @RunWith(JMock.class)
 public class PaBaseProgrammeUpdaterTest extends TestCase {
+
+    private static final String TMP_TEST_DIRECTORY = "/tmp/atlas_test_data_pa";
 
     private Mockery context = new Mockery();
 
@@ -100,6 +103,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         public void sendMessage(ScheduleUpdateMessage scheduleUpdateMessage, byte[] bytes)
                 throws MessagingException { }
     };
+    private final PaTagMap paTagMap = mock(PaTagMap.class);
 
     @Override
     @Before
@@ -112,10 +116,17 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
         channelResolver = new DummyChannelResolver();
         contentWriter = new MongoContentWriter(db, lookupStore, persistenceAuditLog, playerResolver, serviceResolver, clock);
-        programmeProcessor = new PaProgrammeProcessor(contentWriter, resolver, log);
+        programmeProcessor = new PaProgrammeProcessor(contentWriter, resolver, log, paTagMap);
         EquivalentContentResolver equivContentResolver = context.mock(EquivalentContentResolver.class);
         scheduleWriter = new MongoScheduleStore(db, channelResolver, contentBuffer, equivContentResolver, ms);
         contentBuffer = new ContentBuffer(resolver, contentWriter, new DummyItemsPeopleWriter());
+
+        File tmpTestDirectory = new File(TMP_TEST_DIRECTORY);
+        if (tmpTestDirectory.exists()) {
+            FileUtils.forceDelete(tmpTestDirectory);
+        }
+        FileUtils.forceMkdir(tmpTestDirectory);
+        FileUtils.forceDeleteOnExit(tmpTestDirectory);
     }
 
     @Test
@@ -199,13 +210,6 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         broadcast1 = broadcasts.next();
         assertEquals("pa:71118471", broadcast1.getSourceId());
         assertTrue(broadcast1.getRepeat());
-
-//        // Test people get created
-//        for (CrewMember crewMember : item.people()) {
-//            content = store.findByCanonicalUri(crewMember.getCanonicalUri());
-//            assertTrue(content instanceof Person);
-//            assertEquals(crewMember.name(), ((Person) content).name());
-//        }
     }
 
     @Test
@@ -265,7 +269,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
                 PaScheduleVersionStore scheduleVersionStore, ContentBuffer contentBuffer, ContentWriter contentWriter) {
 
             super(MoreExecutors.sameThreadExecutor(), new PaChannelProcessor(processor, trimmer, scheduleWriter, scheduleVersionStore, contentBuffer, contentWriter),
-                    new DefaultPaProgrammeDataStore("/data/pa", null), channelResolver, Optional.fromNullable(scheduleVersionStore));
+                    new DefaultPaProgrammeDataStore(TMP_TEST_DIRECTORY, null), channelResolver, Optional.fromNullable(scheduleVersionStore));
             this.files = files;
         }
 

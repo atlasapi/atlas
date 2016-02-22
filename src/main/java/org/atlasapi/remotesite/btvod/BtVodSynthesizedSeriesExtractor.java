@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
-import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -13,6 +10,9 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import com.google.api.client.util.Maps;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+
+import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
 
 
 public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtractor {
@@ -30,7 +30,8 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
             Set<String> processedRows,
             BtVodSeriesUriExtractor seriesUriExtractor,
-            Set<String> explicitSeriesIds
+            Set<String> explicitSeriesIds,
+            BtVodTagMap btVodTagMap
     ) {
         super(
                 btVodBrandProvider,
@@ -38,7 +39,8 @@ public class BtVodSynthesizedSeriesExtractor extends AbstractBtVodSeriesExtracto
                 listener,
                 processedRows,
                 describedFieldsExtractor,
-                seriesUriExtractor
+                seriesUriExtractor,
+                btVodTagMap
         );
 
         this.explicitSeriesIds = ImmutableSet.copyOf(explicitSeriesIds);

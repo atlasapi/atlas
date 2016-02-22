@@ -1,20 +1,21 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor<UpdateProgress> {
 
@@ -27,6 +28,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
     private final Set<String> processedRows;
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
+    private final BtVodTagMap btVodTagMap;
 
     private UpdateProgress progress = UpdateProgress.START;
 
@@ -36,7 +38,8 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
             BtVodContentListener listener,
             Set<String> processedRows,
             BtVodDescribedFieldsExtractor describedFieldsExtractor,
-            BtVodSeriesUriExtractor seriesUriExtractor
+            BtVodSeriesUriExtractor seriesUriExtractor,
+            BtVodTagMap btVodTagMap
     ) {
         this.processedRows = checkNotNull(processedRows);
         this.listener = checkNotNull(listener);
@@ -47,6 +50,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
         //      Added as a collaborator for Alias extraction, but should be used more
         //      widely
         this.describedFieldsExtractor = checkNotNull(describedFieldsExtractor);
+        this.btVodTagMap = btVodTagMap;
     }
 
     @Override
@@ -88,6 +92,7 @@ public abstract class AbstractBtVodSeriesExtractor implements BtVodDataProcessor
     private void setFields(Series series, BtVodEntry row) {
         VodEntryAndContent vodEntryAndContent = new VodEntryAndContent(row, series);
         series.addTopicRefs(describedFieldsExtractor.topicsFrom(vodEntryAndContent));
+        series.addTopicRefs(btVodTagMap.mapGenresToTopicRefs(series.getGenres()));
     }
 
     @Override

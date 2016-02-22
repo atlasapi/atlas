@@ -16,6 +16,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.remotesite.pa.PaProgrammeProcessor;
+import org.atlasapi.remotesite.pa.PaTagMap;
 import org.atlasapi.remotesite.pa.archives.bindings.Actor;
 import org.atlasapi.remotesite.pa.archives.bindings.Attr;
 import org.atlasapi.remotesite.pa.archives.bindings.Billing;
@@ -44,6 +45,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.anyCollection;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -62,12 +64,13 @@ public class PaArchivesProgExtractorTest {
     private ResolvedContent resolvedContent;
     private PaProgDataUpdatesProcessor progProcessor;
     private PaDataToUpdatesTransformer transformer;
+    private final PaTagMap paTagMap = mock(PaTagMap.class);
 
     @Before
     public void setUp() throws URISyntaxException {
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
-        progProcessor = new PaProgrammeProcessor(writer,resolver,log);
+        progProcessor = new PaProgrammeProcessor(writer,resolver,log,paTagMap);
         transformer = new PaDataToUpdatesTransformer();
     }
 

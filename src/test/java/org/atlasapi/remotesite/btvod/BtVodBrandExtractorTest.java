@@ -49,6 +49,7 @@ public class BtVodBrandExtractorTest {
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BrandUriExtractor brandUriExtractor = new BrandUriExtractor(URI_PREFIX, new TitleSanitiser());
     private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
+    private final BtVodTagMap btVodTagMap = mock(BtVodTagMap.class);
 
     private final BtVodDescribedFieldsExtractor describedFieldsExtractor = new BtVodDescribedFieldsExtractor(
             topicResolver,
@@ -76,7 +77,8 @@ public class BtVodBrandExtractorTest {
             contentListener,
             Sets.<String>newHashSet(),
             describedFieldsExtractor,
-            brandUriExtractor
+            brandUriExtractor,
+            btVodTagMap
     );
     
     @Test

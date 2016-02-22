@@ -1,19 +1,17 @@
 package org.atlasapi.system;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.Queues;
 import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import com.metabroadcast.common.scheduling.StatusReporter;
 import com.mongodb.DBCollection;
 import com.mongodb.DBObject;
+import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
@@ -23,9 +21,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.persistence.content.listing.ProgressStore;
-import org.atlasapi.persistence.lookup.entry.LookupEntry;
-import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +28,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -59,25 +52,18 @@ public class PaContentDeactivator {
     public static final String PA_SEASON_NAMESPACE = "pa:series";
     public static final String PA_PROGRAMME_NAMESPACE = "pa:episode";
 
-    private static final Function<LookupEntry, Long> LOOKUP_ENTRY_TO_ID = new Function<LookupEntry, Long>() {
-        @Override
-        public Long apply(LookupEntry lookupEntry) {
-            return lookupEntry.id();
-        }
-    };
     private static final String CONTAINER = "container";
 
-    private final LookupEntryStore lookupStore;
     private final ContentLister contentLister;
     private final ContentWriter contentWriter;
     private final DBCollection childrenDb;
-    private final ProgressStore progressStore;
+    private final ScheduleTaskProgressStore progressStore;
     private final ThreadPoolExecutor threadPool;
+    private AtomicInteger deactivated = new AtomicInteger(0);
+    private AtomicInteger processed = new AtomicInteger(0);
 
-    public PaContentDeactivator(LookupEntryStore lookupStore, ContentLister contentLister,
-                                ContentWriter contentWriter, ProgressStore progressStore,
-                                DBCollection childrenDb) {
-        this.lookupStore = checkNotNull(lookupStore);
+    public PaContentDeactivator(ContentLister contentLister, ContentWriter contentWriter,
+                                ScheduleTaskProgressStore progressStore, DBCollection childrenDb) {
         this.contentLister = checkNotNull(contentLister);
         this.contentWriter = checkNotNull(contentWriter);
         this.progressStore = checkNotNull(progressStore);
@@ -85,44 +71,82 @@ public class PaContentDeactivator {
         this.childrenDb = checkNotNull(childrenDb);
     }
 
-    public void deactivate(File file, Boolean dryRun) throws IOException {
+    public void deactivate(File file, Boolean dryRun, StatusReporter reporter) throws IOException {
         List<String> lines = Files.readAllLines(file.toPath(), UTF8);
+        reporter.reportStatus(
+                String.format(
+                        "Loading active IDs from file %s",
+                        file.getAbsolutePath()
+                )
+        );
         ImmutableSetMultimap<String, String> typeToIds = extractAliases(lines);
-        deactivate(typeToIds, dryRun);
+        reporter.reportStatus(
+                String.format(
+                        "Loaded %d active IDs from file %s",
+                        typeToIds.entries().size(),
+                        file.getAbsolutePath()
+                )
+        );
+        deactivated = new AtomicInteger(0);
+        processed = new AtomicInteger(0);
+        deactivate(typeToIds, dryRun, reporter);
     }
 
-    public void deactivate(Multimap<String, String> paNamespaceToAliases, Boolean dryRun) throws IOException {
-        Predicate<Content> shouldDeactivatePredicate =
-                new PaContentDeactivationPredicate(paNamespaceToAliases);
+    public void deactivate(
+            Multimap<String, String> paNamespaceToAliases,
+            Boolean dryRun,
+            StatusReporter reporter
+    ) throws IOException {
+        Predicate<Content> shouldDeactivatePredicate = new PaContentDeactivationPredicate(
+                paNamespaceToAliases
+        );
+        deactivateChildren(dryRun, shouldDeactivatePredicate, reporter);
+        deactivateContainers(dryRun, shouldDeactivatePredicate, reporter);
+    }
 
+    private void deactivateContainers(
+            Boolean dryRun,
+            Predicate<Content> shouldDeactivatePredicate,
+            StatusReporter reporter
+    ) {
+        String containerTaskName = getClass().getSimpleName() + "containers";
+
+        final Iterator<Content> containerItr = contentLister.listContent(
+                createListingCriteria(
+                        ImmutableList.of(ContentCategory.CONTAINER),
+                        Optional.fromNullable(progressStore.progressForTask(containerTaskName))
+                )
+        );
+
+        deactivateContent(containerItr, shouldDeactivatePredicate, dryRun, containerTaskName, reporter);
+    }
+
+    private void deactivateChildren(
+            Boolean dryRun,
+            Predicate<Content> shouldDeactivatePredicate,
+            StatusReporter reporter
+    ) {
         String childrenTaskName = getClass().getSimpleName() + "children";
         ImmutableList<ContentCategory> childCategories = ImmutableList.of(
                 ContentCategory.CHILD_ITEM,
                 ContentCategory.TOP_LEVEL_ITEM
         );
         final Iterator<Content> childItr = contentLister.listContent(
-                createListingCriteria(childCategories, progressStore.progressForTask(childrenTaskName))
-        );
-        deactivateContent(childItr, shouldDeactivatePredicate, dryRun, childrenTaskName);
-
-        String containerTaskName = getClass().getSimpleName() + "containers";
-        final Iterator<Content> containerItr = contentLister.listContent(
                 createListingCriteria(
-                        ImmutableList.of(ContentCategory.CONTAINER),
-                        progressStore.progressForTask(containerTaskName)
+                        childCategories,
+                        Optional.fromNullable(progressStore.progressForTask(childrenTaskName))
                 )
         );
-        deactivateContent(containerItr, shouldDeactivatePredicate, dryRun, containerTaskName);
+        deactivateContent(childItr, shouldDeactivatePredicate, dryRun, childrenTaskName, reporter);
     }
 
     private void deactivateContent(
             Iterator<Content> itr,
             Predicate<Content> shouldDeactivatePredicate,
             Boolean dryRun,
-            String taskName
+            String taskName,
+            StatusReporter reporter
     ) {
-        AtomicInteger deactivated = new AtomicInteger(0);
-        AtomicInteger processed = new AtomicInteger(0);
         while (itr.hasNext()) {
             Content content = itr.next();
             int i = processed.incrementAndGet();
@@ -140,8 +164,16 @@ public class PaContentDeactivator {
                 );
                 LOG.debug("Processed {} items, saving progress", i);
             }
+            reporter.reportStatus(String.format("Processed %d Deactivated %d", i, deactivated.get()));
         }
         LOG.debug("Deactivated {} pieces of content", deactivated.get());
+        reporter.reportStatus(
+                String.format(
+                        "Finished processing %d items, deactivated %d",
+                        processed.get(),
+                        deactivated.get()
+                )
+        );
         progressStore.storeProgress(taskName, ContentListingProgress.START);
     }
 

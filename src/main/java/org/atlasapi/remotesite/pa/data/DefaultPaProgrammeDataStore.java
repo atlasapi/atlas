@@ -63,6 +63,13 @@ public class DefaultPaProgrammeDataStore implements PaProgrammeDataStore {
         }
     };
 
+    private static final FilenameFilter activeIdArchive = new FilenameFilter() {
+        @Override
+        public boolean accept(File dir, String name) {
+            return name.endsWith("_archiveID.xml");
+        }
+    };
+
     private static final String PROCESSING_DIR = "/processing";
 
     private final File localFolder;
@@ -165,33 +172,57 @@ public class DefaultPaProgrammeDataStore implements PaProgrammeDataStore {
     @Override
     public List<File> localTvDataFiles(Predicate<File> filter) {
         Predicate<File> fileFilter = filter == null ? Predicates.<File> alwaysTrue() : filter;
-        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(ImmutableList.copyOf(localFolder.listFiles(tvDataFilenameFilter)), fileFilter));
+        ImmutableList<File> tvDataFiles = ImmutableList.copyOf(
+                localFolder.listFiles(tvDataFilenameFilter)
+        );
+        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(tvDataFiles, fileFilter));
     }
 
     @Override
     public List<File> localFeaturesFiles(Predicate<File> filter) {
         Predicate<File> fileFilter = filter == null ? Predicates.<File> alwaysTrue() : filter;
-        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(ImmutableList.copyOf(localFolder.listFiles(featuresFilenameFilter)), fileFilter));
+        ImmutableList<File> featuresFiles = ImmutableList.copyOf(
+                localFolder.listFiles(featuresFilenameFilter)
+        );
+        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(featuresFiles, fileFilter));
     }
 
     @Override
     public List<File> localProfilesFiles(Predicate<File> filter) {
         Predicate<File> fileFilter = filter == null ? Predicates.<File> alwaysTrue() : filter;
-        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(ImmutableList.copyOf(localFolder.listFiles(profilesFilenameFilter)), fileFilter));
+        ImmutableList<File> profileFiles = ImmutableList.copyOf(
+                localFolder.listFiles(profilesFilenameFilter)
+        );
+        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(profileFiles, fileFilter));
     }
     
     @Override
     public List<File> localChannelsFiles(Predicate<File> filter) {
         Predicate<File> fileFilter = filter == null ? Predicates.<File> alwaysTrue() : filter;
-        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(ImmutableList.copyOf(localFolder.listFiles(channelsFilenameFilter)), fileFilter));
+        ImmutableList<File> channelsFiles = ImmutableList.copyOf(
+                localFolder.listFiles(channelsFilenameFilter)
+        );
+        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(channelsFiles, fileFilter));
     }
 
     @Override
     public List<File> localArchivesFiles(Predicate<File> filter) {
         Predicate<File> fileFilter = filter == null ? Predicates.<File> alwaysTrue() : filter;
-        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(ImmutableList.copyOf(localFolder.listFiles(archivesFilenameFilter)), fileFilter));
+        ImmutableList<File> archiveFiles = ImmutableList.copyOf(
+                localFolder.listFiles(archivesFilenameFilter)
+        );
+        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(archiveFiles, fileFilter));
     }
-    
+
+    @Override
+    public List<File> localActiveIdArchiveFiles(Predicate<File> filter) {
+        Predicate<File> fileFilter = filter == null ? Predicates.<File> alwaysTrue() : filter;
+        ImmutableList<File> activeIdArchives = ImmutableList.copyOf(
+                localFolder.listFiles(activeIdArchive)
+        );
+        return FILE_NAME_ORDER.immutableSortedCopy(Iterables.filter(activeIdArchives, fileFilter));
+    }
+
     private final Ordering<File> FILE_NAME_ORDER = new Ordering<File>() {
         @Override
         public int compare(File left, File right) {

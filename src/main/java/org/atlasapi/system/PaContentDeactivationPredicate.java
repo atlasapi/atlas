@@ -23,9 +23,7 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         @Override
         public String apply(String s) {
             Matcher matcher = ID_EXTRACTION_PATTERN.matcher(s);
-            if (!matcher.matches()) {
-                return null;
-            }
+            checkArgument(matcher.matches(), "Not a PA alias");
             return matcher.group(1);
         }
     };
@@ -98,9 +96,6 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         return new Predicate<String>() {
             @Override
             public boolean apply(@Nullable String s) {
-                if (Strings.isNullOrEmpty(s)) {
-                    return false;
-                }
                 /* Series aren't handled here as we lack a reliable mapping from PA's IDs
                     to their URIs in atlas. They are handled by removing empty Series elsewhere */
                 if (content instanceof Episode || content instanceof Item) {

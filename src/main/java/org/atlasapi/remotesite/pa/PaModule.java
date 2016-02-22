@@ -7,9 +7,6 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 
-import com.mongodb.DBCollection;
-import org.atlasapi.equiv.PaAliasBackPopulatorTask;
-import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
 import org.atlasapi.feeds.upload.persistence.MongoFileUploadResultStore;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -17,15 +14,12 @@ import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.PeopleResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.persistence.content.listing.ContentLister;
-import org.atlasapi.persistence.content.mongo.MongoContentTables;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.persistence.content.people.PersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
@@ -68,9 +62,6 @@ import com.metabroadcast.common.security.UsernameAndPassword;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.atlasapi.system.PaAliasBackPopulator;
-import org.atlasapi.system.PaContentDeactivator;
-import org.atlasapi.system.PaContentDeactivatorTask;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -90,7 +81,7 @@ public class PaModule {
     private final static RepetitionRule RECENT_FILE_INGEST = RepetitionRules.every(Duration.standardMinutes(10)).withOffset(Duration.standardMinutes(15));
     private final static RepetitionRule RECENT_ALL_FILE_INGEST = RepetitionRules.NEVER;
     private final static RepetitionRule RECENT_FILE_DOWNLOAD = RepetitionRules.every(Duration.standardMinutes(10));
-    private final static RepetitionRule COMPLETE_INGEST = RepetitionRules.NEVER;
+    private final static RepetitionRule COMPLETE_INGEST = RepetitionRules.NEVER;//weekly(DayOfWeek.FRIDAY, new LocalTime(22, 0, 0));
 
     private static final String TOPICS_COLLECTION = "topics";
 
@@ -111,9 +102,6 @@ public class PaModule {
     private @Autowired ChannelWriter channelWriter;
     private @Autowired DatabasedMongo mongo;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
-    private @Autowired ContentLister contentLister;
-    private @Autowired ScheduleTaskProgressStore progressStore;
-
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
 
@@ -150,13 +138,9 @@ public class PaModule {
         );
         scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
         scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
-        scheduler.schedule(paContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.NEVER);
-        scheduler.schedule(paAliasBackPopulationTask().withName("PA Alias Backpopulator"), RepetitionRules.NEVER);
-
-        log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed")
-                .withSource(PaCompleteUpdater.class));
+        log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed").withSource(PaCompleteUpdater.class));
     }
-
+    
     private PaCompletePeopleUpdater paCompletePeopleUpdater() {
         return new PaCompletePeopleUpdater(paProgrammeDataStore(), personResolver, personWriter, peopleLock);
     }
@@ -164,7 +148,7 @@ public class PaModule {
     private PaDailyPeopleUpdater paDailyPeopleUpdater() {
         return new PaDailyPeopleUpdater(paProgrammeDataStore(), personResolver, personWriter, fileUploadResultStore(), peopleLock);
     }
-
+    
     private FileUploadResultStore fileUploadResultStore() {
         return new MongoFileUploadResultStore(mongo);
     }
@@ -172,24 +156,24 @@ public class PaModule {
     @Bean PaTagMap paTagMap() {
         return new PaTagMap(topicStore, new MongoSequentialIdGenerator(mongo, TOPICS_COLLECTION));
     }
-
+    
     @Bean PaChannelsUpdater paChannelsUpdater() {
         return new PaChannelsUpdater(paProgrammeDataStore(), channelDataHandler(), channelWriterLock());
     }
-
+    
     @Bean PaChannelDataHandler channelDataHandler() {
         return new PaChannelDataHandler(new PaChannelsIngester(), new PaChannelGroupsIngester(), channelResolver, channelWriter, channelGroupResolver, channelGroupWriter);
     }
 
     @Bean PaFeaturesUpdater paFeaturesUpdater() {
         return new PaFeaturesUpdater(
-                paProgrammeDataStore(),
-                fileUploadResultStore(),
-                new PaFeaturesProcessor(contentResolver),
+                paProgrammeDataStore(), 
+                fileUploadResultStore(), 
+                new PaFeaturesProcessor(contentResolver), 
                 new PaFeaturesContentGroupProcessor(contentGroupResolver, contentGroupWriter, featuresConfiguration())
         );
     }
-
+    
     @Bean PaFeaturesConfiguration featuresConfiguration() {
         return new PaFeaturesConfiguration(
                 ImmutableMap.<String, ContentGroupDetails>builder()
@@ -203,25 +187,25 @@ public class PaModule {
     @Bean PaFtpFileUpdater ftpFileUpdater() {
         return new PaFtpFileUpdater(ftpHost, new UsernameAndPassword(ftpUsername, ftpPassword), ftpPath, paProgrammeDataStore());
     }
-
+    
     @Bean PaProgrammeDataStore paProgrammeDataStore() {
         S3Client s3client = new DefaultS3Client(s3access, s3secret, s3bucket);
         return new DefaultPaProgrammeDataStore(localFilesPath, s3client);
     }
-
+    
     @Bean PaProgDataProcessor paProgrammeProcessor() {
         return new PaProgrammeProcessor(contentWriter, contentBuffer(), log, paTagMap());
     }
-
+    
     @Bean PaCompleteUpdater paCompleteUpdater() {
         PaEmptyScheduleProcessor processor = new PaEmptyScheduleProcessor(paProgrammeProcessor(), scheduleResolver);
-        PaChannelProcessor channelProcessor = new PaChannelProcessor(processor, broadcastTrimmer(),
+        PaChannelProcessor channelProcessor = new PaChannelProcessor(processor, broadcastTrimmer(), 
                 scheduleWriter, paScheduleVersionStore(), contentBuffer(), contentWriter);
         ExecutorService executor = Executors.newFixedThreadPool(contentUpdaterThreadCount, new ThreadFactoryBuilder().setNameFormat("pa-complete-updater-%s").build());
         PaCompleteUpdater updater = new PaCompleteUpdater(executor, channelProcessor, paProgrammeDataStore(), channelResolver);
         return updater;
     }
-
+    
     @Bean PaRecentUpdater paRecentUnprocessedUpdater() {
         PaChannelProcessor channelProcessor = new PaChannelProcessor(
                 paProgrammeProcessor(), broadcastTrimmer(), scheduleWriter,
@@ -276,55 +260,32 @@ public class PaModule {
         PaArchivesUpdater updater = new PaCompleteArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;
     }
-
+    
     @Bean @Qualifier("PaContentBuffer") ContentBuffer contentBuffer() {
         return new ContentBuffer(contentResolver, contentWriter, peopleWriter);
     }
-
+    
     @Bean BroadcastTrimmer broadcastTrimmer() {
         return new ScheduleResolverBroadcastTrimmer(Publisher.PA, scheduleResolver, contentResolver, contentWriter);
     }
-
+    
     @Bean PaFileUpdater paFileUpdater() {
         return new PaFileUpdater(ftpFileUpdater());
     }
-
+    
     public @Bean PaSingleDateUpdatingController paUpdateController() {
-        PaChannelProcessor channelProcessor = new PaChannelProcessor(paProgrammeProcessor(), broadcastTrimmer(),
+        PaChannelProcessor channelProcessor = new PaChannelProcessor(paProgrammeProcessor(), broadcastTrimmer(), 
                 scheduleWriter, paScheduleVersionStore(), contentBuffer(), contentWriter);
-        return new PaSingleDateUpdatingController(channelProcessor, scheduleResolver, channelResolver,
+        return new PaSingleDateUpdatingController(channelProcessor, scheduleResolver, channelResolver, 
                 paProgrammeDataStore());
     }
-
+    
     public @Bean PaScheduleVersionStore paScheduleVersionStore() {
         return new MongoPaScheduleVersionStore(mongo);
     }
-
+    
     public @Bean ReentrantLock channelWriterLock() {
         return new ReentrantLock();
     }
 
-    public PaContentDeactivatorTask paContentDeactivatorTask() {
-        DBCollection childrenDb = new MongoContentTables(mongo)
-                .collectionFor(ContentCategory.CHILD_ITEM);
-
-        return new PaContentDeactivatorTask(
-                new PaContentDeactivator(
-                        contentLister,
-                        contentWriter,
-                        progressStore,
-                        childrenDb
-                ),
-                paProgrammeDataStore()
-        );
-    }
-
-    public PaAliasBackPopulatorTask paAliasBackPopulationTask() {
-        PaAliasBackPopulator aliasBackPopulator = new PaAliasBackPopulator(
-                contentLister,
-                contentWriter,
-                progressStore
-        );
-        return new PaAliasBackPopulatorTask(aliasBackPopulator, false);
-    }
 }

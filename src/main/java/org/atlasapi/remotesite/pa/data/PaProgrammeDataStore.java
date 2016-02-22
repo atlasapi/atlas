@@ -23,8 +23,6 @@ public interface PaProgrammeDataStore {
     List<File> localChannelsFiles(Predicate<File> filter);
 
     List<File> localArchivesFiles(Predicate<File> filter);
-
-    List<File> localActiveIdArchiveFiles(Predicate<File> filter);
     
     File copyForProcessing(File file);
 }

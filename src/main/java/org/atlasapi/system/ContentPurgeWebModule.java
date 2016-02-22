@@ -1,7 +1,15 @@
 package org.atlasapi.system;
 
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.netflix.discovery.converters.Auto;
 import org.atlasapi.persistence.MongoContentPersistenceModule;
+import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentPurger;
+import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.listing.ContentLister;
+import org.atlasapi.persistence.content.listing.ProgressStore;
+import org.atlasapi.persistence.content.mongo.MongoContentTables;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,6 +30,16 @@ public class ContentPurgeWebModule {
 
     @Autowired
     private ContentPurger contentPurger;
+    @Autowired
+    private ContentWriter writer;
+    @Autowired
+    private ContentLister lister;
+    @Autowired
+    private LookupEntryStore lookup;
+    @Autowired
+    private ProgressStore progressStore;
+    @Autowired
+    private DatabasedMongo mongo;
     
     @Bean
     public LyrebirdYoutubeContentPurgeController lyrebirdYoutubeContentPurgeController() {
@@ -36,5 +54,18 @@ public class ContentPurgeWebModule {
     @Bean
     public ContentPurgeController btVodContentPurgeController() {
         return new ContentPurgeController(contentPurger);
+    }
+
+    @Bean
+    public PaContentDeactivationController paContentDeactivationController() {
+        return new PaContentDeactivationController(
+                new PaContentDeactivator(
+                        lookup,
+                        lister,
+                        writer,
+                        progressStore,
+                        new MongoContentTables(mongo).collectionFor(ContentCategory.CHILD_ITEM)
+                )
+        );
     }
 }

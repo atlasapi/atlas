@@ -274,10 +274,17 @@ public class PaModule {
     }
     
     public @Bean PaSingleDateUpdatingController paUpdateController() {
-        PaChannelProcessor channelProcessor = new PaChannelProcessor(paProgrammeProcessor(), broadcastTrimmer(), 
-                scheduleWriter, paScheduleVersionStore(), contentBuffer(), contentWriter);
-        return new PaSingleDateUpdatingController(channelProcessor, scheduleResolver, channelResolver, 
-                paProgrammeDataStore());
+        PaChannelProcessor channelProcessor = new PaChannelProcessor(
+                paProgrammeProcessor(),
+                broadcastTrimmer(),
+                scheduleWriter,
+                paScheduleVersionStore(),
+                contentBuffer(),
+                contentWriter
+        );
+        return new PaSingleDateUpdatingController(
+                channelProcessor, channelResolver, paProgrammeDataStore()
+        );
     }
     
     public @Bean PaScheduleVersionStore paScheduleVersionStore() {

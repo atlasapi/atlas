@@ -2,8 +2,12 @@ package org.atlasapi.equiv.generators;
 
 import static com.google.common.collect.Iterables.filter;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
@@ -19,11 +23,14 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
+import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.query.Selection;
@@ -40,6 +47,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private final ApplicationConfiguration searchConfig;
     private final FilmTitleMatcher titleMatcher;
     private final boolean acceptNullYears;
+
+    private final TitleExpander titleExpander = new TitleExpander();
 
     private final List<Publisher> publishers;
 
@@ -68,6 +77,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         }
         
         Film film = (Film) item;
+        String expandedTitle = titleExpander.expand(film.getTitle());
+        film.setTitle(expandedTitle);
         
         if (film.getYear() == null && !acceptNullYears) {
             desc.appendText("Can't continue: null year");

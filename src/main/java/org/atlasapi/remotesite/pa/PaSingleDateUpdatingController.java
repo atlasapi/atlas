@@ -69,7 +69,7 @@ public class PaSingleDateUpdatingController {
     )
     public void runUpdate(@PathVariable String dateString,
             @RequestParam("channel") String channelUri, HttpServletResponse response) {
-        Maybe<Channel> channel = channelResolver.fromKey(channelUri);
+        Maybe<Channel> channel = channelResolver.fromUri(channelUri);
         if (channel.hasValue()) {
             PaSingleDateUpdater updater = new PaSingleDateUpdater(
                     Executors.newSingleThreadExecutor(),

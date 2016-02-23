@@ -19,6 +19,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
 @Controller
 public class PaSingleDateUpdatingController {
@@ -44,7 +45,11 @@ public class PaSingleDateUpdatingController {
         executor.shutdown();
     }
 
-    @RequestMapping(value = "/system/update/pa/{dateString}", method = RequestMethod.POST)
+    @RequestMapping(
+            value = "/system/update/pa/{dateString}",
+            method = RequestMethod.POST,
+            params = {}
+    )
     public void runUpdate(@PathVariable String dateString, HttpServletResponse response) {
         PaSingleDateUpdater updater = new PaSingleDateUpdater(
                 Executors.newSingleThreadExecutor(),
@@ -58,12 +63,13 @@ public class PaSingleDateUpdatingController {
     }
     
     @RequestMapping(
-            value = "/system/update/pa/{dateString}/{channelString}",
-            method = RequestMethod.POST
+            value = "/system/update/pa/{dateString}",
+            method = RequestMethod.POST,
+            params = { "channel" }
     )
-    public void runUpdate(@PathVariable String dateString, @PathVariable String channelUri,
-            HttpServletResponse response) {
-        Maybe<Channel> channel = channelResolver.fromUri(channelUri);
+    public void runUpdate(@PathVariable String dateString,
+            @RequestParam("channel") String channelUri, HttpServletResponse response) {
+        Maybe<Channel> channel = channelResolver.fromKey(channelUri);
         if (channel.hasValue()) {
             PaSingleDateUpdater updater = new PaSingleDateUpdater(
                     Executors.newSingleThreadExecutor(),

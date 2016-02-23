@@ -2,8 +2,12 @@ package org.atlasapi.equiv.generators;
 
 import static com.google.common.collect.Iterables.filter;
 
+import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.regex.Pattern;
+
+import javax.annotation.Nullable;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
@@ -19,11 +23,14 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
+import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.query.Selection;
@@ -31,6 +38,8 @@ import com.metabroadcast.common.query.Selection;
 public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     
     private static final Pattern IMDB_REF = Pattern.compile("http://imdb.com/title/[\\d\\w]+");
+
+    private final Map<String, String> WORDS_TO_EXPAND = ImmutableMap.of("3", "three");
 
     private static final float TITLE_WEIGHTING = 1.0f;
     private static final float BROADCAST_WEIGHTING = 0.0f;
@@ -122,13 +131,36 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     }
 
     private SearchQuery searchQueryFor(Film film) {
-        return new SearchQuery(film.getTitle(), Selection.ALL, publishers, TITLE_WEIGHTING,
+        String filmTitle = expandTitle(film.getTitle());
+        return new SearchQuery(filmTitle, Selection.ALL, publishers, TITLE_WEIGHTING,
                 BROADCAST_WEIGHTING, CATCHUP_WEIGHTING);
     }
 
     private boolean sameYear(Film film, Film equivFilm) {
         return film.getYear().equals(equivFilm.getYear());
     }
+
+    private String expandTitle(String title) {
+        List<String> words = Arrays.asList(title.split(" "));
+        Iterable<String> transform = Iterables.transform(words, expander);
+        StringBuilder builder = new StringBuilder();
+        for (String word : transform) {
+            builder.append(word).append(" ");
+        }
+        return builder.toString().trim();
+    }
+
+    private Function<String, String> expander = new Function<String, String>() {
+        @Nullable
+        @Override
+        public String apply(@Nullable String word) {
+            if (WORDS_TO_EXPAND.keySet().contains(word)) {
+                return WORDS_TO_EXPAND.get(word);
+            }
+            return word;
+        }
+    };
+
     
     @Override
     public String toString() {

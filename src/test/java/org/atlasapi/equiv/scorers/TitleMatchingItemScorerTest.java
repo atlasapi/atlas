@@ -113,6 +113,8 @@ public class TitleMatchingItemScorerTest extends TestCase {
 
     @Test
     public void testMatchingWithApostrophe() {
+        //This test case covers cases when non-abbrivating apostrophe is used in the end of the word
+        // like "Girls' Night In" with "Girls' Night In"
         DefaultDescription desc = new DefaultDescription();
         score(2, scorer.score(itemWithTitle("Girls' Night In"), of(itemWithTitle("Girls' Night In")), desc));
         score(2, scorer.score(itemWithTitle("Girls Night In"), of(itemWithTitle("Girls' Night In")), desc));
@@ -123,6 +125,8 @@ public class TitleMatchingItemScorerTest extends TestCase {
     @Test
     public void testMatchingWithApostropheWithinWord() {
         DefaultDescription desc = new DefaultDescription();
+        //This test case covers cases when non-abbrivating apostrophe is used within a word
+        // like Charlies Big Catch" with "Charlie's Big Catch"
         score(2, scorer.score(itemWithTitle("Charlies Big Catch"), of(itemWithTitle("Charlie's Big Catch")), desc));
         score(2, scorer.score(itemWithTitle("Charlie's Big Catch"), of(itemWithTitle("Charlie's Big Catch")), desc));
         score(2, scorer.score(itemWithTitle("Charlie's Big Catch"), of(itemWithTitle("Charlies Big Catch")), desc));
@@ -130,6 +134,7 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(2, scorer.score(itemWithTitle("C'harlies Big Catch"), of(itemWithTitle("Charlies Big Catch")), desc));
         score(2, scorer.score(itemWithTitle("Charlies Big Catch"), of(itemWithTitle("C'harlies Big Catch")), desc));
         score(2, scorer.score(itemWithTitle("C'harlies Big Catch"), of(itemWithTitle("C'harlies Big Catch")), desc));
+        score(0, scorer.score(itemWithTitle("C'harlie Big Catch"), of(itemWithTitle("C'harlies Big Catch")), desc));
     }
     
     private void score(double expected, ScoredCandidates<Item> scores) {

@@ -39,8 +39,6 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     
     private static final Pattern IMDB_REF = Pattern.compile("http://imdb.com/title/[\\d\\w]+");
 
-    private final Map<String, String> WORDS_TO_EXPAND = ImmutableMap.of("3", "three");
-
     private static final float TITLE_WEIGHTING = 1.0f;
     private static final float BROADCAST_WEIGHTING = 0.0f;
     private static final float CATCHUP_WEIGHTING = 0.0f;
@@ -49,6 +47,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private final ApplicationConfiguration searchConfig;
     private final FilmTitleMatcher titleMatcher;
     private final boolean acceptNullYears;
+
+    private final TitleExpander titleExpander = new TitleExpander();
 
     private final List<Publisher> publishers;
 
@@ -77,6 +77,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         }
         
         Film film = (Film) item;
+        String expandedTitle = titleExpander.expand(film.getTitle());
+        film.setTitle(expandedTitle);
         
         if (film.getYear() == null && !acceptNullYears) {
             desc.appendText("Can't continue: null year");
@@ -131,36 +133,13 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     }
 
     private SearchQuery searchQueryFor(Film film) {
-        String filmTitle = expandTitle(film.getTitle());
-        return new SearchQuery(filmTitle, Selection.ALL, publishers, TITLE_WEIGHTING,
+        return new SearchQuery(film.getTitle(), Selection.ALL, publishers, TITLE_WEIGHTING,
                 BROADCAST_WEIGHTING, CATCHUP_WEIGHTING);
     }
 
     private boolean sameYear(Film film, Film equivFilm) {
         return film.getYear().equals(equivFilm.getYear());
     }
-
-    private String expandTitle(String title) {
-        List<String> words = Arrays.asList(title.split(" "));
-        Iterable<String> transform = Iterables.transform(words, expander);
-        StringBuilder builder = new StringBuilder();
-        for (String word : transform) {
-            builder.append(word).append(" ");
-        }
-        return builder.toString().trim();
-    }
-
-    private Function<String, String> expander = new Function<String, String>() {
-        @Nullable
-        @Override
-        public String apply(@Nullable String word) {
-            if (WORDS_TO_EXPAND.keySet().contains(word)) {
-                return WORDS_TO_EXPAND.get(word);
-            }
-            return word;
-        }
-    };
-
     
     @Override
     public String toString() {

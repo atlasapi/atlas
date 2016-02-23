@@ -5,25 +5,25 @@ import org.junit.Test;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
 
-public class TitleAbbreviationTransformTest {
+public class TitleExpanderTest {
 
-    private final TitleAbbreviationTransform sanitizer = new TitleAbbreviationTransform();
+    private final TitleExpander sanitizer = new TitleExpander();
 
     @Test
     public void testWithoutAbbrevations() {
-        assertThat(sanitizer.apply("Sultans of Swing"),
+        assertThat(sanitizer.expand("Sultans of Swing"),
                 is("sultans of swing"));
-        assertThat(sanitizer.apply("Undefeatablatoration"),
+        assertThat(sanitizer.expand("Undefeatablatoration"),
                 is("undefeatablatoration"));
-        assertThat(sanitizer.apply("Doctor Drake Ramoray"),
+        assertThat(sanitizer.expand("Doctor Drake Ramoray"),
                 is("doctor drake ramoray"));
     }
 
     @Test
     public void testExpandsAbbrevation() {
-        assertThat(sanitizer.apply("Dr Blake Mysteries"),
+        assertThat(sanitizer.expand("Dr Blake Mysteries"),
                 is("doctor blake mysteries"));
-        assertThat(sanitizer.apply("Dr Who"),
+        assertThat(sanitizer.expand("Dr Who"),
                 is("doctor who"));
     }
 

@@ -63,7 +63,7 @@ import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
 import org.atlasapi.equiv.generators.RadioTimesFilmEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ScalingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.SongTitleTransform;
-import org.atlasapi.equiv.generators.TitleAbbreviationTransform;
+import org.atlasapi.equiv.generators.TitleExpander;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
@@ -582,7 +582,7 @@ public class EquivModule {
 
     private EquivalenceUpdater<Container> btTveVodContainerUpdater(Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Container> builder()
-                .withGenerator(new TitleSearchGenerator<Container>(searchResolver, Container.class, acceptablePublishers, new TitleAbbreviationTransform(), 20, DEFAULT_EXACT_TITLE_MATCH_SCORE)
+                .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
                 )
                 .withScorers(ImmutableSet.of(
                         new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE),

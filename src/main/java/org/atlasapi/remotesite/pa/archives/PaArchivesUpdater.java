@@ -98,7 +98,7 @@ public abstract class PaArchivesUpdater extends ScheduledTask {
             Matcher matcher = FILEDATETIME.matcher(filename);
 
             JAXBContext context = JAXBContext.newInstance(
-                    "org.atlasapi.remotesite.pa.listings.bindings");
+                    "org.atlasapi.remotesite.pa.archives.bindings");
             Unmarshaller unmarshaller = context.createUnmarshaller();
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);

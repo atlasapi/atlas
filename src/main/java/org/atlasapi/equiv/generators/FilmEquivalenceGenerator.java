@@ -2,12 +2,8 @@ package org.atlasapi.equiv.generators;
 
 import static com.google.common.collect.Iterables.filter;
 
-import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
@@ -23,14 +19,11 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
-import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.query.Selection;
@@ -48,18 +41,18 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private final FilmTitleMatcher titleMatcher;
     private final boolean acceptNullYears;
 
-    private final TitleExpander titleExpander = new TitleExpander();
+    private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
     private final List<Publisher> publishers;
 
 
-    public FilmEquivalenceGenerator(SearchResolver searchResolver, Iterable<Publisher> publishers, 
+    public FilmEquivalenceGenerator(SearchResolver searchResolver, Iterable<Publisher> publishers,
             boolean acceptNullYears) {
         this.searchResolver = searchResolver;
         this.searchConfig = defaultConfigWithSourcesEnabled(publishers);
         this.publishers = ImmutableList.copyOf(publishers);
         this.acceptNullYears = acceptNullYears;
-        this.titleMatcher = new FilmTitleMatcher();
+        this.titleMatcher = new FilmTitleMatcher(titleExpander);
     }
 
     private ApplicationConfiguration defaultConfigWithSourcesEnabled(Iterable<Publisher> publishers) {
@@ -77,8 +70,6 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         }
         
         Film film = (Film) item;
-        String expandedTitle = titleExpander.expand(film.getTitle());
-        film.setTitle(expandedTitle);
         
         if (film.getYear() == null && !acceptNullYears) {
             desc.appendText("Can't continue: null year");
@@ -133,7 +124,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     }
 
     private SearchQuery searchQueryFor(Film film) {
-        return new SearchQuery(film.getTitle(), Selection.ALL, publishers, TITLE_WEIGHTING,
+        String expandedTitle = titleExpander.expand(film.getTitle());
+        return new SearchQuery(expandedTitle, Selection.ALL, publishers, TITLE_WEIGHTING,
                 BROADCAST_WEIGHTING, CATCHUP_WEIGHTING);
     }
 

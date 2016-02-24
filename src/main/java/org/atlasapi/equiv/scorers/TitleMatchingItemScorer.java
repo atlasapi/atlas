@@ -6,6 +6,7 @@ import java.util.regex.Pattern;
 
 import com.google.common.collect.ImmutableSet;
 
+import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -23,6 +24,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     public static final String NAME = "Title";
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of("the ", "Live ");
     private static final Pattern TRAILING_APOSTROPHE_PATTERN =Pattern.compile("\\w' ");
+    private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
     private Logger log = LoggerFactory.getLogger(TitleMatchingItemScorer.class);
 
@@ -118,7 +120,6 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     
     private Score compareTitles(final String subjectTitle, final String suggestionTitle) {
         boolean matches;
-        
         String subjTitle = normalize(subjectTitle);
         String suggTitle = normalize(suggestionTitle);
 
@@ -137,7 +138,10 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
     
     private String normalize(String title) {
-        return replaceSpecialChars(removeCommonPrefixes(removeSequencePrefix(title).toLowerCase()));
+        String withoutSequencePrefix = removeSequencePrefix(title);
+        String expandedTitle = titleExpander.expand(withoutSequencePrefix);
+        String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle);
+        return replaceSpecialChars(withoutCommonPrefixes);
     }
 
     private String normalizeRegularExpression(String title) {

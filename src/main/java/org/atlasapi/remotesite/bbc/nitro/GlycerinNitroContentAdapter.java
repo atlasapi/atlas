@@ -1,12 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
-
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -22,10 +15,21 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.atlasapi.remotesite.bbc.nitro.v1.NitroClient;
-import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.atlas.glycerin.Glycerin;
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.atlas.glycerin.GlycerinResponse;
+import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.Episode;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.model.Version;
+import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
+import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
+import com.metabroadcast.common.time.Clock;
 
 import com.google.api.client.util.Lists;
 import com.google.common.base.Function;
@@ -42,20 +46,15 @@ import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
-import com.metabroadcast.atlas.glycerin.Glycerin;
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.atlas.glycerin.GlycerinResponse;
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.Episode;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.model.Version;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
-import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
-import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
-import com.metabroadcast.common.time.Clock;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
 
 /**
  * A {@link NitroContentAdapter} based on a {@link Glycerin}.
@@ -68,7 +67,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private final Glycerin glycerin;
     private final GlycerinNitroClipsAdapter clipsAdapter;
-    private final NitroClient nitroClient;
 
     private final NitroBrandExtractor brandExtractor;
     private final NitroSeriesExtractor seriesExtractor;
@@ -77,11 +75,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private final ListeningExecutorService executor;
 
-    public GlycerinNitroContentAdapter(Glycerin glycerin, NitroClient nitroClient,
-            GlycerinNitroClipsAdapter clipsAdapter, QueuingPersonWriter peopleWriter, Clock clock,
-            int pageSize) {
+    public GlycerinNitroContentAdapter(
+            Glycerin glycerin,
+            GlycerinNitroClipsAdapter clipsAdapter,
+            QueuingPersonWriter peopleWriter,
+            Clock clock,
+            int pageSize
+    ) {
         this.glycerin = checkNotNull(glycerin);
-        this.nitroClient = checkNotNull(nitroClient);
         this.pageSize = pageSize;
         this.clipsAdapter = checkNotNull(clipsAdapter);
         this.brandExtractor = new NitroBrandExtractor(clock);
@@ -294,10 +295,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                 return input.getPid();
             }
         });
-    }
-
-    private List<NitroGenreGroup> genres(Episode episode) throws NitroException {
-        return nitroClient.genres(episode.getPid());
     }
 
     private ListMultimap<String, Broadcast> broadcasts(ImmutableList<Episode> episodes)

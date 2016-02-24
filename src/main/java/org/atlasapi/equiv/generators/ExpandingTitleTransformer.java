@@ -5,16 +5,29 @@ import java.util.List;
 import java.util.Map;
 import javax.annotation.Nullable;
 
+import com.metabroadcast.common.collect.ImmutableOptionalMap;
+import com.metabroadcast.common.collect.OptionalMap;
+
 import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
-public class TitleExpander {
+public class ExpandingTitleTransformer {
 
-    private final Map<String, String> WORDS_TO_EXPAND = ImmutableMap.<String,String>builder()
-                                                        .put("dr", "doctor")
-                                                        .put("3", "three")
-                                                        .build();
+    private final OptionalMap<String, String> WORDS_TO_EXPAND = 
+            ImmutableOptionalMap.fromMap(ImmutableMap.<String, String>builder()
+                    .put("dr", "doctor")
+                    .put("1", "one")
+                    .put("2", "two")
+                    .put("3", "three")
+                    .put("4", "four")
+                    .put("5", "five")
+                    .put("6", "six")
+                    .put("7", "seven")
+                    .put("8", "eight")
+                    .put("9", "nine")
+                    .build());
 
     public String expand(String input) {
         input = input.toLowerCase();
@@ -31,10 +44,7 @@ public class TitleExpander {
         @Nullable
         @Override
         public String apply(@Nullable String word) {
-            if (WORDS_TO_EXPAND.keySet().contains(word)) {
-                return WORDS_TO_EXPAND.get(word);
-            }
-            return word;
+            return WORDS_TO_EXPAND.get(word).or(word);
         }
     };
 }

@@ -41,16 +41,18 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private final FilmTitleMatcher titleMatcher;
     private final boolean acceptNullYears;
 
+    private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
+
     private final List<Publisher> publishers;
 
 
-    public FilmEquivalenceGenerator(SearchResolver searchResolver, Iterable<Publisher> publishers, 
+    public FilmEquivalenceGenerator(SearchResolver searchResolver, Iterable<Publisher> publishers,
             boolean acceptNullYears) {
         this.searchResolver = searchResolver;
         this.searchConfig = defaultConfigWithSourcesEnabled(publishers);
         this.publishers = ImmutableList.copyOf(publishers);
         this.acceptNullYears = acceptNullYears;
-        this.titleMatcher = new FilmTitleMatcher();
+        this.titleMatcher = new FilmTitleMatcher(titleExpander);
     }
 
     private ApplicationConfiguration defaultConfigWithSourcesEnabled(Iterable<Publisher> publishers) {
@@ -122,7 +124,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     }
 
     private SearchQuery searchQueryFor(Film film) {
-        return new SearchQuery(film.getTitle(), Selection.ALL, publishers, TITLE_WEIGHTING,
+        String expandedTitle = titleExpander.expand(film.getTitle());
+        return new SearchQuery(expandedTitle, Selection.ALL, publishers, TITLE_WEIGHTING,
                 BROADCAST_WEIGHTING, CATCHUP_WEIGHTING);
     }
 

@@ -98,7 +98,7 @@ public abstract class PaArchivesUpdater extends ScheduledTask {
             Matcher matcher = FILEDATETIME.matcher(filename);
 
             JAXBContext context = JAXBContext.newInstance(
-                    "org.atlasapi.remotesite.pa.listings.bindings");
+                    "org.atlasapi.remotesite.pa.archives.bindings");
             Unmarshaller unmarshaller = context.createUnmarshaller();
             SAXParserFactory factory = SAXParserFactory.newInstance();
             factory.setNamespaceAware(true);
@@ -133,14 +133,17 @@ public abstract class PaArchivesUpdater extends ScheduledTask {
             }
 
             public void afterUnmarshal(Object target, Object parent) {
-                if (parent instanceof TvData) {
+                if (target instanceof TvData) {
                     try {
-                        ArchiveUpdate archiveUpdate = (ArchiveUpdate) target;
-                        for (org.atlasapi.remotesite.pa.archives.bindings.ProgData progData : archiveUpdate.getProgData()) {
-                            log.info("Started processing PA updates for: "
-                                    + progData.getProgId());
-                            ProgData listings = transformer.transformToListingProgdata(progData);
-                            processor.process(listings, getTimeZone(fileData),Timestamp.of(fileToProcess.lastModified()));
+                        TvData tvData = (TvData) target;
+                        List<ArchiveUpdate> archiveUpdate = tvData.getArchiveUpdate();
+                        for (ArchiveUpdate update : archiveUpdate) {
+                            for (org.atlasapi.remotesite.pa.archives.bindings.ProgData progData : update.getProgData()) {
+                                log.info("Started processing PA updates for: "
+                                        + progData.getProgId());
+                                ProgData listings = transformer.transformToListingProgdata(progData);
+                                processor.process(listings, getTimeZone(fileData),Timestamp.of(fileToProcess.lastModified()));
+                            }
                         }
 
                     } catch (NoSuchElementException e) {

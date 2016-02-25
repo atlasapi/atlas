@@ -3,9 +3,17 @@ package org.atlasapi.equiv.generators;
 import org.atlasapi.media.entity.Film;
 
 public class FilmTitleMatcher {
+
+    private ExpandingTitleTransformer titleExpander;
+
+    public FilmTitleMatcher(ExpandingTitleTransformer titleExpander) {
+        this.titleExpander = titleExpander;
+    }
     
     public double titleMatch(Film film, Film equivFilm) {
-        return match(removeThe(alphaNumeric(film.getTitle())), removeThe(alphaNumeric(equivFilm.getTitle())));
+        String targetExpandedTitle = titleExpander.expand(film.getTitle());
+        String candidateExpandedTitle = titleExpander.expand(equivFilm.getTitle());
+        return match(removeThe(alphaNumeric(targetExpandedTitle)), removeThe(alphaNumeric(candidateExpandedTitle)));
     }
 
     public double match(String subjectTitle, String equivalentTitle) {

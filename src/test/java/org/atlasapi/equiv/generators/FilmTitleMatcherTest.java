@@ -10,7 +10,7 @@ import junit.framework.TestCase;
 
 public class FilmTitleMatcherTest extends TestCase {
 
-    private final FilmTitleMatcher matcher = new FilmTitleMatcher();
+    private final FilmTitleMatcher matcher = new FilmTitleMatcher(new ExpandingTitleTransformer());
 
     @Test
     public void testPerfectMatch() {

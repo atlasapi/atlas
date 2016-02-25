@@ -41,6 +41,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final Function<String, String> titleTransform;
     private final ContentTitleScorer<T> titleScorer;
     private final int searchLimit;
+    private final ExpandingTitleTransformer titleExpander;
 
     public TitleSearchGenerator(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, double exactMatchScore) {
         this(searchResolver, cls, publishers, Functions.<String>identity(), 20, exactMatchScore);
@@ -54,6 +55,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         this.searchPublishers = ImmutableSet.copyOf(publishers);
         this.titleTransform = titleTransform;
         this.titleScorer = new ContentTitleScorer<T>(NAME, titleTransform, exactMatchScore);
+        this.titleExpander = new ExpandingTitleTransformer();
     }
 
     @Override
@@ -71,6 +73,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         ApplicationConfiguration appConfig = defaultConfiguration().withSources(enabledPublishers(publishers));
 
         String title = titleTransform.apply(content.getTitle());
+        title = titleExpander.expand(title);
         SearchQuery.Builder query = SearchQuery.builder(title)
                 .withSelection(new Selection(0, searchLimit))
                 .withPublishers(publishers)

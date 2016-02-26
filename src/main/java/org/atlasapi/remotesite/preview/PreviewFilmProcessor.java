@@ -3,10 +3,6 @@ package org.atlasapi.remotesite.preview;
 import java.util.List;
 import java.util.Set;
 
-import nu.xom.Element;
-import nu.xom.Elements;
-import nu.xom.Nodes;
-
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
 import org.atlasapi.media.entity.Clip;
@@ -17,13 +13,18 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.joda.time.Duration;
 
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.text.MoreStrings;
+
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.text.MoreStrings;
+import nu.xom.Element;
+import nu.xom.Elements;
+import nu.xom.Nodes;
+import org.joda.time.Duration;
 
 public class PreviewFilmProcessor {
     
@@ -46,7 +47,7 @@ public class PreviewFilmProcessor {
         String id = movieElement.getAttributeValue("movie_id");
         Film film = new Film(getFilmUri(id), getFilmCurie(id), Publisher.PREVIEW_NETWORKS);
         
-        Integer duration = getInt(movieElement, "movie_duration");
+        Optional<Integer> duration = Optional.fromNullable(getInt(movieElement, "movie_duration"));
         
         film.setYear(getInt(movieElement, "production_year"));
         String website = get(movieElement, "official_website");
@@ -73,7 +74,9 @@ public class PreviewFilmProcessor {
         film.setTitle(get(productElement, "product_title"));
         
         Version version = new Version();
-        version.setDuration(Duration.standardMinutes(duration));
+        if (duration.isPresent()) {
+            version.setDuration(Duration.standardMinutes(duration.get()));
+        }
         film.addVersion(version);
         
         film.setClips(getClips(productElement, id));

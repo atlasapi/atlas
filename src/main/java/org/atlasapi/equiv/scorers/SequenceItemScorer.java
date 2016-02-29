@@ -28,20 +28,28 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
     @Override
     public ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates, ResultDescription desc) {
         Builder<Item> equivalents = DefaultScoredCandidates.fromSource(SEQUENCE_SCORER);
-        
+
+        int numberOfGenericEpisodes = 0;
         if (subject instanceof Episode) {
             Episode episode = (Episode) subject;
+            Integer seriesNumber = episode.getSeriesNumber();
+            Integer episodeNumber = episode.getEpisodeNumber();
             desc.appendText("Subject: S: %s, E: %s. %s candidates",
-                episode.getSeriesNumber(),
-                episode.getEpisodeNumber(),
+                seriesNumber,
+                episodeNumber,
                 Iterables.size(candidates)
             );
             for (Item candidate : candidates) {
                 Score score = score(episode, candidate, desc);
                 equivalents.addEquivalent(candidate, score);
+                Boolean isGeneric = candidate.getGenericDescription();
+                if (isGeneric != null && isGeneric == true && score.isRealScore()) {
+                    numberOfGenericEpisodes ++;
+                }
             }
+            desc.appendText("Subject: S: %s, E: %s. %s generic episodes", seriesNumber, episodeNumber, numberOfGenericEpisodes);
         } else {
-            desc.appendText("Subject: not epsiode");
+            desc.appendText("Subject: not episode");
             for (Item suggestion : candidates) {
                 equivalents.addEquivalent(suggestion, Score.NULL_SCORE);
             }

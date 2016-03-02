@@ -17,18 +17,17 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
-import org.atlasapi.remotesite.bbc.nitro.v1.HttpNitroClient;
-import org.atlasapi.remotesite.bbc.nitro.v1.NitroClient;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.util.GroupLock;
-import org.joda.time.Duration;
-import org.joda.time.LocalDate;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
-import com.google.api.client.util.Strings;
+import com.metabroadcast.atlas.glycerin.Glycerin;
+import com.metabroadcast.atlas.glycerin.XmlGlycerin;
+import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.time.SystemClock;
+
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -38,23 +37,20 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
-import com.google.common.net.HostSpecifier;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.metabroadcast.atlas.glycerin.Glycerin;
-import com.metabroadcast.atlas.glycerin.XmlGlycerin;
-import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.time.SystemClock;
+import org.joda.time.Duration;
+import org.joda.time.LocalDate;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BbcNitroModule {
 
     private @Value("${updaters.bbcnitro.enabled}") Boolean tasksEnabled;
     private @Value("${updaters.bbcnitro.offschedule.enabled}") Boolean offScheduleIngestEnabled;
-    private @Value("${bbc.nitro.host}") String nitroHost;
     private @Value("${bbc.nitro.root}") String nitroRoot;
     private @Value("${bbc.nitro.apiKey}") String nitroApiKey;
     private @Value("${bbc.nitro.requestsPerSecond.today}") Integer nitroTodayRateLimit;
@@ -148,26 +144,15 @@ public class BbcNitroModule {
     }
 
     Glycerin glycerin(Integer rateLimit) {
-        if (!tasksEnabled && Strings.isNullOrEmpty(nitroHost) 
-                || Strings.isNullOrEmpty(nitroHost)) {
+        if (!tasksEnabled) {
             return UnconfiguredGlycerin.get();
         }
-        Builder glycerin = XmlGlycerin.builder(nitroApiKey)
-                .withHost(HostSpecifier.fromValid(nitroHost))
-                .withRootResource(nitroRoot);
+
+        Builder glycerin = XmlGlycerin.builder(nitroApiKey).withRootResource(nitroRoot);
         if (rateLimit != null) {
             glycerin.withLimiter(RateLimiter.create(rateLimit));
         }
         return glycerin.build();
-    }
-
-    @Bean
-    NitroClient nitroClient() {
-        if (!tasksEnabled && Strings.isNullOrEmpty(nitroHost) 
-                || Strings.isNullOrEmpty(nitroHost)) {
-            return UnconfiguredNitroClient.get();
-        }
-        return new HttpNitroClient(HostSpecifier.fromValid(nitroHost), nitroApiKey);
     }
 
     NitroBroadcastHandler<ImmutableList<Optional<ItemRefAndBroadcast>>> nitroBroadcastHandler(Glycerin glycerin, 
@@ -190,7 +175,7 @@ public class BbcNitroModule {
     GlycerinNitroContentAdapter nitroContentAdapter(Glycerin glycerin) {
         SystemClock clock = new SystemClock();
         GlycerinNitroClipsAdapter clipsAdapter = new GlycerinNitroClipsAdapter(glycerin, clock, nitroRequestPageSize);
-        return new GlycerinNitroContentAdapter(glycerin, nitroClient(), clipsAdapter, peopleWriter, clock, nitroRequestPageSize);
+        return new GlycerinNitroContentAdapter(glycerin, clipsAdapter, peopleWriter, clock, nitroRequestPageSize);
     }
 
     private Supplier<Range<LocalDate>> dayRangeSupplier(int back, int forward) {

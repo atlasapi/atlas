@@ -12,6 +12,7 @@ import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.C4;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
+import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV;
@@ -143,6 +144,7 @@ public class EquivTaskModule {
     private static final RepetitionRule VF_AE_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_VIACOM_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_VUBIQUITY_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule EBMS_VF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
     private @Value("${equiv.stream-updater.enabled}") Boolean streamedChangesUpdateEquiv;

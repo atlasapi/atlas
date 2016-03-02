@@ -1,26 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Mockito.any;
-import static org.mockito.Mockito.when;
-
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
-import org.atlasapi.remotesite.bbc.nitro.v1.NitroClient;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Matchers;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -36,10 +19,26 @@ import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
 import com.metabroadcast.common.time.Clock;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.Matchers;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.when;
+
 @RunWith(MockitoJUnitRunner.class)
 public class GlycerinNitroContentAdapterTest {
 
-    @Mock NitroClient nitroClient;
     @Mock Glycerin glycerin;
     @Mock QueuingPersonWriter personWriter;
     @Mock Clock clock;
@@ -56,7 +55,7 @@ public class GlycerinNitroContentAdapterTest {
     @Before
     public void setUp() {
         contentAdapter = new GlycerinNitroContentAdapter(
-                glycerin, nitroClient, clipsAdapter, personWriter, clock, pageSize);
+                glycerin, clipsAdapter, personWriter, clock, pageSize);
     }
 
     @Test

@@ -112,7 +112,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     @Override
     public Optional<ContentHierarchyAndSummaries> process(ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
         try {
-            LOG.trace("Channel: {} ProgData: {} UpdatedAt: {}", channel.toString(), progData, updatedAt);
+            LOG.trace("Channel: {} ProgData: {} UpdatedAt: {}", channel, progData, updatedAt);
             if (! Strings.isNullOrEmpty(progData.getSeriesId()) && IGNORED_BRANDS.contains(progData.getSeriesId())) {
                 return Optional.absent();
             }

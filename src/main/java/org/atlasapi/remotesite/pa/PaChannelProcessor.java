@@ -87,7 +87,7 @@ public class PaChannelProcessor {
             scheduleWriter.replaceScheduleBlock(Publisher.PA, channel, broadcasts);
 
             log.trace("Storing version {} for channel {} on day {}",
-                    String.valueOf(channelData.version()),
+                    channelData.version(),
                     channel,
                     channelData.scheduleDay());
 

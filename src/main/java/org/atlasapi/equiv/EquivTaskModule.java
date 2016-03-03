@@ -145,6 +145,7 @@ public class EquivTaskModule {
     private static final RepetitionRule VF_VUBIQUITY_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
+    private @Value("${equiv.startup-updater.enabled}") String startupUpdaterEnabled;
     private @Value("${equiv.stream-updater.enabled}") Boolean streamedChangesUpdateEquiv;
     private @Value("${equiv.stream-updater.consumers.default}") Integer defaultStreamedEquivUpdateConsumers;
     private @Value("${equiv.stream-updater.consumers.max}") Integer maxStreamedEquivUpdateConsumers;

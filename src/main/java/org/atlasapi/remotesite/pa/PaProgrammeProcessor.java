@@ -112,6 +112,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     @Override
     public Optional<ContentHierarchyAndSummaries> process(ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
         try {
+            LOG.trace("Channel: {} ProgData: {} UpdatedAt: {}", channel.toString(), progData, updatedAt);
             if (! Strings.isNullOrEmpty(progData.getSeriesId()) && IGNORED_BRANDS.contains(progData.getSeriesId())) {
                 return Optional.absent();
             }
@@ -143,7 +144,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             return Optional.of(new ContentHierarchyAndSummaries(possibleBrand, possibleSeries, item, itemAndBroadcast.getBroadcast().requireValue(),
                     Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary)));
         } catch (Exception e) {
-            LOG.warn("Failed to process PA programme data", e);
+            LOG.error("Failed to process PA programme data", e);
             adapterLog.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
         }
         return Optional.absent();

@@ -246,26 +246,25 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private ItemAndBroadcast getClosedEpisode(Brand brand, ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
-        String uri = CLOSED_EPISODE;
-        String curie = CLOSED_CURIE;
+        final String uri = CLOSED_EPISODE + getClosedPostfix(channel);
 
         Maybe<Identified> resolvedContent = contentResolver.findByCanonicalUris(ImmutableList.of(uri)).getFirstValue();
 
         Episode episode;
-        if (resolvedContent.hasValue() && resolvedContent.requireValue() instanceof Episode) {
+        if (resolvedContent.hasValue()
+                && resolvedContent.requireValue() instanceof Episode) {
             episode = (Episode) resolvedContent.requireValue();
         } else {
             episode = (Episode) getBasicEpisode(progData, true);
+            episode.setCanonicalUri(uri);
         }
+        episode.setCurie(CLOSED_CURIE + getClosedPostfix(channel));
         episode.setTitle(progData.getTitle());
         episode.setScheduleOnly(true);
-
-        episode.setCurie(curie+getClosedPostfix(channel));
-        uri = uri.concat(getClosedPostfix(channel));
         episode.setMediaType(channel.getMediaType());
-        episode.setCanonicalUri(uri);
 
         Version version = findBestVersion(episode.getVersions());
+
         Broadcast broadcast = broadcast(progData, channel, zone, updatedAt);
         addBroadcast(version, broadcast);
 

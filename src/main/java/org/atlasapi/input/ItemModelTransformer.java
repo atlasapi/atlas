@@ -66,9 +66,16 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         } else if ("broadcast".equals(type)) {
             item = createBroadcast(inputItem);
         } else {
-            item = new Item();
+            item = createItem(inputItem);
         }
         item.setLastUpdated(now);
+        return item;
+    }
+
+    private Item createItem(org.atlasapi.media.entity.simple.Item inputItem) {
+        Item item = new Item();
+        item.setYear(inputItem.getYear());
+        item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
         return item;
     }
 
@@ -101,6 +108,8 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         Episode episode = new Episode();
         episode.setSeriesNumber(inputItem.getSeriesNumber());
         episode.setEpisodeNumber(inputItem.getEpisodeNumber());
+        episode.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
+        episode.setYear(inputItem.getYear());
 
         if (inputItem.getSeriesSummary() != null) {
             episode.setSeriesRef(new ParentRef(inputItem.getSeriesSummary().getUri()));
@@ -119,6 +128,10 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if (!encodings.isEmpty()) {
             version.setLastUpdated(now);
             version.setManifestedAs(encodings);
+        }
+
+        if (!inputItem.getLocations().isEmpty()) {
+            setDuration(version, inputItem);
         }
         if (inputItem.getBrandSummary() != null) {
             item.setParentRef(new ParentRef(inputItem.getBrandSummary().getUri()));
@@ -139,6 +152,15 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         item.setVersions(ImmutableSet.of(version));
 
         return item;
+    }
+
+    private void setDuration(Version version, org.atlasapi.media.entity.simple.Item inputItem) {
+        for (org.atlasapi.media.entity.simple.Location location : inputItem.getLocations()) {
+            if (location.getDuration() != null) {
+                Duration duration = new Duration(location.getDuration().longValue());
+                version.setDuration(duration);
+            }
+        }
     }
 
     private void addBroadcasts(org.atlasapi.media.entity.simple.Item inputItem, Version version) {
@@ -251,8 +273,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         }
         Set<Restriction> restrictions = Sets.newHashSet();
         Version version = new Version();
-        Duration duration = new Duration(inputLocation.getDuration());
-        version.setDuration(duration);
         restrictions.add(createRestrictionForLocation(inputLocation));
 
         setToFirstRestriction(version, restrictions);

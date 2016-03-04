@@ -41,6 +41,7 @@ public class ItemModelTransformerTest {
     private Item simpleItem;
     private Broadcast simpleBroadcast;
     private Restriction simpleRestriction;
+    private Location simpleLocation;
 
     @Before
     public void setUp() throws Exception {
@@ -56,6 +57,7 @@ public class ItemModelTransformerTest {
 
         simpleRestriction = getSimpleRestriction();
         simpleBroadcast = getSimpleBroadcast();
+        simpleLocation = getSimpleLocation();
         simpleItem = getSimpleItem();
     }
 
@@ -74,6 +76,16 @@ public class ItemModelTransformerTest {
 
         Version version = complex.getVersions().iterator().next();
         checkRestriction(version.getRestriction());
+    }
+
+    @Test
+    public void testTransformDuration()
+            throws Exception {
+        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
+
+        assertThat(complex.getVersions().size(), is(1));
+        Version version = complex.getVersions().iterator().next();
+        assertThat(version.getDuration(), is (2));
     }
 
     public void testTransformItemWithEventRefs() {
@@ -97,6 +109,7 @@ public class ItemModelTransformerTest {
         item.setUri("uri");
         item.setPublisher(new PublisherDetails(Publisher.BBC.key()));
         item.setBroadcasts(Lists.newArrayList(simpleBroadcast));
+        item.setLocations(Lists.<Location>newArrayList(simpleLocation));
         return item;
     }
 
@@ -136,5 +149,11 @@ public class ItemModelTransformerTest {
         restriction.setMessage("message");
 
         return restriction;
+    }
+
+    private Location getSimpleLocation() {
+        Location location = new Location();
+        location.setDuration(2000);
+        return location;
     }
 }

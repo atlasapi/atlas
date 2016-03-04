@@ -251,7 +251,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         }
         Set<Restriction> restrictions = Sets.newHashSet();
         Version version = new Version();
-        Duration duration = new Duration(inputLocation.getDuration());
+        Duration duration = new Duration(inputLocation.getDuration().longValue());
         version.setDuration(duration);
         restrictions.add(createRestrictionForLocation(inputLocation));
 

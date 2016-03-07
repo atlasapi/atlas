@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.pa.deletes;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -53,7 +54,7 @@ public class PaContentDeactivator {
     public static final String PA_PROGRAMME_NAMESPACE = "pa:episode";
 
     private static final String CONTAINER = "container";
-    public static final Pattern FILENAME_DATE_EXTRACTOR = Pattern.compile("^[0-9]{4}[0-9]{2}[0-9]{2}_archiveID.xml$");
+    public static final Pattern FILENAME_DATE_EXTRACTOR = Pattern.compile("^([0-9]{4})([0-9]{2})([0-9]{2})_archiveID.xml$");
 
     private final ContentLister contentLister;
     private final ContentWriter contentWriter;
@@ -294,7 +295,8 @@ public class PaContentDeactivator {
         Extracts the date from the file name of a PA ID archive file.
         Content ingested or updated after (this date - 1d) will not be candidate for deactivation
     */
-    private DateTime extractCutoffTimeFromFilename(String name) {
+    @VisibleForTesting
+    DateTime extractCutoffTimeFromFilename(String name) {
         Matcher matcher = FILENAME_DATE_EXTRACTOR.matcher(name);
         checkArgument(matcher.matches(), "Unable to extract cut off date from filename: " + name);
         return new DateTime(

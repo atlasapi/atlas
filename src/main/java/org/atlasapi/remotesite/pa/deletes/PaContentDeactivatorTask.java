@@ -39,6 +39,6 @@ public class PaContentDeactivatorTask extends ScheduledTask {
 
     private File findLatestActiveIdArchive(PaProgrammeDataStore paDataStore) {
         List<File> archiveIdFiles = paDataStore.localActiveIdArchiveFiles(null);
-        return checkNotNull(Iterables.getFirst(archiveIdFiles, null));
+        return checkNotNull(Iterables.getLast(archiveIdFiles, null));
     }
 }

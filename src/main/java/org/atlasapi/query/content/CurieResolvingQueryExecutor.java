@@ -46,7 +46,7 @@ public class CurieResolvingQueryExecutor implements KnownTypeQueryExecutor {
             ContentQuery query) {
         return delegate.executePublisherQuery(publishers, query);
     }
-	
+
 	private List<String> resolve(Iterable<String> ids) {
 		List<String> resolved = Lists.newArrayList(); 
 		for (String value : ids) {

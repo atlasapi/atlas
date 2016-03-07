@@ -60,11 +60,11 @@ public class LookupResolvingQueryExecutor implements KnownTypeQueryExecutor {
         }
         return ImmutableMap.copyOf(results);
     }
-    
+
     @Override
     public Map<String, List<Identified>> executePublisherQuery(Iterable<Publisher> publishers, final ContentQuery query) {
         Iterable<LookupEntry> entries = lookupEntryStore.entriesForPublishers(publishers, query.getSelection());
-        return executeUriQuery(Iterables.transform(entries, LookupEntry.TO_ID), query.copyWithSelection(Selection.all())); 
+        return executeUriQuery(Iterables.transform(entries, LookupEntry.TO_ID), query.copyWithSelection(Selection.all()));
     }
 
     @Override

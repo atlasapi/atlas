@@ -15,6 +15,7 @@ permissions and limitations under the License. */
 package org.atlasapi.query.v2;
 
 import java.io.IOException;
+import java.util.Iterator;
 import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,12 +23,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.content.criteria.ContentQuery;
+import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
+import org.atlasapi.persistence.event.EventContentLister;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,11 +55,18 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 	private final KnownTypeQueryExecutor executor;
 
     private final ContentWriteController contentWriteController;
+    private final EventContentLister contentLister;
 	
-    public QueryController(KnownTypeQueryExecutor executor, ApplicationConfigurationFetcher configFetcher, AdapterLog log, AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter, ContentWriteController contentWriteController) {
+    public QueryController(KnownTypeQueryExecutor executor,
+            ApplicationConfigurationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter,
+            ContentWriteController contentWriteController,
+            EventContentLister contentLister) {
 	    super(configFetcher, log, outputter, SubstitutionTableNumberCodec.lowerCaseOnly());
         this.executor = executor;
         this.contentWriteController = contentWriteController;
+        this.contentLister = contentLister;
 	}
     
     @RequestMapping("/")
@@ -114,6 +124,20 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
                 modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executePublisherQuery(publishers, filter).values()),Identified.class)),filter.getConfiguration());
                 return;
 	        }
+
+            List<String> eventIds = getEventRefIds(request);
+
+            if(!eventIds.isEmpty()) {
+                modelAndViewFor(
+                        request,
+                        response,
+                        QueryResult.of(Iterables.filter(
+                                iterable(contentLister.contentForEvent(
+                                        ImmutableList.copyOf(decode(eventIds)), filter)),
+                                Identified.class)),
+                        filter.getConfiguration());
+                return;
+            }
 	            
 	        throw new IllegalArgumentException("Must specify content uri(s) or id(s) or alias(es)");
 			
@@ -147,11 +171,24 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
         return split(request.getParameter("id"));
     }
 
+    private List<String> getEventRefIds(HttpServletRequest request) {
+        return split(request.getParameter("event_ids"));
+    }
+
     private ImmutableList<String> split(String parameter) {
         if(parameter == null) {
             return ImmutableList.of();
         }
         return ImmutableList.copyOf(URI_SPLITTER.split(parameter));
+    }
+
+    private Iterable<Content> iterable(final Iterator<Content> iterator) {
+        return new Iterable<Content>() {
+            @Override
+            public Iterator<Content> iterator() {
+                return iterator;
+            }
+        };
     }
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)

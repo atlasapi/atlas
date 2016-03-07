@@ -89,7 +89,7 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
             ContentQuery query) {
         return delegate.executePublisherQuery(publishers, query);
     }
-	
+
 	public Map<String, List<Identified>> executeContentQuery(Iterable<String> uris, ContentQuery query) {
 
 		Map<String, List<Identified>> found = delegate.executeUriQuery(uris, query);

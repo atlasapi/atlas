@@ -149,7 +149,8 @@ public class PaModule {
         );
         scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
         scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
-        scheduler.schedule(paContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.NEVER);
+        scheduler.schedule(dryRunPaContentDeactivatorTask().withName("PA Content Deactivator [DRY RUN]"), RepetitionRules.NEVER);
+        scheduler.schedule(PaContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.NEVER);
         scheduler.schedule(paAliasBackPopulationTask().withName("PA Alias Backpopulator"), RepetitionRules.NEVER);
 
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed")
@@ -311,7 +312,22 @@ public class PaModule {
     }
 
     @Bean
-    public PaContentDeactivatorTask paContentDeactivatorTask() {
+    public PaContentDeactivatorTask PaContentDeactivatorTask() {
+        DBCollection childrenDb = new MongoContentTables(mongo)
+                .collectionFor(ContentCategory.CHILD_ITEM);
+        return new PaContentDeactivatorTask(
+                new PaContentDeactivator(
+                        contentLister,
+                        contentWriter,
+                        new MongoScheduleTaskProgressStore(mongo),
+                        childrenDb
+                ),
+                paProgrammeDataStore()
+        );
+    }
+
+    @Bean @Qualifier("dryRunPaContentDeactivatorTask")
+    public PaContentDeactivatorTask dryRunPaContentDeactivatorTask() {
         DBCollection childrenDb = new MongoContentTables(mongo)
                 .collectionFor(ContentCategory.CHILD_ITEM);
         return new PaContentDeactivatorTask(

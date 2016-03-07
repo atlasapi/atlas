@@ -326,7 +326,7 @@ public class PaModule {
     }
 
     @Bean
-    private PaContentDeactivator paContentDeactivator() {
+    public PaContentDeactivator paContentDeactivator() {
         DBCollection childrenDb = new MongoContentTables(mongo)
                 .collectionFor(ContentCategory.CHILD_ITEM);
         return new PaContentDeactivator(

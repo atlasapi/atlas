@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 
+import com.metabroadcast.common.time.DayOfWeek;
 import com.mongodb.DBCollection;
 import org.atlasapi.equiv.PaAliasBackPopulatorTask;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
@@ -150,7 +151,7 @@ public class PaModule {
         scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
         scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
         scheduler.schedule(dryRunPaContentDeactivatorTask().withName("PA Content Deactivator [DRY RUN]"), RepetitionRules.NEVER);
-        scheduler.schedule(PaContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.NEVER);
+        scheduler.schedule(PaContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.weekly(DayOfWeek.MONDAY, LocalTime.MIDNIGHT));
         scheduler.schedule(paAliasBackPopulationTask().withName("PA Alias Backpopulator"), RepetitionRules.NEVER);
 
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed")

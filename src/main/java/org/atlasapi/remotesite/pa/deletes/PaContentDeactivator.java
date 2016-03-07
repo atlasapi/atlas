@@ -32,6 +32,7 @@ import java.nio.file.Files;
 import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -64,6 +65,7 @@ public class PaContentDeactivator {
 
     private AtomicInteger deactivated = new AtomicInteger(0);
     private AtomicInteger processed = new AtomicInteger(0);
+    private AtomicInteger reactivated = new AtomicInteger(0);
 
     public PaContentDeactivator(ContentLister contentLister, ContentWriter contentWriter,
                                 ScheduleTaskProgressStore progressStore, DBCollection childrenDb) {
@@ -92,6 +94,7 @@ public class PaContentDeactivator {
         );
         deactivated = new AtomicInteger(0);
         processed = new AtomicInteger(0);
+        reactivated = new AtomicInteger(0);
         DateTime ignoreIfModifiedAfter = extractCutoffTimeFromFilename(file.getName()).minusDays(1);
         LOG.info(
                 String.format(
@@ -168,6 +171,11 @@ public class PaContentDeactivator {
                     threadPool.submit(contentDeactivatingRunnable(content));
                 }
                 LOG.debug("Deactivating item #{} id: {}", deactivated.incrementAndGet(), content.getId());
+            } else if (!content.isActivelyPublished()) {
+                if (!dryRun) {
+                    threadPool.submit(contentReactivatingRunnable(content));
+                    LOG.debug("Reactivating item #{} id: {}", reactivated.incrementAndGet(), content.getId());
+                }
             }
             if (i % 1000 == 0) {
                 progressStore.storeProgress(
@@ -179,6 +187,7 @@ public class PaContentDeactivator {
             reporter.reportStatus(String.format("Processed %d Deactivated %d", i, deactivated.get()));
         }
         LOG.debug("Deactivated {} pieces of content", deactivated.get());
+        LOG.debug("Reactivated {} pieces of content", reactivated.get());
         reporter.reportStatus(
                 String.format(
                         "Finished processing %d items, deactivated %d",
@@ -187,6 +196,21 @@ public class PaContentDeactivator {
                 )
         );
         progressStore.storeProgress(taskName, ContentListingProgress.START);
+    }
+
+    private Runnable contentReactivatingRunnable(final Content content) {
+        return new Runnable() {
+            @Override
+            public void run() {
+                content.setActivelyPublished(true);
+                if (content instanceof Container) {
+                    contentWriter.createOrUpdate((Container) content);
+                }
+                if (content instanceof Item) {
+                    contentWriter.createOrUpdate((Item) content);
+                }
+            }
+        };
     }
 
     private Runnable contentDeactivatingRunnable(final Content content) {

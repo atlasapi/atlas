@@ -8,10 +8,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import org.atlasapi.media.entity.*;
 import org.joda.time.DateTime;
-import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nullable;
-import java.time.ZonedDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -58,13 +56,18 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     };
 
     private final Multimap<String, String> paNamespaceToAliases;
-    private final DateTime ignoreIfModifiedAfter;
+    /*
+        We don't want to deactivate content if it was ingested or updated after PA produced a file of
+        active content IDs. Validly active content may be absent from their list until the next time
+        they generate it.
+     */
+    private final DateTime gracePeriodWindow;
 
     public PaContentDeactivationPredicate(
-            DateTime ignoreIfModifiedAfter,
+            DateTime gracePeriodWindow,
             Multimap<String, String> paNamespaceToAliases
     ) {
-        this.ignoreIfModifiedAfter = checkNotNull(ignoreIfModifiedAfter);
+        this.gracePeriodWindow = checkNotNull(gracePeriodWindow);
         this.paNamespaceToAliases = checkNotNull(paNamespaceToAliases);
     }
 
@@ -83,13 +86,13 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
 
     private boolean notModifiedSinceArchiveGenerated(Content content) {
         if (content.getLastUpdated() != null) {
-            return content.getLastUpdated().isBefore(ignoreIfModifiedAfter);
+            return content.getLastUpdated().isBefore(gracePeriodWindow);
         }
         if (content.getLastFetched() != null) {
-            return content.getLastFetched().isBefore(ignoreIfModifiedAfter);
+            return content.getLastFetched().isBefore(gracePeriodWindow);
         }
         if (content.getFirstSeen() != null) {
-            return content.getFirstSeen().isBefore(ignoreIfModifiedAfter);
+            return content.getFirstSeen().isBefore(gracePeriodWindow);
         }
         return true;
     }

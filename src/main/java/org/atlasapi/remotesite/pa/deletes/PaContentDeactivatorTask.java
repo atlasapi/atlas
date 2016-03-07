@@ -1,4 +1,4 @@
-package org.atlasapi.system;
+package org.atlasapi.remotesite.pa.deletes;
 
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.scheduling.ScheduledTask;

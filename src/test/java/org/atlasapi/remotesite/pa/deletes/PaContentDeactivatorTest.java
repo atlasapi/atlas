@@ -1,4 +1,4 @@
-package org.atlasapi.system;
+package org.atlasapi.remotesite.pa.deletes;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -14,10 +14,9 @@ import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
-import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.persistence.content.listing.ProgressStore;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -121,7 +120,7 @@ public class PaContentDeactivatorTest {
 
         typesToIds.put("pa:brand", "10");
         typesToIds.put("pa:episode", "50");
-        deactivator.deactivate(typesToIds, false, MOCK_REPORTER);
+        deactivator.deactivate(typesToIds, false, MOCK_REPORTER, DateTime.now());
         Thread.sleep(2000);
         assertThat(activeItem.isActivelyPublished(), is(true));
         assertThat(inactiveItem.isActivelyPublished(), is(false));

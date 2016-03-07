@@ -68,9 +68,8 @@ import com.metabroadcast.common.security.UsernameAndPassword;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.atlasapi.system.PaAliasBackPopulator;
-import org.atlasapi.system.PaContentDeactivator;
-import org.atlasapi.system.PaContentDeactivatorTask;
+import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
+import org.atlasapi.remotesite.pa.deletes.PaContentDeactivatorTask;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -315,7 +314,6 @@ public class PaModule {
     public PaContentDeactivatorTask paContentDeactivatorTask() {
         DBCollection childrenDb = new MongoContentTables(mongo)
                 .collectionFor(ContentCategory.CHILD_ITEM);
-
         return new PaContentDeactivatorTask(
                 new PaContentDeactivator(
                         contentLister,

@@ -1,4 +1,4 @@
-package org.atlasapi.system;
+package org.atlasapi.remotesite.pa;
 
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
@@ -11,7 +11,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.remotesite.pa.PaHelper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

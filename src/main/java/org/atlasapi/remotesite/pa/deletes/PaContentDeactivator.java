@@ -1,4 +1,4 @@
-package org.atlasapi.system;
+package org.atlasapi.remotesite.pa.deletes;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -21,6 +21,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -45,11 +46,9 @@ public class PaContentDeactivator {
     private static final Charset UTF8 = Charset.forName("UTF-8");
 
     private static final Pattern SERIES_ID_PATTERN = Pattern.compile("<series_id>([0-9]*)</series_id>");
-    private static final Pattern SEASON_ID_PATTERN = Pattern.compile("<season_id>([0-9]*)</season_id>");
     private static final Pattern PROGRAMME_ID_PATTERN = Pattern.compile("<prog_id>([0-9]*)</prog_id>");
 
     public static final String PA_SERIES_NAMESPACE = "pa:brand";
-    public static final String PA_SEASON_NAMESPACE = "pa:series";
     public static final String PA_PROGRAMME_NAMESPACE = "pa:episode";
 
     private static final String CONTAINER = "container";
@@ -59,6 +58,7 @@ public class PaContentDeactivator {
     private final DBCollection childrenDb;
     private final ScheduleTaskProgressStore progressStore;
     private final ThreadPoolExecutor threadPool;
+
     private AtomicInteger deactivated = new AtomicInteger(0);
     private AtomicInteger processed = new AtomicInteger(0);
 
@@ -177,18 +177,6 @@ public class PaContentDeactivator {
         progressStore.storeProgress(taskName, ContentListingProgress.START);
     }
 
-    /*
-        Generically described children are not returned by getChildRefs,
-        thus we must check the DB for any children with this content as its container.
-     */
-    private boolean hasNoGenericChildren(Content content) {
-        if (!(content instanceof Container)) {
-            return true;
-        }
-        DBObject dbQuery = where().fieldEquals(CONTAINER, content.getCanonicalUri()).build();
-        return childrenDb.find(dbQuery).count() < 1;
-    }
-
     private Runnable contentDeactivatingRunnable(final Content content) {
         return new Runnable() {
             @Override
@@ -203,6 +191,19 @@ public class PaContentDeactivator {
             }
         };
     }
+
+    /*
+        Generically described children are not returned by getChildRefs,
+        thus we must check the DB for any children with this content as its container.
+     */
+    private boolean hasNoGenericChildren(Content content) {
+        if (!(content instanceof Container)) {
+            return true;
+        }
+        DBObject dbQuery = where().fieldEquals(CONTAINER, content.getCanonicalUri()).build();
+        return childrenDb.find(dbQuery).count() < 1;
+    }
+
 
     private ThreadPoolExecutor createThreadPool(Integer maxThreads) {
         return new ThreadPoolExecutor(
@@ -231,7 +232,9 @@ public class PaContentDeactivator {
     /*
         Expects lines to be from an XML file provided by PA, containing their IDs by content type.
         This translates into a map of PA alias namespaces to values.
-     */
+
+        Series aren't handled here as we lack a reliable mapping from PA's IDs
+        to their URIs in atlas. They are handled by removing empty Series elsewhere */
     private ImmutableSetMultimap<String, String> extractAliases(List<String> lines) throws IOException {
         SetMultimap<String, String> typeToIds = MultimapBuilder.hashKeys().hashSetValues().build();
         for (String line : lines) {
@@ -239,12 +242,6 @@ public class PaContentDeactivator {
             if (programmeMatcher.find()) {
                 LOG.debug("Matched {} as programme ID", programmeMatcher.group(1));
                 typeToIds.put(PA_PROGRAMME_NAMESPACE, programmeMatcher.group(1));
-                continue;
-            }
-            Matcher seasonMatcher = SEASON_ID_PATTERN.matcher(line);
-            if (seasonMatcher.find()) {
-                LOG.debug("Matched {} as season ID", seasonMatcher.group(1));
-                typeToIds.put(PA_SEASON_NAMESPACE, seasonMatcher.group(1));
                 continue;
             }
             Matcher seriesMatcher = SERIES_ID_PATTERN.matcher(line);

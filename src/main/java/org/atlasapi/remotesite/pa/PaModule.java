@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 
 import com.mongodb.DBCollection;
 import org.atlasapi.equiv.PaAliasBackPopulatorTask;
+import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
 import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
 import org.atlasapi.feeds.upload.persistence.MongoFileUploadResultStore;
@@ -111,7 +112,6 @@ public class PaModule {
     private @Autowired DatabasedMongo mongo;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     private @Autowired ContentLister contentLister;
-    private @Autowired ScheduleTaskProgressStore progressStore;
 
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
@@ -318,7 +318,7 @@ public class PaModule {
                 new PaContentDeactivator(
                         contentLister,
                         contentWriter,
-                        progressStore,
+                        new MongoScheduleTaskProgressStore(mongo),
                         childrenDb
                 ),
                 paProgrammeDataStore()
@@ -330,7 +330,7 @@ public class PaModule {
         PaAliasBackPopulator aliasBackPopulator = new PaAliasBackPopulator(
                 contentLister,
                 contentWriter,
-                progressStore
+                new MongoScheduleTaskProgressStore(mongo)
         );
         return new PaAliasBackPopulatorTask(aliasBackPopulator, false);
     }

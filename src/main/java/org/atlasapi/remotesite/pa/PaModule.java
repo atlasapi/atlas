@@ -101,6 +101,8 @@ public class PaModule {
     private @Autowired ChannelWriter channelWriter;
     private @Autowired DatabasedMongo mongo;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
+    private @Autowired ContentLister contentLister;
+    private @Autowired ScheduleTaskProgressStore progressStore;
 
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();

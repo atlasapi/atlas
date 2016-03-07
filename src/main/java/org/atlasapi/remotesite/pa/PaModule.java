@@ -309,31 +309,31 @@ public class PaModule {
 
     @Bean
     public PaContentDeactivatorTask PaContentDeactivatorTask() {
-        DBCollection childrenDb = new MongoContentTables(mongo)
-                .collectionFor(ContentCategory.CHILD_ITEM);
         return new PaContentDeactivatorTask(
-                new PaContentDeactivator(
-                        contentLister,
-                        contentWriter,
-                        new MongoScheduleTaskProgressStore(mongo),
-                        childrenDb
-                ),
-                paProgrammeDataStore()
+                paContentDeactivator(),
+                paProgrammeDataStore(),
+                false
         );
     }
 
     @Bean @Qualifier("dryRunPaContentDeactivatorTask")
     public PaContentDeactivatorTask dryRunPaContentDeactivatorTask() {
+        return new PaContentDeactivatorTask(
+                paContentDeactivator(),
+                paProgrammeDataStore(),
+                true
+        );
+    }
+
+    @Bean
+    private PaContentDeactivator paContentDeactivator() {
         DBCollection childrenDb = new MongoContentTables(mongo)
                 .collectionFor(ContentCategory.CHILD_ITEM);
-        return new PaContentDeactivatorTask(
-                new PaContentDeactivator(
-                        contentLister,
-                        contentWriter,
-                        new MongoScheduleTaskProgressStore(mongo),
-                        childrenDb
-                ),
-                paProgrammeDataStore()
+        return new PaContentDeactivator(
+                contentLister,
+                contentWriter,
+                new MongoScheduleTaskProgressStore(mongo),
+                childrenDb
         );
     }
 

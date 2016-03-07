@@ -174,8 +174,8 @@ public class PaContentDeactivator {
             } else if (!content.isActivelyPublished()) {
                 if (!dryRun) {
                     threadPool.submit(contentReactivatingRunnable(content));
-                    LOG.debug("Reactivating item #{} id: {}", reactivated.incrementAndGet(), content.getId());
                 }
+                LOG.debug("Reactivating item #{} id: {}", reactivated.incrementAndGet(), content.getId());
             }
             if (i % 1000 == 0) {
                 progressStore.storeProgress(

@@ -7,8 +7,11 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import org.atlasapi.media.entity.*;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDateTime;
 
 import javax.annotation.Nullable;
+import java.time.ZonedDateTime;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -55,8 +58,13 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     };
 
     private final Multimap<String, String> paNamespaceToAliases;
+    private final DateTime ignoreIfModifiedAfter;
 
-    public PaContentDeactivationPredicate(Multimap<String, String> paNamespaceToAliases) {
+    public PaContentDeactivationPredicate(
+            DateTime ignoreIfModifiedAfter,
+            Multimap<String, String> paNamespaceToAliases
+    ) {
+        this.ignoreIfModifiedAfter = checkNotNull(ignoreIfModifiedAfter);
         this.paNamespaceToAliases = checkNotNull(paNamespaceToAliases);
     }
 
@@ -68,8 +76,22 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         return (isNotPaFilm(content) &&
                 isInactiveContent(content) &&
                 isNotGenericDescription(content) &&
-                isNotSeries(content)) ||
+                isNotSeries(content) &&
+                notModifiedSinceArchiveGenerated(content)) ||
                 isEmptyContainer(content);
+    }
+
+    private boolean notModifiedSinceArchiveGenerated(Content content) {
+        if (content.getLastUpdated() != null) {
+            return content.getLastUpdated().isBefore(ignoreIfModifiedAfter);
+        }
+        if (content.getLastFetched() != null) {
+            return content.getLastFetched().isBefore(ignoreIfModifiedAfter);
+        }
+        if (content.getFirstSeen() != null) {
+            return content.getFirstSeen().isBefore(ignoreIfModifiedAfter);
+        }
+        return true;
     }
 
     private boolean isNotSeries(Content content) {

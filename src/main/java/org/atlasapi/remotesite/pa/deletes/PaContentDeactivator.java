@@ -29,6 +29,7 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
+import java.time.format.DateTimeFormatter;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.ThreadPoolExecutor;
@@ -37,6 +38,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.metabroadcast.common.persistence.mongo.MongoBuilders.where;
 
@@ -52,6 +54,7 @@ public class PaContentDeactivator {
     public static final String PA_PROGRAMME_NAMESPACE = "pa:episode";
 
     private static final String CONTAINER = "container";
+    public static final Pattern FILENAME_DATE_EXTRACTOR = Pattern.compile("^[0-9]{4}[0-9]{2}[0-9]{2}_archiveID.xml$");
 
     private final ContentLister contentLister;
     private final ContentWriter contentWriter;
@@ -89,20 +92,29 @@ public class PaContentDeactivator {
         );
         deactivated = new AtomicInteger(0);
         processed = new AtomicInteger(0);
-        deactivate(typeToIds, dryRun, reporter);
+        DateTime ignoreIfModifiedAfter = extractCutoffTimeFromFilename(file.getName()).minusDays(1);
+        LOG.info(
+                String.format(
+                        "Not deactivating content ingest/updated after %s",
+                        ignoreIfModifiedAfter.toString()
+                )
+        );
+        deactivate(typeToIds, dryRun, reporter, ignoreIfModifiedAfter);
     }
 
     public void deactivate(
             Multimap<String, String> paNamespaceToAliases,
             Boolean dryRun,
-            StatusReporter reporter
+            StatusReporter reporter,
+            DateTime ignoreIfModifiedAfter
     ) throws IOException {
         Predicate<Content> shouldDeactivatePredicate = new PaContentDeactivationPredicate(
-                paNamespaceToAliases
+                ignoreIfModifiedAfter, paNamespaceToAliases
         );
         deactivateChildren(dryRun, shouldDeactivatePredicate, reporter);
         deactivateContainers(dryRun, shouldDeactivatePredicate, reporter);
     }
+
 
     private void deactivateContainers(
             Boolean dryRun,
@@ -234,7 +246,8 @@ public class PaContentDeactivator {
         This translates into a map of PA alias namespaces to values.
 
         Series aren't handled here as we lack a reliable mapping from PA's IDs
-        to their URIs in atlas. They are handled by removing empty Series elsewhere */
+        to their URIs in atlas. They are handled by removing empty Series elsewhere
+    */
     private ImmutableSetMultimap<String, String> extractAliases(List<String> lines) throws IOException {
         SetMultimap<String, String> typeToIds = MultimapBuilder.hashKeys().hashSetValues().build();
         for (String line : lines) {
@@ -253,5 +266,21 @@ public class PaContentDeactivator {
             LOG.warn("Line: {} matched no regex for ID extraction, skipping...", line);
         }
         return ImmutableSetMultimap.copyOf(typeToIds);
+    }
+
+    /*
+        Extracts the date from the file name of a PA ID archive file.
+        Content ingested or updated after (this date - 1d) will not be candidate for deactivation
+    */
+    private DateTime extractCutoffTimeFromFilename(String name) {
+        Matcher matcher = FILENAME_DATE_EXTRACTOR.matcher(name);
+        checkArgument(matcher.matches(), "Unable to extract cut off date from filename: " + name);
+        return new DateTime(
+                Integer.parseInt(matcher.group(1)),
+                Integer.parseInt(matcher.group(2)),
+                Integer.parseInt(matcher.group(3)),
+                0,
+                0
+        );
     }
 }

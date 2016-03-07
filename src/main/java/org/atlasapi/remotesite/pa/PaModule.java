@@ -1,16 +1,15 @@
 package org.atlasapi.remotesite.pa;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.annotation.PostConstruct;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.security.UsernameAndPassword;
 import com.mongodb.DBCollection;
 import org.atlasapi.equiv.PaAliasBackPopulatorTask;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
-import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
 import org.atlasapi.feeds.upload.persistence.MongoFileUploadResultStore;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -48,6 +47,8 @@ import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
 import org.atlasapi.remotesite.pa.channels.PaChannelsUpdater;
 import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
+import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
+import org.atlasapi.remotesite.pa.deletes.PaContentDeactivatorTask;
 import org.atlasapi.remotesite.pa.features.ContentGroupDetails;
 import org.atlasapi.remotesite.pa.features.PaFeaturesConfiguration;
 import org.atlasapi.remotesite.pa.features.PaFeaturesContentGroupProcessor;
@@ -60,17 +61,6 @@ import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 import org.atlasapi.remotesite.rt.RtFilmModule;
 import org.atlasapi.s3.DefaultS3Client;
 import org.atlasapi.s3.S3Client;
-
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.security.UsernameAndPassword;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
-import org.atlasapi.remotesite.pa.deletes.PaContentDeactivatorTask;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -79,6 +69,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
+import javax.annotation.PostConstruct;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Configuration
 @Import(RtFilmModule.class)
@@ -149,7 +145,8 @@ public class PaModule {
         );
         scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
         scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
-        scheduler.schedule(paContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.NEVER);
+        scheduler.schedule(dryRunPaContentDeactivatorTask().withName("PA Content Deactivator [DRY RUN]"), RepetitionRules.NEVER);
+        scheduler.schedule(PaContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.NEVER);
         scheduler.schedule(paAliasBackPopulationTask().withName("PA Alias Backpopulator"), RepetitionRules.NEVER);
 
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed")
@@ -311,7 +308,22 @@ public class PaModule {
     }
 
     @Bean
-    public PaContentDeactivatorTask paContentDeactivatorTask() {
+    public PaContentDeactivatorTask PaContentDeactivatorTask() {
+        DBCollection childrenDb = new MongoContentTables(mongo)
+                .collectionFor(ContentCategory.CHILD_ITEM);
+        return new PaContentDeactivatorTask(
+                new PaContentDeactivator(
+                        contentLister,
+                        contentWriter,
+                        new MongoScheduleTaskProgressStore(mongo),
+                        childrenDb
+                ),
+                paProgrammeDataStore()
+        );
+    }
+
+    @Bean @Qualifier("dryRunPaContentDeactivatorTask")
+    public PaContentDeactivatorTask dryRunPaContentDeactivatorTask() {
         DBCollection childrenDb = new MongoContentTables(mongo)
                 .collectionFor(ContentCategory.CHILD_ITEM);
         return new PaContentDeactivatorTask(

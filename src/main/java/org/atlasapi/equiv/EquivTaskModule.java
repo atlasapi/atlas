@@ -115,7 +115,7 @@ public class EquivTaskModule {
     private static final RepetitionRule TALKTALK_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(11, 15));
     private static final RepetitionRule YOUVIEW_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(15, 00));
     private static final RepetitionRule YOUVIEW_STAGE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(8, 00));
-    private static final RepetitionRule YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(21, 00));
+    private static final RepetitionRule YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(9, 30));
     private static final RepetitionRule YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(9, 00));
     private static final RepetitionRule BBC_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(9, 00));
     private static final RepetitionRule ITV_SCHEDULE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(11, 00));

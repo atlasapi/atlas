@@ -2,7 +2,7 @@ package org.atlasapi.equiv;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.metabroadcast.common.scheduling.ScheduledTask;
-import org.atlasapi.system.PaAliasBackPopulator;
+import org.atlasapi.remotesite.pa.PaAliasBackPopulator;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

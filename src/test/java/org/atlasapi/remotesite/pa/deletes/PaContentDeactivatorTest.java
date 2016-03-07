@@ -1,21 +1,22 @@
-package org.atlasapi.system;
+package org.atlasapi.remotesite.pa.deletes;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.MultimapBuilder;
 import com.google.common.collect.SetMultimap;
+import com.metabroadcast.common.scheduling.StatusReporter;
 import com.mongodb.DBCollection;
 import com.mongodb.DBCursor;
 import com.mongodb.DBObject;
+import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.media.entity.*;
 import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
-import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.persistence.content.listing.ProgressStore;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -31,11 +32,24 @@ import static org.mockito.Mockito.when;
 
 public class PaContentDeactivatorTest {
 
+    private static final StatusReporter MOCK_REPORTER = new StatusReporter() {
+
+        @Override
+        public void reportStatus(String s) {
+            System.out.println(s);
+        }
+
+        @Override
+        public boolean shouldContinue() {
+            return true;
+        }
+    };
+
     private PaContentDeactivator deactivator;
     private LookupEntryStore lookup;
     private ContentLister lister;
     private ContentWriter writer;
-    private ProgressStore progressStore;
+    private ScheduleTaskProgressStore progressStore;
     private Brand activeContainer;
     private Brand inactiveContainer;
     private Brand emptyContainer;
@@ -49,16 +63,16 @@ public class PaContentDeactivatorTest {
         lookup = mock(LookupEntryStore.class);
         lister = mock(ContentLister.class);
         writer = mock(ContentWriter.class);
-        progressStore = mock(ProgressStore.class);
+        progressStore = mock(ScheduleTaskProgressStore.class);
         childCollection = mock(DBCollection.class);
 
         deactivator = new PaContentDeactivator(
-                lookup,
                 lister,
                 writer,
                 progressStore,
                 childCollection
         );
+
         activeContainer = new Brand("http://pressassociation.com/series/10", "10", Publisher.PA);
         activeContainer.setChildRefs(
                 ImmutableList.of(
@@ -87,7 +101,14 @@ public class PaContentDeactivatorTest {
         inactiveItem = new Item("http://pressassociation.com/episodes/60", "60", Publisher.PA);
         inactiveItem.setId(60l);
 
-        setupMocks(activeItem, inactiveItem, activeContainer, inactiveContainer, emptyContainer, emptyContainerButHasGenericChildren);
+        setupMocks(
+                activeItem,
+                inactiveItem,
+                activeContainer,
+                inactiveContainer,
+                emptyContainer,
+                emptyContainerButHasGenericChildren
+        );
     }
 
     @Test
@@ -99,7 +120,7 @@ public class PaContentDeactivatorTest {
 
         typesToIds.put("pa:brand", "10");
         typesToIds.put("pa:episode", "50");
-        deactivator.deactivate(typesToIds, false);
+        deactivator.deactivate(typesToIds, false, MOCK_REPORTER, DateTime.now());
         Thread.sleep(2000);
         assertThat(activeItem.isActivelyPublished(), is(true));
         assertThat(inactiveItem.isActivelyPublished(), is(false));
@@ -117,8 +138,7 @@ public class PaContentDeactivatorTest {
             Brand activeContainer,
             Brand inactiveContainer,
             Brand emptyContainer,
-            Brand emptyContainerWithGenericChildren
-    ) {
+            Brand emptyContainerWithGenericChildren) {
         LookupEntry activeLookup = mock(LookupEntry.class);
         when(activeLookup.id()).thenReturn(10l).thenReturn(50l);
         DBCursor dbCursor = mock(DBCursor.class);
@@ -129,9 +149,9 @@ public class PaContentDeactivatorTest {
                 .thenReturn(ImmutableList.of(activeLookup));
 
         when(progressStore.progressForTask(PaContentDeactivator.class.getSimpleName()+"containers"))
-                .thenReturn(Optional.<ContentListingProgress>absent());
+                .thenReturn(null);
         when(progressStore.progressForTask(PaContentDeactivator.class.getSimpleName()+"children"))
-                .thenReturn(Optional.<ContentListingProgress>absent());
+                .thenReturn(null);
 
         ImmutableList<ContentCategory> childCats = ImmutableList.of(
                 ContentCategory.CHILD_ITEM,
@@ -161,4 +181,5 @@ public class PaContentDeactivatorTest {
 
         when(lister.listContent(containerCriteria)).thenReturn(containerItr);
     }
+
 }

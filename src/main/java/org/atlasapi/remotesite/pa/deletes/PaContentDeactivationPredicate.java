@@ -1,4 +1,4 @@
-package org.atlasapi.system;
+package org.atlasapi.remotesite.pa.deletes;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Function;
@@ -7,6 +7,7 @@ import com.google.common.collect.FluentIterable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import org.atlasapi.media.entity.*;
+import org.joda.time.DateTime;
 
 import javax.annotation.Nullable;
 import java.util.regex.Matcher;
@@ -55,8 +56,18 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
     };
 
     private final Multimap<String, String> paNamespaceToAliases;
+    /*
+        We don't want to deactivate content if it was ingested or updated after PA produced a file of
+        active content IDs. Validly active content may be absent from their list until the next time
+        they generate it.
+     */
+    private final DateTime gracePeriodWindow;
 
-    public PaContentDeactivationPredicate(Multimap<String, String> paNamespaceToAliases) {
+    public PaContentDeactivationPredicate(
+            DateTime gracePeriodWindow,
+            Multimap<String, String> paNamespaceToAliases
+    ) {
+        this.gracePeriodWindow = checkNotNull(gracePeriodWindow);
         this.paNamespaceToAliases = checkNotNull(paNamespaceToAliases);
     }
 
@@ -68,8 +79,22 @@ public class PaContentDeactivationPredicate implements Predicate<Content> {
         return (isNotPaFilm(content) &&
                 isInactiveContent(content) &&
                 isNotGenericDescription(content) &&
-                isNotSeries(content)) ||
+                isNotSeries(content) &&
+                notModifiedSinceArchiveGenerated(content)) ||
                 isEmptyContainer(content);
+    }
+
+    private boolean notModifiedSinceArchiveGenerated(Content content) {
+        if (content.getLastUpdated() != null) {
+            return content.getLastUpdated().isBefore(gracePeriodWindow);
+        }
+        if (content.getLastFetched() != null) {
+            return content.getLastFetched().isBefore(gracePeriodWindow);
+        }
+        if (content.getFirstSeen() != null) {
+            return content.getFirstSeen().isBefore(gracePeriodWindow);
+        }
+        return true;
     }
 
     private boolean isNotSeries(Content content) {

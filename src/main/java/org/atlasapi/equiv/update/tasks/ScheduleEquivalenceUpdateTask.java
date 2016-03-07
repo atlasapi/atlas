@@ -14,6 +14,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.persistence.content.ScheduleResolver;
+
+import com.google.common.collect.Lists;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,8 +60,17 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
             .withLookBack(back)
             .withLookAhead(forward)
             .generate(new LocalDate());
-        
-        Iterator<LocalDate> dayIterator = range.iterator();
+
+        // It's better to run in reverse order, since the furthest point in the schedule
+        // is likely to have not been run before, and if run last it's more subject
+        // to job interruptions.
+        //
+        // If we were to run forwards, we would first recompute days which have been
+        // computed before, rather than first running days at the end of the schedule for
+        // the first time.
+
+        Iterator<LocalDate> dayIterator = Lists.reverse(Lists.newArrayList(range.iterator()))
+                .iterator();
         LocalDate start, end;
         
         while(dayIterator.hasNext()) {
@@ -96,7 +107,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     ));
                 }
                 ScheduleChannel scheduleChannel = channelItr.next();
-                
+
                 Iterator<Item> channelItems = scheduleChannel.items().iterator();
                 while (channelItems.hasNext() && shouldContinue()) {
                     Item scheduleItem = channelItems.next();

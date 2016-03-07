@@ -112,6 +112,14 @@ public class PaContentDeactivatorTest {
     }
 
     @Test
+    public void testDateExtractionFromFileName() {
+        DateTime dateTime = deactivator.extractCutoffTimeFromFilename("20151228_archiveID.xml");
+        assertThat(dateTime.getYear(), is(2015));
+        assertThat(dateTime.getMonthOfYear(), is(12));
+        assertThat(dateTime.getDayOfMonth(), is(28));
+    }
+
+    @Test
     public void testDeactivatesContentCorrectly() throws Exception {
         SetMultimap<String, String> typesToIds = MultimapBuilder.SetMultimapBuilder
                 .hashKeys()

@@ -167,12 +167,14 @@ public class PaContentDeactivator {
             LOG.debug("Processing item #{} id: {}", i, content.getId());
             if (shouldDeactivatePredicate.apply(content) && hasNoGenericChildren(content)) {
                 if (!dryRun) {
-                    threadPool.submit(contentDeactivatingRunnable(content));
+                    content.setActivelyPublished(false);
+                    threadPool.submit(contentWritingRunnable(content));
                 }
                 LOG.debug("Deactivating item #{} id: {}", deactivated.incrementAndGet(), content.getId());
             } else if (!content.isActivelyPublished()) {
                 if (!dryRun) {
-                    threadPool.submit(contentReactivatingRunnable(content));
+                    content.setActivelyPublished(true);
+                    threadPool.submit(contentWritingRunnable(content));
                 }
                 LOG.debug("Reactivating item #{} id: {}", reactivated.incrementAndGet(), content.getId());
             }
@@ -197,26 +199,10 @@ public class PaContentDeactivator {
         progressStore.storeProgress(taskName, ContentListingProgress.START);
     }
 
-    private Runnable contentReactivatingRunnable(final Content content) {
+    private Runnable contentWritingRunnable(final Content content) {
         return new Runnable() {
             @Override
             public void run() {
-                content.setActivelyPublished(true);
-                if (content instanceof Container) {
-                    contentWriter.createOrUpdate((Container) content);
-                }
-                if (content instanceof Item) {
-                    contentWriter.createOrUpdate((Item) content);
-                }
-            }
-        };
-    }
-
-    private Runnable contentDeactivatingRunnable(final Content content) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                content.setActivelyPublished(false);
                 if (content instanceof Container) {
                     contentWriter.createOrUpdate((Container) content);
                 }

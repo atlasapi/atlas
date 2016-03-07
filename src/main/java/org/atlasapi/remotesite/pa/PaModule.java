@@ -1,14 +1,12 @@
 package org.atlasapi.remotesite.pa;
 
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
-
-import javax.annotation.PostConstruct;
-
-import com.mongodb.DBCollection;
-import org.atlasapi.equiv.PaAliasBackPopulatorTask;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.security.UsernameAndPassword;
 import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
 import org.atlasapi.feeds.upload.persistence.MongoFileUploadResultStore;
@@ -17,7 +15,6 @@ import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -25,7 +22,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.PeopleResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.listing.ContentLister;
-import org.atlasapi.persistence.content.mongo.MongoContentTables;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.persistence.content.people.PersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
@@ -59,17 +55,6 @@ import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 import org.atlasapi.remotesite.rt.RtFilmModule;
 import org.atlasapi.s3.DefaultS3Client;
 import org.atlasapi.s3.S3Client;
-
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.security.UsernameAndPassword;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
-import org.atlasapi.remotesite.pa.deletes.PaContentDeactivatorTask;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -78,6 +63,12 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
+import javax.annotation.PostConstruct;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 @Configuration
 @Import(RtFilmModule.class)
@@ -149,8 +140,6 @@ public class PaModule {
         );
         scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
         scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
-        scheduler.schedule(paContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.NEVER);
-        scheduler.schedule(paAliasBackPopulationTask().withName("PA Alias Backpopulator"), RepetitionRules.NEVER);
 
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed")
                 .withSource(PaCompleteUpdater.class));
@@ -310,28 +299,4 @@ public class PaModule {
         return new ReentrantLock();
     }
 
-    @Bean
-    public PaContentDeactivatorTask paContentDeactivatorTask() {
-        DBCollection childrenDb = new MongoContentTables(mongo)
-                .collectionFor(ContentCategory.CHILD_ITEM);
-        return new PaContentDeactivatorTask(
-                new PaContentDeactivator(
-                        contentLister,
-                        contentWriter,
-                        progressStore,
-                        childrenDb
-                ),
-                paProgrammeDataStore()
-        );
-    }
-
-    @Bean
-    public PaAliasBackPopulatorTask paAliasBackPopulationTask() {
-        PaAliasBackPopulator aliasBackPopulator = new PaAliasBackPopulator(
-                contentLister,
-                contentWriter,
-                progressStore
-        );
-        return new PaAliasBackPopulatorTask(aliasBackPopulator, false);
-    }
 }

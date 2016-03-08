@@ -1,13 +1,12 @@
 package org.atlasapi.remotesite.pa;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.security.UsernameAndPassword;
-import com.mongodb.DBCollection;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
+
+import javax.annotation.PostConstruct;
+
 import org.atlasapi.equiv.PaAliasBackPopulatorTask;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
@@ -61,6 +60,17 @@ import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 import org.atlasapi.remotesite.rt.RtFilmModule;
 import org.atlasapi.s3.DefaultS3Client;
 import org.atlasapi.s3.S3Client;
+
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.security.UsernameAndPassword;
+import com.metabroadcast.common.time.DayOfWeek;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import com.mongodb.DBCollection;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -69,12 +79,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import javax.annotation.PostConstruct;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.locks.Lock;
-import java.util.concurrent.locks.ReentrantLock;
 
 @Configuration
 @Import(RtFilmModule.class)
@@ -146,7 +150,7 @@ public class PaModule {
         scheduler.schedule(paRecentArchivesUpdater().withName("PA Recent Archives Updater"), RECENT_FILE_INGEST);
         scheduler.schedule(paCompleteArchivesUpdater().withName("PA Complete Archives Updater"), COMPLETE_INGEST);
         scheduler.schedule(dryRunPaContentDeactivatorTask().withName("PA Content Deactivator [DRY RUN]"), RepetitionRules.NEVER);
-        scheduler.schedule(PaContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.NEVER);
+        scheduler.schedule(PaContentDeactivatorTask().withName("PA Content Deactivator"), RepetitionRules.weekly(DayOfWeek.MONDAY, LocalTime.MIDNIGHT));
         scheduler.schedule(paAliasBackPopulationTask().withName("PA Alias Backpopulator"), RepetitionRules.NEVER);
 
         log.record(new AdapterLogEntry(Severity.INFO).withDescription("PA update scheduled task installed")

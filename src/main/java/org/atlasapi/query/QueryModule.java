@@ -66,9 +66,10 @@ public class QueryModule {
                 new NoLoggingPersistenceAuditLog(), readPreference);
 	    KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
         KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
-		
-        KnownTypeQueryExecutor queryExecutor = new LookupResolvingQueryExecutor(cassandraContentResolver, mongoContentResolver, lookupStore, cassandraEnabled);
-		
+
+		KnownTypeQueryExecutor queryExecutor = new LookupResolvingQueryExecutor(cassandraContentResolver,
+				mongoContentResolver, lookupStore, cassandraEnabled);
+
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 		
 	    queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);

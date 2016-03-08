@@ -79,9 +79,18 @@ public class PaChannelProcessor {
         
         try {
             if (trimmer != null) {
-                trimmer.trimBroadcasts(channelData.schedulePeriod(), channel, acceptableBroadcastIds.build());
+                ImmutableMap<String, String> acceptableIds = acceptableBroadcastIds.build();
+                log.trace("Trimming broadcasts for period {}; will remove IDs others than {}",
+                        channelData.schedulePeriod(), acceptableIds);
+                trimmer.trimBroadcasts(channelData.schedulePeriod(), channel, acceptableIds);
             }
             scheduleWriter.replaceScheduleBlock(Publisher.PA, channel, broadcasts);
+
+            log.trace("Storing version {} for channel {} on day {}",
+                    channelData.version(),
+                    channel,
+                    channelData.scheduleDay());
+
             scheduleVersionStore.store(channel, channelData.scheduleDay(), channelData.version());
         } catch (Exception e) {
             log.error(String.format("Error trimming and writing schedule for channel %s", channel.getKey()), e);

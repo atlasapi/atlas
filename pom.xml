@@ -678,7 +678,7 @@
         <sonar.jacoco.itReportPath>${project.basedir}/target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
         <sonar.junit.reportsPath>${project.basedir}/target/surefire-reports</sonar.junit.reportsPath>
-        <sonar.branch>owl</sonar.branch>
+        <sonar.projectKey>${project.groupId}:atlas-owl</sonar.projectKey>
         <sonar.language>java</sonar.language>
         <sonar.exclusions>**/target/**/*,**/src/main/java/**/generated/**/*</sonar.exclusions>
     </properties>

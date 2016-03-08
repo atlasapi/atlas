@@ -72,30 +72,30 @@ public class TaskController extends BaseController<Iterable<Task>> {
             @RequestParam(value = "status", required = false) String status,
             @RequestParam(value = "action", required = false) String action,
             @RequestParam(value = "type", required = false) String type,
-            @RequestParam(value = "element_id", required = false) String elementId
-            ) throws IOException {
-        
+            @RequestParam(value = "element_id", required = false) String elementId,
+            @RequestParam(value = "order_by", required = false) String orderBy
+    ) throws IOException {
         try {
             Selection selection = SELECTION_BUILDER.build(request);
             ApplicationConfiguration appConfig = appConfig(request);
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
-            
+
             if (destinationType == null) {
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
             }
-            
+
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 
-            TaskQuery taskQuery = queryFrom(destinationType, publisher, selection, contentUri, 
-                    remoteId, status, action, type, elementId);
-            
+            TaskQuery taskQuery = queryFrom(destinationType, publisher, selection, contentUri,
+                    remoteId, status, action, type, elementId, orderBy);
+
             Iterable<Task> allTasks = taskStore.allTasks(taskQuery);
-            
+
             modelAndViewFor(request, response, allTasks, appConfig);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
@@ -113,7 +113,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
 
     private TaskQuery queryFrom(DestinationType destinationType, Publisher publisher, Selection selection, 
             String contentUri, String remoteId, String statusStr, String actionStr, String typeStr, 
-            String elementId) {
+            String elementId, String orderBy) {
 
         if (contentUri != null 
                 && !contentUri.startsWith(NITRO_URI_PREFIX)) {
@@ -123,8 +123,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
         TaskQuery.Builder query = TaskQuery.builder(selection, publisher, destinationType)
                 .withContentUri(contentUri)
                 .withRemoteId(remoteId)
-                .withElementId(elementId)
-                .withSort(TaskQuery.Sort.DESC);
+                .withElementId(elementId);
         
         if (statusStr != null) {
             Status status = Status.valueOf(statusStr.trim().toUpperCase());
@@ -138,8 +137,36 @@ public class TaskController extends BaseController<Iterable<Task>> {
             TVAElementType type = TVAElementType.valueOf(typeStr.trim().toUpperCase());
             query.withTaskType(type);
         }
+
+        if (orderBy != null) {
+            query.withSort(parseOrderBy(orderBy));
+        } else {
+            query.withSort(TaskQuery.Sort.of(
+                    TaskQuery.Sort.Field.UPLOAD_TIME,
+                    TaskQuery.Sort.Direction.DESC
+            ));
+        }
         
         return query.build();
+    }
+
+    private TaskQuery.Sort parseOrderBy(String orderBy) {
+        String[] parts = orderBy.split("\\.");
+        if (parts.length == 1) {
+            return TaskQuery.Sort.of(
+                    TaskQuery.Sort.Field.fromKey(parts[0])
+            );
+        } else if (parts.length == 2) {
+            return TaskQuery.Sort.of(
+                    TaskQuery.Sort.Field.fromKey(parts[0]),
+                    TaskQuery.Sort.Direction.valueOf(parts[1].toUpperCase())
+            );
+        } else {
+            throw new IllegalArgumentException(String.format(
+                    "Illegal orderBy value: %s",
+                    orderBy
+            ));
+        }
     }
 
     @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/tasks/{id}.json", method = RequestMethod.GET)

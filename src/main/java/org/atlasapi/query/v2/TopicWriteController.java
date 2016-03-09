@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.math.BigInteger;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.ws.rs.core.HttpHeaders;
 
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
@@ -36,7 +38,9 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
-
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.properties.Configurer;
 
 public class TopicWriteController {
 
@@ -45,6 +49,7 @@ public class TopicWriteController {
     private final ApplicationConfigurationFetcher appConfigFetcher;
     private final TopicStore store;
     private final ModelReader reader;
+    private static final NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private ModelTransformer<org.atlasapi.media.entity.simple.Topic, Topic> transformer;
 
@@ -96,7 +101,13 @@ public class TopicWriteController {
             log.error("Error reading input for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
         }
-        
+
+        String hostName = Configurer.get("local.host.name").get();
+        resp.setHeader(
+                HttpHeaders.LOCATION,
+                hostName
+                        + "/3.0/content.json?id="
+                        + codec.encode(BigInteger.valueOf(topic.getId())));
         resp.setStatus(HttpStatusCode.OK.code());
         resp.setContentLength(0);
         return null;

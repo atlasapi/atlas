@@ -264,6 +264,29 @@ public class PaProgrammeProcessorTest {
     }
 
     @Test
+    public void testSetsRepeatFlagFromRevisedRepeat() {
+        Film film = new Film("http://pressassociation.com/films/5", "pa:f-5", Publisher.PA);
+        Version version = new Version();
+        version.setProvider(Publisher.PA);
+        film.addVersion(version);
+
+        Brand expectedItemBrand = new Brand("http://pressassociation.com/brands/5", "pa:b-5", Publisher.PA);
+        Series expectedItemSeries= new Series("http://pressassociation.com/series/5-6", "pa:s-5-6", Publisher.PA);
+        setupContentResolver(ImmutableSet.<Identified>of(film, expectedItemBrand, expectedItemSeries));
+
+        ProgData progData = setupProgData();
+        progData.getAttr().setRevisedRepeat("yes");
+
+        ContentHierarchyAndSummaries hierarchy = progProcessor.process(progData, channel, UTC, Timestamp.of(0)).get();
+
+        Broadcast broadcast = Iterables.getOnlyElement(
+                Iterables.getOnlyElement(hierarchy.getItem().getVersions()).getBroadcasts()
+        );
+
+        assertTrue(broadcast.getRepeat());
+    }
+
+    @Test
     public void testGetTitleAndDescriptionForNewFilm() throws Exception {
         String brandUri = "http://pressassociation.com/brands/5";
         String expectedUri = "http://pressassociation.com/films/5";

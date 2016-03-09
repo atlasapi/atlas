@@ -239,6 +239,7 @@ person_id: A unique id for this person
 	stereo: the programme in stereo.
 	subtitles: the programme carries Teletext or Ceefax subtitles.
 	repeat: the programme a repeat.
+	revised repeat: the programme a revised repeat.
 	bw: the programme broadcast in Black and White.
 	premiere: this a broadcast premiere.
     new_episode: this is the first showing of this programme on this channel.
@@ -268,6 +269,7 @@ person_id: A unique id for this person
 	stereo (yes | no) "no"
 	subtitles (yes | no) "no"
 	repeat (yes | no) "no"
+	revised_repeat (yes | no) "no"
 	bw (yes | no) "no"
 	premiere (yes | no) "no"
 	new_episode (yes | no) "no"

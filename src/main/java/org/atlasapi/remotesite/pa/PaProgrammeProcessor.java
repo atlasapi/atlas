@@ -742,13 +742,22 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     //If the repeat flag is "yes" it's definitely a repeat. If it's "no" 
-    // then we can't be sure so ingest it as null.  
+    // then we can't be sure, since the PA aren't making any assertion; effectively, it's a null
+    // so we'll ingest as such
     private Boolean isRepeat(Channel channel, Attr attr) {
         Boolean repeat = getBooleanValue(attr.getRepeat());
-        if (Boolean.FALSE.equals(repeat)) {
-            return null;
+
+        // revised repeat means that a broadcast is a repeat, but has been edited since the
+        // original broadcast. In Atlas we do not make such a distinction, we coalesce
+        // PA's repeat and revised repeat flag into a single field
+        Boolean revisedRepeat = getBooleanValue(attr.getRevisedRepeat());
+
+        if (Boolean.TRUE.equals(revisedRepeat)
+                || Boolean.TRUE.equals(repeat)) {
+            return true;
         }
-        return repeat;
+
+        return null;
     }
 
     private void addBroadcast(Version version, Broadcast newBroadcast) {

@@ -25,6 +25,7 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.Identified;
@@ -223,9 +224,19 @@ public class ContentWriteController {
         existing.setImages(merge ?
                            merge(existing.getImages(), update.getImages()) :
                            update.getImages());
+
+        if (existing instanceof Episode && update instanceof Episode) {
+            return mergeEpisodes((Episode) existing, (Episode) update);
+        }
         if (existing instanceof Item && update instanceof Item) {
             return mergeItems((Item) existing, (Item) update);
         }
+        return existing;
+    }
+
+    private Item mergeEpisodes(Episode existing, Episode update) {
+        existing.setSeriesNumber(update.getSeriesNumber());
+        existing.setEpisodeNumber(update.getEpisodeNumber());
         return existing;
     }
 
@@ -238,6 +249,8 @@ public class ContentWriteController {
             Version postedVersion = Iterables.getOnlyElement(update.getVersions());
             mergeVersions(existingVersion, postedVersion);
         }
+        existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
+        existing.setYear(update.getYear());
         if (existing instanceof Song && update instanceof Song) {
             return mergeSongs((Song) existing, (Song) update);
         }

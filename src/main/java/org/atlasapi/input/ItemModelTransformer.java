@@ -66,9 +66,16 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         } else if ("broadcast".equals(type)) {
             item = createBroadcast(inputItem);
         } else {
-            item = new Item();
+            item = createItem(inputItem);
         }
         item.setLastUpdated(now);
+        return item;
+    }
+
+    private Item createItem(org.atlasapi.media.entity.simple.Item inputItem) {
+        Item item = new Item();
+        item.setYear(inputItem.getYear());
+        item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
         return item;
     }
 

@@ -26,6 +26,8 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.segment.SegmentEvent;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
+
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -120,6 +122,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             version.setLastUpdated(now);
             version.setManifestedAs(encodings);
         }
+
         if (inputItem.getBrandSummary() != null) {
             item.setParentRef(new ParentRef(inputItem.getBrandSummary().getUri()));
         }
@@ -135,10 +138,28 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             version.setLastUpdated(now);
             version.setSegmentEvents(segments);
         }
-
+        item.setYear(inputItem.getYear());
+        item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
+        checkAndSetConsistentDuration(inputItem, version);
         item.setVersions(ImmutableSet.of(version));
 
         return item;
+    }
+
+    private void checkAndSetConsistentDuration(org.atlasapi.media.entity.simple.Item item, Version version) {
+        Set<Integer> durations = Sets.newHashSet();
+        for (org.atlasapi.media.entity.simple.Location location : item.getLocations()) {
+            Integer duration = location.getDuration();
+            if (duration != null) {
+                durations.add(duration);
+            }
+        }
+        if (durations.size() > 1 ) {
+            throw new IllegalArgumentException("Locations for " + item.getUri() + " have inconsistent durations");
+        } else if (durations.size() == 1) {
+            Duration duration = new Duration(Iterables.getOnlyElement(durations).longValue());
+            version.setDuration(duration);
+        }
     }
 
     private void addBroadcasts(org.atlasapi.media.entity.simple.Item inputItem, Version version) {
@@ -251,7 +272,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         }
         Set<Restriction> restrictions = Sets.newHashSet();
         Version version = new Version();
-
         restrictions.add(createRestrictionForLocation(inputLocation));
 
         setToFirstRestriction(version, restrictions);

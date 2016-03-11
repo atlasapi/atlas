@@ -2,7 +2,10 @@ package org.atlasapi.input;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.isNull;
 import static org.mockito.Mockito.when;
 
 import java.math.BigInteger;
@@ -10,6 +13,7 @@ import java.util.Date;
 
 import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.entity.simple.*;
@@ -23,6 +27,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.collect.Lists;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.time.Clock;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -41,7 +46,6 @@ public class ItemModelTransformerTest {
     private Item simpleItem;
     private Broadcast simpleBroadcast;
     private Restriction simpleRestriction;
-    private Location simpleLocation;
 
     @Before
     public void setUp() throws Exception {
@@ -57,7 +61,6 @@ public class ItemModelTransformerTest {
 
         simpleRestriction = getSimpleRestriction();
         simpleBroadcast = getSimpleBroadcast();
-        simpleLocation = getSimpleLocation();
         simpleItem = getSimpleItem();
     }
 
@@ -79,14 +82,60 @@ public class ItemModelTransformerTest {
     }
 
     @Test
-    public void testTransformDuration()
+    public void testSetsAdditionalFieldsForFilms() {
+        Item film = getSimpleItem();
+        film.setType("film");
+        film.setYear(2000);
+        film.addCountryOfOrigin(Countries.GB);
+        org.atlasapi.media.entity.Item complex = transformer.transform(film);
+
+        assertTrue(complex instanceof Film);
+        assertThat(complex.getYear(), is(2000));
+        assertTrue(complex.getCountriesOfOrigin().contains(Countries.GB));
+    }
+
+
+    @Test
+    public void testSetsDurationFromLocation()
             throws Exception {
+        simpleItem.addLocation(getSimpleLocationWithDuration(2000));
         org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
 
         assertThat(complex.getVersions().size(), is(1));
         Version version = complex.getVersions().iterator().next();
         assertThat(version.getDuration(), is (2));
     }
+
+    @Test(expected = IllegalArgumentException.class)
+    public void testThrowsExceptionIfMultipleLocationsWithDifferentDurations()
+            throws Exception {
+        simpleItem.addLocation(getSimpleLocationWithDuration(2000));
+        simpleItem.addLocation(getSimpleLocationWithDuration(3000));
+        transformer.transform(simpleItem);
+    }
+
+    @Test
+    public void testSetsDurationFromLocationsWithIdenticalDurations(){
+        simpleItem.addLocation(getSimpleLocationWithDuration(2000));
+        simpleItem.addLocation(getSimpleLocationWithDuration(2000));
+        simpleItem.addLocation(getSimpleLocationWithDuration(2000));
+        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
+
+        assertThat(complex.getVersions().size(), is(1));
+        Version version = complex.getVersions().iterator().next();
+        assertThat(version.getDuration(), is (2));
+    }
+
+    @Test
+    public void testNoDurationIsSetIfNoLocationProvided(){
+        simpleItem.addLocation(new Location());
+        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
+
+        assertThat(complex.getVersions().size(), is(1));
+        Version version = complex.getVersions().iterator().next();
+        assertNull(version.getDuration());
+    }
+
 
     public void testTransformItemWithEventRefs() {
         when(idCodec.decode("12345")).thenReturn(BigInteger.valueOf(12345));
@@ -109,7 +158,6 @@ public class ItemModelTransformerTest {
         item.setUri("uri");
         item.setPublisher(new PublisherDetails(Publisher.BBC.key()));
         item.setBroadcasts(Lists.newArrayList(simpleBroadcast));
-        item.setLocations(Lists.<Location>newArrayList(simpleLocation));
         return item;
     }
 
@@ -151,9 +199,9 @@ public class ItemModelTransformerTest {
         return restriction;
     }
 
-    private Location getSimpleLocation() {
+    private Location getSimpleLocationWithDuration(int duration) {
         Location location = new Location();
-        location.setDuration(2000);
+        location.setDuration(duration);
         return location;
     }
 }

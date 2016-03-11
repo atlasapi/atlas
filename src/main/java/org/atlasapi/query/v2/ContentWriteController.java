@@ -226,7 +226,7 @@ public class ContentWriteController {
                            update.getImages());
 
         if (existing instanceof Episode && update instanceof Episode) {
-            return mergeEpisodes((Episode) existing, (Episode) update);
+            mergeEpisodes((Episode) existing, (Episode) update);
         }
         if (existing instanceof Item && update instanceof Item) {
             return mergeItems((Item) existing, (Item) update);

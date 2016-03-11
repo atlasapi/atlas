@@ -68,16 +68,9 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         } else if ("broadcast".equals(type)) {
             item = createBroadcast(inputItem);
         } else {
-            item = createItem(inputItem);
+            item = new Item();
         }
         item.setLastUpdated(now);
-        return item;
-    }
-
-    private Item createItem(org.atlasapi.media.entity.simple.Item inputItem) {
-        Item item = new Item();
-        item.setYear(inputItem.getYear());
-        item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
         return item;
     }
 
@@ -110,8 +103,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         Episode episode = new Episode();
         episode.setSeriesNumber(inputItem.getSeriesNumber());
         episode.setEpisodeNumber(inputItem.getEpisodeNumber());
-        episode.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
-        episode.setYear(inputItem.getYear());
 
         if (inputItem.getSeriesSummary() != null) {
             episode.setSeriesRef(new ParentRef(inputItem.getSeriesSummary().getUri()));
@@ -147,7 +138,8 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             version.setLastUpdated(now);
             version.setSegmentEvents(segments);
         }
-
+        item.setYear(inputItem.getYear());
+        item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
         checkAndSetConsistentDuration(inputItem, version);
         item.setVersions(ImmutableSet.of(version));
 
@@ -163,7 +155,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             }
         }
         if (durations.size() > 1 ) {
-            throw new IllegalStateException("Locations for " + item.getUri() + " have inconsistent durations");
+            throw new IllegalArgumentException("Locations for " + item.getUri() + " have inconsistent durations");
         } else if (durations.size() == 1) {
             Duration duration = new Duration(Iterables.getOnlyElement(durations).longValue());
             version.setDuration(duration);

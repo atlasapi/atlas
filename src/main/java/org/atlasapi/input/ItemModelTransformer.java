@@ -165,7 +165,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if (durations.size() > 1 ) {
             throw new IllegalStateException("Locations for " + item.getUri() + " have inconsistent durations");
         } else if (durations.size() == 1) {
-            Duration duration = new Duration(Iterables.getOnlyElement(durations));
+            Duration duration = new Duration(Iterables.getOnlyElement(durations).longValue());
             version.setDuration(duration);
         }
     }

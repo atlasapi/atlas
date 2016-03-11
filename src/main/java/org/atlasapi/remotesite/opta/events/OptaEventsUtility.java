@@ -206,12 +206,12 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
             .put(OptaSportType.FOOTBALL_CHAMPIONS_LEAGUE, ImmutableMap.of(
                     "Football", "http://dbpedia.org/resources/Football", 
                     "Association Football", "http://dbpedia.org/resources/Association_football", 
-                    "Premier League", "http://dbpedia.org/resources/UEFA_Champions_League"
+                    "UEFA Champions League", "http://dbpedia.org/resources/UEFA_Champions_League"
             ))
             .put(OptaSportType.FOOTBALL_EUROPA_LEAGUE, ImmutableMap.of(
                     "Football", "http://dbpedia.org/resources/Football", 
                     "Association Football", "http://dbpedia.org/resources/Association_football", 
-                    "Premier League", "http://dbpedia.org/resources/UEFA_Europa_League"
+                    "UEFA Europa League", "http://dbpedia.org/resources/UEFA_Europa_League"
             ))
             .put(OptaSportType.FOOTBALL_FA_CUP, ImmutableMap.of(
                     "Football", "http://dbpedia.org/resources/Football",

@@ -1,11 +1,11 @@
 package org.atlasapi.remotesite.btvod;
 
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Topic;
-import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.persistence.topic.TopicCreatingTopicResolver;
 import org.atlasapi.persistence.topic.TopicWriter;
 import org.atlasapi.remotesite.btvod.contentgroups.BtVodContentMatchingPredicates;
@@ -18,6 +18,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.junit.Test;
 
 import static org.hamcrest.CoreMatchers.is;
@@ -37,13 +38,14 @@ public class BtVodSynthesizedSeriesExtractorTest {
     private static final Topic NEW_TOPIC = new Topic(123L);
     private static final String BT_VOD_GUID_NAMESPACE = "guid namespace";
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
+    private static final String BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE = "synth guid namespace";
+    private static final String BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE = "synth id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
     private static final String BT_VOD_KEYWORD_NAMESPACE = "keyword namespace";
 
     private final BtVodBrandProvider brandProvider = mock(BtVodBrandProvider.class);
     private final BtVodContentListener contentListener = mock(BtVodContentListener.class);
-    private final ImageExtractor imageExtractor = mock(ImageExtractor.class);
     private final TopicCreatingTopicResolver topicResolver = mock(TopicCreatingTopicResolver.class);
     private final TopicWriter topicWriter = mock(TopicWriter.class);
     private final BtVodContentMatchingPredicate newTopicContentMatchingPredicate = mock(BtVodContentMatchingPredicate.class);
@@ -65,17 +67,12 @@ public class BtVodSynthesizedSeriesExtractorTest {
             new Topic(345L),
             new Topic(456L),
             BT_VOD_GUID_NAMESPACE,
+            BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE,
             BT_VOD_ID_NAMESPACE,
+            BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE,
             BT_VOD_CONTENT_PROVIDER_NAMESPACE,
             BT_VOD_GENRE_NAMESPACE,
             BT_VOD_KEYWORD_NAMESPACE
-    );
-
-    private final TopicRef newTopicRef = new TopicRef(
-            NEW_TOPIC,
-            1.0f,
-            false,
-            TopicRef.Relationship.ABOUT
     );
 
     private final BtVodSynthesizedSeriesExtractor seriesExtractor = new BtVodSynthesizedSeriesExtractor(
@@ -121,8 +118,6 @@ public class BtVodSynthesizedSeriesExtractorTest {
         assertThat(seriesExtractor.getSynthesizedSeries().isEmpty(), is(true));
     }
 
-
-
     @Test
     public void testDoesntExtractSeriesFromNonEpisode() {
         BtVodEntry entry = row();
@@ -152,6 +147,29 @@ public class BtVodSynthesizedSeriesExtractorTest {
         Series series = Iterables.getOnlyElement(seriesExtractor.getSynthesizedSeries().values());
 
         verify(brandProvider).updateBrandFromSeries(entry, series);
+    }
+
+    @Test
+    public void testSetSynthesisedAliasesFromBtEntry() throws Exception {
+        BtVodEntry entry = row();
+
+        String brandUri = "http://brand-uri.com";
+        ParentRef brandRef = mock(ParentRef.class);
+
+        when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
+        when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of(brandUri + "/series/1"));
+
+        seriesExtractor.process(entry);
+
+        Series series = Iterables.getOnlyElement(seriesExtractor.getSynthesizedSeries().values());
+
+        assertThat(series.getAliases().size(), is(2));
+        assertThat(series.getAliases().containsAll(Lists.newArrayList(
+                new Alias(BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE, entry.getGuid()),
+                new Alias(BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE, entry.getId())
+        )),
+                is(true));
     }
 
     private BtVodEntry row() {

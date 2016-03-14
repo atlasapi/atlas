@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -10,7 +8,6 @@ import java.util.concurrent.ExecutionException;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
-import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Priority;
 import org.atlasapi.media.entity.PriorityScoreReasons;
 import org.atlasapi.media.entity.Publisher;
@@ -30,6 +27,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 
 public class BtVodDescribedFieldsExtractor {
 
@@ -39,6 +38,10 @@ public class BtVodDescribedFieldsExtractor {
 
     private final String guidAliasNamespace;
     private final String idAliasNamespace;
+
+    private final String synthesisedFromGuidAliasNamespace;
+    private final String synthesisedFromIdAliasNamespace;
+
     private final String contentProviderTopicNamespace;
     private final String genreTopicNamespace;
     private final String keywordTopicNamespace;
@@ -158,7 +161,9 @@ public class BtVodDescribedFieldsExtractor {
             Topic tvBoxsetTopic,
             Topic subCatchupTopic,
             String guidAliasNamespace,
+            String synthesisedFromGuidAliasNamespace,
             String idAliasNamespace,
+            String synthesisedFromIdAliasNamespace,
             String contentProviderTopicNamespace,
             String genreTopicNamespace,
             String keywordTopicNamespace
@@ -181,6 +186,10 @@ public class BtVodDescribedFieldsExtractor {
 
         this.guidAliasNamespace = checkNotNull(guidAliasNamespace);
         this.idAliasNamespace = checkNotNull(idAliasNamespace);
+
+        this.synthesisedFromGuidAliasNamespace = checkNotNull(synthesisedFromGuidAliasNamespace);
+        this.synthesisedFromIdAliasNamespace = checkNotNull(synthesisedFromIdAliasNamespace);
+
         this.contentProviderTopicNamespace = checkNotNull(contentProviderTopicNamespace);
         this.genreTopicNamespace = checkNotNull(genreTopicNamespace);
         this.keywordTopicNamespace = checkNotNull(keywordTopicNamespace);
@@ -236,8 +245,6 @@ public class BtVodDescribedFieldsExtractor {
             }
             described.setGenres(genres.build());
         }
-        
-        described.setAliases(aliasesFrom(row));
     }
 
     public Set<String> btGenreStringsFrom(BtVodEntry row) {
@@ -335,16 +342,17 @@ public class BtVodDescribedFieldsExtractor {
         return topicRefBuilder.build();
     }
 
-    public Iterable<Alias> aliasesFrom(BtVodEntry row) {
+    public Iterable<Alias> explicitAliasesFrom(BtVodEntry row) {
         return ImmutableSet.of(
                 new Alias(guidAliasNamespace, row.getGuid()),
                 new Alias(idAliasNamespace, row.getId()));
     }
 
-    private Iterable<Image> createImages(BtVodEntry row) {
-        // images are of poor quality, so not useful to save
-        // return imageExtractor.extractImages(row.getProductImages());
-        return ImmutableSet.of();
+    public Iterable<Alias> synthesisedAliasesFrom(BtVodEntry row) {
+        return ImmutableSet.of(
+                new Alias(synthesisedFromGuidAliasNamespace, row.getGuid()),
+                new Alias(synthesisedFromIdAliasNamespace, row.getId())
+        );
     }
 
     private String cacheKey(String namespace, String value) {

@@ -1,10 +1,7 @@
 package org.atlasapi.input;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Currency;
 import java.util.Date;
-import java.util.Iterator;
 import java.util.Set;
 
 import org.atlasapi.media.TransportSubType;
@@ -27,19 +24,22 @@ import org.atlasapi.media.segment.SegmentEvent;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 
-import com.google.common.collect.Iterables;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
-import com.google.common.collect.Sets;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.DateTimeZones;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.media.entity.simple.Item, Item> {
 
@@ -65,8 +65,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             item = createFilm(inputItem);
         } else if ("song".equals(type)) {
             item = createSong(inputItem);
-        } else if ("broadcast".equals(type)) {
-            item = createBroadcast(inputItem);
         } else {
             item = new Item();
         }
@@ -78,16 +76,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         Film film = new Film();
         film.setYear(inputItem.getYear());
         return film;
-    }
-
-    private Item createBroadcast(org.atlasapi.media.entity.simple.Item inputItem) {
-        Item item = new Item();
-
-        Version version = new Version();
-        addBroadcasts(inputItem, version);
-        item.setVersions(ImmutableSet.of(version));
-
-        return item;
     }
 
     private Item createSong(org.atlasapi.media.entity.simple.Item inputItem) {
@@ -126,10 +114,12 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if (inputItem.getBrandSummary() != null) {
             item.setParentRef(new ParentRef(inputItem.getBrandSummary().getUri()));
         }
+
         if (!inputItem.getBroadcasts().isEmpty()) {
             version.setLastUpdated(now);
             addBroadcasts(inputItem, version);
         }
+
         if (inputItem.getSegments() != null && !inputItem.getSegments().isEmpty()) {
             Set<SegmentEvent> segments = Sets.newHashSet();
             for (org.atlasapi.media.entity.simple.SegmentEvent segmentEvent : inputItem.getSegments()) {
@@ -138,9 +128,13 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             version.setLastUpdated(now);
             version.setSegmentEvents(segments);
         }
+
+        addRestrictions(inputItem, version);
+
         item.setYear(inputItem.getYear());
         item.setCountriesOfOrigin(inputItem.getCountriesOfOrigin());
         checkAndSetConsistentDuration(inputItem, version);
+
         item.setVersions(ImmutableSet.of(version));
 
         return item;
@@ -164,58 +158,51 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
 
     private void addBroadcasts(org.atlasapi.media.entity.simple.Item inputItem, Version version) {
         Set<Broadcast> broadcasts = Sets.newHashSet();
-        Set<Restriction> restrictions = Sets.newHashSet();
 
         for (org.atlasapi.media.entity.simple.Broadcast broadcast : inputItem.getBroadcasts()) {
             broadcasts.add(broadcastTransformer.transform(broadcast));
-            restrictions.add(createRestriction(broadcast));
         }
 
         version.setBroadcasts(broadcasts);
-        setToFirstRestriction(version, restrictions);
     }
+    
+    private void addRestrictions(org.atlasapi.media.entity.simple.Item inputItem, Version version) {
+        // Since we are coalescing multiple broadcasts each with possibly its own restriction there is
+        // no good way decide which restriction to keep so we are keeping the first one
+        for (org.atlasapi.media.entity.simple.Broadcast broadcast : inputItem.getBroadcasts()) {
+            Optional<Restriction> restriction = createRestriction(broadcast.getRestriction());
 
-    private Restriction createRestriction(org.atlasapi.media.entity.simple.Broadcast broadcast) {
-        Restriction restriction = new Restriction();
-
-        org.atlasapi.media.entity.simple.Restriction simpleRestriction = broadcast.getRestriction();
-
-        setPropertiesForRestriction(restriction, simpleRestriction);
-
-
-        return restriction;
-    }
-    private Restriction createRestrictionForLocation(org.atlasapi.media.entity.simple.Location location) {
-        Restriction restriction = new Restriction();
-
-        org.atlasapi.media.entity.simple.Restriction simpleRestriction = location.getRestriction();
-        restriction = setPropertiesForRestriction(restriction, simpleRestriction);
-
-        return restriction;
-    }
-
-    private Restriction setPropertiesForRestriction(Restriction restriction,
-                                                    org.atlasapi.media.entity.simple.Restriction simpleRestriction) {
-        if (simpleRestriction != null) {
-            restriction.setRestricted(simpleRestriction.isRestricted());
-            restriction.setAuthority(simpleRestriction.getAuthority());
-            restriction.setRating(simpleRestriction.getRating());
-            restriction.setMinimumAge(simpleRestriction.getMinimumAge());
-            restriction.setMessage(simpleRestriction.getMessage());
+            if (restriction.isPresent()) {
+                version.setRestriction(restriction.get());
+                return;
+            }
         }
 
-        return restriction;
+        for (org.atlasapi.media.entity.simple.Location location : inputItem.getLocations()) {
+            Optional<Restriction> restriction = createRestriction(location.getRestriction());
+
+            if (restriction.isPresent()) {
+                version.setRestriction(restriction.get());
+                return;
+            }
+        }
     }
 
-
-    // Since we are coalescing multiple broadcasts each with possibly its own restriction there is
-    // no good way decide which restriction to keep so we are keeping the first one
-    private void setToFirstRestriction(Version version, Set<Restriction> restrictions) {
-        Iterator<Restriction> iterator = restrictions.iterator();
-        if(!iterator.hasNext()) {
-            return;
+    private Optional<Restriction> createRestriction(
+            org.atlasapi.media.entity.simple.Restriction simpleRestriction) {
+        if (simpleRestriction == null) {
+            return Optional.absent();
         }
-        version.setRestriction(iterator.next());
+        
+        Restriction restriction = new Restriction();
+        
+        restriction.setRestricted(simpleRestriction.isRestricted());
+        restriction.setAuthority(simpleRestriction.getAuthority());
+        restriction.setRating(simpleRestriction.getRating());
+        restriction.setMinimumAge(simpleRestriction.getMinimumAge());
+        restriction.setMessage(simpleRestriction.getMessage());
+
+        return Optional.of(restriction);
     }
 
     private Set<Encoding> encodingsFrom(Set<org.atlasapi.media.entity.simple.Location> locations, DateTime now) {
@@ -270,11 +257,6 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if (inputLocation.getTransportType() != null) {
             location.setTransportType(TransportType.fromString(inputLocation.getTransportType()));
         }
-        Set<Restriction> restrictions = Sets.newHashSet();
-        Version version = new Version();
-        restrictions.add(createRestrictionForLocation(inputLocation));
-
-        setToFirstRestriction(version, restrictions);
         return location;
     }
 

@@ -1,34 +1,39 @@
 package org.atlasapi.input;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.isNull;
-import static org.mockito.Mockito.when;
-
 import java.math.BigInteger;
 import java.util.Date;
 
-import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.media.entity.simple.*;
+import org.atlasapi.media.entity.simple.Broadcast;
+import org.atlasapi.media.entity.simple.EventRef;
+import org.atlasapi.media.entity.simple.Item;
+import org.atlasapi.media.entity.simple.Location;
+import org.atlasapi.media.entity.simple.PublisherDetails;
+import org.atlasapi.media.entity.simple.Restriction;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
+
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.time.Clock;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.time.Clock;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ItemModelTransformerTest {
@@ -136,6 +141,45 @@ public class ItemModelTransformerTest {
         assertNull(version.getDuration());
     }
 
+    @Test
+    public void testBroadcastsAreTransformedForItemOfTypeBroadcast() throws Exception {
+        simpleItem.setType("broadcast");
+        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
+
+        assertThat(complex.getVersions().size(), is(1));
+
+        Version version = complex.getVersions().iterator().next();
+        assertThat(version.getBroadcasts().size(), is(1));
+
+        org.atlasapi.media.entity.Broadcast broadcast = version.getBroadcasts().iterator().next();
+        assertThat(broadcast.getBroadcastOn(), is(simpleBroadcast.getBroadcastOn()));
+    }
+
+    @Test
+    public void testTransformingItemWithBroadcastSetsRestriction() throws Exception {
+        Location location = new Location();
+        location.setRestriction(simpleRestriction);
+
+        simpleItem.addLocation(location);
+        simpleItem.setBroadcasts(Lists.<Broadcast>newArrayList());
+
+        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
+
+        assertThat(complex.getVersions().size(), is(1));
+
+        Version version = complex.getVersions().iterator().next();
+        checkRestriction(version.getRestriction());
+    }
+
+    @Test
+    public void testTransformingItemWithLocationsSetsRestriction() throws Exception {
+        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
+
+        assertThat(complex.getVersions().size(), is(1));
+
+        Version version = complex.getVersions().iterator().next();
+        checkRestriction(version.getRestriction());
+    }
 
     public void testTransformItemWithEventRefs() {
         when(idCodec.decode("12345")).thenReturn(BigInteger.valueOf(12345));

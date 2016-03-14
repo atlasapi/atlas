@@ -108,50 +108,15 @@ public class GsonBtMpxClientTest {
     }
 
     @Test
-    public void testNewValueDeserializationDirectFromWebsiteWithInternalHttpClient() throws Exception {
+    public void testDeserializationDirectFromWebsiteWithInternalHttpClientIT() throws Exception {
         //Testing deserialization with the remote copy of the file from the website.
         SimpleHttpClient httpClient1 = new SimpleHttpClientBuilder().build();
         PaginatedEntries entriesFromRemote = httpClient1.get(createHttpRequestFromVole());
 
-        Iterable<Entry> nonZeroEntries = Iterables.filter(entriesFromRemote.getEntries(),
-                not(isZeroAvailableDate(0l)));
+        assertThat(entriesFromRemote.getEntries().isEmpty(), is(false));
 
-        Entry firstNonZeroEntry = Iterables.getFirst(nonZeroEntries, null);
-
-        assertNotNull(firstNonZeroEntry.getAvailableDate());
-    }
-
-    @Test
-    public void testNewValueDeserializationDirectFromTest2WebsiteWithGsonBtMpxClient() throws BtMpxClientException {
-        SimpleHttpClient httpClient
-                = new SimpleHttpClientBuilder().build();
-
-        GsonBtMpxClient client = new GsonBtMpxClient(httpClient,
-                "http://bt.feed.theplatform.eu/f/kfloDSwm/vole-med-feed-linear");
-
-        PaginatedEntries channels = client.getChannels(Optional.<Selection>absent());
-        Iterable<Entry> nonZeroEntries = Iterables.filter(channels.getEntries(),
-                not(isZeroAvailableDate(0l)));
-
-        Entry firstNonZeroEntry = Iterables.getFirst(nonZeroEntries, null);
-
-        assertNotNull(firstNonZeroEntry.getAvailableDate());
-        assertNotNull(firstNonZeroEntry.getLinearEpgChannelId());
-    }
-
-    @Test
-    public void testNewValueDeserializationDirectFromProdWebsiteWithGsonBtMpxClient() throws BtMpxClientException {
-        SimpleHttpClient httpClient
-                = new SimpleHttpClientBuilder().build();
-
-        GsonBtMpxClient client = new GsonBtMpxClient(httpClient,
-                "http://bt.feed.theplatform.eu/f/wzIRPC/btv-med-feed-linear");
-
-        PaginatedEntries channels = client.getChannels(Optional.<Selection>absent());
-
-        Entry firstNonZeroEntry = Iterables.getFirst(channels.getEntries(), null);
-
-        assertNotNull(firstNonZeroEntry.getAvailableDate());
+        Entry entry = Iterables.getFirst(entriesFromRemote.getEntries(), null);
+        assertNotNull(entry);
     }
 
     private Predicate<Entry> isZeroAvailableDate(final long availableDate) {

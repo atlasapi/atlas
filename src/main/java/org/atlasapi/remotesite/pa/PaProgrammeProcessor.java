@@ -501,13 +501,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         } else {
             film = getBasicFilm(progData);
         }
-        film.addAlias(PaHelper.getFilmAlias(identifierFor(progData)));
-        Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
-        if (rtFilmIdentifier.isPresent()) {
-            film.addAlias(PaHelper.getRtFilmAlias(rtFilmIdentifier.get()));
-        }
-
-        film.setAliasUrls(ImmutableSet.of(PaHelper.getAlias(progData.getProgId())));
 
         if (progData.getFilmYear() != null && MoreStrings.containsOnlyAsciiDigits(progData.getFilmYear())) {
             film.setYear(Integer.parseInt(progData.getFilmYear()));
@@ -551,6 +544,25 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         episode.setPeople(people(progData));
 
         setCertificate(progData, episode);
+
+        // Adding a film alias only used to happen when type was film. Previously this was
+        // decided based on the existence of the field rt_filmnumber. That's faulty, though,
+        // so we changed it to use the film flag. In order to maintain backward-compatibilty
+        // and only set the film alias when a rt_filmnumber value exists, we make that
+        // check here.
+
+        if (!Strings.isNullOrEmpty(progData.getRtFilmnumber())) {
+            episode.addAlias(PaHelper.getFilmAlias(identifierFor(progData)));
+        }
+
+        Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
+        if (rtFilmIdentifier.isPresent()) {
+            episode.addAlias(PaHelper.getRtFilmAlias(rtFilmIdentifier.get()));
+        }
+
+        episode.setAliasUrls(ImmutableSet.of(PaHelper.getAlias(progData.getProgId())));
+
+
     }
 
     private Broadcast addBroadcast(ProgData progData, Item item, Channel channel,
@@ -741,13 +753,22 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     //If the repeat flag is "yes" it's definitely a repeat. If it's "no" 
-    // then we can't be sure so ingest it as null.  
+    // then we can't be sure, since the PA aren't making any assertion; effectively, it's a null
+    // so we'll ingest as such
     private Boolean isRepeat(Channel channel, Attr attr) {
         Boolean repeat = getBooleanValue(attr.getRepeat());
-        if (Boolean.FALSE.equals(repeat)) {
-            return null;
+
+        // revised repeat means that a broadcast is a repeat, but has been edited since the
+        // original broadcast. In Atlas we do not make such a distinction, we coalesce
+        // PA's repeat and revised repeat flag into a single field
+        Boolean revisedRepeat = getBooleanValue(attr.getRevisedRepeat());
+
+        if (Boolean.TRUE.equals(revisedRepeat)
+                || Boolean.TRUE.equals(repeat)) {
+            return true;
         }
-        return repeat;
+
+        return null;
     }
 
     private void addBroadcast(Version version, Broadcast newBroadcast) {
@@ -848,7 +869,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         if (MediaType.AUDIO.equals(channel.getMediaType())) {
             return Specialization.RADIO;
         }
-        return Strings.isNullOrEmpty(progData.getRtFilmnumber()) ? Specialization.TV : Specialization.FILM;
+        return getBooleanValue(progData.getAttr().getFilm()) ? Specialization.FILM : Specialization.TV;
     }
 
     protected static DateTime getTransmissionTime(String date, String time, DateTimeZone zone) {

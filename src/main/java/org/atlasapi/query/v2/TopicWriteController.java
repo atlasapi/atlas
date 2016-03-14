@@ -106,7 +106,7 @@ public class TopicWriteController {
         resp.setHeader(
                 HttpHeaders.LOCATION,
                 hostName
-                        + "/3.0/content.json?id="
+                        + "/3.0/topic.json?id="
                         + codec.encode(BigInteger.valueOf(topic.getId())));
         resp.setStatus(HttpStatusCode.OK.code());
         resp.setContentLength(0);

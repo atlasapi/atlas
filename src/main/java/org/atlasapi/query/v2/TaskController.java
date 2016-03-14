@@ -146,7 +146,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
                     TaskQuery.Sort.Direction.DESC
             ));
         }
-        
+
         return query.build();
     }
 
@@ -159,7 +159,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
         } else if (parts.length == 2) {
             return TaskQuery.Sort.of(
                     TaskQuery.Sort.Field.fromKey(parts[0]),
-                    TaskQuery.Sort.Direction.valueOf(parts[1])
+                    TaskQuery.Sort.Direction.valueOf(parts[1].toUpperCase())
             );
         } else {
             throw new IllegalArgumentException(String.format(

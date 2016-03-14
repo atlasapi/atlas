@@ -50,6 +50,7 @@ import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -258,6 +259,7 @@ public class ContentWriteController {
     }
 
     private void mergeVersions(Version existing, Version update) {
+        existing.setDuration(Duration.standardSeconds(update.getDuration().longValue()));
         existing.setManifestedAs(update.getManifestedAs());
         existing.setBroadcasts(update.getBroadcasts());
         existing.setSegmentEvents(update.getSegmentEvents());

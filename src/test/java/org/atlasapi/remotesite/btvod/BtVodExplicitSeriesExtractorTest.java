@@ -23,6 +23,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import org.hamcrest.CoreMatchers;
 import org.junit.Before;
 import org.junit.Test;
@@ -113,7 +114,7 @@ public class BtVodExplicitSeriesExtractorTest {
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("seriesUri"));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
         when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
-        when(describedFieldsExtractor.aliasesFrom(entry)).thenReturn(ImmutableSet.of(alias1, alias2));
+        when(describedFieldsExtractor.explicitAliasesFrom(entry)).thenReturn(ImmutableSet.of(alias1, alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of(genre));
 
         seriesExtractor.process(entry);
@@ -147,7 +148,7 @@ public class BtVodExplicitSeriesExtractorTest {
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("seriesUri"));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
         when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(mock(ParentRef.class)));
-        when(describedFieldsExtractor.aliasesFrom(entry)).thenReturn(ImmutableSet.of(mock(Alias.class)));
+        when(describedFieldsExtractor.explicitAliasesFrom(entry)).thenReturn(ImmutableSet.of(mock(Alias.class)));
         when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of("genre"));
 
         seriesExtractor.process(entry);
@@ -192,10 +193,10 @@ public class BtVodExplicitSeriesExtractorTest {
         when(seriesUriExtractor.extractSeriesNumber(series2)).thenReturn(Optional.of(1));
         when(brandProvider.brandRefFor(series2)).thenReturn(Optional.of(brandRef));
 
-        when(describedFieldsExtractor.aliasesFrom(series1)).thenReturn(ImmutableSet.of(alias1));
+        when(describedFieldsExtractor.explicitAliasesFrom(series1)).thenReturn(ImmutableSet.of(alias1));
         when(describedFieldsExtractor.btGenreStringsFrom(series1)).thenReturn(ImmutableSet.<String>of());
 
-        when(describedFieldsExtractor.aliasesFrom(series2)).thenReturn(ImmutableSet.of(alias2));
+        when(describedFieldsExtractor.explicitAliasesFrom(series2)).thenReturn(ImmutableSet.of(alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(series2)).thenReturn(ImmutableSet.<String>of());
 
         ArgumentCaptor<Series> seriesCaptor = ArgumentCaptor.forClass(Series.class);
@@ -233,7 +234,7 @@ public class BtVodExplicitSeriesExtractorTest {
         when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("seriesUri"));
         when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
         when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
-        when(describedFieldsExtractor.aliasesFrom(entry)).thenReturn(ImmutableSet.of(alias1, alias2));
+        when(describedFieldsExtractor.explicitAliasesFrom(entry)).thenReturn(ImmutableSet.of(alias1, alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of(genre));
         when(describedFieldsExtractor.topicsFrom(Matchers.<VodEntryAndContent>anyObject())).thenReturn(ImmutableSet.of(newTopic));
 
@@ -284,10 +285,10 @@ public class BtVodExplicitSeriesExtractorTest {
         when(imageExtractor.imagesFor(series1)).thenReturn(ImmutableSet.of(image1));
         when(imageExtractor.imagesFor(series2)).thenReturn(ImmutableSet.of(image2));
 
-        when(describedFieldsExtractor.aliasesFrom(series1)).thenReturn(ImmutableSet.of(alias1));
+        when(describedFieldsExtractor.explicitAliasesFrom(series1)).thenReturn(ImmutableSet.of(alias1));
         when(describedFieldsExtractor.btGenreStringsFrom(series1)).thenReturn(ImmutableSet.<String>of());
 
-        when(describedFieldsExtractor.aliasesFrom(series2)).thenReturn(ImmutableSet.of(alias2));
+        when(describedFieldsExtractor.explicitAliasesFrom(series2)).thenReturn(ImmutableSet.of(alias2));
         when(describedFieldsExtractor.btGenreStringsFrom(series2)).thenReturn(ImmutableSet.<String>of());
 
         seriesExtractor.process(series1);
@@ -298,6 +299,33 @@ public class BtVodExplicitSeriesExtractorTest {
         verify(descriptionAndImageUpdater).updateDescriptionsAndImages(
                 eq(series), eq(series2), eq(ImmutableSet.of(image2)), anySet()
         );
+    }
+
+    @Test
+    public void testSetExplicitAliasesFromBtEntry() throws Exception {
+        BtVodEntry entry = row();
+        entry.setProductType("season");// "Apr 30 2014 12:00AM"
+        ParentRef brandRef = mock(ParentRef.class);
+        Alias alias1 = mock(Alias.class);
+        Alias alias2 = mock(Alias.class);
+        String genre = "genre1";
+
+        when(contentResolver.findByCanonicalUris(ImmutableSet.of("seriesUri")))
+                .thenReturn(ResolvedContent.builder().build());
+
+        when(seriesUriExtractor.seriesUriFor(entry)).thenReturn(Optional.of("seriesUri"));
+        when(seriesUriExtractor.extractSeriesNumber(entry)).thenReturn(Optional.of(1));
+        when(brandProvider.brandRefFor(entry)).thenReturn(Optional.of(brandRef));
+        when(describedFieldsExtractor.explicitAliasesFrom(entry))
+                .thenReturn(ImmutableSet.of(alias1, alias2));
+        when(describedFieldsExtractor.btGenreStringsFrom(entry)).thenReturn(ImmutableSet.of(genre));
+
+        seriesExtractor.process(entry);
+
+        Series series = Iterables.getOnlyElement(seriesExtractor.getExplicitSeries().values());
+
+        assertThat(series.getAliases().size(), is(2));
+        assertThat(series.getAliases().containsAll(Lists.newArrayList(alias1, alias2)), is(true));
     }
 
     private BtVodEntry row() {

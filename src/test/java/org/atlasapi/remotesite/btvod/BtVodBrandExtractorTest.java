@@ -39,6 +39,8 @@ public class BtVodBrandExtractorTest {
     private static final String URI_PREFIX = "http://example.org/";
     private static final String BT_VOD_GUID_NAMESPACE = "guid namespace";
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
+    private static final String BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE = "synth guid namespace";
+    private static final String BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE = "synth id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
     private static final String BT_VOD_CHANNEL_ID_NAMESPACE = "channel id namespace";
@@ -66,7 +68,9 @@ public class BtVodBrandExtractorTest {
             new Topic(345L),
             new Topic(456L),
             BT_VOD_GUID_NAMESPACE,
+            BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE,
             BT_VOD_ID_NAMESPACE,
+            BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE,
             BT_VOD_CONTENT_PROVIDER_NAMESPACE,
             BT_VOD_GENRE_NAMESPACE,
             BT_VOD_CHANNEL_ID_NAMESPACE
@@ -83,7 +87,7 @@ public class BtVodBrandExtractorTest {
     
     @Test
     public void testCreatesSyntheticBrandFromEpisodeData() {
-        BtVodEntry row = row(FULL_EPISODE_TITLE, PRODUCT_ID, "episode", "parentGuid");
+        BtVodEntry row = row(FULL_EPISODE_TITLE, PRODUCT_ID, "12345", "episode", "parentGuid");
         
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
 
@@ -97,7 +101,7 @@ public class BtVodBrandExtractorTest {
     
     @Test
     public void testCreatesSyntheticBrandFromEpisodeDataWithoutEpisodeTitle() {
-        BtVodEntry row = row("Mad Men S01 E01", PRODUCT_ID, "episode", "parentGuid");
+        BtVodEntry row = row("Mad Men S01 E01", PRODUCT_ID, "12345", "episode", "parentGuid");
         
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
 
@@ -114,7 +118,7 @@ public class BtVodBrandExtractorTest {
     public void testDoesntCreateSyntheticBrandFromNonEpisodeData() {
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
 
-        BtVodEntry entry = row(FULL_EPISODE_TITLE, PRODUCT_ID, "episode", "parentGuid");
+        BtVodEntry entry = row(FULL_EPISODE_TITLE, PRODUCT_ID, "12345", "episode", "parentGuid");
         entry.setProductType("film");
 
         brandExtractor.process(entry);
@@ -125,7 +129,7 @@ public class BtVodBrandExtractorTest {
 
     @Test
     public void testCreatesParentGuidToBrandMappingFromEpisode() {
-        BtVodEntry row = row(FULL_EPISODE_TITLE, PRODUCT_ID, "episode", "parentGuid");
+        BtVodEntry row = row(FULL_EPISODE_TITLE, PRODUCT_ID, "12345", "episode", "parentGuid");
 
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
 
@@ -139,8 +143,8 @@ public class BtVodBrandExtractorTest {
 
     @Test
     public void testUpdateParentGuidForAlreadyCreatedBrands() throws Exception {
-        BtVodEntry season = row(BRAND_TITLE + " S5", "1", "season", "parentGuidSeason");
-        BtVodEntry episode = row(FULL_EPISODE_TITLE, "2", "episode", "parentGuidEpisode");
+        BtVodEntry season = row(BRAND_TITLE + " S5", "1", "12345", "season", "parentGuidSeason");
+        BtVodEntry episode = row(FULL_EPISODE_TITLE, "2", "12345", "episode", "parentGuidEpisode");
 
         when(imageUriProvider.imageUriFor(Matchers.anyString())).thenReturn(Optional.<String>absent());
 
@@ -154,11 +158,33 @@ public class BtVodBrandExtractorTest {
         assertThat(parentGuidToBrand.get(episode.getParentGuid()), sameInstance(extracted));
     }
 
-    private BtVodEntry row(String title, String guid, String productType, String parentGuid) {
+    @Test
+    public void testAddSynthesisedAliasToBrand() throws Exception {
+        BtVodEntry season = row(BRAND_TITLE + " S5", "1", "12345", "season", "parentGuidSeason");
+
+        brandExtractor.process(season);
+
+        Brand extracted = Iterables.getOnlyElement(brandExtractor.getProcessedBrands().values());
+
+        assertThat(extracted.getAliases().size(), is(2));
+
+        assertThat(Iterables.get(extracted.getAliases(), 0).getNamespace(),
+                is(BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE));
+        assertThat(Iterables.get(extracted.getAliases(), 0).getValue(),
+                is(season.getGuid()));
+
+        assertThat(Iterables.get(extracted.getAliases(), 1).getNamespace(),
+                is(BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE));
+        assertThat(Iterables.get(extracted.getAliases(), 1).getValue(),
+                is(season.getId()));
+    }
+
+    private BtVodEntry row(String title, String guid, String id, String productType,
+            String parentGuid) {
         
         BtVodEntry entry = new BtVodEntry();
         entry.setGuid(guid);
-        entry.setId("12345");
+        entry.setId(id);
         entry.setParentGuid(parentGuid);
         entry.setTitle(title);
         entry.setProductOfferStartDate(1364774400000L); //"Apr  1 2013 12:00AM"

@@ -7,24 +7,38 @@ import java.util.Set;
 
 import javax.annotation.Nonnull;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ComparisonChain;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class HierarchyDescriptionAndImageUpdater {
+
+    private final String descriptionsGuidAliasNamespace;
+    private final String imagesGuidAliasNamespace;
+
+    public HierarchyDescriptionAndImageUpdater(String descriptionsGuidAliasNamespace,
+            String imagesGuidAliasNamespace) {
+        this.descriptionsGuidAliasNamespace = checkNotNull(descriptionsGuidAliasNamespace);
+        this.imagesGuidAliasNamespace = checkNotNull(imagesGuidAliasNamespace);
+    }
 
     private Map<String, MetadataSource> descriptionSource = new HashMap<>();
     private Map<String, MetadataSource> longDescriptionSource = new HashMap<>();
     private Map<String, MetadataSource> imagesSource = new HashMap<>();
 
-    public void update(Content target, Series series) {
+    public void update(Content target, Series series, BtVodEntry seriesRow) {
         Integer seriesNumber = series.getSeriesNumber();
         if (seriesNumber == null) {
             // Set to lowest priority
@@ -32,11 +46,11 @@ public class HierarchyDescriptionAndImageUpdater {
         }
 
         MetadataSource source = MetadataSource.fromSeries(seriesNumber);
-        Metadata metadata = Metadata.from(series);
+        Metadata metadata = Metadata.from(series, seriesRow);
         update(target, metadata, source);
     }
 
-    public void update(Content target, Episode episode) {
+    public void update(Content target, Episode episode, BtVodEntry episodeRow) {
         Integer episodeNumber = episode.getEpisodeNumber();
         if (episodeNumber == null) {
             // Set to lowest priority
@@ -44,7 +58,7 @@ public class HierarchyDescriptionAndImageUpdater {
         }
 
         MetadataSource source = MetadataSource.fromEpisode(episodeNumber);
-        Metadata metadata = Metadata.from(episode);
+        Metadata metadata = Metadata.from(episode, episodeRow);
         update(target, metadata, source);
     }
 
@@ -55,23 +69,29 @@ public class HierarchyDescriptionAndImageUpdater {
     }
 
     private void update(Content target, Metadata metadata, MetadataSource source) {
-        updateDescription(target, metadata, source);
-        updateLongDescription(target, metadata, source);
-        updateImages(target, metadata, source);
+        boolean descriptionUpdated = updateDescription(target, metadata, source);
+        boolean longDescriptionUpdated = updateLongDescription(target, metadata, source);
+        boolean imagesUpdated = updateImages(target, metadata, source);
+
+        if (descriptionUpdated || longDescriptionUpdated || imagesUpdated) {
+            updateAliases(target, metadata);
+        }
     }
 
-    private void updateDescription(Content target, Metadata metadata, MetadataSource source) {
+    private boolean updateDescription(Content target, Metadata metadata, MetadataSource source) {
         Optional<MetadataSource> existingSource =
                 Optional.fromNullable(descriptionSource.get(target.getCanonicalUri()));
 
         if (hasOwnDescription(target, existingSource)) {
-            return;
+            return false;
         }
 
         if (hasDescription(metadata) && isHigherPriority(source, existingSource)) {
             target.setDescription(metadata.getDescription());
             descriptionSource.put(target.getCanonicalUri(), source);
+            return true;
         }
+        return false;
     }
 
     private boolean hasOwnDescription(Content target, Optional<MetadataSource> sourceOptional) {
@@ -86,18 +106,20 @@ public class HierarchyDescriptionAndImageUpdater {
         return metadata.getDescription() != null;
     }
 
-    private void updateLongDescription(Content target, Metadata metadata, MetadataSource source) {
+    private boolean updateLongDescription(Content target, Metadata metadata, MetadataSource source) {
         Optional<MetadataSource> existingSource =
                 Optional.fromNullable(longDescriptionSource.get(target.getCanonicalUri()));
 
         if (hasOwnLongDescription(target, existingSource)) {
-            return;
+            return false;
         }
 
         if (hasLongDescription(metadata) && isHigherPriority(source, existingSource)) {
             target.setLongDescription(metadata.getLongDescription());
             longDescriptionSource.put(target.getCanonicalUri(), source);
+            return true;
         }
+        return false;
     }
 
     private boolean hasOwnLongDescription(Content target,
@@ -113,19 +135,21 @@ public class HierarchyDescriptionAndImageUpdater {
         return metadata.getLongDescription() != null;
     }
 
-    private void updateImages(Content target, Metadata metadata, MetadataSource source) {
+    private boolean updateImages(Content target, Metadata metadata, MetadataSource source) {
         Optional<MetadataSource> existingSource =
                 Optional.fromNullable(imagesSource.get(target.getCanonicalUri()));
 
         if (hasOwnImages(target, existingSource)) {
-            return;
+            return false;
         }
 
         if (hasImages(metadata) && isHigherPriority(source, existingSource)) {
             target.setImages(metadata.getImages());
             target.setImage(metadata.getImage());
             imagesSource.put(target.getCanonicalUri(), source);
+            return true;
         }
+        return false;
     }
 
     private boolean hasOwnImages(Content target, Optional<MetadataSource> sourceOptional) {
@@ -146,6 +170,24 @@ public class HierarchyDescriptionAndImageUpdater {
         // as different BT VoD entries get deduped in it and each time which images and descriptions
         // have been kept as part of the deduping process may have changed
         return !existingSource.isPresent() || source.compareTo(existingSource.get()) >= 0;
+    }
+
+    private void updateAliases(Content target, Metadata metadata) {
+        ImmutableSet.Builder<Alias> aliasBuilder = ImmutableSet.builder();
+
+        for (Alias alias : target.getAliases()) {
+            if (!descriptionsGuidAliasNamespace.equals(alias.getNamespace())
+                    && !imagesGuidAliasNamespace.equals(alias.getNamespace())) {
+                aliasBuilder.add(alias);
+            }
+        }
+
+        aliasBuilder.add(
+                new Alias(descriptionsGuidAliasNamespace, metadata.getGuid()),
+                new Alias(imagesGuidAliasNamespace, metadata.getGuid())
+        );
+
+        target.setAliases(aliasBuilder.build());
     }
 
     private enum MetadataSourceType {
@@ -242,21 +284,24 @@ public class HierarchyDescriptionAndImageUpdater {
         private final String longDescription;
         private final Set<Image> images;
         private final String image;
+        private final String guid;
 
         private Metadata(String description, String longDescription, Set<Image> images,
-                String image) {
+                String image, String guid) {
             this.description = description;
             this.longDescription = longDescription;
             this.images = images;
             this.image = image;
+            this.guid = guid;
         }
 
-        public static Metadata from(Content content) {
+        public static Metadata from(Content content, BtVodEntry seriesRow) {
             return new Metadata(
                     content.getDescription(),
                     content.getLongDescription(),
                     content.getImages(),
-                    content.getImage()
+                    content.getImage(),
+                    seriesRow.getGuid()
             );
         }
 
@@ -265,7 +310,8 @@ public class HierarchyDescriptionAndImageUpdater {
                     btVodCollection.getDescription(),
                     btVodCollection.getLongDescription(),
                     btVodCollection.getImages(),
-                    btVodCollection.getImage()
+                    btVodCollection.getImage(),
+                    btVodCollection.getGuid()
             );
         }
 
@@ -283,6 +329,10 @@ public class HierarchyDescriptionAndImageUpdater {
 
         public String getImage() {
             return image;
+        }
+
+        public String getGuid() {
+            return guid;
         }
     }
 }

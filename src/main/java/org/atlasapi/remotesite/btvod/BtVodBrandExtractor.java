@@ -68,12 +68,15 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
                 return CONTINUE;
             }
 
-            if (updateParentGuidIfBrandAlreadyProcessed(row)) {
-                thisProgress = UpdateProgress.SUCCESS;
-                return CONTINUE;
-            }
+            Brand brand;
+            Optional<String> optionalUri = brandUriExtractor.extractBrandUri(row);
 
-            Brand brand = brandFrom(row);
+            if (optionalUri.isPresent() && processedBrands.containsKey(optionalUri.get())) {
+                brand = processedBrands.get(optionalUri.get());
+            }
+            else {
+                brand = brandFrom(row, optionalUri.get());
+            }
 
             listener.onContent(brand, row);
             processedBrands.put(brand.getCanonicalUri(), brand);
@@ -89,17 +92,6 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
         return CONTINUE;
     }
 
-    private boolean updateParentGuidIfBrandAlreadyProcessed(BtVodEntry row) {
-        Optional<String> optionalUri = brandUriExtractor.extractBrandUri(row);
-        if (optionalUri.isPresent() && processedBrands.containsKey(optionalUri.get())) {
-            Brand brand = processedBrands.get(optionalUri.get());
-            updateParentGuidToBrand(row, brand);
-
-            return true;
-        }
-        return false;
-    }
-
     private void updateParentGuidToBrand(BtVodEntry row, Brand brand) {
         if (row.getParentGuid() != null) {
             parentGuidToBrand.put(row.getParentGuid(), brand);
@@ -111,17 +103,18 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
         return brandUriExtractor.getSynthesizedKey(row).or(productId);
     }
 
-    private Brand brandFrom(BtVodEntry row) {
-        Brand brand = new Brand(brandUriExtractor.extractBrandUri(row).get(), null, publisher);
+    private Brand brandFrom(BtVodEntry row, String brandUri) {
+        Brand brand = new Brand(brandUri, null, publisher);
         if (brandUriExtractor.canParseBrandFromEpisode(row)) {
             brand.setTitle(brandUriExtractor.brandTitleFromEpisodeTitle(row.getTitle()));
         } else if (brandUriExtractor.canParseBrandFromSeries(row)) {
             brand.setTitle(brandUriExtractor.brandTitleFromSeriesTitle(row.getTitle()));
         } else {
             String productId = row.getGuid();
-            throw new RuntimeException("Unexpected state - row with product_id: " + productId + " is not a brand nor is possible to parse a brand from it");
+            throw new RuntimeException("Unexpected state - row with product_id: " + productId +
+                    " is not a brand nor is possible to parse a brand from it");
         }
-        brand.setAliases(describedFieldExtractor.aliasesFrom(row));
+        brand.setAliases(describedFieldExtractor.synthesisedAliasesFrom(row));
         brand.setGenres(describedFieldExtractor.btGenreStringsFrom(row));
         brand.setSpecialization(Specialization.TV);
 
@@ -130,8 +123,6 @@ public class BtVodBrandExtractor implements BtVodDataProcessor<UpdateProgress> {
         brand.addTopicRefs(btVodTagMap.mapGenresToTopicRefs(brand.getGenres()));
         return brand;
     }
-
-
 
     @Override
     public UpdateProgress getResult() {

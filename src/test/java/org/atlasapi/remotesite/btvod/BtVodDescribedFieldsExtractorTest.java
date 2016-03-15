@@ -1,13 +1,8 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Set;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
@@ -19,6 +14,12 @@ import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodPlproduct$productTag;
 import org.atlasapi.remotesite.btvod.model.BtVodProductMetadata;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
+
+import com.metabroadcast.common.base.Maybe;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.hamcrest.core.Is;
 import org.junit.Before;
 import org.junit.Test;
@@ -26,16 +27,21 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodDescribedFieldsExtractorTest {
 
     private static final String BT_VOD_GUID_NAMESPACE = "guid namespace";
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
+
+    private static final String BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE = "synth guid namespace";
+    private static final String BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE = "synth id namespace";
+
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
     private static final String BT_VOD_KEYWORD_NAMESPACE = "keyword namespace";
@@ -71,7 +77,9 @@ public class BtVodDescribedFieldsExtractorTest {
                 new Topic(345L),
                 new Topic(456L),
                 BT_VOD_GUID_NAMESPACE,
+                BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE,
                 BT_VOD_ID_NAMESPACE,
+                BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE,
                 BT_VOD_CONTENT_PROVIDER_NAMESPACE,
                 BT_VOD_GENRE_NAMESPACE,
                 BT_VOD_KEYWORD_NAMESPACE
@@ -190,5 +198,43 @@ public class BtVodDescribedFieldsExtractorTest {
 
         verify(created).setTitle("value");
         assertThat(Iterables.getOnlyElement(topicRef).getTopic(), is(42L));
+    }
+
+    @Test
+    public void testGetAliasesIfExplicitlyCreatedFromEntry() throws Exception {
+        BtVodEntry entry = new BtVodEntry();
+
+        entry.setGuid("guid");
+        entry.setId("id");
+
+        Iterable<Alias> aliases = objectUnderTest.explicitAliasesFrom(entry);
+
+        assertThat(Iterables.size(aliases), is(2));
+
+        assertThat(Iterables.get(aliases, 0).getNamespace(), is(BT_VOD_GUID_NAMESPACE));
+        assertThat(Iterables.get(aliases, 0).getValue(), is(entry.getGuid()));
+
+        assertThat(Iterables.get(aliases, 1).getNamespace(), is(BT_VOD_ID_NAMESPACE));
+        assertThat(Iterables.get(aliases, 1).getValue(), is(entry.getId()));
+    }
+
+    @Test
+    public void testGetAliasesIfSynthesisedFromEntry() throws Exception {
+        BtVodEntry entry = new BtVodEntry();
+
+        entry.setGuid("guid");
+        entry.setId("id");
+
+        Iterable<Alias> aliases = objectUnderTest.synthesisedAliasesFrom(entry);
+
+        assertThat(Iterables.size(aliases), is(2));
+
+        assertThat(Iterables.get(aliases, 0).getNamespace(),
+                is(BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE));
+        assertThat(Iterables.get(aliases, 0).getValue(), is(entry.getGuid()));
+
+        assertThat(Iterables.get(aliases, 1).getNamespace(),
+                is(BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE));
+        assertThat(Iterables.get(aliases, 1).getValue(), is(entry.getId()));
     }
 }

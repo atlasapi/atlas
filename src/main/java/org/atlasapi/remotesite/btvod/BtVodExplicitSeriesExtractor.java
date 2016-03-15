@@ -79,7 +79,7 @@ public class BtVodExplicitSeriesExtractor extends AbstractBtVodSeriesExtractor {
 
         series.addVersions(currentVersions);
 
-        series.addAliases(getDescribedFieldsExtractor().aliasesFrom(row));
+        series.addAliases(getDescribedFieldsExtractor().explicitAliasesFrom(row));
         series.setTitle(titleSanitiser.sanitiseTitle(row.getTitle()));
         getDescribedFieldsExtractor().setDescribedFieldsFrom(row, series);
 

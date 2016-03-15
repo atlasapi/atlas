@@ -1,13 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.atlasapi.remotesite.btvod.BtVodProductType.COLLECTION;
-import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
-import static org.atlasapi.remotesite.btvod.BtVodProductType.FILM;
-import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
-import static org.atlasapi.remotesite.btvod.BtVodProductType.MUSIC;
-import static org.atlasapi.remotesite.btvod.BtVodProductType.SEASON;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -27,8 +19,9 @@ import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -40,8 +33,16 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.primitives.Ints;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.COLLECTION;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.EPISODE;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.FILM;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.HELP;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.MUSIC;
+import static org.atlasapi.remotesite.btvod.BtVodProductType.SEASON;
 
 
 public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
@@ -183,7 +184,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         item.addVersions(versions);
 
         item.addClips(extractTrailer(row));
-        item.addAliases(describedFieldsExtractor.aliasesFrom(row));
+        item.addAliases(describedFieldsExtractor.explicitAliasesFrom(row));
         
         addMissingTopicRefs(item, row);
     }
@@ -318,6 +319,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
         }
 
         describedFieldsExtractor.setDescribedFieldsFrom(row, item);
+        item.setAliases(describedFieldsExtractor.explicitAliasesFrom(row));
 
         Set<Version> versions = versionsExtractor.createVersions(row);
         descriptionAndImageUpdater.updateDescriptionsAndImages(

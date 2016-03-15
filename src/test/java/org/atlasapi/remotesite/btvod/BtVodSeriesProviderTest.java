@@ -1,25 +1,25 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.hamcrest.core.Is.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodSeriesProviderTest {
@@ -113,7 +113,7 @@ public class BtVodSeriesProviderTest {
 
         seriesProvider.updateSeriesFromEpisode(episodeRow, episode);
 
-        verify(descriptionAndImageUpdater).update(EXPLICIT_SERIES, episode);
+        verify(descriptionAndImageUpdater).update(EXPLICIT_SERIES, episode, episodeRow);
     }
 
     @Test

@@ -172,7 +172,7 @@ public class EquivTaskModule {
     
     private @Autowired KafkaMessagingModule messaging;
 
-    private final int NUM_OF_THREADS_FOR_STARTUP_JOBS = 10;
+    private final int NUM_OF_THREADS_FOR_STARTUP_JOBS = 4;
     
     @PostConstruct
     public void scheduleUpdater() {

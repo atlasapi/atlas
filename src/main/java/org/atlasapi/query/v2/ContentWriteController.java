@@ -20,6 +20,7 @@ import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.query.content.ContentWriteExecutor;
 
 import com.metabroadcast.common.base.Maybe;
@@ -48,21 +49,22 @@ public class ContentWriteController {
 
     private final ApplicationConfigurationFetcher appConfigFetcher;
     private final ModelReader reader;
-
-    private ModelTransformer<Description, Content> transformer;
-
+    private final ModelTransformer<Description, Content> transformer;
     private final ContentWriteExecutor writeExecutor;
+    private final LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
 
     public ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
             ModelReader reader,
             ModelTransformer<Description, Content> transformer,
-            ContentWriteExecutor contentWriteExecutor
+            ContentWriteExecutor contentWriteExecutor,
+            LookupBackedContentIdGenerator lookupBackedContentIdGenerator
     ) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
         this.reader = checkNotNull(reader);
         this.transformer = checkNotNull(transformer);
         this.writeExecutor = checkNotNull(contentWriteExecutor);
+        this.lookupBackedContentIdGenerator = checkNotNull(lookupBackedContentIdGenerator);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
@@ -109,9 +111,11 @@ public class ContentWriteController {
             return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
 
-        Long contentId;
+        Long contentId = lookupBackedContentIdGenerator.getId(content);
+        content.setId(contentId);
+
         try {
-            contentId = writeExecutor.writeContent(content, description.getType(), merge);
+            writeExecutor.writeContent(content, description.getType(), merge);
         } catch (Exception e) {
             log.error("Error reading input for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());

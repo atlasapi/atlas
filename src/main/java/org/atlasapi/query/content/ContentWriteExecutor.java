@@ -29,6 +29,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.joda.time.Duration;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ContentWriteExecutor {
@@ -53,7 +54,9 @@ public class ContentWriteExecutor {
         this.eventResolver = checkNotNull(eventResolver);
     }
 
-    public Long writeContent(Content content, String type, boolean shouldMerge) {
+    public void writeContent(Content content, String type, boolean shouldMerge) {
+        checkArgument(content.getId() != null, "Cannot write content without an ID");
+
         Content updatedContent = updateEventPublisher(content);
 
         Maybe<Identified> identified = resolveExisting(updatedContent);
@@ -70,7 +73,6 @@ public class ContentWriteExecutor {
         } else {
             writer.createOrUpdate((Container) updatedContent);
         }
-        return updatedContent.getId();
     }
 
     private Content updateEventPublisher(Content content) {

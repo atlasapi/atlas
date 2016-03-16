@@ -94,6 +94,7 @@ import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.PeopleResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
@@ -152,6 +153,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import tva.metadata._2010.TVAMainType;
 
+import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
+
 @Configuration
 @Import( { WatermarkModule.class } )
 public class QueryWebModule {
@@ -163,7 +166,8 @@ public class QueryWebModule {
     private @Autowired DatabasedMongo mongo;
     private @Autowired ContentGroupWriter contentGroupWriter;
     private @Autowired ContentGroupResolver contentGroupResolver;
-    private @Autowired ContentWriter contentWriter;
+    private @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) ContentWriter contentWriter;
+    private @Autowired LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ChannelResolver channelResolver;
@@ -325,7 +329,8 @@ public class QueryWebModule {
                         scheduleWriter,
                         channelResolver,
                         eventResolver
-                )
+                ),
+                lookupBackedContentIdGenerator
         );
     }
 

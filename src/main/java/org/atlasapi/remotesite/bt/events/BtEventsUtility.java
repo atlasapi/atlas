@@ -1,14 +1,16 @@
 package org.atlasapi.remotesite.bt.events;
 
+import java.util.List;
 import java.util.Map;
 
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.events.EventsUtility;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
-import org.joda.time.DateTime;
 
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import org.joda.time.DateTime;
 
 
 public final class BtEventsUtility extends EventsUtility<BtSportType> {
@@ -52,14 +54,27 @@ public final class BtEventsUtility extends EventsUtility<BtSportType> {
             .put("Sepang Circuit", "http://dbpedia.org/resources/Sepang_Circuit")
             .put("Comunitat Valenciana", "http://dbpedia.org/resources/Circuit_Ricardo_Tormo")
             .build();
-    private static final Map<BtSportType, Map<String, String>> EVENT_GROUPS_LOOKUP = ImmutableMap.<BtSportType, Map<String, String>>builder()
-            .put(BtSportType.UFC, ImmutableMap.of(
-                    "UFC", "http://dbpedia.org/resources/UFC"
+    private static final Map<BtSportType, List<EventGroup>> EVENT_GROUPS_LOOKUP = ImmutableMap.
+            <BtSportType, List<EventGroup>>builder()
+            .put(BtSportType.UFC, ImmutableList.of(
+                    EventGroup.ofDefaultNs(
+                            "UFC",
+                            "http://dbpedia.org/resources/UFC"
+                    )
             ))
-            .put(BtSportType.MOTO_GP, ImmutableMap.of(
-                    "Moto GP", "http://dbpedia.org/resources/Moto_gp", 
-                    "Motorsport", "http://dbpedia.org/resources/Motorsport",
-                    "Grand Prix motorcycle racing", "http://dbpedia.org/resources/Grand_Prix_motorcycle_racing"
+            .put(BtSportType.MOTO_GP, ImmutableList.of(
+                    EventGroup.ofDefaultNs(
+                            "Moto GP",
+                            "http://dbpedia.org/resources/Moto_gp"
+                    ),
+                    EventGroup.ofDefaultNs(
+                            "Motorsport",
+                            "http://dbpedia.org/resources/Motorsport"
+                    ),
+                    EventGroup.ofDefaultNs(
+                            "Grand Prix motorcycle racing",
+                            "http://dbpedia.org/resources/Grand_Prix_motorcycle_racing"
+                    )
             ))
             .build();
 
@@ -94,7 +109,7 @@ public final class BtEventsUtility extends EventsUtility<BtSportType> {
     }
 
     @Override
-    public Optional<Map<String, String>> fetchEventGroupUrls(BtSportType sport) {
+    public Optional<List<EventGroup>> fetchEventGroupUrls(BtSportType sport) {
         return Optional.fromNullable(EVENT_GROUPS_LOOKUP.get(sport));
     }
 

@@ -1,32 +1,39 @@
 package org.atlasapi.remotesite.events;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.atlasapi.media.entity.Publisher.DBPEDIA;
-
-import java.util.Map;
-import java.util.Map.Entry;
+import java.util.List;
 import java.util.Set;
 
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
-import org.joda.time.DateTime;
+
+import com.metabroadcast.common.base.Maybe;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
+import org.joda.time.DateTime;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.media.entity.Publisher.DBPEDIA;
 
 
 public abstract class EventsUtility<S> {
 
     private static final String DBPEDIA_NAMESPACE = "dbpedia";
     
-    private final Function<Entry<String, String>, Topic> topicLookup = new Function<Entry<String, String>, Topic>() {
+    private final Function<EventGroup, Topic> topicLookup = new Function<EventGroup, Topic>() {
         @Override
-        public Topic apply(Entry<String, String> input) {
-            return resolveOrCreateDbpediaTopic(input.getKey(), Topic.Type.SUBJECT, input.getValue());
+        public Topic apply(EventGroup input) {
+            return resolveOrCreateDbpediaTopic(
+                    input.getTitle(),
+                    Topic.Type.SUBJECT,
+                    input.getNamespace(),
+                    input.getValue(),
+                    input.getPublisher()
+            );
         }
     };
     private final TopicStore topicStore;
@@ -60,7 +67,9 @@ public abstract class EventsUtility<S> {
         if (!value.isPresent()) {
             return Optional.absent();
         }
-        return Optional.of(resolveOrCreateDbpediaTopic(location, Topic.Type.PLACE, value.get()));
+        return Optional.of(resolveOrCreateDbpediaTopic(
+                location, Topic.Type.PLACE, DBPEDIA_NAMESPACE, value.get(), DBPEDIA
+        ));
     }
     
     public abstract Optional<String> fetchLocationUrl(String location);
@@ -76,21 +85,24 @@ public abstract class EventsUtility<S> {
      * values found for the provided sport
      */
     public Optional<Set<Topic>> parseEventGroups(S sport) {
-        Optional<Map<String, String>> eventGroups = fetchEventGroupUrls(sport);
+        Optional<List<EventGroup>> eventGroups = fetchEventGroupUrls(sport);
         if (!eventGroups.isPresent()) {
             return Optional.absent();
         }
-        return Optional.<Set<Topic>>of(ImmutableSet.copyOf(Iterables.transform(eventGroups.get().entrySet(), topicLookup)));
+        return Optional.<Set<Topic>>of(ImmutableSet.copyOf(Iterables.transform(
+                eventGroups.get(), topicLookup
+        )));
     }
     
-    public abstract Optional<Map<String, String>> fetchEventGroupUrls(S sport);
+    public abstract Optional<List<EventGroup>> fetchEventGroupUrls(S sport);
     
-    private Topic resolveOrCreateDbpediaTopic(String title, Topic.Type topicType, String value) {
-        Maybe<Topic> resolved = topicStore.topicFor(DBPEDIA_NAMESPACE, value);
+    private Topic resolveOrCreateDbpediaTopic(String title, Topic.Type topicType, String namespace,
+            String value, Publisher publisher) {
+        Maybe<Topic> resolved = topicStore.topicFor(namespace, value);
         if (resolved.hasValue()) {
             Topic topic = resolved.requireValue();
             
-            topic.setPublisher(DBPEDIA);
+            topic.setPublisher(publisher);
             topic.setTitle(title);
             topic.setType(topicType);
             
@@ -100,9 +112,48 @@ public abstract class EventsUtility<S> {
         }
         throw new IllegalStateException(String.format(
                 "Topic store failed to create Topic with namespace %s and value %s", 
-                DBPEDIA_NAMESPACE, 
+                namespace,
                 value
         ));
     }
 
+    public static class EventGroup {
+
+        private final String title;
+        private final String namespace;
+        private final String value;
+        private final Publisher publisher;
+
+        private EventGroup(String title, String namespace, String value, Publisher publisher) {
+            this.title = title;
+            this.namespace = namespace;
+            this.value = value;
+            this.publisher = publisher;
+        }
+
+        public static EventGroup of(String title, String namespace, String value,
+                Publisher publisher) {
+            return new EventGroup(title, namespace, value, publisher);
+        }
+
+        public static EventGroup ofDefaultNs(String title, String value) {
+            return new EventGroup(title, DBPEDIA_NAMESPACE, value, DBPEDIA);
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getNamespace() {
+            return namespace;
+        }
+
+        public String getValue() {
+            return value;
+        }
+
+        public Publisher getPublisher() {
+            return publisher;
+        }
+    }
 }

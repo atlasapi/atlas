@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 
 import org.atlasapi.media.entity.Episode;
@@ -15,6 +13,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Table;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class BtVodSeriesProvider {
 
@@ -93,7 +93,7 @@ public class BtVodSeriesProvider {
         }
         Series series = seriesOptional.get();
 
-        descriptionAndImageUpdater.update(series, episode);
+        descriptionAndImageUpdater.update(series, episode, episodeRow);
         certificateUpdater.updateCertificates(series, episode);
         topicUpdater.updateTopics(series, episode.getTopicRefs());
 

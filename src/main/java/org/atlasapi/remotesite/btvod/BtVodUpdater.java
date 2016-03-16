@@ -47,6 +47,9 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodEntryMatchingPredicate kidsPredicate;
     private final BtVodTagMap btVodTagMap;
 
+    private final String btVodDescriptionsGuidAliasNamespace;
+    private final String btVodImagesGuidAliasNamespace;
+
     public BtVodUpdater(
             ContentWriter contentWriter,
             BtVodData vodData,
@@ -65,7 +68,9 @@ public class BtVodUpdater extends ScheduledTask {
             BtMpxVodClient mpxClient,
             TopicQueryResolver topicQueryResolver,
             BtVodEntryMatchingPredicate kidsPredicate,
-            BtVodTagMap btVodTagMap
+            BtVodTagMap btVodTagMap,
+            String btVodDescriptionsGuidAliasNamespace,
+            String btVodImagesGuidAliasNamespace
     ) {
         this.contentWriter = checkNotNull(contentWriter);
         this.newFeedContentMatchingPredicate = checkNotNull(newFeedContentMatchingPredicate);
@@ -85,6 +90,8 @@ public class BtVodUpdater extends ScheduledTask {
         this.topicQueryResolver = checkNotNull(topicQueryResolver);
         this.kidsPredicate = checkNotNull(kidsPredicate);
         this.btVodTagMap = checkNotNull(btVodTagMap);
+        this.btVodDescriptionsGuidAliasNamespace = checkNotNull(btVodDescriptionsGuidAliasNamespace);
+        this.btVodImagesGuidAliasNamespace = checkNotNull(btVodImagesGuidAliasNamespace);
     }
 
     @Override
@@ -179,7 +186,10 @@ public class BtVodUpdater extends ScheduledTask {
                 brandUriExtractor,
                 brandExtractor.getProcessedBrands(),
                 brandExtractor.getParentGuidToBrand(),
-                new HierarchyDescriptionAndImageUpdater(),
+                new HierarchyDescriptionAndImageUpdater(
+                        btVodDescriptionsGuidAliasNamespace,
+                        btVodImagesGuidAliasNamespace
+                ),
                 new CertificateUpdater(),
                 topicUpdater,
                 listeners
@@ -274,7 +284,10 @@ public class BtVodUpdater extends ScheduledTask {
                 explicitSeriesExtractor.getExplicitSeries(),
                 synthesizedSeriesExtractor.getSynthesizedSeries(),
                 seriesUriExtractor,
-                new HierarchyDescriptionAndImageUpdater(),
+                new HierarchyDescriptionAndImageUpdater(
+                        btVodDescriptionsGuidAliasNamespace,
+                        btVodImagesGuidAliasNamespace
+                ),
                 new CertificateUpdater(),
                 brandProvider,
                 topicUpdater,

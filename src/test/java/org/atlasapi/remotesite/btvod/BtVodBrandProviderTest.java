@@ -1,14 +1,16 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -16,10 +18,8 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class BtVodBrandProviderTest {
@@ -69,14 +69,14 @@ public class BtVodBrandProviderTest {
     public void testUpdateDescriptionsAndImagesFromSeries() throws Exception {
         brandProvider.updateBrandFromSeries(seriesRow, series);
 
-        verify(descriptionAndImageUpdater).update(brand, series);
+        verify(descriptionAndImageUpdater).update(brand, series, seriesRow);
     }
 
     @Test
     public void testUpdateDescriptionsAndImagesFromEpisode() throws Exception {
-        brandProvider.updateBrandFromEpisode(seriesRow, episode);
+        brandProvider.updateBrandFromEpisode(episodeRow, episode);
 
-        verify(descriptionAndImageUpdater).update(brand, episode);
+        verify(descriptionAndImageUpdater).update(brand, episode, episodeRow);
     }
 
     @Test

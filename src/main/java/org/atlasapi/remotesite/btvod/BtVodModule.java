@@ -46,17 +46,35 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BtVodModule {
+
     private static final String BT_VOD_UPDATER_ENV = "prod";
     private static final String BT_VOD_UPDATER_CONFIG = "config1";
 
     private static final String BT_VOD_NAMESPACES_PREFIX = "gb:bt:tv:mpx:";
-    private static final String BT_VOD_FEED_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "feed:%s:%s";
-    private static final String BT_VOD_APP_CATEGORY_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "category:%s:%s";
-    private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "contentProvider:%s:%s";
-    private static final String BT_VOD_GENRE_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "genre:%s:%s";
-    private static final String BT_VOD_KEYWORD_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "keyword:%s:%s";
-    private static final String BT_VOD_GUID_ALIAS_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "guid:%s:%s";
-    private static final String BT_VOD_ID_ALIAS_NAMESPACE_FORMAT = BT_VOD_NAMESPACES_PREFIX + "id:%s:%s";
+
+    private static final String BT_VOD_FEED_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "feed:%s:%s";
+    private static final String BT_VOD_APP_CATEGORY_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "category:%s:%s";
+    private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "contentProvider:%s:%s";
+    private static final String BT_VOD_GENRE_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "genre:%s:%s";
+    private static final String BT_VOD_KEYWORD_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "keyword:%s:%s";
+    private static final String BT_VOD_GUID_ALIAS_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "guid:%s:%s";
+    private static final String BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "synthesisedFrom:guid:%s:%s";
+    private static final String BT_VOD_ID_ALIAS_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "id:%s:%s";
+    private static final String BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "synthesisedFrom:id:%s:%s";
+    private static final String BT_VOD_DESCRIPTIONS_GUID_ALIAS_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "descriptions:guid:%s:%s";
+    private static final String BT_VOD_IMAGES_GUID_ALIAS_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "images:guid:%s:%s";
+
     private static final String BT_VOD_NEW_FEED = "new";
     private static final String BT_VOD_KIDS_TOPIC = "kids";
     private static final String BT_VOD_CATCHUP_TOPIC = "subscription-catchup";
@@ -84,7 +102,6 @@ public class BtVodModule {
     
     private static final String URI_PREFIX = "http://vod.bt.com/";
     private static final String TVE_URI_PREFIX_FORMAT = "http://%s/";
-    private static final ImmutableSet<String> SEASON_PRODUCT_OFFERING_TYPES = ImmutableSet.of("season", "season-est");
     private static final String SUBSCRIPTION_CATCHUP_SCHEDULER_CHANNEL = "TV Replay";
 
     private static final RepetitionRule TVE_MPX_REPETITION_RULE = RepetitionRules.every(Duration.standardHours(6));
@@ -202,11 +219,21 @@ public class BtVodModule {
                 seriesUriExtractor(URI_PREFIX),
                 versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
                 describedFieldsExtractor(Publisher.BT_VOD, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG,
-                        btVodMpxProdFeedBaseUrl, newFeedSuffix, btVodMpxProdFeedQParam, btVodMpxProdFeedBaseUrl),
+                        newFeedSuffix, btVodMpxProdFeedQParam, btVodMpxProdFeedBaseUrl),
                 mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
                 topicQueryResolver,
                 BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY),
-                new BtVodTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics"))
+                new BtVodTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")),
+                String.format(
+                        BT_VOD_DESCRIPTIONS_GUID_ALIAS_NAMESPACE_FORMAT,
+                        BT_VOD_UPDATER_ENV,
+                        BT_VOD_UPDATER_CONFIG
+                ),
+                String.format(
+                        BT_VOD_IMAGES_GUID_ALIAS_NAMESPACE_FORMAT,
+                        BT_VOD_UPDATER_ENV,
+                        BT_VOD_UPDATER_CONFIG
+                )
         );
     }
 
@@ -311,7 +338,6 @@ public class BtVodModule {
                         publisher,
                         envName,
                         conf,
-                        feedBaseUrl,
                         newFeedSuffix,
                         feedQParam,
                         baseUrlForItemLookup
@@ -319,7 +345,9 @@ public class BtVodModule {
                 mpxVodClient(baseUrlForItemLookup, feedNameForItemLookup, btVodMpxProdFeedQParam),
                 topicQueryResolver,
                 BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY),
-                new BtVodTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics"))
+                new BtVodTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")),
+                String.format(BT_VOD_DESCRIPTIONS_GUID_ALIAS_NAMESPACE_FORMAT, envName, conf),
+                String.format(BT_VOD_IMAGES_GUID_ALIAS_NAMESPACE_FORMAT, envName, conf)
         ).withName(
                 String.format(
                         "BT TVE VoD Updater for %s",
@@ -364,7 +392,6 @@ public class BtVodModule {
             Publisher publisher,
             String env,
             String conf,
-            String baseUrl,
             String newFeedSuffix,
             String qParam,
             String btVodMpxProdFeedBaseUrlForGuidLookup
@@ -383,7 +410,9 @@ public class BtVodModule {
                 topicFor(btVodAppCategoryNamespaceFor(env, conf), BT_VOD_TV_BOXSETS_TOPIC, publisher),
                 topicFor(btVodAppCategoryNamespaceFor(env, conf), BT_VOD_CATCHUP_TOPIC, publisher),
                 String.format(BT_VOD_GUID_ALIAS_NAMESPACE_FORMAT, env, conf),
+                String.format(BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE_FORMAT, env, conf),
                 String.format(BT_VOD_ID_ALIAS_NAMESPACE_FORMAT, env, conf),
+                String.format(BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE_FORMAT, env, conf),
                 String.format(BT_VOD_CONTENT_PROVIDER_NAMESPACE_FORMAT, env, conf),
                 String.format(BT_VOD_GENRE_NAMESPACE_FORMAT, env, conf),
                 String.format(BT_VOD_KEYWORD_NAMESPACE_FORMAT, env, conf)

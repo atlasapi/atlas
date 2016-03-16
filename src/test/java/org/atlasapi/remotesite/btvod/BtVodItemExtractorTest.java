@@ -1,16 +1,5 @@
 package org.atlasapi.remotesite.btvod;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anySet;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Matchers.isA;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.Set;
@@ -40,6 +29,13 @@ import org.atlasapi.remotesite.btvod.model.BtVodProductPricingPlan;
 import org.atlasapi.remotesite.btvod.model.BtVodProductPricingTier;
 import org.atlasapi.remotesite.btvod.model.BtVodProductRating;
 import org.atlasapi.remotesite.btvod.model.BtVodProductScope;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
@@ -49,12 +45,16 @@ import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 import org.mockito.Matchers;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Sets;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anySet;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Matchers.isA;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 
 public class BtVodItemExtractorTest {
@@ -73,6 +73,8 @@ public class BtVodItemExtractorTest {
     private static final Topic NEW_TOPIC = new Topic(123L);
     private static final String BT_VOD_GUID_NAMESPACE = "guid namespace";
     private static final String BT_VOD_ID_NAMESPACE = "id namespace";
+    private static final String BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE = "synth guid namespace";
+    private static final String BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE = "synth id namespace";
     private static final String BT_VOD_CONTENT_PROVIDER_NAMESPACE = "content provider namespace";
     private static final String BT_VOD_GENRE_NAMESPACE = "genre namespace";
     private static final String BT_VOD_KEYWORD_NAMESPACE = "keyword namespace";
@@ -134,7 +136,9 @@ public class BtVodItemExtractorTest {
                         new Topic(345L),
                         new Topic(456L),
                         BT_VOD_GUID_NAMESPACE,
+                        BT_VOD_SYNTHESISED_FROM_GUID_ALIAS_NAMESPACE,
                         BT_VOD_ID_NAMESPACE,
+                        BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE,
                         BT_VOD_CONTENT_PROVIDER_NAMESPACE,
                         BT_VOD_GENRE_NAMESPACE,
                         BT_VOD_KEYWORD_NAMESPACE

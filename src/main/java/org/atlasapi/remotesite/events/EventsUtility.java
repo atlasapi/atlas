@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.events;
 import java.util.List;
 import java.util.Set;
 
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
@@ -27,7 +28,11 @@ public abstract class EventsUtility<S> {
         @Override
         public Topic apply(EventGroup input) {
             return resolveOrCreateDbpediaTopic(
-                    input.getTitle(), Topic.Type.SUBJECT, input.getNamespace(), input.getValue()
+                    input.getTitle(),
+                    Topic.Type.SUBJECT,
+                    input.getNamespace(),
+                    input.getValue(),
+                    input.getPublisher()
             );
         }
     };
@@ -63,7 +68,7 @@ public abstract class EventsUtility<S> {
             return Optional.absent();
         }
         return Optional.of(resolveOrCreateDbpediaTopic(
-                location, Topic.Type.PLACE, DBPEDIA_NAMESPACE, value.get()
+                location, Topic.Type.PLACE, DBPEDIA_NAMESPACE, value.get(), DBPEDIA
         ));
     }
     
@@ -92,12 +97,12 @@ public abstract class EventsUtility<S> {
     public abstract Optional<List<EventGroup>> fetchEventGroupUrls(S sport);
     
     private Topic resolveOrCreateDbpediaTopic(String title, Topic.Type topicType, String namespace,
-            String value) {
+            String value, Publisher publisher) {
         Maybe<Topic> resolved = topicStore.topicFor(namespace, value);
         if (resolved.hasValue()) {
             Topic topic = resolved.requireValue();
             
-            topic.setPublisher(DBPEDIA);
+            topic.setPublisher(publisher);
             topic.setTitle(title);
             topic.setType(topicType);
             
@@ -117,19 +122,22 @@ public abstract class EventsUtility<S> {
         private final String title;
         private final String namespace;
         private final String value;
+        private final Publisher publisher;
 
-        private EventGroup(String title, String namespace, String value) {
+        private EventGroup(String title, String namespace, String value, Publisher publisher) {
             this.title = title;
             this.namespace = namespace;
             this.value = value;
+            this.publisher = publisher;
         }
 
-        public static EventGroup of(String title, String namespace, String value) {
-            return new EventGroup(title, namespace, value);
+        public static EventGroup of(String title, String namespace, String value,
+                Publisher publisher) {
+            return new EventGroup(title, namespace, value, publisher);
         }
 
         public static EventGroup ofDefaultNs(String title, String value) {
-            return new EventGroup(title, DBPEDIA_NAMESPACE, value);
+            return new EventGroup(title, DBPEDIA_NAMESPACE, value, DBPEDIA);
         }
 
         public String getTitle() {
@@ -142,6 +150,10 @@ public abstract class EventsUtility<S> {
 
         public String getValue() {
             return value;
+        }
+
+        public Publisher getPublisher() {
+            return publisher;
         }
     }
 }

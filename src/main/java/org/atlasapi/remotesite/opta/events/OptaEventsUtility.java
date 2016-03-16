@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.opta.events;
 import java.util.List;
 import java.util.Map;
 
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.events.EventsUtility;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
@@ -20,7 +21,8 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
     private static final String EVENT_URI_BASE = "http://optasports.com/events/";
     private static final String TEAM_URI_BASE = "http://optasports.com/teams/";
 
-    private static final String COMPETITION_NAMESPACE = "dbpedia:competition";
+    private static final String COMPETITION_NAMESPACE = "com:optasports:competition";
+    private static final Publisher COMPETITION_EVENT_GROUP_PUBLISHER = Publisher.OPTA;
 
     private static final Map<OptaSportType, Duration> DURATION_MAPPING = 
             ImmutableMap.<OptaSportType, Duration>builder()
@@ -195,10 +197,15 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                             "Rugby Football",
                             "http://dbpedia.org/resources/Rugby_football"
                     ),
+                    EventGroup.ofDefaultNs(
+                            "English Premiership (rugby union)",
+                            "http://dbpedia.org/resources/English_Premiership_(rugby_union)"
+                    ),
                     EventGroup.of(
                             "English Premiership (rugby union)",
                             COMPETITION_NAMESPACE,
-                            "http://dbpedia.org/resources/English_Premiership_(rugby_union)"
+                            "http://optasports.com/competition/English_Premiership_(rugby_union)",
+                            COMPETITION_EVENT_GROUP_PUBLISHER
                     )
                 ))
             .put(OptaSportType.FOOTBALL_SCOTTISH_PREMIER_LEAGUE, ImmutableList.of(
@@ -210,10 +217,15 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                             "Association Football",
                             "http://dbpedia.org/resources/Association_football"
                     ),
+                    EventGroup.ofDefaultNs(
+                            "Scottish Premier League",
+                            "http://dbpedia.org/resources/Scottish_Premier_League"
+                    ),
                     EventGroup.of(
                             "Scottish Premier League",
                             COMPETITION_NAMESPACE,
-                            "http://dbpedia.org/resources/Scottish_Premier_League"
+                            "http://optasports.com/competition/Scottish_Premier_League",
+                            COMPETITION_EVENT_GROUP_PUBLISHER
                     )
             ))
             .put(OptaSportType.FOOTBALL_GERMAN_BUNDESLIGA, ImmutableList.of(
@@ -225,10 +237,15 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                             "Association Football",
                             "http://dbpedia.org/resources/Association_football"
                     ),
+                    EventGroup.ofDefaultNs(
+                            "German Bundesliga",
+                            "http://dbpedia.org/resources/German_Bundesliga"
+                    ),
                     EventGroup.of(
                             "German Bundesliga",
                             COMPETITION_NAMESPACE,
-                            "http://dbpedia.org/resources/German_Bundesliga"
+                            "http://optasports.com/competition/German_Bundesliga",
+                            COMPETITION_EVENT_GROUP_PUBLISHER
                     )
             ))
             .put(OptaSportType.FOOTBALL_PREMIER_LEAGUE, ImmutableList.of(
@@ -240,10 +257,15 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                             "Association Football",
                             "http://dbpedia.org/resources/Association_football"
                     ),
+                    EventGroup.ofDefaultNs(
+                            "Premier League",
+                            "http://dbpedia.org/resources/Premier_League"
+                    ),
                     EventGroup.of(
                             "Premier League",
                             COMPETITION_NAMESPACE,
-                            "http://dbpedia.org/resources/Premier_League"
+                            "http://optasports.com/competition/Premier_League",
+                            COMPETITION_EVENT_GROUP_PUBLISHER
                     )
             ))
             .put(OptaSportType.FOOTBALL_CHAMPIONS_LEAGUE, ImmutableList.of(
@@ -255,10 +277,15 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                             "Association Football",
                             "http://dbpedia.org/resources/Association_football"
                     ),
+                    EventGroup.ofDefaultNs(
+                            "UEFA Champions League",
+                            "http://dbpedia.org/resources/UEFA_Champions_League"
+                    ),
                     EventGroup.of(
                             "UEFA Champions League",
                             COMPETITION_NAMESPACE,
-                            "http://dbpedia.org/resources/UEFA_Champions_League"
+                            "http://optasports.com/competition/UEFA_Champions_League",
+                            COMPETITION_EVENT_GROUP_PUBLISHER
                     )
             ))
             .put(OptaSportType.FOOTBALL_EUROPA_LEAGUE, ImmutableList.of(
@@ -270,10 +297,15 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                             "Association Football",
                             "http://dbpedia.org/resources/Association_football"
                     ),
+                    EventGroup.ofDefaultNs(
+                            "UEFA Europa League",
+                            "http://dbpedia.org/resources/UEFA_Europa_League"
+                    ),
                     EventGroup.of(
                             "UEFA Europa League",
                             COMPETITION_NAMESPACE,
-                            "http://dbpedia.org/resources/UEFA_Europa_League"
+                            "http://optasports.com/competition/UEFA_Europa_League",
+                            COMPETITION_EVENT_GROUP_PUBLISHER
                     )
             ))
             .put(OptaSportType.FOOTBALL_FA_CUP, ImmutableList.of(
@@ -285,10 +317,15 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
                             "Association Football",
                             "http://dbpedia.org/resources/Association_football"
                     ),
+                    EventGroup.ofDefaultNs(
+                            "FA Cup",
+                            "http://dbpedia.org/resources/FA_Cup"
+                    ),
                     EventGroup.of(
                             "FA Cup",
                             COMPETITION_NAMESPACE,
-                            "http://dbpedia.org/resources/FA_Cup"
+                            "http://optasports.com/competition/FA_Cup",
+                            COMPETITION_EVENT_GROUP_PUBLISHER
                     )
             ))
             .build();

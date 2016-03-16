@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.opta.events.sports;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.net.URL;
@@ -31,13 +28,8 @@ import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchInfo.MatchDat
 import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsTeamData;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsTeamDataDeserializer;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.junit.Before;
-import org.junit.Test;
-import org.mockito.Mockito;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
+
+import com.metabroadcast.common.base.Maybe;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -49,8 +41,19 @@ import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
-import com.metabroadcast.common.base.Maybe;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.junit.Before;
+import org.junit.Test;
+import org.mockito.Mockito;
+import org.mockito.invocation.InvocationOnMock;
+import org.mockito.stubbing.Answer;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.when;
 
 public class OptaSportsDataHandlerTest {
 
@@ -86,16 +89,27 @@ public class OptaSportsDataHandlerTest {
     
     @Before
     public void setup() {
-        Mockito.when(topicStore.topicFor(Mockito.matches("dbpedia"), Mockito.anyString())).then(new Answer<Maybe<Topic>>() {
+        when(topicStore.topicFor(Mockito.matches("dbpedia"), Mockito.anyString()))
+                .then(new Answer<Maybe<Topic>>() {
             @Override
             public Maybe<Topic> answer(InvocationOnMock invocation) throws Throwable {
-                Topic topic = new Topic(1234l);
-                topic.setNamespace("dbpedia");
-                topic.setValue((String) invocation.getArguments()[1]);
-                return Maybe.just(topic);
+                    Topic topic = new Topic(1234L);
+                    topic.setNamespace("dbpedia");
+                    topic.setValue((String) invocation.getArguments()[1]);
+                    return Maybe.just(topic);
             }
         });
-        Mockito.when(organisationStore.organisation(Mockito.anyString())).thenReturn(Optional.<Organisation>absent());
+        when(topicStore.topicFor(eq("com:optasports:competition"), anyString()))
+                .then(new Answer<Maybe<Topic>>() {
+            @Override
+            public Maybe<Topic> answer(InvocationOnMock invocation) throws Throwable {
+                    Topic topic = new Topic(5L);
+                    topic.setNamespace("com:optasports:competition");
+                    topic.setValue((String) invocation.getArguments()[1]);
+                    return Maybe.just(topic);
+            }
+        });
+        when(organisationStore.organisation(Mockito.anyString())).thenReturn(Optional.<Organisation>absent());
     }
     
     

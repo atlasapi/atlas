@@ -214,6 +214,7 @@ public class EquivTaskModule {
             scheduleEquivalenceJob(publisherUpdateTask(VF_ITV).withName("VF ITV Equivalence Updater"), VF_ITV_EQUIVALENCE_REPETITION, jobsAtStartup);
             scheduleEquivalenceJob(publisherUpdateTask(VF_VIACOM).withName("VF VIACOM Equivalence Updater"), VF_VIACOM_EQUIVALENCE_REPETITION, jobsAtStartup);
             scheduleEquivalenceJob(publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"), VF_VUBIQUITY_EQUIVALENCE_REPETITION, jobsAtStartup);
+            scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
 
             scheduleEquivalenceJob(taskBuilder(0, 7)
                     .withPublishers(YOUVIEW)

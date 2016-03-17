@@ -75,8 +75,11 @@ public class HierarchyDescriptionAndImageUpdater {
         String existingDescription = target.getDescription();
         String existingLongDescription = target.getLongDescription();
         Set<String> existingImages = Sets.newHashSet();
-        for (Image image : target.getImages()) {
-            existingImages.add(image.getCanonicalUri());
+
+        if (target.getImages() != null) {
+            for (Image image : target.getImages()) {
+                existingImages.add(image.getCanonicalUri());
+            }
         }
 
         boolean updatedDescription = updateDescription(

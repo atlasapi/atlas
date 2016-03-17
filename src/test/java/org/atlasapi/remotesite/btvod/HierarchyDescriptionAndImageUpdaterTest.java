@@ -356,6 +356,26 @@ public class HierarchyDescriptionAndImageUpdaterTest {
         assertThat(brand.getAliases().size(), is(0));
     }
 
+    @Test
+    public void testDoNotThrowNullPointerExceptionForNullImages() throws Exception {
+        Brand brand = new Brand();
+
+        brand.setCanonicalUri("uri");
+        brand.setDescription("description");
+        brand.setLongDescription("longDescription");
+
+        BtVodCollection collection = new BtVodCollection(
+                "guid",
+                DateTime.now(),
+                brand.getDescription(),
+                brand.getLongDescription(),
+                ImmutableSet.<Image>of()
+        );
+
+        updater.update(brand, collection);
+        assertThat(brand.getAliases().size(), is(0));
+    }
+
     private Brand getBrand(String uri, String description, String longDescription,
             Image... images) {
         Brand brand = new Brand();

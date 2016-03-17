@@ -259,7 +259,12 @@ public class ContentWriteController {
     }
 
     private void mergeVersions(Version existing, Version update) {
-        existing.setDuration(Duration.standardSeconds(update.getDuration().longValue()));
+        Integer updatedDuration = update.getDuration();
+        if (updatedDuration != null) {
+            existing.setDuration(Duration.standardSeconds(updatedDuration));
+        } else {
+            existing.setDuration(null);
+        }
         existing.setManifestedAs(update.getManifestedAs());
         existing.setBroadcasts(update.getBroadcasts());
         existing.setSegmentEvents(update.getSegmentEvents());

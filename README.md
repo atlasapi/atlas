@@ -36,7 +36,7 @@ So, to get everything built and ready:
 This will download all the dependencies, compile the code and run the tests (make sure mongo's setup). To actually run the project locally:
 
     mvn jetty:run -Dprocessing.config=true -Dupdaters.bbc.enabled=true -Djetty.port=8282 # Atlas processing
-    mvn jetty:run                                                                        # Atlas front-end
+    mvn jetty:run -Dprocessing.config=false                                              # Atlas front-end
     
 This will startup Atlas locally using the lovely [Jetty](http://jetty.codehaus.org/jetty/).
 

@@ -70,8 +70,10 @@ public class BtVodModule {
             BT_VOD_NAMESPACES_PREFIX + "id:%s:%s";
     private static final String BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE_FORMAT =
             BT_VOD_NAMESPACES_PREFIX + "synthesisedFrom:id:%s:%s";
-    private static final String BT_VOD_DESCRIPTIONS_GUID_ALIAS_NAMESPACE_FORMAT =
-            BT_VOD_NAMESPACES_PREFIX + "descriptions:guid:%s:%s";
+    private static final String BT_VOD_DESCRIPTION_GUID_ALIAS_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "description:guid:%s:%s";
+    private static final String BT_VOD_LONG_DESCRIPTION_GUID_ALIAS_NAMESPACE_FORMAT =
+            BT_VOD_NAMESPACES_PREFIX + "longDescription:guid:%s:%s";
     private static final String BT_VOD_IMAGES_GUID_ALIAS_NAMESPACE_FORMAT =
             BT_VOD_NAMESPACES_PREFIX + "images:guid:%s:%s";
 
@@ -225,7 +227,12 @@ public class BtVodModule {
                 BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY),
                 new BtVodTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")),
                 String.format(
-                        BT_VOD_DESCRIPTIONS_GUID_ALIAS_NAMESPACE_FORMAT,
+                        BT_VOD_DESCRIPTION_GUID_ALIAS_NAMESPACE_FORMAT,
+                        BT_VOD_UPDATER_ENV,
+                        BT_VOD_UPDATER_CONFIG
+                ),
+                String.format(
+                        BT_VOD_LONG_DESCRIPTION_GUID_ALIAS_NAMESPACE_FORMAT,
                         BT_VOD_UPDATER_ENV,
                         BT_VOD_UPDATER_CONFIG
                 ),
@@ -346,7 +353,8 @@ public class BtVodModule {
                 topicQueryResolver,
                 BtVodEntryMatchingPredicates.schedulerChannelPredicate(KIDS_CATEGORY),
                 new BtVodTagMap(topicStore, new MongoSequentialIdGenerator(mongo, "topics")),
-                String.format(BT_VOD_DESCRIPTIONS_GUID_ALIAS_NAMESPACE_FORMAT, envName, conf),
+                String.format(BT_VOD_DESCRIPTION_GUID_ALIAS_NAMESPACE_FORMAT, envName, conf),
+                String.format(BT_VOD_LONG_DESCRIPTION_GUID_ALIAS_NAMESPACE_FORMAT, envName, conf),
                 String.format(BT_VOD_IMAGES_GUID_ALIAS_NAMESPACE_FORMAT, envName, conf)
         ).withName(
                 String.format(

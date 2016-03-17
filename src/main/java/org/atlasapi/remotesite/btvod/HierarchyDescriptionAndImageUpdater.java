@@ -14,6 +14,7 @@ import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.btvod.model.BtVodEntry;
 
+import com.google.api.client.util.Sets;
 import com.google.common.base.Optional;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.ImmutableSet;
@@ -25,12 +26,14 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class HierarchyDescriptionAndImageUpdater {
 
-    private final String descriptionsGuidAliasNamespace;
+    private final String descriptionGuidAliasNamespace;
+    private final String longDescriptionGuidAliasNamespace;
     private final String imagesGuidAliasNamespace;
 
-    public HierarchyDescriptionAndImageUpdater(String descriptionsGuidAliasNamespace,
-            String imagesGuidAliasNamespace) {
-        this.descriptionsGuidAliasNamespace = checkNotNull(descriptionsGuidAliasNamespace);
+    public HierarchyDescriptionAndImageUpdater(String descriptionGuidAliasNamespace,
+            String longDescriptionGuidAliasNamespace, String imagesGuidAliasNamespace) {
+        this.descriptionGuidAliasNamespace = checkNotNull(descriptionGuidAliasNamespace);
+        this.longDescriptionGuidAliasNamespace = checkNotNull(longDescriptionGuidAliasNamespace);
         this.imagesGuidAliasNamespace = checkNotNull(imagesGuidAliasNamespace);
     }
 
@@ -69,24 +72,49 @@ public class HierarchyDescriptionAndImageUpdater {
     }
 
     private void update(Content target, Metadata metadata, MetadataSource source) {
-        boolean descriptionUpdated = updateDescription(target, metadata, source);
-        boolean longDescriptionUpdated = updateLongDescription(target, metadata, source);
-        boolean imagesUpdated = updateImages(target, metadata, source);
+        String existingDescription = target.getDescription();
+        String existingLongDescription = target.getLongDescription();
+        Set<String> existingImages = Sets.newHashSet();
 
-        if (descriptionUpdated || longDescriptionUpdated || imagesUpdated) {
-            updateAliases(target, metadata);
+        if (target.getImages() != null) {
+            for (Image image : target.getImages()) {
+                existingImages.add(image.getCanonicalUri());
+            }
+        }
+
+        boolean updatedDescription = updateDescription(
+                target, metadata, source, existingDescription
+        );
+        boolean updatedLongDescription = updateLongDescription(
+                target, metadata, source, existingLongDescription
+        );
+        boolean updatedImages = updateImages(
+                target, metadata, source, existingImages
+        );
+
+        if (updatedDescription) {
+            updateAliases(target, metadata, descriptionGuidAliasNamespace);
+        }
+        if (updatedLongDescription) {
+            updateAliases(target, metadata, longDescriptionGuidAliasNamespace);
+        }
+        if (updatedImages) {
+            updateAliases(target, metadata, imagesGuidAliasNamespace);
         }
     }
 
-    private boolean updateDescription(Content target, Metadata metadata, MetadataSource source) {
+    private boolean updateDescription(Content target, Metadata metadata,
+            MetadataSource source, String existingDescription) {
         Optional<MetadataSource> existingSource =
                 Optional.fromNullable(descriptionSource.get(target.getCanonicalUri()));
 
-        if (hasOwnDescription(target, existingSource)) {
+        if (hasOwnDescription(target, existingSource)
+                || !hasDescription(metadata)
+                || metadata.getDescription().equals(existingDescription)) {
             return false;
         }
 
-        if (hasDescription(metadata) && isHigherPriority(source, existingSource)) {
+        if (isHigherPriority(source, existingSource)) {
             target.setDescription(metadata.getDescription());
             descriptionSource.put(target.getCanonicalUri(), source);
             return true;
@@ -106,15 +134,18 @@ public class HierarchyDescriptionAndImageUpdater {
         return metadata.getDescription() != null;
     }
 
-    private boolean updateLongDescription(Content target, Metadata metadata, MetadataSource source) {
+    private boolean updateLongDescription(Content target, Metadata metadata,
+            MetadataSource source, String existingLongDescription) {
         Optional<MetadataSource> existingSource =
                 Optional.fromNullable(longDescriptionSource.get(target.getCanonicalUri()));
 
-        if (hasOwnLongDescription(target, existingSource)) {
+        if (hasOwnLongDescription(target, existingSource)
+                || !hasLongDescription(metadata)
+                || metadata.getLongDescription().equals(existingLongDescription)) {
             return false;
         }
 
-        if (hasLongDescription(metadata) && isHigherPriority(source, existingSource)) {
+        if (isHigherPriority(source, existingSource)) {
             target.setLongDescription(metadata.getLongDescription());
             longDescriptionSource.put(target.getCanonicalUri(), source);
             return true;
@@ -135,15 +166,25 @@ public class HierarchyDescriptionAndImageUpdater {
         return metadata.getLongDescription() != null;
     }
 
-    private boolean updateImages(Content target, Metadata metadata, MetadataSource source) {
+    private boolean updateImages(Content target, Metadata metadata,
+            MetadataSource source, Set<String> existingImages) {
         Optional<MetadataSource> existingSource =
                 Optional.fromNullable(imagesSource.get(target.getCanonicalUri()));
 
-        if (hasOwnImages(target, existingSource)) {
+        if (hasOwnImages(target, existingSource) || !hasImages(metadata)) {
             return false;
         }
 
-        if (hasImages(metadata) && isHigherPriority(source, existingSource)) {
+        Set<String> imageUris = Sets.newHashSet();
+        for (Image image : metadata.getImages()) {
+            imageUris.add(image.getCanonicalUri());
+        }
+
+        if (imageUris.size() == existingImages.size() && imageUris.containsAll(existingImages)) {
+            return false;
+        }
+
+        if (isHigherPriority(source, existingSource)) {
             target.setImages(metadata.getImages());
             target.setImage(metadata.getImage());
             imagesSource.put(target.getCanonicalUri(), source);
@@ -172,20 +213,16 @@ public class HierarchyDescriptionAndImageUpdater {
         return !existingSource.isPresent() || source.compareTo(existingSource.get()) >= 0;
     }
 
-    private void updateAliases(Content target, Metadata metadata) {
+    private void updateAliases(Content target, Metadata metadata, String aliasToUpdate) {
         ImmutableSet.Builder<Alias> aliasBuilder = ImmutableSet.builder();
 
         for (Alias alias : target.getAliases()) {
-            if (!descriptionsGuidAliasNamespace.equals(alias.getNamespace())
-                    && !imagesGuidAliasNamespace.equals(alias.getNamespace())) {
+            if (!aliasToUpdate.equals(alias.getNamespace())) {
                 aliasBuilder.add(alias);
             }
         }
 
-        aliasBuilder.add(
-                new Alias(descriptionsGuidAliasNamespace, metadata.getGuid()),
-                new Alias(imagesGuidAliasNamespace, metadata.getGuid())
-        );
+        aliasBuilder.add(new Alias(aliasToUpdate, metadata.getGuid()));
 
         target.setAliases(aliasBuilder.build());
     }

@@ -44,7 +44,7 @@ public class OptaSportConfiguration {
     
     public Optional<String> prefixToStripFromId() {
         return prefixToStripFromId;
-    };
+    }
 
     public static class Builder {
         

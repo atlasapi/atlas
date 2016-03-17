@@ -13,6 +13,9 @@ import org.atlasapi.remotesite.opta.events.model.OptaTeam;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.metabroadcast.common.http.HttpException;
 import com.metabroadcast.common.http.HttpResponsePrologue;
 import com.metabroadcast.common.http.HttpResponseTransformer;
@@ -22,22 +25,27 @@ import com.metabroadcast.common.security.UsernameAndPassword;
 
 
 public final class HttpOptaEventsFetcher<T extends OptaTeam, M extends OptaMatch> implements OptaEventsFetcher<T, M> {
-    
-    private static final String OPTA_URL_PATTERN = "http://%s/competition.php?feed_type=%%s&competition=%%s&season_id=%%s&user=%s&psw=%s&json";
-    
+
+    private static final String OPTA_URL_PATTERN = "http://%s/competition.php?feed_type=%s&competition=%s&season_id=%s&user=%s&psw=%s&json";
+
     private final Map<OptaSportType, OptaSportConfiguration> sportConfig;
     private final SimpleHttpClient client;
-    private final String urlPattern;
     private final HttpResponseTransformer<Optional<? extends OptaEventsData<T, M>>> transformer;
+    private final String baseUrl;
+    private final String username;
+    private final String password;
+    private final Logger log = LoggerFactory.getLogger(getClass());
     
     public HttpOptaEventsFetcher(Map<OptaSportType, OptaSportConfiguration> sportConfig, 
-            SimpleHttpClient client, OptaDataTransformer<T, M> dataTransformer, 
-            UsernameAndPassword credentials, String baseUrl) {
+            SimpleHttpClient client, OptaDataTransformer<T, M> dataTransformer, String baseUrl,
+            Map<String, String> credentials) {
         this.sportConfig = ImmutableMap.copyOf(sportConfig);
         this.client = checkNotNull(client);
-        checkNotNull(credentials);
-        this.urlPattern = String.format(OPTA_URL_PATTERN, checkNotNull(baseUrl), credentials.username(), credentials.password());
         this.transformer = createTransformer(checkNotNull(dataTransformer));
+        this.baseUrl = checkNotNull(baseUrl);
+        checkNotNull(credentials);
+        this.username = credentials.get("username");
+        this.password = credentials.get("password");
     }
 
     private HttpResponseTransformer<Optional<? extends OptaEventsData<T, M>>> createTransformer(
@@ -58,9 +66,21 @@ public final class HttpOptaEventsFetcher<T extends OptaTeam, M extends OptaMatch
             if (config == null) {
                 return Optional.absent();
             }
-            
-            String url = String.format(urlPattern, config.feedType(), config.competition(), config.seasonId());
-            
+
+            log.error("username - " + username + " | password - " + password);
+
+            String url = String.format(
+                OPTA_URL_PATTERN,
+                baseUrl,
+                config.feedType(),
+                config.competition(),
+                config.seasonId(),
+                username,
+                password
+            );
+
+            log.error("url - " + url + " | username - " + username + " | password - " + password);
+
             return client.get(SimpleHttpRequest.httpRequestFrom(url, transformer));
         } catch (Exception e) {
             throw new FetchException(e.getMessage(), e);

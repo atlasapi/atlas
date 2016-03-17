@@ -22,22 +22,20 @@ import com.metabroadcast.common.security.UsernameAndPassword;
 
 
 public final class HttpOptaEventsFetcher<T extends OptaTeam, M extends OptaMatch> implements OptaEventsFetcher<T, M> {
-    
-    private static final String OPTA_URL_PATTERN = "http://%s/competition.php?feed_type=%%s&competition=%%s&season_id=%%s&user=%s&psw=%s&json";
-    
+
+    private static final String OPTA_URL_PATTERN = "http://%s/competition.php?feed_type=%s&competition=%s&season_id=%s&user=%s&psw=%s&json";
+
     private final Map<OptaSportType, OptaSportConfiguration> sportConfig;
     private final SimpleHttpClient client;
-    private final String urlPattern;
     private final HttpResponseTransformer<Optional<? extends OptaEventsData<T, M>>> transformer;
+    private final String baseUrl;
     
     public HttpOptaEventsFetcher(Map<OptaSportType, OptaSportConfiguration> sportConfig, 
-            SimpleHttpClient client, OptaDataTransformer<T, M> dataTransformer, 
-            UsernameAndPassword credentials, String baseUrl) {
+            SimpleHttpClient client, OptaDataTransformer<T, M> dataTransformer, String baseUrl) {
         this.sportConfig = ImmutableMap.copyOf(sportConfig);
         this.client = checkNotNull(client);
-        checkNotNull(credentials);
-        this.urlPattern = String.format(OPTA_URL_PATTERN, checkNotNull(baseUrl), credentials.username(), credentials.password());
         this.transformer = createTransformer(checkNotNull(dataTransformer));
+        this.baseUrl = checkNotNull(baseUrl);
     }
 
     private HttpResponseTransformer<Optional<? extends OptaEventsData<T, M>>> createTransformer(
@@ -58,9 +56,17 @@ public final class HttpOptaEventsFetcher<T extends OptaTeam, M extends OptaMatch
             if (config == null) {
                 return Optional.absent();
             }
-            
-            String url = String.format(urlPattern, config.feedType(), config.competition(), config.seasonId());
-            
+
+            String url = String.format(
+                OPTA_URL_PATTERN,
+                baseUrl,
+                config.feedType(),
+                config.competition(),
+                config.seasonId(),
+                config.getUsername(),
+                config.getPassword()
+            );
+
             return client.get(SimpleHttpRequest.httpRequestFrom(url, transformer));
         } catch (Exception e) {
             throw new FetchException(e.getMessage(), e);

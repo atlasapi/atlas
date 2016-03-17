@@ -53,8 +53,10 @@ public class OptaEventsModule {
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     
     private @Value("${opta.events.http.baseUrl}") String baseUrl;
-    private @Value("${opta.events.http.username}") String username;
-    private @Value("${opta.events.http.password}") String password;
+    private @Value("${opta.events.http.sports.rugby.username}") String rugbyUsername;
+    private @Value("${opta.events.http.sports.rugby.password}") String rugbyPassword;
+    private @Value("${opta.events.http.sports.soccer.username}") String soccerUsername;
+    private @Value("${opta.events.http.sports.soccer.password}") String soccerPassword;
     
     @PostConstruct
     public void startBackgroundTasks() {
@@ -89,7 +91,8 @@ public class OptaEventsModule {
             Map<OptaSportType, OptaSportConfiguration> sportConfig, 
             OptaDataTransformer<SportsTeam, SportsMatchData> dataTransformer) {
         
-        return new HttpOptaEventsFetcher<>(sportConfig, HttpClients.webserviceClient(), dataTransformer, new UsernameAndPassword(username, password), baseUrl);
+        return new HttpOptaEventsFetcher<>(sportConfig, HttpClients.webserviceClient(),
+                dataTransformer, baseUrl);
     }
 
     private OptaSportsDataHandler dataHandler(Map<OptaSportType, OptaSportConfiguration> config) {
@@ -115,13 +118,18 @@ public class OptaEventsModule {
      */
     private Map<OptaSportType, OptaSportConfiguration> sportConfig(String sportPrefix) {
         Builder<OptaSportType, OptaSportConfiguration> configMapping = ImmutableMap.<OptaSportType, OptaSportConfiguration>builder();
+
+        Map<String, String> credentials = getCredentials(sportPrefix);
+        String username = credentials.get("username");
+        String password = credentials.get("password");
+
         for (Entry<String, Parameter> property : Configurer.getParamsWithKeyMatching(Predicates.containsPattern(sportPrefix))) {
             String sportKey = property.getKey().substring(sportPrefix.length());
             String sportConfig = property.getValue().get();
             
             if (!Strings.isNullOrEmpty(sportConfig)) {
                 OptaSportType sport = OptaSportType.valueOf(sportKey.toUpperCase());
-                OptaSportConfiguration config = parseConfig(sportConfig);
+                OptaSportConfiguration config = parseConfig(sportConfig, username, password);
                 configMapping.put(sport, config);
             } else {
                 log.warn("Opta HTTP configuration for sport {} is missing.", sportKey);
@@ -131,18 +139,40 @@ public class OptaEventsModule {
     }
 
     /**
+      * Checks if sport prefix is either soccer or rugby, then adds username and password to the map.
+      * @param sportPrefix the environment parameter prefix for sports
+      * @return
+      */
+    private Map<String, String> getCredentials(String sportPrefix) {
+        Builder<String, String> credentialsMap = ImmutableMap.<String, String>builder();
+        if (sportPrefix.equals(OPTA_HTTP_SOCCER_CONFIG_PREFIX)) {
+                credentialsMap.put("username", soccerUsername);
+                credentialsMap.put("password", soccerPassword);
+            } else if (sportPrefix.equals(OPTA_HTTP_RUGBY_CONFIG_PREFIX)) {
+                credentialsMap.put("username", rugbyUsername);
+                credentialsMap.put("password", rugbyPassword);
+            } else {
+               throw new IllegalArgumentException("Invalid Sport prefix, couldn't get OPTA HTTP credentials.");
+            }
+        return credentialsMap.build();
+    }
+
+    /**
      * Parses a String parameter into a set of three parameters required for the Opta Sports 
      * competition API. The format is [prefix].[sportName]=feedType|competition|seasonId
      * @param sportConfig
      * @return
      */
-    private OptaSportConfiguration parseConfig(String sportConfig) {
+    private OptaSportConfiguration parseConfig(String sportConfig, String username, String password) {
         Iterable<String> configItems = Splitter.on('|').split(sportConfig);
         OptaSportConfiguration.Builder config 
             = OptaSportConfiguration.builder()
                 .withFeedType(Iterables.get(configItems, 0))
                 .withCompetition(Iterables.get(configItems, 1))
-                .withSeasonId(Iterables.get(configItems, 2));
+                .withSeasonId(Iterables.get(configItems, 2))
+                .withSeasonId(Iterables.get(configItems, 2))
+                .withUsername(username)
+                .withPassword(password);
         
         if (Iterables.size(configItems) == 4) {
             config.withPrefixToStripFromId(Iterables.get(configItems, 3));

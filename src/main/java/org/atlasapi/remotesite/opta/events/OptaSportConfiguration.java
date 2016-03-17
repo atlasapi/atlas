@@ -16,6 +16,8 @@ public class OptaSportConfiguration {
     private final String feedType;
     private final String competition;
     private final String seasonId;
+    private final String username;
+    private final String password;
     private Optional<String> prefixToStripFromId;
     
     public static Builder builder() {
@@ -23,11 +25,13 @@ public class OptaSportConfiguration {
     }
     
     private OptaSportConfiguration(String feedType, String competition, 
-            String seasonId, String prefixToStripFromOptaId) {
+            String seasonId, String prefixToStripFromOptaId, String username, String password) {
         this.feedType = checkNotNull(feedType);
         this.competition = checkNotNull(competition);
         this.seasonId = checkNotNull(seasonId);
         this.prefixToStripFromId = Optional.fromNullable(prefixToStripFromOptaId);
+        this.username = checkNotNull(username);
+        this.password = checkNotNull(password);
     }
     
     public String feedType() {
@@ -46,15 +50,26 @@ public class OptaSportConfiguration {
         return prefixToStripFromId;
     };
 
+    public String getPassword() {
+        return password;
+    }
+
+    public String getUsername() {
+        return username;
+    }
+
     public static class Builder {
         
         private String feedType;
         private String competition;
         private String seasonId;
         private String prefixToStripFromId;
+        private String username;
+        private String password;
         
         public OptaSportConfiguration build() {
-            return new OptaSportConfiguration(feedType, competition, seasonId, prefixToStripFromId);
+            return new OptaSportConfiguration(feedType, competition, seasonId, prefixToStripFromId,
+                    username, password);
         }
         
         private Builder() { }
@@ -76,6 +91,16 @@ public class OptaSportConfiguration {
 
         public Builder withPrefixToStripFromId(String prefixToStripFromId) {
             this.prefixToStripFromId = prefixToStripFromId;
+            return this;
+        }
+
+        public Builder withUsername(String username) {
+            this.username = username;
+            return this;
+        }
+
+            public Builder withPassword(String password) {
+            this.password = password;
             return this;
         }
     }

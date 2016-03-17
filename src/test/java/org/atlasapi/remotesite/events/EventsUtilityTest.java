@@ -1,22 +1,25 @@
 package org.atlasapi.remotesite.events;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.opta.events.model.OptaSportType;
+
+import com.metabroadcast.common.base.Maybe;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.junit.Test;
 import org.mockito.Mockito;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 
 
 public class EventsUtilityTest {
@@ -74,8 +77,10 @@ public class EventsUtilityTest {
     private EventsUtility<OptaSportType> createEventUtil(TopicStore topicStore) {
         return new EventsUtility<OptaSportType>(topicStore) {
             
-            Map<OptaSportType, Map<String, String>> groupMapping = ImmutableMap.of(
-                    OptaSportType.RUGBY_AVIVA_PREMIERSHIP, (Map<String, String>)ImmutableMap.of("Sport", "sport uri")
+            Map<OptaSportType, List<EventGroup>> groupMapping = ImmutableMap.of(
+                    OptaSportType.RUGBY_AVIVA_PREMIERSHIP, (List<EventGroup>) ImmutableList.of(
+                            EventGroup.ofDefaultNs("Sport", "sport uri")
+                    )
             );
             
             @Override
@@ -97,7 +102,7 @@ public class EventsUtilityTest {
             }
             
             @Override
-            public Optional<Map<String, String>> fetchEventGroupUrls(OptaSportType sport) {
+            public Optional<List<EventGroup>> fetchEventGroupUrls(OptaSportType sport) {
                 return Optional.fromNullable(groupMapping.get(sport));
             }
         };

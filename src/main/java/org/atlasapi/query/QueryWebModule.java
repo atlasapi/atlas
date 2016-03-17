@@ -13,14 +13,8 @@ import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
-import org.atlasapi.input.BrandModelTransformer;
-import org.atlasapi.input.ClipModelTransformer;
 import org.atlasapi.input.DefaultGsonModelReader;
-import org.atlasapi.input.DelegatingModelTransformer;
-import org.atlasapi.input.ItemModelTransformer;
 import org.atlasapi.input.PersonModelTransformer;
-import org.atlasapi.input.SegmentModelTransformer;
-import org.atlasapi.input.SeriesModelTransformer;
 import org.atlasapi.input.TopicModelTransformer;
 import org.atlasapi.media.channel.CachingChannelGroupStore;
 import org.atlasapi.media.channel.Channel;
@@ -94,6 +88,7 @@ import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.PeopleResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
@@ -117,6 +112,7 @@ import org.atlasapi.persistence.service.ServiceResolver;
 import org.atlasapi.persistence.topic.TopicContentLister;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
 import org.atlasapi.persistence.topic.TopicStore;
+import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.topic.PublisherFilteringTopicContentLister;
 import org.atlasapi.query.topic.PublisherFilteringTopicResolver;
 import org.atlasapi.query.v2.ChannelController;
@@ -135,24 +131,26 @@ import org.atlasapi.query.v2.SearchController;
 import org.atlasapi.query.v2.TaskController;
 import org.atlasapi.query.v2.TopicController;
 import org.atlasapi.query.v2.TopicWriteController;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
 
-import com.google.common.base.Splitter;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.time.SystemClock;
 
+import com.google.common.base.Splitter;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import tva.metadata._2010.TVAMainType;
 
+import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
+
 @Configuration
-@Import( { WatermarkModule.class } )
+@Import( { WatermarkModule.class, QueryExecutorModule.class } )
 public class QueryWebModule {
     
     private @Value("${local.host.name}") String localHostName;
@@ -162,7 +160,8 @@ public class QueryWebModule {
     private @Autowired DatabasedMongo mongo;
     private @Autowired ContentGroupWriter contentGroupWriter;
     private @Autowired ContentGroupResolver contentGroupResolver;
-    private @Autowired ContentWriter contentWriter;
+    private @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) ContentWriter contentWriter;
+    private @Autowired LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ChannelResolver channelResolver;
@@ -193,6 +192,8 @@ public class QueryWebModule {
     private @Autowired ApplicationConfigurationFetcher configFetcher;
     private @Autowired AdapterLog log;
     private @Autowired EventContentLister eventContentLister;
+
+    private @Autowired ContentWriteExecutor contentWriteExecutor;
     
     @Bean ChannelController channelController() {
         return new ChannelController(configFetcher, log, channelModelWriter(), channelResolver, new SubstitutionTableNumberCodec());
@@ -200,7 +201,7 @@ public class QueryWebModule {
 
     @Bean AtlasModelWriter<Iterable<Channel>> channelModelWriter() {
         ChannelModelSimplifier channelModelSimplifier = channelModelSimplifier();
-        return this.<Iterable<Channel>>standardWriter(
+        return this.standardWriter(
             new SimpleChannelModelWriter(new JsonTranslator<ChannelQueryResult>(), channelModelSimplifier),
             new SimpleChannelModelWriter(new JaxbXmlTranslator<ChannelQueryResult>(), channelModelSimplifier));
     }
@@ -261,7 +262,7 @@ public class QueryWebModule {
 
     @Bean AtlasModelWriter<Iterable<ChannelGroup>> channelGroupModelWriter() {
         ChannelGroupModelSimplifier channelGroupModelSimplifier = ChannelGroupModelSimplifier();
-        return this.<Iterable<ChannelGroup>>standardWriter(
+        return this.standardWriter(
             new SimpleChannelGroupModelWriter(new JsonTranslator<ChannelGroupQueryResult>(), channelGroupModelSimplifier),
             new SimpleChannelGroupModelWriter(new JaxbXmlTranslator<ChannelGroupQueryResult>(), channelGroupModelSimplifier));
     }
@@ -288,34 +289,13 @@ public class QueryWebModule {
     NumberToShortStringCodec idCodec() {
         return SubstitutionTableNumberCodec.lowerCaseOnly();
     }
-    
-    ClipModelTransformer clipTransformer() {
-        return new ClipModelTransformer(lookupStore, topicStore, channelResolver, idCodec(), new SystemClock(), segmentModelTransformer());
-    }
-    
-    BrandModelTransformer brandTransformer() {
-        return new BrandModelTransformer(lookupStore, topicStore, idCodec(), clipTransformer(), new SystemClock());
-    }
-    
-    ItemModelTransformer itemTransformer() {
-        return new ItemModelTransformer(lookupStore, topicStore, channelResolver, idCodec(), clipTransformer(), new SystemClock(), segmentModelTransformer());
-    }
 
-    SeriesModelTransformer seriesTransformer() {
-        return new SeriesModelTransformer(lookupStore, topicStore, idCodec(), clipTransformer(), new SystemClock());
-    }
-
-    SegmentModelTransformer segmentModelTransformer() {
-        return new SegmentModelTransformer(segmentWriter);
-    }
-    
     ContentWriteController contentWriteController() {
-        return new ContentWriteController(configFetcher, contentResolver, contentWriter, 
-                new DefaultGsonModelReader(),
-                new DelegatingModelTransformer(brandTransformer(), itemTransformer(), seriesTransformer()), 
-                scheduleWriter, channelResolver, eventResolver);
+        return new ContentWriteController(
+                configFetcher, contentWriteExecutor, lookupBackedContentIdGenerator
+        );
     }
-    
+
     TopicWriteController topicWriteController() {
         return new TopicWriteController(configFetcher, topicStore, new DefaultGsonModelReader(), new TopicModelTransformer());
     }
@@ -377,7 +357,7 @@ public class QueryWebModule {
     
     @Bean
     AtlasModelWriter<QueryResult<Identified, ? extends Identified>> contentModelOutputter() {
-        return this.<QueryResult<Identified, ? extends Identified>>standardWriter(
+        return this.standardWriter(
                 new SimpleContentModelWriter(new JsonTranslator<ContentQueryResult>(), contentItemModelSimplifier(), containerSimplifier(), topicSimplifier(), productSimplifier(), imageSimplifier(), personSimplifier()),
                 new SimpleContentModelWriter(new JaxbXmlTranslator<ContentQueryResult>(), contentItemModelSimplifier(), containerSimplifier(), topicSimplifier(), productSimplifier(), imageSimplifier(), personSimplifier()));
     }
@@ -462,14 +442,14 @@ public class QueryWebModule {
 
     @Bean
     AtlasModelWriter<Iterable<Person>> personModelOutputter() {
-        return this.<Iterable<Person>>standardWriter(
+        return this.standardWriter(
                 new SimplePersonModelWriter(new JsonTranslator<PeopleQueryResult>(), imageSimplifier(), upcomingItemsResolver(), availableItemsResolver()),
                 new SimplePersonModelWriter(new JaxbXmlTranslator<PeopleQueryResult>(), imageSimplifier(), upcomingItemsResolver(), availableItemsResolver()));
     }
 
     @Bean
     AtlasModelWriter<Iterable<ScheduleChannel>> scheduleChannelModelOutputter() {
-        return this.<Iterable<ScheduleChannel>>standardWriter(
+        return this.standardWriter(
                 new SimpleScheduleModelWriter(new JsonTranslator<ScheduleQueryResult>(), scheduleItemModelSimplifier(), channelSimplifier()),
                 new SimpleScheduleModelWriter(new JaxbXmlTranslator<ScheduleQueryResult>(), scheduleItemModelSimplifier(), channelSimplifier()));
     }
@@ -477,7 +457,7 @@ public class QueryWebModule {
     @Bean
     AtlasModelWriter<Iterable<Topic>> topicModelOutputter() {
         TopicModelSimplifier topicModelSimplifier = topicSimplifier();
-        return this.<Iterable<Topic>>standardWriter(
+        return this.standardWriter(
                 new SimpleTopicModelWriter(new JsonTranslator<TopicQueryResult>(), contentResolver, topicModelSimplifier),
                 new SimpleTopicModelWriter(new JaxbXmlTranslator<TopicQueryResult>(), contentResolver, topicModelSimplifier));
     }
@@ -485,7 +465,7 @@ public class QueryWebModule {
     @Bean
     AtlasModelWriter<Iterable<Event>> eventModelOutputter() {
         EventModelSimplifier eventModelSimplifier = eventSimplifier();
-        return this.<Iterable<Event>>standardWriter(
+        return this.standardWriter(
                 new SimpleEventModelWriter(new JsonTranslator<EventQueryResult>(), contentResolver, eventModelSimplifier),
                 new SimpleEventModelWriter(new JaxbXmlTranslator<EventQueryResult>(), contentResolver, eventModelSimplifier));
     }
@@ -493,7 +473,7 @@ public class QueryWebModule {
     @Bean
     AtlasModelWriter<Iterable<Task>> taskModelOutputter() {
         TaskModelSimplifier taskModelSimplifier = taskSimplifier();
-        return this.<Iterable<Task>>standardWriter(
+        return this.standardWriter(
                 new SimpleTaskModelWriter(new JsonTranslator<TaskQueryResult>(), taskModelSimplifier),
                 new SimpleTaskModelWriter(new JaxbXmlTranslator<TaskQueryResult>(), taskModelSimplifier));
     }
@@ -501,7 +481,7 @@ public class QueryWebModule {
     @Bean
     AtlasModelWriter<Iterable<FeedStatistics>> feedStatsModelOutputter() {
         FeedStatisticsModelSimplifier feedStatsSimplifier = feedStatsSimplifier();
-        return this.<Iterable<FeedStatistics>>standardWriter(
+        return this.standardWriter(
                 new SimpleFeedStatisticsModelWriter(new JsonTranslator<FeedStatisticsQueryResult>(), feedStatsSimplifier),
                 new SimpleFeedStatisticsModelWriter(new JaxbXmlTranslator<FeedStatisticsQueryResult>(), feedStatsSimplifier));
     }
@@ -517,7 +497,7 @@ public class QueryWebModule {
     @Bean
     AtlasModelWriter<Iterable<Product>> productModelOutputter() {
         ProductModelSimplifier modelSimplifier = productSimplifier();
-        return this.<Iterable<Product>>standardWriter(
+        return this.standardWriter(
                 new SimpleProductModelWriter(new JsonTranslator<ProductQueryResult>(), contentResolver, modelSimplifier),
                 new SimpleProductModelWriter(new JaxbXmlTranslator<ProductQueryResult>(), contentResolver, modelSimplifier));
     }
@@ -525,27 +505,24 @@ public class QueryWebModule {
     @Bean
     AtlasModelWriter<Iterable<ContentGroup>> contentGroupOutputter() {
         ContentGroupModelSimplifier modelSimplifier = contentGroupSimplifier();
-        return this.<Iterable<ContentGroup>>standardWriter(
+        return this.standardWriter(
                 new SimpleContentGroupModelWriter(new JsonTranslator<ContentGroupQueryResult>(), modelSimplifier),
                 new SimpleContentGroupModelWriter(new JaxbXmlTranslator<ContentGroupQueryResult>(), modelSimplifier));
     }
 
     @Bean
     ContentGroupModelSimplifier contentGroupSimplifier() {
-        ContentGroupModelSimplifier contentGroupModelSimplifier = new ContentGroupModelSimplifier(imageSimplifier());
-        return contentGroupModelSimplifier;
+        return new ContentGroupModelSimplifier(imageSimplifier());
     }
 
     @Bean
     TopicModelSimplifier topicSimplifier() {
-        TopicModelSimplifier topicModelSimplifier = new TopicModelSimplifier(localHostName);
-        return topicModelSimplifier;
+        return new TopicModelSimplifier(localHostName);
     }
 
     @Bean
     ProductModelSimplifier productSimplifier() {
-        ProductModelSimplifier productModelSimplifier = new ProductModelSimplifier(localHostName);
-        return productModelSimplifier;
+        return new ProductModelSimplifier(localHostName);
     }
 
     private <I extends Iterable<?>> AtlasModelWriter<I> standardWriter(AtlasModelWriter<I> jsonWriter, AtlasModelWriter<I> xmlWriter) {

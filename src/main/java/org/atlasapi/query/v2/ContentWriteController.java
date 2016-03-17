@@ -1,9 +1,8 @@
 package org.atlasapi.query.v2;
 
-import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
+import java.io.InputStream;
 import java.math.BigInteger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -15,11 +14,7 @@ import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
-import org.atlasapi.input.ModelReader;
-import org.atlasapi.input.ModelTransformer;
-import org.atlasapi.input.ReadException;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.query.content.ContentWriteExecutor;
 
@@ -30,6 +25,7 @@ import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.properties.Configurer;
 
 import com.google.common.base.Strings;
+import org.apache.commons.io.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
@@ -48,21 +44,15 @@ public class ContentWriteController {
     private static final NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private final ApplicationConfigurationFetcher appConfigFetcher;
-    private final ModelReader reader;
-    private final ModelTransformer<Description, Content> transformer;
     private final ContentWriteExecutor writeExecutor;
     private final LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
 
     public ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
-            ModelReader reader,
-            ModelTransformer<Description, Content> transformer,
             ContentWriteExecutor contentWriteExecutor,
             LookupBackedContentIdGenerator lookupBackedContentIdGenerator
     ) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
-        this.reader = checkNotNull(reader);
-        this.transformer = checkNotNull(transformer);
         this.writeExecutor = checkNotNull(contentWriteExecutor);
         this.lookupBackedContentIdGenerator = checkNotNull(lookupBackedContentIdGenerator);
     }
@@ -90,18 +80,20 @@ public class ContentWriteController {
             return error(resp, HttpStatus.UNAUTHORIZED.value());
         }
 
-        Content content;
-        Description description;
+        ContentWriteExecutor.InputContent inputContent;
         try {
-            description = deserialize(new InputStreamReader(req.getInputStream()));
-            content = complexify(description);
-        } catch (IOException ioe) {
-            log.error("Error reading input for request " + req.getRequestURL(), ioe);
+            byte[] inputStreamBytes = IOUtils.toByteArray(req.getInputStream());
+            InputStream inputStream = new ByteArrayInputStream(inputStreamBytes);
+            inputContent = writeExecutor.parseInputStream(inputStream);
+        } catch (IOException e) {
+            log.error("Error reading input for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
         } catch (Exception e) {
             log.error("Error reading input for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
+
+        Content content = inputContent.getContent();
 
         if (!possibleConfig.requireValue().canWrite(content.getPublisher())) {
             return error(resp, HttpStatusCode.FORBIDDEN.code());
@@ -115,7 +107,7 @@ public class ContentWriteController {
         content.setId(contentId);
 
         try {
-            writeExecutor.writeContent(content, description.getType(), merge);
+            writeExecutor.writeContent(content, inputContent.getType(), merge);
         } catch (Exception e) {
             log.error("Error reading input for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
@@ -131,14 +123,6 @@ public class ContentWriteController {
         resp.setStatus(HttpStatusCode.OK.code());
         resp.setContentLength(0);
         return null;
-    }
-
-    private Description deserialize(Reader input) throws IOException, ReadException {
-        return reader.read(new BufferedReader(input), Description.class);
-    }
-
-    private Content complexify(Description inputContent) {
-        return transformer.transform(inputContent);
     }
 
     private Void error(HttpServletResponse response, int code) {

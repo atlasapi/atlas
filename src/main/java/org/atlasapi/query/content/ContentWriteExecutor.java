@@ -1,8 +1,16 @@
 package org.atlasapi.query.content;
 
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.List;
 import java.util.Set;
 
+import org.atlasapi.input.ModelReader;
+import org.atlasapi.input.ModelTransformer;
+import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Broadcast;
@@ -16,6 +24,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ScheduleEntry;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -34,6 +43,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ContentWriteExecutor {
 
+    private final ModelReader reader;
+    private final ModelTransformer<Description, Content> transformer;
     private final ContentResolver resolver;
     private final ContentWriter writer;
     private final ScheduleWriter scheduleWriter;
@@ -41,17 +52,29 @@ public class ContentWriteExecutor {
     private final EventResolver eventResolver;
 
     public ContentWriteExecutor(
+            ModelReader reader,
+            ModelTransformer<Description, Content> transformer,
             ContentResolver resolver,
             ContentWriter writer,
             ScheduleWriter scheduleWriter,
             ChannelResolver channelResolver,
             EventResolver eventResolver
     ) {
+        this.reader = checkNotNull(reader);
+        this.transformer = checkNotNull(transformer);
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(writer);
         this.scheduleWriter = checkNotNull(scheduleWriter);
         this.channelResolver = checkNotNull(channelResolver);
         this.eventResolver = checkNotNull(eventResolver);
+    }
+
+    public InputContent parseInputStream(InputStream inputStream) throws IOException,
+            ReadException {
+        Description description = deserialize(new InputStreamReader(inputStream));
+        Content content = complexify(description);
+
+        return new InputContent(content, description.getType());
     }
 
     public void writeContent(Content content, String type, boolean shouldMerge) {
@@ -73,6 +96,14 @@ public class ContentWriteExecutor {
         } else {
             writer.createOrUpdate((Container) updatedContent);
         }
+    }
+
+    private Description deserialize(Reader input) throws IOException, ReadException {
+        return reader.read(new BufferedReader(input), Description.class);
+    }
+
+    private Content complexify(Description inputContent) {
+        return transformer.transform(inputContent);
     }
 
     private Content updateEventPublisher(Content content) {
@@ -224,6 +255,25 @@ public class ContentWriteExecutor {
                         channel.requireValue(),
                         ImmutableSet.of(new ScheduleEntry.ItemRefAndBroadcast(item, broadcast)));
             }
+        }
+    }
+
+    public static class InputContent {
+
+        private final Content content;
+        private final String type;
+
+        public InputContent(Content content, String type) {
+            this.content = content;
+            this.type = type;
+        }
+
+        public Content getContent() {
+            return content;
+        }
+
+        public String getType() {
+            return type;
         }
     }
 }

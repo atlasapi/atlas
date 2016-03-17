@@ -13,14 +13,8 @@ import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
-import org.atlasapi.input.BrandModelTransformer;
-import org.atlasapi.input.ClipModelTransformer;
 import org.atlasapi.input.DefaultGsonModelReader;
-import org.atlasapi.input.DelegatingModelTransformer;
-import org.atlasapi.input.ItemModelTransformer;
 import org.atlasapi.input.PersonModelTransformer;
-import org.atlasapi.input.SegmentModelTransformer;
-import org.atlasapi.input.SeriesModelTransformer;
 import org.atlasapi.input.TopicModelTransformer;
 import org.atlasapi.media.channel.CachingChannelGroupStore;
 import org.atlasapi.media.channel.Channel;
@@ -156,7 +150,7 @@ import tva.metadata._2010.TVAMainType;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @Configuration
-@Import( { WatermarkModule.class } )
+@Import( { WatermarkModule.class, QueryExecutorModule.class } )
 public class QueryWebModule {
     
     private @Value("${local.host.name}") String localHostName;
@@ -198,6 +192,8 @@ public class QueryWebModule {
     private @Autowired ApplicationConfigurationFetcher configFetcher;
     private @Autowired AdapterLog log;
     private @Autowired EventContentLister eventContentLister;
+
+    private @Autowired ContentWriteExecutor contentWriteExecutor;
     
     @Bean ChannelController channelController() {
         return new ChannelController(configFetcher, log, channelModelWriter(), channelResolver, new SubstitutionTableNumberCodec());
@@ -293,44 +289,10 @@ public class QueryWebModule {
     NumberToShortStringCodec idCodec() {
         return SubstitutionTableNumberCodec.lowerCaseOnly();
     }
-    
-    ClipModelTransformer clipTransformer() {
-        return new ClipModelTransformer(lookupStore, topicStore, channelResolver, idCodec(), new SystemClock(), segmentModelTransformer());
-    }
-    
-    BrandModelTransformer brandTransformer() {
-        return new BrandModelTransformer(lookupStore, topicStore, idCodec(), clipTransformer(), new SystemClock());
-    }
-    
-    ItemModelTransformer itemTransformer() {
-        return new ItemModelTransformer(lookupStore, topicStore, channelResolver, idCodec(), clipTransformer(), new SystemClock(), segmentModelTransformer());
-    }
 
-    SeriesModelTransformer seriesTransformer() {
-        return new SeriesModelTransformer(lookupStore, topicStore, idCodec(), clipTransformer(), new SystemClock());
-    }
-
-    SegmentModelTransformer segmentModelTransformer() {
-        return new SegmentModelTransformer(segmentWriter);
-    }
-    
     ContentWriteController contentWriteController() {
         return new ContentWriteController(
-                configFetcher,
-                new DefaultGsonModelReader(),
-                new DelegatingModelTransformer(
-                        brandTransformer(),
-                        itemTransformer(),
-                        seriesTransformer()
-                ),
-                new ContentWriteExecutor(
-                        contentResolver,
-                        contentWriter,
-                        scheduleWriter,
-                        channelResolver,
-                        eventResolver
-                ),
-                lookupBackedContentIdGenerator
+                configFetcher, contentWriteExecutor, lookupBackedContentIdGenerator
         );
     }
 

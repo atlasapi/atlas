@@ -1,9 +1,7 @@
 package org.atlasapi.query.worker;
 
 import java.io.ByteArrayInputStream;
-import java.io.IOException;
 
-import org.atlasapi.input.ReadException;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.query.content.ContentWriteExecutor;
 
@@ -37,7 +35,7 @@ public class ContentWriteWorker implements Worker<ContentWriteMessage> {
             Content content = inputContent.getContent();
             content.setId(message.getContentid());
             writeExecutor.writeContent(content, inputContent.getType(), message.getShouldMerge());
-        } catch (IOException | ReadException e) {
+        } catch (Exception e) {
             log.error("Failed to write content", e);
             throw Throwables.propagate(e);
         }

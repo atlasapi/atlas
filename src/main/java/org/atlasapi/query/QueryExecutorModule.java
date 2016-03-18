@@ -15,7 +15,7 @@ import org.atlasapi.input.SegmentModelTransformer;
 import org.atlasapi.input.SeriesModelTransformer;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.segment.SegmentWriter;
-import org.atlasapi.messaging.v3.MessagingModule;
+import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
@@ -48,7 +48,7 @@ import org.springframework.context.annotation.Import;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @Configuration
-@Import({ MessagingModule.class })
+@Import({ KafkaMessagingModule.class })
 public class QueryExecutorModule {
 
     private @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) ContentWriter contentWriter;

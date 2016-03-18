@@ -12,7 +12,7 @@ public abstract class ContentWriteMessageConfiguration {
             @JsonProperty("messageId") String messageId,
             @JsonProperty("timestamp") Timestamp timestamp,
             @JsonProperty("contentBytes") byte[] contentBytes,
-            @JsonProperty("contentId") long contentId,
+            @JsonProperty("contentId") Long contentId,
             @JsonProperty("shouldMerge") boolean shouldMerge
     ) {
 

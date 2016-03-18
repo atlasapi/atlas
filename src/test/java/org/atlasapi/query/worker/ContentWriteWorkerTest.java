@@ -72,7 +72,7 @@ public class ContentWriteWorkerTest {
         );
 
         Content actualContent = contentCaptor.getValue();
-        assertThat(actualContent.getId(), is(message.getContentid()));
+        assertThat(actualContent.getId(), is(message.getContentId()));
         assertThat(actualContent.getCanonicalUri(), is(inputContent.getContent().getCanonicalUri()));
     }
 }

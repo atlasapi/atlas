@@ -39,7 +39,7 @@ public class ContentWriteMessageSerialiserTest {
         assertThat(deserialisedMessage.getMessageId(), is(message.getMessageId()));
         assertThat(deserialisedMessage.getTimestamp(), is(message.getTimestamp()));
         assertThat(deserialisedMessage.getContentBytes(), is(message.getContentBytes()));
-        assertThat(deserialisedMessage.getContentid(), is(message.getContentid()));
+        assertThat(deserialisedMessage.getContentId(), is(message.getContentId()));
         assertThat(deserialisedMessage.getShouldMerge(), is(message.getShouldMerge()));
     }
 }

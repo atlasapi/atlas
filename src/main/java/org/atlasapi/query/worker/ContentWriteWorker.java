@@ -27,13 +27,13 @@ public class ContentWriteWorker implements Worker<ContentWriteMessage> {
     @Override
     public void process(ContentWriteMessage message) throws RecoverableException {
         try {
-            log.debug("Processing message on {}", message.getContentid());
+            log.debug("Processing message on {}", message.getContentId());
 
             ContentWriteExecutor.InputContent inputContent = writeExecutor.parseInputStream(
                     new ByteArrayInputStream(message.getContentBytes())
             );
             Content content = inputContent.getContent();
-            content.setId(message.getContentid());
+            content.setId(message.getContentId());
             writeExecutor.writeContent(content, inputContent.getType(), message.getShouldMerge());
         } catch (Exception e) {
             log.error("Failed to write content", e);

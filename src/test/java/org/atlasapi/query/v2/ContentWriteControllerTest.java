@@ -148,7 +148,7 @@ public class ContentWriteControllerTest {
         ContentWriteMessage actualMessage = messageCaptor.getValue();
         assertThat(actualMessage.getMessageId(), is(not(nullValue())));
         assertThat(actualMessage.getTimestamp(), is(not(nullValue())));
-        assertThat(actualMessage.getContentid(), is(contentId));
+        assertThat(actualMessage.getContentId(), is(contentId));
         assertThat(actualMessage.getShouldMerge(), is(true));
         assertThat(actualMessage.getContentBytes(), is(inputBytes));
 

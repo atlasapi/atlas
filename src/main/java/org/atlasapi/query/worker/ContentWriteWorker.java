@@ -29,6 +29,8 @@ public class ContentWriteWorker implements Worker<ContentWriteMessage> {
     @Override
     public void process(ContentWriteMessage message) throws RecoverableException {
         try {
+            log.debug("Processing message on {}", message.getContentid());
+
             ContentWriteExecutor.InputContent inputContent = writeExecutor.parseInputStream(
                     new ByteArrayInputStream(message.getContentBytes())
             );

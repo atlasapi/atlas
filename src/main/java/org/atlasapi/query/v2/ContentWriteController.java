@@ -98,6 +98,10 @@ public class ContentWriteController {
         byte[] inputStreamBytes;
         ContentWriteExecutor.InputContent inputContent;
         try {
+            // We are wrapping the stream in a ByteArrayInputStream to allow us to read the
+            // stream multiple times. This so we can deserialise here to do the validation
+            // and then pass the same stream to the message sender if the async option is enabled
+            // without having to reserialise it
             inputStreamBytes = IOUtils.toByteArray(req.getInputStream());
             InputStream inputStream = new ByteArrayInputStream(inputStreamBytes);
             inputContent = writeExecutor.parseInputStream(inputStream);

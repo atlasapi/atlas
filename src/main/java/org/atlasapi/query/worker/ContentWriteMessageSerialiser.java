@@ -14,10 +14,9 @@ import com.google.common.base.Throwables;
 
 public class ContentWriteMessageSerialiser implements MessageSerializer<ContentWriteMessage> {
 
-    private final ObjectMapper mapper;
+    private static final ObjectMapper mapper = JsonFactory.makeJsonMapper();
 
-    public ContentWriteMessageSerialiser() {
-        mapper = JsonFactory.makeJsonMapper();
+    static {
         mapper.registerModule(new JacksonMessageSerializer.MessagingModule());
         mapper.addMixInAnnotations(
                 ContentWriteMessage.class, ContentWriteMessageConfiguration.class

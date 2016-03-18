@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
@@ -28,6 +29,8 @@ import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.Timestamp;
 
+import com.google.api.client.repackaged.com.google.common.base.Joiner;
+import com.google.api.client.util.Maps;
 import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
@@ -99,10 +102,10 @@ public class ContentWriteController {
             InputStream inputStream = new ByteArrayInputStream(inputStreamBytes);
             inputContent = writeExecutor.parseInputStream(inputStream);
         } catch (IOException e) {
-            log.error("Error reading input for request " + req.getRequestURL(), e);
+            logError("Error reading input for request", e, req);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
         } catch (Exception e) {
-            log.error("Error reading input for request " + req.getRequestURL(), e);
+            logError("Error reading input for request", e, req);
             return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
 
@@ -126,7 +129,7 @@ public class ContentWriteController {
                 writeExecutor.writeContent(content, inputContent.getType(), merge);
             }
         } catch (Exception e) {
-            log.error("Error executing request " + req.getRequestURL(), e);
+            logError("Error executing request", e, req);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
         }
 
@@ -158,6 +161,30 @@ public class ContentWriteController {
                         + "/3.0/content.json?id="
                         + codec.encode(BigInteger.valueOf(contentId))
         );
+    }
+
+    private void logError(String errorMessage, Exception e, HttpServletRequest req) {
+        StringBuilder errorBuilder = new StringBuilder();
+
+        errorBuilder.append(errorMessage)
+                .append(" ")
+                .append(req.getRequestURL());
+
+        Map<String, String> parameters = Maps.newHashMap();
+        for (Map.Entry<String, String[]> parameter : req.getParameterMap().entrySet()) {
+            parameters.put(parameter.getKey(), Joiner.on(",").join(parameter.getValue()));
+        }
+
+        if (!parameters.isEmpty()) {
+            String parameterString = Joiner.on("&")
+                    .withKeyValueSeparator("=")
+                    .join(parameters);
+
+            errorBuilder.append("?")
+                    .append(parameterString);
+        }
+
+        log.error(errorBuilder.toString(), e);
     }
 
     private Void error(HttpServletResponse response, int code) {

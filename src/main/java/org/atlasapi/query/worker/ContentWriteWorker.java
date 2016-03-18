@@ -36,7 +36,7 @@ public class ContentWriteWorker implements Worker<ContentWriteMessage> {
             content.setId(message.getContentId());
             writeExecutor.writeContent(content, inputContent.getType(), message.getShouldMerge());
         } catch (Exception e) {
-            log.error("Failed to write content", e);
+            log.error("Failed to write content {}", message.getContentId(), e);
             throw Throwables.propagate(e);
         }
     }

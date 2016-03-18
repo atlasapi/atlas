@@ -26,7 +26,8 @@ public class HierarchyDescriptionAndImageUpdaterTest {
 
     private HierarchyDescriptionAndImageUpdater updater;
 
-    private String descriptionsGuidAliasNamespace;
+    private String descriptionGuidAliasNamespace;
+    private String longDescriptionGuidAliasNamespace;
     private String imagesGuidAliasNamespace;
 
     private Image firstImage;
@@ -35,11 +36,14 @@ public class HierarchyDescriptionAndImageUpdaterTest {
 
     @Before
     public void setUp() throws Exception {
-        descriptionsGuidAliasNamespace = "descriptions namespace";
+        descriptionGuidAliasNamespace = "descriptions namespace";
+        longDescriptionGuidAliasNamespace = "long descriptions namespace";
         imagesGuidAliasNamespace = "images namespace";
 
         updater = new HierarchyDescriptionAndImageUpdater(
-                descriptionsGuidAliasNamespace, imagesGuidAliasNamespace
+                descriptionGuidAliasNamespace,
+                longDescriptionGuidAliasNamespace,
+                imagesGuidAliasNamespace
         );
         firstImage = new Image("firstImageUri");
         secondImage = new Image("secondImageUri");
@@ -270,10 +274,18 @@ public class HierarchyDescriptionAndImageUpdaterTest {
         BtVodEntry newerEpisodeRow = getRow("6-guid");
 
         updater.update(brand, olderEpisode, olderEpisodeRow);
-        checkAliasSource(brand, olderEpisodeRow.getGuid(), unrelatedExistingAlias);
+        assertThat(brand.getAliases().size(), is(4));
+        assertThat(brand.getAliases().contains(unrelatedExistingAlias), is(true));
+        checkAliasSource(brand, descriptionGuidAliasNamespace, olderEpisodeRow.getGuid());
+        checkAliasSource(brand, longDescriptionGuidAliasNamespace, olderEpisodeRow.getGuid());
+        checkAliasSource(brand, imagesGuidAliasNamespace, olderEpisodeRow.getGuid());
 
         updater.update(brand, newerEpisode, newerEpisodeRow);
-        checkAliasSource(brand, olderEpisodeRow.getGuid(), unrelatedExistingAlias);
+        assertThat(brand.getAliases().size(), is(4));
+        assertThat(brand.getAliases().contains(unrelatedExistingAlias), is(true));
+        checkAliasSource(brand, descriptionGuidAliasNamespace, olderEpisodeRow.getGuid());
+        checkAliasSource(brand, longDescriptionGuidAliasNamespace, olderEpisodeRow.getGuid());
+        checkAliasSource(brand, imagesGuidAliasNamespace, olderEpisodeRow.getGuid());
     }
 
     @Test
@@ -287,7 +299,9 @@ public class HierarchyDescriptionAndImageUpdaterTest {
         BtVodEntry episodeRow = getRow("6-guid");
 
         updater.update(brand, episode, episodeRow);
-        checkAliasSource(brand, episodeRow.getGuid(), unrelatedExistingAlias);
+        assertThat(brand.getAliases().size(), is(2));
+        assertThat(brand.getAliases().contains(unrelatedExistingAlias), is(true));
+        checkAliasSource(brand, imagesGuidAliasNamespace, episodeRow.getGuid());
     }
 
     @Test
@@ -301,7 +315,10 @@ public class HierarchyDescriptionAndImageUpdaterTest {
         BtVodEntry episodeRow = getRow("5-guid");
 
         updater.update(brand, episoe, episodeRow);
-        checkAliasSource(brand, episodeRow.getGuid(), unrelatedExistingAlias);
+        assertThat(brand.getAliases().size(), is(3));
+        assertThat(brand.getAliases().contains(unrelatedExistingAlias), is(true));
+        checkAliasSource(brand, descriptionGuidAliasNamespace, episodeRow.getGuid());
+        checkAliasSource(brand, longDescriptionGuidAliasNamespace, episodeRow.getGuid());
     }
 
     @Test
@@ -316,7 +333,47 @@ public class HierarchyDescriptionAndImageUpdaterTest {
         );
 
         updater.update(brand, collection);
-        checkAliasSource(brand, collection.getGuid(), unrelatedExistingAlias);
+        assertThat(brand.getAliases().size(), is(4));
+        assertThat(brand.getAliases().contains(unrelatedExistingAlias), is(true));
+        checkAliasSource(brand, descriptionGuidAliasNamespace, collection.getGuid());
+        checkAliasSource(brand, longDescriptionGuidAliasNamespace, collection.getGuid());
+        checkAliasSource(brand, imagesGuidAliasNamespace, collection.getGuid());
+    }
+
+    @Test
+    public void testDoNotUpdateAliasesWhenUpdatingWithSameImagesAndDescriptions() throws Exception {
+        Brand brand = getBrand("uri", "description", "longDescription", firstImage);
+
+        BtVodCollection collection = new BtVodCollection(
+                "guid",
+                DateTime.now(),
+                brand.getDescription(),
+                brand.getLongDescription(),
+                brand.getImages()
+        );
+
+        updater.update(brand, collection);
+        assertThat(brand.getAliases().size(), is(0));
+    }
+
+    @Test
+    public void testDoNotThrowNullPointerExceptionForNullImages() throws Exception {
+        Brand brand = new Brand();
+
+        brand.setCanonicalUri("uri");
+        brand.setDescription("description");
+        brand.setLongDescription("longDescription");
+
+        BtVodCollection collection = new BtVodCollection(
+                "guid",
+                DateTime.now(),
+                brand.getDescription(),
+                brand.getLongDescription(),
+                ImmutableSet.<Image>of()
+        );
+
+        updater.update(brand, collection);
+        assertThat(brand.getAliases().size(), is(0));
     }
 
     private Brand getBrand(String uri, String description, String longDescription,
@@ -390,12 +447,9 @@ public class HierarchyDescriptionAndImageUpdaterTest {
         assertThat(actual.getImage(), is(expectedSource.getImage()));
     }
 
-    private void checkAliasSource(Brand brand, String guid, Alias unrelatedExistingAlias) {
-        assertThat(brand.getAliases().size(), is(3));
+    private void checkAliasSource(Brand brand, String aliasNamespace, String guid) {
         assertThat(brand.getAliases().containsAll(ImmutableSet.of(
-                unrelatedExistingAlias,
-                new Alias(descriptionsGuidAliasNamespace, guid),
-                new Alias(imagesGuidAliasNamespace, guid)
+                new Alias(aliasNamespace, guid)
         )), is(true));
     }
 }

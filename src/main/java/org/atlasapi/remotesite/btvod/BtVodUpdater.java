@@ -47,7 +47,8 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodEntryMatchingPredicate kidsPredicate;
     private final BtVodTagMap btVodTagMap;
 
-    private final String btVodDescriptionsGuidAliasNamespace;
+    private final String btVodDescriptionGuidAliasNamespace;
+    private final String btVodLongDescriptionGuidAliasNamespace;
     private final String btVodImagesGuidAliasNamespace;
 
     public BtVodUpdater(
@@ -69,7 +70,8 @@ public class BtVodUpdater extends ScheduledTask {
             TopicQueryResolver topicQueryResolver,
             BtVodEntryMatchingPredicate kidsPredicate,
             BtVodTagMap btVodTagMap,
-            String btVodDescriptionsGuidAliasNamespace,
+            String btVodDescriptionGuidAliasNamespace,
+            String btVodLongDescriptionsGuidAliasNamespace,
             String btVodImagesGuidAliasNamespace
     ) {
         this.contentWriter = checkNotNull(contentWriter);
@@ -90,7 +92,10 @@ public class BtVodUpdater extends ScheduledTask {
         this.topicQueryResolver = checkNotNull(topicQueryResolver);
         this.kidsPredicate = checkNotNull(kidsPredicate);
         this.btVodTagMap = checkNotNull(btVodTagMap);
-        this.btVodDescriptionsGuidAliasNamespace = checkNotNull(btVodDescriptionsGuidAliasNamespace);
+        this.btVodDescriptionGuidAliasNamespace =
+                checkNotNull(btVodDescriptionGuidAliasNamespace);
+        this.btVodLongDescriptionGuidAliasNamespace =
+                checkNotNull(btVodLongDescriptionsGuidAliasNamespace);
         this.btVodImagesGuidAliasNamespace = checkNotNull(btVodImagesGuidAliasNamespace);
     }
 
@@ -187,7 +192,8 @@ public class BtVodUpdater extends ScheduledTask {
                 brandExtractor.getProcessedBrands(),
                 brandExtractor.getParentGuidToBrand(),
                 new HierarchyDescriptionAndImageUpdater(
-                        btVodDescriptionsGuidAliasNamespace,
+                        btVodDescriptionGuidAliasNamespace,
+                        btVodLongDescriptionGuidAliasNamespace,
                         btVodImagesGuidAliasNamespace
                 ),
                 new CertificateUpdater(),
@@ -285,7 +291,8 @@ public class BtVodUpdater extends ScheduledTask {
                 synthesizedSeriesExtractor.getSynthesizedSeries(),
                 seriesUriExtractor,
                 new HierarchyDescriptionAndImageUpdater(
-                        btVodDescriptionsGuidAliasNamespace,
+                        btVodDescriptionGuidAliasNamespace,
+                        btVodLongDescriptionGuidAliasNamespace,
                         btVodImagesGuidAliasNamespace
                 ),
                 new CertificateUpdater(),

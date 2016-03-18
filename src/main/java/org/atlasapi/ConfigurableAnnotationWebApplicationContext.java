@@ -16,6 +16,7 @@ import org.atlasapi.logging.HealthModule;
 import org.atlasapi.persistence.CassandraPersistenceModule;
 import org.atlasapi.persistence.ManualScheduleRebuildModule;
 import org.atlasapi.persistence.MongoContentPersistenceModule;
+import org.atlasapi.query.QueryExecutorModule;
 import org.atlasapi.query.QueryModule;
 import org.atlasapi.query.QueryWebModule;
 import org.atlasapi.query.SearchModule;
@@ -29,13 +30,14 @@ import org.atlasapi.remotesite.metabroadcast.picks.PicksModule;
 import org.atlasapi.remotesite.metabroadcast.similar.SimilarContentModule;
 import org.atlasapi.remotesite.wikipedia.WikipediaModule;
 import org.atlasapi.system.ContentPurgeWebModule;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
+
+import com.metabroadcast.common.properties.Configurer;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.Lists;
-import com.metabroadcast.common.properties.Configurer;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfigWebApplicationContext {
 
@@ -86,7 +88,8 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 SimilarContentModule.class,
                 CreateYouTubeContentGroupModule.class,
                 ContentPurgeWebModule.class,
-                KnowledgeMotionModule.class
+                KnowledgeMotionModule.class,
+                QueryExecutorModule.class
             );
             if (youViewUploadEnabled()) {
                 builder.add(

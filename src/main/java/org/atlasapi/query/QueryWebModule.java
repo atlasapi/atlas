@@ -131,11 +131,13 @@ import org.atlasapi.query.v2.SearchController;
 import org.atlasapi.query.v2.TaskController;
 import org.atlasapi.query.v2.TopicController;
 import org.atlasapi.query.v2.TopicWriteController;
+import org.atlasapi.query.worker.ContentWriteMessage;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.SystemClock;
 
 import com.google.common.base.Splitter;
@@ -194,6 +196,7 @@ public class QueryWebModule {
     private @Autowired EventContentLister eventContentLister;
 
     private @Autowired ContentWriteExecutor contentWriteExecutor;
+    private @Autowired MessageSender<ContentWriteMessage> contentWriteMessageSender;
     
     @Bean ChannelController channelController() {
         return new ChannelController(configFetcher, log, channelModelWriter(), channelResolver, new SubstitutionTableNumberCodec());
@@ -286,13 +289,16 @@ public class QueryWebModule {
         return new QueryController(queryExecutor, configFetcher, log, contentModelOutputter(), contentWriteController(), eventContentLister);
     }
     
-    NumberToShortStringCodec idCodec() {
+    private NumberToShortStringCodec idCodec() {
         return SubstitutionTableNumberCodec.lowerCaseOnly();
     }
 
-    ContentWriteController contentWriteController() {
+    private ContentWriteController contentWriteController() {
         return new ContentWriteController(
-                configFetcher, contentWriteExecutor, lookupBackedContentIdGenerator
+                configFetcher,
+                contentWriteExecutor,
+                lookupBackedContentIdGenerator,
+                contentWriteMessageSender
         );
     }
 

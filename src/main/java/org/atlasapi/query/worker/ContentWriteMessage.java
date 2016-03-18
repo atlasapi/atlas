@@ -24,7 +24,7 @@ public class ContentWriteMessage extends AbstractMessage {
         return contentBytes;
     }
 
-    public Long getContentid() {
+    public long getContentid() {
         return contentid;
     }
 

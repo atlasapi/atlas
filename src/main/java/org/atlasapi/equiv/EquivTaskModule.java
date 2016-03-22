@@ -178,126 +178,127 @@ public class EquivTaskModule {
     public void scheduleUpdater() {
         ExecutorService executorService = Executors.newFixedThreadPool(
                 NUM_OF_THREADS_FOR_STARTUP_JOBS);
-        if(Boolean.parseBoolean(updaterEnabled)) {
+        if(!Boolean.parseBoolean(updaterEnabled)) {
+            return;
+        }
 
-            List<ScheduledTask> jobsAtStartup = Lists.newArrayList();
-            scheduleEquivalenceJob(publisherUpdateTask(ITV).withName("ITV Equivalence Updater"), ITUNES_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(ITV_INTERLINKING).withName("ITV Interlinking Equivalence Updater"), ITV_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(FIVE).withName("Five Equivalence Updater"), FIVE_SCHEDULE_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(ITUNES).withName("Itunes Equivalence Updater"), ITUNES_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(RADIO_TIMES).withName("RT Equivalence Updater"), RT_EQUIVALENCE_REPETITION,jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(TALK_TALK).withName("TalkTalk Equivalence Updater"), TALKTALK_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(ROVI_EN).withName("Rovi EN Equivalence Updater"), ROVI_EN_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(RTE).withName("RTE Equivalence Updater"), RTE_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(BT_VOD).withName("BT VOD Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(BT_TVE_VOD).withName("BT TVE VOD (prod, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(BT_TVE_VOD_VOLD_CONFIG_1).withName("BT TVE VOD (vold, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(BT_TVE_VOD_VOLE_CONFIG_1).withName("BT TVE VOD (vole, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1).withName("BT TVE VOD (systest2, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(AMAZON_UNBOX).withName("Amazon Unbox Equivalence Updater"), AMAZON_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(UKTV).withName("UKTV Equivalence Updater"), UKTV_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(WIKIPEDIA).withName("Wikipedia Equivalence Updater"), WIKIPEDIA_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(BBC_MUSIC).withName("Music Equivalence Updater"), BBC_MUSIC_EQUIVALENCE_REPETITION, jobsAtStartup);
+        List<ScheduledTask> jobsAtStartup = Lists.newArrayList();
+        scheduleEquivalenceJob(publisherUpdateTask(ITV).withName("ITV Equivalence Updater"), ITUNES_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(ITV_INTERLINKING).withName("ITV Interlinking Equivalence Updater"), ITV_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(FIVE).withName("Five Equivalence Updater"), FIVE_SCHEDULE_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(ITUNES).withName("Itunes Equivalence Updater"), ITUNES_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(RADIO_TIMES).withName("RT Equivalence Updater"), RT_EQUIVALENCE_REPETITION,jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(TALK_TALK).withName("TalkTalk Equivalence Updater"), TALKTALK_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(ROVI_EN).withName("Rovi EN Equivalence Updater"), ROVI_EN_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(RTE).withName("RTE Equivalence Updater"), RTE_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BT_VOD).withName("BT VOD Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BT_TVE_VOD).withName("BT TVE VOD (prod, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BT_TVE_VOD_VOLD_CONFIG_1).withName("BT TVE VOD (vold, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BT_TVE_VOD_VOLE_CONFIG_1).withName("BT TVE VOD (vole, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1).withName("BT TVE VOD (systest2, conf1) Equivalence Updater"), BT_VOD_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(AMAZON_UNBOX).withName("Amazon Unbox Equivalence Updater"), AMAZON_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(UKTV).withName("UKTV Equivalence Updater"), UKTV_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(WIKIPEDIA).withName("Wikipedia Equivalence Updater"), WIKIPEDIA_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BBC_MUSIC).withName("Music Equivalence Updater"), BBC_MUSIC_EQUIVALENCE_REPETITION, jobsAtStartup);
 
-            scheduleEquivalenceJob(publisherUpdateTask(PA).withName("PA Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(BBC).withName("BBC Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(C4).withName("C4 Equivalence Updater"), RepetitionRules.NEVER,jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(C4_PMLSD).withName("C4 PMLSD Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(BBC_REDUX).withName("Redux Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
-            //scheduleEquivalenceJob(publisherUpdateTask(LOVEFILM).withName("Lovefilm Equivalence Updater"), RepetitionRules.every(Duration.standardHours(12)).withOffset(Duration.standardHours(10)), jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(NETFLIX).withName("Netflix Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(YOUVIEW).withName("YouView Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(YOUVIEW_STAGE).withName("YouView Stage Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(VF_AE).withName("VF AE Equivalence Updater"), VF_AE_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(VF_BBC).withName("VF BBC Equivalence Updater"), VF_BBC_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(VF_C5).withName("VF C5 Equivalence Updater"), VF_C5_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(VF_ITV).withName("VF ITV Equivalence Updater"), VF_ITV_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(VF_VIACOM).withName("VF VIACOM Equivalence Updater"), VF_VIACOM_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"), VF_VUBIQUITY_EQUIVALENCE_REPETITION, jobsAtStartup);
-            scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(PA).withName("PA Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BBC).withName("BBC Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(C4).withName("C4 Equivalence Updater"), RepetitionRules.NEVER,jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(C4_PMLSD).withName("C4 PMLSD Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BBC_REDUX).withName("Redux Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
+        //scheduleEquivalenceJob(publisherUpdateTask(LOVEFILM).withName("Lovefilm Equivalence Updater"), RepetitionRules.every(Duration.standardHours(12)).withOffset(Duration.standardHours(10)), jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(NETFLIX).withName("Netflix Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(YOUVIEW).withName("YouView Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(YOUVIEW_STAGE).withName("YouView Stage Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(VF_AE).withName("VF AE Equivalence Updater"), VF_AE_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(VF_BBC).withName("VF BBC Equivalence Updater"), VF_BBC_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(VF_C5).withName("VF C5 Equivalence Updater"), VF_C5_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(VF_ITV).withName("VF ITV Equivalence Updater"), VF_ITV_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(VF_VIACOM).withName("VF VIACOM Equivalence Updater"), VF_VIACOM_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"), VF_VUBIQUITY_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
 
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(YOUVIEW)
-                    .withChannels(youviewChannelResolver.getAllChannels())
-                    .build().withName("YouView Schedule Equivalence (8 day) Updater"),
-                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(YOUVIEW_STAGE)
-                    .withChannels(youviewChannelResolver.getAllChannels())
-                    .build().withName("YouView Stage Schedule Equivalence (8 day) Updater"), 
-                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(YOUVIEW_BT)
-                    .withChannels(youviewChannelResolver.getAllChannels())
-                    .build().withName("YouView BT Schedule Equivalence (8 day) Updater"), 
-                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(YOUVIEW_BT_STAGE)
-                    .withChannels(youviewChannelResolver.getAllChannels())
-                    .build().withName("YouView Stage BT Schedule Equivalence (8 day) Updater"), 
-                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(YOUVIEW_SCOTLAND_RADIO)
-                    .withChannels(youviewChannelResolver.getAllChannels())
-                    .build().withName("YouView Scotland Radio Schedule Equivalence (8 day) Updater"), 
-                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(YOUVIEW_SCOTLAND_RADIO_STAGE)
-                    .withChannels(youviewChannelResolver.getAllChannels())
-                    .build().withName("YouView Stage Scotland Radio Schedule Equivalence (8 day) Updater"), 
-                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(BBC)
-                    .withChannels(bbcChannels())
-                    .build().withName("BBC Schedule Equivalence (8 day) Updater"), 
-                BBC_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(ITV)
-                    .withChannels(itvChannels())
-                    .build().withName("ITV Schedule Equivalence (8 day) Updater"), 
-                ITV_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(ITV_INTERLINKING)
-                    .withChannels(itvChannels())
-                    .build().withName("ITV Interlinking Schedule Equivalence (8 day) Updater"), 
-                ITV_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(C4)
-                    .withChannels(c4Channels())
-                    .build().withName("C4 Schedule Equivalence (8 day) Updater"), 
-                C4_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(C4_PMLSD)
-                    .withChannels(c4Channels())
-                    .build().withName("C4 Schedule Equivalence (8 day) Updater"), 
-                C4_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(0, 7)
-                    .withPublishers(FIVE)
-                    .withChannels(fiveChannels())
-                    .build().withName("Five Schedule Equivalence (8 day) Updater"), 
-                RepetitionRules.NEVER,
-                    jobsAtStartup);
-            scheduleEquivalenceJob(taskBuilder(7, 0)
-                    .withPublishers(BBC_REDUX)
-                    .withChannels(bbcReduxChannels())
-                    .build().withName("Redux Schedule Equivalence (8 day) Updater"), 
-                REDUX_SCHEDULE_EQUIVALENCE_REPETITION,
-                    jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(YOUVIEW)
+                .withChannels(youviewChannelResolver.getAllChannels())
+                .build().withName("YouView Schedule Equivalence (8 day) Updater"),
+            YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(YOUVIEW_STAGE)
+                .withChannels(youviewChannelResolver.getAllChannels())
+                .build().withName("YouView Stage Schedule Equivalence (8 day) Updater"),
+            YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(YOUVIEW_BT)
+                .withChannels(youviewChannelResolver.getAllChannels())
+                .build().withName("YouView BT Schedule Equivalence (8 day) Updater"),
+            YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(YOUVIEW_BT_STAGE)
+                .withChannels(youviewChannelResolver.getAllChannels())
+                .build().withName("YouView Stage BT Schedule Equivalence (8 day) Updater"),
+            YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(YOUVIEW_SCOTLAND_RADIO)
+                .withChannels(youviewChannelResolver.getAllChannels())
+                .build().withName("YouView Scotland Radio Schedule Equivalence (8 day) Updater"),
+            YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(YOUVIEW_SCOTLAND_RADIO_STAGE)
+                .withChannels(youviewChannelResolver.getAllChannels())
+                .build().withName("YouView Stage Scotland Radio Schedule Equivalence (8 day) Updater"),
+            YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(BBC)
+                .withChannels(bbcChannels())
+                .build().withName("BBC Schedule Equivalence (8 day) Updater"),
+            BBC_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(ITV)
+                .withChannels(itvChannels())
+                .build().withName("ITV Schedule Equivalence (8 day) Updater"),
+            ITV_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(ITV_INTERLINKING)
+                .withChannels(itvChannels())
+                .build().withName("ITV Interlinking Schedule Equivalence (8 day) Updater"),
+            ITV_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(C4)
+                .withChannels(c4Channels())
+                .build().withName("C4 Schedule Equivalence (8 day) Updater"),
+            C4_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(C4_PMLSD)
+                .withChannels(c4Channels())
+                .build().withName("C4 Schedule Equivalence (8 day) Updater"),
+            C4_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                .withPublishers(FIVE)
+                .withChannels(fiveChannels())
+                .build().withName("Five Schedule Equivalence (8 day) Updater"),
+            RepetitionRules.NEVER,
+                jobsAtStartup);
+        scheduleEquivalenceJob(taskBuilder(7, 0)
+                .withPublishers(BBC_REDUX)
+                .withChannels(bbcReduxChannels())
+                .build().withName("Redux Schedule Equivalence (8 day) Updater"),
+            REDUX_SCHEDULE_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
 
-            for (ScheduledTask scheduledTask : jobsAtStartup) {
-                executorService.submit(scheduledTask);
-            }
+        for (ScheduledTask scheduledTask : jobsAtStartup) {
+            executorService.submit(scheduledTask);
         }
     }
 

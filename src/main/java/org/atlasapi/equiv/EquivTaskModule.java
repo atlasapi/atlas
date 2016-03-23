@@ -276,7 +276,7 @@ public class EquivTaskModule {
     private void addYouViewScheduleEquivalenceJobs(List<ScheduledTask> jobsAtStartup) {
 
         scheduleEquivalenceJob(
-                taskBuilder(0, 4)
+                taskBuilder(0, 7)
                         .withPublishers(YOUVIEW)
                         .withChannels(youviewChannelResolver.getAllChannels())
                         .build().withName("YouView Schedule Equivalence (8 day) Updater"),
@@ -292,7 +292,7 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                taskBuilder(0, 4)
+                taskBuilder(0, 7)
                         .withPublishers(YOUVIEW_BT)
                         .withChannels(youviewChannelResolver.getAllChannels())
                         .build().withName("YouView BT Schedule Equivalence (8 day) Updater"),

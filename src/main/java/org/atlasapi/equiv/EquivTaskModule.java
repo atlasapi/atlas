@@ -152,6 +152,7 @@ public class EquivTaskModule {
     private static final RepetitionRule EBMS_VF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
+    private @Value("${equiv.updater.youviewschedule.enabled}") String youViewScheduleupdaterEnabled;
     private @Value("${equiv.stream-updater.enabled}") Boolean streamedChangesUpdateEquiv;
     private @Value("${equiv.stream-updater.consumers.default}") Integer defaultStreamedEquivUpdateConsumers;
     private @Value("${equiv.stream-updater.consumers.max}") Integer maxStreamedEquivUpdateConsumers;
@@ -218,42 +219,61 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"), VF_VUBIQUITY_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
 
-        scheduleEquivalenceJob(taskBuilder(0, 7)
-                .withPublishers(YOUVIEW)
-                .withChannels(youviewChannelResolver.getAllChannels())
-                .build().withName("YouView Schedule Equivalence (8 day) Updater"),
-            YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup);
-        scheduleEquivalenceJob(taskBuilder(0, 7)
-                .withPublishers(YOUVIEW_STAGE)
-                .withChannels(youviewChannelResolver.getAllChannels())
-                .build().withName("YouView Stage Schedule Equivalence (8 day) Updater"),
-            YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup);
-        scheduleEquivalenceJob(taskBuilder(0, 7)
-                .withPublishers(YOUVIEW_BT)
-                .withChannels(youviewChannelResolver.getAllChannels())
-                .build().withName("YouView BT Schedule Equivalence (8 day) Updater"),
-            YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup);
-        scheduleEquivalenceJob(taskBuilder(0, 7)
-                .withPublishers(YOUVIEW_BT_STAGE)
-                .withChannels(youviewChannelResolver.getAllChannels())
-                .build().withName("YouView Stage BT Schedule Equivalence (8 day) Updater"),
-            YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup);
-        scheduleEquivalenceJob(taskBuilder(0, 7)
-                .withPublishers(YOUVIEW_SCOTLAND_RADIO)
-                .withChannels(youviewChannelResolver.getAllChannels())
-                .build().withName("YouView Scotland Radio Schedule Equivalence (8 day) Updater"),
-            YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup);
-        scheduleEquivalenceJob(taskBuilder(0, 7)
-                .withPublishers(YOUVIEW_SCOTLAND_RADIO_STAGE)
-                .withChannels(youviewChannelResolver.getAllChannels())
-                .build().withName("YouView Stage Scotland Radio Schedule Equivalence (8 day) Updater"),
-            YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup);
+        if (Boolean.parseBoolean(youViewScheduleupdaterEnabled)) {
+            scheduleEquivalenceJob(
+                    taskBuilder(0, 7)
+                            .withPublishers(YOUVIEW)
+                            .withChannels(youviewChannelResolver.getAllChannels())
+                            .build().withName("YouView Schedule Equivalence (8 day) Updater"),
+                    YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
+                    jobsAtStartup
+            );
+            scheduleEquivalenceJob(
+                    taskBuilder(0, 7)
+                            .withPublishers(YOUVIEW_STAGE)
+                            .withChannels(youviewChannelResolver.getAllChannels())
+                            .build().withName("YouView Stage Schedule Equivalence (8 day) Updater"),
+                    YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
+                    jobsAtStartup
+            );
+            scheduleEquivalenceJob(
+                    taskBuilder(0, 7)
+                            .withPublishers(YOUVIEW_BT)
+                            .withChannels(youviewChannelResolver.getAllChannels())
+                            .build().withName("YouView BT Schedule Equivalence (8 day) Updater"),
+                    YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
+                    jobsAtStartup
+            );
+            scheduleEquivalenceJob(
+                    taskBuilder(0, 7)
+                            .withPublishers(YOUVIEW_BT_STAGE)
+                            .withChannels(youviewChannelResolver.getAllChannels())
+                            .build()
+                            .withName("YouView Stage BT Schedule Equivalence (8 day) Updater"),
+                    YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
+                    jobsAtStartup
+            );
+            scheduleEquivalenceJob(
+                    taskBuilder(0, 7)
+                            .withPublishers(YOUVIEW_SCOTLAND_RADIO)
+                            .withChannels(youviewChannelResolver.getAllChannels())
+                            .build()
+                            .withName("YouView Scotland Radio Schedule Equivalence (8 day) Updater"),
+                    YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
+                    jobsAtStartup
+            );
+            scheduleEquivalenceJob(
+                    taskBuilder(0, 7)
+                            .withPublishers(YOUVIEW_SCOTLAND_RADIO_STAGE)
+                            .withChannels(youviewChannelResolver.getAllChannels())
+                            .build()
+                            .withName(
+                                    "YouView Stage Scotland Radio Schedule Equivalence (8 day) Updater"),
+                    YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
+                    jobsAtStartup
+            );
+        }
+
         scheduleEquivalenceJob(taskBuilder(0, 7)
                 .withPublishers(BBC)
                 .withChannels(bbcChannels())

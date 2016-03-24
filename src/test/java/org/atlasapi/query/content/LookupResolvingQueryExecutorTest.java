@@ -6,6 +6,7 @@ import static org.junit.Assert.assertThat;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import junit.framework.TestCase;
 
@@ -15,6 +16,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.output.Annotation;
 import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.InMemoryLookupEntryStore;
@@ -53,10 +55,13 @@ public class LookupResolvingQueryExecutorTest extends TestCase {
         writeEquivalenceEntries(queryItem, enabledEquivItem, disabledEquivItem);
 
         context.checking(new Expectations(){{
-            one(mongoContentResolver).findByLookupRefs(with(hasItems(LookupRef.from(queryItem), LookupRef.from(enabledEquivItem))));
+            one(mongoContentResolver).findByLookupRefs(
+                    with(hasItems(LookupRef.from(queryItem), LookupRef.from(enabledEquivItem))),
+                    with(Expectations.<Set<Annotation>>anything()));
             will(returnValue(ResolvedContent.builder().put(queryItem.getCanonicalUri(), queryItem).put(enabledEquivItem.getCanonicalUri(), enabledEquivItem).build()));
         }});
         context.checking(new Expectations(){{
+            never(cassandraContentResolver).findByLookupRefs(with(Expectations.<Iterable<LookupRef>>anything()), with(Expectations.<Set<Annotation>>anything()));
             never(cassandraContentResolver).findByLookupRefs(with(Expectations.<Iterable<LookupRef>>anything()));
         }});
 
@@ -98,11 +103,15 @@ public class LookupResolvingQueryExecutorTest extends TestCase {
         lookupStore.store(LookupEntry.lookupEntryFrom(queryItem));
 
         context.checking(new Expectations(){{
-            one(mongoContentResolver).findByLookupRefs(with(Expectations.<Iterable<LookupRef>>anything()));
+            one(mongoContentResolver).findByLookupRefs(
+                    with(Expectations.<Iterable<LookupRef>>anything()),
+                    with(Expectations.<Set<Annotation>>anything()));
             will(returnValue(ResolvedContent.builder().put(queryItem.getCanonicalUri(), queryItem).build()));
         }});
         context.checking(new Expectations(){{
-            never(cassandraContentResolver).findByLookupRefs(with(Expectations.<Iterable<LookupRef>>anything()));
+            never(cassandraContentResolver).findByLookupRefs(
+                    with(Expectations.<Iterable<LookupRef>>anything()),
+                    with(Expectations.<Set<Annotation>>anything()));
         }});
 
         Map<String, List<Identified>> result = executor.executeUriQuery(ImmutableList.of(query),
@@ -203,7 +212,9 @@ public class LookupResolvingQueryExecutorTest extends TestCase {
                 .copyWithDirectEquivalents(ImmutableSet.of(queryEntry.lookupRef())));
 
         context.checking(new Expectations(){{
-            one(mongoContentResolver).findByLookupRefs(with(hasItems(LookupRef.from(equivItem))));
+            one(mongoContentResolver).findByLookupRefs(
+                    with(hasItems(LookupRef.from(equivItem))),
+                    with(Expectations.<Set<Annotation>>anything()));
             will(returnValue(ResolvedContent.builder().put(equivItem.getCanonicalUri(), equivItem).build()));
         }});
         context.checking(new Expectations(){{

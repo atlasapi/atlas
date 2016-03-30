@@ -74,12 +74,23 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             }
 
             //series id -> series
-            final BiMap<Integer, Series> extractedSeries = linkBrandsAndSeries(dataSet.getArtistCollectionTable(), extractedBrands, extractSeries(dataSet.getCollectionTable()));
+            final BiMap<Integer, Series> extractedSeries = linkBrandsAndSeries(
+                    dataSet.getArtistCollectionTable(),
+                    extractedBrands,
+                    extractSeries(dataSet.getCollectionTable())
+            );
             
-            Multimap<String, Location> extractedLocations = extractLocations(dataSet, ImmutableSet.of(Countries.GB, Countries.US));
+            Multimap<String, Location> extractedLocations = extractLocations(
+                    dataSet,
+                    ImmutableSet.of(Countries.GB, Countries.US)
+            );
             
             //episode id -> trackNumber/series
-            Multimap<Series, Episode> extractedEpisodes = linkEpisodesAndSeries(dataSet.getCollectionVideoTable(), extractedSeries, extractVideos(dataSet.getVideoTable(), extractedSeries, extractedLocations));
+            Multimap<Series, Episode> extractedEpisodes = linkEpisodesAndSeries(
+                    dataSet.getCollectionVideoTable(),
+                    extractedSeries,
+                    extractVideos(dataSet.getVideoTable(), extractedSeries, extractedLocations)
+            );
             
             int seriess = 0;
             Set<Series> seriesToWrite = extractedEpisodes.keySet();
@@ -101,8 +112,12 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
     }
 
     // Return a map here to give this function some transparency.
-    private BiMap<Integer, Series> linkBrandsAndSeries(EpfTable<EpfArtistCollection> artistCollectionTable, final Map<Integer, Brand> brands, final BiMap<Integer, Series> series) throws IOException {
+    private BiMap<Integer, Series> linkBrandsAndSeries(EpfTable<EpfArtistCollection> artistCollectionTable,
+            final Map<Integer, Brand> brands,
+            final BiMap<Integer, Series> series) throws IOException {
+
         reportStatus("Linking series to brands");
+
         return artistCollectionTable.processRows(new EpfTableRowProcessor<EpfArtistCollection, BiMap<Integer, Series>>() {
 
             private final ImmutableBiMap.Builder<Integer, Series> linkedSeries = ImmutableBiMap.builder();

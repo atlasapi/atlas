@@ -82,7 +82,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             
             Multimap<String, Location> extractedLocations = extractLocations(
                     dataSet,
-                    ImmutableSet.of(Countries.GB, Countries.US)
+                    ImmutableSet.of(Countries.GB)
             );
             
             //episode id -> trackNumber/series

@@ -13,6 +13,7 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
@@ -89,6 +90,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public static final String ITEM = "ITEM";
     public static final String BRAND = "BRAND";
     public static final String SERIES = "SERIES";
+    public static final String FILM = "FILM";
 
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
     private final Map<String, Container> seenContainer = Maps.newHashMap();
@@ -162,6 +164,17 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 seenContent.put(manualHash, episode);
             } else {
                 seenContent.put(manualHash, mergeAliasesAndLocations(episode, seen));
+            }
+        } else if (content instanceof Film) {
+            Film film = (Film) content;
+            String title = film.getTitle();
+            String year = film.getYear().toString();
+            String manualHash = title.concat(year).concat(FILM);
+            Content seen = seenContent.get(manualHash);
+            if (seen == null) {
+                seenContent.put(manualHash, film);
+            } else {
+                seenContent.put(manualHash, mergeAliasesAndLocations(film, seen));
             }
         } else if (content instanceof Item) {
             Item item = (Item) content;

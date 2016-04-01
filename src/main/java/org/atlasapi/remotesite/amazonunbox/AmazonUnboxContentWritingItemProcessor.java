@@ -87,6 +87,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public static final String CONTAINER = "CONTAINER";
     public static final String EPISODE = "EPISODE";
     public static final String ITEM = "ITEM";
+    public static final String BRAND = "BRAND";
+    public static final String SERIES = "SERIES";
 
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
     private final Map<String, Container> seenContainer = Maps.newHashMap();
@@ -131,11 +133,23 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void checkForDuplicatesSaveForProcessing(Content content) {
-        if (content instanceof Container) {
+        if (content instanceof Brand) {
             String title = content.getTitle();
-            String manualHash = title.concat(CONTAINER);
+            String manualHash = title.concat(BRAND);
+            Content seen = seenContent.get(manualHash);
             if (seenContent.get(title) == null) {
                 seenContent.put(manualHash, content);
+            } else {
+                seenContent.put(manualHash, mergeAliasesAndLocations(content, seen));
+            }
+        } else if (content instanceof Series) {
+            String title = content.getTitle();
+            String manualHash = title.concat(SERIES);
+            Content seen = seenContent.get(manualHash);
+            if (seenContent.get(title) == null) {
+                seenContent.put(manualHash, content);
+            } else {
+                seenContent.put(manualHash, mergeAliasesAndLocations(content, seen));
             }
         } else if (content instanceof Episode){
             Episode episode = (Episode) content;

@@ -17,10 +17,12 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentMerger.AliasMergeStrategy;
@@ -306,6 +308,28 @@ public class ContentMergerTest {
                 ImmutableSet.of(topicRef1, topicRef2, topicRef3)
         );
 
+    }
+
+    @Test
+    public void testMergesContainers() {
+        ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.MERGE, MergeStrategy.MERGE);
+        Episode current = createEpisode("title", Publisher.METABROADCAST, 1);
+        Episode extracted = createEpisode("title", Publisher.METABROADCAST, 1);
+
+        ParentRef seriesRef1 = mock(ParentRef.class);
+        ParentRef parentRef1 = mock(ParentRef.class);
+
+        extracted.setParentRef(parentRef1);
+        extracted.setSeriesRef(seriesRef1);
+
+        Episode merged = (Episode) contentMerger.merge(current, extracted);
+
+        assertEquals(merged.getContainer(),
+                extracted.getContainer()
+        );
+        assertEquals(merged.getSeriesRef(),
+                extracted.getSeriesRef()
+        );
     }
 
     private Item createItem(String title, Publisher publisher) {

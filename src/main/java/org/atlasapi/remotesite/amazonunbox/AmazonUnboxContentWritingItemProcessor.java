@@ -139,19 +139,15 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             String title = content.getTitle();
             String manualHash = title.concat(BRAND);
             Content seen = seenContent.get(manualHash);
-            if (seenContent.get(title) == null) {
-                seenContent.put(manualHash, content);
-            } else {
-                seenContent.put(manualHash, mergeAliasesAndLocations(content, seen));
+            if (seen == null) {
+                seenContent.forcePut(manualHash, content);
             }
         } else if (content instanceof Series) {
             String title = content.getTitle();
             String manualHash = title.concat(SERIES);
             Content seen = seenContent.get(manualHash);
-            if (seenContent.get(title) == null) {
-                seenContent.put(manualHash, content);
-            } else {
-                seenContent.put(manualHash, mergeAliasesAndLocations(content, seen));
+            if (seen == null) {
+                seenContent.forcePut(manualHash, content);
             }
         } else if (content instanceof Episode){
             Episode episode = (Episode) content;
@@ -161,20 +157,19 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             String manualHash = title.concat(episodeNumber).concat(seasonNumber).concat(EPISODE);
             Content seen = seenContent.get(manualHash);
             if (seen == null) {
-                seenContent.put(manualHash, episode);
+                seenContent.forcePut(manualHash, episode);
             } else {
-                seenContent.put(manualHash, mergeAliasesAndLocations(episode, seen));
+                seenContent.forcePut(manualHash, mergeAliasesAndLocations(episode, seen));
             }
         } else if (content instanceof Film) {
             Film film = (Film) content;
             String title = film.getTitle();
-            String year = film.getYear().toString();
-            String manualHash = title.concat(year).concat(FILM);
+            String manualHash = title.concat(FILM);
             Content seen = seenContent.get(manualHash);
             if (seen == null) {
-                seenContent.put(manualHash, film);
+                seenContent.forcePut(manualHash, film);
             } else {
-                seenContent.put(manualHash, mergeAliasesAndLocations(film, seen));
+                seenContent.forcePut(manualHash, mergeAliasesAndLocations(film, seen));
             }
         } else if (content instanceof Item) {
             Item item = (Item) content;
@@ -182,9 +177,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             String manualHash = title.concat(ITEM);
             Content seen = seenContent.get(manualHash);
             if (seen == null) {
-                seenContent.put(manualHash, item);
+                seenContent.forcePut(manualHash, item);
             } else {
-                seenContent.put(manualHash, mergeAliasesAndLocations(item, seen));
+                seenContent.forcePut(manualHash, mergeAliasesAndLocations(item, seen));
             }
         }
     }

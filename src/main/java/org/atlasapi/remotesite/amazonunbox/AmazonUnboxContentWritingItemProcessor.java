@@ -135,19 +135,22 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void checkForDuplicatesSaveForProcessing(Content content) {
+        if (content.getCanonicalUri().equals("http://unbox.amazon.co.uk/B0108LZVAE")) {
+            log.debug("Problem episode without container");
+        }
         if (content instanceof Brand) {
             String title = content.getTitle();
             String manualHash = title.concat(BRAND);
             Content seen = seenContent.get(manualHash);
-            if (seen == null) {
-                seenContent.forcePut(manualHash, content);
+            if (seen == null && !seenContent.containsValue(content)) {
+                seenContent.put(manualHash, content);
             }
         } else if (content instanceof Series) {
             String title = content.getTitle();
             String manualHash = title.concat(SERIES);
             Content seen = seenContent.get(manualHash);
-            if (seen == null) {
-                seenContent.forcePut(manualHash, content);
+            if (seen == null && !seenContent.containsValue(content)) {
+                seenContent.put(manualHash, content);
             }
         } else if (content instanceof Episode){
             Episode episode = (Episode) content;
@@ -157,7 +160,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             String manualHash = title.concat(episodeNumber).concat(seasonNumber).concat(EPISODE);
             Content seen = seenContent.get(manualHash);
             if (seen == null) {
-                seenContent.forcePut(manualHash, episode);
+                seenContent.put(manualHash, episode);
             } else {
                 seenContent.forcePut(manualHash, mergeAliasesAndLocations(episode, seen));
             }
@@ -167,7 +170,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             String manualHash = title.concat(FILM);
             Content seen = seenContent.get(manualHash);
             if (seen == null) {
-                seenContent.forcePut(manualHash, film);
+                seenContent.put(manualHash, film);
             } else {
                 seenContent.forcePut(manualHash, mergeAliasesAndLocations(film, seen));
             }
@@ -177,7 +180,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             String manualHash = title.concat(ITEM);
             Content seen = seenContent.get(manualHash);
             if (seen == null) {
-                seenContent.forcePut(manualHash, item);
+                seenContent.put(manualHash, item);
             } else {
                 seenContent.forcePut(manualHash, mergeAliasesAndLocations(item, seen));
             }
@@ -215,6 +218,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private void processSeenContent() {
         for (Content content : seenContent.values()) {
+            if (content.getCanonicalUri().equals("http://unbox.amazon.co.uk/B0108LZVAE")) {
+                log.debug("Problem episode without container");
+            }
             Maybe<Identified> existing = resolve(content.getCanonicalUri());
             if (existing.isNothing()) {
                 write(content);
@@ -418,7 +424,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             Series series = (Series) seenContainer.get(seriesUri);
             episode.setSeriesNumber(series.getSeriesNumber());
         }
-        
+
         writer.createOrUpdate(episode);
     }
 }

@@ -21,7 +21,6 @@ import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
 import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.REDBEE_MEDIA;
 import static org.atlasapi.media.entity.Publisher.ROVI_EN;
 import static org.atlasapi.media.entity.Publisher.RTE;
 import static org.atlasapi.media.entity.Publisher.TALK_TALK;
@@ -147,7 +146,6 @@ public class EquivTaskModule {
     private static final RepetitionRule VF_VIACOM_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_VUBIQUITY_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule EBMS_VF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
-    private static final RepetitionRule REDBEE_MEDIA_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
     private @Value("${equiv.updater.youviewschedule.enabled}") String youViewScheduleUpdaterEnabled;
@@ -228,7 +226,6 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(publisherUpdateTask(VF_VIACOM).withName("VF VIACOM Equivalence Updater"), VF_VIACOM_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"), VF_VUBIQUITY_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
-        scheduleEquivalenceJob(publisherUpdateTask(REDBEE_MEDIA).withName("Redbee Statutory Listings Equivalence Updater"), REDBEE_MEDIA_EQUIVALENCE_REPETITION, jobsAtStartup);
 
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(BBC)

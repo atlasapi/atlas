@@ -124,7 +124,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 episode.setSeriesNumber(source.getSeasonNumber());
             }
             episode.setParentRef(new ParentRef(createBrandUri(source.getSeriesAsin())));
-            
+
             item = episode;
         } else {
             item = new Item();
@@ -285,6 +285,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         content.setLanguages(generateLanguages(source));
         
         content.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
+        //we are setting title of brand as description for deduping episodes that
+        // have same title, episode number and series number such as "Pilot Ep.1 S.1"
+        content.setShortDescription(source.getSeriesTitle());
         content.setImage(source.getLargeImageUrl());
         content.setImages(generateImages(source));
         if (source.getReleaseDate() != null) {

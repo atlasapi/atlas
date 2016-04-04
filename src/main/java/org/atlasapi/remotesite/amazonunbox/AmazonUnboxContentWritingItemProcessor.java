@@ -9,6 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -93,6 +95,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public static final String BRAND = "BRAND";
     public static final String SERIES = "SERIES";
     public static final String FILM = "FILM";
+    public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
 
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
     private final Map<String, Container> seenContainer = Maps.newHashMap();
@@ -160,7 +163,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 String title = episode.getTitle();
                 String episodeNumber = episode.getEpisodeNumber().toString();
                 String seasonNumber = episode.getSeriesNumber().toString();
-                manualHash = title.concat(episodeNumber).concat(seasonNumber).concat(EPISODE);
+                String brandTitle = episode.getShortDescription();
+                manualHash = title.concat(brandTitle).concat(episodeNumber).concat(seasonNumber).concat(EPISODE);
             } else if (content instanceof Film) {
                 Film film = (Film) content;
                 manualHash = "";
@@ -187,12 +191,20 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private Content mergeAliasesAndLocations(Content item, Content seen) {
         Version version = Iterables.getOnlyElement(item.getVersions());
-        Alias alias = Iterables.getOnlyElement(item.getAliases());
+        Alias alias = Iterables.getOnlyElement(Iterables.filter(item.getAliases(), AMAZON_ALIAS));
         version.addAlias(alias);
-        seen.getAliases().add(alias);
-        seen.getVersions().add(version);
+        seen.addAlias(alias);
+        seen.addVersion(version);
         return seen;
     }
+
+    private Predicate<Alias> AMAZON_ALIAS = new Predicate<Alias>() {
+
+        @Override
+        public boolean apply(Alias input) {
+            return input.getNamespace().equals(GB_AMAZON_ASIN);
+        }
+    };
 
     @Override
     public void finish() {

@@ -75,7 +75,7 @@ public class AmazonUnboxContentWritingItemProcessorTest {
     }
 
     @Test
-    public void testDuplicatedEpisodesMergeToOne()
+    public void testHierarchyIsIngestedWithoutDuplicates()
             throws ParserConfigurationException, SAXException, IOException {
         SAXParserFactory factory = SAXParserFactory.newInstance();
         SAXParser saxParser = factory.newSAXParser();

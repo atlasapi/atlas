@@ -137,54 +137,50 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void checkForDuplicatesSaveForProcessing(Content content) {
-        if (content.getCanonicalUri().equals("http://unbox.amazon.co.uk/B0108LZVAE")) {
-            log.debug("Problem episode without container");
-        }
-        if (content instanceof Brand) {
-            String title = content.getTitle();
-            String manualHash = title.concat(BRAND);
+        String manualHash;
+        if (content instanceof Container) {
+
+            if (content instanceof Brand) {
+                String title = content.getTitle();
+                manualHash = title.concat(BRAND);
+            } else {
+                String title = content.getTitle();
+                manualHash = title.concat(SERIES);
+            }
+
             Content seen = seenContent.get(manualHash);
             if (seen == null && !seenContent.containsValue(content)) {
                 seenContent.put(manualHash, content);
             }
-        } else if (content instanceof Series) {
-            String title = content.getTitle();
-            String manualHash = title.concat(SERIES);
+
+        } else {
+
+            if (content instanceof Episode){
+                Episode episode = (Episode) content;
+                String title = episode.getTitle();
+                String episodeNumber = episode.getEpisodeNumber().toString();
+                String seasonNumber = episode.getSeriesNumber().toString();
+                manualHash = title.concat(episodeNumber).concat(seasonNumber).concat(EPISODE);
+            } else if (content instanceof Film) {
+                Film film = (Film) content;
+                manualHash = "";
+                String title = film.getTitle();
+                Integer year = film.getYear();
+                if (film.getYear() != null) {
+                    manualHash = manualHash.concat(year.toString());
+                }
+                manualHash = manualHash.concat(title).concat(FILM);
+            } else {
+                Item item = (Item) content;
+                String title = item.getTitle();
+                manualHash = title.concat(ITEM);
+            }
+
             Content seen = seenContent.get(manualHash);
-            if (seen == null && !seenContent.containsValue(content)) {
+            if (seen == null) {
                 seenContent.put(manualHash, content);
-            }
-        } else if (content instanceof Episode){
-            Episode episode = (Episode) content;
-            String title = episode.getTitle();
-            String episodeNumber = episode.getEpisodeNumber().toString();
-            String seasonNumber = episode.getSeriesNumber().toString();
-            String manualHash = title.concat(episodeNumber).concat(seasonNumber).concat(EPISODE);
-            Content seen = seenContent.get(manualHash);
-            if (seen == null) {
-                seenContent.put(manualHash, episode);
             } else {
-                seenContent.forcePut(manualHash, mergeAliasesAndLocations(episode, seen));
-            }
-        } else if (content instanceof Film) {
-            Film film = (Film) content;
-            String title = film.getTitle();
-            String manualHash = title.concat(FILM);
-            Content seen = seenContent.get(manualHash);
-            if (seen == null) {
-                seenContent.put(manualHash, film);
-            } else {
-                seenContent.forcePut(manualHash, mergeAliasesAndLocations(film, seen));
-            }
-        } else if (content instanceof Item) {
-            Item item = (Item) content;
-            String title = item.getTitle();
-            String manualHash = title.concat(ITEM);
-            Content seen = seenContent.get(manualHash);
-            if (seen == null) {
-                seenContent.put(manualHash, item);
-            } else {
-                seenContent.forcePut(manualHash, mergeAliasesAndLocations(item, seen));
+                seenContent.forcePut(manualHash, mergeAliasesAndLocations(content, seen));
             }
         }
     }
@@ -223,9 +219,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private void processSeenContent() {
         for (Content content : seenContent.values()) {
-            if (content.getCanonicalUri().equals("http://unbox.amazon.co.uk/B0108LZVAE")) {
-                log.debug("Problem episode without container");
-            }
             Maybe<Identified> existing = resolve(content.getCanonicalUri());
             if (existing.isNothing()) {
                 write(content);

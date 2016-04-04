@@ -97,6 +97,14 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public static final String FILM = "FILM";
     public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
 
+    private final Predicate<Alias> AMAZON_ALIAS = new Predicate<Alias>() {
+
+        @Override
+        public boolean apply(Alias input) {
+            return input.getNamespace().equals(GB_AMAZON_ASIN);
+        }
+    };
+
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
     private final Map<String, Container> seenContainer = Maps.newHashMap();
     private final SetMultimap<String, Content> cached = HashMultimap.create();
@@ -140,20 +148,19 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void checkForDuplicatesSaveForProcessing(Content content) {
-        String manualHash;
+        StringBuilder key = new StringBuilder();
         if (content instanceof Container) {
 
             if (content instanceof Brand) {
                 String title = content.getTitle();
-                manualHash = title.concat(BRAND);
+                key.append(title).append(BRAND);
             } else {
                 String title = content.getTitle();
-                manualHash = title.concat(SERIES);
+                key.append(title).append(SERIES);
             }
-
-            Content seen = seenContent.get(manualHash);
-            if (seen == null && !seenContent.containsValue(content)) {
-                seenContent.put(manualHash, content);
+            String hash = key.toString();
+            if (!seenContent.containsKey(hash) && !seenContent.containsValue(content)) {
+                seenContent.put(hash, content);
             }
 
         } else {
@@ -161,30 +168,29 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             if (content instanceof Episode){
                 Episode episode = (Episode) content;
                 String title = episode.getTitle();
-                String episodeNumber = episode.getEpisodeNumber().toString();
-                String seasonNumber = episode.getSeriesNumber().toString();
+                int episodeNumber = episode.getEpisodeNumber();
+                int seasonNumber = episode.getSeriesNumber();
                 String brandTitle = episode.getShortDescription();
-                manualHash = title.concat(brandTitle).concat(episodeNumber).concat(seasonNumber).concat(EPISODE);
+                key.append(title).append(brandTitle).append(episodeNumber).append(seasonNumber).append(EPISODE);
             } else if (content instanceof Film) {
                 Film film = (Film) content;
-                manualHash = "";
                 String title = film.getTitle();
                 Integer year = film.getYear();
                 if (film.getYear() != null) {
-                    manualHash = manualHash.concat(year.toString());
+                    key.append(year);
                 }
-                manualHash = manualHash.concat(title).concat(FILM);
+                key.append(title).append(FILM);
             } else {
                 Item item = (Item) content;
                 String title = item.getTitle();
-                manualHash = title.concat(ITEM);
+                key.append(title).append(ITEM);
             }
-
-            Content seen = seenContent.get(manualHash);
-            if (seen == null) {
-                seenContent.put(manualHash, content);
+            String hash = key.toString();
+            if (!seenContent.containsKey(hash)) {
+                seenContent.put(hash, content);
             } else {
-                seenContent.forcePut(manualHash, mergeAliasesAndLocations(content, seen));
+                Content seen = seenContent.get(hash);
+                seenContent.forcePut(hash, mergeAliasesAndLocations(content, seen));
             }
         }
     }
@@ -197,14 +203,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         seen.addVersion(version);
         return seen;
     }
-
-    private Predicate<Alias> AMAZON_ALIAS = new Predicate<Alias>() {
-
-        @Override
-        public boolean apply(Alias input) {
-            return input.getNamespace().equals(GB_AMAZON_ASIN);
-        }
-    };
 
     @Override
     public void finish() {

@@ -101,7 +101,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
         @Override
         public boolean apply(Alias input) {
-            return input.getNamespace().equals(GB_AMAZON_ASIN);
+            return GB_AMAZON_ASIN.equals(input.getNamespace());
         }
     };
 

@@ -132,6 +132,12 @@ public class PeopleWriteController {
         existing.setBirthDate(update.getBirthDate());
         existing.setBirthPlace(update.getBirthPlace());
         existing.setQuotes(merge ? merge(existing.getQuotes(),update.getQuotes()) : update.getQuotes());
+        existing.setImages(merge ?
+                           merge(existing.getImages(), update.getImages()) :
+                           update.getImages());
+        existing.setAwards(merge ?
+                           merge(existing.getAwards(), update.getAwards()) :
+                           update.getAwards());
         return existing;
     }
 

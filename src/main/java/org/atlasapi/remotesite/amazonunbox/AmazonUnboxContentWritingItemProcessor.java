@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
@@ -19,6 +20,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -188,8 +190,11 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private Content mergeAliasesAndLocations(Content item, Content seen) {
-        seen.setAliases(Iterables.concat(item.getAliases(), seen.getAliases()));
-        seen.getVersions().addAll(item.getVersions());
+        Version version = Iterables.getOnlyElement(item.getVersions());
+        Alias alias = Iterables.getOnlyElement(item.getAliases());
+        version.addAlias(alias);
+        seen.getAliases().add(alias);
+        seen.getVersions().add(version);
         return seen;
     }
 

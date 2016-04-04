@@ -327,6 +327,9 @@ public class ContentMergerTest {
         assertEquals(merged.getContainer(),
                 extracted.getContainer()
         );
+        assertEquals(merged.getSeriesRef(),
+                extracted.getSeriesRef()
+        );
     }
 
     private Item createItem(String title, Publisher publisher) {

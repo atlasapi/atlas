@@ -120,8 +120,7 @@ public class ContentMerger {
             current.setSeriesRef(extracted.getSeriesRef());
         }
 
-        if (current.getContainer() == null
-                || extracted.getContainer() == null) {
+        if (current.getContainer() == null) {
             current.setParentRef(extracted.getContainer());
         }
         return current;

@@ -119,6 +119,10 @@ public class ContentMerger {
                 || !current.getSeriesRef().getUri().equals(extracted.getSeriesRef().getUri())) {
             current.setSeriesRef(extracted.getSeriesRef());
         }
+
+        if (current.getContainer() == null) {
+            current.setParentRef(extracted.getContainer());
+        }
         return current;
     }
 

@@ -296,34 +296,20 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         Set<Content> allLoveFilmContent = ImmutableSet.copyOf(resolveAllLoveFilmContent());
         Set<Content> notSeen = Sets.difference(allLoveFilmContent, seenContent.values());
         
-//        float missingPercentage = ((float) notSeen.size() / (float) allLoveFilmContent.size()) * 100;
-//        if (missingPercentage > (float) missingContentPercentage) {
-//            throw new RuntimeException("File failed to update " + missingPercentage + "% of all LoveFilm content. File may be truncated.");
-//        } else {
-//            // TODO check/test if this does what it should
-//            List<Content> orderedContent = REVERSE_HIERARCHICAL_ORDER.sortedCopy(notSeen);
-//            for (Content notSeenContent : orderedContent) {
-//                notSeenContent.setActivelyPublished(false);
-//                // write
-//                if (notSeenContent instanceof Item) {
-//                    writer.createOrUpdate((Item) notSeenContent);
-//                } else if (notSeenContent instanceof Container) {
-//                    writer.createOrUpdate((Container) notSeenContent);
-//                } else {
-//                    throw new RuntimeException("LoveFilm content with uri " + notSeenContent.getCanonicalUri() + " not an Item or a Container");
-//                }
-//            }
-//        }
-        //Temporarily commented out check for missingContentPercentage, will uncomment after first ingest with deduping logic
-        List<Content> orderedContent = REVERSE_HIERARCHICAL_ORDER.sortedCopy(notSeen);
-        for (Content notSeenContent : orderedContent) {
-            notSeenContent.setActivelyPublished(false);
-            if (notSeenContent instanceof Item) {
-                writer.createOrUpdate((Item) notSeenContent);
-            } else if (notSeenContent instanceof Container) {
-                writer.createOrUpdate((Container) notSeenContent);
-            } else {
-                throw new RuntimeException("LoveFilm content with uri " + notSeenContent.getCanonicalUri() + " not an Item or a Container");
+        float missingPercentage = ((float) notSeen.size() / (float) allLoveFilmContent.size()) * 100;
+        if (missingPercentage > (float) missingContentPercentage) {
+            throw new RuntimeException("File failed to update " + missingPercentage + "% of all LoveFilm content. File may be truncated.");
+        } else {
+            List<Content> orderedContent = REVERSE_HIERARCHICAL_ORDER.sortedCopy(notSeen);
+            for (Content notSeenContent : orderedContent) {
+                notSeenContent.setActivelyPublished(false);
+                if (notSeenContent instanceof Item) {
+                    writer.createOrUpdate((Item) notSeenContent);
+                } else if (notSeenContent instanceof Container) {
+                    writer.createOrUpdate((Container) notSeenContent);
+                } else {
+                    throw new RuntimeException("LoveFilm content with uri " + notSeenContent.getCanonicalUri() + " not an Item or a Container");
+                }
             }
         }
     }

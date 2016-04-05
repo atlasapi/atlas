@@ -125,7 +125,12 @@ public class C4FourOdEpisodesExtractorTest extends TestCase {
 		Policy firstEpisodePolicy = firstEpsiodeLocation.getPolicy();
 		assertThat(firstEpisodePolicy.getAvailabilityStart().withZone(DateTimeZones.UTC), is(new DateTime("2009-07-01T22:00:00.000Z").withZone(DateTimeZones.UTC)));
 		assertThat(firstEpisodePolicy.getAvailabilityEnd().withZone(DateTimeZones.UTC), is(new DateTime("2012-12-31T00:00:00.000Z").withZone(DateTimeZones.UTC)));
-		assertThat(firstEpisodePolicy.getAvailableCountries(), is((Set<Country>) Sets.newHashSet(Countries.GB, Countries.IE)));
+		assertThat(firstEpisodePolicy.getAvailableCountries(), is((Set<Country>) Sets.newHashSet(
+                Countries.fromCode("GG"),
+                Countries.GB,
+                Countries.fromCode("JE"),
+                Countries.fromCode("IM"),
+                Countries.IE)));
 		
 		Episode episodeWithABroadcast = (Episode) Iterables.get(episodes, 4);
 		Version episodeWithABroadcastVersion = Iterables.get(episodeWithABroadcast.getVersions(), 0);

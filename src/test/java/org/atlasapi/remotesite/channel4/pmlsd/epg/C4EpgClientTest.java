@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.channel4.pmlsd.epg;
 import static org.junit.Assert.*;
 
 import java.util.List;
+import java.util.Set;
 
 import com.metabroadcast.common.http.FixedResponseHttpClient;
 
@@ -17,6 +18,7 @@ import com.google.common.base.Charsets;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.io.Resources;
 import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.intl.Country;
 import com.metabroadcast.common.time.DateTimeZones;
 
 public class C4EpgClientTest {
@@ -80,7 +82,15 @@ public class C4EpgClientTest {
         assertEquals("http://www.channel4.com/programmes/the-hoobs/4od#2924127", media.player());
         assertEquals("http://cache.channel4.com/assets/programmes/images/the-hoobs/series-1/the-hoobs-s1-20090623112301_200x113.jpg", media.thumbnail());
         assertEquals("nonadult", media.rating());
-        assertEquals(ImmutableSet.of(Countries.GB, Countries.IE), media.availableCountries());
+        Set<Country> expectedCountries = ImmutableSet.of(
+                Countries.fromCode("IM"),
+                Countries.fromCode("IE"),
+                Countries.fromCode("GB"),
+                Countries.fromCode("JE"),
+                Countries.fromCode("GG")
+            );
+
+        assertEquals(expectedCountries, media.availableCountries());
     }
 
 }

@@ -83,11 +83,11 @@ public class C4EpgClientTest {
         assertEquals("http://cache.channel4.com/assets/programmes/images/the-hoobs/series-1/the-hoobs-s1-20090623112301_200x113.jpg", media.thumbnail());
         assertEquals("nonadult", media.rating());
         Set<Country> expectedCountries = ImmutableSet.of(
-//                Countries.fromCode("IM"),
+                Countries.fromCode("IM"),
                 Countries.fromCode("IE"),
-                Countries.fromCode("GB")
-//                Countries.fromCode("JE"),
-//                Countries.fromCode("GG")
+                Countries.fromCode("GB"),
+                Countries.fromCode("JE"),
+                Countries.fromCode("GG")
             );
 
         assertEquals(expectedCountries, media.availableCountries());

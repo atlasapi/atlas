@@ -9,15 +9,20 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import javax.annotation.Nullable;
+
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -25,6 +30,10 @@ import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -40,7 +49,7 @@ import com.metabroadcast.common.base.Maybe;
 
 
 public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemProcessor {
-    
+
     private static final Ordering<Content> REVERSE_HIERARCHICAL_ORDER = new Ordering<Content>() {
         @Override
         public int compare(Content left, Content right) {
@@ -80,13 +89,28 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             return input instanceof Item;
         }
     };
-    
+    public static final String CONTAINER = "CONTAINER";
+    public static final String EPISODE = "EPISODE";
+    public static final String ITEM = "ITEM";
+    public static final String BRAND = "BRAND";
+    public static final String SERIES = "SERIES";
+    public static final String FILM = "FILM";
+    public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
+
+    private final Predicate<Alias> AMAZON_ALIAS = new Predicate<Alias>() {
+
+        @Override
+        public boolean apply(Alias input) {
+            return GB_AMAZON_ASIN.equals(input.getNamespace());
+        }
+    };
+
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
-    private final Map<String, Container> seen = Maps.newHashMap();
+    private final Map<String, Container> seenContainer = Maps.newHashMap();
     private final SetMultimap<String, Content> cached = HashMultimap.create();
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
-    private final Set<Content> seenContent = Sets.newHashSet();
+    private final BiMap<String, Content> seenContent = HashBiMap.create();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -109,7 +133,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     @Override
     public void prepare() {
-        seen.clear();
+        seenContainer.clear();
         cached.clear();
         topLevelSeries.clear();
         standAloneEpisodes.clear();
@@ -119,13 +143,92 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     @Override
     public void process(AmazonUnboxItem item) {
         for (Content content : extract(item)) {
-            // Brands are extracted for every episode, since they are synthesized from
-            // data in an episode row. We only need to process the first instance 
-            // of a brands
-            if (seenContent.contains(content)) {
-                continue;
+            checkForDuplicatesSaveForProcessing(content);
+        }
+    }
+
+    private void checkForDuplicatesSaveForProcessing(Content content) {
+        StringBuilder key = new StringBuilder();
+        if (content instanceof Container) {
+
+            if (content instanceof Brand) {
+                String title = content.getTitle();
+                key.append(title).append(BRAND);
+            } else {
+                String title = content.getTitle();
+                key.append(title).append(SERIES);
             }
-            seenContent.add(content);
+            String hash = key.toString();
+            if (!seenContent.containsKey(hash) && !seenContent.containsValue(content)) {
+                seenContent.put(hash, content);
+            }
+
+        } else {
+
+            if (content instanceof Episode){
+                Episode episode = (Episode) content;
+                String title = episode.getTitle();
+                int episodeNumber = episode.getEpisodeNumber();
+                int seasonNumber = episode.getSeriesNumber();
+                String brandTitle = episode.getShortDescription();
+                key.append(title).append(brandTitle).append(episodeNumber).append(seasonNumber).append(EPISODE);
+            } else if (content instanceof Film) {
+                Film film = (Film) content;
+                String title = film.getTitle();
+                Integer year = film.getYear();
+                if (film.getYear() != null) {
+                    key.append(year);
+                }
+                key.append(title).append(FILM);
+            } else {
+                Item item = (Item) content;
+                String title = item.getTitle();
+                key.append(title).append(ITEM);
+            }
+            String hash = key.toString();
+            if (!seenContent.containsKey(hash)) {
+                seenContent.put(hash, content);
+            } else {
+                Content seen = seenContent.get(hash);
+                seenContent.forcePut(hash, mergeAliasesAndLocations(content, seen));
+            }
+        }
+    }
+
+    private Content mergeAliasesAndLocations(Content item, Content seen) {
+        Version version = Iterables.getOnlyElement(item.getVersions());
+        Alias alias = Iterables.getOnlyElement(Iterables.filter(item.getAliases(), AMAZON_ALIAS));
+        version.addAlias(alias);
+        seen.addAlias(alias);
+        seen.addVersion(version);
+        return seen;
+    }
+
+    @Override
+    public void finish() {
+        processSeenContent();
+        processTopLevelSeries();
+        processStandAloneEpisodes();
+        
+        if (cached.values().size() > 0) {
+            log.warn("{} extracted but unwritten", cached.values().size());
+            for (Entry<String, Collection<Content>> mapping : cached.asMap().entrySet()) {
+                log.warn(mapping.toString());
+            }
+        }
+        
+        seenContainer.clear();
+        cached.clear();
+        topLevelSeries.clear();
+        standAloneEpisodes.clear();
+        
+        checkForDeletedContent();
+        
+        seenContent.clear();
+    }
+
+    private void processSeenContent() {
+        for (Content content : seenContent.values()) {
             Maybe<Identified> existing = resolve(content.getCanonicalUri());
             if (existing.isNothing()) {
                 write(content);
@@ -138,28 +241,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 }
             }
         }
-    }
-    
-    @Override
-    public void finish() {
-        processTopLevelSeries();
-        processStandAloneEpisodes();
-        
-        if (cached.values().size() > 0) {
-            log.warn("{} extracted but unwritten", cached.values().size());
-            for (Entry<String, Collection<Content>> mapping : cached.asMap().entrySet()) {
-                log.warn(mapping.toString());
-            }
-        }
-        
-        seen.clear();
-        cached.clear();
-        topLevelSeries.clear();
-        standAloneEpisodes.clear();
-        
-        checkForDeletedContent();
-        
-        seenContent.clear();
     }
 
     private void processStandAloneEpisodes() {
@@ -213,17 +294,15 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
      
     private void checkForDeletedContent() {
         Set<Content> allLoveFilmContent = ImmutableSet.copyOf(resolveAllLoveFilmContent());
-        Set<Content> notSeen = Sets.difference(allLoveFilmContent, seenContent);
+        Set<Content> notSeen = Sets.difference(allLoveFilmContent, seenContent.values());
         
         float missingPercentage = ((float) notSeen.size() / (float) allLoveFilmContent.size()) * 100;
         if (missingPercentage > (float) missingContentPercentage) {
             throw new RuntimeException("File failed to update " + missingPercentage + "% of all LoveFilm content. File may be truncated.");
         } else {
-            // TODO check/test if this does what it should
             List<Content> orderedContent = REVERSE_HIERARCHICAL_ORDER.sortedCopy(notSeen);
             for (Content notSeenContent : orderedContent) {
                 notSeenContent.setActivelyPublished(false);
-                // write
                 if (notSeenContent instanceof Item) {
                     writer.createOrUpdate((Item) notSeenContent);
                 } else if (notSeenContent instanceof Container) {
@@ -288,7 +367,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void writeBrand(Brand brand) {
         writer.createOrUpdate(brand);
         String brandUri = brand.getCanonicalUri();
-        seen.put(brandUri, brand);
+        seenContainer.put(brandUri, brand);
         for (Content subContent : cached.removeAll(brandUri)) {
             write(subContent);
         }
@@ -296,7 +375,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private void cacheOrWriteSeriesAndSubContents(Series series) {
         ParentRef parent = series.getParent();
-        if (parent != null && !seen.containsKey(parent.getUri())) {
+        if (parent != null && !seenContainer.containsKey(parent.getUri())) {
             cached.put(parent.getUri(), series);
         } else {
             writeSeries(series);
@@ -306,7 +385,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public void writeSeries(Series series) {
         String seriesUri = series.getCanonicalUri();
         writer.createOrUpdate(series);
-        seen.put(seriesUri, series);
+        seenContainer.put(seriesUri, series);
         for (Content episode : cached.removeAll(seriesUri)) {
             write(episode);
         }
@@ -315,7 +394,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void cacheOrWriteItem(Content content) {
         Item item = (Item) content;
         ParentRef parent = item.getContainer();
-        if (parent != null && !seen.containsKey(parent.getUri())) {
+        if (parent != null && !seenContainer.containsKey(parent.getUri())) {
             cached.put(parent.getUri(), item);
         } else {
             writer.createOrUpdate((Item) content);
@@ -325,21 +404,21 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void cacheOrWriteEpisode(Episode episode) {
         ParentRef parent = episode.getContainer();
         
-        if (parent != null && !seen.containsKey(parent.getUri())) {
+        if (parent != null && !seenContainer.containsKey(parent.getUri())) {
             cached.put(parent.getUri(), episode);
             return;
         } 
         
         String seriesUri = episode.getSeriesRef() != null ? episode.getSeriesRef().getUri() : null;
         if (seriesUri != null) {
-            if (!seen.containsKey(seriesUri)) {
+            if (!seenContainer.containsKey(seriesUri)) {
                 cached.put(seriesUri, episode);
                 return;
             }
-            Series series = (Series) seen.get(seriesUri);
+            Series series = (Series) seenContainer.get(seriesUri);
             episode.setSeriesNumber(series.getSeriesNumber());
         }
-        
+
         writer.createOrUpdate(episode);
     }
 }

@@ -67,7 +67,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setThumbnail(content.getThumbnail());
             simpleDescription.setImage(content.getImage());
             simpleDescription.setShortDescription(content.getShortDescription());
-
+            simpleDescription.setAwards(content.getAwards());
             MediaType mediaType = content.getMediaType();
             if (mediaType != null) {
                 simpleDescription.setMediaType(mediaType.toString().toLowerCase());

@@ -6,10 +6,14 @@ import java.io.File;
 
 import javax.annotation.PostConstruct;
 
+import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.remotesite.itunes.epf.ItunesEpfUpdateTask;
 import org.atlasapi.remotesite.itunes.epf.LatestEpfDataSetSupplier;
+import org.atlasapi.remotesite.util.OldContentDeactivator;
+
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -27,10 +31,17 @@ public class ItunesModule {
     private final static Daily FIVE_AM = RepetitionRules.daily(new LocalTime(5, 0, 0));
     
     private @Value("${epf.filesPath}") String localFilesPath;
-    
-    private @Autowired SimpleScheduler scheduler;
-    private @Autowired ContentWriter contentWriter;
-    private @Autowired AdapterLog log;
+
+    @Autowired
+    private SimpleScheduler scheduler;
+    @Autowired
+    private ContentWriter contentWriter;
+    @Autowired
+    private ContentResolver contentResolver;
+    @Autowired
+    private ContentLister contentLister;
+    @Autowired
+    private AdapterLog log;
     
 //    private @Autowired ItunesBrandAdapter itunesBrandAdapter;
 //    
@@ -47,18 +58,22 @@ public class ItunesModule {
 //        return new ItunesRssUpdater(feeds, HttpClients.webserviceClient(), contentWriter, itunesBrandAdapter, log);
 //    }
 //    
-    
-  @PostConstruct
-  public void startBackgroundTasks() {
-      try {
-          if (!Strings.isNullOrEmpty(localFilesPath)) {
-              scheduler.schedule(new ItunesEpfUpdateTask(new LatestEpfDataSetSupplier(new File(localFilesPath)), contentWriter, log).withName("iTunes EPF Updater"), FIVE_AM);
-              log.record(infoEntry().withDescription("iTunes EPF update task installed (%s)", localFilesPath).withSource(getClass()));
-          } else {
-              log.record(infoEntry().withDescription("iTunes EPF update task not installed", localFilesPath).withSource(getClass()));
-          }
-      } catch (Exception e) {
-          log.record(infoEntry().withDescription("iTunes EPF update task installed failed").withSource(getClass()).withCause(e));
-      }
-  } 
+    @PostConstruct
+    public void startBackgroundTasks() {
+        try {
+            if (!Strings.isNullOrEmpty(localFilesPath)) {
+                scheduler.schedule(new ItunesEpfUpdateTask(new LatestEpfDataSetSupplier(new File(localFilesPath)), contentDeactivator(), contentWriter, log).withName("iTunes EPF Updater"), FIVE_AM);
+                log.record(infoEntry().withDescription("iTunes EPF update task installed (%s)", localFilesPath).withSource(getClass()));
+            } else {
+                log.record(infoEntry().withDescription("iTunes EPF update task not installed", localFilesPath).withSource(getClass()));
+            }
+        } catch (Exception e) {
+            log.record(infoEntry().withDescription("iTunes EPF update task installed failed").withSource(getClass()).withCause(e));
+        }
+    }
+
+    private OldContentDeactivator contentDeactivator() {
+        return new OldContentDeactivator(contentLister, contentWriter, contentResolver);
+    }
+
 }

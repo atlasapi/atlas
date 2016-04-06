@@ -27,7 +27,9 @@ import org.atlasapi.remotesite.itunes.epf.model.EpfCollectionVideo;
 import org.atlasapi.remotesite.itunes.epf.model.EpfPricing;
 import org.atlasapi.remotesite.itunes.epf.model.EpfStorefront;
 import org.atlasapi.remotesite.itunes.epf.model.EpfVideo;
+import org.atlasapi.remotesite.util.OldContentDeactivator;
 
+import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
@@ -46,16 +48,19 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 
 public class ItunesEpfUpdateTask extends ScheduledTask {
 
+    public static final int DEACTIVATED_CONTENT_THRESHOLD = 50;
     private final Supplier<EpfDataSet> dataSetSupplier;
     private final ContentWriter writer;
+    private final OldContentDeactivator deactivator;
 
     private final ItunesCollectionSeriesExtractor seriesExtractor = new ItunesCollectionSeriesExtractor();
     private final ItunesVideoEpisodeExtractor episodeExtractor = new ItunesVideoEpisodeExtractor();
     private final ItunesPricingLocationExtractor locationExtractor = new ItunesPricingLocationExtractor();
     private final AdapterLog log;
 
-    public ItunesEpfUpdateTask(Supplier<EpfDataSet> dataSetSupplier, ContentWriter writer, AdapterLog log) {
+    public ItunesEpfUpdateTask(Supplier<EpfDataSet> dataSetSupplier, OldContentDeactivator oldContentDeactivator, ContentWriter writer, AdapterLog log) {
         this.dataSetSupplier = dataSetSupplier;
+        this.deactivator = oldContentDeactivator;
         this.writer = writer;
         this.log = log;
     }
@@ -65,12 +70,15 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         try {
             EpfDataSet dataSet = dataSetSupplier.get();
 
+            Set<String> ingestedUris = Sets.newHashSet();
+
             //brand id -> brand
             final BiMap<Integer, Brand> extractedBrands = extractBrands(dataSet.getArtistTable());
 
             int brands = 0;
             for (Brand brand : extractedBrands.values()) {
                 writer.createOrUpdate(brand);
+                ingestedUris.add(brand.getCanonicalUri());
                 reportStatus(String.format("Writing brands %s/%s", ++brands, extractedBrands.size()));
             }
 
@@ -86,14 +94,20 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             Set<Series> seriesToWrite = extractedEpisodes.keySet();
             for (Series series : seriesToWrite) {
                 writer.createOrUpdate(series);
+                ingestedUris.add(series.getCanonicalUri());
                 reportStatus(String.format("Writing series %s/%s", ++seriess, seriesToWrite.size()));
             }
 
             int episodes = 0;
             for (Episode episode : extractedEpisodes.values()) {
                 writer.createOrUpdate(episode);
+                ingestedUris.add(episode.getCanonicalUri());
                 reportStatus(String.format("Writing episodes %s/%s", ++episodes, extractedEpisodes.size()));
             }
+
+            deactivator.deactivateOldContent(Publisher.ITUNES, ingestedUris,
+                    DEACTIVATED_CONTENT_THRESHOLD
+            );
 
         } catch (Exception e) {
             log.record(errorEntry().withCause(e).withDescription("Error during EPF update").withSource(getClass()));

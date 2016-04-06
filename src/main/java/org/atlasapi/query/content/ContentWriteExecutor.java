@@ -190,6 +190,9 @@ public class ContentWriteExecutor {
         existing.setImages(merge ?
                            merge(existing.getImages(), update.getImages()) :
                            update.getImages());
+        existing.setAwards(merge ?
+                           merge(existing.getAwards(), update.getAwards()) :
+                           update.getAwards());
 
         if (existing instanceof Episode && update instanceof Episode) {
             mergeEpisodes((Episode) existing, (Episode) update);

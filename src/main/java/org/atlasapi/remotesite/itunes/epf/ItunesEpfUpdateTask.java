@@ -48,7 +48,7 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 
 public class ItunesEpfUpdateTask extends ScheduledTask {
 
-    public static final int DEACTIVATED_CONTENT_THRESHOLD = 50;
+    public static final int DEACTIVATED_CONTENT_THRESHOLD = 0;
     private final Supplier<EpfDataSet> dataSetSupplier;
     private final ContentWriter writer;
     private final OldContentDeactivator deactivator;

@@ -156,14 +156,6 @@ public class ItunesEpfUpdateTaskTest extends TestCase {
                 new NullAdapterLog()
         );
         when(dataSupplier.get()).thenReturn(new EpfDataSet(parent));
-
-        //        context.checking(new Expectations(){{
-        //            one(dataSupplier).get();will(returnValue(new EpfDataSet(parent)));
-        //            one(writer).createOrUpdate(with(brand("http://itunes.apple.com/artist/id102225079")));
-        //            one(writer).createOrUpdate(with(series("http://itunes.apple.com/tv-season/id102772946")));
-        //            one(writer).createOrUpdate(with(item("http://itunes.apple.com/video/id102225077")));
-        //        }});
-        //
         task.run();
 
         verify(writer, times(2)).createOrUpdate(containerArgumentCaptor.capture());

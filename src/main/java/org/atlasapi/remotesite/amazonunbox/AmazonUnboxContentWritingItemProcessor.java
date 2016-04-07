@@ -2,6 +2,9 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import static com.google.common.base.Predicates.and;
+import static com.google.common.base.Predicates.not;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -111,6 +114,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
     private final BiMap<String, Content> seenContent = HashBiMap.create();
+    private final Map<String, String> linkDuplicatedSeriesUri = Maps.newHashMap();
+    private final Map<String, Series> linkSeriesKey = Maps.newHashMap();
+    private final Map<String, String> linkDuplicatedBrandUri = Maps.newHashMap();
+    private final Map<String, Brand> linkBrandKey = Maps.newHashMap();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -152,11 +159,22 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         if (content instanceof Container) {
 
             if (content instanceof Brand) {
-                String title = content.getTitle();
+                Brand brand = (Brand) content;
+                String title = brand.getTitle();
                 key.append(title).append(BRAND);
-            } else {
-                String title = content.getTitle();
-                key.append(title).append(SERIES);
+                linkDuplicatedBrandUri.put(brand.getCanonicalUri(), key.toString());
+                if (!linkBrandKey.containsKey(key.toString())) {
+                    linkBrandKey.put(key.toString(), brand);
+                }
+            } else if (content instanceof Series){
+                Series series = (Series) content;
+                String title = series.getTitle();
+                String brandTitle = series.getShortDescription();
+                key.append(title).append(brandTitle).append(SERIES);
+                linkDuplicatedSeriesUri.put(series.getCanonicalUri(), key.toString());
+                if (!linkSeriesKey.containsKey(key.toString())) {
+                    linkSeriesKey.put(key.toString(), series);
+                }
             }
             String hash = key.toString();
             if (!seenContent.containsKey(hash) && !seenContent.containsValue(content)) {
@@ -211,6 +229,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         processStandAloneEpisodes();
         
         if (cached.values().size() > 0) {
+            System.out.println(cached.values().size());
             log.warn("{} extracted but unwritten", cached.values().size());
             for (Entry<String, Collection<Content>> mapping : cached.asMap().entrySet()) {
                 log.warn(mapping.toString());
@@ -228,20 +247,43 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void processSeenContent() {
-        for (Content content : seenContent.values()) {
-            Maybe<Identified> existing = resolve(content.getCanonicalUri());
-            if (existing.isNothing()) {
-                write(content);
-            } else {
-                Identified identified = existing.requireValue();
-                if (content instanceof Item) {
-                    write(contentMerger.merge(ContentMerger.asItem(identified), (Item) content));
-                } else if (content instanceof Container) {
-                    write(contentMerger.merge(ContentMerger.asContainer(identified), (Container) content));
-                }
+        Iterable<Content> brands = Iterables.filter(seenContent.values(), IS_BRAND);
+        for (Content container : brands) {
+            checkAndWriteSeenContent(container);
+        }
+
+        Iterable<Content> series = Iterables.filter(seenContent.values(), IS_SERIES);
+        for (Content container : series) {
+            checkAndWriteSeenContent(container);
+        }
+
+        Iterable<Content> notContainers = Iterables.filter(seenContent.values(), and(not(IS_BRAND), not(IS_SERIES)));
+        for (Content notContainer : notContainers) {
+            checkAndWriteSeenContent(notContainer);
+        }
+    }
+
+    private void checkAndWriteSeenContent(Content content) {
+        Maybe<Identified> existing = resolve(content.getCanonicalUri());
+        if (existing.isNothing()) {
+            write(content);
+        } else {
+            Identified identified = existing.requireValue();
+            if (content instanceof Item) {
+                write(contentMerger.merge(ContentMerger.asItem(identified), (Item) content));
+            } else if (content instanceof Container) {
+                write(contentMerger.merge(ContentMerger.asContainer(identified), (Container) content));
             }
         }
     }
+
+    private Predicate<Content> IS_BRAND = new Predicate<Content>() {
+
+        @Override
+        public boolean apply(@Nullable Content input) {
+            return input instanceof Brand;
+        }
+    };
 
     private void processStandAloneEpisodes() {
         for (Entry<String, Brand> entry : standAloneEpisodes.entrySet()) {
@@ -417,19 +459,28 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private void cacheOrWriteEpisode(Episode episode) {
         ParentRef parent = episode.getContainer();
-        
-        if (parent != null && !seenContainer.containsKey(parent.getUri())) {
-            cached.put(parent.getUri(), episode);
-            return;
-        } 
+
+        if (parent != null) {
+            Brand brand = linkBrandKey.get(linkDuplicatedBrandUri.get(parent.getUri()));
+            episode.setContainer(brand);
+            String brandUri = brand.getCanonicalUri();
+            if (!seenContainer.containsKey(brandUri)) {
+                cached.put(brandUri, episode);
+                return;
+            }
+        }
         
         String seriesUri = episode.getSeriesRef() != null ? episode.getSeriesRef().getUri() : null;
         if (seriesUri != null) {
+            Series series = linkSeriesKey.get(linkDuplicatedSeriesUri.get(seriesUri));
+            if (series != null) {
+                episode.setSeriesRef(ParentRef.parentRefFrom(series));
+                seriesUri = series.getCanonicalUri();
+            }
             if (!seenContainer.containsKey(seriesUri)) {
                 cached.put(seriesUri, episode);
                 return;
             }
-            Series series = (Series) seenContainer.get(seriesUri);
             episode.setSeriesNumber(series.getSeriesNumber());
         }
 

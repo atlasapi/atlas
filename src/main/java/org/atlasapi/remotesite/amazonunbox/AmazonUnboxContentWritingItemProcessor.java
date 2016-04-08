@@ -431,11 +431,18 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private void cacheOrWriteSeriesAndSubContents(Series series) {
         ParentRef parent = series.getParent();
-        if (parent != null && !seenContainer.containsKey(parent.getUri())) {
-            cached.put(parent.getUri(), series);
-        } else {
-            writeSeries(series);
+        if (parent != null) {
+            Brand brand = linkBrandKey.get(linkDuplicatedBrandUri.get(parent.getUri()));
+            if (brand != null) {
+                series.setParent(brand);
+            }
+            String brandUri = series.getParent().getUri();
+            if (!seenContainer.containsKey(brandUri)) {
+                cached.put(brandUri, series);
+                return;
+            }
         }
+        writeSeries(series);
     }
 
     public void writeSeries(Series series) {

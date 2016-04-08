@@ -99,7 +99,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             return input instanceof Item;
         }
     };
-    public static final String CONTAINER = "CONTAINER";
+
     public static final String EPISODE = "EPISODE";
     public static final String ITEM = "ITEM";
     public static final String BRAND = "BRAND";
@@ -152,6 +152,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         topLevelSeries.clear();
         standAloneEpisodes.clear();
         seenContent.clear();
+        duplicatedSeriesToCommonKeyMap.clear();
+        commonSeriesKeyToCommonSeriesMap.clear();
+        duplicatedBrandToCommonKeyMap.clear();
+        commonBrandKeyToCommonBrandMap.clear();
     }
     
     @Override
@@ -241,11 +245,15 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 log.warn(mapping.toString());
             }
         }
-        
+
         seenContainer.clear();
         cached.clear();
         topLevelSeries.clear();
         standAloneEpisodes.clear();
+        duplicatedSeriesToCommonKeyMap.clear();
+        commonSeriesKeyToCommonSeriesMap.clear();
+        duplicatedBrandToCommonKeyMap.clear();
+        commonBrandKeyToCommonBrandMap.clear();
         
         checkForDeletedContent();
         

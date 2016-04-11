@@ -76,7 +76,8 @@ public class BtVodVersionsExtractor {
         
         locations.addAll(createLocations(row, btTvServiceId, aliases));
         
-        if (hasServiceTypeOtg(row)) {
+        if (hasServiceTypeOtg(row)
+                && hasMasterAgreementServiceTypeOtg(row)) {
             locations.addAll(createLocations(row, btTvOtgServiceId, aliases));
         }
 
@@ -210,8 +211,8 @@ public class BtVodVersionsExtractor {
         return row.getServiceTypes().contains(OTG_PLATFORM);
     }
 
-    private boolean isItemTvodPlayoutAllowed(BtVodEntry row) {
-        return !Boolean.FALSE.equals(Boolean.valueOf(row.getMasterAgreementOtgTvodPlay()));
+    private boolean hasMasterAgreementServiceTypeOtg(BtVodEntry row) {
+        return row.getMasterAgreementServiceTypes().contains(OTG_PLATFORM);
     }
 
     private Optional<Location> createLocation(BtVodEntry row, Interval availability,

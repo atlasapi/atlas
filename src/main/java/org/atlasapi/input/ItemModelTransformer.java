@@ -301,7 +301,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         for (org.atlasapi.media.entity.simple.ReleaseDate releaseDate : releaseDates) {
             ReleaseDate complexReleaseDate = new ReleaseDate(convertToLocalDate(releaseDate.getDate()),
                     Countries.fromCode(releaseDate.getCountry()),
-                    ReleaseDate.ReleaseType.valueOf(releaseDate.getType()));
+                    ReleaseDate.ReleaseType.valueOf(releaseDate.getType().toLowerCase()));
             builder.add(complexReleaseDate);
         }
         return builder.build();

@@ -670,7 +670,7 @@ public class EquivModule {
             .withFilter(this.<Container>standardFilter())
             .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
             .withHandler(containerResultHandlers(sources))
-            
+
             .build();
     }
 

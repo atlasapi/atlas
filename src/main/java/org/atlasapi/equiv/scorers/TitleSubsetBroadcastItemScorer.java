@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkArgument;
 import java.util.Collection;
 import java.util.Set;
 
+import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
@@ -34,6 +35,8 @@ import com.google.common.collect.Sets;
 public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
+
+    private final ExpandingTitleTransformer titleTransformer = new ExpandingTitleTransformer();
 
     private final CharMatcher punctuation = CharMatcher.JAVA_LETTER.negate();
     private final Splitter splitter = Splitter.on(' ')
@@ -97,19 +100,31 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
         if (titleMissing(subject) || titleMissing(candidate)) {
             return false;
         }
-        Set<String> subjectWords = filterCommon(lowerCaseTitleWords(subject));
-        Set<String> candidateWords = filterCommon(lowerCaseTitleWords(candidate));
+        String normalizedSubjectTitle = sanitize(subject.getTitle());
+        String normalizedCandidateTitle = sanitize(candidate.getTitle());
+        Set<String> subjectWords = filterCommon(titleWords(normalizedSubjectTitle));
+        Set<String> candidateWords = filterCommon(titleWords(normalizedCandidateTitle));
         Set<String> shorter = collectionSize.min(subjectWords, candidateWords);
         Set<String> longer = collectionSize.max(candidateWords, subjectWords);
         return percentOfShorterInLonger(shorter, longer) >= threshold;
+    }
+
+    private String sanitize(String title) {
+        return removeCommonPrefixes(titleTransformer.expand(title)
+                .replaceAll(" & ", " and ")
+                .replaceAll("[^\\d\\w\\s]", "").toLowerCase());
+    }
+
+    private String removeCommonPrefixes(String title) {
+        return title.startsWith("the ") ? title.substring(4) : title;
     }
 
     private Set<String> filterCommon(Set<String> words) {
         return Sets.difference(words, commonWords);
     }
 
-    private ImmutableSet<String> lowerCaseTitleWords(Content subject) {
-        return ImmutableSet.copyOf(splitter.split(subject.getTitle().toLowerCase()));
+    private ImmutableSet<String> titleWords(String title) {
+        return ImmutableSet.copyOf(splitter.split(title));
     }
 
     private double percentOfShorterInLonger(Set<String> shorter, Set<String> longer) {

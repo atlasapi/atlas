@@ -33,6 +33,14 @@ public class TitleSubsetBroadcastItemScorerTest {
             itemWithTitle("Doctor Who?"), 
             itemWithTitle("Doctor Who Confidential")
         ));
+        assertEquals(Score.ONE, score(
+                itemWithTitle("Power Rangers: R.P.M."),
+                itemWithTitle("Power Rangers RPM")
+        ));
+        assertEquals(Score.ONE, score(
+                itemWithTitle("Power - Rangers: R.P.M.!!"),
+                itemWithTitle("Power Rangers RPM")
+        ));
     }
     
     @Test

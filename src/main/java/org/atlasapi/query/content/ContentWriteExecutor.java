@@ -195,7 +195,9 @@ public class ContentWriteExecutor {
             mergeEpisodes((Episode) existing, (Episode) update);
         }
         if (existing instanceof Item && update instanceof Item) {
-            return mergeItems((Item) existing, (Item) update);
+            return mergeItems(
+                    mergeReleaseDates((Item) existing, (Item) update, merge),
+                    (Item) update);
         }
         return existing;
     }
@@ -206,6 +208,12 @@ public class ContentWriteExecutor {
         return existing;
     }
 
+    private Item mergeReleaseDates(Item existing, Item update, boolean merge) {
+        existing.setReleaseDates((merge ?
+                                  merge(existing.getReleaseDates(), update.getReleaseDates()) :
+                                  update.getReleaseDates()));
+        return existing;
+    }
     private Item mergeItems(Item existing, Item update) {
         if (!update.getVersions().isEmpty()) {
             if (Iterables.isEmpty(existing.getVersions())) {

@@ -1,12 +1,14 @@
 package org.atlasapi.output.simple;
 
 import com.google.common.base.Function;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
+import org.atlasapi.media.entity.simple.Award;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
@@ -67,7 +69,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setThumbnail(content.getThumbnail());
             simpleDescription.setImage(content.getImage());
             simpleDescription.setShortDescription(content.getShortDescription());
-            simpleDescription.setAwards(content.getAwards());
+            simpleDescription.setAwards(simplifyAwards(content.getAwards()));
 
             MediaType mediaType = content.getMediaType();
             if (mediaType != null) {
@@ -208,6 +210,23 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     private Set<LocalizedTitle> simplifyLocalizedTitles(F content) {
         return ImmutableSet.copyOf(Iterables.transform(content.getLocalizedTitles(),
                 TO_SIMPLE_LOCALIZED_TITLE));
+    }
+
+    private Set<Award> simplifyAwards(Set<org.atlasapi.media.entity.Award> awards) {
+        return FluentIterable.from(awards)
+                .transform(new Function<org.atlasapi.media.entity.Award, Award>() {
+
+                    @Override
+                    public Award apply(org.atlasapi.media.entity.Award input) {
+                        Award award = new Award();
+                        award.setDescription(input.getDescription());
+                        award.setOutcome(input.getOutcome());
+                        award.setTitle(input.getTitle());
+                        award.setYear(input.getYear());
+                        return award;
+                    }
+                })
+                .toSet();
     }
 
     private static final Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription> TO_SIMPLE_LOCALISED_DESCRIPTION = new Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription>() {

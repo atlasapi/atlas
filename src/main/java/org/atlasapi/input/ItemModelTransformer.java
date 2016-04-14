@@ -28,7 +28,6 @@ import org.atlasapi.persistence.topic.TopicStore;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.intl.Country;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.DateTimeZones;
@@ -300,13 +299,10 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         ImmutableSet.Builder<ReleaseDate> builder = new ImmutableSet.Builder<>();
 
         for (org.atlasapi.media.entity.simple.ReleaseDate releaseDate : releaseDates) {
-            if(releaseDate.getCountry() != null && releaseDate.getDate() != null && releaseDate.getType() != null) {
-                ReleaseDate complexReleaseDate = new ReleaseDate(convertToLocalDate(releaseDate.getDate()),
-                        Countries.fromCode(releaseDate.getCountry()),
-                        ReleaseDate.ReleaseType.valueOf(releaseDate.getType().toUpperCase()));
-                builder.add(complexReleaseDate);
-            }
-
+            ReleaseDate complexReleaseDate = new ReleaseDate(convertToLocalDate(releaseDate.getDate()),
+                    Countries.fromCode(releaseDate.getCountry()),
+                    ReleaseDate.ReleaseType.valueOf(releaseDate.getType().toUpperCase()));
+            builder.add(complexReleaseDate);
         }
         return builder.build();
     }

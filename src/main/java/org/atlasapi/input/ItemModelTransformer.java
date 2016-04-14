@@ -17,6 +17,7 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Policy.RevenueContract;
+import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
@@ -38,6 +39,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.joda.time.LocalDate;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -75,6 +77,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
     private Item createFilm(org.atlasapi.media.entity.simple.Item inputItem) {
         Film film = new Film();
         film.setYear(inputItem.getYear());
+        film.setReleaseDates(releaseDatesFrom(inputItem.getReleaseDates()));
         return film;
     }
 
@@ -290,6 +293,25 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
             return null;
         }
         return new DateTime(date).withZone(DateTimeZones.UTC);
+    }
+
+    private Set<ReleaseDate> releaseDatesFrom(Set<org.atlasapi.media.entity.simple.ReleaseDate> releaseDates) {
+        ImmutableSet.Builder<ReleaseDate> builder = new ImmutableSet.Builder<>();
+
+        for (org.atlasapi.media.entity.simple.ReleaseDate releaseDate : releaseDates) {
+            ReleaseDate complexReleaseDate = new ReleaseDate(convertToLocalDate(releaseDate.getDate()),
+                    Countries.fromCode(releaseDate.getCountry()),
+                    ReleaseDate.ReleaseType.valueOf(releaseDate.getType().toUpperCase()));
+            builder.add(complexReleaseDate);
+        }
+        return builder.build();
+    }
+
+    private LocalDate convertToLocalDate(Date date) {
+        if(date == null) {
+            return null;
+        }
+        return new LocalDate(date);
     }
 
 }

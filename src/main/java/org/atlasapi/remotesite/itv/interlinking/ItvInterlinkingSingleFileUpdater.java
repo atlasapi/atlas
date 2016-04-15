@@ -16,7 +16,7 @@ import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.http.SimpleHttpRequest;
 
 public class ItvInterlinkingSingleFileUpdater {
-    
+
     private static final String BASE_URL = "http://mercury.itv.com/linking/";
     private final DateTimeFormatter dateFormat = DateTimeFormat.forPattern("yyyyMMdd");
     

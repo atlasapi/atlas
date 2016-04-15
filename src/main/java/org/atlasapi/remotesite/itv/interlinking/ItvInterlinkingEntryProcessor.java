@@ -26,10 +26,14 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.metabroadcast.common.base.Maybe;
 
 public class ItvInterlinkingEntryProcessor {
-    
+
+    private final Logger log = LoggerFactory.getLogger(ItvInterlinkingEntryProcessor.class);
     private final Map<String, InterlinkingEntry<? extends Identified>> idToContent = Maps.newHashMap();
     private final Multimap<String, InterlinkingEntry<? extends Identified>> parentIdToContent = ArrayListMultimap.create();
     private final Set<InterlinkingEntry<? extends Identified>> parentless = Sets.newHashSet();
@@ -43,36 +47,41 @@ public class ItvInterlinkingEntryProcessor {
     }
     
     public void processEntry(Element entryElem) {
-        InterlinkingType type = InterlinkingType.fromKey(requireElemValue(entryElem, "type", INTERLINKING_NS));
-        InterlinkingOperation operation = InterlinkingOperation.valueOf(requireElemValue(entryElem, "operation", INTERLINKING_NS).toUpperCase());
-        
-        if (operation == InterlinkingOperation.STORE) {
-            InterlinkingEntry<? extends Identified> content = null;
-            if (type == InterlinkingType.BRAND) {
-                content = extractor.getBrand(entryElem);
-            } else if (type == InterlinkingType.EPISODE) {
-                content = extractor.getEpisode(entryElem);
-            } else if (type == InterlinkingType.BROADCAST) {
-                content = extractor.getBroadcast(entryElem);
-            } else if (type == InterlinkingType.ONDEMAND) {
-                content = extractor.getOnDemand(entryElem);
-            } else if (type == InterlinkingType.SERIES) {
-                content = extractor.getSeries(entryElem);
-            } else if (type == InterlinkingType.SUBSERIES) {
-                throw new RuntimeException("Subseries found");
-            } else {
-                throw new RuntimeException("unknown type " + type);
-            }
-            
-            if (content != null) {
-                idToContent.put(content.getId(), content);
-                if (content.getParentId().hasValue()) {
-                    parentIdToContent.put(content.getParentId().requireValue(), content);
+        try {
+            InterlinkingType type = InterlinkingType.fromKey(requireElemValue(entryElem, "type", INTERLINKING_NS));
+            InterlinkingOperation operation = InterlinkingOperation.valueOf(requireElemValue(entryElem, "operation", INTERLINKING_NS).toUpperCase());
+
+            if (operation == InterlinkingOperation.STORE) {
+                InterlinkingEntry<? extends Identified> content = null;
+                if (type == InterlinkingType.BRAND) {
+                    content = extractor.getBrand(entryElem);
+                } else if (type == InterlinkingType.EPISODE) {
+                    content = extractor.getEpisode(entryElem);
+                } else if (type == InterlinkingType.BROADCAST) {
+                    content = extractor.getBroadcast(entryElem);
+                } else if (type == InterlinkingType.ONDEMAND) {
+                    content = extractor.getOnDemand(entryElem);
+                } else if (type == InterlinkingType.SERIES) {
+                    content = extractor.getSeries(entryElem);
+                } else if (type == InterlinkingType.SUBSERIES) {
+                    throw new RuntimeException("Subseries found");
                 } else {
-                    parentless.add(content);
+                    throw new RuntimeException("unknown type " + type);
+                }
+
+                if (content != null) {
+                    idToContent.put(content.getId(), content);
+                    if (content.getParentId().hasValue()) {
+                        parentIdToContent.put(content.getParentId().requireValue(), content);
+                    } else {
+                        parentless.add(content);
+                    }
                 }
             }
+        } catch (NullPointerException e) {
+            log.warn("Element {} thrown exception {}", entryElem, e);
         }
+
     }
     
     public void processAllEntries() {

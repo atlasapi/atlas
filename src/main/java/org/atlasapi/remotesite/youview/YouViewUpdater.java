@@ -11,6 +11,8 @@ import nu.xom.Elements;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
+
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
@@ -26,6 +28,7 @@ public class YouViewUpdater extends ScheduledTask {
 
     private static final String ATOM_PREFIX = "atom";
     private static final String ENTRY_KEY = "entry";
+    private static final String DATE_TIME_FORMAT = "YYYY-MM-dd'T'HH:mm:ss'Z'";
     private final YouViewScheduleFetcher fetcher;
     private final int plusDays;
     private final int minusDays;
@@ -65,10 +68,17 @@ public class YouViewUpdater extends ScheduledTask {
                     Interval interval = new Interval(start.toDateTimeAtStartOfDay(), 
                             end.toDateTimeAtStartOfDay());
                     Integer serviceId = channel.getKey();
-                    Document xml = fetcher.getSchedule(interval.getStart(), interval.getEnd(), 
+                    DateTime startDate = interval.getStart();
+                    DateTime endDate = interval.getEnd();
+                    Document xml = fetcher.getSchedule(startDate, endDate,
                             serviceId);
                     Element root = xml.getRootElement();
                     Elements entries = root.getChildElements(ENTRY_KEY, root.getNamespaceURI(ATOM_PREFIX));
+
+                    if(entries.size() == 0) {
+                        log.warn("Schedule for ?starttime={}&endtime={}&service={} is empty for channel {}",
+                                startDate.toString(DATE_TIME_FORMAT), endDate.toString(DATE_TIME_FORMAT), serviceId, channel.getValue().getTitle());
+                    }
 
                     Publisher publisher = publisherFor(channelResolver.getChannelServiceAlias(serviceId));
                     progress = progress.reduce(processor.process(channel.getValue(),  

@@ -15,6 +15,7 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
+import com.google.common.base.Supplier;
 import com.google.common.collect.Lists;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -31,7 +32,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     private final EquivalenceUpdater<Content> updater;
     private final ScheduleResolver scheduleResolver;
     private final List<Publisher> publishers;
-    private final List<Channel> channels;
+    private final Supplier<Iterable<Channel>> channelsSupplier;
     private final int back;
     private final int forward;
 
@@ -42,12 +43,13 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     }
 
     private ScheduleEquivalenceUpdateTask(EquivalenceUpdater<Content> updater,
-            ScheduleResolver scheduleResolver, List<Publisher> publishers, List<Channel> channels,
+            ScheduleResolver scheduleResolver, List<Publisher> publishers,
+            Supplier<Iterable<Channel>> channelsSupplier,
             int back, int forward) {
         this.updater = updater;
         this.scheduleResolver = scheduleResolver;
         this.publishers = publishers;
-        this.channels = channels;
+        this.channelsSupplier = channelsSupplier;
         this.back = back;
         this.forward = forward;
     }
@@ -85,7 +87,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     public UpdateProgress equivalateSchedule(LocalDate start, LocalDate end) {
         UpdateProgress progress = UpdateProgress.START;
         for (Publisher publisher : publishers) {
-            for (Channel channel : channels) {
+            for (Channel channel : channelsSupplier.get()) {
                 if (!shouldContinue()) {
                     return progress;
                 }
@@ -148,7 +150,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         private EquivalenceUpdater<Content> updater;
         private ScheduleResolver scheduleResolver;
         private List<Publisher> publishers;
-        private List<Channel> channels;
+        private Supplier<Iterable<Channel>> channelsSupplier;
         private int back;
         private int forward;
 
@@ -157,7 +159,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     updater,
                     scheduleResolver,
                     publishers,
-                    channels,
+                    channelsSupplier,
                     back,
                     forward);
         }
@@ -184,8 +186,8 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
             return withPublishers(ImmutableList.copyOf(publishers));
         }
 
-        public Builder withChannels(Iterable<Channel> channels) {
-            this.channels = ImmutableList.copyOf(channels);
+        public Builder withChannelsSupplier(Supplier<Iterable<Channel>> channelsSupplier) {
+            this.channelsSupplier = channelsSupplier;
             return this;
         }
 

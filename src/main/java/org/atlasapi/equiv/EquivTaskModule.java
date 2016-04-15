@@ -1,5 +1,6 @@
 package org.atlasapi.equiv;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
@@ -82,6 +83,8 @@ import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 
 import com.google.api.client.util.Lists;
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -211,7 +214,6 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(publisherUpdateTask(UKTV).withName("UKTV Equivalence Updater"), UKTV_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(WIKIPEDIA).withName("Wikipedia Equivalence Updater"), WIKIPEDIA_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(BBC_MUSIC).withName("Music Equivalence Updater"), BBC_MUSIC_EQUIVALENCE_REPETITION, jobsAtStartup);
-
         scheduleEquivalenceJob(publisherUpdateTask(PA).withName("PA Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(BBC).withName("BBC Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(C4).withName("C4 Equivalence Updater"), RepetitionRules.NEVER,jobsAtStartup);
@@ -232,43 +234,43 @@ public class EquivTaskModule {
 
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(BBC)
-                        .withChannels(bbcChannels())
+                        .withChannelsSupplier(bbcChannels())
                         .build().withName("BBC Schedule Equivalence (8 day) Updater"),
                 BBC_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup);
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(ITV)
-                        .withChannels(itvChannels())
+                        .withChannelsSupplier(itvChannels())
                         .build().withName("ITV Schedule Equivalence (8 day) Updater"),
                 ITV_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup);
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(ITV_INTERLINKING)
-                        .withChannels(itvChannels())
+                        .withChannelsSupplier(itvChannels())
                         .build().withName("ITV Interlinking Schedule Equivalence (8 day) Updater"),
                 ITV_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup);
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(C4)
-                        .withChannels(c4Channels())
+                        .withChannelsSupplier(c4Channels())
                         .build().withName("C4 Schedule Equivalence (8 day) Updater"),
                 C4_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup);
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(C4_PMLSD)
-                        .withChannels(c4Channels())
+                        .withChannelsSupplier(c4Channels())
                         .build().withName("C4 Schedule Equivalence (8 day) Updater"),
                 C4_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup);
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(FIVE)
-                        .withChannels(fiveChannels())
+                        .withChannelsSupplier(fiveChannels())
                         .build().withName("Five Schedule Equivalence (8 day) Updater"),
                 RepetitionRules.NEVER,
                 jobsAtStartup);
         scheduleEquivalenceJob(taskBuilder(7, 0)
                         .withPublishers(BBC_REDUX)
-                        .withChannels(bbcReduxChannels())
+                        .withChannelsSupplier(bbcReduxChannels())
                         .build().withName("Redux Schedule Equivalence (8 day) Updater"),
                 REDUX_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup);
@@ -280,7 +282,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(YOUVIEW)
-                        .withChannels(youviewChannelResolver.getAllChannels())
+                        .withChannelsSupplier(youviewChannelsSupplier())
                         .build().withName("YouView Schedule Equivalence (8 day) Updater"),
                 YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup
@@ -288,7 +290,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(YOUVIEW_STAGE)
-                        .withChannels(youviewChannelResolver.getAllChannels())
+                        .withChannelsSupplier(youviewChannelsSupplier())
                         .build().withName("YouView Stage Schedule Equivalence (8 day) Updater"),
                 YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup
@@ -296,7 +298,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(YOUVIEW_BT)
-                        .withChannels(youviewChannelResolver.getAllChannels())
+                        .withChannelsSupplier(youviewChannelsSupplier())
                         .build().withName("YouView BT Schedule Equivalence (8 day) Updater"),
                 YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup
@@ -304,7 +306,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(YOUVIEW_BT_STAGE)
-                        .withChannels(youviewChannelResolver.getAllChannels())
+                        .withChannelsSupplier(youviewChannelsSupplier())
                         .build()
                         .withName("YouView Stage BT Schedule Equivalence (8 day) Updater"),
                 YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
@@ -313,7 +315,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(YOUVIEW_SCOTLAND_RADIO)
-                        .withChannels(youviewChannelResolver.getAllChannels())
+                        .withChannelsSupplier(youviewChannelsSupplier())
                         .build()
                         .withName("YouView Scotland Radio Schedule Equivalence (8 day) Updater"),
                 YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
@@ -322,7 +324,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(YOUVIEW_SCOTLAND_RADIO_STAGE)
-                        .withChannels(youviewChannelResolver.getAllChannels())
+                        .withChannelsSupplier(youviewChannelsSupplier())
                         .build()
                         .withName(
                                 "YouView Stage Scotland Radio Schedule Equivalence (8 day) Updater"),
@@ -387,31 +389,49 @@ public class EquivTaskModule {
         return new EquivalenceResultProbeController(equivalenceResultStore, equivProbeStore());
     }
     
-    private Iterable<Channel> bbcChannels() {
-        return Iterables.transform(BbcIonServices.services.values(),
-            new Function<String, Channel>() {
-                @Override
-                public Channel apply(String input) {
-                    return channelResolver.fromUri(input).requireValue();
-                }
-            }
+    private Supplier<Iterable<Channel>> bbcChannels() {
+        return Suppliers.ofInstance(Iterables.transform(
+                BbcIonServices.services.values(),
+                    new Function<String, Channel>() {
+                        @Override
+                        public Channel apply(String input) {
+                            return channelResolver.fromUri(input).requireValue();
+                        }
+                    }
+                ));
+    }
+
+    private Supplier<Iterable<Channel>> youviewChannelsSupplier() {
+        return new YouViewChannelsChannelSupplier(youviewChannelResolver);
+    }
+
+    private Supplier<Iterable<Channel>> itvChannels() {
+        return Suppliers.ofInstance(
+                (Iterable<Channel>) new ItvWhatsonChannelMap(channelResolver).values()
+        );
+    }
+        
+    private Supplier<Iterable<Channel>> c4Channels() {
+        return Suppliers.ofInstance(
+                (Iterable<Channel>) new C4AtomApi(channelResolver).getChannelMap().values()
+        );
+    }
+    
+    private Supplier<Iterable<Channel>> fiveChannels() {
+        return Suppliers.ofInstance(
+                (Iterable<Channel>) new FiveChannelMap(channelResolver).values()
         );
     }
 
-    private Iterable<Channel> itvChannels() {
-        return new ItvWhatsonChannelMap(channelResolver).values();
-    }
-        
-    private Iterable<Channel> c4Channels() {
-        return new C4AtomApi(channelResolver).getChannelMap().values();
-    }
-    
-    private Iterable<Channel> fiveChannels() {
-        return new FiveChannelMap(channelResolver).values();
-    }
+    private Supplier<Iterable<Channel>> bbcReduxChannels() {
 
-    private Iterable<Channel> bbcReduxChannels() {
-        return new ReduxServices(channelResolver).channelMap().values();
+        return new Supplier<Iterable<Channel>>() {
+
+            @Override
+            public Iterable<Channel> get() {
+                return new ReduxServices(channelResolver).channelMap().values();
+            }
+        };
     }
     
     private EquivalenceUpdatingWorker equivUpdatingWorker() {
@@ -466,6 +486,20 @@ public class EquivTaskModule {
                 
             }, MoreExecutors.sameThreadExecutor());
             consumer.get().startAsync();
+        }
+    }
+
+    private static class YouViewChannelsChannelSupplier implements Supplier<Iterable<Channel>> {
+
+        private final YouViewChannelResolver youviewChannelResolver;
+
+        public YouViewChannelsChannelSupplier(YouViewChannelResolver youviewChannelResolver) {
+            this.youviewChannelResolver = checkNotNull(youviewChannelResolver);
+        }
+
+        @Override
+        public Iterable<Channel> get() {
+            return youviewChannelResolver.getAllChannels();
         }
     }
     

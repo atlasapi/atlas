@@ -37,7 +37,7 @@ public class FiveUpdater extends ScheduledTask {
 
     private static final Logger log = LoggerFactory.getLogger(FiveUpdater.class);
     private static final String BASE_API_URL = "https://pdb.five.tv/internal";
-    public static final int LIMIT = 100;
+    private static final int LIMIT = 100;
     private final FiveBrandProcessor processor;
     private final Timestamper timestamper = new SystemClock();
     private final int socketTimeout;
@@ -45,7 +45,10 @@ public class FiveUpdater extends ScheduledTask {
     private final Builder parser = new Builder();
     private SimpleHttpClient streamHttpClient;
 
-    public FiveUpdater(ContentWriter contentWriter, ChannelResolver channelResolver, ContentResolver contentResolver, 
+    private int processedItems = 0;
+    private int failedItems =  0;
+
+    public FiveUpdater(ContentWriter contentWriter, ChannelResolver channelResolver, ContentResolver contentResolver,
             FiveLocationPolicyIds locationPolicyIds, int socketTimeout) {
         this.socketTimeout = socketTimeout;
         this.streamHttpClient = buildFetcher();
@@ -133,7 +136,6 @@ public class FiveUpdater extends ScheduledTask {
     }
 
     private void process(Elements elements) {
-        int processed = 0, failed = 0;
         
         for(int i = 0; i < elements.size(); i++) {
             Element element = elements.get(i);
@@ -144,9 +146,9 @@ public class FiveUpdater extends ScheduledTask {
                 }
                 catch (Exception e) {
                     log.error("Exception when processing show", e);
-                    failed++;
+                    failedItems++;
                 }
-                reportStatus(String.format("%s processed. %s failed", ++processed, failed));
+                reportStatus(String.format("%s processed. %s failed", ++processedItems, failedItems));
             }
         }
     }

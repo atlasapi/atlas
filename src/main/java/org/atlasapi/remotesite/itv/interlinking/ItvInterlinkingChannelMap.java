@@ -17,6 +17,7 @@ public class ItvInterlinkingChannelMap {
         idToChannel.put("ITV3", channelResolver.fromUri("http://www.itv.com/channels/itv3").requireValue());
         idToChannel.put("ITV4", channelResolver.fromUri("http://www.itv.com/channels/itv4").requireValue());
         idToChannel.put("CITV", channelResolver.fromUri("http://www.itv.com/channels/citv").requireValue());
+        idToChannel.put("ITVBE", channelResolver.fromUri("http://ref.atlasapi.org/channels/pressassociation.com/1900").requireValue());
     }
     
     public Channel get(String key) {

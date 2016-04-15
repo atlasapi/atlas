@@ -1,21 +1,21 @@
 package org.atlasapi.remotesite.youview;
 
+import java.util.Set;
+
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Publisher;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import org.junit.Test;
+
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
-
-import java.util.Set;
-
-import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Publisher;
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
 
 
 public class DefaultYouViewChannelResolverTest {
@@ -23,6 +23,8 @@ public class DefaultYouViewChannelResolverTest {
     private static final Set<String> ALIAS_PREFIXES = ImmutableSet.of("http://youview.com/service/");
     
     private static final Channel BBC_ONE = new Channel(Publisher.METABROADCAST, "BBC One", "bbcone", null, MediaType.VIDEO, "http://www.bbc.co.uk/bbcone");
+    private static final Channel BBC_TWO = new Channel(Publisher.METABROADCAST, "BBC Two", "bbctwo", null, MediaType.VIDEO, "http://www.bbc.co.uk/bbctwo");
+
     private final ChannelResolver channelResolver = mock(ChannelResolver.class);
     
     @Test
@@ -61,5 +63,19 @@ public class DefaultYouViewChannelResolverTest {
         DefaultYouViewChannelResolver yvChannelResolver = new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
     
         assertThat(yvChannelResolver.getChannel(456).get(), is(BBC_ONE));
+    }
+
+    @Test
+    public void overrideAliasTakesPrecedence() {
+        when(channelResolver.forAliases("http://youview.com/service/")).thenReturn(
+                ImmutableMap.of("http://youview.com/service/123", BBC_ONE));
+        when(channelResolver.forAliases("http://overrides.youview.com/service/")).thenReturn(
+                ImmutableMap.of("http://overrides.youview.com/service/123", BBC_TWO));
+
+
+        DefaultYouViewChannelResolver yvChannelResolver =
+                new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
+
+        assertThat(yvChannelResolver.getChannel(123).get(), is(BBC_TWO));
     }
 }

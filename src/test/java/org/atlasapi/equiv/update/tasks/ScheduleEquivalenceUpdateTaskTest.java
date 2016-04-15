@@ -14,9 +14,11 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
+
+import com.google.common.base.Supplier;
+import com.google.common.base.Suppliers;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.junit.Test;
@@ -76,7 +78,7 @@ public class ScheduleEquivalenceUpdateTaskTest {
             .withBack(0)
             .withForward(0)
             .withPublishers(ImmutableList.of(Publisher.YOUVIEW))
-            .withChannels(ImmutableList.of(bbcOne))
+            .withChannelsSupplier(Suppliers.ofInstance((Iterable<Channel>)ImmutableList.of(bbcOne)))
             .withScheduleResolver(resolver)
             .withUpdater(updater)
             .build().run();

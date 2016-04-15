@@ -34,9 +34,10 @@ import com.metabroadcast.common.time.Timestamp;
 import com.metabroadcast.common.time.Timestamper;
 
 public class FiveUpdater extends ScheduledTask {
-    
+
     private static final Logger log = LoggerFactory.getLogger(FiveUpdater.class);
     private static final String BASE_API_URL = "https://pdb.five.tv/internal";
+    public static final int LIMIT = 100;
     private final FiveBrandProcessor processor;
     private final Timestamper timestamper = new SystemClock();
     private final int socketTimeout;
@@ -96,8 +97,19 @@ public class FiveUpdater extends ScheduledTask {
         Timestamp start = timestamper.timestamp();
         try {
             log.info("Five update started from " + BASE_API_URL);
-            Document document = streamHttpClient.get(new SimpleHttpRequest<Document>(BASE_API_URL + "/shows", TRANSFORMER));
-            process(document.getRootElement().getFirstChildElement("shows").getChildElements());
+            boolean exhausted = false;
+            int startingPoint = 0;
+            while (!exhausted) {
+                String apiCall = getApiCall(startingPoint);
+                Document document = streamHttpClient.get(new SimpleHttpRequest<Document>(apiCall, TRANSFORMER));
+                Elements shows = document.getRootElement()
+                        .getFirstChildElement("shows")
+                        .getChildElements();
+                process(shows);
+                startingPoint += LIMIT;
+                exhausted = shows.size() == 0;
+            }
+
 
             Timestamp end = timestamper.timestamp();
             log.info("Five update completed in " + start.durationTo(end).getStandardSeconds() + " seconds");
@@ -115,7 +127,11 @@ public class FiveUpdater extends ScheduledTask {
             Throwables.propagate(e);
         }
     }
-    
+
+    private String getApiCall(int startingPoint) {
+        return String.format("%s/shows?offset=%d&limit=%d", BASE_API_URL, startingPoint, LIMIT);
+    }
+
     private void process(Elements elements) {
         int processed = 0, failed = 0;
         

@@ -12,7 +12,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBElement;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.feeds.tasks.Destination.DestinationType;
 import org.atlasapi.feeds.tvanytime.TvAnytimeGenerator;
@@ -113,9 +116,16 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             @RequestParam(value = "uri", required = true) String uri) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
-            ApplicationConfiguration appConfig = appConfig(request);
+
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
-            
             if (destinationType == null) {
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
@@ -166,9 +176,16 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             @RequestParam(value = "uri", required = true) String uri) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
-            ApplicationConfiguration appConfig = appConfig(request);
+
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
-            
             if (destinationType == null) {
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
@@ -207,9 +224,16 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             @RequestParam(value = "version_crid", required = false) String versionCrid) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
-            ApplicationConfiguration appConfig = appConfig(request);
+
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
-            
             if (destinationType == null) {
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
@@ -263,9 +287,16 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             @RequestParam(value = "broadcast_imi", required = false) String broadcastImi) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
-            ApplicationConfiguration appConfig = appConfig(request);
+
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
-            
             if (destinationType == null) {
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
@@ -320,7 +351,15 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             @RequestParam(value = "on_demand_imi", required = false) String onDemandImi) throws IOException {
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
-            ApplicationConfiguration appConfig = appConfig(request);
+
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
             
             if (destinationType == null) {

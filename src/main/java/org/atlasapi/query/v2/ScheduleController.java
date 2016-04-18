@@ -8,7 +8,10 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -32,13 +35,18 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.webapp.query.DateTimeInQueryParser;
 
 @Controller
 public class ScheduleController extends BaseController<Iterable<ScheduleChannel>> {
-    
+
+    private static final AtlasErrorSummary FORBIDDEN = new AtlasErrorSummary(new NullPointerException())
+            .withStatusCode(HttpStatusCode.FORBIDDEN)
+            .withMessage("Your API key is not permitted to view content from this publisher");
+
     private static final Range<Integer> COUNT_RANGE = Range.closed(1, 10);
     
     private final ScheduleResolver scheduleResolver;
@@ -66,6 +74,14 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             @RequestParam(required=false) String publisher, 
             HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
+            Maybe<ApplicationConfiguration> requestedConfig;
+            try {
+                requestedConfig = possibleAppConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             DateTime fromWhen = null;
             DateTime toWhen = null;
             Integer count = null; 
@@ -91,7 +107,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             
             String apiKey = request.getParameter("apiKey");
             boolean apiKeySupplied = apiKey != null;
-            Maybe<ApplicationConfiguration> requestedConfig = possibleAppConfig(request);
+
             if (apiKeySupplied && requestedConfig.isNothing()) {
                     throw new IllegalArgumentException("Unknown API key: " + apiKey);
             }

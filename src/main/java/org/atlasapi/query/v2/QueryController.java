@@ -21,7 +21,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
@@ -87,7 +90,13 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 	@RequestMapping(value="/3.0/content.*",method=RequestMethod.GET)
 	public void content(HttpServletRequest request, HttpServletResponse response) throws IOException {
 		try {
-			ContentQuery filter = builder.build(request);
+            ContentQuery filter;
+            try {
+                filter = builder.build(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
 			
 			List<String> uris = getUriList(request);
 			if(!uris.isEmpty()) {

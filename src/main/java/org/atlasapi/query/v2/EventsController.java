@@ -8,7 +8,10 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.Topic;
@@ -90,8 +93,14 @@ public class EventsController extends BaseController<Iterable<Event>> {
             @RequestParam(value = "from", required = false) String fromStr,
             @RequestParam(value = "no_whitelist", required = false) Boolean noWhitelist) throws IOException {
         try {
-            final ApplicationConfiguration appConfig = appConfig(request);
-            
+            final ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             Selection selection = SELECTION_BUILDER.build(request);
             Iterable<Event> events;
             
@@ -126,7 +135,13 @@ public class EventsController extends BaseController<Iterable<Event>> {
     public void singleEvent(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("id") String id) throws IOException {
         try {
-            final ApplicationConfiguration appConfig = appConfig(request);
+            final ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
             
             Optional<Event> event = eventResolver.fetch(idCodec.decode(id).longValue());
             if (!event.isPresent()) {

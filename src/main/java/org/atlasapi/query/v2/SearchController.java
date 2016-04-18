@@ -7,8 +7,11 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.IpCheckingApiKeyConfigurationFetcher;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
@@ -25,12 +28,18 @@ import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
+
+import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.text.MoreStrings;
 import org.atlasapi.media.entity.Specialization;
 
 @Controller
 public class SearchController extends BaseController<QueryResult<Identified,?extends Identified>> {
+
+    private static final AtlasErrorSummary FORBIDDEN = new AtlasErrorSummary(new NullPointerException())
+            .withStatusCode(HttpStatusCode.FORBIDDEN)
+            .withMessage("Your API key is not permitted to view content from this publisher");
 
     private static final String QUERY_PARAM = "q";
     private static final String SPECIALIZATION_PARAM = "specialization";
@@ -101,7 +110,14 @@ public class SearchController extends BaseController<QueryResult<Identified,?ext
             float catchupWeighting = getFloatParam(catchupWeightingParam, DEFAULT_CATCHUP_WEIGHTING);
             float priorityChannelWeighting = getFloatParam(priorityChannelWeightingParam, DEFAULT_PRIORITY_CHANNEL_WEIGHTING);
 
-            ApplicationConfiguration appConfig = appConfig(request);
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             Set<Specialization> specializations = specializations(specialization);
             Set<Publisher> publishers = publishers(publisher, appConfig);
             List<Identified> content = searcher.search(SearchQuery.builder(q)

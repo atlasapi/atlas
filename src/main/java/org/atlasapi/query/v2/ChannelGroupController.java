@@ -9,7 +9,10 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
@@ -97,7 +100,13 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             @RequestParam(value = PLATFORM_ID_KEY, required = false) String platformId,
             @RequestParam(value = ADVERTISED, required = false) String advertised) throws IOException {
         try {
-            final ApplicationConfiguration appConfig = appConfig(request);
+            final ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
             
             Optional<Set<Annotation>> annotations = annotationExtractor.extract(request);
             if (annotations.isPresent() && !validAnnotations(annotations.get())) {
@@ -138,13 +147,20 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             @RequestParam(value = CHANNEL_GENRES_KEY, required = false) String channelGenres,
             @RequestParam(value = ADVERTISED, required = false) String advertised) throws IOException {
         try {
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(idCodec.decode(id).longValue());
             if (!possibleChannelGroup.isPresent()) {
                 errorViewFor(request, response, NOT_FOUND);
                 return;
-            } 
+            }
 
-            ApplicationConfiguration appConfig = appConfig(request);
             if (!appConfig.isEnabled(possibleChannelGroup.get().getPublisher())) {
                 outputter.writeError(request, response, FORBIDDEN.withMessage("ChannelGroup " + id + " not available"));
                 return;

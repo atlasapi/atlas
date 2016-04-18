@@ -5,7 +5,10 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.feeds.tasks.Action;
 import org.atlasapi.feeds.tasks.Destination.DestinationType;
@@ -77,7 +80,15 @@ public class TaskController extends BaseController<Iterable<Task>> {
     ) throws IOException {
         try {
             Selection selection = SELECTION_BUILDER.build(request);
-            ApplicationConfiguration appConfig = appConfig(request);
+
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                outputter.writeError(request, response, FORBIDDEN);
+                return;
+            }
+
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
 

@@ -185,17 +185,11 @@ public class ScheduleControllerTest {
 
     @Test
     public void testErrorsWhenApiKeyForUnknownAppIsSupplied() throws Exception {
-        
         HttpServletRequest req = request.withParam("apiKey", "unknownKey");
-        HttpServletResponse response = new StubHttpServletResponse();
-        
+        when(configFetcher.configurationFor(req)).thenThrow(RevokedApiKeyException.class);
+
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", req, response);
-        
-        verify(outputter, never()).writeTo(argThat(is(req)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
-        ArgumentCaptor<AtlasErrorSummary> errorCaptor = ArgumentCaptor.forClass(AtlasErrorSummary.class);
-        verify(outputter).writeError(argThat(is(req)), argThat(is(response)), errorCaptor.capture());
-        assertThat(errorCaptor.getValue().exception(), is(instanceOf(IllegalArgumentException.class)));
-        
+        verifyExceptionThrownAndWrittenToUser(RevokedApiKeyException.class);
     }
 
     @Test
@@ -276,7 +270,7 @@ public class ScheduleControllerTest {
         when(channelResolver.fromKey(any(String.class))).thenReturn(Maybe.just(channel));
         when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.<ApplicationConfiguration>absent())))
         .thenReturn(Schedule.fromChannelMap(ImmutableMap.<Channel,List<Item>>of(), new Interval(from, from)));
-        
+
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, "bbcone", null, "bbc.co.uk", request, response);
         
         verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));

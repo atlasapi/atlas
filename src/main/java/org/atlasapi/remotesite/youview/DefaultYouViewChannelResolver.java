@@ -7,18 +7,17 @@ import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.apache.commons.collections.iterators.EntrySetMapIterator;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
     
@@ -49,10 +48,22 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
         
         Pattern pattern = Pattern.compile("^" + prefix + "(\\d+)$");
         Multimap<Channel, String> overrides = overrideAliasesForPrefix(channelResolver, prefix);
+        Map<String, Channel> overridesByAlias = inverseMultimap(overrides);
+
         Set<Channel> foundMappings = Sets.newHashSet();
         for (Entry<String, Channel> entry : channelResolver.forAliases(prefix).entrySet()) {
-            Channel channel = entry.getValue();
-            String alias = overrideFor(channel, overrides).or(entry.getKey());
+            String channelAlias = entry.getKey();
+            Channel channel = overridesByAlias.get(channelAlias.replace(
+                    HTTP_PREFIX,
+                    OVERRIDES_PREFIX
+            ));
+
+            String alias = channelAlias;
+            if (channel == null) {
+                channel = entry.getValue();
+                alias = overrideFor(channel, overrides).or(channelAlias);
+            }
+
             addService(pattern, alias, channel, channelMapBuilder, aliasMapBuilder);
             foundMappings.add(channel);
         }
@@ -61,6 +72,16 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
         // taken into account
         
         addOverridesWhereNoPrimaryAliasExists(pattern, foundMappings, overrides, channelMapBuilder, aliasMapBuilder);
+    }
+
+    private Map<String, Channel> inverseMultimap(Multimap<Channel, String> overrides) {
+        ImmutableMap.Builder<String, Channel> overrideAliases = ImmutableMap.builder();
+
+        for (Entry<Channel, String> entry : overrides.entries()) {
+            overrideAliases.put(entry.getValue(), entry.getKey());
+        }
+
+        return overrideAliases.build();
     }
 
     private void addService(Pattern pattern, String alias, Channel channel,

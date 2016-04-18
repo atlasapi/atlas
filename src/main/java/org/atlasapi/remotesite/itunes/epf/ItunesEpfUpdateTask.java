@@ -41,6 +41,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.intl.Country;
@@ -58,7 +59,8 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
     private final ItunesPricingLocationExtractor locationExtractor = new ItunesPricingLocationExtractor();
     private final AdapterLog log;
 
-    public ItunesEpfUpdateTask(Supplier<EpfDataSet> dataSetSupplier, OldContentDeactivator oldContentDeactivator, ContentWriter writer, AdapterLog log) {
+    public ItunesEpfUpdateTask(Supplier<EpfDataSet> dataSetSupplier,
+            OldContentDeactivator oldContentDeactivator, ContentWriter writer, AdapterLog log) {
         this.dataSetSupplier = dataSetSupplier;
         this.deactivator = oldContentDeactivator;
         this.writer = writer;
@@ -83,12 +85,23 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             }
 
             //series id -> series
-            final BiMap<Integer, Series> extractedSeries = linkBrandsAndSeries(dataSet.getArtistCollectionTable(), extractedBrands, extractSeries(dataSet.getCollectionTable()));
+            final BiMap<Integer, Series> extractedSeries = linkBrandsAndSeries(
+                    dataSet.getArtistCollectionTable(),
+                    extractedBrands,
+                    extractSeries(dataSet.getCollectionTable())
+            );
 
-            Multimap<String, Location> extractedLocations = extractLocations(dataSet, ImmutableSet.of(Countries.GB));
+            Multimap<String, Location> extractedLocations = extractLocations(
+                    dataSet,
+                    ImmutableSet.of(Countries.GB)
+            );
 
             //episode id -> trackNumber/series
-            Multimap<Series, Episode> extractedEpisodes = linkEpisodesAndSeries(dataSet.getCollectionVideoTable(), extractedSeries, extractVideos(dataSet.getVideoTable(), extractedSeries, extractedLocations));
+            Multimap<Series, Episode> extractedEpisodes = linkEpisodesAndSeries(
+                    dataSet.getCollectionVideoTable(),
+                    extractedSeries,
+                    extractVideos(dataSet.getVideoTable(), extractedSeries, extractedLocations)
+            );
 
             int seriess = 0;
             Set<Series> seriesToWrite = extractedEpisodes.keySet();
@@ -105,6 +118,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
                 reportStatus(String.format("Writing episodes %s/%s", ++episodes, extractedEpisodes.size()));
             }
 
+            reportStatus(String.format("%s written episodes. Started deactivating content", extractedEpisodes.size()));
             deactivator.deactivateOldContent(Publisher.ITUNES, ingestedUris,
                     DEACTIVATED_CONTENT_THRESHOLD
             );
@@ -116,7 +130,9 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
     }
 
     // Return a map here to give this function some transparency.
-    private BiMap<Integer, Series> linkBrandsAndSeries(EpfTable<EpfArtistCollection> artistCollectionTable, final Map<Integer, Brand> brands, final BiMap<Integer, Series> series) throws IOException {
+    private BiMap<Integer, Series> linkBrandsAndSeries(
+            EpfTable<EpfArtistCollection> artistCollectionTable, final Map<Integer, Brand> brands,
+            final BiMap<Integer, Series> series) throws IOException {
         reportStatus("Linking series to brands");
         return artistCollectionTable.processRows(new EpfTableRowProcessor<EpfArtistCollection, BiMap<Integer, Series>>() {
 
@@ -125,7 +141,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             @Override
             public boolean process(EpfArtistCollection row) {
                 Brand brand = brands.get(row.get(EpfArtistCollection.ARTIST_ID));
-                if(brand != null) {
+                if (brand != null) {
                     Integer collectionId = row.get(EpfArtistCollection.COLLECTION_ID);
                     Series sery = series.get(collectionId);
                     boolean keyIsInMap = linkedSeries.build().containsKey(collectionId);
@@ -144,39 +160,45 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         });
     }
 
-    private Multimap<String, Location> extractLocations(final EpfDataSet dataSet, ImmutableSet<Country> countries) throws IOException {
+    private Multimap<String, Location> extractLocations(final EpfDataSet dataSet,
+            ImmutableSet<Country> countries) throws IOException {
         reportStatus("Extracting locations...");
-        Iterable<Location> locations = Iterables.concat(Iterables.transform(countries, new Function<Country, Set<Location>>() {
-            @Override
-            public Set<Location> apply(final Country country) {
-                try {
-                    EpfTable<EpfPricing> pricingTable = dataSet.getPricingTable();
-                    final Map<String, Integer> countryCodes = extractCountryCodes(dataSet.getCountryCodes());
-                    return pricingTable.processRows(new EpfTableRowProcessor<EpfPricing, Set<Location>>() {
+        Iterable<Location> locations = Iterables.concat(Iterables.transform(
+                countries,
+                new Function<Country, Set<Location>>() {
 
-                        private final ImmutableSet.Builder<Location> countryLocations = ImmutableSet.builder();
+                    @Override
+                    public Set<Location> apply(final Country country) {
+                        try {
+                            EpfTable<EpfPricing> pricingTable = dataSet.getPricingTable();
+                            final Map<String, Integer> countryCodes = extractCountryCodes(dataSet.getCountryCodes());
+                            return pricingTable.processRows(new EpfTableRowProcessor<EpfPricing, Set<Location>>() {
 
-                        @Override
-                        public boolean process(EpfPricing row) {
-                            Maybe<Location> location = locationExtractor.extract(new ItunesEpfPricingSource(row, country, countryCodes));
-                            if (location.hasValue()) {
-                                countryLocations.add(location.requireValue());
-                            }
-                            return isRunning();
+                                private final ImmutableSet.Builder<Location> countryLocations = ImmutableSet.builder();
+
+                                @Override
+                                public boolean process(EpfPricing row) {
+                                    Maybe<Location> location = locationExtractor.extract(new ItunesEpfPricingSource(row, country, countryCodes));
+                                    if (location.hasValue()) {
+                                        countryLocations.add(location.requireValue());
+                                    }
+                                    return isRunning();
+                                }
+
+                                @Override
+                                public Set<Location> getResult() {
+                                    return countryLocations.build();
+                                }
+                            });
+                        } catch (Exception e) {
+                            throw Throwables.propagate(e);
                         }
-
-                        @Override
-                        public Set<Location> getResult() {
-                            return countryLocations.build();
-                        }
-                    });
-                } catch (Exception e) {
-                    throw Throwables.propagate(e);
+                    }
                 }
-            }
-        }));
+        ));
 
         return Multimaps.index(locations, new Function<Location, String>() {
+
             @Override
             public String apply(Location input) {
                 return input.getEmbedId();
@@ -184,7 +206,8 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         });
     }
 
-    public Map<String, Integer> extractCountryCodes(EpfTable<EpfStorefront> storefront) throws IOException {
+    public Map<String, Integer> extractCountryCodes(EpfTable<EpfStorefront> storefront)
+            throws IOException {
         return storefront.processRows(new EpfTableRowProcessor<EpfStorefront, Map<String, Integer>>() {
 
             ImmutableMap.Builder<String, Integer> results = ImmutableMap.builder();
@@ -206,9 +229,11 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         });
     }
 
-    private Map<Integer, Episode> extractVideos(EpfTable<EpfVideo> videosTable, final BiMap<Integer, Series> extractedSeries, final Multimap<String, Location> extractedLocations) throws IOException {
+    private Map<Integer, Episode> extractVideos(EpfTable<EpfVideo> videosTable,
+            final BiMap<Integer, Series> extractedSeries,
+            final Multimap<String, Location> extractedLocations) throws IOException {
         reportStatus("Extracting episodes");
-        return videosTable.processRows(new EpfTableRowProcessor<EpfVideo, Map<Integer,Episode>>() {
+        return videosTable.processRows(new EpfTableRowProcessor<EpfVideo, Map<Integer, Episode>>() {
 
             ImmutableMap.Builder<Integer, Episode> results = ImmutableMap.builder();
 
@@ -217,7 +242,8 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
                 Integer videoId = row.get(EpfVideo.VIDEO_ID);
                 try {
                     if (4 == row.get(EpfVideo.MEDIA_TYPE_ID)) {
-                        Collection<Location> locations = extractedLocations.get(String.valueOf(videoId));
+                        Collection<Location> locations = extractedLocations.get(String.valueOf(
+                                videoId));
                         if (!locations.isEmpty()) {
                             results.put(videoId, episodeExtractor.extract(new ItunesEpfVideoSource(row, locations)));
                         }
@@ -235,19 +261,21 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         });
     }
 
-    private Multimap<Series,Episode> linkEpisodesAndSeries(EpfTable<EpfCollectionVideo> cvTable, final Map<Integer, Series> extractedSeries, final Map<Integer, Episode> extractedEpisodes) throws IOException {
+    private Multimap<Series, Episode> linkEpisodesAndSeries(EpfTable<EpfCollectionVideo> cvTable,
+            final Map<Integer, Series> extractedSeries,
+            final Map<Integer, Episode> extractedEpisodes) throws IOException {
         reportStatus("Linking videos to series...");
-        return cvTable.processRows(new EpfTableRowProcessor<EpfCollectionVideo, Multimap<Series,Episode>>() {
+        return cvTable.processRows(new EpfTableRowProcessor<EpfCollectionVideo, Multimap<Series, Episode>>() {
 
-            private final HashMultimap<Series,Episode> linkedEpisodes = HashMultimap.create();
+            private final HashMultimap<Series, Episode> linkedEpisodes = HashMultimap.create();
 
             @Override
             public boolean process(EpfCollectionVideo row) {
                 Series series = extractedSeries.get(row.get(EpfCollectionVideo.COLLECTION_ID));
-                if(series != null) {
+                if (series != null) {
                     series.withSeriesNumber(row.get(EpfCollectionVideo.VOLUME_NUMBER));
                     Episode ep = extractedEpisodes.get(row.get(EpfCollectionVideo.VIDEO_ID));
-                    if(ep != null) {
+                    if (ep != null) {
                         ep.setEpisodeNumber(row.get(EpfCollectionVideo.TRACK_NUMBER));
                         linkedEpisodes.put(series, link(series, ep));
                     }
@@ -263,14 +291,15 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             }
 
             @Override
-            public Multimap<Series,Episode> getResult() {
+            public Multimap<Series, Episode> getResult() {
                 return linkedEpisodes;
             }
 
         });
     }
 
-    private BiMap<Integer, Series> extractSeries(EpfTable<EpfCollection> collTable) throws IOException {
+    private BiMap<Integer, Series> extractSeries(EpfTable<EpfCollection> collTable)
+            throws IOException {
         reportStatus("Extracting series...");
         return collTable.processRows(new EpfTableRowProcessor<EpfCollection, BiMap<Integer, Series>>() {
 
@@ -294,15 +323,17 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         });
     }
 
-    private BiMap<Integer, Brand> extractBrands(EpfTable<EpfArtist> artistTable) throws IOException {
+    private BiMap<Integer, Brand> extractBrands(EpfTable<EpfArtist> artistTable)
+            throws IOException {
         reportStatus("Extracting brands...");
-        return artistTable.processRows(new EpfTableRowProcessor<EpfArtist,BiMap<Integer,Brand>>() {
+        return artistTable.processRows(new EpfTableRowProcessor<EpfArtist, BiMap<Integer, Brand>>() {
 
             private final ImmutableBiMap.Builder<Integer, Brand> extractedBrands = ImmutableBiMap.builder();
 
             @Override
             public boolean process(EpfArtist row) {
-                if(row.get(EpfArtist.IS_ACTUAL_ARTIST) && ArtistType.TV_SHOW.equals(row.get(EpfArtist.ARTIST_TYPE_ID))) {
+                if (row.get(EpfArtist.IS_ACTUAL_ARTIST) && ArtistType.TV_SHOW.equals(row.get(
+                        EpfArtist.ARTIST_TYPE_ID))) {
                     Brand extractedBrand = extract(row);
                     extractedBrands.put(row.get(EpfArtist.ARTIST_ID), extractedBrand);
                 }
@@ -317,11 +348,10 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             }
 
             @Override
-            public BiMap<Integer,Brand> getResult() {
+            public BiMap<Integer, Brand> getResult() {
                 return extractedBrands.build();
             }
         });
     }
-
 
 }

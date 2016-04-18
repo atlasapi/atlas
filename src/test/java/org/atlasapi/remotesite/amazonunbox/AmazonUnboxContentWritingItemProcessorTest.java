@@ -14,9 +14,7 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.persistence.content.ContentListener;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -24,14 +22,11 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentExtractor;
 
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -69,9 +64,17 @@ public class AmazonUnboxContentWritingItemProcessorTest {
 
     @Before
     public void setUp() {
-        when(resolver.findByCanonicalUris(anyCollection())).thenReturn(ResolvedContent.builder().build());
+        when(resolver.findByCanonicalUris(anyCollection())).thenReturn(ResolvedContent.builder()
+                .build());
         when(lister.listContent(any(ContentListingCriteria.class))).thenReturn(Collections.<Content>emptyIterator());
-        processor = new AmazonUnboxContentWritingItemProcessor(extractor,resolver, writer, lister, 100, brandProcessor);
+        processor = new AmazonUnboxContentWritingItemProcessor(
+                extractor,
+                resolver,
+                writer,
+                lister,
+                100,
+                brandProcessor
+        );
     }
 
     @Test
@@ -94,9 +97,9 @@ public class AmazonUnboxContentWritingItemProcessorTest {
         int brands = 0;
         for (Container value : allValues) {
             if (value instanceof Brand) {
-                brands ++;
+                brands++;
             } else if (value instanceof Series) {
-                series ++;
+                series++;
             }
         }
         assertEquals(series, 2);

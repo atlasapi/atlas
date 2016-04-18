@@ -53,6 +53,10 @@ public class YouViewScheduleFetcher {
         }
         return xmlTransformer.getXml();
     }
+
+    public String getBaseUrl() {
+        return this.youviewUrl;
+    }
     
     private class XmlHttpResponseTransformer implements HttpResponseTransformer<Void> {
         private Document xml;

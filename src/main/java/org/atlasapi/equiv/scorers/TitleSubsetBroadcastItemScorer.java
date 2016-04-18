@@ -100,23 +100,18 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
         if (titleMissing(subject) || titleMissing(candidate)) {
             return false;
         }
-        String normalizedSubjectTitle = sanitize(subject.getTitle());
-        String normalizedCandidateTitle = sanitize(candidate.getTitle());
-        Set<String> subjectWords = filterCommon(titleWords(normalizedSubjectTitle));
-        Set<String> candidateWords = filterCommon(titleWords(normalizedCandidateTitle));
+        String sanitizedSubjectTitle = sanitize(subject.getTitle());
+        String sanitizedCandidateTitle = sanitize(candidate.getTitle());
+        Set<String> subjectWords = filterCommon(titleWords(sanitizedSubjectTitle));
+        Set<String> candidateWords = filterCommon(titleWords(sanitizedCandidateTitle));
         Set<String> shorter = collectionSize.min(subjectWords, candidateWords);
         Set<String> longer = collectionSize.max(candidateWords, subjectWords);
         return percentOfShorterInLonger(shorter, longer) >= threshold;
     }
 
     private String sanitize(String title) {
-        return removeCommonPrefixes(titleTransformer.expand(title)
-                .replaceAll(" & ", " and ")
-                .replaceAll("[^\\d\\w\\s]", "").toLowerCase());
-    }
-
-    private String removeCommonPrefixes(String title) {
-        return title.startsWith("the ") ? title.substring(4) : title;
+        return titleTransformer.expand(title)
+                .replaceAll("[^\\d\\w\\s]", "").toLowerCase();
     }
 
     private Set<String> filterCommon(Set<String> words) {

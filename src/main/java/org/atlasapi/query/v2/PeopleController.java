@@ -6,7 +6,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.Publisher;
@@ -21,6 +24,8 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
+
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.query.Selection;
@@ -50,8 +55,14 @@ public class PeopleController extends BaseController<Iterable<Person>> {
     @RequestMapping("/3.0/people.*")
     public void content(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            ApplicationConfiguration config = possibleAppConfig(request)
-                    .valueOrDefault(ApplicationConfiguration.defaultConfiguration());
+            ApplicationConfiguration config;
+            try {
+                config = possibleAppConfig(request).valueOrDefault(ApplicationConfiguration
+                        .defaultConfiguration());
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
+                return;
+            }
 
             String uri = request.getParameter("uri");
             String id = request.getParameter("id");

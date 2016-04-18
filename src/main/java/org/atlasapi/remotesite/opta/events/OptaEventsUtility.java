@@ -189,6 +189,7 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
             .put("Vicente Calderón", "http://dbpedia.org/resources/Vicente_Calder%C3%B3n_Stadium")
             .put("Volksparkstadion", "http://dbpedia.org/resources/Volksparkstadion")
             .put("WWK ARENA", "http://dbpedia.org/resources/WWK_ARENA")
+            .put("Sixways", "http://dbpedia.org/resources/Sixways_Stadium")
             .build();
     private static final Map<OptaSportType, List<EventGroup>> EVENT_GROUPS_LOOKUP = ImmutableMap.
             <OptaSportType, List<EventGroup>>builder()

@@ -76,7 +76,7 @@ public class YouViewUpdater extends ScheduledTask {
                     Elements entries = root.getChildElements(ENTRY_KEY, root.getNamespaceURI(ATOM_PREFIX));
 
                     if(entries.size() == 0) {
-                        log.warn("Schedule for ?starttime={}&endtime={}&service={} is empty for channel {}",
+                        log.warn("Schedule for {}?starttime={}&endtime={}&service={} is empty for channel {}", fetcher.getBaseUrl(),
                                 startDate.toString(DATE_TIME_FORMAT), endDate.toString(DATE_TIME_FORMAT), serviceId, channel.getValue().getTitle());
                     }
 

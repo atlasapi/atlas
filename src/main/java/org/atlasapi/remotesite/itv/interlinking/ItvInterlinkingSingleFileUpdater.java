@@ -1,6 +1,8 @@
 package org.atlasapi.remotesite.itv.interlinking;
 
 import static org.atlasapi.remotesite.itv.interlinking.ItvInterlinkingContentExtractor.ATOM_NS;
+
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
@@ -45,9 +47,9 @@ public class ItvInterlinkingSingleFileUpdater {
             entryProcessor.processAllEntries();
             
         } catch (HttpException e) {
-            e.printStackTrace();
+            throw Throwables.propagate(e);
         } catch (Exception e) {
-            e.printStackTrace();
+            throw Throwables.propagate(e);
         }
     }
     

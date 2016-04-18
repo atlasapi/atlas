@@ -97,7 +97,7 @@ public class EventsController extends BaseController<Iterable<Event>> {
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                errorViewFor(request, response, FORBIDDEN);
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
 
@@ -139,7 +139,7 @@ public class EventsController extends BaseController<Iterable<Event>> {
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                errorViewFor(request, response, FORBIDDEN);
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
             

@@ -60,7 +60,7 @@ public class TopicController extends BaseController<Iterable<Topic>> {
             try {
                 query = builder.build(req);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                errorViewFor(req, resp, FORBIDDEN);
+                errorViewFor(req, resp, AtlasErrorSummary.forException(ex));
                 return;
             }
 

@@ -43,10 +43,6 @@ import com.metabroadcast.common.webapp.query.DateTimeInQueryParser;
 @Controller
 public class ScheduleController extends BaseController<Iterable<ScheduleChannel>> {
 
-    private static final AtlasErrorSummary FORBIDDEN = new AtlasErrorSummary(new NullPointerException())
-            .withStatusCode(HttpStatusCode.FORBIDDEN)
-            .withMessage("Your API key is not permitted to view content from this publisher");
-
     private static final Range<Integer> COUNT_RANGE = Range.closed(1, 10);
     
     private final ScheduleResolver scheduleResolver;
@@ -78,7 +74,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             try {
                 requestedConfig = possibleAppConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                errorViewFor(request, response, FORBIDDEN);
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
 

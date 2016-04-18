@@ -108,7 +108,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                errorViewFor(request, response, FORBIDDEN);
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
             

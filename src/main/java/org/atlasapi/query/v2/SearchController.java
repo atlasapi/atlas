@@ -37,10 +37,6 @@ import org.atlasapi.media.entity.Specialization;
 @Controller
 public class SearchController extends BaseController<QueryResult<Identified,?extends Identified>> {
 
-    private static final AtlasErrorSummary FORBIDDEN = new AtlasErrorSummary(new NullPointerException())
-            .withStatusCode(HttpStatusCode.FORBIDDEN)
-            .withMessage("Your API key is not permitted to view content from this publisher");
-
     private static final String QUERY_PARAM = "q";
     private static final String SPECIALIZATION_PARAM = "specialization";
     private static final String PUBLISHER_PARAM = "publisher";
@@ -114,7 +110,7 @@ public class SearchController extends BaseController<QueryResult<Identified,?ext
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                errorViewFor(request, response, FORBIDDEN);
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
 

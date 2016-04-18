@@ -60,7 +60,7 @@ public class PeopleController extends BaseController<Iterable<Person>> {
                 config = possibleAppConfig(request).valueOrDefault(ApplicationConfiguration
                         .defaultConfiguration());
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                errorViewFor(request, response, FORBIDDEN);
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
 

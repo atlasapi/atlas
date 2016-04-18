@@ -7,7 +7,10 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
@@ -49,21 +52,27 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
     public void statistics(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("publisher") String publisherStr) throws IOException {
         try {
-        ApplicationConfiguration appConfig = appConfig(request);
-        Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
-        if (!appConfig.isEnabled(publisher)) {
-            errorViewFor(request, response, FORBIDDEN);
-            return;
-        }
-        
-        Optional<FeedStatistics> resolved = statsResolver.resolveFor(publisher);
-        
-        if (!resolved.isPresent()) {
-            errorViewFor(request, response, NOT_FOUND);
-            return;
-        }
-        
-        modelAndViewFor(request, response, ImmutableSet.of(resolved.get()), appConfig);
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
+                return;
+            }
+
+            Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
+            if (!appConfig.isEnabled(publisher)) {
+                errorViewFor(request, response, FORBIDDEN);
+                return;
+            }
+
+            Optional<FeedStatistics> resolved = statsResolver.resolveFor(publisher);
+            if (!resolved.isPresent()) {
+                errorViewFor(request, response, NOT_FOUND);
+                return;
+            }
+
+            modelAndViewFor(request, response, ImmutableSet.of(resolved.get()), appConfig);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }

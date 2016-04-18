@@ -185,17 +185,11 @@ public class ScheduleControllerTest {
 
     @Test
     public void testErrorsWhenApiKeyForUnknownAppIsSupplied() throws Exception {
-        
         HttpServletRequest req = request.withParam("apiKey", "unknownKey");
-        HttpServletResponse response = new StubHttpServletResponse();
-        
+        when(configFetcher.configurationFor(req)).thenThrow(RevokedApiKeyException.class);
+
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", req, response);
-        
-        verify(outputter, never()).writeTo(argThat(is(req)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
-        ArgumentCaptor<AtlasErrorSummary> errorCaptor = ArgumentCaptor.forClass(AtlasErrorSummary.class);
-        verify(outputter).writeError(argThat(is(req)), argThat(is(response)), errorCaptor.capture());
-        assertThat(errorCaptor.getValue().exception(), is(instanceOf(IllegalArgumentException.class)));
-        
+        verifyExceptionThrownAndWrittenToUser(RevokedApiKeyException.class);
     }
 
     @Test

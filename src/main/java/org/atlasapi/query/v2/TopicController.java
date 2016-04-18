@@ -10,6 +10,7 @@ import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
@@ -55,7 +56,14 @@ public class TopicController extends BaseController<Iterable<Topic>> {
     @RequestMapping(value={"3.0/topics.*","/topics.*"})
     public void topics(HttpServletRequest req, HttpServletResponse resp) throws IOException  {
         try {
-            ContentQuery query = builder.build(req);
+            ContentQuery query;
+            try {
+                query = builder.build(req);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                errorViewFor(req, resp, AtlasErrorSummary.forException(ex));
+                return;
+            }
+
             modelAndViewFor(req, resp, topicResolver.topicsFor(query), query.getConfiguration());
         } catch (Exception e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));

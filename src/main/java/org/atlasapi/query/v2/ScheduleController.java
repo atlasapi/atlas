@@ -78,7 +78,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             try {
                 requestedConfig = possibleAppConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                outputter.writeError(request, response, FORBIDDEN);
+                errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 
@@ -104,13 +104,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         + "or 'from' and 'to'"
                         + "or 'from' and 'count'");
             }
-            
-            String apiKey = request.getParameter("apiKey");
-            boolean apiKeySupplied = apiKey != null;
 
-            if (apiKeySupplied && requestedConfig.isNothing()) {
-                    throw new IllegalArgumentException("Unknown API key: " + apiKey);
-            }
             ApplicationConfiguration appConfig = requestedConfig.valueOrDefault(defaultConfig);
             
             boolean publishersSupplied = !Strings.isNullOrEmpty(publisher);
@@ -129,7 +123,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                 throw new IllegalArgumentException("You must specify at least one channel that exists using the channel or channel_id parameter");
             }
             
-            ApplicationConfiguration mergeConfig = apiKeySupplied && !publishersSupplied ? appConfig : null;
+            ApplicationConfiguration mergeConfig = !publishersSupplied ? appConfig : null;
             Schedule schedule;
             if (count != null) {
                 schedule = scheduleResolver.schedule(fromWhen, count, channels, publishers, Optional.fromNullable(mergeConfig));

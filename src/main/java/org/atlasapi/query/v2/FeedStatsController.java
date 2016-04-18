@@ -56,7 +56,7 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                outputter.writeError(request, response, FORBIDDEN);
+                errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 

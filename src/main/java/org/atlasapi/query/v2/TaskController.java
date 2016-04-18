@@ -85,7 +85,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                outputter.writeError(request, response, FORBIDDEN);
+                errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 

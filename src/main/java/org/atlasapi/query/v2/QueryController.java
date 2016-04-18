@@ -94,7 +94,7 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             try {
                 filter = builder.build(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                outputter.writeError(request, response, FORBIDDEN);
+                errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 			

@@ -114,7 +114,7 @@ public class SearchController extends BaseController<QueryResult<Identified,?ext
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                outputter.writeError(request, response, FORBIDDEN);
+                errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 

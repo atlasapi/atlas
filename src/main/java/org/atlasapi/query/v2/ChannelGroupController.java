@@ -104,7 +104,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                outputter.writeError(request, response, FORBIDDEN);
+                errorViewFor(request, response, FORBIDDEN);
                 return;
             }
             
@@ -151,7 +151,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             try {
                 appConfig = appConfig(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                outputter.writeError(request, response, FORBIDDEN);
+                errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 

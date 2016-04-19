@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.rt;
 import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
@@ -19,6 +20,7 @@ import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Rating;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.media.entity.Restriction;
@@ -53,6 +55,7 @@ public class RtFilmProcessor {
     
     private static final String RT_FILM_URI_BASE = "http://radiotimes.com/films/";
     private static final String RT_FILM_ALIAS = "rt:filmid";
+    private static final String RT_RATING_SCHEME = "5STAR";
     
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
@@ -176,6 +179,15 @@ public class RtFilmProcessor {
         }
 
         film.setReviews(reviews);
+        
+        Element starRating = filmElement.getFirstChildElement("rating");
+        if (hasValue(starRating)) {
+            int ratingValue = Character.getNumericValue(starRating.getValue().charAt(0));
+            if (0 <= ratingValue) {
+                Rating rating = new Rating(RT_RATING_SCHEME, ratingValue, film.getPublisher());
+                film.setRatings(Collections.singletonList(rating));
+            }
+        }
 
         contentWriter.createOrUpdate(film);
         

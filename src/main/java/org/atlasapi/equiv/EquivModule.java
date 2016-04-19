@@ -256,6 +256,7 @@ public class EquivModule {
     
     private EquivalenceUpdater<Container> topLevelContainerUpdater(Set<Publisher> publishers) {
         return ContentEquivalenceUpdater.<Container> builder()
+            .withExcludedUris(excludedUrisFromProperties())
             .withGenerators(ImmutableSet.of(
                 TitleSearchGenerator.create(searchResolver, Container.class, publishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                 ScalingEquivalenceGenerator.scale(
@@ -493,6 +494,7 @@ public class EquivModule {
     private ContentEquivalenceUpdater<Container> standardSeriesUpdater(
             Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Container>builder()
+            .withExcludedUris(excludedUrisFromProperties())
             .withGenerator(new ContainerCandidatesContainerEquivalenceGenerator(contentResolver, equivSummaryStore))
             .withScorer(new SequenceContainerScorer())
             .withCombiner(new NullScoreAwareAveragingCombiner<Container>())
@@ -511,6 +513,7 @@ public class EquivModule {
     private SourceSpecificEquivalenceUpdater roviUpdater(Publisher roviSource, ImmutableSet<Publisher> roviMatchPublishers) {
         SourceSpecificEquivalenceUpdater roviUpdater = SourceSpecificEquivalenceUpdater.builder(roviSource)
             .withItemUpdater(ContentEquivalenceUpdater.<Item> builder()
+                    .withExcludedUris(excludedUrisFromProperties())
                     .withGenerators(ImmutableSet.of(
                             new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver, channelResolver, roviMatchPublishers, Duration.standardMinutes(10)),
                             new ContainerCandidatesItemEquivalenceGenerator(contentResolver, equivSummaryStore),
@@ -542,6 +545,7 @@ public class EquivModule {
 
     private EquivalenceUpdater<Container> facebookContainerEquivalenceUpdater(Set<Publisher> facebookAcceptablePublishers) {
         return ContentEquivalenceUpdater.<Container> builder()
+            .withExcludedUris(excludedUrisFromProperties())
             .withGenerators(ImmutableSet.of(
                     TitleSearchGenerator.create(searchResolver, Container.class, facebookAcceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                     aliasResolvingGenerator(contentResolver, Container.class)
@@ -559,6 +563,7 @@ public class EquivModule {
 
     private EquivalenceUpdater<Container> vodContainerUpdater(Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Container> builder()
+            .withExcludedUris(excludedUrisFromProperties())
             .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
             )
             .withScorers(ImmutableSet.of(
@@ -582,6 +587,7 @@ public class EquivModule {
 
     private EquivalenceUpdater<Container> btTveVodContainerUpdater(Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Container> builder()
+                .withExcludedUris(excludedUrisFromProperties())
                 .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
                 )
                 .withScorers(ImmutableSet.of(
@@ -604,6 +610,7 @@ public class EquivModule {
 
     private ContentEquivalenceUpdater.Builder<Item> vodItemUpdater(Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Item> builder()
+            .withExcludedUris(excludedUrisFromProperties())
             .withGenerators(ImmutableSet.of(
                 new ContainerCandidatesItemEquivalenceGenerator(contentResolver, equivSummaryStore),
                 new FilmEquivalenceGenerator(searchResolver, acceptablePublishers, true)
@@ -631,6 +638,7 @@ public class EquivModule {
     // 
     private ContentEquivalenceUpdater.Builder<Item> btVodItemUpdater(Set<Publisher> acceptablePublishers) {
         return ContentEquivalenceUpdater.<Item> builder()
+            .withExcludedUris(excludedUrisFromProperties())
             .withGenerators(ImmutableSet.of(
                 new ContainerCandidatesItemEquivalenceGenerator(contentResolver, equivSummaryStore),
                 new FilmEquivalenceGenerator(searchResolver, acceptablePublishers, true)
@@ -660,6 +668,7 @@ public class EquivModule {
 
     private EquivalenceUpdater<Container> broadcastItemContainerEquivalenceUpdater(Set<Publisher> sources) {
         return ContentEquivalenceUpdater.<Container> builder()
+            .withExcludedUris(excludedUrisFromProperties())
             .withGenerators(ImmutableSet.of(
                 TitleSearchGenerator.create(searchResolver, Container.class, sources, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                 new ContainerChildEquivalenceGenerator(contentResolver, equivSummaryStore)
@@ -688,6 +697,7 @@ public class EquivModule {
     private EquivalenceUpdater<Item> aliasIdentifiedBroadcastItemEquivalenceUpdater(
             Set<Publisher> sources) {
         return ContentEquivalenceUpdater.<Item>builder()
+                .withExcludedUris(excludedUrisFromProperties())
                 .withGenerator(new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver,
                         channelResolver,
                         sources,
@@ -703,6 +713,7 @@ public class EquivModule {
 
     private EquivalenceUpdater<Item> rtItemEquivalenceUpdater() {
         return ContentEquivalenceUpdater.<Item> builder()
+            .withExcludedUris(excludedUrisFromProperties())
             .withGenerators(ImmutableSet.of(
                 new RadioTimesFilmEquivalenceGenerator(contentResolver),
                 new FilmEquivalenceGenerator(searchResolver, ImmutableSet.of(Publisher.PREVIEW_NETWORKS), false)

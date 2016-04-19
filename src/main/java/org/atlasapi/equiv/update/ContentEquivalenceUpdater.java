@@ -37,6 +37,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         private EquivalenceFilter<T> filter;
         private EquivalenceExtractor<T> extractor;
         private EquivalenceResultHandler<T> handler;
+        private Set<String> excludedUris;
         
         public Builder<T> withGenerator(EquivalenceGenerator<T> generator) {
             generators.add(generator);
@@ -77,6 +78,11 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             this.handler = handler;
             return this;
         }
+
+        public Builder<T> withExcludedUris(Set<String> excludedUris) {
+            this.excludedUris = excludedUris;
+            return this;
+        }
         
         public ContentEquivalenceUpdater<T> build() {
             return new ContentEquivalenceUpdater<T>(
@@ -85,7 +91,8 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 combiner,
                 filter,
                 extractor,
-                handler
+                handler,
+                excludedUris
             );
         }
     }
@@ -109,9 +116,10 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         ScoreCombiner<T> combiner,
         EquivalenceFilter<T> filter,
         EquivalenceExtractor<T> extractor,
-        EquivalenceResultHandler<T> handler
+        EquivalenceResultHandler<T> handler,
+        Set<String> excludedUris
     ) {
-        this.generators = EquivalenceGenerators.from(generators);
+        this.generators = EquivalenceGenerators.from(generators, excludedUris);
         this.scorers = EquivalenceScorers.from(scorers);
         this.resultBuilder = new DefaultEquivalenceResultBuilder<T>(combiner, filter, extractor);
         this.handler = handler;
@@ -121,7 +129,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     public void updateEquivalences(T content) {
 
         ReadableDescription desc = new DefaultDescription();
-        
+
         List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
         
         Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));

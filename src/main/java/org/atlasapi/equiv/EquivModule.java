@@ -238,6 +238,7 @@ public class EquivModule {
                 new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver, 
                     channelResolver, acceptablePublishers, Duration.standardMinutes(5), filter)
             ))
+            .withExcludedUris(excludedUrisFromProperties())
             .withScorers(scorers)
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
             .withFilter(this.<Item>standardFilter())

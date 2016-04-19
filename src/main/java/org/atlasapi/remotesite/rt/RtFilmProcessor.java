@@ -179,13 +179,15 @@ public class RtFilmProcessor {
         }
 
         film.setReviews(reviews);
-        
+
         Element starRating = filmElement.getFirstChildElement("rating");
         if (hasValue(starRating)) {
             int ratingValue = Character.getNumericValue(starRating.getValue().charAt(0));
             if (0 <= ratingValue) {
                 Rating rating = new Rating(RT_RATING_SCHEME, ratingValue, film.getPublisher());
                 film.setRatings(Collections.singletonList(rating));
+            } else {
+                log.record(warnEntry().withSource(getClass()).withDescription("Unable to parse %s rating scheme from '%s'", RT_RATING_SCHEME, starRating.getValue()));
             }
         }
 

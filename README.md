@@ -16,7 +16,7 @@ Atlas, and specifically atlas-persistence, uses [MongoDB](http://www.mongodb.org
 
 During test runs, Atlas will run integration tests against a mongo running on port 8585. If one isn't running then it'll try and start one, assuming that mongod is available on its path, so either keep one running or make sure you've added mongo/bin to your path.
 
-The running Atlas instance requires that MongoDB be running on its standard port:27107. Please make sure you've kicked one off.
+The running Atlas instance requires that MongoDB be running on its standard port:27107 and ZooKeeper/Kafka: running locally.  Please make sure you've kicked them off.
 
 ## Maven
 

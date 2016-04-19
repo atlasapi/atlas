@@ -2,7 +2,9 @@ package org.atlasapi.remotesite.rt;
 
 import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import nu.xom.Element;
@@ -20,6 +22,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.media.entity.Review;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Subtitles;
 import org.atlasapi.media.entity.Version;
@@ -160,7 +163,20 @@ public class RtFilmProcessor {
         if (hasValue(ukCinemaCertificate)) {
             film.setCertificates(certificate(ukCinemaCertificate));
         }
-        
+
+        ArrayList<Review> reviews = new ArrayList(2);
+        Element normalReview = filmElement.getFirstChildElement("normal_review");
+        if (hasValue(normalReview)) {
+            reviews.add(new Review(Locale.ENGLISH, normalReview.getValue()));
+        }
+
+        Element shortReview = filmElement.getFirstChildElement("short_review");
+        if (hasValue(shortReview)) {
+            reviews.add(new Review(Locale.ENGLISH, shortReview.getValue()));
+        }
+
+        film.setReviews(reviews);
+
         contentWriter.createOrUpdate(film);
         
         peopleWriter.createOrUpdatePeople(film);

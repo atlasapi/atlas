@@ -42,7 +42,7 @@ public class EquivalenceGeneratorsTest {
     }
 
     @Test
-    public void testGeneratorExcludesUriFromTheList() {
+    public void generatorCreatesNoCandidatesForExcludedUri() {
         Item item = new Item();
         item.setCanonicalUri("excluded");
         List<ScoredCandidates<Content>> generated = generators.generate(item, resultDescription);
@@ -50,7 +50,7 @@ public class EquivalenceGeneratorsTest {
     }
 
     @Test
-    public void testGeneratorNotExcludesUriFromTheList() {
+    public void generatorCreatesCandidatesForNonExcludedUri() {
         Item item = new Item();
         item.setCanonicalUri("notexcluded");
         generators.generate(item, resultDescription);

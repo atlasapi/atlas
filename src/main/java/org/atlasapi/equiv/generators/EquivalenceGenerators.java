@@ -29,7 +29,6 @@ public class EquivalenceGenerators<T extends Content> {
         desc.startStage("Generating equivalences");
         Builder<ScoredCandidates<T>> generatedScores = ImmutableList.builder();
 
-
         if (excludedUris.contains(content.getCanonicalUri())) {
             desc.appendText("Content %s is in equivalence blacklist and will not be equivalated",
                     content.getCanonicalUri());

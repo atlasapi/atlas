@@ -29,6 +29,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.entity.testing.ComplexBroadcastTestDataBuilder;
 import org.atlasapi.media.product.ProductResolver;
@@ -141,6 +142,13 @@ public class ItemModelSimplifierTest {
         fullItem.setShortDescription("Hello");
         fullItem.setMediumDescription("Hello World");
         fullItem.setLongDescription("Hello World Test");
+
+        Award award = new Award();
+        award.setDescription("description");
+        award.setTitle("title");
+        award.setYear(2009);
+        award.setOutcome("won");
+        fullItem.setAwards(ImmutableSet.of(award));
         
         CrewMember person = Actor.actor("hisID", "Andrew Collings", "Dirt-bag Humperdink", Publisher.BBC);
         fullItem.addPerson(person);
@@ -193,6 +201,12 @@ public class ItemModelSimplifierTest {
         assertThat(broadcastChannel.getTitle(), is(channel.getTitle()));
         assertThat(broadcastChannel.getParent().getTitle(), is(parent.getTitle()));
         assertThat(Iterables.getOnlyElement(broadcastChannel.getParent().getImages()).getUri(), is(channelImage.getCanonicalUri()));
+
+        org.atlasapi.media.entity.simple.Award simpleAward = Iterables.getOnlyElement(simpleItem.getAwards());
+        assertThat(simpleAward.getTitle(), is("title"));
+        assertThat(simpleAward.getDescription(), is("description"));
+        assertThat(simpleAward.getOutcome(), is("won"));
+        assertThat(simpleAward.getYear().intValue(), is(2009));
     }
 
 }

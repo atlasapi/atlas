@@ -5,7 +5,10 @@ import java.util.Locale;
 import java.util.Set;
 
 import com.google.common.collect.Collections2;
+import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+
+import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.media.entity.MediaType;
@@ -73,7 +76,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         if (inputContent.getReviews() != null) {
             result.setReviews(reviews(result.getPublisher(), inputContent.getReviews()));
         }
-        result.setAwards(inputContent.getAwards());
+        result.setAwards(transformAwards(inputContent.getAwards()));
 
         return result;
     }
@@ -143,5 +146,22 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
             throw new IllegalArgumentException("unknown publisher " + pubDets.getKey());
         }
         return possiblePublisher.requireValue();
+    }
+
+    private Set<Award> transformAwards(Set<org.atlasapi.media.entity.simple.Award> awards) {
+        return FluentIterable.from(awards)
+                .transform(new Function<org.atlasapi.media.entity.simple.Award, Award>() {
+
+                    @Override
+                    public Award apply(org.atlasapi.media.entity.simple.Award input) {
+                        Award award = new Award();
+                        award.setDescription(input.getDescription());
+                        award.setOutcome(input.getOutcome());
+                        award.setTitle(input.getTitle());
+                        award.setYear(input.getYear());
+                        return award;
+                    }
+                })
+                .toSet();
     }
 }

@@ -103,7 +103,7 @@ public class BbcIonServices {
         .put("british_film_institute", "http://www.bbc.co.uk/services/british_film_institute")
         .put("hay_festival", "http://www.bbc.co.uk/services/hay_festival")
         .put("royal_shakespeare_company", "http://www.bbc.co.uk/services/royal_shakespeare_company")
-        .put("the_royal_opera_house", "http://www.bbc.co.uk/services/the_royal_opera_house")
+        .put("royal_opera_house", "http://www.bbc.co.uk/services/royal_opera_house")
         .put("british_council", "http://www.bbc.co.uk/services/british_council")
         .put("shakespeare_birthplace_trust", "http://www.bbc.co.uk/services/shakespeare_birthplace_trust")
         .put("ex_cathedra", "http://www.bbc.co.uk/services/ex_cathedra")

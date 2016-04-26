@@ -27,7 +27,6 @@ import org.atlasapi.query.uri.SavingFetcher;
 import org.atlasapi.query.uri.canonical.Canonicaliser;
 import org.atlasapi.query.uri.canonical.CanonicalisingFetcher;
 import org.atlasapi.remotesite.RemoteSiteModule;
-import org.atlasapi.remotesite.bbc.BbcUriCanonicaliser;
 import org.atlasapi.remotesite.bliptv.BlipTvAdapter;
 import org.atlasapi.remotesite.dailymotion.DailyMotionItemAdapter;
 import org.atlasapi.remotesite.facebook.FacebookCanonicaliser;
@@ -87,7 +86,6 @@ public class AtlasFetchModule {
 		
 		public @Bean List<Canonicaliser> canonicalisers() {
 			List<Canonicaliser> canonicalisers = Lists.newArrayList();
-			canonicalisers.add(new BbcUriCanonicaliser());
 			canonicalisers.add(new YoutubeUriCanonicaliser());
 			canonicalisers.add(new YouTubeFeedCanonicaliser());
 			canonicalisers.add(new FacebookCanonicaliser());

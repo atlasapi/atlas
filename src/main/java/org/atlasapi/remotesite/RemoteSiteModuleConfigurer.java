@@ -9,7 +9,6 @@ import org.apache.commons.logging.LogFactory;
 import org.atlasapi.feeds.lakeview.LakeviewModule;
 import org.atlasapi.remotesite.amazonunbox.AmazonUnboxModule;
 import org.atlasapi.remotesite.archiveorg.ArchiveOrgModule;
-import org.atlasapi.remotesite.bbc.BbcModule;
 import org.atlasapi.remotesite.bbc.audience.AudienceModule;
 import org.atlasapi.remotesite.bbc.products.BBCProductsModule;
 import org.atlasapi.remotesite.bt.channels.BtChannelsModule;
@@ -38,7 +37,6 @@ import org.atlasapi.remotesite.redux.ReduxModule;
 import org.atlasapi.remotesite.rovi.RoviModule;
 import org.atlasapi.remotesite.rte.RteModule;
 import org.atlasapi.remotesite.space.TheSpaceModule;
-import org.atlasapi.remotesite.talktalk.TalkTalkModule;
 import org.atlasapi.remotesite.thesun.TheSunModule;
 import org.atlasapi.remotesite.tvblob.TVBlobModule;
 import org.atlasapi.remotesite.voila.VoilaModule;
@@ -56,7 +54,6 @@ public class RemoteSiteModuleConfigurer {
     private static Log logger = LogFactory.getLog(RemoteSiteModuleConfigurer.class);
 
     private Map<String, Class<?>> moduleMap = ImmutableMap.<String, Class<?>>builder()
-        .put("bbc",     BbcModule.class)
         .put("itv",     ItvModule.class)
         .put("c4",      C4Module.class)
         .put("c4pmlsd", C4PmlsdModule.class)
@@ -86,7 +83,6 @@ public class RemoteSiteModuleConfigurer {
         .put("emipub", EmiPubModule.class)
         .put("metabroadcast", MetaBroadcastModule.class)
         .put("btfeatured", BtFeaturedContentModule.class)
-        .put("talktalk", TalkTalkModule.class)
         .put("itvwhatson", ItvWhatsOnModule.class)
         .put("wikipedia", WikipediaModule.class)
         .put("thesuntvpicks", TheSunModule.class)

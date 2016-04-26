@@ -17,7 +17,7 @@ import org.springframework.context.annotation.Configuration;
 import javax.annotation.PostConstruct;
 
 @Configuration
-public class OddJobRandomTaskModule {
+public class DataBackpopulationModule {
 
     private @Autowired ContentLister lister;
     private @Autowired ContentResolver resolver;
@@ -27,11 +27,6 @@ public class OddJobRandomTaskModule {
 
     @PostConstruct
     public void setup() {
-        scheduler.schedule(childRefUpdateTask(), RepetitionRules.NEVER);
-        scheduler.schedule(personRefUpdateTask(), RepetitionRules.NEVER);
-        scheduler.schedule(personLookupPopulationTask(), RepetitionRules.NEVER);
-        scheduler.schedule(lookupRefUpdateTask(), RepetitionRules.NEVER);
-        scheduler.schedule(tveChildRefUpdateTask().withName("TVE ChildRef update"), RepetitionRules.NEVER);
     }
     
     @Bean

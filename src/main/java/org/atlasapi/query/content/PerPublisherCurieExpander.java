@@ -3,8 +3,6 @@ package org.atlasapi.query.content;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.atlasapi.remotesite.bbc.BbcIplayerHightlightsAdapter;
-import org.atlasapi.remotesite.bbc.BbcUriCanonicaliser;
 import org.atlasapi.remotesite.itv.ItvMercuryBrandAdapter;
 import org.atlasapi.remotesite.youtube.YoutubeUriCanonicaliser;
 
@@ -18,26 +16,6 @@ import com.metabroadcast.common.base.Maybe;
 public class PerPublisherCurieExpander implements CurieExpander {
 
 	public enum CurieAlgorithm {
-		BBC {
-
-			@Override
-			public String expand(String curie) {
-				Maybe<String> uri = BbcIplayerHightlightsAdapter.expand(curie);
-				if (uri.hasValue()) {
-					return uri.requireValue();
-				}
-				return "http://www.bbc.co.uk/programmes/" + curie.substring(4);
-			}
-
-			@Override
-			public String compact(String url) {
-				Maybe<String> curie = BbcIplayerHightlightsAdapter.compact(url);
-				if (curie.hasValue()) {
-					return curie.requireValue();
-				}
-				return "bbc:" + BbcUriCanonicaliser.bbcProgrammeIdFrom(url);
-			}
-		},
 		C4 {
 		    
 		    final Pattern c4ProgrammeIdCuriePattern = Pattern.compile("(\\d+)-(\\d+)");

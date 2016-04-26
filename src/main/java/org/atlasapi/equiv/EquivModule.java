@@ -449,6 +449,7 @@ public class EquivModule {
             .withGenerator(
                 new TitleSearchGenerator<Item>(searchResolver, Song.class, itunesAndMusicPublishers, new SongTitleTransform(), 100, DEFAULT_EXACT_TITLE_MATCH_SCORE)
             ).withScorer(new CrewMemberScorer(new SongCrewMemberExtractor()))
+                .withExcludedUris(excludedUrisFromProperties())
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
             .withFilter(AlwaysTrueFilter.<Item>get())
             .withExtractor(new MusicEquivalenceExtractor())

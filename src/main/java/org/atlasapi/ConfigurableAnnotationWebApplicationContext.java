@@ -3,7 +3,7 @@ package org.atlasapi;
 import org.atlasapi.application.ApplicationModule;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.EquivTaskModule;
-import org.atlasapi.equiv.OddJobRandomTaskModule;
+import org.atlasapi.equiv.DataBackpopulationModule;
 import org.atlasapi.feeds.AtlasFeedsModule;
 import org.atlasapi.feeds.interlinking.delta.InterlinkingDeltaModule;
 import org.atlasapi.feeds.radioplayer.RadioPlayerModule;
@@ -20,7 +20,6 @@ import org.atlasapi.query.QueryExecutorModule;
 import org.atlasapi.query.QueryModule;
 import org.atlasapi.query.QueryWebModule;
 import org.atlasapi.query.SearchModule;
-import org.atlasapi.remotesite.CreateYouTubeContentGroupModule;
 import org.atlasapi.remotesite.RemoteSiteModule;
 import org.atlasapi.remotesite.RemoteSiteModuleConfigurer;
 import org.atlasapi.remotesite.bbc.nitro.BbcNitroModule;
@@ -81,12 +80,11 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 ManualScheduleRebuildModule.class, 
                 InterlinkingDeltaModule.class,
                 EquivTaskModule.class,
-                OddJobRandomTaskModule.class,
+                DataBackpopulationModule.class,
                 WikipediaModule.class,
                 BbcNitroModule.class,
                 PicksModule.class,
                 SimilarContentModule.class,
-                CreateYouTubeContentGroupModule.class,
                 ContentPurgeWebModule.class,
                 KnowledgeMotionModule.class,
                 QueryExecutorModule.class

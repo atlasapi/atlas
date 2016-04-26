@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.bbc.ion;
 
-import static com.google.common.base.Predicates.in;
-import static com.google.common.base.Predicates.not;
-
 import org.atlasapi.feeds.radioplayer.RadioPlayerService;
 import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 
@@ -11,6 +8,9 @@ import com.google.common.collect.BiMap;
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
+
+import static com.google.common.base.Predicates.in;
+import static com.google.common.base.Predicates.not;
 
 public class BbcIonServices {
 
@@ -99,7 +99,16 @@ public class BbcIonServices {
         .put("bbc_sport", "http://www.bbc.co.uk/services/bbc_sport")
         .put("bbc_webonly", "http://www.bbc.co.uk/services/bbc_webonly")
         .put("bbc_music", "http://www.bbc.co.uk/services/bbc_music")
-//       I don't think the following are required, but leaving here so the full list can be 
+        .put("shakespeares_globe", "http://www.bbc.co.uk/services/shakespeares_globe")
+        .put("british_film_institute", "http://www.bbc.co.uk/services/british_film_institute")
+        .put("hay_festival", "http://www.bbc.co.uk/services/hay_festival")
+        .put("royal_shakespeare_company", "http://www.bbc.co.uk/services/royal_shakespeare_company")
+        .put("royal_opera_house", "http://www.bbc.co.uk/services/royal_opera_house")
+        .put("british_council", "http://www.bbc.co.uk/services/british_council")
+        .put("shakespeare_birthplace_trust", "http://www.bbc.co.uk/services/shakespeare_birthplace_trust")
+        .put("ex_cathedra", "http://www.bbc.co.uk/services/ex_cathedra")
+        .put("europeanbroadcastingunion", "http://www.bbc.co.uk/services/europeanbroadcastingunion")
+//       I don't think the following are required, but leaving here so the full list can be
 //       checked
 //        .put("bbc_radio_swindon", "")
 //        .put("bbc_wales", "")

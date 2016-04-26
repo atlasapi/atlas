@@ -7,6 +7,7 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.entity.simple.Award;
 import org.atlasapi.media.entity.simple.Broadcast;
 import org.atlasapi.media.entity.simple.EventRef;
 import org.atlasapi.media.entity.simple.Item;
@@ -21,6 +22,7 @@ import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.time.Clock;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
@@ -181,6 +183,18 @@ public class ItemModelTransformerTest {
         checkRestriction(version.getRestriction());
     }
 
+    @Test
+    public void testTransformingItemWithAwards() {
+        org.atlasapi.media.entity.Item complex = transformer.transform(getSimpleItemWithAward());
+        org.atlasapi.media.entity.Award award = Iterables.getOnlyElement(complex.getAwards());
+        assertEquals("title", award.getTitle());
+        assertEquals("description", award.getDescription());
+        assertEquals("won", award.getOutcome());
+        assertEquals(2009, award.getYear().intValue());
+
+
+    }
+
     public void testTransformItemWithEventRefs() {
         when(idCodec.decode("12345")).thenReturn(BigInteger.valueOf(12345));
         when(idCodec.decode("1234")).thenReturn(BigInteger.valueOf(1234));
@@ -202,6 +216,20 @@ public class ItemModelTransformerTest {
         item.setUri("uri");
         item.setPublisher(new PublisherDetails(Publisher.BBC.key()));
         item.setBroadcasts(Lists.newArrayList(simpleBroadcast));
+        return item;
+    }
+
+    private Item getSimpleItemWithAward() {
+        Item item = new Item();
+        item.setUri("uri");
+        item.setPublisher(new PublisherDetails(Publisher.BBC.key()));
+        item.setBroadcasts(Lists.newArrayList(simpleBroadcast));
+        Award award = new Award();
+        award.setDescription("description");
+        award.setTitle("title");
+        award.setYear(2009);
+        award.setOutcome("won");
+        item.setAwards(ImmutableSet.of(award));
         return item;
     }
 

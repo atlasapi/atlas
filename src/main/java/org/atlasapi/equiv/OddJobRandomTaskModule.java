@@ -27,11 +27,11 @@ public class OddJobRandomTaskModule {
 
     @PostConstruct
     public void setup() {
-        scheduler.schedule(childRefUpdateTask(), RepetitionRules.NEVER);
-        scheduler.schedule(personRefUpdateTask(), RepetitionRules.NEVER);
-        scheduler.schedule(personLookupPopulationTask(), RepetitionRules.NEVER);
-        scheduler.schedule(lookupRefUpdateTask(), RepetitionRules.NEVER);
-        scheduler.schedule(tveChildRefUpdateTask().withName("TVE ChildRef update"), RepetitionRules.NEVER);
+//        scheduler.schedule(childRefUpdateTask(), RepetitionRules.NEVER);
+//        scheduler.schedule(personRefUpdateTask(), RepetitionRules.NEVER);
+//        scheduler.schedule(personLookupPopulationTask(), RepetitionRules.NEVER);
+//        scheduler.schedule(lookupRefUpdateTask(), RepetitionRules.NEVER);
+//        scheduler.schedule(tveChildRefUpdateTask().withName("TVE ChildRef update"), RepetitionRules.NEVER);
     }
     
     @Bean

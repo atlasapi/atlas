@@ -1,6 +1,5 @@
 package org.atlasapi.query.content;
 
-import static org.atlasapi.query.content.PerPublisherCurieExpander.CurieAlgorithm.BBC;
 import static org.atlasapi.query.content.PerPublisherCurieExpander.CurieAlgorithm.BLIP;
 import static org.atlasapi.query.content.PerPublisherCurieExpander.CurieAlgorithm.BTFEATURED;
 import static org.atlasapi.query.content.PerPublisherCurieExpander.CurieAlgorithm.C4;

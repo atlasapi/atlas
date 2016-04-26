@@ -20,7 +20,6 @@ import org.atlasapi.query.QueryExecutorModule;
 import org.atlasapi.query.QueryModule;
 import org.atlasapi.query.QueryWebModule;
 import org.atlasapi.query.SearchModule;
-import org.atlasapi.remotesite.CreateYouTubeContentGroupModule;
 import org.atlasapi.remotesite.RemoteSiteModule;
 import org.atlasapi.remotesite.RemoteSiteModuleConfigurer;
 import org.atlasapi.remotesite.bbc.nitro.BbcNitroModule;
@@ -86,7 +85,6 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 BbcNitroModule.class,
                 PicksModule.class,
                 SimilarContentModule.class,
-                CreateYouTubeContentGroupModule.class,
                 ContentPurgeWebModule.class,
                 KnowledgeMotionModule.class,
                 QueryExecutorModule.class

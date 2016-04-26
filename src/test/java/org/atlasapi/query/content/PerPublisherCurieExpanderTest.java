@@ -24,23 +24,6 @@ public class PerPublisherCurieExpanderTest extends TestCase {
 
 	CurieExpander expander = new PerPublisherCurieExpander();
 	
-	public void testExpandsBbcCuries() throws Exception {
-		
-		assertThat(expander.expand("bbc:b006mk25"), is(Maybe.just("http://www.bbc.co.uk/programmes/b006mk25")));
-		assertThat(expander.expand("bbc:p006mk25"), is(Maybe.just("http://www.bbc.co.uk/programmes/p006mk25")));
-
-		assertThat(expander.expand("bbc:atoz_a"), is(Maybe.just("http://feeds.bbc.co.uk/iplayer/atoz/a/list")));
-		assertThat(expander.expand("bbc:atoz_0-9"), is(Maybe.just("http://feeds.bbc.co.uk/iplayer/atoz/0-9/list")));
-		assertThat(expander.expand("bbc:bbc_one"), is(Maybe.just("http://feeds.bbc.co.uk/iplayer/bbc_one/list")));
-
-		assertThat(expander.expand("bbc:highlights_tv"), is(Maybe.just("http://feeds.bbc.co.uk/iplayer/highlights/tv")));
-		assertThat(expander.expand("bbc:popular_tv"), is(Maybe.just("http://feeds.bbc.co.uk/iplayer/popular/tv")));
-
-		assertThat(expander.expand("bbc:highlights_radio"), is(Maybe.just("http://feeds.bbc.co.uk/iplayer/highlights/radio")));
-		assertThat(expander.expand("bbc:popular_radio"), is(Maybe.just("http://feeds.bbc.co.uk/iplayer/popular/radio")));
-	
-	}
-	
 	public void testExpandsC4Curies() throws Exception {
 		assertThat(expander.expand("c4:grand-designs"), is(Maybe.just("http://www.channel4.com/programmes/grand-designs")));
 		assertThat(expander.expand("c4:grand-designs_2921795"), is(Maybe.just("http://www.channel4.com/programmes/grand-designs/4od#2921795")));

@@ -3,7 +3,7 @@ package org.atlasapi;
 import org.atlasapi.application.ApplicationModule;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.EquivTaskModule;
-import org.atlasapi.equiv.OddJobRandomTaskModule;
+import org.atlasapi.equiv.DataBackpopulationModule;
 import org.atlasapi.feeds.AtlasFeedsModule;
 import org.atlasapi.feeds.interlinking.delta.InterlinkingDeltaModule;
 import org.atlasapi.feeds.radioplayer.RadioPlayerModule;
@@ -80,7 +80,7 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 ManualScheduleRebuildModule.class, 
                 InterlinkingDeltaModule.class,
                 EquivTaskModule.class,
-                OddJobRandomTaskModule.class,
+                DataBackpopulationModule.class,
                 WikipediaModule.class,
                 BbcNitroModule.class,
                 PicksModule.class,

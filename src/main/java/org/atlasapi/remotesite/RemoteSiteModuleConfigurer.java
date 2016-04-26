@@ -37,7 +37,6 @@ import org.atlasapi.remotesite.redux.ReduxModule;
 import org.atlasapi.remotesite.rovi.RoviModule;
 import org.atlasapi.remotesite.rte.RteModule;
 import org.atlasapi.remotesite.space.TheSpaceModule;
-import org.atlasapi.remotesite.talktalk.TalkTalkModule;
 import org.atlasapi.remotesite.thesun.TheSunModule;
 import org.atlasapi.remotesite.tvblob.TVBlobModule;
 import org.atlasapi.remotesite.voila.VoilaModule;
@@ -84,7 +83,6 @@ public class RemoteSiteModuleConfigurer {
         .put("emipub", EmiPubModule.class)
         .put("metabroadcast", MetaBroadcastModule.class)
         .put("btfeatured", BtFeaturedContentModule.class)
-        .put("talktalk", TalkTalkModule.class)
         .put("itvwhatson", ItvWhatsOnModule.class)
         .put("wikipedia", WikipediaModule.class)
         .put("thesuntvpicks", TheSunModule.class)

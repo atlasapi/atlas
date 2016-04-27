@@ -488,31 +488,21 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     private Item getBasicFilmWithoutBroadcast(ProgData progData, DateTimeZone zone, Timestamp updatedAt) {
         String rtFilmAlias = PaHelper.getFilmRtAlias(progData.getRtFilmnumber());
         String filmUri = PaHelper.getFilmUri(identifierFor(progData));
-        ResolvedContent possiblePreviousData = contentResolver.findByCanonicalUris(ImmutableList.of(rtFilmAlias, filmUri));
+        Maybe<Identified> possiblePreviousData = contentResolver.findByUris(ImmutableList.of(
+                rtFilmAlias,
+                filmUri
+        )).getFirstValue();
 
         Film film;
-        Maybe<Identified> oldFilm = possiblePreviousData.get(rtFilmAlias);
-        Maybe<Identified> newFilm = possiblePreviousData.get(filmUri);
-        if (oldFilm.hasValue()) {
-            Identified previous = oldFilm.requireValue();
+        if (possiblePreviousData.hasValue()) {
+            Identified previous = possiblePreviousData.requireValue();
             if (previous instanceof Film) {
                 film = (Film) previous;
             } else {
                 film = new Film();
                 Item.copyTo((Episode) previous, film);
             }
-            film.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
             film.addAliasUrl(filmUri);
-        } else if (newFilm.hasValue()) {
-            Identified previous = newFilm.requireValue();
-            if (previous instanceof Film) {
-                film = (Film) previous;
-            } else {
-                film = new Film();
-                Item.copyTo((Episode) previous, film);
-            }
-            film.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
-            film.addAliasUrl(rtFilmAlias);
         } else {
             film = getBasicFilm(progData);
         }
@@ -850,7 +840,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     private Film getBasicFilm(ProgData progData) {
         Film film = new Film(PaHelper.getFilmUri(identifierFor(progData)), PaHelper.getEpisodeCurie(identifierFor(progData)), Publisher.PA);
         film.addAliasUrl(PaHelper.getFilmRtAlias(progData.getRtFilmnumber()));
-        film.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
         setBasicDetails(progData, film);
         
         return film;

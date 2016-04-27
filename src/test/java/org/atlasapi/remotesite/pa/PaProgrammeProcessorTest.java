@@ -297,7 +297,7 @@ public class PaProgrammeProcessorTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableList.of(brandUri)))
                 .thenReturn(ResolvedContent.builder().build());
-        when(contentResolver.findByCanonicalUris(ImmutableList.of(PaHelper.getFilmRtAlias("5"), expectedUri)))
+        when(contentResolver.findByUris(ImmutableList.of(PaHelper.getFilmRtAlias("5"), expectedUri)))
                 .thenReturn(ResolvedContent.builder().build());
 
         String expectedTitle = "Prog title";
@@ -383,7 +383,7 @@ public class PaProgrammeProcessorTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableList.of(brandUri)))
                 .thenReturn(ResolvedContent.builder().build());
-        when(contentResolver.findByCanonicalUris(ImmutableList.of(PaHelper.getFilmRtAlias("5"), expectedUri)))
+        when(contentResolver.findByUris(ImmutableList.of(PaHelper.getFilmRtAlias("5"), expectedUri)))
                 .thenReturn(ResolvedContent.builder().build());
 
         ProgData progData = setupProgFilm("Prog title", "Prog description");
@@ -435,7 +435,7 @@ public class PaProgrammeProcessorTest {
         String brandUri = "http://pressassociation.com/brands/5";
         when(contentResolver.findByCanonicalUris(ImmutableList.of(brandUri)))
                 .thenReturn(ResolvedContent.builder().build());
-        when(contentResolver.findByCanonicalUris(ImmutableList.of(
+        when(contentResolver.findByUris(ImmutableList.of(
                     "http://pressassociation.com/films/5",
                     "http://pressassociation.com/episodes/1"
                 ))).thenReturn(ResolvedContent.builder().build());
@@ -465,7 +465,7 @@ public class PaProgrammeProcessorTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableList.of(brandUri)))
                 .thenReturn(ResolvedContent.builder().build());
-        when(contentResolver.findByCanonicalUris(ImmutableList.of(
+        when(contentResolver.findByUris(ImmutableList.of(
                 "http://pressassociation.com/films/5",
                 "http://pressassociation.com/episodes/1"
         ))).thenReturn(ResolvedContent.builder()
@@ -500,7 +500,7 @@ public class PaProgrammeProcessorTest {
 
         when(contentResolver.findByCanonicalUris(ImmutableList.of(brandUri)))
                 .thenReturn(ResolvedContent.builder().build());
-        when(contentResolver.findByCanonicalUris(ImmutableList.of(
+        when(contentResolver.findByUris(ImmutableList.of(
                 "http://pressassociation.com/films/5",
                 "http://pressassociation.com/episodes/1"
         ))).thenReturn(ResolvedContent.builder()
@@ -599,7 +599,7 @@ public class PaProgrammeProcessorTest {
     }
 
     private void setupContentResolverForFilm(Identified film, String alias) {
-        when(contentResolver.findByCanonicalUris(ImmutableList.of(alias, film.getCanonicalUri())))
+        when(contentResolver.findByUris(ImmutableList.of(alias, film.getCanonicalUri())))
                 .thenReturn(ResolvedContent.builder()
                         .put(film.getCanonicalUri(), film)
                         .build()

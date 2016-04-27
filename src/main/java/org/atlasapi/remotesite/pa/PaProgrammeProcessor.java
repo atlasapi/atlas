@@ -486,10 +486,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private Item getBasicFilmWithoutBroadcast(ProgData progData, DateTimeZone zone, Timestamp updatedAt) {
-        String rtFilmAlias = PaHelper.getFilmRtAlias(progData.getRtFilmnumber());
+        String filmAlias = PaHelper.getAlias(progData.getProgId());
         String filmUri = PaHelper.getFilmUri(identifierFor(progData));
         Maybe<Identified> possiblePreviousData = contentResolver.findByUris(ImmutableList.of(
-                rtFilmAlias,
+                filmAlias,
                 filmUri
         )).getFirstValue();
 
@@ -502,7 +502,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                 film = new Film();
                 Item.copyTo((Episode) previous, film);
             }
-            film.addAliasUrl(filmUri);
         } else {
             film = getBasicFilm(progData);
         }
@@ -839,7 +838,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     
     private Film getBasicFilm(ProgData progData) {
         Film film = new Film(PaHelper.getFilmUri(identifierFor(progData)), PaHelper.getEpisodeCurie(identifierFor(progData)), Publisher.PA);
-        film.addAliasUrl(PaHelper.getFilmRtAlias(progData.getRtFilmnumber()));
         setBasicDetails(progData, film);
         
         return film;

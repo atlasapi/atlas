@@ -502,7 +502,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                 film = new Film();
                 Item.copyTo((Episode) previous, film);
             }
-            film.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
             film.addAliasUrl(filmUri);
         } else {
             film = getBasicFilm(progData);

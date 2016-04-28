@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.bt.channels;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
@@ -18,17 +16,20 @@ import org.atlasapi.media.channel.Region;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
-import org.slf4j.Logger;
+
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import org.slf4j.Logger;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public abstract class AbstractBtChannelGroupSaver {
@@ -93,7 +94,7 @@ public abstract class AbstractBtChannelGroupSaver {
                 log.error("Failure to process. Channel Id may contain illegal characters that cannot be decoded", e);
             }
 
-            removeOldChannelsInGroup(channelGroup, currentChannels);
+            addCurrentChannelsToChannelGroup(channelGroup, currentChannels);
             channelGroupWriter.createOrUpdate(channelGroup);
             channelGroupUris.add(channelGroup.getCanonicalUri());
         };
@@ -117,30 +118,16 @@ public abstract class AbstractBtChannelGroupSaver {
         return currentChannels;
     }
     
-    private void removeOldChannelsInGroup(final ChannelGroup channelGroup, Set<Long> currentChannels) {
-        Set<Long> removedChannels = 
-                Sets.difference(
-                        ImmutableSet.copyOf(Iterables.transform(channelGroup.getChannelNumberings(), ChannelNumbering.TO_CHANNEL)), 
-                        currentChannels
-                );
-        
-        if (removedChannels.isEmpty()) {
-            return;
+    private void addCurrentChannelsToChannelGroup(final ChannelGroup channelGroup, Set<Long> currentChannels) {
+        ImmutableList.Builder<ChannelNumbering> channelNumberings = ImmutableList.builder();
+        for (Long channelId : currentChannels) {
+            ChannelNumbering channel = ChannelNumbering.builder()
+                    .withChannel(channelId)
+                    .withChannelGroup(channelGroup)
+                    .build();
+            channelNumberings.add(channel);
         }
-        
-        for (Channel channel : channelResolver.forIds(removedChannels)) {
-            channel.setChannelNumbers(
-                Iterables.filter(channel.getChannelNumbers(), new Predicate<ChannelNumbering>() {
-    
-                    @Override
-                    public boolean apply(ChannelNumbering input) {
-                        return !input.getChannelGroup().equals(channelGroup.getId());
-                    }
-                })
-            );
-            channelWriter.createOrUpdate(channel);
-        }
-        
+        channelGroup.setChannelNumberings(channelNumberings.build());
     }
 
     private ChannelGroup getOrCreateChannelGroup(String uri, Optional<Alias> alias) {

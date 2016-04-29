@@ -30,6 +30,7 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.util.ItemAndBroadcast;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
@@ -485,16 +486,19 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private Item getBasicFilmWithoutBroadcast(ProgData progData, DateTimeZone zone, Timestamp updatedAt) {
+        String filmAlias = PaHelper.getAlias(progData.getProgId());
         String filmUri = PaHelper.getFilmUri(identifierFor(progData));
-        Maybe<Identified> possiblePreviousData = contentResolver.findByCanonicalUris(ImmutableList.of(filmUri)).getFirstValue();
+        Maybe<Identified> possiblePreviousData = contentResolver.findByUris(ImmutableList.of(
+                filmAlias,
+                filmUri
+        )).getFirstValue();
 
         Film film;
         if (possiblePreviousData.hasValue()) {
             Identified previous = possiblePreviousData.requireValue();
             if (previous instanceof Film) {
                 film = (Film) previous;
-            }
-            else {
+            } else {
                 film = new Film();
                 Item.copyTo((Episode) previous, film);
             }
@@ -833,8 +837,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
     
     private Film getBasicFilm(ProgData progData) {
-        Film film = new Film(PaHelper.getFilmUri(identifierFor(progData)), PaHelper.getFilmCurie(identifierFor(progData)), Publisher.PA);
-        
+        Film film = new Film(PaHelper.getFilmUri(identifierFor(progData)), PaHelper.getEpisodeCurie(identifierFor(progData)), Publisher.PA);
         setBasicDetails(progData, film);
         
         return film;
@@ -878,7 +881,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
     
     protected static String identifierFor(ProgData progData) {
-        return ! Strings.isNullOrEmpty(progData.getRtFilmnumber()) ? progData.getRtFilmnumber() : progData.getProgId();
+        return progData.getProgId();
     }
     
     protected Optional<String> rtFilmIdentifierFor(ProgData progData) {

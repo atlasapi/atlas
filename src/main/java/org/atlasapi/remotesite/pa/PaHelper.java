@@ -9,7 +9,9 @@ public class PaHelper {
     private static final String RT_FILM_ALIAS = "rt:filmid";
     
     public static String getFilmUri(String id) {
-        return PA_BASE_URL + "films/" + id;
+        //previously film ids were generated from rtfilmnumber, now we will be using progId
+        //since they have different numberspace, we will save films under /episode/progId
+        return getEpisodeUri(id);
     }
     
     public static Alias getProgIdAlias(String id) {
@@ -29,7 +31,11 @@ public class PaHelper {
     public static String getEpisodeUri(String id) {
         return PA_BASE_URL + "episodes/" + id;
     }
-    
+
+    public static String getFilmRtAlias(String rtFilmNumber) {
+        return PA_BASE_URL + "films/" + rtFilmNumber;
+    }
+
     public static Alias getEpisodeAlias(String id) {
         return new Alias(PA_BASE_ALIAS + "episode", id);
     }
@@ -58,9 +64,10 @@ public class PaHelper {
         return new Alias(PA_BASE_ALIAS + "series", id + "-" + seriesNumber);
     }
     
-    public static String getFilmCurie(String id) {
-        return "pa:f-" + id;
+    public static String getEpisodeCurie(String id) {
+        return "pa:e-" + id;
     }
+
     
     public static String getBroadcastId(String slotId) {
         return "pa:" + slotId;

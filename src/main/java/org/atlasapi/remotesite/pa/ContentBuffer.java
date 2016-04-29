@@ -16,6 +16,10 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ContentHierarchyAndBroadcast;
+
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -24,7 +28,6 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-
 
 /**
  * Maintain a buffer of content to write, which acts as a write-through caching implementation
@@ -41,6 +44,14 @@ public class ContentBuffer implements ContentResolver {
         
         @Override 
         protected Map<String, Identified> initialValue() {
+            return Maps.newHashMap();
+        }
+    };
+
+    private static ThreadLocal<Map<String, String>> aliasToCanonicalUri = new ThreadLocal<Map<String, String>>() {
+
+        @Override
+        protected Map<String, String> initialValue() {
             return Maps.newHashMap();
         }
     };
@@ -71,6 +82,11 @@ public class ContentBuffer implements ContentResolver {
             contentCache.get().put(hierarchy.getSeries().get().getCanonicalUri(), hierarchy.getSeries().get());
         }
         contentCache.get().put(hierarchy.getItem().getCanonicalUri(), hierarchy.getItem());
+
+        for (String aliasUrl : hierarchy.getItem().getAliasUrls()) {
+            aliasToCanonicalUri.get().put(aliasUrl, hierarchy.getItem().getCanonicalUri());
+        }
+
         hierarchies.get().add(hierarchy);
     }
     
@@ -85,7 +101,23 @@ public class ContentBuffer implements ContentResolver {
 
     @Override
     public ResolvedContent findByUris(Iterable<String> uris) {
-        throw new UnsupportedOperationException();
+        for (String uri : uris) {
+
+            Identified identified = contentCache.get().get(uri);
+
+            if (identified != null) {
+                return ResolvedContent.builder().put(uri, identified).build();
+            }
+
+            String canonicalUri = aliasToCanonicalUri.get().get(uri);
+            if (canonicalUri != null) {
+                identified = contentCache.get().get(canonicalUri);
+                if (identified != null) {
+                    return ResolvedContent.builder().put(canonicalUri, identified).build();
+                }
+            }
+        }
+        return resolver.findByUris(uris);
     }
     
     public void flush() {
@@ -104,6 +136,7 @@ public class ContentBuffer implements ContentResolver {
         } finally {
             hierarchies.get().clear();
             contentCache.get().clear();
+            aliasToCanonicalUri.get().clear();
         }
     }
 

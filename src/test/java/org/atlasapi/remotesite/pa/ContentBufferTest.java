@@ -1,10 +1,14 @@
 package org.atlasapi.remotesite.pa;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyCollection;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.util.List;
 import java.util.Map;
 
 import org.atlasapi.media.entity.Brand;
@@ -22,6 +26,8 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ContentHierarchyAndBroadcast;
+
+import com.google.common.collect.ImmutableList;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -40,9 +46,51 @@ public class ContentBufferTest {
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final ItemsPeopleWriter itemsPeopleWriter = mock(ItemsPeopleWriter.class);
     
-    private final ContentBuffer contentBuffer = new ContentBuffer(contentResolver, contentWriter, 
+    private final ContentBuffer contentBuffer = new ContentBuffer(contentResolver, contentWriter,
             itemsPeopleWriter);
-    
+
+    @Test
+    public void testFindsCachedByUris() {
+        Brand brand = BrandTestDataBuilder.brand().build();
+        brand.setCanonicalUri("http://brand.com");
+
+        List<String> aliasUrls = ImmutableList.of("http://brand.com/item/alias");
+        Item item = ComplexItemTestDataBuilder.complexItem().build();
+        item.setAliasUrls(aliasUrls);
+        item.setCanonicalUri("http://brand.com/item");
+
+        Broadcast broadcast = ComplexBroadcastTestDataBuilder.broadcast().build();
+        contentBuffer.add(new ContentHierarchyAndBroadcast(Optional.of(brand),
+                Optional.<Series>absent(), item, broadcast));
+
+        Identified queried = Iterables.getOnlyElement(
+                contentBuffer.findByUris(ImmutableSet.of("http://brand.com/item/alias"))
+                        .getAllResolvedResults());
+
+        assertEquals(item, queried);
+    }
+
+    @Test
+    public void testFindsNotCachedByUris() {
+        Brand brand = BrandTestDataBuilder.brand().build();
+        brand.setCanonicalUri("http://brand.com");
+
+        List<String> aliasUrls = ImmutableList.of("http://brand.com/item");
+        Item item = ComplexItemTestDataBuilder.complexItem().build();
+        item.setAliasUrls(aliasUrls);
+
+        Broadcast broadcast = ComplexBroadcastTestDataBuilder.broadcast().build();
+
+        when(contentResolver.findByUris(anyCollection())).thenReturn(ResolvedContent.builder().put("http://brand.com/item", item).build());
+
+        contentBuffer.add(new ContentHierarchyAndBroadcast(Optional.of(brand),
+                Optional.<Series>absent(), new Item(), broadcast));
+
+        ResolvedContent byUris = contentBuffer.findByUris(ImmutableSet.of("http://brand.com/item"));
+
+        assertFalse(byUris.isEmpty());
+    }
+
     @Test
     public void testWriteThroughCache() {
         Brand brand = BrandTestDataBuilder.brand().build();
@@ -111,5 +159,5 @@ public class ContentBufferTest {
         
         assertEquals(resolvedItem.requireValue(), queried);
     }
-    
+
 }

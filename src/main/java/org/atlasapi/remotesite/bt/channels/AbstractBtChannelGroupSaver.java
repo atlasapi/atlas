@@ -94,7 +94,7 @@ public abstract class AbstractBtChannelGroupSaver {
                 log.error("Failure to process. Channel Id may contain illegal characters that cannot be decoded", e);
             }
 
-            addCurrentChannelsToChannelGroup(channelGroup, currentChannels);
+            setCurrentChannelsToChannelGroup(channelGroup, currentChannels);
             channelGroupWriter.createOrUpdate(channelGroup);
             channelGroupUris.add(channelGroup.getCanonicalUri());
         };
@@ -118,7 +118,7 @@ public abstract class AbstractBtChannelGroupSaver {
         return currentChannels;
     }
     
-    private void addCurrentChannelsToChannelGroup(final ChannelGroup channelGroup, Set<Long> currentChannels) {
+    private void setCurrentChannelsToChannelGroup(final ChannelGroup channelGroup, Set<Long> currentChannels) {
         ImmutableList.Builder<ChannelNumbering> channelNumberings = ImmutableList.builder();
         for (Long channelId : currentChannels) {
             ChannelNumbering channel = ChannelNumbering.builder()

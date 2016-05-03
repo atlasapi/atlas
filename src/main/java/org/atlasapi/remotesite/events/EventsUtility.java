@@ -68,18 +68,8 @@ public abstract class EventsUtility<S> {
             return Optional.absent();
         }
         return Optional.of(resolveOrCreateDbpediaTopic(
-                value.get().title, Topic.Type.PLACE, DBPEDIA_NAMESPACE, value.get().uri, DBPEDIA
+                value.get().getTitle(), Topic.Type.PLACE, DBPEDIA_NAMESPACE, value.get().getUri(), DBPEDIA
         ));
-    }
-
-    public static class LocationTitleUri {
-        final public String title;
-        final public String uri;
-
-        public LocationTitleUri(String title, String uri) {
-            this.title = checkNotNull(title);
-            this.uri = checkNotNull(uri);
-        }
     }
 
     public abstract Optional<LocationTitleUri> fetchLocationUrl(String location);
@@ -166,4 +156,24 @@ public abstract class EventsUtility<S> {
             return publisher;
         }
     }
+
+    public static class LocationTitleUri {
+        final private String title;
+        final private String uri;
+
+        public LocationTitleUri(String title, String uri) {
+            this.title = checkNotNull(title);
+            this.uri = checkNotNull(uri);
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+    }
+
 }

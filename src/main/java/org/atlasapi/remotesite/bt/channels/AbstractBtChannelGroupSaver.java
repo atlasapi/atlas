@@ -117,7 +117,7 @@ public abstract class AbstractBtChannelGroupSaver {
 
         return currentChannels;
     }
-    
+
     private void setCurrentChannelsToChannelGroup(final ChannelGroup channelGroup, Set<Long> currentChannels) {
         ImmutableList.Builder<ChannelNumbering> channelNumberings = ImmutableList.builder();
         for (Long channelId : currentChannels) {

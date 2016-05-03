@@ -97,8 +97,13 @@ public class EventsUtilityTest {
             }
             
             @Override
-            public Optional<String> fetchLocationUrl(String location) {
-                return Optional.fromNullable(location);
+            public Optional<LocationTitleUri> fetchLocationUrl(String location) {
+                LocationTitleUri result = null;
+                if (null != location) {
+                    result = new LocationTitleUri(location, location);
+                }
+
+                return Optional.fromNullable(result);
             }
             
             @Override

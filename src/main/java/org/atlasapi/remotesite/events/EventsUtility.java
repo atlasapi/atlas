@@ -63,16 +63,16 @@ public abstract class EventsUtility<S> {
      * found for the provided location
      */
     public Optional<Topic> createOrResolveVenue(String location) {
-        Optional<String> value = fetchLocationUrl(location);
+        Optional<LocationTitleUri> value = fetchLocationUrl(location);
         if (!value.isPresent()) {
             return Optional.absent();
         }
         return Optional.of(resolveOrCreateDbpediaTopic(
-                location, Topic.Type.PLACE, DBPEDIA_NAMESPACE, value.get(), DBPEDIA
+                value.get().getTitle(), Topic.Type.PLACE, DBPEDIA_NAMESPACE, value.get().getUri(), DBPEDIA
         ));
     }
-    
-    public abstract Optional<String> fetchLocationUrl(String location);
+
+    public abstract Optional<LocationTitleUri> fetchLocationUrl(String location);
     
     /**
      * For a given sport, looks up a set of DBpedia Topic value Strings associated
@@ -156,4 +156,24 @@ public abstract class EventsUtility<S> {
             return publisher;
         }
     }
+
+    public static class LocationTitleUri {
+        final private String title;
+        final private String uri;
+
+        public LocationTitleUri(String title, String uri) {
+            this.title = checkNotNull(title);
+            this.uri = checkNotNull(uri);
+        }
+
+        public String getTitle() {
+            return title;
+        }
+
+        public String getUri() {
+            return uri;
+        }
+
+    }
+
 }

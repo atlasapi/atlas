@@ -2,7 +2,10 @@ package org.atlasapi.remotesite.rt;
 
 import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import nu.xom.Element;
@@ -17,9 +20,11 @@ import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Rating;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.media.entity.Review;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Subtitles;
 import org.atlasapi.media.entity.Version;
@@ -50,6 +55,7 @@ public class RtFilmProcessor {
     
     private static final String RT_FILM_URI_BASE = "http://radiotimes.com/films/";
     private static final String RT_FILM_ALIAS = "rt:filmid";
+    private static final String RT_RATING_SCHEME = "5STAR";
     
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
@@ -160,7 +166,31 @@ public class RtFilmProcessor {
         if (hasValue(ukCinemaCertificate)) {
             film.setCertificates(certificate(ukCinemaCertificate));
         }
-        
+
+        ArrayList<Review> reviews = new ArrayList(2);
+        Element normalReview = filmElement.getFirstChildElement("normal_review");
+        if (hasValue(normalReview)) {
+            reviews.add(new Review(Locale.ENGLISH, normalReview.getValue()));
+        }
+
+        Element shortReview = filmElement.getFirstChildElement("short_review");
+        if (hasValue(shortReview)) {
+            reviews.add(new Review(Locale.ENGLISH, shortReview.getValue()));
+        }
+
+        film.setReviews(reviews);
+
+        Element starRating = filmElement.getFirstChildElement("rating");
+        if (hasValue(starRating)) {
+            int ratingValue = Character.getNumericValue(starRating.getValue().charAt(0));
+            if (0 <= ratingValue) {
+                Rating rating = new Rating(RT_RATING_SCHEME, ratingValue, film.getPublisher());
+                film.setRatings(Collections.singletonList(rating));
+            } else {
+                log.record(warnEntry().withSource(getClass()).withDescription("Unable to parse %s rating scheme from '%s'", RT_RATING_SCHEME, starRating.getValue()));
+            }
+        }
+
         contentWriter.createOrUpdate(film);
         
         peopleWriter.createOrUpdatePeople(film);

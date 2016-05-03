@@ -82,7 +82,7 @@ public class BtEventsDataHandlerTest {
         assertEquals("http://bt.com/events/" + match.id(), parsedEvent.getCanonicalUri());
         assertEquals(match.name(), parsedEvent.title());
         assertEquals(Publisher.BT_EVENTS, parsedEvent.publisher());
-        assertEquals(utility.fetchLocationUrl(match.location()).get(), parsedEvent.venue().getValue());
+        assertEquals(utility.fetchLocationUrl(match.location()).get().uri, parsedEvent.venue().getValue());
         assertEquals(new DateTime(2014, 3, 20, 0, 0, 0, 563, DateTimeZone.UTC), parsedEvent.startTime());
         assertEquals(new DateTime(2014, 03, 23, 11, 23, 17, 833, DateTimeZone.UTC), parsedEvent.endTime());
         assertTrue(parsedEvent.organisations().isEmpty());

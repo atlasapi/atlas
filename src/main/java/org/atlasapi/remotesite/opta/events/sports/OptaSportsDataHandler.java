@@ -66,11 +66,13 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
         }
         Optional<DateTime> startTime = parseStartTime(match, sport);
         if (!startTime.isPresent()) {
+            log.error("Unable to identify start time for {}", title.get());
             return Optional.absent();
         }
         
         Optional<Topic> venue = createOrResolveVenue(match);
         if (!venue.isPresent()) {
+            log.error("Unable to identify venue for {} on {}", title.get(), startTime.get().toString());
             return Optional.absent();
         }
         

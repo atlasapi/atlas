@@ -104,8 +104,14 @@ public final class BtEventsUtility extends EventsUtility<BtSportType> {
     }
 
     @Override
-    public Optional<String> fetchLocationUrl(String location) {
-        return Optional.fromNullable(VENUE_LOOKUP.get(location));
+    public Optional<LocationTitleUri> fetchLocationUrl(String location) {
+        LocationTitleUri result = null;
+        String uri = VENUE_LOOKUP.get(location);
+        if(null != uri) {
+            result = new LocationTitleUri(location, uri);
+        }
+
+        return Optional.fromNullable(result);
     }
 
     @Override

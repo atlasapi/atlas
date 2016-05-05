@@ -235,7 +235,7 @@ public class BtVodItemExtractor implements BtVodDataProcessor<UpdateProgress> {
             title = row.getGuid();
         }
         
-        return row.getProductType() + ":" + brandUri + seriesUri + title;
+        return row.getProductType() + ":" + brandUri + seriesUri + title.toLowerCase();
     }
 
     private Item createSong(BtVodEntry row) {

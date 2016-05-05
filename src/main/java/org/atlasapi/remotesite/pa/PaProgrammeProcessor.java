@@ -30,7 +30,6 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.util.ItemAndBroadcast;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
@@ -91,7 +90,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     
     private static final String YES = "yes";
     private static final String CLOSED_BRAND = "http://pressassociation.com/brands/8267";
-    private static final String CLOSED_EPISODE = "http://pressassociation.com/episodes/closed";
+    private static final String CLOSED_EPISODE = "http://pressassociation.com/episodes/1607805";
+    private static final String CLOSED_EPISODE_PREFIX = "http://pressassociation.com/episodes/closed";
     private static final String CLOSED_CURIE = "pa:closed";    
     
     private static final List<String> IGNORED_BRANDS = ImmutableList.of("70214", "84575");    // 70214 is 'TBA' brand, 84575 is 'Film TBA'
@@ -247,7 +247,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private ItemAndBroadcast getClosedEpisode(Brand brand, ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
-        final String uri = CLOSED_EPISODE + getClosedPostfix(channel);
+        final String uri = CLOSED_EPISODE_PREFIX + getClosedPostfix(channel);
 
         Maybe<Identified> resolvedContent = contentResolver.findByCanonicalUris(ImmutableList.of(uri)).getFirstValue();
 
@@ -662,6 +662,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             }
         } else {
             item = getBasicEpisode(progData, isEpisode);
+        }
+
+        if (CLOSED_EPISODE.equals(episodeUri)) {
+            item.setScheduleOnly(true);
         }
 
         item.addAlias(PaHelper.getEpisodeAlias(identifierFor(progData)));

@@ -90,7 +90,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     
     private static final String YES = "yes";
     private static final String CLOSED_BRAND = "http://pressassociation.com/brands/8267";
-    private static final String CLOSED_EPISODE = "http://pressassociation.com/episodes/1607805";
+    private static final String SCHEDULED_ONLY_EPISODE = "http://pressassociation.com/episodes/1607805";
     private static final String CLOSED_EPISODE_PREFIX = "http://pressassociation.com/episodes/closed";
     private static final String CLOSED_CURIE = "pa:closed";    
     
@@ -664,7 +664,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             item = getBasicEpisode(progData, isEpisode);
         }
 
-        if (CLOSED_EPISODE.equals(episodeUri)) {
+        if (SCHEDULED_ONLY_EPISODE.equals(episodeUri)) {
             item.setScheduleOnly(true);
         }
 

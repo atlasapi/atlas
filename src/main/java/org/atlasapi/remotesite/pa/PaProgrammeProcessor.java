@@ -500,7 +500,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                 film = (Film) previous;
             } else {
                 film = new Film();
-                Item.copyTo((Episode) previous, film);
+                Content.copyTo((Content) previous, film);
             }
         } else {
             film = getBasicFilm(progData);

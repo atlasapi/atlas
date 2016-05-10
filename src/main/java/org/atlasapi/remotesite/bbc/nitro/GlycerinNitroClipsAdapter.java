@@ -14,6 +14,8 @@ import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroClipExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+
+import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -116,7 +118,32 @@ public class GlycerinNitroClipsAdapter {
         } catch (GlycerinException e) {
             throw new NitroException(NitroUtil.toPids(refs).toString(), e);
         }
-        
+    }
+
+    public List<org.atlasapi.media.entity.Clip> clipsFor(PidReference ref) throws NitroException {
+        try {
+            Iterable<com.metabroadcast.atlas.glycerin.model.Clip> nitroClips
+                    = Iterables.transform(Iterables.filter(getNitroClip(ref), isClip), toClip);
+
+            if (Iterables.isEmpty(nitroClips)) {
+                log.warn("No programmes found for clipRefs {}", ref, new Function<PidReference, String>() {
+
+                    @Override
+                    public String apply(@Nullable PidReference pidRef) {
+                        return pidRef.getPid();
+                    }
+                });
+            }
+
+            Iterable<List<Clip>> clipParts = Iterables.partition(nitroClips, BATCH_SIZE);
+            ImmutableList.Builder<org.atlasapi.media.entity.Clip> clips = ImmutableList.builder();
+            for (List<Clip> clipPart : clipParts) {
+                clips.addAll(extractClips(clipPart).values());
+            }
+            return clips.build();
+        } catch (GlycerinException e) {
+            throw new NitroException(ref.toString(), e);
+        }
     }
 
     private Multimap<String, org.atlasapi.media.entity.Clip> extractClips(List<Clip> clipPart) throws GlycerinException {
@@ -200,6 +227,31 @@ public class GlycerinNitroClipsAdapter {
         
         ListenableFuture<List<ImmutableList<Programme>>> all = Futures.allAsList(futures);
         
+        try {
+            return ImmutableList.copyOf(Iterables.concat(all.get()));
+        } catch (InterruptedException | ExecutionException e) {
+            if (e.getCause() instanceof GlycerinException) {
+                throw (GlycerinException) e.getCause();
+            }
+            throw Throwables.propagate(e);
+        }
+    }
+
+    private ImmutableList<Programme> getNitroClip(PidReference ref) throws GlycerinException {
+
+        List<ListenableFuture<ImmutableList<Programme>>> futures = Lists.newArrayList();
+
+        ProgrammesQuery query = ProgrammesQuery.builder()
+                .withEntityType(EntityTypeOption.CLIP)
+                .withChildrenOf(ref.toString())
+                .withMixins(IMAGES)
+                .withPageSize(pageSize)
+                .build();
+
+        futures.add(executor.submit(exhaustingProgrammeCallable(query)));
+
+        ListenableFuture<List<ImmutableList<Programme>>> all = Futures.allAsList(futures);
+
         try {
             return ImmutableList.copyOf(Iterables.concat(all.get()));
         } catch (InterruptedException | ExecutionException e) {

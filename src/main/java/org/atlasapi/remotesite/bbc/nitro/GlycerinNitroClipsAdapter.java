@@ -239,8 +239,6 @@ public class GlycerinNitroClipsAdapter {
 
     private ImmutableList<Programme> getNitroClip(PidReference ref) throws GlycerinException {
 
-        List<ListenableFuture<ImmutableList<Programme>>> futures = Lists.newArrayList();
-
         ProgrammesQuery query = ProgrammesQuery.builder()
                 .withEntityType(EntityTypeOption.CLIP)
                 .withChildrenOf(ref.toString())
@@ -248,12 +246,11 @@ public class GlycerinNitroClipsAdapter {
                 .withPageSize(pageSize)
                 .build();
 
-        futures.add(executor.submit(exhaustingProgrammeCallable(query)));
-
-        ListenableFuture<List<ImmutableList<Programme>>> all = Futures.allAsList(futures);
+        ListenableFuture<ImmutableList<Programme>> future = executor.submit(
+                exhaustingProgrammeCallable(query));
 
         try {
-            return ImmutableList.copyOf(Iterables.concat(all.get()));
+            return ImmutableList.copyOf(future.get());
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof GlycerinException) {
                 throw (GlycerinException) e.getCause();

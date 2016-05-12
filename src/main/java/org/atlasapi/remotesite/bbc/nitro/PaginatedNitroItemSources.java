@@ -22,15 +22,13 @@ import java.util.concurrent.ExecutionException;
 public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episode>> {
 
     private Iterable<Episode> episodes;
-    private int nitroBatchSize;
     private int pageSize;
     private ListeningExecutorService executor;
     private final Glycerin glycerin;
 
-    public PaginatedNitroItemSources(Iterable<Episode> episodes, int nitroBatchSize, int pageSize,
+    public PaginatedNitroItemSources(Iterable<Episode> episodes, int pageSize,
                                      ListeningExecutorService executor, Glycerin glycerin) {
         this.episodes = episodes;
-        this.nitroBatchSize = nitroBatchSize;
         this.pageSize = pageSize;
         this.executor = executor;
         this.glycerin = glycerin;
@@ -38,7 +36,7 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
 
     @Override
     public Iterator iterator() {
-        return new NitroItemSourceIterator(episodes, nitroBatchSize, pageSize, executor, glycerin);
+        return new NitroItemSourceIterator(episodes, pageSize, executor, glycerin);
     }
 
     private static class NitroItemSourceIterator implements Iterator<NitroItemSource<Episode>> {
@@ -49,7 +47,7 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
         private final ListeningExecutorService executor;
         private final Glycerin glycerin;
 
-        public NitroItemSourceIterator(Iterable<Episode> episodes, int nitroBatchSize, int pageSize,
+        public NitroItemSourceIterator(Iterable<Episode> episodes, int pageSize,
                                        ListeningExecutorService executor, Glycerin glycerin) {
             this.episodes = episodes.iterator();
             this.pageSize = pageSize;
@@ -59,10 +57,7 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
 
         @Override
         public boolean hasNext() {
-            if (episodes.hasNext()) {
-                return true;
-            }
-            return false;
+            return episodes.hasNext();
         }
 
         @Override

@@ -4,7 +4,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
-import com.google.common.base.Predicate;
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
@@ -28,6 +29,7 @@ import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.common.time.Clock;
 
 import com.google.common.base.Function;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -36,8 +38,6 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -56,7 +56,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private static final Logger log = LoggerFactory.getLogger(GlycerinNitroContentAdapter.class);
     private static final Function<Programme, Episode> TO_EPISODE = new Function<Programme, Episode>() {
 
-        @Nullable
         @Override
         public Episode apply(@Nullable Programme input) {
             return input.getAsEpisode();
@@ -198,7 +197,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             throws GlycerinException, NitroException {
         return new PaginatedNitroItemSources(
                 episodes,
-                NITRO_BATCH_SIZE,
                 pageSize,
                 executor,
                 glycerin

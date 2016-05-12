@@ -49,10 +49,7 @@ public class LazyNitroEpisodeExtractor implements Iterable<Item> {
 
         @Override
         public boolean hasNext() {
-            if (episodes.hasNext()) {
-                return true;
-            }
-            return false;
+            return episodes.hasNext();
         }
 
         @Override

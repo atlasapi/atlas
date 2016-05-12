@@ -17,7 +17,6 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroClipExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 
-import com.google.common.base.Optional;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -125,7 +124,7 @@ public class GlycerinNitroClipsAdapter {
     public List<org.atlasapi.media.entity.Clip> clipsFor(PidReference ref) throws NitroException {
         try {
             Iterable<com.metabroadcast.atlas.glycerin.model.Clip> nitroClips = Iterables
-                    .transform(Iterables.filter(getNitroClip(ref), isClip), toClip);
+                    .transform(Iterables.filter(getNitroClips(ref), isClip), toClip);
 
             if (Iterables.isEmpty(nitroClips)) {
                 log.warn("No programmes found for clipRefs {}", ref, new Function<PidReference, String>() {
@@ -138,8 +137,7 @@ public class GlycerinNitroClipsAdapter {
             }
 
             ImmutableList.Builder<org.atlasapi.media.entity.Clip> extractedClips = ImmutableList.builder();
-            List<Clip> clips = Lists.newArrayList(nitroClips);
-            for (Clip clip : clips) {
+            for (Clip clip : nitroClips) {
                 extractedClips.add(extractClip(clip));
             }
             return extractedClips.build();
@@ -268,7 +266,7 @@ public class GlycerinNitroClipsAdapter {
         }
     }
 
-    private ImmutableList<Programme> getNitroClip(PidReference ref) throws GlycerinException {
+    private ImmutableList<Programme> getNitroClips(PidReference ref) throws GlycerinException {
 
         ProgrammesQuery query = ProgrammesQuery.builder()
                 .withEntityType(EntityTypeOption.CLIP)
@@ -310,6 +308,4 @@ public class GlycerinNitroClipsAdapter {
         }
         return programmes.build();
     }
-
-    
 }

@@ -9,6 +9,13 @@ import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 
 import java.util.Iterator;
 
+/**
+ * Used to paginate over Nitro Programmes to reduce the heap overhead.
+ *
+ * Takes an iterable of {@link ProgrammesQuery} which is used to get
+ * the individual Nitro Programmes.
+ * Used as part of {@link OffScheduleContentIngestTask}
+ */
 public class PaginatedProgrammeRequest implements Iterable<Programme> {
 
     private final Iterable<ProgrammesQuery> programmeQueries;

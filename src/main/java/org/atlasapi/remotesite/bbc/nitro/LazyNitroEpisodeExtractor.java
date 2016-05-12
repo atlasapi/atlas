@@ -14,7 +14,9 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.google.common.base.Throwables;
 
 /**
- * Extracts Atlas items from given Nitro episodes to reduce the heap overhead.
+ * This class is used to paginate over Nitro Episodes to reduce the heap overhead.
+ *
+ * Used as part of {@link OffScheduleContentIngestTask}
  */
 public class LazyNitroEpisodeExtractor implements Iterable<Item> {
 
@@ -22,6 +24,14 @@ public class LazyNitroEpisodeExtractor implements Iterable<Item> {
     private final NitroEpisodeExtractor itemExtractor;
     private final GlycerinNitroClipsAdapter clipsAdapter;
 
+    /**
+     * Lazy Nitro episode extractor used for iterating over Nitro episodes to get Atlas items.
+     *
+     * @param episodes - iterable of Nitro item sources for Nitro episodes, used for extracting
+     *                 Atlas items.
+     * @param itemExtractor - used for extracting Atlas item from Nitro episode.
+     * @param clipsAdapter - used for extracting individual episode clips.
+     */
     public LazyNitroEpisodeExtractor(Iterable<NitroItemSource<Episode>> episodes, NitroEpisodeExtractor itemExtractor,
                              GlycerinNitroClipsAdapter clipsAdapter) {
         this.episodes = episodes;
@@ -69,6 +79,13 @@ public class LazyNitroEpisodeExtractor implements Iterable<Item> {
             throw new UnsupportedOperationException();
         }
 
+        /**
+         * Returns a list of clips for the given episode, that later is used
+         * to set the Atlas item clips.
+         * @param pid - the episode programme PID.
+         * @param uri - the episode prgramme URI.
+         * @return List of Atlas clips.
+         */
         public List<Clip> getClips(String pid, String uri) {
             PidReference pidReference = new PidReference();
             pidReference.setPid(pid);

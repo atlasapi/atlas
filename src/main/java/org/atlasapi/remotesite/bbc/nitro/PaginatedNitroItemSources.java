@@ -1,23 +1,26 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.api.client.util.Lists;
-import com.google.common.base.Throwables;
-import com.google.common.collect.*;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.metabroadcast.atlas.glycerin.Glycerin;
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.atlas.glycerin.GlycerinResponse;
-import com.metabroadcast.atlas.glycerin.model.*;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
-import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
-import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
-
 import java.util.Iterator;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
+
+import com.metabroadcast.atlas.glycerin.Glycerin;
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.atlas.glycerin.GlycerinResponse;
+import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.Episode;
+import com.metabroadcast.atlas.glycerin.model.Version;
+import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
+import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
+import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
+
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
 
 public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episode>> {
 
@@ -42,7 +45,6 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
     private static class NitroItemSourceIterator implements Iterator<NitroItemSource<Episode>> {
 
         private Iterator<Episode> episodes;
-        private Episode episode;
         private final int pageSize;
         private final ListeningExecutorService executor;
         private final Glycerin glycerin;
@@ -62,7 +64,7 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
 
         @Override
         public NitroItemSource<Episode> next() {
-            episode = episodes.next();
+            Episode episode = episodes.next();
 
             ListenableFuture<ImmutableList<Availability>> availabilities;
             try {

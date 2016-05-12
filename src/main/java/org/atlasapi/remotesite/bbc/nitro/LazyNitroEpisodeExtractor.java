@@ -1,19 +1,20 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.Multimap;
-import com.metabroadcast.atlas.glycerin.model.Episode;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
+import java.util.Iterator;
+import java.util.List;
+
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 
-import java.util.Iterator;
-import java.util.List;
+import com.metabroadcast.atlas.glycerin.model.Episode;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+
+import com.google.common.base.Throwables;
 
 /**
- *
+ * Extracts Atlas items from given Nitro episodes to reduce the heap overhead.
  */
 public class LazyNitroEpisodeExtractor implements Iterable<Item> {
 
@@ -36,7 +37,6 @@ public class LazyNitroEpisodeExtractor implements Iterable<Item> {
     private static class EpisodesIterator implements Iterator<Item> {
 
         private Iterator<NitroItemSource<Episode>> episodes;
-        private NitroItemSource<Episode> episode;
         private final NitroEpisodeExtractor itemExtractor;
         private final GlycerinNitroClipsAdapter clipsAdapter;
 
@@ -54,7 +54,7 @@ public class LazyNitroEpisodeExtractor implements Iterable<Item> {
 
         @Override
         public Item next() {
-            this.episode = episodes.next();
+            NitroItemSource<Episode> episode = episodes.next();
             Item item = itemExtractor.extract(episode);
             List<Clip> clips = getClips(
                     episode.getProgramme().getPid(),
@@ -74,13 +74,11 @@ public class LazyNitroEpisodeExtractor implements Iterable<Item> {
             pidReference.setPid(pid);
             pidReference.setHref(uri);
 
-            List<Clip> clips;
             try {
-                clips = clipsAdapter.clipsFor(pidReference);
+                return clipsAdapter.clipsFor(pidReference);
             } catch (NitroException e) {
                 throw Throwables.propagate(e);
             }
-            return clips;
         }
     }
 }

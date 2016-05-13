@@ -108,6 +108,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 );
 
             } catch (NitroException e) {
+                log.error("Item fetching failed", e);
                 throw Throwables.propagate(e);
             } catch (InterruptedException e) {
                 log.error("Could not lock item IDs", e);

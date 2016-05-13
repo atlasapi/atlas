@@ -86,7 +86,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
             String episodeId = possibleEpisodeId.get();
             String containerId = possibleContainerId.get();
-            reportStatus(String.format("Locking item ID - %d", episodeId));
+            reportStatus(String.format("Locking item ID - %s", episodeId));
 
             boolean writeSuccessful = false;
             try {

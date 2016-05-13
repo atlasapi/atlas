@@ -1,45 +1,50 @@
 package org.atlasapi.remotesite;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.notNull;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.intl.Countries;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentMerger.AliasMergeStrategy;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
+
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.time.DateTimeZones;
+
+import com.google.common.base.Equivalence;
+import com.google.common.base.Objects;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Equivalence;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.time.DateTimeZones;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.notNullValue;
+import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentMergerTest {
@@ -205,7 +210,6 @@ public class ContentMergerTest {
         assertTrue(!merged.getReleaseDates().isEmpty());
     }
 
-
     @Test
     public void testItemEpisodeMergingMergesReleaseDate() {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE);
@@ -269,7 +273,7 @@ public class ContentMergerTest {
     }
     
     @Test
-      public void testKeepAliasesMergeStrategy() {
+    public void testKeepAliasesMergeStrategy() {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.KEEP);
         Item current = createItem("title", Publisher.METABROADCAST);
         Item extracted = createItem("title", Publisher.METABROADCAST);
@@ -284,7 +288,6 @@ public class ContentMergerTest {
 
         assertEquals(currentAliases, merged.getAliases());
     }
-
 
     @Test
     public void testMergeTopicsMergeStrategy() {
@@ -330,6 +333,218 @@ public class ContentMergerTest {
         assertEquals(merged.getSeriesRef(),
                 extracted.getSeriesRef()
         );
+    }
+
+    @Test
+    public void revokesDeletedVersion() {
+        ContentMerger contentMerger = new ContentMerger(
+                MergeStrategy.NITRO_VERSIONS_REVOKE,
+                MergeStrategy.KEEP,
+                MergeStrategy.REPLACE
+        );
+
+        Series current = new Series();
+
+        Version currentVersion1 = new Version();
+        currentVersion1.setCanonicalUri("http://example.org/1");
+
+        Encoding encoding = new Encoding();
+        encoding.setCanonicalUri("http://example.org/encoding/1");
+        Location location1 = new Location();
+        Location location2 = new Location();
+        encoding.setAvailableAt(ImmutableSet.of(location1, location2));
+        currentVersion1.setManifestedAs(ImmutableSet.of(encoding));
+
+        Version currentVersion2 = new Version();
+        currentVersion2.setCanonicalUri("http://example.org/2");
+        current.setVersions(ImmutableSet.of(currentVersion1, currentVersion2));
+
+        Series extracted = new Series();
+
+        Version extractedVersion = new Version();
+        extractedVersion.setCanonicalUri("http://example.org/2");
+
+        extracted.setVersions(ImmutableSet.of(extractedVersion));
+
+        Series merged = (Series) contentMerger.merge(current, extracted);
+        Set<Version> versions = merged.getVersions();
+
+        assertThat(versions.size(), is(2));
+
+        Version merged1 = Iterables.find(versions, new Predicate<Version>() {
+            @Override
+            public boolean apply(Version input) {
+                return "http://example.org/1".equals(input.getCanonicalUri());
+            }
+        });
+
+        Encoding mergedEncoding1 = Iterables.getOnlyElement(merged1.getManifestedAs());
+        for (Location mergedLocation : mergedEncoding1.getAvailableAt()) {
+            assertThat(mergedLocation.getAvailable(), is(false));
+        }
+
+        Version merged2 = Iterables.find(versions, new Predicate<Version>() {
+            @Override
+            public boolean apply(Version input) {
+                return "http://example.org/2".equals(input.getCanonicalUri());
+            }
+        });
+        assertThat(merged2, is(notNullValue()));
+    }
+
+    @Test
+    public void revokesDeletedAvailability() {
+        ContentMerger contentMerger = new ContentMerger(
+                MergeStrategy.NITRO_VERSIONS_REVOKE,
+                MergeStrategy.KEEP,
+                MergeStrategy.REPLACE
+        );
+
+        Series current = new Series();
+
+        Version currentVersion = new Version();
+        currentVersion.setCanonicalUri("http://example.org/1");
+
+        Encoding currentEncoding = new Encoding();
+        currentEncoding.setCanonicalUri("http://example.org/encoding/1");
+        Location currentLocation1 = new Location();
+        currentLocation1.setUri("http://example.org/location/1");
+        Location currentLocation2 = new Location();
+        currentLocation2.setUri("http://example.org/location/2");
+        currentEncoding.setAvailableAt(ImmutableSet.of(currentLocation1, currentLocation2));
+        currentVersion.setManifestedAs(ImmutableSet.of(currentEncoding));
+
+        current.setVersions(ImmutableSet.of(currentVersion));
+
+        Series extracted = new Series();
+
+        Version extractedVersion = new Version();
+        extractedVersion.setCanonicalUri("http://example.org/1");
+
+        Encoding extractedEncodign = new Encoding();
+        extractedEncodign.setCanonicalUri("http://example.org/encoding/1");
+        Location extractedLocation1 = new Location();
+        extractedLocation1.setUri("http://example.org/location/1");
+        extractedEncodign.setAvailableAt(ImmutableSet.of(extractedLocation1));
+        extractedVersion.setManifestedAs(ImmutableSet.of(extractedEncodign));
+
+        extracted.setVersions(ImmutableSet.of(extractedVersion));
+
+        Series merged = (Series) contentMerger.merge(current, extracted);
+        Version mergedVersion = Iterables.getOnlyElement(merged.getVersions());
+
+        Encoding encoding = Iterables.getOnlyElement(mergedVersion.getManifestedAs());
+        assertThat(encoding.getAvailableAt().size(), is(2));
+
+        for (Location location : encoding.getAvailableAt()) {
+            if ("http://example.org/location/2".equals(location.getUri())) {
+                assertThat(location.getAvailable(), is(false));
+            } else {
+                assertThat(location.getAvailable(), is(true));
+            }
+        }
+    }
+
+    @Test
+    public void revokesDeletedVersion_revokesDeletedAvailability_leavesRest() {
+        ContentMerger contentMerger = new ContentMerger(
+                MergeStrategy.NITRO_VERSIONS_REVOKE,
+                MergeStrategy.KEEP,
+                MergeStrategy.REPLACE
+        );
+
+        Series current = new Series();
+
+        Version currentVersionWithRevokedLocation = new Version();
+        currentVersionWithRevokedLocation.setCanonicalUri("http://example.org/1");
+
+        Encoding encoding = new Encoding();
+        encoding.setCanonicalUri("http://example.org/encoding/1");
+        Location location1 = new Location();
+        location1.setUri("http://example.org/location/1");
+        Location location2 = new Location();
+        location2.setUri("http://example.org/location/2");
+        encoding.setAvailableAt(ImmutableSet.of(location1, location2));
+        currentVersionWithRevokedLocation.setManifestedAs(ImmutableSet.of(encoding));
+
+        Version revokedCurrentVersion = new Version();
+        revokedCurrentVersion.setCanonicalUri("http://example.org/2");
+
+        Encoding encoding2 = new Encoding();
+        encoding2.setCanonicalUri("http://example.org/encoding/1");
+        Location revokedLocation1 = new Location();
+        revokedLocation1.setUri("http://example.org/location/1");
+        Location revokedLocation2 = new Location();
+        revokedLocation2.setUri("http://example.org/location/2");
+        encoding2.setAvailableAt(ImmutableSet.of(revokedLocation1, revokedLocation2));
+        revokedCurrentVersion.setManifestedAs(ImmutableSet.of(encoding2));
+
+        Version unchangedCurrentVersion = new Version();
+        unchangedCurrentVersion.setCanonicalUri("http://example.org/3");
+
+        current.setVersions(ImmutableSet.of(currentVersionWithRevokedLocation, revokedCurrentVersion));
+
+        //--------------------------- existing vs. extracted --------------------------------
+
+        Series extracted = new Series();
+
+        Location extractedLocation = new Location();
+        extractedLocation.setUri("http://example.org/location/2");
+
+        Encoding extractedEncoding = new Encoding();
+        extractedEncoding.setAvailableAt(ImmutableSet.of(extractedLocation));
+
+        Version extractedVersion1 = new Version();
+        extractedVersion1.setCanonicalUri("http://example.org/1");
+        extractedVersion1.setManifestedAs(ImmutableSet.of(extractedEncoding));
+
+        Version extractedVersion2 = new Version();
+        extractedVersion2.setCanonicalUri("http://example.org/3");
+
+        extracted.setVersions(ImmutableSet.of(extractedVersion1, extractedVersion2));
+
+        Series merged = (Series) contentMerger.merge(current, extracted);
+        Set<Version> versions = merged.getVersions();
+
+        assertThat(versions.size(), is(3));
+
+        Version merged1 = Iterables.find(versions, new Predicate<Version>() {
+            @Override
+            public boolean apply(Version input) {
+                return "http://example.org/1".equals(input.getCanonicalUri());
+            }
+        });
+
+        Encoding mergedEncoding1 = Iterables.getOnlyElement(merged1.getManifestedAs());
+        for (Location mergedLocation : mergedEncoding1.getAvailableAt()) {
+            if ("http://example.org/location/1".equals(mergedLocation.getUri())) {
+                assertThat(mergedLocation.getAvailable(), is(false));
+            } else if ("http://example.org/location/2".equals(mergedLocation.getUri())) {
+                assertThat(mergedLocation.getAvailable(), is(true));
+            } else {
+                fail(String.format("Unexpected location %s", mergedLocation));
+            }
+        }
+
+        Version merged2 = Iterables.find(versions, new Predicate<Version>() {
+            @Override
+            public boolean apply(Version input) {
+                return "http://example.org/2".equals(input.getCanonicalUri());
+            }
+        });
+
+        Encoding mergedEncoding2 = Iterables.getOnlyElement(merged2.getManifestedAs());
+        for (Location mergedLocation : mergedEncoding2.getAvailableAt()) {
+            assertThat(mergedLocation.getAvailable(), is(false));
+        }
+
+        Version merged3 = Iterables.find(versions, new Predicate<Version>() {
+            @Override
+            public boolean apply(Version input) {
+                return "http://example.org/3".equals(input.getCanonicalUri());
+            }
+        });
+        assertThat(merged3, is(notNullValue()));
     }
 
     private Item createItem(String title, Publisher publisher) {

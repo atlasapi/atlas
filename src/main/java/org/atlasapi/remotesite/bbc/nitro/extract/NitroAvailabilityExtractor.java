@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -13,8 +11,11 @@ import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Network;
 import org.atlasapi.media.entity.Policy.Platform;
-import org.joda.time.DateTime;
-import org.joda.time.chrono.ISOChronology;
+
+import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.time.DateTimeZones;
 
 import com.google.common.base.Equivalence;
 import com.google.common.base.Equivalence.Wrapper;
@@ -27,10 +28,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.time.DateTimeZones;
+import org.joda.time.DateTime;
+import org.joda.time.chrono.ISOChronology;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Possibly extracts an {@link Encoding} and {@link Location}s for it from some
@@ -203,6 +204,8 @@ public class NitroAvailabilityExtractor {
         location.setUri(IPLAYER_URL_BASE + checkNotNull(NitroUtil.programmePid(source)));
         location.setTransportType(TransportType.LINK);
         location.setPolicy(policy(source, platform, network, mediaType));
+        location.setAvailable(!REVOKED.equals(source.getRevocationStatus()));
+
         return location;
     }
 

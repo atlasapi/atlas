@@ -149,11 +149,11 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
+        Iterable<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
         return mergeItemsWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
     }
     
-    private ResolveOrFetchResult<Item> mergeItemsWithExisting(ImmutableSet<Item> fetchedItems,
+    private ResolveOrFetchResult<Item> mergeItemsWithExisting(Iterable<Item> fetchedItems,
             Set<Item> existingItems) {
         Map<String, Item> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedItems, Identified.TO_URI));
         ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
@@ -305,11 +305,10 @@ public class LocalOrRemoteNitroFetcher {
                     ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Container.class))).getAll();
     }
     
-    
     private Multimap<String, Item> toBrandUriMap(Iterable<Item> items) {
         return Multimaps.index(Iterables.filter(items, HAS_BRAND), TO_BRAND_REF_URI);
     }
-    
+
     private static Function<Item, String> TO_BRAND_REF_URI = new Function<Item, String>() {
 
         @Override

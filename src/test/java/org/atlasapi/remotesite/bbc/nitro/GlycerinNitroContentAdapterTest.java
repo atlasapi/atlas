@@ -1,5 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
@@ -19,10 +23,6 @@ import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
 import com.metabroadcast.common.time.Clock;
 
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -78,7 +78,7 @@ public class GlycerinNitroContentAdapterTest {
 
         when(glycerinResponse.hasNext()).thenReturn(false);
         when(glycerinResponse.getResults())
-                .thenReturn(ImmutableList.of(Programme.valueOf(episode)));
+                .thenReturn(ImmutableList.of(Programme.valueOf(episode), Programme.valueOf(episode)));
 
         when(availabilityResponse.hasNext()).thenReturn(false);
         when(availabilityResponse.getResults()).thenReturn(ImmutableList.<Availability>of());
@@ -94,8 +94,8 @@ public class GlycerinNitroContentAdapterTest {
         when(glycerin.execute(any(BroadcastsQuery.class))).thenReturn(broadcastResponse);
         when(glycerin.execute(any(VersionsQuery.class))).thenReturn(versionResponse);
 
-        ImmutableSet<Item> items = contentAdapter.fetchEpisodes(query);
-        Item item = Iterables.getOnlyElement(items);
+        Iterable<Item> items = contentAdapter.fetchEpisodes(query);
+        Item item = Iterables.getFirst(items, null);
         assertEquals(title, item.getTitle());
     }
 }

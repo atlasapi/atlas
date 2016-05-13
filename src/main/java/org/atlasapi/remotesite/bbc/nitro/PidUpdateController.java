@@ -50,7 +50,7 @@ public class PidUpdateController {
     @RequestMapping(value = "/system/bbc/nitro/update/content/{pid}", method = RequestMethod.POST)
     public void updatePidFromNitro(HttpServletResponse response, @PathVariable("pid") String pid)
             throws IOException {
-        Set<Item> items;
+        Iterable<Item> items;
         try {
             items = contentAdapter
                     .fetchEpisodes(ProgrammesQuery.builder()
@@ -64,7 +64,7 @@ public class PidUpdateController {
             return;
         }
 
-        if (items.isEmpty()) {
+        if (Iterables.getOnlyElement(items) == null) {
             log.error("No items found in Nitro for pid {}", pid);
             response.setStatus(HttpStatusCode.NOT_FOUND.code());
             response.setContentLength(0);

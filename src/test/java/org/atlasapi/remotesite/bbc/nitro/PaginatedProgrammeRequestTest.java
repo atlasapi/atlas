@@ -16,6 +16,7 @@ import java.util.Iterator;
 
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
@@ -129,7 +130,6 @@ public class PaginatedProgrammeRequestTest {
         when(glycerinResponse.hasNext()).thenReturn(true);
 
         Iterator<Programme> programmes = paginatedProgrammeRequest.iterator();
-        programmes.hasNext();
         assertTrue(programmes.hasNext());
     }
 }

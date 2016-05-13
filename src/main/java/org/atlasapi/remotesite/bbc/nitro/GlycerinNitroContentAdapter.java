@@ -1,7 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Executors;
 
 import javax.annotation.Nullable;
@@ -19,12 +18,9 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.atlas.glycerin.GlycerinResponse;
-import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.common.time.Clock;
 
@@ -213,17 +209,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         return new PaginatedProgrammeRequest(glycerin, queries);
     }
 
-    private <T> ImmutableList<T> exhaust(GlycerinResponse<T> resp) throws GlycerinException {
-        ImmutableList.Builder<T> programmes = ImmutableList.builder();
-        ImmutableList<T> results = resp.getResults();
-        programmes.addAll(results);
-        while (resp.hasNext()) {
-            resp = resp.getNext();
-            programmes.addAll(resp.getResults());
-        }
-        return programmes.build();
-    }
-
     private Iterable<String> toStrings(Iterable<PidReference> refs) {
         return Iterables.transform(refs, new Function<PidReference, String>() {
 
@@ -233,17 +218,4 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             }
         });
     }
-
-    private Callable<ImmutableList<Availability>> exhaustingAvailabilityCallable(
-            final AvailabilityQuery query) {
-
-        return new Callable<ImmutableList<Availability>>() {
-
-            @Override
-            public ImmutableList<Availability> call() throws Exception {
-                return exhaust(glycerin.execute(query));
-            }
-        };
-    }
-
 }

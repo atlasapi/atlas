@@ -56,10 +56,6 @@ public class PaginatedProgrammeRequest implements Iterable<Programme> {
                 return true;
             }
 
-            if (!programmeQueries.hasNext()) {
-                return false;
-            }
-
             try {
                 if (currentProgrammes == null) { // Getting the first page.
                     currentResponse = client.execute(programmeQueries.next());
@@ -67,6 +63,9 @@ public class PaginatedProgrammeRequest implements Iterable<Programme> {
                 } else if (currentResponse.hasNext()) { // Getting the next page.
                     currentProgrammes = currentResponse.getNext().getResults().iterator();
                 } else if (!currentResponse.hasNext()) { // Getting the next Programme response.
+                    if (!programmeQueries.hasNext()) {
+                        return false;
+                    }
                     currentResponse = client.execute(programmeQueries.next());
                     currentProgrammes = currentResponse.getResults().iterator();
                 }

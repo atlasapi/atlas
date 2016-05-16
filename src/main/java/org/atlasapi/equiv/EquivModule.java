@@ -242,7 +242,7 @@ public class EquivModule {
             .withScorers(scorers)
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
             .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item> atLeastNTimesGreater(1.5))
             .withHandler((EquivalenceResultHandler<Item>) new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.relaxed(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),

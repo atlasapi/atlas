@@ -271,7 +271,7 @@ public class EquivModule {
                             TitleMatchingContainerScorer.NAME
             ))
             .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Container>moreThanPercent(90))
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container>atLeastNTimesGreater(1.5))
             .withHandler(containerResultHandlers(publishers))
             .build();
     }

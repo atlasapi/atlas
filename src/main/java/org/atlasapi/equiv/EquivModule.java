@@ -581,7 +581,7 @@ public class EquivModule {
                 ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
             )
             .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container> atLeastNTimesGreater(1.5))
             .withHandler(containerResultHandlers(acceptablePublishers))
             .build();
     }

@@ -61,6 +61,8 @@ import org.atlasapi.remotesite.rt.RtFilmModule;
 import org.atlasapi.s3.DefaultS3Client;
 import org.atlasapi.s3.S3Client;
 
+import com.metabroadcast.common.ingest.monitorclient.IngestMonitorClient;
+import com.metabroadcast.common.ingest.monitorclient.config.IngesterConfiguration;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
@@ -68,6 +70,7 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.security.UsernameAndPassword;
 import com.metabroadcast.common.time.DayOfWeek;
 
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mongodb.DBCollection;
@@ -112,6 +115,7 @@ public class PaModule {
     private @Autowired DatabasedMongo mongo;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     private @Autowired ContentLister contentLister;
+    private @Autowired IngestMonitorClient ingestMonitorClient;
 
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
@@ -126,6 +130,7 @@ public class PaModule {
     private @Value("${pa.s3.bucket}") String s3bucket;
     private @Value("${pa.people.enabled}") boolean peopleEnabled;
     private @Value("${pa.content.updater.threads}") int contentUpdaterThreadCount;
+    private @Value("") String
 
     @PostConstruct
     public void startBackgroundTasks() {
@@ -210,10 +215,24 @@ public class PaModule {
         return new PaProgrammeProcessor(contentBuffer(), log, paTagMap());
     }
 
+    @Bean IngestMonitorClient ingestMonitorClient() {
+        IngesterConfiguration ingesterConfiguration = IngesterConfiguration
+                .builder()
+                .environment(IngesterConfiguration.Environment.from("stage"))
+                .publisher(ImmutableList.of(Publisher.PA.key()))
+                .name("PA ingester")
+                .key("pa-ingester")
+                .monitorUri("http://ingest-monitor-stage.mbst.tv/1/ingests")
+                .build();
+
+
+        return new IngestMonitorClient(ingesterConfiguration);
+    }
+
     @Bean PaCompleteUpdater paCompleteUpdater() {
         PaEmptyScheduleProcessor processor = new PaEmptyScheduleProcessor(paProgrammeProcessor(), scheduleResolver);
         PaChannelProcessor channelProcessor = new PaChannelProcessor(processor, broadcastTrimmer(),
-                scheduleWriter, paScheduleVersionStore(), contentBuffer(), contentWriter);
+                scheduleWriter, paScheduleVersionStore(), contentBuffer(), contentWriter, ingestMonitorClient);
         ExecutorService executor = Executors.newFixedThreadPool(contentUpdaterThreadCount, new ThreadFactoryBuilder().setNameFormat("pa-complete-updater-%s").build());
         PaCompleteUpdater updater = new PaCompleteUpdater(executor, channelProcessor, paProgrammeDataStore(), channelResolver);
         return updater;
@@ -222,7 +241,8 @@ public class PaModule {
     @Bean PaRecentUpdater paRecentUnprocessedUpdater() {
         PaChannelProcessor channelProcessor = new PaChannelProcessor(
                 paProgrammeProcessor(), broadcastTrimmer(), scheduleWriter,
-                paScheduleVersionStore(), contentBuffer(), contentWriter
+                paScheduleVersionStore(), contentBuffer(), contentWriter,
+                ingestMonitorClient
         );
         ExecutorService executor = Executors.newFixedThreadPool(
                 contentUpdaterThreadCount,
@@ -242,7 +262,8 @@ public class PaModule {
     @Bean PaRecentUpdater paRecentAllUpdater() {
         PaChannelProcessor channelProcessor = new PaChannelProcessor(
                 paProgrammeProcessor(), broadcastTrimmer(), scheduleWriter,
-                paScheduleVersionStore(), contentBuffer(), contentWriter
+                paScheduleVersionStore(), contentBuffer(), contentWriter,
+                ingestMonitorClient
         );
         ExecutorService executor = Executors.newFixedThreadPool(
                 contentUpdaterThreadCount,
@@ -302,7 +323,8 @@ public class PaModule {
                 scheduleWriter,
                 paScheduleVersionStore(),
                 contentBuffer(),
-                contentWriter
+                contentWriter,
+                ingestMonitorClient
         );
         return new PaSingleDateUpdatingController(
                 channelProcessor, channelResolver, paProgrammeDataStore()

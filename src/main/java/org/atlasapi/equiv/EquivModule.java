@@ -679,7 +679,7 @@ public class EquivModule {
                 new NullScoreAwareAveragingCombiner<Container>(),
                     TitleMatchingContainerScorer.NAME))
             .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container> atLeastNTimesGreater(1.5))
             .withHandler(containerResultHandlers(sources))
             
             .build();

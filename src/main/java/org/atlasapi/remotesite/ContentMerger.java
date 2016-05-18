@@ -35,37 +35,20 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ContentMerger {
 
-    interface TopicMergeStrategy {
-        Content mergeTopics(Content current, Content extracted);
-    }
-
-    interface VersionMergeStrategy {
-        Content mergeVersions(Content current, Content extracted);
-    }
-    
-    interface AliasMergeStrategy {
-        Item mergeAliases(Item current, Item extracted);
-    }
-
-    public static abstract class MergeStrategy {
-        private MergeStrategy(){}
-
-        public static final LeaveEverythingAlone KEEP = new LeaveEverythingAlone();
-        public static final ReplaceEverything REPLACE = new ReplaceEverything();
-        public static final StandardMerge MERGE = new StandardMerge();
-        public static final BbcNitroRevokingMerge NITRO_VERSIONS_REVOKE = new BbcNitroRevokingMerge();
-
-        public static ReplaceTopicsBasedOnEquivalence replaceTopicsBasedOn(final Equivalence<TopicRef> equivalence) {
-            Preconditions.checkNotNull(equivalence);
-            return new ReplaceTopicsBasedOnEquivalence(equivalence);
-        }
-    }
-
     private final VersionMergeStrategy versionMergeStrategy;
     private final TopicMergeStrategy topicsMergeStrategy;
     private final AliasMergeStrategy aliasMergeStrategy;
 
-    public ContentMerger(VersionMergeStrategy versionMergeStrategy, TopicMergeStrategy topicsMergeStrategy, 
+    public static Container asContainer(Identified identified) {
+        return castTo(identified, Container.class);
+    }
+
+    public static Item asItem(Identified identified) {
+        return castTo(identified, Item.class);
+    }
+
+    public ContentMerger(VersionMergeStrategy versionMergeStrategy,
+            TopicMergeStrategy topicsMergeStrategy,
             AliasMergeStrategy aliasMergeStrategy) {
         this.versionMergeStrategy = checkNotNull(versionMergeStrategy);
         this.topicsMergeStrategy = checkNotNull(topicsMergeStrategy);
@@ -77,12 +60,12 @@ public class ContentMerger {
         current = aliasMergeStrategy.mergeAliases(current, extracted);
         current = mergeContents(current, extracted);
 
-        if ( current.getContainer() == null
+        if (current.getContainer() == null
                 || extracted.getContainer() == null
                 || !current.getContainer().getUri().equals(extracted.getContainer().getUri())) {
             current.setParentRef(extracted.getContainer());
         }
-        
+
         if (current instanceof Episode) {
             if (extracted instanceof Episode) {
                 current = mergeEpisodeSpecificFields((Episode) current, (Episode) extracted);
@@ -95,7 +78,7 @@ public class ContentMerger {
             if (extracted instanceof Episode) {
                 Episode newEp = new Episode();
                 Item.copyTo(current, newEp);
-                
+
                 current = mergeEpisodeSpecificFields(newEp, (Episode) extracted);
             }
         }
@@ -118,38 +101,35 @@ public class ContentMerger {
         return current;
     }
 
-    private Episode mergeEpisodeSpecificFields(Episode current, Episode extracted) {
-        current.setEpisodeNumber(extracted.getEpisodeNumber());
-        current.setSeriesNumber(extracted.getSeriesNumber());
-
-        if ( current.getSeriesRef() == null
-                || extracted.getSeriesRef() == null
-                || !current.getSeriesRef().getUri().equals(extracted.getSeriesRef().getUri())) {
-            current.setSeriesRef(extracted.getSeriesRef());
-        }
-
-        if (current.getContainer() == null) {
-            current.setParentRef(extracted.getContainer());
-        }
-        return current;
-    }
-
     public Container merge(Container current, Container extracted) {
         current = mergeContents(current, extracted);
         if (current instanceof Series && extracted instanceof Series) {
             Series currentSeries = (Series) current;
             Series extractedSeries = (Series) extracted;
-            
+
             currentSeries.withSeriesNumber(extractedSeries.getSeriesNumber());
-            
+
             if (currentSeries.getParent() == null
                     || extractedSeries.getParent() == null
                     || !currentSeries.getParent().equals(extractedSeries.getParent())) {
                 currentSeries.setParentRef(extractedSeries.getParent());
             }
-            
+
         }
         return current;
+    }
+
+    private static <T> T castTo(Identified identified, Class<T> cls) {
+        try {
+            return cls.cast(identified);
+        } catch (ClassCastException e) {
+            throw new ClassCastException(String.format(
+                    "%s: expected %s got %s",
+                    identified.getCanonicalUri(),
+                    cls.getSimpleName(),
+                    identified.getClass().getSimpleName()
+            ));
+        }
     }
 
     private <C extends Content> C mergeContents(C current, C extracted) {
@@ -184,26 +164,57 @@ public class ContentMerger {
         return current;
     }
 
-    public static Container asContainer(Identified identified) {
-        return castTo(identified, Container.class);
+    private Episode mergeEpisodeSpecificFields(Episode current, Episode extracted) {
+        current.setEpisodeNumber(extracted.getEpisodeNumber());
+        current.setSeriesNumber(extracted.getSeriesNumber());
+
+        if (current.getSeriesRef() == null
+                || extracted.getSeriesRef() == null
+                || !current.getSeriesRef().getUri().equals(extracted.getSeriesRef().getUri())) {
+            current.setSeriesRef(extracted.getSeriesRef());
+        }
+
+        if (current.getContainer() == null) {
+            current.setParentRef(extracted.getContainer());
+        }
+        return current;
     }
 
-    public static Item asItem(Identified identified) {
-        return castTo(identified, Item.class);
+    interface TopicMergeStrategy {
+
+        Content mergeTopics(Content current, Content extracted);
     }
 
-    private static <T> T castTo(Identified identified, Class<T> cls) {
-        try {
-            return cls.cast(identified);
-        } catch (ClassCastException e) {
-            throw new ClassCastException(String.format("%s: expected %s got %s",
-                    identified.getCanonicalUri(),
-                    cls.getSimpleName(),
-                    identified.getClass().getSimpleName()));
+    interface VersionMergeStrategy {
+
+        Content mergeVersions(Content current, Content extracted);
+    }
+
+    interface AliasMergeStrategy {
+
+        Item mergeAliases(Item current, Item extracted);
+    }
+
+    public static abstract class MergeStrategy {
+
+        private MergeStrategy() {
+        }
+
+        public static final LeaveEverythingAlone KEEP = new LeaveEverythingAlone();
+        public static final ReplaceEverything REPLACE = new ReplaceEverything();
+        public static final StandardMerge MERGE = new StandardMerge();
+        public static final BbcNitroRevokingMerge NITRO_VERSIONS_REVOKE = new BbcNitroRevokingMerge();
+
+        public static ReplaceTopicsBasedOnEquivalence replaceTopicsBasedOn(
+                final Equivalence<TopicRef> equivalence) {
+            Preconditions.checkNotNull(equivalence);
+            return new ReplaceTopicsBasedOnEquivalence(equivalence);
         }
     }
 
-    private static class LeaveEverythingAlone extends MergeStrategy implements TopicMergeStrategy, VersionMergeStrategy, AliasMergeStrategy {
+    private static class LeaveEverythingAlone extends MergeStrategy
+            implements TopicMergeStrategy, VersionMergeStrategy, AliasMergeStrategy {
+
         @Override
         public Content mergeTopics(Content current, Content extracted) {
             return current;
@@ -218,10 +229,12 @@ public class ContentMerger {
         public Item mergeAliases(Item current, Item extracted) {
             return current;
         }
-        
+
     }
 
-    private static class ReplaceEverything extends MergeStrategy implements TopicMergeStrategy, VersionMergeStrategy, AliasMergeStrategy {
+    private static class ReplaceEverything extends MergeStrategy
+            implements TopicMergeStrategy, VersionMergeStrategy, AliasMergeStrategy {
+
         @Override
         public Content mergeTopics(Content current, Content extracted) {
             current.setTopicRefs(extracted.getTopicRefs());
@@ -242,7 +255,9 @@ public class ContentMerger {
         }
     }
 
-    private static class StandardMerge extends MergeStrategy implements VersionMergeStrategy, AliasMergeStrategy, TopicMergeStrategy {
+    private static class StandardMerge extends MergeStrategy
+            implements VersionMergeStrategy, AliasMergeStrategy, TopicMergeStrategy {
+
         @Override
         public Content mergeVersions(Content current, Content extracted) {
             Map<String, Version> mergedVersions = Maps.newHashMap();
@@ -254,7 +269,10 @@ public class ContentMerger {
             for (Version version : extracted.getVersions()) {
                 if (mergedVersions.containsKey(version.getCanonicalUri())) {
                     Version mergedVersion = mergedVersions.get(version.getCanonicalUri());
-                    mergedVersion.setBroadcasts(Sets.union(version.getBroadcasts(), mergedVersion.getBroadcasts()));
+                    mergedVersion.setBroadcasts(Sets.union(
+                            version.getBroadcasts(),
+                            mergedVersion.getBroadcasts()
+                    ));
                     mergedVersion.setManifestedAs(version.getManifestedAs());
                     mergedVersion.setRestriction(version.getRestriction());
                     if (version.getDuration() == null) {
@@ -322,7 +340,10 @@ public class ContentMerger {
         }
 
         private Version mergeUpdatedVersions(Version newVersion, Version mergedVersion) {
-            mergedVersion.setBroadcasts(Sets.union(newVersion.getBroadcasts(), mergedVersion.getBroadcasts()));
+            mergedVersion.setBroadcasts(Sets.union(
+                    newVersion.getBroadcasts(),
+                    mergedVersion.getBroadcasts()
+            ));
             mergedVersion.setRestriction(newVersion.getRestriction());
 
             if (newVersion.getDuration() != null) {
@@ -421,7 +442,10 @@ public class ContentMerger {
                             needle.getVideoHorizontalSize(),
                             candidate.getVideoHorizontalSize()
                     ) &&
-                    Objects.equal(needle.getVideoVerticalSize(), candidate.getVideoVerticalSize()) &&
+                    Objects.equal(
+                            needle.getVideoVerticalSize(),
+                            candidate.getVideoVerticalSize()
+                    ) &&
                     Objects.equal(needle.getAudioDescribed(), candidate.getAudioDescribed()) &&
                     Objects.equal(needle.getSigned(), candidate.getSigned()) &&
                     Objects.equal(needle.getSubtitled(), candidate.getSubtitled());
@@ -469,15 +493,23 @@ public class ContentMerger {
         }
 
         private boolean policyFuzzyEquals(@Nullable Policy needle, @Nullable Policy candidate) {
-            return needle == candidate || !(needle == null || candidate == null)
-                    && Objects.equal(needle.getAvailabilityStart(), candidate.getAvailabilityStart())
-                    && Objects.equal(needle.getAvailabilityEnd(), candidate.getAvailabilityEnd())
-                    && Objects.equal(needle.getPlatform(), candidate.getPlatform())
-                    && Objects.equal(needle.getAvailableCountries(), candidate.getAvailableCountries());
+            return needle == candidate || !(needle == null || candidate == null) &&
+                    Objects.equal(
+                            needle.getAvailabilityStart(),
+                            candidate.getAvailabilityStart()
+                    ) &&
+                    Objects.equal(needle.getAvailabilityEnd(), candidate.getAvailabilityEnd()) &&
+                    Objects.equal(needle.getPlatform(), candidate.getPlatform()) &&
+                    Objects.equal(
+                            needle.getAvailableCountries(),
+                            candidate.getAvailableCountries()
+                    );
         }
     }
 
-    private static class ReplaceTopicsBasedOnEquivalence extends MergeStrategy implements TopicMergeStrategy {
+    private static class ReplaceTopicsBasedOnEquivalence extends MergeStrategy
+            implements TopicMergeStrategy {
+
         private final Equivalence<TopicRef> equivalence;
 
         private ReplaceTopicsBasedOnEquivalence(Equivalence<TopicRef> equivalence) {
@@ -493,21 +525,24 @@ public class ContentMerger {
             }
             for (TopicRef topicRef : extracted.getTopicRefs()) {
                 Equivalence.Wrapper<TopicRef> wrapped = equivalence.wrap(topicRef);
-                if (! mergedRefs.add(wrapped)) {
+                if (!mergedRefs.add(wrapped)) {
                     mergedRefs.remove(wrapped);  // force replacement
                     mergedRefs.add(wrapped);
                 }
             }
 
-            current.setTopicRefs(Iterables.transform(mergedRefs, new Function<Equivalence.Wrapper<TopicRef>, TopicRef>() {
-                @Override
-                public TopicRef apply(Equivalence.Wrapper<TopicRef> input) {
-                    return input.get();
-                }
-            }));
+            current.setTopicRefs(Iterables.transform(
+                    mergedRefs,
+                    new Function<Equivalence.Wrapper<TopicRef>, TopicRef>() {
+
+                        @Override
+                        public TopicRef apply(Equivalence.Wrapper<TopicRef> input) {
+                            return input.get();
+                        }
+                    }
+            ));
 
             return current;
         }
     }
-
 }

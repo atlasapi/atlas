@@ -51,7 +51,7 @@ public interface NitroContentAdapter {
      * @throws IllegalArgumentException
      *             - if any of the {@code refs} is not for an episode.
      */
-    ImmutableSet<Item> fetchEpisodes(ProgrammesQuery query) throws NitroException;
+    Iterable<Item> fetchEpisodes(ProgrammesQuery query) throws NitroException;
 
     /**
      * Fetch and transform data for the given ref into a {@link Item}.
@@ -65,5 +65,5 @@ public interface NitroContentAdapter {
      * @throws IllegalArgumentException
      *             - if any of the {@code refs} is not for an episode.
      */
-    ImmutableSet<Item> fetchEpisodes(Iterable<PidReference> refs) throws NitroException;
+    Iterable<Item> fetchEpisodes(Iterable<PidReference> refs) throws NitroException;
 }

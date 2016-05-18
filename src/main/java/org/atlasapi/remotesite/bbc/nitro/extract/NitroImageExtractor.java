@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.remotesite.ContentExtractor;
 
@@ -10,9 +11,13 @@ import org.atlasapi.remotesite.ContentExtractor;
  * Extracts an {@link Image} from a
  * {@link com.metabroadcast.atlas.glycerin.model.Image} according to the provided dimensions.
  */
-public class NitroImageExtractor
-        implements
+public class NitroImageExtractor implements
         ContentExtractor<com.metabroadcast.atlas.glycerin.model.Brand.Images.Image, Image> {
+
+    private static final String BBC_NITRO_TYPE = "bbc:nitro:type";
+    private static final String IDENT = "ident";
+    private static final String $_RECIPE = "$recipe";
+    public static final String RESOLUTION = "1024x576";
 
     private final String recipe;
     private final int width;
@@ -43,10 +48,13 @@ public class NitroImageExtractor
         if(!url.contains("http://")) {
             url = "http://" + url ;
         }
-
+        if (url.contains($_RECIPE)) {
+            url = url.replace($_RECIPE, RESOLUTION);
+        }
         Image image = new Image(url);
-        image.setWidth(width);
-        image.setHeight(height);
+        image.setWidth(1024);
+        image.setHeight(576);
+        image.addAlias(new Alias(BBC_NITRO_TYPE, IDENT));
 
         return image;
     }

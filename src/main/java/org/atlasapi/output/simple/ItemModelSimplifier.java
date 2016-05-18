@@ -568,19 +568,26 @@ public class ItemModelSimplifier
             ApplicationConfiguration config) {
         DateTime now = new DateTime(DateTimeZones.UTC);
         for (Location location : encoding.getAvailableAt()) {
+            if (!location.getAvailable()) {
+                continue;
+            }
+
             if (!annotations.contains(Annotation.AVAILABLE_LOCATIONS)
-                    || location.getPolicy() == null
-                    || available(location.getPolicy(), now)) {
+                    || withinAvailabilityWindow(location, now)) {
                 addTo(simpleItem, version, encoding, location, item, annotations, config);
             }
         }
     }
 
-    private boolean available(Policy policy, DateTime now) {
-        return policy.getAvailabilityStart() == null
+    private boolean withinAvailabilityWindow(Location location, DateTime now) {
+        Policy policy = location.getPolicy();
+
+        return policy == null
+                || policy.getAvailabilityStart() == null
                 || policy.getAvailabilityEnd() == null
                 || policy.getAvailabilityStart().isBefore(now)
-                && policy.getAvailabilityEnd().isAfter(now);
+                    && policy.getAvailabilityEnd().isAfter(now);
+
     }
 
     private void addTo(org.atlasapi.media.entity.simple.Item simpleItem, Version version,

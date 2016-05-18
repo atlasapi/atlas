@@ -193,13 +193,23 @@ public class ItemModelSimplifierTest {
         location.setPolicy(new Policy().withRevenueContract(RevenueContract.PAY_TO_BUY)
                 .withPrice(new Price(Currency.getInstance("GBP"), 99))
                 .withAvailableCountries(Countries.GB));
+
         Location embed = new Location();
         embed.setTransportType(TransportType.EMBED);
         embed.setEmbedId("embedId");
         embed.setTransportSubType(TransportSubType.BRIGHTCOVE);
 
+        Location revokedLocation = new Location();
+        revokedLocation.setUri("http://example.com/revoked");
+        revokedLocation.setPolicy(new Policy().withRevenueContract(RevenueContract.PAY_TO_BUY)
+                .withPrice(new Price(Currency.getInstance("GBP"), 99))
+                .withAvailableCountries(Countries.GB));
+        revokedLocation.setAvailable(false);
+
         encoding.addAvailableAt(location);
         encoding.addAvailableAt(embed);
+        encoding.addAvailableAt(revokedLocation);
+
         encoding.setAudioDescribed(true);
         encoding.setHighDefinition(true);
         fullItem.addVersion(version);

@@ -41,12 +41,20 @@ public class ChannelIngestTask extends ScheduledTask {
             reportStatus("Writing channels");
             int failedServices = 0;
             writeChannels(services, failedServices);
-            reportStatus(String.format("%d services written out of %d", services.size(), failedServices));
+            int servicesCount = services.size();
+            reportStatus(String.format("%d services failed out of %d", failedServices,
+                    servicesCount
+            ));
 
             int failedMasterbrands = 0;
             writeChannels(masterbrands, failedMasterbrands);
-            reportStatus(String.format("%d masterbrands written out of %d", masterbrands.size(), failedMasterbrands));
+            int masterbrandsCount = masterbrands.size();
+            reportStatus(String.format("%d masterbrands failed out of %d", failedMasterbrands,
+                    masterbrandsCount
+            ));
 
+            reportStatus(String.format("%d failed services and masterbrands out of %d", failedMasterbrands+failedServices, servicesCount
+                    + masterbrandsCount));
         } catch (GlycerinException e) {
             throw Throwables.propagate(e);
         }

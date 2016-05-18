@@ -7,11 +7,10 @@ import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricRegistry;
 import org.atlasapi.AtlasMain;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
@@ -21,6 +20,8 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
+import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHydrator;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.util.GroupLock;
 
@@ -33,6 +34,7 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.time.SystemClock;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -77,6 +79,7 @@ public class BbcNitroModule {
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ChannelResolver channelResolver;
+    private @Autowired ChannelWriter channelWriter;
     private @Autowired QueuingPersonWriter peopleWriter;
     
     private final ThreadFactory nitroThreadFactory = new ThreadFactoryBuilder()
@@ -197,6 +200,11 @@ public class BbcNitroModule {
         );
     }
 
+    private ScheduledTask channelIngestTask() {
+        Glycerin glycerin = glycerin(null);
+        return ChannelIngestTask.create(nitroChannelAdapter(glycerin), channelWriter, channelResolver, new NitroChannelHydrator());
+    }
+
     public ContentWriter contentWriter() {
         return new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
     }
@@ -298,6 +306,10 @@ public class BbcNitroModule {
         );
 
         return new GlycerinNitroContentAdapter(glycerin, clipsAdapter, peopleWriter, clock, nitroRequestPageSize, metricRegistry, "nitro.contentAdapter.");
+    }
+
+    GlycerinNitroChannelAdapter nitroChannelAdapter(Glycerin glycerin) {
+        return GlycerinNitroChannelAdapter.create(glycerin);
     }
 
     private Supplier<Range<LocalDate>> dayRangeSupplier(int back, int forward) {

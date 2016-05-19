@@ -35,7 +35,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     private static final String BBC_SERVICE_PID = "bbc:service:pid";
     private static final String TERRESTRIAL_SERVICE_LOCATOR = "terrestrial_service_locator";
     private static final String BBC_SERVICE_LOCATOR = "bbc:service:locator";
-    private static final String NITRO_URI_PREFIX = "http://nitro.bbc.co.uk/";
+    private static final String NITRO_SERVICE_URI_PREFIX = "http://nitro.bbc.co.uk/service/";
+    private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrand/";
 
     private final Glycerin glycerin;
 
@@ -115,7 +116,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         Channel.Builder builder = Channel.builder()
                 .withBroadcaster(Publisher.BBC)
                 .withSource(Publisher.BBC_NITRO)
-                .withUri(NITRO_URI_PREFIX + result.getMid())
+                .withUri(NITRO_MASTERBRAND_URI_PREFIX + result.getMid())
                 .withChannelType(ChannelType.MASTERBRAND);
 
         Brand.Images images = result.getImages();
@@ -154,7 +155,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withTitle(result.getName())
                 .withMediumDescription(result.getDescription())
                 .withRegion(result.getRegion())
-                .withUri(NITRO_URI_PREFIX + result.getSid())
+                .withUri(NITRO_SERVICE_URI_PREFIX + result.getSid())
                 .withChannelType(ChannelType.CHANNEL);
         Optional<LocalDate> startDate = getStartDate(result);
         if (startDate.isPresent()) {

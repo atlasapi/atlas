@@ -61,7 +61,7 @@ public class GlycerinNitroChannelAdapterTest {
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
-        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/bbc_radio_fourlw"));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/service/bbc_radio_fourlw"));
         assertThat(channel.getMediumDescription(), is("description"));
         assertThat(channel.getMediaType(), is(MediaType.AUDIO));
         assertThat(channel.getTitle(), is("name"));
@@ -78,7 +78,7 @@ public class GlycerinNitroChannelAdapterTest {
         ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
-        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/bbc_radio_fourlw"));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrand/bbc_radio_fourlw"));
         assertThat(channel.getTitle(), is("name"));
         assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
@@ -93,7 +93,7 @@ public class GlycerinNitroChannelAdapterTest {
         ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
-        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/bbc_radio_fourlw"));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrand/bbc_radio_fourlw"));
         assertThat(channel.getTitle(), is("name"));
         assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
@@ -112,7 +112,7 @@ public class GlycerinNitroChannelAdapterTest {
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
-        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/bbc_radio_fourlw"));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/service/bbc_radio_fourlw"));
         assertThat(channel.getMediumDescription(), is("description"));
         assertThat(channel.getMediaType(), is(MediaType.AUDIO));
         assertThat(channel.getTitle(), is("name"));

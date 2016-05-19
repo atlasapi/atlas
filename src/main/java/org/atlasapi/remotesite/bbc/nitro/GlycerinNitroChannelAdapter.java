@@ -82,9 +82,6 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         Channel.Builder builder = Channel.builder()
                 .withBroadcaster(Publisher.BBC)
                 .withSource(Publisher.BBC_NITRO)
-                .withShortDescription(result.getSynopses().getShort())
-                .withMediumDescription(result.getSynopses().getMedium())
-                .withLongDescription(result.getSynopses().getLong())
                 .withUri(NITRO_URI_PREFIX + result.getMid())
                 .withChannelType(ChannelType.MASTERBRAND);
 

@@ -11,7 +11,6 @@ import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
@@ -56,7 +55,8 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 .builder()
                 .withMixins(ProgrammesMixin.ANCESTOR_TITLES, ProgrammesMixin.CONTRIBUTIONS,
                         ProgrammesMixin.IMAGES, ProgrammesMixin.GENRE_GROUPINGS)
-                .withAvailability(AvailabilityOption.AVAILABLE)
+                // TODO: MBST-15453
+                .withUnsafeArbitrary("availability", "PT12H")
                 .withPageSize(pageSize)
                 .withAvailabilityEntityType(AvailabilityEntityTypeOption.EPISODE)
                 .withEntityType(EntityTypeOption.EPISODE)

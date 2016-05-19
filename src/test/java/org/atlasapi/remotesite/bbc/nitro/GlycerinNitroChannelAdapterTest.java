@@ -8,10 +8,14 @@ import org.atlasapi.media.entity.Publisher;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
+import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.DateRange;
 import com.metabroadcast.atlas.glycerin.model.Id;
 import com.metabroadcast.atlas.glycerin.model.Ids;
+import com.metabroadcast.atlas.glycerin.model.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Service;
+import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
+import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 
 import com.google.common.collect.ImmutableList;
@@ -25,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -42,6 +47,7 @@ public class GlycerinNitroChannelAdapterTest {
     @Before
     public void setUp() throws GlycerinException {
         when(glycerin.execute(any(ServicesQuery.class))).thenReturn(response);
+        when(glycerin.execute(any(MasterBrandsQuery.class))).thenReturn(response);
         channelAdapter = GlycerinNitroChannelAdapter.create(glycerin);
     }
 
@@ -63,6 +69,38 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
         assertNotNull(channel.getEndDate());
         assertNotNull(channel.getStartDate());
+    }
+
+    @Test
+    public void generatesAtlasModelFromNitroMasterbrands() throws GlycerinException {
+        MasterBrand masterBrand = getBasicMasterbrand();
+        when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
+        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
+        Channel channel = Iterables.getOnlyElement(services);
+        assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/bbc_radio_fourlw"));
+        assertThat(channel.getTitle(), is("name"));
+        assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
+        assertThat(channel.getBroadcaster(), is(Publisher.BBC));
+    }
+
+    @Test
+    public void generatesAtlasModelFromAdditionalMasterbrandsFields() throws GlycerinException {
+        MasterBrand masterBrand = getBasicMasterbrand();
+        setImages(masterBrand);
+        setSynopses(masterBrand);
+        when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
+        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
+        Channel channel = Iterables.getOnlyElement(services);
+        assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/bbc_radio_fourlw"));
+        assertThat(channel.getTitle(), is("name"));
+        assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
+        assertThat(channel.getBroadcaster(), is(Publisher.BBC));
+        assertThat(Iterables.getOnlyElement(channel.getImages()).getCanonicalUri(), is("uri"));
+        assertThat(channel.getShortDescription(), is("short"));
+        assertThat(channel.getMediumDescription(), is("medium"));
+        assertThat(channel.getLongDescription(), is("long"));
     }
 
     @Test
@@ -110,6 +148,29 @@ public class GlycerinNitroChannelAdapterTest {
         service.setRegion("ALL");
         service.setMediaType("Audio");
         return service;
+    }
+
+    private MasterBrand getBasicMasterbrand() {
+        MasterBrand masterBrand = new MasterBrand();
+        masterBrand.setMid("bbc_radio_fourlw");
+        masterBrand.setName("name");
+        return masterBrand;
+    }
+
+    private void setImages(MasterBrand masterBrand) {
+        Brand.Images images = new Brand.Images();
+        Brand.Images.Image image = new Brand.Images.Image();
+        image.setTemplateUrl("uri");
+        images.setImage(image);
+        masterBrand.setImages(images);
+    }
+
+    private void setSynopses(MasterBrand masterBrand) {
+        MasterBrand.Synopses synopses = new MasterBrand.Synopses();
+        synopses.setLong("long");
+        synopses.setMedium("medium");
+        synopses.setShort("short");
+        masterBrand.setSynopses(synopses);
     }
 
 }

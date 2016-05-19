@@ -1,9 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
 import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
@@ -22,8 +18,8 @@ import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBroadcastExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.atlasapi.util.GroupLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.atlas.glycerin.model.PidReference;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -35,15 +31,20 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * {@link NitroBroadcastHandler} which fetches, updates and writes relevant
  * content for the {@link Broadcast}.
  */
 public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandler<ImmutableList<Optional<ItemRefAndBroadcast>>> {
-    
-    private final Logger log = LoggerFactory.getLogger(getClass());
+
+    private static final Logger log = LoggerFactory.getLogger(ContentUpdatingNitroBroadcastHandler.class);
     
     private final ContentWriter writer;
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;

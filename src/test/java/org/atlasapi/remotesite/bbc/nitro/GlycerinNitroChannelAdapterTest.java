@@ -82,6 +82,7 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getTitle(), is("name"));
         assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
+        assertThat(channel.getMediaType(), is(MediaType.VIDEO));
     }
 
     @Test

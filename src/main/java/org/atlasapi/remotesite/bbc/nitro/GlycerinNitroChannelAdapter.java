@@ -119,15 +119,20 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withUri(NITRO_MASTERBRAND_URI_PREFIX + result.getMid())
                 .withChannelType(ChannelType.MASTERBRAND);
 
+
         Brand.Images images = result.getImages();
         if (images != null) {
             builder.withImage(new Image(images.getImage().getTemplateUrl()));
         }
 
-        if (result.getName() != null) {
-            builder.withTitle(result.getName());
+        String name = result.getName();
+        if (name != null) {
+            builder.withTitle(name);
+            inferAndSetMediaType(builder, name);
         } else {
-            builder.withTitle(result.getTitle());
+            String title = result.getTitle();
+            inferAndSetMediaType(builder, title);
+            builder.withTitle(title);
         }
 
         if (result.getSynopses() != null) {
@@ -145,6 +150,14 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             builder.withEndDate(endDate.get());
         }
         return builder.build();
+    }
+
+    private void inferAndSetMediaType(Channel.Builder builder, String name) {
+        if (name.toLowerCase().contains("music") || name.toLowerCase().contains("radio")) {
+            builder.withMediaType(MediaType.AUDIO);
+        } else {
+            builder.withMediaType(MediaType.VIDEO);
+        }
     }
 
     private Channel getChannel(Service result) {

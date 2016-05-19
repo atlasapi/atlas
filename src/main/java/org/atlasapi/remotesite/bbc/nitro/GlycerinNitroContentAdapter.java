@@ -12,7 +12,6 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 
@@ -50,20 +49,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private static final int NITRO_BATCH_SIZE = 10;
 
     private static final Logger log = LoggerFactory.getLogger(GlycerinNitroContentAdapter.class);
-    private static final Function<Programme, Episode> TO_EPISODE = new Function<Programme, Episode>() {
-
-        @Override
-        public Episode apply(@Nullable Programme input) {
-            return input.getAsEpisode();
-        }
-    };
-    public static final Predicate<Programme> IS_EPISODE = new Predicate<Programme>() {
-
-        @Override
-        public boolean apply(Programme input) {
-            return input.isEpisode();
-        }
-    };
 
     private final Glycerin glycerin;
     private final GlycerinNitroClipsAdapter clipsAdapter;
@@ -74,6 +59,37 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private final int pageSize;
 
     private final ListeningExecutorService executor;
+
+    private static final Function<Programme, Episode> TO_EPISODE = new Function<Programme, Episode>() {
+
+        @Override
+        public Episode apply(@Nullable Programme input) {
+            return input.getAsEpisode();
+        }
+    };
+    private static final Function<List<Programme>, List<Episode>> TO_EPISODES_LIST = new Function<List<Programme>, List<Episode>>() {
+
+        @Nullable
+        @Override
+        public List<Episode> apply(@Nullable List<Programme> input) {
+            return ImmutableList.copyOf(Iterables.transform(input, toEpisode()));
+        }
+    };
+    private static final Predicate<Programme> IS_EPISODE = new Predicate<Programme>() {
+
+        @Override
+        public boolean apply(Programme input) {
+            return input.isEpisode();
+        }
+    };
+    private static final Function<List<Programme>, List<Programme>> IS_EPISODES_LIST = new Function<List<Programme>, List<Programme>>() {
+
+        @Nullable
+        @Override
+        public List<Programme> apply(@Nullable List<Programme> input) {
+            return ImmutableList.copyOf(Iterables.filter(input, isEpisode()));
+        }
+    };
 
     public GlycerinNitroContentAdapter(
             Glycerin glycerin,
@@ -91,6 +107,22 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
     }
 
+    public static final Function<Programme, Episode> toEpisode() {
+        return TO_EPISODE;
+    }
+
+    public static final Function<List<Programme>, List<Episode>> toEpisodesList() {
+        return TO_EPISODES_LIST;
+    }
+
+    public static final Predicate<Programme> isEpisode() {
+        return IS_EPISODE;
+    }
+
+    public static final Function<List<Programme>, List<Programme>> isEpisodesList() {
+        return IS_EPISODES_LIST;
+    }
+
     @Override
     public ImmutableSet<Brand> fetchBrands(Iterable<PidReference> refs) throws NitroException {
         if (Iterables.isEmpty(refs)) {
@@ -98,14 +130,16 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
         try {
             checkRefType(refs, "brand");
-            Iterable<Programme> programmes = fetchProgrammes(makeProgrammeQueries(refs));
+            Iterable<List<Programme>> currentProgrammes = fetchProgrammes(makeProgrammeQueries(refs));
             Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
             ImmutableSet.Builder<Brand> fetched = ImmutableSet.builder();
-            for (Programme programme : programmes) {
-                if (programme.isBrand()) {
-                    Brand brand = brandExtractor.extract(programme.getAsBrand());
-                    brand.setClips(clips.get(brand.getCanonicalUri()));
-                    fetched.add(brand);
+            for (List<Programme> programmes : currentProgrammes) {
+                for (Programme programme : programmes) {
+                    if (programme.isBrand()) {
+                        Brand brand = brandExtractor.extract(programme.getAsBrand());
+                        brand.setClips(clips.get(brand.getCanonicalUri()));
+                        fetched.add(brand);
+                    }
                 }
             }
             return fetched.build();
@@ -127,14 +161,16 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
         try {
             checkRefType(refs, "series");
-            Iterable<Programme> programmes = fetchProgrammes(makeProgrammeQueries(refs));
+            Iterable<List<Programme>> currentProgrammes = fetchProgrammes(makeProgrammeQueries(refs));
             Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
             ImmutableSet.Builder<Series> fetched = ImmutableSet.builder();
-            for (Programme programme : programmes) {
-                if (programme.isSeries()) {
-                    Series series = seriesExtractor.extract(programme.getAsSeries());
-                    series.setClips(clips.get(series.getCanonicalUri()));
-                    fetched.add(series);
+            for (List<Programme> programmes : currentProgrammes) {
+                for (Programme programme : programmes) {
+                    if (programme.isSeries()) {
+                        Series series = seriesExtractor.extract(programme.getAsSeries());
+                        series.setClips(clips.get(series.getCanonicalUri()));
+                        fetched.add(series);
+                    }
                 }
             }
             return fetched.build();
@@ -160,9 +196,9 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<Item> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
+    public Iterable<List<Item>> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
         try {
-            Iterable<Programme> programmes = fetchProgrammes(ImmutableList.of(programmesQuery));
+            Iterable<List<Programme>> programmes = fetchProgrammes(ImmutableList.of(programmesQuery));
             return fetchEpisodesFromProgrammes(programmes);
         } catch (GlycerinException e) {
             throw new NitroException(programmesQuery.toString(), e);
@@ -170,40 +206,47 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<Item> fetchEpisodes(Iterable<PidReference> refs)
+    public Iterable<List<Item>> fetchEpisodes(Iterable<PidReference> refs)
             throws NitroException {
         try {
             Iterable<ProgrammesQuery> programmesQueries = makeProgrammeQueries(refs);
-            Iterable<Programme> programmes = fetchProgrammes(programmesQueries);
-            return fetchEpisodesFromProgrammes(programmes);
+            Iterable<List<Programme>> currentProgrammes = fetchProgrammes(programmesQueries);
+            return fetchEpisodesFromProgrammes(currentProgrammes);
         } catch (GlycerinException e) {
             throw new NitroException(refs.toString(), e);
         }
     }
 
-    private Iterable<Item> fetchEpisodesFromProgrammes(Iterable<Programme> programmes)
+    private Iterable<List<Item>> fetchEpisodesFromProgrammes(Iterable<List<Programme>> currentProgrammes)
             throws NitroException, GlycerinException {
-        Iterable<Episode> episodes = getAsEpisodes(programmes);
-        Iterable<NitroItemSource<Episode>> sources = toItemSources(episodes);
-
-        return new LazyNitroEpisodeExtractor(sources, itemExtractor, clipsAdapter);
+        Iterable<List<Episode>> programmesAsEpisodes = getAsEpisodes(currentProgrammes);
+        return toItemsListIterable(programmesAsEpisodes);
     }
 
-    private Iterable<NitroItemSource<Episode>> toItemSources(Iterable<Episode> episodes)
+    private Iterable<List<Item>> toItemsListIterable(Iterable<List<Episode>> episodes)
             throws GlycerinException, NitroException {
         return new PaginatedNitroItemSources(
                 episodes,
-                pageSize,
                 executor,
-                glycerin
+                glycerin,
+                pageSize,
+                itemExtractor,
+                clipsAdapter
         );
     }
 
-    private Iterable<Episode> getAsEpisodes(Iterable<Programme> programmes) {
-        return Iterables.transform(Iterables.filter(programmes, IS_EPISODE), TO_EPISODE);
+    private Iterable<List<Episode>> getAsEpisodes(Iterable<List<Programme>> programmes) {
+        Iterable<List<Programme>> episodes = Iterables.transform(
+                programmes,
+                isEpisodesList()
+        );
+        return Iterables.transform(
+                episodes,
+                toEpisodesList()
+        );
     }
 
-    private Iterable<Programme> fetchProgrammes(Iterable<ProgrammesQuery> queries)
+    private Iterable<List<Programme>> fetchProgrammes(Iterable<ProgrammesQuery> queries)
             throws GlycerinException {
 
         return new PaginatedProgrammeRequest(glycerin, queries);

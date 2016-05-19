@@ -1,6 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -50,7 +52,7 @@ public class PidUpdateController {
     @RequestMapping(value = "/system/bbc/nitro/update/content/{pid}", method = RequestMethod.POST)
     public void updatePidFromNitro(HttpServletResponse response, @PathVariable("pid") String pid)
             throws IOException {
-        Iterable<Item> items;
+        Iterable<List<Item>> items;
         try {
             items = contentAdapter
                     .fetchEpisodes(ProgrammesQuery.builder()
@@ -71,20 +73,24 @@ public class PidUpdateController {
             return;
         }
 
-        Item item = Iterables.getOnlyElement(items);
+        List<Item> itemsList = Iterables.getOnlyElement(items);
+        Iterator<Item> itemIterator = itemsList.iterator();
 
-        updateBrand(response, pid, item);
-        updateSeries(response, pid, item);
+        while (itemIterator.hasNext()) {
+            Item item = itemIterator.next();
+            updateBrand(response, pid, item);
+            updateSeries(response, pid, item);
 
-        try {
-            contentWriter.createOrUpdate(item);
-            response.setStatus(HttpStatusCode.ACCEPTED.code());
-        } catch (IllegalArgumentException e) {
-            String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
-            log.error(message);
-            response.setStatus(HttpStatusCode.SERVER_ERROR.code());
-            response.setContentLength(message.length());
-            response.getWriter().write(message);
+            try {
+                contentWriter.createOrUpdate(item);
+                response.setStatus(HttpStatusCode.ACCEPTED.code());
+            } catch (IllegalArgumentException e) {
+                String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
+                log.error(message);
+                response.setStatus(HttpStatusCode.SERVER_ERROR.code());
+                response.setContentLength(message.length());
+                response.getWriter().write(message);
+            }
         }
     }
 
@@ -99,10 +105,10 @@ public class PidUpdateController {
 
         ParentRef seriesRef = ((Episode) item).getSeriesRef();
         if (seriesRef == null) {
-            /* this is theoretically possible, there's episodes that are part of a brand but don't,
-               e.g., have a strong ordering, etc. See NitroEpisodeExtractor#isBrandSeriesEpisode
-               vs. NitroEpisodeExtractor#isBrandEpisode
-             */
+        /* this is theoretically possible, there's episodes that are part of a brand but don't,
+           e.g., have a strong ordering, etc. See NitroEpisodeExtractor#isBrandSeriesEpisode
+           vs. NitroEpisodeExtractor#isBrandEpisode
+         */
             return;
         }
 
@@ -144,12 +150,12 @@ public class PidUpdateController {
                     ImmutableList.of(parentPidRef)
             );
 
-            /* handle The Curious Case of Top Level Series (In The Night). The container can
-               be a Series, not just a brand, in which case it won't hit the early return
-               guard, but it will also obviously not return any brands for the above query.
-               That's by design, as Nitro's data model is pretty flexible and allows cases like
-               these.
-            */
+        /* handle The Curious Case of Top Level Series (In The Night). The container can
+           be a Series, not just a brand, in which case it won't hit the early return
+           guard, but it will also obviously not return any brands for the above query.
+           That's by design, as Nitro's data model is pretty flexible and allows cases like
+           these.
+        */
             if (!brand.isEmpty()) {
                 contentWriter.createOrUpdate(Iterables.getOnlyElement(brand));
             }

@@ -115,7 +115,6 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
         ), Predicates.notNull()));
     }
 
-
     private ImmutableList<Optional<ItemRefAndBroadcast>> writeContent(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
             ResolveOrFetchResult<Item> items, Iterable<Series> series,

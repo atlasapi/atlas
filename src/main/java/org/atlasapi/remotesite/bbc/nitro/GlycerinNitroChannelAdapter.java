@@ -71,14 +71,14 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         ImmutableList<MasterBrand> results = response.getResults();
         ImmutableSet.Builder<Channel> masterBrands = ImmutableSet.builder();
         for (MasterBrand result : results) {
-            Channel.Builder builder = getMasterBrand(result);
+            Channel channel = getMasterBrand(result);
 
-            masterBrands.add(builder.build());
+            masterBrands.add(channel);
         }
         return masterBrands.build();
     }
 
-    private Channel.Builder getMasterBrand(MasterBrand result) {
+    private Channel getMasterBrand(MasterBrand result) {
         Channel.Builder builder = Channel.builder()
                 .withBroadcaster(Publisher.BBC)
                 .withSource(Publisher.BBC_NITRO)
@@ -99,6 +99,12 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             builder.withTitle(result.getTitle());
         }
 
+        if (result.getSynopses() != null) {
+            builder.withShortDescription(result.getSynopses().getShort())
+                   .withMediumDescription(result.getSynopses().getMedium())
+                   .withLongDescription(result.getSynopses().getLong());
+        }
+
         Optional<LocalDate> startDate = getStartDate(result);
         if (startDate.isPresent()) {
             builder.withStartDate(startDate.get());
@@ -107,7 +113,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         if (endDate.isPresent()) {
             builder.withEndDate(endDate.get());
         }
-        return builder;
+        return builder.build();
     }
 
     private Channel getChannel(Service result) {

@@ -61,6 +61,37 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private final ListeningExecutorService executor;
 
+    private static final Function<Programme, Episode> TO_EPISODE = new Function<Programme, Episode>() {
+
+        @Override
+        public Episode apply(@Nullable Programme input) {
+            return input.getAsEpisode();
+        }
+    };
+    public static final Function<List<Programme>, List<Episode>> TO_EPISODES_LIST = new Function<List<Programme>, List<Episode>>() {
+
+        @Nullable
+        @Override
+        public List<Episode> apply(@Nullable List<Programme> input) {
+            return ImmutableList.copyOf(Iterables.transform(input, TO_EPISODE));
+        }
+    };
+    public static final Predicate<Programme> IS_EPISODE = new Predicate<Programme>() {
+
+        @Override
+        public boolean apply(Programme input) {
+            return input.isEpisode();
+        }
+    };
+    public static final Function<List<Programme>, List<Programme>> IS_EPISODES_LIST = new Function<List<Programme>, List<Programme>>() {
+
+        @Nullable
+        @Override
+        public List<Programme> apply(@Nullable List<Programme> input) {
+            return ImmutableList.copyOf(Iterables.filter(input, IS_EPISODE));
+        }
+    };
+
     public GlycerinNitroContentAdapter(
             Glycerin glycerin,
             GlycerinNitroClipsAdapter clipsAdapter,
@@ -173,32 +204,30 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private Iterable<Item> fetchEpisodesFromProgrammes(Iterable<List<Programme>> currentProgrammes)
             throws NitroException, GlycerinException {
-        Iterable<Episode> episodes = getAsEpisodes(currentProgrammes);
+        Iterable<List<Episode>> episodes = getAsEpisodes(currentProgrammes);
         Iterable<NitroItemSource<Episode>> sources = toItemSources(episodes);
 
         return new LazyNitroEpisodeExtractor(sources, itemExtractor, clipsAdapter);
     }
 
-    private Iterable<NitroItemSource<Episode>> toItemSources(Iterable<Episode> episodes)
+    private Iterable<NitroItemSource<Episode>> toItemSources(Iterable<List<Episode>> episodes)
             throws GlycerinException, NitroException {
         return new PaginatedNitroItemSources(
                 episodes,
-                pageSize,
                 executor,
                 glycerin
         );
     }
 
-    private Iterable<Episode> getAsEpisodes(Iterable<List<Programme>> currentProgrammes) {
-        ImmutableList.Builder<Episode> episodes = ImmutableList.builder();
-        for (List<Programme> programmes : currentProgrammes) {
-            for (Programme programme : programmes) {
-                if (programme.isEpisode()) {
-                    episodes.add(programme.getAsEpisode());
-                }
-            }
-        }
-        return episodes.build();
+    private Iterable<List<Episode>> getAsEpisodes(Iterable<List<Programme>> programmes) {
+        Iterable<List<Programme>> filteredProgrammes = Iterables.transform(
+                programmes,
+                IS_EPISODES_LIST
+        );
+        return Iterables.transform(
+                filteredProgrammes,
+                TO_EPISODES_LIST
+        );
     }
 
     private Iterable<List<Programme>> fetchProgrammes(Iterable<ProgrammesQuery> queries)

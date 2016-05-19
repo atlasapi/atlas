@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.Iterator;
+import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
@@ -24,47 +25,64 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 
 public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episode>> {
 
-    private Iterable<Episode> episodes;
-    private int pageSize;
+    private Iterable<List<Episode>> episodes;
     private ListeningExecutorService executor;
     private final Glycerin glycerin;
 
-    public PaginatedNitroItemSources(Iterable<Episode> episodes, int pageSize,
-                                     ListeningExecutorService executor, Glycerin glycerin) {
+    public PaginatedNitroItemSources(Iterable<List<Episode>> episodes, ListeningExecutorService executor,
+            Glycerin glycerin) {
         this.episodes = episodes;
-        this.pageSize = pageSize;
         this.executor = executor;
         this.glycerin = glycerin;
     }
 
     @Override
     public Iterator iterator() {
-        return new NitroItemSourceIterator(episodes, pageSize, executor, glycerin);
+        return new NitroItemSourceIterator(episodes, executor, glycerin);
     }
 
     private static class NitroItemSourceIterator implements Iterator<NitroItemSource<Episode>> {
 
-        private Iterator<Episode> episodes;
-        private final int pageSize;
+        public static final int PAGE_SIZE = 30;
+        private Iterator<List<Episode>> episodes;
         private final ListeningExecutorService executor;
         private final Glycerin glycerin;
+        private Iterator<Episode> currentEpisodes;
+        private Episode episode;
 
-        public NitroItemSourceIterator(Iterable<Episode> episodes, int pageSize,
-                                       ListeningExecutorService executor, Glycerin glycerin) {
+        public NitroItemSourceIterator(Iterable<List<Episode>> episodes,
+                ListeningExecutorService executor, Glycerin glycerin) {
             this.episodes = episodes.iterator();
-            this.pageSize = pageSize;
             this.executor = executor;
             this.glycerin = glycerin;
         }
 
         @Override
         public boolean hasNext() {
-            return episodes.hasNext();
+            if (currentEpisodes != null && episodes.hasNext()) { // Get first list of episodes
+                currentEpisodes = episodes.next().iterator();
+                if (currentEpisodes.hasNext()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else if (currentEpisodes.hasNext()) { // Check for next episode
+                return true;
+            } else if (episodes.hasNext()) { // Get next list of episodes
+                currentEpisodes = episodes.next().iterator();
+                if (currentEpisodes.hasNext()) {
+                    return true;
+                } else {
+                    return false;
+                }
+            } else {
+                return false;
+            }
         }
 
         @Override
         public NitroItemSource<Episode> next() {
-            Episode episode = episodes.next();
+            Episode episode = currentEpisodes.next();
 
             ListenableFuture<ImmutableList<Availability>> availabilities;
             try {
@@ -111,10 +129,12 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
             throw new UnsupportedOperationException();
         }
 
-        private ListenableFuture<ImmutableList<Availability>> availabilities(Episode episode) throws GlycerinException {
+        private ListenableFuture<ImmutableList<Availability>> availabilities(Episode episode)
+                throws GlycerinException {
+
             AvailabilityQuery query = AvailabilityQuery.builder()
                     .withDescendantsOf(episode.getPid())
-                    .withPageSize(pageSize)
+                    .withPageSize(PAGE_SIZE)
                     .withMediaSet("apple-iphone4-ipad-hls-3g",
                             "apple-iphone4-hls",
                             "pc",
@@ -128,7 +148,7 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
         private ListenableFuture<ImmutableList<Broadcast>> broadcasts(Episode episode) throws GlycerinException {
             BroadcastsQuery query = BroadcastsQuery.builder()
                     .withDescendantsOf(episode.getPid())
-                    .withPageSize(pageSize)
+                    .withPageSize(PAGE_SIZE)
                     .build();
 
             return executor.submit(exhaustingBroadcastsCallable(query));
@@ -137,7 +157,7 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
         private ListenableFuture<ImmutableList<Version>> versions(Episode episode) throws GlycerinException {
             VersionsQuery query = VersionsQuery.builder()
                     .withDescendantsOf(episode.getPid())
-                    .withPageSize(pageSize)
+                    .withPageSize(PAGE_SIZE)
                     .build();
 
           return executor.submit(exhaustingVersionsCallable(query));

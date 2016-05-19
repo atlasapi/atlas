@@ -16,7 +16,7 @@ import java.util.List;
  * Used to paginate over Nitro Programmes to reduce the heap overhead.
  *
  * Takes an iterable of {@link ProgrammesQuery} which is used to get
- * the individual Nitro Programmes.
+ * the an iterable of Programmes per page.
  * Used as part of {@link OffScheduleContentIngestTask}
  */
 public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
@@ -39,9 +39,7 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
         private final Glycerin client;
         private final Iterator<ProgrammesQuery> programmeQueries;
         private GlycerinResponse<Programme> currentResponse;
-        private Iterator<Programme> currentProgrammes;
-
-        private List<Programme> programmes;
+        private Iterable<Programme> currentProgrammes;
 
         public ProgrammeIterator(Glycerin client, Iterable<ProgrammesQuery> programmeQueries) {
             this.client = client;
@@ -49,35 +47,35 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
         }
 
         /**
-         * Checks if current programme is present so that next method can be used to retrieve the Programme object.
-         * At first will get the first page of the Program, then iterate over Programme pages, if there are any.
+         * Checks if current page of 30 programmes is present so that next method can be used
+         * to retrieve the next page of 30 Programmes.
+         * At first will get the first page as a list, then get next page as a list, if there are any.
          * If not will get next Programme object and repeat previous steps.
          * This has been done to decrease the heap overhead when querying Nitro.
          * @return returns true if the current Programme is present, else returns false.
          */
         @Override
         public boolean hasNext() {
-            if (currentProgrammes != null && currentProgrammes.hasNext()) {
-                return true;
-            }
-
             try {
                 if (currentProgrammes == null) { // Getting the first page.
                     if (!programmeQueries.hasNext()) {
                         return false;
                     }
                     currentResponse = client.execute(programmeQueries.next());
-                    currentProgrammes = currentResponse.getResults().iterator();
+                    currentProgrammes = currentResponse.getResults();
+                    return true;
                 } else if (currentResponse.hasNext()) { // Getting the next page.
-                    currentProgrammes = currentResponse.getNext().getResults().iterator();
+                    currentProgrammes = currentResponse.getNext().getResults();
+                    return true;
                 } else if (!currentResponse.hasNext()) { // Getting the next Programme response.
                     if (!programmeQueries.hasNext()) {
                         return false;
                     }
                     currentResponse = client.execute(programmeQueries.next());
-                    currentProgrammes = currentResponse.getResults().iterator();
+                    currentProgrammes = currentResponse.getResults();
+                    return true;
                 }
-                return currentProgrammes.hasNext();
+                return false;
             } catch (GlycerinException e) {
                 throw Throwables.propagate(e);
             }
@@ -85,15 +83,7 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
 
         @Override
         public List<Programme> next() {
-            ImmutableList.Builder<Programme> programmesBuilder = ImmutableList.builder();
-
-            int programmeCount = 0;
-            while (programmeCount < 30 && hasNext()) {
-                programmesBuilder.add(currentProgrammes.next());
-                programmeCount++;
-            }
-
-            return programmesBuilder.build();
+            return ImmutableList.copyOf(currentProgrammes);
         }
 
         @Override

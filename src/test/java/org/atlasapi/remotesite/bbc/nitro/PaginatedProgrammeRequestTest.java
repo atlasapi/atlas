@@ -66,7 +66,7 @@ public class PaginatedProgrammeRequestTest {
     @Test
     public void whenCurrentProgrammeIsEmptyAndNextProgrammeIsEmptyReturnsEmptyIterable() throws GlycerinException {
         ImmutableList.Builder<Programme> programmesList = ImmutableList.builder();
-        this.paginatedProgrammeRequest = new PaginatedProgrammeRequest(client, ImmutableList.of(programmesQuery, programmesQuery));
+        this.paginatedProgrammeRequest = new PaginatedProgrammeRequest(client, ImmutableList.<ProgrammesQuery>of());
 
         when(client.execute(any(ProgrammesQuery.class))).thenReturn(glycerinResponse, glycerinResponse);
         when(glycerinResponse.getNext()).thenReturn(glycerinResponse);

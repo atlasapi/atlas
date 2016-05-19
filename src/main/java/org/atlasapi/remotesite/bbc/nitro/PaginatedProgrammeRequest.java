@@ -1,6 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -8,6 +10,7 @@ import com.metabroadcast.atlas.glycerin.model.Programme;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 
 import java.util.Iterator;
+import java.util.List;
 
 /**
  * Used to paginate over Nitro Programmes to reduce the heap overhead.
@@ -16,7 +19,7 @@ import java.util.Iterator;
  * the individual Nitro Programmes.
  * Used as part of {@link OffScheduleContentIngestTask}
  */
-public class PaginatedProgrammeRequest implements Iterable<Programme> {
+public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
 
     private final Iterable<ProgrammesQuery> programmeQueries;
     private final Glycerin client;
@@ -27,16 +30,18 @@ public class PaginatedProgrammeRequest implements Iterable<Programme> {
     }
 
     @Override
-    public Iterator<Programme> iterator() {
+    public Iterator<List<Programme>> iterator() {
         return new ProgrammeIterator(client, programmeQueries);
     }
 
-    private static class ProgrammeIterator implements Iterator<Programme> {
+    private static class ProgrammeIterator implements Iterator<List<Programme>> {
 
         private final Glycerin client;
         private final Iterator<ProgrammesQuery> programmeQueries;
         private GlycerinResponse<Programme> currentResponse;
         private Iterator<Programme> currentProgrammes;
+
+        private List<Programme> programmes;
 
         public ProgrammeIterator(Glycerin client, Iterable<ProgrammesQuery> programmeQueries) {
             this.client = client;
@@ -79,8 +84,16 @@ public class PaginatedProgrammeRequest implements Iterable<Programme> {
         }
 
         @Override
-        public Programme next() {
-            return currentProgrammes.next();
+        public List<Programme> next() {
+            ImmutableList.Builder<Programme> programmesBuilder = ImmutableList.builder();
+
+            int programmeCount = 0;
+            while (programmeCount < 30 && hasNext()) {
+                programmesBuilder.add(currentProgrammes.next());
+                programmeCount++;
+            }
+
+            return programmesBuilder.build();
         }
 
         @Override

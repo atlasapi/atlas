@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import java.util.Iterator;
+import java.util.List;
 
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.PEOPLE;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.TITLES;
@@ -58,7 +59,7 @@ public class PaginatedProgrammeRequestTest {
         when(glycerinResponse.getNext()).thenReturn(glycerinResponse);
         when(glycerinResponse.getResults()).thenReturn(ImmutableList.of(programme));
 
-        Iterator<Programme> programmes = paginatedProgrammeRequest.iterator();
+        Iterator<List<Programme>> programmes = paginatedProgrammeRequest.iterator();
         assertTrue(programmes.hasNext());
     }
 
@@ -73,7 +74,7 @@ public class PaginatedProgrammeRequestTest {
         when(glycerinResponse.getNext()).thenReturn(glycerinResponse);
         when(glycerinResponse.getResults()).thenReturn(programmesList.build());
 
-        Iterator<Programme> programmes = paginatedProgrammeRequest.iterator();
+        Iterator<List<Programme>> programmes = paginatedProgrammeRequest.iterator();
         assertFalse(programmes.hasNext());
     }
 
@@ -82,14 +83,22 @@ public class PaginatedProgrammeRequestTest {
         ImmutableList.Builder<ProgrammesQuery> programmesList = ImmutableList.builder();
         this.paginatedProgrammeRequest = new PaginatedProgrammeRequest(client, programmesList.build());
 
-        Iterator<Programme> programmes = paginatedProgrammeRequest.iterator();
+        Iterator<List<Programme>> programmes = paginatedProgrammeRequest.iterator();
         assertFalse(programmes.hasNext());
     }
 
     @Test
     public void gettingNextProgrammeReturnsNextProgrammeIterable() throws GlycerinException {
         ImmutableList.Builder<Programme> programmesList = ImmutableList.builder();
-        this.paginatedProgrammeRequest = new PaginatedProgrammeRequest(client, ImmutableList.of(programmesQuery, programmesQuery));
+
+        ImmutableList.Builder<ProgrammesQuery> programmesQueries = ImmutableList.builder();
+        int count = 0;
+        while (count < 35) {
+            programmesQueries.add(programmesQuery);
+            count++;
+        }
+
+        this.paginatedProgrammeRequest = new PaginatedProgrammeRequest(client, programmesQueries.build());
 
         when(client.execute(any(ProgrammesQuery.class))).thenReturn(glycerinResponse, glycerinResponse);
         when(glycerinResponse.getNext()).thenReturn(glycerinResponse);
@@ -97,7 +106,7 @@ public class PaginatedProgrammeRequestTest {
         when(glycerinResponse.getNext()).thenReturn(glycerinResponse);
         when(glycerinResponse.getResults()).thenReturn(ImmutableList.of(programme));
 
-        Iterator<Programme> programmes = paginatedProgrammeRequest.iterator();
+        Iterator<List<Programme>> programmes = paginatedProgrammeRequest.iterator();
         programmes.hasNext();
         programmes.next();
         assertTrue(programmes.hasNext());
@@ -113,7 +122,7 @@ public class PaginatedProgrammeRequestTest {
         when(glycerinResponse.getNext()).thenReturn(glycerinResponse);
         when(glycerinResponse.hasNext()).thenReturn(true);
 
-        Iterator<Programme> programmes = paginatedProgrammeRequest.iterator();
+        Iterator<List<Programme>> programmes = paginatedProgrammeRequest.iterator();
         programmes.hasNext();
         programmes.next();
         assertTrue(programmes.hasNext());
@@ -129,7 +138,7 @@ public class PaginatedProgrammeRequestTest {
         when(glycerinResponse.getNext()).thenReturn(glycerinResponse);
         when(glycerinResponse.hasNext()).thenReturn(true);
 
-        Iterator<Programme> programmes = paginatedProgrammeRequest.iterator();
+        Iterator<List<Programme>> programmes = paginatedProgrammeRequest.iterator();
         assertTrue(programmes.hasNext());
     }
 }

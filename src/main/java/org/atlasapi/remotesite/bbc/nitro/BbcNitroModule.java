@@ -126,7 +126,7 @@ public class BbcNitroModule {
 
     private ScheduledTask channelIngestTask() {
         Glycerin glycerin = glycerin(null);
-        return ChannelIngestTask.create(nitroChannelAdapter(glycerin), channelWriter);
+        return ChannelIngestTask.create(nitroChannelAdapter(glycerin), channelWriter, channelResolver);
     }
 
     public ContentWriter contentWriter() {

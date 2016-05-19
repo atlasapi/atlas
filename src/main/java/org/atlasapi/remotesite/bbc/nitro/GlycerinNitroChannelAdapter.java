@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.List;
+
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.Alias;
@@ -20,10 +22,10 @@ import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.joda.time.LocalDate;
 
+import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
@@ -47,35 +49,66 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
     @Override
     public ImmutableSet<Channel> fetchServices() throws GlycerinException {
-        ServicesQuery servicesQuery = ServicesQuery.builder()
-                .withPageSize(MAXIMUM_PAGE_SIZE)
-                .withServiceType(ServiceTypeOption.LOCAL_RADIO, ServiceTypeOption.NATIONAL_RADIO,
-                        ServiceTypeOption.REGIONAL_RADIO, ServiceTypeOption.TV)
-                .build();
-        GlycerinResponse<Service> response = glycerin.execute(servicesQuery);
-        ImmutableList<Service> results = response.getResults();
         ImmutableSet.Builder<Channel> channels = ImmutableSet.builder();
-        for (Service result : results) {
-            Channel channel = getChannel(result);
 
-            channels.add(channel);
+        boolean exhausted = false;
+        int startingPoint = 1;
+        while (!exhausted) {
+            List<Service> results = paginateServices(startingPoint);
+            for (Service result : results) {
+                Channel channel = getChannel(result);
+
+                channels.add(channel);
+            }
+            startingPoint ++;
+            exhausted = results.size() != MAXIMUM_PAGE_SIZE;
         }
+
         return channels.build();
     }
 
     @Override
     public ImmutableSet<Channel> fetchMasterbrands() throws GlycerinException {
-        MasterBrandsQuery masterBrandsQuery = MasterBrandsQuery.builder()
-                .withPageSize(MAXIMUM_PAGE_SIZE).withMixins(MasterBrandsMixin.IMAGES).build();
-        GlycerinResponse<MasterBrand> response = glycerin.execute(masterBrandsQuery);
-        ImmutableList<MasterBrand> results = response.getResults();
         ImmutableSet.Builder<Channel> masterBrands = ImmutableSet.builder();
-        for (MasterBrand result : results) {
-            Channel channel = getMasterBrand(result);
 
-            masterBrands.add(channel);
+        boolean exhausted = false;
+        int startingPoint = 1;
+        while (!exhausted) {
+            List<MasterBrand> results = paginateMasterBrands(startingPoint);
+            for (MasterBrand result : results) {
+                Channel channel = getMasterBrand(result);
+
+                masterBrands.add(channel);
+            }
+            startingPoint ++;
+            exhausted = results.size() != MAXIMUM_PAGE_SIZE;
         }
+
         return masterBrands.build();
+    }
+
+    private List<Service> paginateServices(int page) throws GlycerinException {
+        checkArgument(page > 0, "page count starts with 1");
+        ServicesQuery servicesQuery = ServicesQuery.builder()
+                .withPageSize(MAXIMUM_PAGE_SIZE)
+                .withPage(page)
+                .withServiceType(
+                        ServiceTypeOption.LOCAL_RADIO, ServiceTypeOption.NATIONAL_RADIO,
+                        ServiceTypeOption.REGIONAL_RADIO, ServiceTypeOption.TV)
+                .build();
+        GlycerinResponse<Service> response = glycerin.execute(servicesQuery);
+        return response.getResults();
+    }
+
+    private List<MasterBrand> paginateMasterBrands(int page) throws GlycerinException {
+        checkArgument(page > 0, "page count starts with 1");
+        MasterBrandsQuery masterBrandsQuery = MasterBrandsQuery.builder()
+                .withPageSize(MAXIMUM_PAGE_SIZE)
+                .withPage(page)
+                .withMixins(MasterBrandsMixin.IMAGES)
+                .build();
+        GlycerinResponse<MasterBrand> response = glycerin.execute(masterBrandsQuery);
+        return response.getResults();
     }
 
     private Channel getMasterBrand(MasterBrand result) {

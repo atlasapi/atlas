@@ -1,8 +1,9 @@
-package org.atlasapi.remotesite.bbc.nitro;
+package org.atlasapi.remotesite.bbc.nitro.channels;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
+import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
 
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.common.base.Maybe;
@@ -10,6 +11,7 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,17 +23,19 @@ public class ChannelIngestTask extends ScheduledTask {
     private static final Logger log = LoggerFactory.getLogger(ChannelIngestTask.class);
 
     private final NitroChannelAdapter channelAdapter;
+    private final NitroChannelHidrator hidrator;
     private final ChannelWriter channelWriter;
     private final ChannelResolver channelResolver;
 
-    private ChannelIngestTask(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver) {
+    private ChannelIngestTask(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver, NitroChannelHidrator hidrator) {
         this.channelAdapter = checkNotNull(channelAdapter);
         this.channelWriter = checkNotNull(channelWriter);
         this.channelResolver = checkNotNull(channelResolver);
+        this.hidrator = checkNotNull(hidrator);
     }
 
-    public static ChannelIngestTask create(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver) {
-        return new ChannelIngestTask(channelAdapter, channelWriter, channelResolver);
+    public static ChannelIngestTask create(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver, NitroChannelHidrator hidrator) {
+        return new ChannelIngestTask(channelAdapter, channelWriter, channelResolver, hidrator);
     }
 
     @Override
@@ -44,29 +48,20 @@ public class ChannelIngestTask extends ScheduledTask {
             ImmutableSet<Channel> masterbrands = channelAdapter.fetchMasterbrands();
 
             reportStatus("Writing channels");
-            int failedServices = 0;
-            writeAndMergeChannels(services, failedServices);
-            int servicesCount = services.size();
-            reportStatus(String.format("%d services failed out of %d", failedServices,
-                    servicesCount
-            ));
+            Iterable<Channel> filteredServices = hidrator.filterAndHydrateServices(services);
+            writeAndMergeChannels(filteredServices);
 
-            int failedMasterbrands = 0;
-            writeAndMergeChannels(masterbrands, failedMasterbrands);
-            int masterbrandsCount = masterbrands.size();
-            reportStatus(String.format("%d masterbrands failed out of %d", failedMasterbrands,
-                    masterbrandsCount
-            ));
+            Iterable<Channel> filteredMasterBrands = hidrator.filterAndHydrateMasterbrands(masterbrands);
+            writeAndMergeChannels(filteredMasterBrands);
 
-            reportStatus(String.format("%d failed services and masterbrands out of %d", failedMasterbrands+failedServices, servicesCount
-                    + masterbrandsCount));
         } catch (GlycerinException e) {
             throw Throwables.propagate(e);
         }
 
     }
 
-    private void writeAndMergeChannels(Iterable<Channel> channels, int failedCount) {
+    private void writeAndMergeChannels(Iterable<Channel> channels) {
+        int failed = 0;
         for (Channel channel : channels) {
             Maybe<Channel> existing = channelResolver.fromUri(channel.getCanonicalUri());
             try {
@@ -98,8 +93,11 @@ public class ChannelIngestTask extends ScheduledTask {
                 }
             } catch (Exception e) {
                 log.error("Failed to write channel {}", channel.getCanonicalUri());
-                failedCount ++;
+                ++failed;
             }
         }
+        reportStatus(String.format("%d channels failed out of %d", failed,
+                Iterables.size(channels)
+        ));
     }
 }

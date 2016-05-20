@@ -48,7 +48,7 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
 
         /**
          * Checks if current page of programmes is present so that next method can be used
-         * to retrieve the next page of 30 Programmes.
+         * to retrieve the next page of Programmes.
          * At first will get the first page as a list, then get next page as a list, if there are any.
          * If not will get next Programme object and repeat previous steps.
          * This has been done to decrease the heap overhead when querying Nitro.

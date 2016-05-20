@@ -61,7 +61,7 @@ public class GlycerinNitroChannelAdapterTest {
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
-        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/service/bbc_radio_fourlw"));
+        assertThat(channel.getUri(), is("dvb://233a..1700"));
         assertThat(channel.getMediumDescription(), is("description"));
         assertThat(channel.getMediaType(), is(MediaType.AUDIO));
         assertThat(channel.getTitle(), is("name"));
@@ -98,7 +98,6 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getTitle(), is("name"));
         assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
-        assertThat(Iterables.getOnlyElement(channel.getImages()).getCanonicalUri(), is("uri"));
         assertThat(channel.getShortDescription(), is("short"));
         assertThat(channel.getMediumDescription(), is("medium"));
         assertThat(channel.getLongDescription(), is("long"));
@@ -113,7 +112,7 @@ public class GlycerinNitroChannelAdapterTest {
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
-        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/service/bbc_radio_fourlw"));
+        assertThat(channel.getUri(), is("dvb://233a..1700"));
         assertThat(channel.getMediumDescription(), is("description"));
         assertThat(channel.getMediaType(), is(MediaType.AUDIO));
         assertThat(channel.getTitle(), is("name"));

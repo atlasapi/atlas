@@ -89,7 +89,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             List<MasterBrand> results = paginateMasterBrands(startingPoint);
             for (MasterBrand result : results) {
                 Channel channel = getMasterBrand(result);
-
+                channel.setAliases(ImmutableSet.of(new Alias("bbc:masterbrand:mid", result.getMid())));
                 masterBrands.add(channel);
             }
             startingPoint ++;
@@ -142,8 +142,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
         if (result.getSynopses() != null) {
             builder.withShortDescription(result.getSynopses().getShort())
-                   .withMediumDescription(result.getSynopses().getMedium())
-                   .withLongDescription(result.getSynopses().getLong());
+                    .withMediumDescription(result.getSynopses().getMedium())
+                    .withLongDescription(result.getSynopses().getLong());
         }
 
         Optional<LocalDate> startDate = getStartDate(result);
@@ -195,7 +195,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         Channel channel = getChannel(result);
         String locatorValue = locator.getValue();
         channel.setCanonicalUri(locatorValue);
-        channel.setAliases(ImmutableSet.of(new Alias(BBC_SERVICE_LOCATOR, locatorValue)));
+        channel.setAliases(ImmutableSet.of(new Alias(BBC_SERVICE_LOCATOR, locatorValue), new Alias("bbc:service:sid", result.getSid())));
         channel.setAliasUrls(ImmutableSet.of(locatorValue));
         return channel;
     }

@@ -47,7 +47,7 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
         }
 
         /**
-         * Checks if current page of 30 programmes is present so that next method can be used
+         * Checks if current page of programmes is present so that next method can be used
          * to retrieve the next page of 30 Programmes.
          * At first will get the first page as a list, then get next page as a list, if there are any.
          * If not will get next Programme object and repeat previous steps.
@@ -57,23 +57,22 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
         @Override
         public boolean hasNext() {
             try {
-                if (currentProgrammes == null) { // Getting the first page.
-                    if (!programmeQueries.hasNext()) {
+                if (currentResponse == null) { // Getting the first page.
+                    if (programmeQueries.hasNext()) {
+                        currentResponse = client.execute(programmeQueries.next());
+                        return currentResponse.hasNext();
+                    } else {
                         return false;
                     }
-                    currentResponse = client.execute(programmeQueries.next());
-                    currentProgrammes = currentResponse.getResults();
-                    return true;
                 } else if (currentResponse.hasNext()) { // Getting the next page.
-                    currentProgrammes = currentResponse.getNext().getResults();
                     return true;
                 } else if (!currentResponse.hasNext()) { // Getting the next Programme response.
-                    if (!programmeQueries.hasNext()) {
+                    if (programmeQueries.hasNext()) {
+                        currentResponse = client.execute(programmeQueries.next());
+                        return currentResponse.hasNext();
+                    } else {
                         return false;
                     }
-                    currentResponse = client.execute(programmeQueries.next());
-                    currentProgrammes = currentResponse.getResults();
-                    return true;
                 }
                 return false;
             } catch (GlycerinException e) {
@@ -83,7 +82,11 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
 
         @Override
         public List<Programme> next() {
-            return ImmutableList.copyOf(currentProgrammes);
+            try {
+                return ImmutableList.copyOf(currentResponse.getNext().getResults());
+            } catch (GlycerinException e) {
+                throw Throwables.propagate(e);
+            }
         }
 
         @Override

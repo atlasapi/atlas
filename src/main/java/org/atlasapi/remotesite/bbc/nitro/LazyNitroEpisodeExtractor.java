@@ -33,7 +33,7 @@ public class LazyNitroEpisodeExtractor implements Iterable<Item> {
      * @param clipsAdapter - used for extracting individual episode clips.
      */
     public LazyNitroEpisodeExtractor(Iterable<NitroItemSource<Episode>> episodes, NitroEpisodeExtractor itemExtractor,
-                             GlycerinNitroClipsAdapter clipsAdapter) {
+            GlycerinNitroClipsAdapter clipsAdapter) {
         this.episodes = episodes;
         this.itemExtractor = itemExtractor;
         this.clipsAdapter = clipsAdapter;
@@ -51,7 +51,7 @@ public class LazyNitroEpisodeExtractor implements Iterable<Item> {
         private final GlycerinNitroClipsAdapter clipsAdapter;
 
         public EpisodesIterator(Iterable<NitroItemSource<Episode>> episodes, NitroEpisodeExtractor itemExtractor,
-                                GlycerinNitroClipsAdapter clipsAdapter) {
+                GlycerinNitroClipsAdapter clipsAdapter) {
             this.episodes = episodes.iterator();
             this.itemExtractor = itemExtractor;
             this.clipsAdapter = clipsAdapter;

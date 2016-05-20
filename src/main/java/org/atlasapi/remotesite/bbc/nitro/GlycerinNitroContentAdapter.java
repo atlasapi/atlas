@@ -12,7 +12,6 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 
@@ -220,28 +219,31 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
     private Iterable<Item> fetchEpisodesFromProgrammes(Iterable<List<Programme>> currentProgrammes)
             throws NitroException, GlycerinException {
-        Iterable<List<Episode>> episodes = getAsEpisodes(currentProgrammes);
-        Iterable<NitroItemSource<Episode>> sources = toItemSources(episodes);
-
-        return new LazyNitroEpisodeExtractor(sources, itemExtractor, clipsAdapter);
+        Iterable<List<Episode>> programmesAsEpisodes = getAsEpisodes(currentProgrammes);
+        return toItems(programmesAsEpisodes);
+//
+//        return new LazyNitroEpisodeExtractor(sources, itemExtractor, clipsAdapter);
     }
 
-    private Iterable<NitroItemSource<Episode>> toItemSources(Iterable<List<Episode>> episodes)
+    private Iterable<Item> toItems(Iterable<List<Episode>> episodes)
             throws GlycerinException, NitroException {
         return new PaginatedNitroItemSources(
                 episodes,
                 executor,
-                glycerin
+                glycerin,
+                pageSize,
+                itemExtractor,
+                clipsAdapter
         );
     }
 
     private Iterable<List<Episode>> getAsEpisodes(Iterable<List<Programme>> programmes) {
-        Iterable<List<Programme>> filteredProgrammes = Iterables.transform(
+        Iterable<List<Programme>> episodes = Iterables.transform(
                 programmes,
                 isEpisodesList()
         );
         return Iterables.transform(
-                filteredProgrammes,
+                episodes,
                 toEpisodesList()
         );
     }

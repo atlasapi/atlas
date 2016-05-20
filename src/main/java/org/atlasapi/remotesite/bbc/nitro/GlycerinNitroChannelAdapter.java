@@ -5,15 +5,14 @@ import java.util.List;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
-import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Id;
+import com.metabroadcast.atlas.glycerin.model.Ids;
 import com.metabroadcast.atlas.glycerin.model.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Service;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsMixin;
@@ -57,15 +56,27 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         while (!exhausted) {
             List<Service> results = paginateServices(startingPoint);
             for (Service result : results) {
-                Channel channel = getChannel(result);
-
-                channels.add(channel);
+                Ids ids = result.getIds();
+                if (ids != null) {
+                    generateAndAddChannelsFromLocators(channels, result, ids);
+                }
             }
             startingPoint ++;
             exhausted = results.size() != MAXIMUM_PAGE_SIZE;
         }
 
         return channels.build();
+    }
+
+    private void generateAndAddChannelsFromLocators(ImmutableSet.Builder<Channel> channels,
+            Service result, Ids ids) {
+        Channel channel;
+        for (Id id : ids.getId()) {
+            if (id.getType().equals(TERRESTRIAL_SERVICE_LOCATOR)) {
+                channel = getChannelWithLocatorAlias(result, id);
+                channels.add(channel);
+            }
+        }
     }
 
     @Override
@@ -119,12 +130,6 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withUri(NITRO_MASTERBRAND_URI_PREFIX + result.getMid())
                 .withChannelType(ChannelType.MASTERBRAND);
 
-
-        Brand.Images images = result.getImages();
-        if (images != null) {
-            builder.withImage(new Image(images.getImage().getTemplateUrl()));
-        }
-
         String name = result.getName();
         if (name != null) {
             builder.withTitle(name);
@@ -168,7 +173,6 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withTitle(result.getName())
                 .withMediumDescription(result.getDescription())
                 .withRegion(result.getRegion())
-                .withUri(NITRO_SERVICE_URI_PREFIX + result.getSid())
                 .withChannelType(ChannelType.CHANNEL);
         Optional<LocalDate> startDate = getStartDate(result);
         if (startDate.isPresent()) {
@@ -183,11 +187,16 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             if (id.getType().equals(PID)) {
                 channel.addAlias(new Alias(BBC_SERVICE_PID, id.getValue()));
             }
-            if (id.getType().equals(TERRESTRIAL_SERVICE_LOCATOR)) {
-                channel.addAlias(new Alias(BBC_SERVICE_LOCATOR, id.getValue()));
-                channel.addAliasUrl(id.getValue());
-            }
         }
+        return channel;
+    }
+
+    private Channel getChannelWithLocatorAlias(Service result, Id locator) {
+        Channel channel = getChannel(result);
+        String locatorValue = locator.getValue();
+        channel.setCanonicalUri(locatorValue);
+        channel.setAliases(ImmutableSet.of(new Alias(BBC_SERVICE_LOCATOR, locatorValue)));
+        channel.setAliasUrls(ImmutableSet.of(locatorValue));
         return channel;
     }
 

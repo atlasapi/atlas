@@ -1,5 +1,5 @@
-{{DISPLAYTITLE:List of ''Buffy the Vampire Slayer'' episodes}}
-''[[Buffy the Vampire Slayer]]'' is an American television series created by [[Joss Whedon]], which premiered on March 10, 1997. It concluded on May 20, 2003, after seven seasons with 144 episodes in total, plus an unaired pilot episode.
+{{DISPLAYTITLE:List of ''Buffy the Vampire Slayer'' episodesIterator}}
+''[[Buffy the Vampire Slayer]]'' is an American television series created by [[Joss Whedon]], which premiered on March 10, 1997. It concluded on May 20, 2003, after seven seasons with 144 episodesIterator in total, plus an unaired pilot episode.
 
 The first five seasons aired on [[The WB Television Network|The WB]], and in 2001, it transferred to the [[UPN]] for its final two seasons.<ref>{{cite web|url=http://www.cesnur.org/2001/buffy_april01.htm|title='Buffy,' Moving to UPN, Tries to Be WB Slayer|accessdate=October 20, 2006|work=cesnur.org}}</ref> In the United Kingdom, the entire series aired on [[Sky1]] and [[BBC Two]], and on [[TV3 (Ireland)|TV3]] in Ireland. The story line is continued in comic book form in [[Buffy the Vampire Slayer Season Eight|Season 8]] and [[Buffy the Vampire Slayer Season Nine|Season 9]].
 
@@ -116,24 +116,24 @@ All seven seasons of the series are available on individual DVD box sets for Reg
 * [[Buffy the Vampire Slayer (film)|''Buffy the Vampire Slayer'' (film)]]
 * [[Buffy the Vampire Slayer DVDs|''Buffy the Vampire Slayer'' DVDs]]
 * ''[[Buffy the Vampire Slayer Season Eight]]''
-* [[List of Angel episodes|List of ''Angel'' episodes]]
+* [[List of Angel episodesIterator|List of ''Angel'' episodesIterator]]
 
 == References ==
 {{Reflist|2}}
 
 == External links ==
-* {{Imdb episodes|0118276|Buffy the Vampire Slayer}}
-* {{Tv.com episodes|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer}}
-* List of [http://www.buffyguide.com/episodes.shtml ''Buffy the Vampire Slayer'' episodes] at [http://www.buffyguide.com BuffyGuide.com]
+* {{Imdb episodesIterator|0118276|Buffy the Vampire Slayer}}
+* {{Tv.com episodesIterator|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer}}
+* List of [http://www.buffyguide.com/episodesIterator.shtml ''Buffy the Vampire Slayer'' episodesIterator] at [http://www.buffyguide.com BuffyGuide.com]
 * {{Epguides|BuffytheVampireSlayer|Buffy the Vampire Slayer}}
 
 {{Buffynav}}
 {{BuffyEpisodes}}
 
 {{DEFAULTSORT:Buffy The Vampire Slayer}}
-[[Category:Buffy the Vampire Slayer|List of episodes]]
-[[Category:Buffy the Vampire Slayer episodes| ]]
-[[Category:Lists of comedy-drama television series episodes]]
-[[Category:Lists of fantasy television series episodes]]
+[[Category:Buffy the Vampire Slayer|List of episodesIterator]]
+[[Category:Buffy the Vampire Slayer episodesIterator| ]]
+[[Category:Lists of comedy-drama television series episodesIterator]]
+[[Category:Lists of fantasy television series episodesIterator]]
 
 {{Link FL|tr}}

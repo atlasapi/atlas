@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
@@ -27,7 +28,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
 
-public class PaginatedNitroItemSources implements Iterable<Item> {
+import static com.google.common.base.Preconditions.checkNotNull;
+
+public class PaginatedNitroItemSources implements Iterable<List<Item>> {
 
     private Iterable<List<Episode>> episodes;
     private ListeningExecutorService executor;
@@ -39,12 +42,12 @@ public class PaginatedNitroItemSources implements Iterable<Item> {
     public PaginatedNitroItemSources(Iterable<List<Episode>> episodes, ListeningExecutorService executor,
             Glycerin glycerin, int pageSize, NitroEpisodeExtractor itemExtractor,
             GlycerinNitroClipsAdapter clipsAdapter) {
-        this.episodes = episodes;
-        this.executor = executor;
-        this.glycerin = glycerin;
-        this.pageSize = pageSize;
-        this.itemExtractor = itemExtractor;
-        this.clipsAdapter = clipsAdapter;
+        this.episodes = checkNotNull(episodes);
+        this.executor = checkNotNull(executor);
+        this.glycerin = checkNotNull(glycerin);
+        this.pageSize = checkNotNull(pageSize);
+        this.itemExtractor = checkNotNull(itemExtractor);
+        this.clipsAdapter = checkNotNull(clipsAdapter);
     }
 
     @Override
@@ -53,23 +56,23 @@ public class PaginatedNitroItemSources implements Iterable<Item> {
                 clipsAdapter);
     }
 
-    private static class NitroItemSourceIterator implements Iterator<Item> {
+    private static class NitroItemSourceIterator implements Iterator<List<Item>> {
 
-        private Iterator<List<Episode>> episodes;
+        private Iterator<List<Episode>> episodesIterator;
         private final ListeningExecutorService executor;
         private final Glycerin glycerin;
-        private Iterator<Episode> currentEpisodes;
+        private Iterator<Episode> currentEpisodesIterator;
         private Episode episode;
         private int pageSize;
         private final NitroEpisodeExtractor itemExtractor;
         private GlycerinNitroClipsAdapter clipsAdapter;
 
 
-        public NitroItemSourceIterator(Iterable<List<Episode>> episodes,
+        public NitroItemSourceIterator(Iterable<List<Episode>> episodesIterator,
                 ListeningExecutorService executor, Glycerin glycerin,
                 int pageSize, NitroEpisodeExtractor itemExtractor,
                 GlycerinNitroClipsAdapter clipsAdapter) {
-            this.episodes = episodes.iterator();
+            this.episodesIterator = episodesIterator.iterator();
             this.executor = executor;
             this.glycerin = glycerin;
             this.pageSize = pageSize;
@@ -79,57 +82,47 @@ public class PaginatedNitroItemSources implements Iterable<Item> {
 
         @Override
         public boolean hasNext() {
-            if (currentEpisodes == null && episodes.hasNext()) { // Get first list of episodes
-                currentEpisodes = episodes.next().iterator();
-                if (currentEpisodes.hasNext()) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else if (currentEpisodes.hasNext()) { // Check for next episode
-                return true;
-            } else if (episodes.hasNext()) { // Get next list of episodes
-                currentEpisodes = episodes.next().iterator();
-                if (currentEpisodes.hasNext()) {
-                    return true;
-                } else {
-                    return false;
-                }
-            } else {
-                return false;
-            }
+            return episodesIterator.hasNext();
         }
 
         @Override
-        public Item next() {
-            Episode glycerinEpisode = currentEpisodes.next();
+        public List<Item> next() {
+            List<Episode> episodes = episodesIterator.next();
+            ImmutableList.Builder<Item> items = ImmutableList.builder();
+            currentEpisodesIterator = episodes.iterator();
 
-            ListenableFuture<ImmutableList<Availability>> availabilities = getAvailabilities(glycerinEpisode);
-            ListenableFuture<ImmutableList<Broadcast>> broadcasts = getBroadcasts(glycerinEpisode);
-            ListenableFuture<ImmutableList<Version>> versions = getVersions(glycerinEpisode);
+            while (currentEpisodesIterator.hasNext()) {
+                Episode glycerinEpisode = currentEpisodesIterator.next();
 
-            try {
-                NitroItemSource<Episode> nitroItemSource = NitroItemSource.valueOf(
-                        glycerinEpisode,
-                        availabilities.get(),
-                        broadcasts.get(),
-                        versions.get()
-                );
+                ListenableFuture<ImmutableList<Availability>> availabilities = getAvailabilities(glycerinEpisode);
+                ListenableFuture<ImmutableList<Broadcast>> broadcasts = getBroadcasts(glycerinEpisode);
+                ListenableFuture<ImmutableList<Version>> versions = getVersions(glycerinEpisode);
 
-                Item item = itemExtractor.extract(nitroItemSource);
-                List<Clip> clips = getClips(nitroItemSource);
-                item.setClips(clips);
-                return item;
-            } catch (InterruptedException | ExecutionException e) {
-                if (e.getCause() instanceof GlycerinException) {
-                    try {
-                        throw (GlycerinException) e.getCause();
-                    } catch (GlycerinException e1) {
-                        Throwables.propagate(e1);
+                try {
+                    NitroItemSource<Episode> nitroItemSource = NitroItemSource.valueOf(
+                            glycerinEpisode,
+                            availabilities.get(),
+                            broadcasts.get(),
+                            versions.get()
+                    );
+
+                    Item item = itemExtractor.extract(nitroItemSource);
+                    List<Clip> clips = getClips(nitroItemSource);
+                    item.setClips(clips);
+                    items.add(item);
+                } catch (InterruptedException | ExecutionException e) {
+                    if (e.getCause() instanceof GlycerinException) {
+                        try {
+                            throw (GlycerinException) e.getCause();
+                        } catch (GlycerinException e1) {
+                            Throwables.propagate(e1);
+                        }
                     }
+                    throw Throwables.propagate(e);
                 }
-                throw Throwables.propagate(e);
             }
+
+            return items.build();
         }
 
         private List<Clip> getClips(NitroItemSource<Episode> nitroItemSource) {

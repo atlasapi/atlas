@@ -13,7 +13,7 @@
  |region_2 = {{Start date|2002|5|13}}
  |prev_season = [[Buffy the Vampire Slayer (season 3)|Season 3]]
  |next_season = [[Buffy the Vampire Slayer (season 5)|Season 5]]
- |episode_list = [[List of Buffy the Vampire Slayer episodes|List of ''Buffy the Vampire Slayer'' episodes]]
+ |episode_list = [[List of Buffy the Vampire Slayer episodesIterator|List of ''Buffy the Vampire Slayer'' episodesIterator]]
 }}
 The '''fourth season''' of the television series '''''[[Buffy the Vampire Slayer (TV series)|Buffy the Vampire Slayer]]''''' premiered on October 5, 1999, on [[The WB Television Network]] and concluded its 22-episode season on May 23, 2000. It maintained its previous timeslot, airing Tuesdays at 8:00 pm ET. Beginning with this season, the character of [[Angel (Buffy the Vampire Slayer)|Angel]] was given his own series, titled ''[[Angel (TV series)|Angel]]'', which aired on The WB following ''Buffy''. Various ''Buffy'' characters made appearances in ''Angel'', including Buffy herself; [[Cordelia Chase]], formerly a regular in ''Buffy'', and [[Wesley Wyndam-Pryce]], who appeared in ''Buffy'' season 3, became regulars in ''Angel''.
 
@@ -43,22 +43,22 @@ Buffy and her allies, upon learning of Adam plans, unite to defeat Adam and dest
 
 === Recurring cast ===
 {{Columns-list|2|
-* [[Emma Caulfield]] as [[Anya Jenkins]] (15 episodes)
-* [[Amber Benson]] as [[Tara Maclay]] (12 episodes)
-* [[Leonard Roberts]] as [[List of minor Buffy the Vampire Slayer characters#Forrest Gates|Forrest Gates]] (12 episodes)
-* [[Bailey Chase]] as [[List of minor Buffy the Vampire Slayer characters#Graham Miller|Graham Miller]] (10 episodes)
-* [[Lindsay Crouse]] as [[Maggie Walsh]] (9 episodes)
-* [[George Hertzberg]] as [[Adam (Buffy the Vampire Slayer)|Adam]] (9 episodes)
-* [[Adam Kaufman (actor)|Adam Kaufman]] as [[List of minor Buffy the Vampire Slayer characters#Parker Abrams|Parker Abrams]] (5 episodes)
-* [[Kristine Sutherland]] as [[Joyce Summers]] (5 episodes)
-* [[Mercedes McNab]] as [[Harmony Kendall]] (4 episodes)
-* [[Paige Moss]] as [[List of minor Buffy the Vampire Slayer characters#Veruca|Veruca]]  (3 episodes)
-* [[Conor O'Farrell]] as Colonel McNamara (3 episodes)
-* [[Phina Oruche]] as [[List of minor Buffy the Vampire Slayer characters#Olivia|Olivia]] (3 episodes)
-* [[Jack Stehlin]]  as Dr. Angleman (3 episodes)
-* [[David Boreanaz]] as [[Angel (Buffy the Vampire Slayer)|Angel]] (2 episodes)
-* [[Eliza Dushku]] as [[Faith (Buffy the Vampire Slayer)|Faith]] (2 episodes)
-* [[Dagney Kerr]] as [[List of minor Buffy the Vampire Slayer characters#Kathy Newman|Kathy Newman]] (2 episodes)
+* [[Emma Caulfield]] as [[Anya Jenkins]] (15 episodesIterator)
+* [[Amber Benson]] as [[Tara Maclay]] (12 episodesIterator)
+* [[Leonard Roberts]] as [[List of minor Buffy the Vampire Slayer characters#Forrest Gates|Forrest Gates]] (12 episodesIterator)
+* [[Bailey Chase]] as [[List of minor Buffy the Vampire Slayer characters#Graham Miller|Graham Miller]] (10 episodesIterator)
+* [[Lindsay Crouse]] as [[Maggie Walsh]] (9 episodesIterator)
+* [[George Hertzberg]] as [[Adam (Buffy the Vampire Slayer)|Adam]] (9 episodesIterator)
+* [[Adam Kaufman (actor)|Adam Kaufman]] as [[List of minor Buffy the Vampire Slayer characters#Parker Abrams|Parker Abrams]] (5 episodesIterator)
+* [[Kristine Sutherland]] as [[Joyce Summers]] (5 episodesIterator)
+* [[Mercedes McNab]] as [[Harmony Kendall]] (4 episodesIterator)
+* [[Paige Moss]] as [[List of minor Buffy the Vampire Slayer characters#Veruca|Veruca]]  (3 episodesIterator)
+* [[Conor O'Farrell]] as Colonel McNamara (3 episodesIterator)
+* [[Phina Oruche]] as [[List of minor Buffy the Vampire Slayer characters#Olivia|Olivia]] (3 episodesIterator)
+* [[Jack Stehlin]]  as Dr. Angleman (3 episodesIterator)
+* [[David Boreanaz]] as [[Angel (Buffy the Vampire Slayer)|Angel]] (2 episodesIterator)
+* [[Eliza Dushku]] as [[Faith (Buffy the Vampire Slayer)|Faith]] (2 episodesIterator)
+* [[Dagney Kerr]] as [[List of minor Buffy the Vampire Slayer characters#Kathy Newman|Kathy Newman]] (2 episodesIterator)
 * [[Elizabeth Anne Allen]] as [[Amy Madison]] (1 episode)
 * [[Ethan Erickson]] as [[List of minor Buffy the Vampire Slayer characters#Percy West|Percy West]] (1 episode)
 * Sharon Ferguson as [[First Slayer]] (1 episode)
@@ -72,12 +72,12 @@ Buffy and her allies, upon learning of Adam plans, unite to defeat Adam and dest
 }}
 
 == Crew ==
-Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], and wrote and directed four episodes including the season premiere and finale. [[Marti Noxon]] was promoted to supervising producer and wrote or co-wrote five episodes. [[Jane Espenson]] was promoted to co-producer and wrote or co-wrote five episodes. [[David Fury]] was hired as producer, having previously wrote for the show freelance in seasons 2 and 3, and wrote or co-wrote four episodes. [[Doug Petrie|Douglas Petrie]] was promoted to executive story editor and wrote three episodes. The only new addition was [[Tracey Forbes]], who served as a staff writer and wrote three episodes.<ref>{{cite web|url=http://www.whedon.info/A-Brief-History-of-Mutant-Enemy.html|title=A Brief History of Mutant Enemy|work=Whedon.info|date=May 24, 2004|accessdate=July 30, 2010}}</ref>
+Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], and wrote and directed four episodesIterator including the season premiere and finale. [[Marti Noxon]] was promoted to supervising producer and wrote or co-wrote five episodesIterator. [[Jane Espenson]] was promoted to co-producer and wrote or co-wrote five episodesIterator. [[David Fury]] was hired as producer, having previously wrote for the show freelance in seasons 2 and 3, and wrote or co-wrote four episodesIterator. [[Doug Petrie|Douglas Petrie]] was promoted to executive story editor and wrote three episodesIterator. The only new addition was [[Tracey Forbes]], who served as a staff writer and wrote three episodesIterator.<ref>{{cite web|url=http://www.whedon.info/A-Brief-History-of-Mutant-Enemy.html|title=A Brief History of Mutant Enemy|work=Whedon.info|date=May 24, 2004|accessdate=July 30, 2010}}</ref>
 
-[[James A. Contner]] (also co-producer) directed the highest amount of episodes in the fourth season, directing six episodes. Joss Whedon and [[David Grossman (director)|David Grossman]] each directed four.
+[[James A. Contner]] (also co-producer) directed the highest amount of episodesIterator in the fourth season, directing six episodesIterator. Joss Whedon and [[David Grossman (director)|David Grossman]] each directed four.
 
 == Episodes ==
-{{See also|List of Buffy the Vampire Slayer episodes}}
+{{See also|List of Buffy the Vampire Slayer episodesIterator}}
 <onlyinclude>{| class="wikitable plainrowheaders" style="width: 100%; margin-right: 0;"
 |-
 ! style="background: #A9A9A9; color: #000000;"| No. in<br />series
@@ -89,7 +89,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
 ! style="background: #A9A9A9; color: #000000;"| Production<br>code
 ! style="background: #A9A9A9; color: #000000;"| U.S. viewers<br />(millions)
 |-
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 57
  |EpisodeNumber2 = 1
  |Title = [[The Freshman (Buffy the Vampire Slayer)|The Freshman]]
@@ -101,7 +101,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = While Willow blossoms in the college environment, Buffy has a difficult time adjusting - getting lost, getting kicked out of a class for talking, meeting her Cher-loving roommate Kathy ([[Dagney Kerr]]) - and her Slaying suffers because of it.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 58
  |EpisodeNumber2 = 2
  |Title = [[Living Conditions]]
@@ -113,7 +113,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Buffy becomes convinced that her annoying roommate is evil, but her friends think she is crazy. Buffy steals Kathy's toenail clippings to prove that Kathy is a demon and they get into a fight.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 59
  |EpisodeNumber2 = 3
  |Title = [[The Harsh Light of Day (Buffy the Vampire Slayer)|The Harsh Light of Day]]
@@ -125,7 +125,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Spike returns to Sunnydale for a gem that will make him invincible. He finds it, but Buffy gets it away from him and decides to send it to Angel. Buffy returns to dating but ends up being let down and hurt.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 60
  |EpisodeNumber2 = 4
  |Title = [[Fear, Itself]]
@@ -137,7 +137,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = The gang find themselves in a real-life house of horrors while at a Halloween frat party, in which a fear demon feeds on their individual fears. Meanwhile, Anya needs Giles to help her save Xander when she realizes something is amiss.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 61
  |EpisodeNumber2 = 5
  |Title = [[Beer Bad]]
@@ -149,7 +149,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Xander gets a job bartending at the college pub; Buffy drinks with upperclassmen at that pub. It turns out that the bar manager is spiking the beer with some supernatural mojo, causing the targets to revert to caveman mentality.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 62
  |EpisodeNumber2 = 6
  |Title = [[Wild at Heart (Buffy the Vampire Slayer)|Wild at Heart]]
@@ -161,7 +161,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Oz meets another werewolf, Veruca ([[Paige Moss]]), and locks her in his cage to prevent her from attacking people. Willow comes to the cage the next morning to find them naked together. Veruca tries to kill Willow, Oz-wolf kills Veruca, Buffy stops him from attacking Willow, then Oz leaves town.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 63
  |EpisodeNumber2 = 7
  |Title = [[The Initiative]]
@@ -173,7 +173,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Spike, who was captured by the commandos, is being held hostage by them in a hi-tech facility underneath the University. Spike escapes and heads to find Buffy, who he assumes is behind this; Riley realizes he has a crush on Buffy.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 64
  |EpisodeNumber2 = 8
  |Title = [[Pangs]]
@@ -185,7 +185,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Xander accidentally releases Hus (Tod Thawley), a [[Indigenous peoples of the Americas|Native American]] [[Revenge|vengeance]] [[spirit]]. Angel secretly arrives in Sunnydale to protect Buffy (who is attempting a perfect Thanksgiving) from the spirit.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 65
  |EpisodeNumber2 = 9
  |Title = [[Something Blue (Buffy the Vampire Slayer)|Something Blue]]
@@ -197,7 +197,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = A spell by Willow goes awry, blinding Giles, making Xander a literal demon-magnet, and causing Buffy and Spike to fall in love and get engaged. Once Willow realizes her mistake, she goes about reversing it.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 66
  |EpisodeNumber2 = 10
  |Title = [[Hush (Buffy the Vampire Slayer)|Hush]]
@@ -209,7 +209,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = The Gentlemen steal the voices of the population of [[Sunnydale]], rendering everyone in the town (including the [[Scooby Gang (Buffy the Vampire Slayer)|Scooby Gang]]) unable to speak. Giles reveals that the only thing that can defeat The Gentleman is a real human scream. This episode is mostly silent (aside from music) from the point The Gentlemen steal Sunnydale's voices.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 67
  |EpisodeNumber2 = 11
  |Title = [[Doomed (Buffy the Vampire Slayer)|Doomed]]
@@ -221,7 +221,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = An earthquake occurs in Sunnydale, which signifies the Hellmouth is opening. The gang must return to the remains of Sunnydale High to stop it; Buffy and Riley struggle with each other's secrets.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 68
  |EpisodeNumber2 = 12
  |Title = [[A New Man]]
@@ -233,7 +233,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Giles, feeling left out, goes out for drinks with [[Ethan Rayne]] ([[Robin Sachs]]). He wakes up in the morning as a Fyarl demon, and hires Spike to help him. Mistaking him for a Fyarl demon, The Initiative and Buffy try to hunt him down.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 69
  |EpisodeNumber2 = 13
  |Title = [[The I in Team]]
@@ -245,7 +245,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = When [[Maggie Walsh|Professor Walsh]] ([[Lindsay Crouse]]) decides Buffy is a threat to The Initiative, she decides to kill her by sending her on a dangerous mission. Riley discovers that Professor Walsh has tried to kill Buffy and begins to think seriously of leaving the organization.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 70
  |EpisodeNumber2 = 14
  |Title = [[Goodbye Iowa]]
@@ -257,7 +257,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Buffy discovers The Initiative's secret weapon; Riley becomes unstable due to the death of Professor Walsh and drug withdrawal; Adam ([[George Hertzberg]]) reveals some information about himself, while trying to learn about people by investigating their insides.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 71
  |EpisodeNumber2 = 15
  |RTitle = "[[This Year's Girl]]" (Part 1)
@@ -269,7 +269,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = [[Faith (Buffy the Vampire Slayer)|Faith]] ([[Eliza Dushku]]) wakes up from her eight-month coma and seeks revenge against Buffy. After failing to attack her, she switches bodies with Buffy using a gift left to her by [[Richard Wilkins (Buffy the Vampire Slayer)|Richard Wilkins III]] ([[Harry Groener]]), the now-dead mayor.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 72
  |EpisodeNumber2 = 16
  |RTitle = "[[Who Are You (Buffy the Vampire Slayer)|Who Are You]]" (Part 2)
@@ -281,7 +281,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Buffy (in Faith's body) is abducted by the Council's team, while Faith (in Buffy's body) has ruthless fun at the expense of Buffy. After Faith and Buffy (as each other) rescue a group of people in a church that has been attacked by vampires, they switch their bodies back. Faith begins to feel remorse, and heads to L.A.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 73
  |EpisodeNumber2 = 17
  |Title = [[Superstar (Buffy the Vampire Slayer)|Superstar]]
@@ -293,7 +293,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = [[Jonathan Levinson|Jonathan]] ([[Danny Strong]]) casts a spell to cause all of [[Sunnydale]] to believe that he is the titular "superstar". However, the spell comes with a price - it conjures up a monster which endangers the town.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 74
  |EpisodeNumber2 = 18
  |Title = [[Where the Wild Things Are (Buffy the Vampire Slayer)|Where the Wild Things Are]]
@@ -305,7 +305,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = When Buffy and Riley rouse a supernatural force at the fraternity party house, they are held hostage by ghost children who were abused by a [[Fundamentalist Christianity|Christian fundamentalist]] ([[Kathryn Joosten]]) and now seek revenge. Willow, Tara, and Giles perform a spell to stop the spirits.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 75
  |EpisodeNumber2 = 19
  |Title = [[New Moon Rising (Buffy the Vampire Slayer)|New Moon Rising]]
@@ -317,7 +317,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Oz returns to Sunnydale after learning to control his werewolf instincts. However, he loses control when he suspects Tara ([[Amber Benson]]) and Willow's relationship, and is subsequently caught by the Initiative.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 76
  |EpisodeNumber2 = 20
  |RTitle = "[[The Yoko Factor]]" (Part 1)
@@ -329,7 +329,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Riley spars with Angel ([[David Boreanaz]]) when Angel visits Sunnydale; Adam convinces Spike that he will take his chip out if he helps him get Buffy where he wants, Spike agrees and sets out to distance the Scoobies from each other.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 77
  |EpisodeNumber2 = 21
  |RTitle = "[[Primeval (Buffy the Vampire Slayer)|Primeval]]" (Part 2)
@@ -341,7 +341,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = The Scoobies reveal Adam's plan of releasing an army of hybrid cyborg monsters. A composite being created by a spell, combining the powers and personalities of Buffy, Willow, Xander, and Giles kill Adam after an intense fight.
  |LineColor = A9A9A9
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 78
  |EpisodeNumber2 = 22
  |Title = [[Restless (Buffy the Vampire Slayer)|Restless]]
@@ -356,9 +356,9 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
 |}</onlyinclude>
 
 === Crossovers with ''Angel'' ===
-Beginning with this season, ''Buffy the Vampire Slayer'' and its [[Spin-off (media)|spin-off]] ''[[Angel (TV series)|Angel]]'' both aired on [[The WB Television Network]]. Both shows aired on Tuesdays, ''Buffy'' at 8:00 PM ET, and ''Angel'' at 9:00 PM ET. The fourth season of ''Buffy'' aired along with the [[Angel (season 1)|first season]] of ''Angel''. Both shows featured [[Fictional crossover#Television series|crossover episodes]], in which characters of one series appeared in the other.  [[Angel (Buffy the Vampire Slayer)|Angel]] ([[David Boreanaz]]), [[Cordelia Chase]] ([[Charisma Carpenter]]) and [[Wesley Wyndam-Pryce]] ([[Alexis Denisof]]), who had been introduced in ''Buffy'', became main characters in the spinoff series.
+Beginning with this season, ''Buffy the Vampire Slayer'' and its [[Spin-off (media)|spin-off]] ''[[Angel (TV series)|Angel]]'' both aired on [[The WB Television Network]]. Both shows aired on Tuesdays, ''Buffy'' at 8:00 PM ET, and ''Angel'' at 9:00 PM ET. The fourth season of ''Buffy'' aired along with the [[Angel (season 1)|first season]] of ''Angel''. Both shows featured [[Fictional crossover#Television series|crossover episodesIterator]], in which characters of one series appeared in the other.  [[Angel (Buffy the Vampire Slayer)|Angel]] ([[David Boreanaz]]), [[Cordelia Chase]] ([[Charisma Carpenter]]) and [[Wesley Wyndam-Pryce]] ([[Alexis Denisof]]), who had been introduced in ''Buffy'', became main characters in the spinoff series.
 
-The first crossover appeared in the premiere episodes, where Angel calls Buffy but doesn't say anything; on ''Buffy'', she is seen answering the phone. After the events of "[[The Harsh Light of Day (Buffy the Vampire Slayer)|The Harsh Light of Day]]", [[Oz (Buffy the Vampire Slayer)|Oz]] ([[Seth Green]]) visits Los Angeles in the ''Angel'' episode "[[In the Dark (Angel)|In the Dark]]" to give Angel the Gem of Amarra (a ring that makes vampires unkillable), and [[Spike (Buffy the Vampire Slayer)|Spike]] ([[James Marsters]]) follows him.
+The first crossover appeared in the premiere episodesIterator, where Angel calls Buffy but doesn't say anything; on ''Buffy'', she is seen answering the phone. After the events of "[[The Harsh Light of Day (Buffy the Vampire Slayer)|The Harsh Light of Day]]", [[Oz (Buffy the Vampire Slayer)|Oz]] ([[Seth Green]]) visits Los Angeles in the ''Angel'' episode "[[In the Dark (Angel)|In the Dark]]" to give Angel the Gem of Amarra (a ring that makes vampires unkillable), and [[Spike (Buffy the Vampire Slayer)|Spike]] ([[James Marsters]]) follows him.
 
 In the ''Angel'' episode "[[Bachelor Party (Angel)|Bachelor Party]]", [[Doyle (Angel)|Doyle]] ([[Glenn Quinn]]) has a vision of Buffy in danger. This causes Angel to secretly visit Sunnydale in the episode "[[Pangs]]", to protect her. After learning that he was in town, [[Buffy Summers|Buffy]] ([[Sarah Michelle Gellar]]) visits L.A. in the ''Angel'' episode "[[I Will Remember You (Angel)|I Will Remember You]]" to express her displeasure in his not telling her that he was there.
 
@@ -375,30 +375,30 @@ The series received three [[Primetime Emmy Award]] nominations, for Outstanding 
 
 The series was nominated for two [[Television Critics Association|Television Critics Association Awards]], for Outstanding Achievement in Drama and Program of the Year.<ref>{{cite web|url=http://www.imdb.com/title/tt0118276/awards|title="Buffy the Vampire Slayer" (1997) - Awards|work=[[IMDb]]|accessdate=August 2, 2010}}</ref>
 
-In particular, the episode "Hush" was highly praised when it aired. Robert Bianco from ''[[USA Today]]'' comments, "(i)n a medium in which producers tend to grow bored with their own creations, either trashing them or taking them in increasingly bizarre directions, Whedon continues to find new ways to make his fabulously entertaining series richer and more compelling. With or without words, he's a TV treasure."<ref>Bianco, Robert (December 14, 1999). "Critic's Corner", ''USA Today'', p. 12D.</ref> Alan Sepinwall in ''[[The Star-Ledger]]'' calls it a "magnificently daring episode", explaining "(w)hat makes it particularly brave is that, even when ''Buffy'' has been failing to click dramatically this year, the show has still been able to get by on the witty dialogue, which is all but absent after the first few scenes. Whedon finds ways to get around that, with several cast members—particularly Anthony Head as the scholarly Giles and Alyson Hannigan as nervous witch Willow—proving to be wonderfully expressive silent comedians."<ref>Sepinwall, Alan (December 14, 1999). "All TV - Buffy loses voice, gains magic", ''The Star-Ledger'' (Newark, NJ).</ref>  In the ''[[Daily News (New York)|New York Daily News]]'', David Bianculli states that the episode is "a true tour de force, and another inventive triumph for this vastly underrated series."<ref>Bianculli, David (March 21, 2000). "TV Tonight", ''New York Daily News'', p. 78.</ref> Robert Hanks from ''[[The Independent]]'' in the UK writes that "''Buffy the Vampire Slayer'', in most weeks the funniest and cleverest programme on TV, reached new heights" with "Hush".<ref>Hanks, Robert (December 22, 2000). "Television Review". ''The Independent'' (London), p. 18.</ref> Noel Murray in [[The A.V. Club]] calls it an "episode unlike any other, with a lusher score and some of the most genuinely disturbing imagery I’ve yet seen on ''Buffy''."<ref>Murray, Noel (August 14, 2009). [http://www.avclub.com/articles/hush-etc,31725/ "Hush", etc.] The AV Club. Retrieved on June 14, 2010.</ref> The episode was included among 13 of the scariest films or television shows by [[Salon.com]], and justified by Stephanie Zacharek, who states it "scans just like one of those listless dreams in which you try to scream, and can't. Everybody's had 'em—and yet the way the eerie quiet of 'Hush' sucks you in, you feel as if the experience is privately, and unequivocally, your own."<ref>"[http://www.salon.com/entertainment/movies/feature/2002/10/31/scary Truly scary stuff]", Salon.com (October 31, 2002). Retrieved on June 14, 2010.</ref> Following the series finale in 2003, "Hush" continued to receive praise. Lisa Rosen in the ''[[Los Angeles Times]]'' states that the episode is "one of TV's most terrifying hours".<ref>Rosen, Lisa (May 20, 2003). "R.I.P. 'Buffy': You Drove a Stake Through Convention; ''Los Angeles Times'', p. E1.</ref> [[Smashing Magazine]] counted "Hush" as one of the top ten television episodes that inspire creativity.<ref>Lazaris, Louis (April 13, 2009). [http://www.smashingmagazine.com/2009/08/13/10-unique-tv-series-episodes-that-inspire-creativity/ Unique TV Series Episodes That Inspire Creativity], Smashing Magazine. Retrieved on June 13, 2010.</ref> Keith McDuffee of [[TV Squad]] named it the best Buffy episode in the series, writing "(i)f someone who had never seen Buffy (blasphemy!) asked me to show them just one episode of the show to get them hooked, this would be it".<ref>McDufee, Keith (October 24, 2005). [http://www.tvsquad.com/2005/10/24/the-five-by-five-best-episodes-of-buffy/ The Five (by Five): Best episodes of Buffy], TV Squad. Retrieved on June 13, 2010.</ref> [[TV.com]] named it as the fourth most frightening episode in television history.<ref>Lawson, Richard (October 26, 2009). [http://www.tv.com/untitled/story/19102.html?tag=headlines;title;1 The Five Scariest Episodes in TV History], TV.com. Retrieved on June 13, 2010.</ref>
+In particular, the episode "Hush" was highly praised when it aired. Robert Bianco from ''[[USA Today]]'' comments, "(i)n a medium in which producers tend to grow bored with their own creations, either trashing them or taking them in increasingly bizarre directions, Whedon continues to find new ways to make his fabulously entertaining series richer and more compelling. With or without words, he's a TV treasure."<ref>Bianco, Robert (December 14, 1999). "Critic's Corner", ''USA Today'', p. 12D.</ref> Alan Sepinwall in ''[[The Star-Ledger]]'' calls it a "magnificently daring episode", explaining "(w)hat makes it particularly brave is that, even when ''Buffy'' has been failing to click dramatically this year, the show has still been able to get by on the witty dialogue, which is all but absent after the first few scenes. Whedon finds ways to get around that, with several cast members—particularly Anthony Head as the scholarly Giles and Alyson Hannigan as nervous witch Willow—proving to be wonderfully expressive silent comedians."<ref>Sepinwall, Alan (December 14, 1999). "All TV - Buffy loses voice, gains magic", ''The Star-Ledger'' (Newark, NJ).</ref>  In the ''[[Daily News (New York)|New York Daily News]]'', David Bianculli states that the episode is "a true tour de force, and another inventive triumph for this vastly underrated series."<ref>Bianculli, David (March 21, 2000). "TV Tonight", ''New York Daily News'', p. 78.</ref> Robert Hanks from ''[[The Independent]]'' in the UK writes that "''Buffy the Vampire Slayer'', in most weeks the funniest and cleverest programme on TV, reached new heights" with "Hush".<ref>Hanks, Robert (December 22, 2000). "Television Review". ''The Independent'' (London), p. 18.</ref> Noel Murray in [[The A.V. Club]] calls it an "episode unlike any other, with a lusher score and some of the most genuinely disturbing imagery I’ve yet seen on ''Buffy''."<ref>Murray, Noel (August 14, 2009). [http://www.avclub.com/articles/hush-etc,31725/ "Hush", etc.] The AV Club. Retrieved on June 14, 2010.</ref> The episode was included among 13 of the scariest films or television shows by [[Salon.com]], and justified by Stephanie Zacharek, who states it "scans just like one of those listless dreams in which you try to scream, and can't. Everybody's had 'em—and yet the way the eerie quiet of 'Hush' sucks you in, you feel as if the experience is privately, and unequivocally, your own."<ref>"[http://www.salon.com/entertainment/movies/feature/2002/10/31/scary Truly scary stuff]", Salon.com (October 31, 2002). Retrieved on June 14, 2010.</ref> Following the series finale in 2003, "Hush" continued to receive praise. Lisa Rosen in the ''[[Los Angeles Times]]'' states that the episode is "one of TV's most terrifying hours".<ref>Rosen, Lisa (May 20, 2003). "R.I.P. 'Buffy': You Drove a Stake Through Convention; ''Los Angeles Times'', p. E1.</ref> [[Smashing Magazine]] counted "Hush" as one of the top ten television episodesIterator that inspire creativity.<ref>Lazaris, Louis (April 13, 2009). [http://www.smashingmagazine.com/2009/08/13/10-unique-tv-series-episodesIterator-that-inspire-creativity/ Unique TV Series Episodes That Inspire Creativity], Smashing Magazine. Retrieved on June 13, 2010.</ref> Keith McDuffee of [[TV Squad]] named it the best Buffy episode in the series, writing "(i)f someone who had never seen Buffy (blasphemy!) asked me to show them just one episode of the show to get them hooked, this would be it".<ref>McDufee, Keith (October 24, 2005). [http://www.tvsquad.com/2005/10/24/the-five-by-five-best-episodesIterator-of-buffy/ The Five (by Five): Best episodesIterator of Buffy], TV Squad. Retrieved on June 13, 2010.</ref> [[TV.com]] named it as the fourth most frightening episode in television history.<ref>Lawson, Richard (October 26, 2009). [http://www.tv.com/untitled/story/19102.html?tag=headlines;title;1 The Five Scariest Episodes in TV History], TV.com. Retrieved on June 13, 2010.</ref>
 
-The Futon Critic named "[[Restless (Buffy the Vampire Slayer)|Restless]]" the best episode of 2000.<ref>{{cite web|url=http://www.thefutoncritic.com/reviews/2001/01/04/the-20-best-episodes-of-2000-10679/20010104_bestof2000/|title=The 20 Best Episodes of 2000|work=The Futon Critic|author=Brian Ford Sullivan|date=January 4, 2001|accessdate=August 2, 2010}}</ref>
+The Futon Critic named "[[Restless (Buffy the Vampire Slayer)|Restless]]" the best episode of 2000.<ref>{{cite web|url=http://www.thefutoncritic.com/reviews/2001/01/04/the-20-best-episodesIterator-of-2000-10679/20010104_bestof2000/|title=The 20 Best Episodes of 2000|work=The Futon Critic|author=Brian Ford Sullivan|date=January 4, 2001|accessdate=August 2, 2010}}</ref>
 
 The fourth season averaged 4.7 million viewers, slightly lower than the first season of ''Angel''.<ref>{{cite web|url=http://www.quotenmeter.de/cms/?p1=n&p2=9946|title=Season Ratings 1999-2000|work=Nielsen Media Research|accessdate=August 2, 2010}}</ref>
 
 == DVD release ==
-''Buffy the Vampire Slayer'': The Complete Fourth Season was released on DVD in region 1 on June 10, 2003<ref name="r1 dvd"/> and in region 2 on May 13, 2002.<ref>{{Cite web |url=http://www.bbc.co.uk/cult/buffy/buffystuff/dvdvideo/index.shtml |title=Buffy DVD and VHS |publisher=[[BBC]] |accessdate=July 31, 2010}}</ref> The DVD includes all 22 episodes on 6 discs presented in full frame 1.33:1 aspect ratio (region 1) and in anamorphic widescreen 1.78:1 aspect ratio (region 2 and 4). Special features on the DVD include seven commentary tracks—"Wild at Heart" by creator [[Joss Whedon]], writer [[Marti Noxon]], and actor [[Seth Green]] (region 1 only); "The Initiative" by writer [[Doug Petrie]]; "Hush" by writer and director Joss Whedon; "This Year's Girl" by writer Doug Petrie; "Superstar" by writer [[Jane Espenson]]; "Primeval" by writer [[David Fury]] and director [[James A. Contner]]; and "Restless" by writer and director Joss Whedon. Scripts for "Fear, Itself", "Hush", and "Who Are You" are included. Featurettes include, "Spike Me", which details the character of Spike; "Oz Revelations: A Full Moon", which details the departure of the character with insights by actor Seth Green; "Hush", where cast and crew members discuss the unique episode; "''Buffy'': Inside Sets of Sunnydale" showcases all the sets on the show with tours of sets; "''Buffy'': Inside the Music", which details the music and bands featured on the show; and "Season 4 Overview", a 30-minute featurette where cast and crew members discuss the season. Also included are cast biographies and photo galleries.<ref>{{cite web|url=http://www.tvshowsondvd.com/releases/Buffy-Vampire-Slayer-Season-4/2258|title=Buffy the Vampire Slayer - Season 4|work=TVShowsOnDVD.com |accessdate=July 31, 2010}}</ref>
+''Buffy the Vampire Slayer'': The Complete Fourth Season was released on DVD in region 1 on June 10, 2003<ref name="r1 dvd"/> and in region 2 on May 13, 2002.<ref>{{Cite web |url=http://www.bbc.co.uk/cult/buffy/buffystuff/dvdvideo/index.shtml |title=Buffy DVD and VHS |publisher=[[BBC]] |accessdate=July 31, 2010}}</ref> The DVD includes all 22 episodesIterator on 6 discs presented in full frame 1.33:1 aspect ratio (region 1) and in anamorphic widescreen 1.78:1 aspect ratio (region 2 and 4). Special features on the DVD include seven commentary tracks—"Wild at Heart" by creator [[Joss Whedon]], writer [[Marti Noxon]], and actor [[Seth Green]] (region 1 only); "The Initiative" by writer [[Doug Petrie]]; "Hush" by writer and director Joss Whedon; "This Year's Girl" by writer Doug Petrie; "Superstar" by writer [[Jane Espenson]]; "Primeval" by writer [[David Fury]] and director [[James A. Contner]]; and "Restless" by writer and director Joss Whedon. Scripts for "Fear, Itself", "Hush", and "Who Are You" are included. Featurettes include, "Spike Me", which details the character of Spike; "Oz Revelations: A Full Moon", which details the departure of the character with insights by actor Seth Green; "Hush", where cast and crew members discuss the unique episode; "''Buffy'': Inside Sets of Sunnydale" showcases all the sets on the show with tours of sets; "''Buffy'': Inside the Music", which details the music and bands featured on the show; and "Season 4 Overview", a 30-minute featurette where cast and crew members discuss the season. Also included are cast biographies and photo galleries.<ref>{{cite web|url=http://www.tvshowsondvd.com/releases/Buffy-Vampire-Slayer-Season-4/2258|title=Buffy the Vampire Slayer - Season 4|work=TVShowsOnDVD.com |accessdate=July 31, 2010}}</ref>
 
 == References ==
 {{Reflist|2}}
 
 == External links ==
-* {{Imdb episodes|0118276|Buffy the Vampire Slayer}}
-* {{Tv.com episodes|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer|4}}
-* List of [http://www.buffyguide.com/episodes/episodes4.shtml ''Buffy the Vampire Slayer'' season 4 episodes] at [http://www.buffyguide.com BuffyGuide.com]
+* {{Imdb episodesIterator|0118276|Buffy the Vampire Slayer}}
+* {{Tv.com episodesIterator|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer|4}}
+* List of [http://www.buffyguide.com/episodesIterator/episodes4.shtml ''Buffy the Vampire Slayer'' season 4 episodesIterator] at [http://www.buffyguide.com BuffyGuide.com]
 * {{Epguides|BuffytheVampireSlayer|Buffy the Vampire Slayer}}
 
 {{Buffynav}}
 {{BuffyEpisodes}}
 
-[[Category:Buffy the Vampire Slayer (season 4) episodes| ]]
-[[Category:Lists of comedy-drama television series episodes]]
-[[Category:Lists of fantasy television series episodes]]
+[[Category:Buffy the Vampire Slayer (season 4) episodesIterator| ]]
+[[Category:Lists of comedy-drama television series episodesIterator]]
+[[Category:Lists of fantasy television series episodesIterator]]
 [[Category:1999 television seasons]]
 [[Category:2000 television seasons]]
 [[Category:Cyborgs in fiction]]

@@ -13,7 +13,7 @@
  |region_2 = {{Start date|2002|10|28}}
  |prev_season = [[Buffy the Vampire Slayer (season 4)|Season 4]]
  |next_season = [[Buffy the Vampire Slayer (season 6)|Season 6]]
- |episode_list = [[List of Buffy the Vampire Slayer episodes|List of ''Buffy the Vampire Slayer'' episodes]]
+ |episode_list = [[List of Buffy the Vampire Slayer episodesIterator|List of ''Buffy the Vampire Slayer'' episodesIterator]]
 }}
 The '''fifth season''' of the television series '''''[[Buffy the Vampire Slayer (TV series)|Buffy the Vampire Slayer]]''''' premiered on September 26, 2000 on [[The WB Television Network]] and concluded its 22-episode season on May 22, 2001. It maintained its previous timeslot, airing Tuesdays at 8:00 pm ET. This was the final season to air on The WB before it moved to [[UPN]]; The WB billed the season five finale as the "''The WB'' [[series finale]]".
 
@@ -50,20 +50,20 @@ Near the end of the season, Joyce dies of an aneurysm, devastating Dawn and Buff
 
 === Recurring cast ===
 {{Columns-list|2|
-* [[Amber Benson]] as [[Tara Maclay]] (18 episodes)
-* [[Kristine Sutherland]] as [[Joyce Summers]] (16 episodes)
-* [[Charlie Weber (actor)|Charlie Weber]] as [[List of minor Buffy the Vampire Slayer characters#Ben|Ben]] (14 episodes)
-* [[Clare Kramer]] as [[Glory (Buffy the Vampire Slayer)|Glory]] (12 episodes)
-* Troy Blendell as [[List of minor Buffy the Vampire Slayer characters#Jinx|Jinx]] (6 episodes)
-* [[Todd Duffey]] as [[List of minor Buffy the Vampire Slayer characters#Murk|Murk]] (6 episodes)
-* [[Mercedes McNab]] as [[Harmony Kendall]] (5 episodes)
-* [[Bailey Chase]] as [[List of minor Buffy the Vampire Slayer characters#Graham Miller|Graham Miller]] (3 episodes)
-* Justin Gorence as Orlando (3 episodes)
-* [[Joel Grey]] as [[List of minor Buffy the Vampire Slayer characters#Doc|Doc]] (3 episodes)
-* [[Kevin Weisman]] as Dreg (3 episodes)
-* [[David Boreanaz]] as [[Angel (Buffy the Vampire Slayer)|Angel]] (2 episodes)
-* [[Adam Busch]] as [[Warren Mears]] (2 episodes)
-* [[Juliet Landau]] as [[Drusilla (Buffy the Vampire Slayer)|Drusilla]] (2 episodes)
+* [[Amber Benson]] as [[Tara Maclay]] (18 episodesIterator)
+* [[Kristine Sutherland]] as [[Joyce Summers]] (16 episodesIterator)
+* [[Charlie Weber (actor)|Charlie Weber]] as [[List of minor Buffy the Vampire Slayer characters#Ben|Ben]] (14 episodesIterator)
+* [[Clare Kramer]] as [[Glory (Buffy the Vampire Slayer)|Glory]] (12 episodesIterator)
+* Troy Blendell as [[List of minor Buffy the Vampire Slayer characters#Jinx|Jinx]] (6 episodesIterator)
+* [[Todd Duffey]] as [[List of minor Buffy the Vampire Slayer characters#Murk|Murk]] (6 episodesIterator)
+* [[Mercedes McNab]] as [[Harmony Kendall]] (5 episodesIterator)
+* [[Bailey Chase]] as [[List of minor Buffy the Vampire Slayer characters#Graham Miller|Graham Miller]] (3 episodesIterator)
+* Justin Gorence as Orlando (3 episodesIterator)
+* [[Joel Grey]] as [[List of minor Buffy the Vampire Slayer characters#Doc|Doc]] (3 episodesIterator)
+* [[Kevin Weisman]] as Dreg (3 episodesIterator)
+* [[David Boreanaz]] as [[Angel (Buffy the Vampire Slayer)|Angel]] (2 episodesIterator)
+* [[Adam Busch]] as [[Warren Mears]] (2 episodesIterator)
+* [[Juliet Landau]] as [[Drusilla (Buffy the Vampire Slayer)|Drusilla]] (2 episodesIterator)
 * [[Julie Benz]] as [[Darla (Buffy the Vampire Slayer)|Darla]] (1 episode)
 * [[Dean Butler (actor)|Dean Butler]] as [[List of minor Buffy the Vampire Slayer characters#Hank Summers|Hank Summers]] (1 episode)
 * Amelinda Embry as [[List of minor Buffy the Vampire Slayer characters#Katrina Silber|Katrina Silber]] (1 episode)
@@ -73,12 +73,12 @@ Near the end of the season, Joyce dies of an aneurysm, devastating Dawn and Buff
 }}
 
 == Crew ==
-Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], and wrote and directed three episodes including the season finale. [[Marti Noxon]] was promoted to co-executive producer and wrote three episodes, including directing two of them. [[Jane Espenson]] was promoted to producer and wrote or co-wrote five episodes. [[David Fury]] was promoted to supervising producer and wrote three episodes. [[Doug Petrie|Douglas Petrie]] was promoted to co-producer and wrote or co-wrote four episodes. New additions in the fifth season included [[Rebecca Rand Kirshner]], who wrote three episodes and [[Steven S. DeKnight]], who wrote two episodes.<ref>{{cite web|url=http://www.whedon.info/A-Brief-History-of-Mutant-Enemy.html|title=A Brief History of Mutant Enemy|work=Whedon.info|date=May 24, 2004|accessdate=July 30, 2010}}</ref>
+Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], and wrote and directed three episodesIterator including the season finale. [[Marti Noxon]] was promoted to co-executive producer and wrote three episodesIterator, including directing two of them. [[Jane Espenson]] was promoted to producer and wrote or co-wrote five episodesIterator. [[David Fury]] was promoted to supervising producer and wrote three episodesIterator. [[Doug Petrie|Douglas Petrie]] was promoted to co-producer and wrote or co-wrote four episodesIterator. New additions in the fifth season included [[Rebecca Rand Kirshner]], who wrote three episodesIterator and [[Steven S. DeKnight]], who wrote two episodesIterator.<ref>{{cite web|url=http://www.whedon.info/A-Brief-History-of-Mutant-Enemy.html|title=A Brief History of Mutant Enemy|work=Whedon.info|date=May 24, 2004|accessdate=July 30, 2010}}</ref>
 
-[[David Solomon (TV producer)|David Solomon]] directed the highest amount of episodes in the fifth season, directing four episodes and was promoted to producer. Joss Whedon, [[James A. Contner]] (also co-producer), and [[David Grossman (director)|David Grossman]] each directed three.
+[[David Solomon (TV producer)|David Solomon]] directed the highest amount of episodesIterator in the fifth season, directing four episodesIterator and was promoted to producer. Joss Whedon, [[James A. Contner]] (also co-producer), and [[David Grossman (director)|David Grossman]] each directed three.
 
 == Episodes ==
-{{See also|List of Buffy the Vampire Slayer episodes}}
+{{See also|List of Buffy the Vampire Slayer episodesIterator}}
 <onlyinclude>{| class="wikitable plainrowheaders" style="width: 100%; margin-right: 0;"
 |-
 ! style="background: #890e22; color: #ffffff;"| No. in<br />series
@@ -90,7 +90,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
 ! style="background: #890e22; color: #ffffff;"| Production<br>code
 ! style="background: #890e22; color: #ffffff;"| U.S. viewers<br />(millions)
 |-
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 79
  |EpisodeNumber2 = 1
  |Title = [[Buffy vs. Dracula]]
@@ -102,7 +102,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = [[Buffy Summers|Buffy]] faces [[Count Dracula]] who has come to [[Sunnydale]] to make her one of his concubines. Dracula turns [[Xander Harris|Xander]] into a [[Renfield]] of sorts, before being defeated but not killed.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 80
  |EpisodeNumber2 = 2
  |Title = [[Real Me (Buffy the Vampire Slayer)|Real Me]]
@@ -114,7 +114,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Buffy is having trouble getting along with her sister [[Dawn Summers|Dawn]], who is kidnapped by Harmony's gang. Harmony makes two inept attempts on Buffy's life, but fails each time and Dawn is saved.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 81
  |EpisodeNumber2 = 3
  |Title = [[The Replacement]]
@@ -126,7 +126,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Xander is split into two people by a demon, one strong, the other weak. The lame Xander is unhappy that the cool Xander lives his life better than he can, getting an apartment and a date with [[Anya Jenkins|Anya]].
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 82
  |EpisodeNumber2 = 4
  |Title = [[Out of My Mind (Buffy the Vampire Slayer)|Out of My Mind]]
@@ -138,7 +138,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = [[Riley Finn|Riley]] is risking his health to be able to fight with Buffy. His super soldier enhancement is destroying his heart. Buffy enlists [[Spike (Buffy the Vampire Slayer)|Spike]] to take Riley to the doctor, but instead Spike kidnaps the doctor to remove his chip.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 83
  |EpisodeNumber2 = 5
  |Title = [[No Place Like Home (Buffy the Vampire Slayer)|No Place Like Home]]
@@ -150,7 +150,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = [[Glorificus|Glory]], the new Big Bad, is looking for "The Key". After being beaten by Glory, Buffy meets a monk who reveals to her that she doesn't really have a sister — Dawn is The Key, sent to Buffy for protection.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 84
  |EpisodeNumber2 = 6
  |Title = [[Family (Buffy the Vampire Slayer)|Family]]
@@ -162,7 +162,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = [[Tara Maclay|Tara]] is about to celebrate her 20th birthday, and her family comes to abduct her before she becomes a demon. Glory sends demons after the Slayer, and Tara accidentally helps them.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 85
  |EpisodeNumber2 = 7
  |Title = [[Fool for Love (Buffy the Vampire Slayer)|Fool for Love]]
@@ -174,7 +174,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = After a close call, Buffy asks Spike about the slayers he's killed; he reveals he exploited their death wish. Buffy rebuffs Spike's advances, and while he originally is angry, he comforts her after she finds out about her mother's health condition.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 86
  |EpisodeNumber2 = 8
  |Title = [[Shadow (Buffy the Vampire Slayer)|Shadow]]
@@ -186,7 +186,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = [[Joyce Summers]] has a brain tumor, and Buffy worries about how Dawn will take it. In addition, Buffy must keep her sister safe from Glory and her magic snake.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 87
  |EpisodeNumber2 = 9
  |Title = [[Listening to Fear]]
@@ -198,7 +198,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = As Buffy and Dawn help their mother prepare for surgery, an extraterrestrial preys on Sunnydale's mental patients and follows Joyce home. The alien was summoned by Ben to clean up Glory's mess, and Buffy kills it.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 88
  |EpisodeNumber2 = 10
  |Title = [[Into the Woods (Buffy the Vampire Slayer)|Into the Woods]]
@@ -210,7 +210,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Buffy learns Riley has been going to a vampire brothel to have his blood sucked for pleasure. She confronts him, and he says he's going away with the military if she doesn't give him a reason to stay. She wants him to stay, but doesn't tell him in time.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 89
  |EpisodeNumber2 = 11
  |Title = [[Triangle (Buffy the Vampire Slayer)|Triangle]]
@@ -222,7 +222,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Emotions between Willow and Anya come to a boil over Xander, and they summon a troll ([[Minor characters of Buffy the Vampire Slayer#Olaf|Olaf]]). The troll was Anya's ex-boyfriend whom she called vengeance upon. He tries to make Xander choose between the women, but Buffy sends him packing.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 90
  |EpisodeNumber2 = 12
  |Title = [[Checkpoint (Buffy the Vampire Slayer)|Checkpoint]]
@@ -234,7 +234,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = The Watcher's Council withholds information about Glory from Buffy and make her go through a series of tests. Glory and the Knights of Byzantium target Buffy, and she realizes it's because she has power over them. She orders Quentin to give her the scoop on Glory, and it turns out she's not a demon - she's a god.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 91
  |EpisodeNumber2 = 13
  |Title = [[Blood Ties (Buffy the Vampire Slayer)|Blood Ties]]
@@ -246,7 +246,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Dawn discovers that she is the Key, becomes depressed, and runs away. She tells her tale to Ben, who morphs into Glory. Glory, not remembering Ben's thoughts, decides Dawn doesn't know the Key's location, and Willow and Tara teleport Glory elsewhere.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 92
  |EpisodeNumber2 = 14
  |Title = [[Crush (Buffy the Vampire Slayer)|Crush]]
@@ -258,7 +258,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Spike's profession of love for Buffy is spurned when Drusilla returns. He offers to kill Dru, but Buffy is unimpressed. He saves Buffy from Dru, but has his invitation to the Summers' home revoked.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 93
  |EpisodeNumber2 = 15
  |Title = [[I Was Made to Love You]]
@@ -270,7 +270,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = A robot girlfriend, April, is abandoned by her creator, Warren. When April tries to kill Warren's current girlfriend, Buffy intervenes. Spike secretly coerces Warren into making him a robot of Buffy.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 94
  |EpisodeNumber2 = 16
  |Title = [[The Body (Buffy the Vampire Slayer)|The Body]]
@@ -282,7 +282,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Buffy and the gang are crushed by the death of Joyce. Dawn goes to the morgue to see the body and is attacked by a vampire. Buffy saves her and watches as Dawn reaches to touch Joyce.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 95
  |EpisodeNumber2 = 17
  |Title = [[Forever (Buffy the Vampire Slayer)|Forever]]
@@ -294,7 +294,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Buffy is comforted by Angel following her mother's death, although he can't stay. Dawn attempts to resurrect Joyce with the help of Spike and Doc, but stops part way through the ceremony after Buffy convinces her.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 96
  |EpisodeNumber2 = 18
  |Title = [[Intervention (Buffy the Vampire Slayer)|Intervention]]
@@ -306,7 +306,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = The Scoobies discover Spike's new robot toy; Glory's minions kidnap Spike, thinking he is the Key, and when they realize he isn't they torture him for information. Buffy and Giles go on a discovery quest about the origin of the Slayer. Buffy is told ominously that "Death is your gift".
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 97
  |EpisodeNumber2 = 19
  |Title = [[Tough Love (Buffy the Vampire Slayer)|Tough Love]]
@@ -318,7 +318,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Willow and Tara get into an argument, leaving Tara vulnerable to be attacked by Glory, who thinks she is the Key. After discovering her error, Tara's brain is sucked out and Willow swears revenge.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 98
  |EpisodeNumber2 = 20
  |Title = [[Spiral (Buffy the Vampire Slayer)|Spiral]]
@@ -330,7 +330,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Glory discovers the real Key, and Buffy and company must flee from her, and the Knights of Byzantium who are trying to destroy the Key. The gang race from Sunnydale in a [[Recreational vehicle|caravan]].
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 99
  |EpisodeNumber2 = 21
  |Title = [[The Weight of the World (Buffy the Vampire Slayer)|The Weight of the World]]
@@ -342,7 +342,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
  |ShortSummary = Willow tries to reach the Slayer, who has been rendered catatonic by Dawn's abduction.
  |LineColor = 890e22
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 100
  |EpisodeNumber2 = 22
  |Title = [[The Gift (Buffy the Vampire Slayer)|The Gift]]
@@ -359,7 +359,7 @@ Series creator [[Joss Whedon]] served as executive producer and [[showrunner]], 
 === Crossovers with ''Angel'' ===
 The fifth season of ''Buffy the Vampire Slayer'' aired along with the [[Angel (season 2)|second season]] of ''[[Angel (TV series)|Angel]]''. Both shows retained their timeslots on [[The WB Television Network]], airing on Tuesdays at 8:00 PM ET and 9:00 PM ET respectively.
 
-The ''Buffy'' episode "[[Fool for Love (Buffy the Vampire Slayer)|Fool for Love]]" is a companion to the ''Angel'' episode "[[Darla (Angel episode)|Darla]]". Both episodes feature multiple flashbacks to the history of [[Spike (Buffy the Vampire Slayer)|Spike]] ([[James Marsters]]) and [[Darla (Buffy the Vampire Slayer)|Darla]] ([[Julie Benz]]), shown from their respective viewpoints. [[Angel (Buffy the Vampire Slayer)|Angel]] ([[David Boreanaz]]) and [[Drusilla (Buffy the Vampire Slayer)|Drusilla]] ([[Juliet Landau]]) also appear in both episodes. Both episodes feature a same scene – one from the point of view of Spike and the other from Angel, Darla, and Drusilla.
+The ''Buffy'' episode "[[Fool for Love (Buffy the Vampire Slayer)|Fool for Love]]" is a companion to the ''Angel'' episode "[[Darla (Angel episode)|Darla]]". Both episodesIterator feature multiple flashbacks to the history of [[Spike (Buffy the Vampire Slayer)|Spike]] ([[James Marsters]]) and [[Darla (Buffy the Vampire Slayer)|Darla]] ([[Julie Benz]]), shown from their respective viewpoints. [[Angel (Buffy the Vampire Slayer)|Angel]] ([[David Boreanaz]]) and [[Drusilla (Buffy the Vampire Slayer)|Drusilla]] ([[Juliet Landau]]) also appear in both episodesIterator. Both episodesIterator feature a same scene – one from the point of view of Spike and the other from Angel, Darla, and Drusilla.
 
 ''Buffy'' recurring character Drusilla makes her first present-tense appearance on ''Angel'' in the episode "[[The Trial (Angel)|The Trial]]". She returns to Sunnydale in her final present-tense appearance in the episode "[[Crush (Buffy the Vampire Slayer)|Crush]]".
 
@@ -372,33 +372,33 @@ Willow comes to L.A. in the ''Angel'' season two finale, "[[There's No Place Lik
 == Reception ==
 The series was included in the [[American Film Institute]]'s list for the best drama series of the year. [[Sarah Michelle Gellar]] was nominated for a [[Golden Globe Award]] for [[Golden Globe Award for Best Actress – Television Series Drama|Best Actress – Television Series Drama]]. [[Joss Whedon]] was nominated for a [[Nebula Award]] for [[Nebula Award for Best Script|Best Script]] for "[[The Body (Buffy the Vampire Slayer)|The Body]]". The series was nominated for three [[Television Critics Association|Television Critics Association Awards]], for Individual Achievement in Drama (Sarah Michelle Gellar), Outstanding Achievement in Drama, and Program of the Year.<ref>{{cite web|url=http://www.imdb.com/title/tt0118276/awards|title="Buffy the Vampire Slayer" (1997) - Awards|work=[[IMDb]]|accessdate=August 2, 2010}}</ref>
 
-The episode "The Body" was particularly highly acclaimed by critics. David Bianculli in the ''[[Daily News (New York)|New York Daily News]]'' commends the acting abilities of Sarah Michelle Gellar, Michelle Trachtenberg, Alyson Hannigan, and Amber Benson. "The Body", according to Bianculli is "[[Emmy Award|Emmy]]-worthy ... It also will haunt you—but not in the normal way associated with this still-evolving, still-achieving series."<ref>Bianculli, David (February 27, 2001). "Super Yet Natural: Tonight's 'Buffy' is a gem of realism", ''[[Daily News (New York)|New York Daily News]]'' (New York), p. 87.</ref> Television critic Alesia Redding and editor Joe Vince of the ''[[South Bend Tribune]]'' write, "I was riveted by this show ... This isn't just one of the best ''Buffy'' episodes of all time. It's one of the best episodes of TV of all time." Redding adds, "If you watch this incredible episode and don't recognize it as great TV, you're hopeless&nbsp;... A 'fantasy' show delivers the most stark and realistic take on death I've ever seen, deftly depicting how a loved one who dies suddenly becomes 'the body'." <ref>Redding, Alesia (May 25, 2003). "Slayed to rest ; A few tweaks might have let 'Buffy' go into TV history with a little more bite", ''[[South Bend Tribune]]'' (Schurz Communications).</ref>
+The episode "The Body" was particularly highly acclaimed by critics. David Bianculli in the ''[[Daily News (New York)|New York Daily News]]'' commends the acting abilities of Sarah Michelle Gellar, Michelle Trachtenberg, Alyson Hannigan, and Amber Benson. "The Body", according to Bianculli is "[[Emmy Award|Emmy]]-worthy ... It also will haunt you—but not in the normal way associated with this still-evolving, still-achieving series."<ref>Bianculli, David (February 27, 2001). "Super Yet Natural: Tonight's 'Buffy' is a gem of realism", ''[[Daily News (New York)|New York Daily News]]'' (New York), p. 87.</ref> Television critic Alesia Redding and editor Joe Vince of the ''[[South Bend Tribune]]'' write, "I was riveted by this show ... This isn't just one of the best ''Buffy'' episodesIterator of all time. It's one of the best episodesIterator of TV of all time." Redding adds, "If you watch this incredible episode and don't recognize it as great TV, you're hopeless&nbsp;... A 'fantasy' show delivers the most stark and realistic take on death I've ever seen, deftly depicting how a loved one who dies suddenly becomes 'the body'." <ref>Redding, Alesia (May 25, 2003). "Slayed to rest ; A few tweaks might have let 'Buffy' go into TV history with a little more bite", ''[[South Bend Tribune]]'' (Schurz Communications).</ref>
 
 Gareth McLean in ''[[The Guardian]]'' rejected the notion that ''Buffy'' is similar to other "schmaltzy American teen show(s)" like ''[[Dawson's Creek]]'': "This episode was a brave, honest and wrenching portrayal of death and loss. The way this was handled by Joss Whedon ... was ingenious. Time slowed down and the feeling of numbness was palpable as Buffy and her gang tried to come to terms with Joyce's death." McLean especially appreciated the small details of Buffy protecting Joyce's dignity and the confusion shown by the characters. He concludes, "Joyce may be dead but long live ''Buffy the Vampire Slayer''."<ref>McLean, Gareth (April 21, 2001). "Review: Last night's TV: A real death in Buffy land", ''[[The Guardian]]'' (London; Guardian Media Group), p. 19.</ref>
 
-At [[Salon.com]], Joyce Millman wrote, "there hasn't been a finer hour of drama on TV this year than ... 'The Body' ... You have to hand it to the writers; Joyce's demise came as a complete surprise. In that instant, Buffy's childhood officially ends. Even if ''Buffy'' gets stiffed in every other Emmy category this year, 'The Body' should convince the nominating committee that Gellar is for real ... I can't remember the last time I saw a more wrenching portrayal of the shock of loss."<ref>Millman, Joyce (March 21, 2001). "[http://www.salon.com/entertainment/col/mill/2001/03/12/buffy_mom The death of Buffy's mom], Salon.com. Retrieved on June 14, 2010.</ref> Andrew Gilstrap at [[PopMatters]] declares it "possibly the finest hour of television I've seen, bar none&nbsp;...  It is an incredibly moving episode, one that finally admits that you don't walk away from death unscathed. It also shows that, for all the group's slaying experience, they really weren't prepared for death when it stole a loved one."<ref>Gilstrap, Andrew (June 10, 2002) [http://www.popmatters.com/tv/reviews/b/buffy-the-vampire-slayer3.shtml Death and the Single Girl: Buffy Grows Up], Pop Matters. Retrieved on June 14, 2010.</ref> The Futon Critic named "The Body" the best episode of 2001.<ref>{{cite web|url=http://www.thefutoncritic.com/reviews/2002/01/07/the-50-best-episodes-of-2001-number-10-1-12235/20020107_bestof2001/|title=The 50 Best Episodes of 2001 - #10-1|work=The Futon Critic|author=Brian Ford Sullivan|date=January 7, 2002|accessdate=August 2, 2010}}</ref>
+At [[Salon.com]], Joyce Millman wrote, "there hasn't been a finer hour of drama on TV this year than ... 'The Body' ... You have to hand it to the writers; Joyce's demise came as a complete surprise. In that instant, Buffy's childhood officially ends. Even if ''Buffy'' gets stiffed in every other Emmy category this year, 'The Body' should convince the nominating committee that Gellar is for real ... I can't remember the last time I saw a more wrenching portrayal of the shock of loss."<ref>Millman, Joyce (March 21, 2001). "[http://www.salon.com/entertainment/col/mill/2001/03/12/buffy_mom The death of Buffy's mom], Salon.com. Retrieved on June 14, 2010.</ref> Andrew Gilstrap at [[PopMatters]] declares it "possibly the finest hour of television I've seen, bar none&nbsp;...  It is an incredibly moving episode, one that finally admits that you don't walk away from death unscathed. It also shows that, for all the group's slaying experience, they really weren't prepared for death when it stole a loved one."<ref>Gilstrap, Andrew (June 10, 2002) [http://www.popmatters.com/tv/reviews/b/buffy-the-vampire-slayer3.shtml Death and the Single Girl: Buffy Grows Up], Pop Matters. Retrieved on June 14, 2010.</ref> The Futon Critic named "The Body" the best episode of 2001.<ref>{{cite web|url=http://www.thefutoncritic.com/reviews/2002/01/07/the-50-best-episodesIterator-of-2001-number-10-1-12235/20020107_bestof2001/|title=The 50 Best Episodes of 2001 - #10-1|work=The Futon Critic|author=Brian Ford Sullivan|date=January 7, 2002|accessdate=August 2, 2010}}</ref>
 
 ''[[Entertainment Weekly]]'' named "[[The Gift (Buffy the Vampire Slayer)|The Gift]]" one of TV's best season finales ever.<ref>{{cite web|url=http://www.ew.com/ew/gallery/0,,20200272_19,00.html|title=TV's Best Season Finales Ever|work=EW.com|accessdate=August 2, 2010}}</ref>
 
 The fifth season averaged 4.4 million viewers, slightly higher than the second season of ''Angel''.<ref>{{cite web|url=http://www.ew.com/ew/article/0,,256435,00.html|title=The Bitter End|work=Entertainment Weekly|date=June 1, 2001|accessdate=August 10, 2010}}</ref>
 
 == DVD release ==
-''Buffy the Vampire Slayer'': The Complete Fifth Season was released on DVD in region 1 on December 9, 2003<ref name="r1 dvd"/> and in region 2 on October 28, 2002.<ref>{{Cite web |url=http://www.bbc.co.uk/cult/buffy/buffystuff/dvdvideo/index.shtml |title=Buffy DVD and VHS |publisher=[[BBC]] |accessdate=July 31, 2010}}</ref> The DVD includes all 22 episodes on 6 discs presented in full frame 1.33:1 aspect ratio (region 1) and in anamorphic widescreen 1.78:1 aspect ratio (region 2 and 4). Special features on the DVD include four commentary tracks—"Real Me" by writer [[David Fury]] and director [[David Grossman (director)|David Grossman]]; "Fool for Love" by writer [[Doug Petrie]]; "I Was Made to Love You" by writer [[Jane Espenson]]; and "The Body" by writer and director [[Joss Whedon]]. Scripts for "The Replacement", "Fool for Love", "Into the Woods", and "Checkpoint" are included. Featurettes include, "''Buffy'' Abroad", which details the international popularity of the show; "Demonology: A Slayer's Guide", a featurette presented by [[Danny Strong]] showcasing the various demons on the show; "Casting ''Buffy''", which details the casting process of all the main actors; "Action Heroes!: The Stunts of ''Buffy''" details the stunts and features behind-the-scenes footage with the stunt actors; "Natural Causes", a featurette on the episode "The Body"; "Spotlight on Dawn" details the introduction of the character and interview with actress [[Michelle Trachtenberg]]; and "The Story of Season 5", a 30-minute featurette where cast and crew members discuss the season. Also included are series outtakes, ''Buffy'' video game trailer, photo galleries, and DVD-ROM content.<ref>{{cite web|url=http://www.tvshowsondvd.com/releases/Buffy-Vampire-Slayer-Season-5/3127|title=Buffy the Vampire Slayer - Season 5|work=TVShowsOnDVD.com |accessdate=July 31, 2010}}</ref>
+''Buffy the Vampire Slayer'': The Complete Fifth Season was released on DVD in region 1 on December 9, 2003<ref name="r1 dvd"/> and in region 2 on October 28, 2002.<ref>{{Cite web |url=http://www.bbc.co.uk/cult/buffy/buffystuff/dvdvideo/index.shtml |title=Buffy DVD and VHS |publisher=[[BBC]] |accessdate=July 31, 2010}}</ref> The DVD includes all 22 episodesIterator on 6 discs presented in full frame 1.33:1 aspect ratio (region 1) and in anamorphic widescreen 1.78:1 aspect ratio (region 2 and 4). Special features on the DVD include four commentary tracks—"Real Me" by writer [[David Fury]] and director [[David Grossman (director)|David Grossman]]; "Fool for Love" by writer [[Doug Petrie]]; "I Was Made to Love You" by writer [[Jane Espenson]]; and "The Body" by writer and director [[Joss Whedon]]. Scripts for "The Replacement", "Fool for Love", "Into the Woods", and "Checkpoint" are included. Featurettes include, "''Buffy'' Abroad", which details the international popularity of the show; "Demonology: A Slayer's Guide", a featurette presented by [[Danny Strong]] showcasing the various demons on the show; "Casting ''Buffy''", which details the casting process of all the main actors; "Action Heroes!: The Stunts of ''Buffy''" details the stunts and features behind-the-scenes footage with the stunt actors; "Natural Causes", a featurette on the episode "The Body"; "Spotlight on Dawn" details the introduction of the character and interview with actress [[Michelle Trachtenberg]]; and "The Story of Season 5", a 30-minute featurette where cast and crew members discuss the season. Also included are series outtakes, ''Buffy'' video game trailer, photo galleries, and DVD-ROM content.<ref>{{cite web|url=http://www.tvshowsondvd.com/releases/Buffy-Vampire-Slayer-Season-5/3127|title=Buffy the Vampire Slayer - Season 5|work=TVShowsOnDVD.com |accessdate=July 31, 2010}}</ref>
 
 == References ==
 {{Reflist|2}}
 
 == External links ==
-* {{Imdb episodes|0118276|Buffy the Vampire Slayer}}
-* {{Tv.com episodes|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer|5}}
-* List of [http://www.buffyguide.com/episodes/episodes5.shtml ''Buffy the Vampire Slayer'' season 5 episodes] at [http://www.buffyguide.com BuffyGuide.com]
+* {{Imdb episodesIterator|0118276|Buffy the Vampire Slayer}}
+* {{Tv.com episodesIterator|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer|5}}
+* List of [http://www.buffyguide.com/episodesIterator/episodes5.shtml ''Buffy the Vampire Slayer'' season 5 episodesIterator] at [http://www.buffyguide.com BuffyGuide.com]
 * {{Epguides|BuffytheVampireSlayer|Buffy the Vampire Slayer}}
 
 {{Buffynav}}
 {{BuffyEpisodes}}
 
-[[Category:Buffy the Vampire Slayer (season 5) episodes| ]]
-[[Category:Lists of comedy-drama television series episodes]]
-[[Category:Lists of fantasy television series episodes]]
+[[Category:Buffy the Vampire Slayer (season 5) episodesIterator| ]]
+[[Category:Lists of comedy-drama television series episodesIterator]]
+[[Category:Lists of fantasy television series episodesIterator]]
 [[Category:2000 television seasons]]
 [[Category:2001 television seasons]]

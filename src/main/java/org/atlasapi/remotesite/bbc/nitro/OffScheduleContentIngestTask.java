@@ -1,5 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.Iterator;
+import java.util.List;
+
 import javax.annotation.Nullable;
 
 import org.atlasapi.media.entity.Brand;
@@ -65,7 +68,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 .build();
 
         reportStatus("Doing the discovery call");
-        Iterable<Item> fetched;
+        Iterable<List<Item>> fetched;
         try {
             fetched = contentAdapter.fetchEpisodes(query);
         } catch (NitroException e) {
@@ -76,57 +79,62 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         int failed = 0;
 
         reportStatus("Writing items");
-        for (Item fetchedItem : fetched) {
-            Optional<String> possibleEpisodeId = getCanonicalUri(fetchedItem);
-            Optional<String> possibleContainerId = topLevelContainerId(fetchedItem);
 
-            if (!possibleEpisodeId.isPresent() || !possibleContainerId.isPresent()) {
-                continue;
-            }
+        Iterator<List<Item>> itemIterator = fetched.iterator();
+        while (itemIterator.hasNext()) {
+            List<Item> itemList = itemIterator.next();
+            for (Item item : itemList) {
+                Optional<String> possibleEpisodeId = getCanonicalUri(item);
+                Optional<String> possibleContainerId = topLevelContainerId(item);
 
-            String episodeId = possibleEpisodeId.get();
-            String containerId = possibleContainerId.get();
-            reportStatus(String.format("Locking item ID - %s", episodeId));
-
-            boolean writeSuccessful = false;
-            try {
-                lock.lock(episodeId);
-                lock.lock(containerId);
-
-                ResolveOrFetchResult<Item> item = localOrRemoteFetcher.resolveItems(
-                        ImmutableList.of(fetchedItem));
-
-                ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(
-                        item.getAll());
-                ImmutableSet<Container> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(
-                        item.getAll());
-
-                writeSuccessful = writeContent(
-                        item,
-                        (Series) Iterables.getOnlyElement(resolvedSeries, null),
-                        (Brand) Iterables.getOnlyElement(resolvedBrands, null)
-                );
-
-            } catch (NitroException e) {
-                log.error("Item fetching failed", e);
-                throw Throwables.propagate(e);
-            } catch (InterruptedException e) {
-                log.error("Could not lock item IDs", e);
-            } finally {
-                if (writeSuccessful) {
-                    written++;
-                } else {
-                    failed++;
+                if (!possibleEpisodeId.isPresent() || !possibleContainerId.isPresent()) {
+                    continue;
                 }
 
-                lock.unlock(episodeId);
-                lock.unlock(containerId);
+                String episodeId = possibleEpisodeId.get();
+                String containerId = possibleContainerId.get();
+                reportStatus(String.format("Locking item ID - %s", episodeId));
 
-                reportStatus(String.format(
-                        "Written %d items of which %d failed",
-                        written,
-                        failed
-                ));
+                boolean writeSuccessful = false;
+                try {
+                    lock.lock(episodeId);
+                    lock.lock(containerId);
+
+                    ResolveOrFetchResult<Item> resolvedItem = localOrRemoteFetcher.resolveItems(
+                            ImmutableList.of(item));
+
+                    ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(
+                            resolvedItem.getAll());
+                    ImmutableSet<Container> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(
+                            resolvedItem.getAll());
+
+                    writeSuccessful = writeContent(
+                            resolvedItem,
+                            (Series) Iterables.getOnlyElement(resolvedSeries, null),
+                            (Brand) Iterables.getOnlyElement(resolvedBrands, null)
+                    );
+
+                } catch (NitroException e) {
+                    log.error("Item fetching failed", e);
+                    throw Throwables.propagate(e);
+                } catch (InterruptedException e) {
+                    log.error("Could not lock item IDs", e);
+                } finally {
+                    if (writeSuccessful) {
+                        written++;
+                    } else {
+                        failed++;
+                    }
+
+                    lock.unlock(episodeId);
+                    lock.unlock(containerId);
+
+                    reportStatus(String.format(
+                            "Written %d items of which %d failed",
+                            written,
+                            failed
+                    ));
+                }
             }
         }
     }

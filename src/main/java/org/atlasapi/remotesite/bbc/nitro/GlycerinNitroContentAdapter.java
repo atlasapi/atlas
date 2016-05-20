@@ -196,7 +196,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<Item> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
+    public Iterable<List<Item>> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
         try {
             Iterable<List<Programme>> programmes = fetchProgrammes(ImmutableList.of(programmesQuery));
             return fetchEpisodesFromProgrammes(programmes);
@@ -206,7 +206,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<Item> fetchEpisodes(Iterable<PidReference> refs)
+    public Iterable<List<Item>> fetchEpisodes(Iterable<PidReference> refs)
             throws NitroException {
         try {
             Iterable<ProgrammesQuery> programmesQueries = makeProgrammeQueries(refs);
@@ -217,13 +217,13 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
     }
 
-    private Iterable<Item> fetchEpisodesFromProgrammes(Iterable<List<Programme>> currentProgrammes)
+    private Iterable<List<Item>> fetchEpisodesFromProgrammes(Iterable<List<Programme>> currentProgrammes)
             throws NitroException, GlycerinException {
         Iterable<List<Episode>> programmesAsEpisodes = getAsEpisodes(currentProgrammes);
-        return toItems(programmesAsEpisodes);
+        return toItemsListIterable(programmesAsEpisodes);
     }
 
-    private Iterable<Item> toItems(Iterable<List<Episode>> episodes)
+    private Iterable<List<Item>> toItemsListIterable(Iterable<List<Episode>> episodes)
             throws GlycerinException, NitroException {
         return new PaginatedNitroItemSources(
                 episodes,

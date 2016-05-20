@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.List;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
@@ -51,7 +53,7 @@ public interface NitroContentAdapter {
      * @throws IllegalArgumentException
      *             - if any of the {@code refs} is not for an episode.
      */
-    Iterable<Item> fetchEpisodes(ProgrammesQuery query) throws NitroException;
+    Iterable<List<Item>> fetchEpisodes(ProgrammesQuery query) throws NitroException;
 
     /**
      * Fetch and transform data for the given ref into a {@link Item}.
@@ -65,5 +67,5 @@ public interface NitroContentAdapter {
      * @throws IllegalArgumentException
      *             - if any of the {@code refs} is not for an episode.
      */
-    Iterable<Item> fetchEpisodes(Iterable<PidReference> refs) throws NitroException;
+    Iterable<List<Item>> fetchEpisodes(Iterable<PidReference> refs) throws NitroException;
 }

@@ -12,7 +12,7 @@
  |region_1 = {{Start date|2004|11|16}}<ref name="r1 dvd">{{cite web |url=http://www.amazon.com/dp/B0002XVKMC |title=Buffy the Vampire Slayer - The Complete Seventh Season (1997) |work=[[Amazon.com]] |accessdate=July 30, 2010}}</ref>
  |region_2 = {{Start date|2004|4|5}}
  |prev_season = [[Buffy the Vampire Slayer (season 6)|Season 6]]
- |episode_list = [[List of Buffy the Vampire Slayer episodes|List of ''Buffy the Vampire Slayer'' episodes]]
+ |episode_list = [[List of Buffy the Vampire Slayer episodesIterator|List of ''Buffy the Vampire Slayer'' episodesIterator]]
 }}
 The '''seventh and final''' season of the television series '''''[[Buffy the Vampire Slayer (TV series)|Buffy the Vampire Slayer]]''''' premiered on September 24, 2002 on [[UPN]] and concluded its 22-episode season and its television run on May 20, 2003. It maintained its previous timeslot, airing Tuesdays at 8:00&nbsp;pm ET.
 
@@ -53,29 +53,29 @@ In the last scene of the series, the survivors gather on the rim of Sunnydale's 
 
 === Recurring cast ===
 {{Columns-list|2|
-* [[Tom Lenk]] as [[Andrew Wells]] (15 episodes)
-* [[D. B. Woodside]] as [[Robin Wood (Buffy the Vampire Slayer)|Robin Wood]] (14 episodes)
-* [[Anthony Stewart Head]] as [[Rupert Giles]] (13 episodes)
-* [[Iyari Limon]] as [[Kennedy (Buffy the Vampire Slayer)|Kennedy]] (13 episodes)
-* [[Sarah Hagan]] as [[Amanda (Buffy the Vampire Slayer)|Amanda]] (9 episodes)
-* [[Felicia Day]] as [[Vi (Buffy the Vampire Slayer)|Vi]] (8 episodes)
-* [[Indigo (actress)|Indigo]] as [[Rona (Buffy the Vampire Slayer)|Rona]] (8 episodes)
-* [[Clara Bryant]] as [[List of minor Buffy the Vampire Slayer characters#Molly|Molly]] (5 episodes)
-* [[Adam Busch]] as [[First Evil|The First Evil]]/[[Warren Mears]] (5 episodes)
-* [[Eliza Dushku]] as [[Faith (Buffy the Vampire Slayer)|Faith]] (5 episodes)
-* [[Nathan Fillion]] as [[Caleb (Buffy the Vampire Slayer)|Caleb]] (5 episodes)
-* [[Danny Strong]] as [[Jonathan Levinson]]/The First Evil (4 episodes)
-* [[Camden Toy]] as [[Turok-Han]] (4 episodes)
-* [[Kristy Wu]] as [[List of minor Buffy the Vampire Slayer characters#Chao-Ahn|Chao-Ahn]] (4 episodes)
-* [[Juliet Landau]] as The First Evil/[[Drusilla (Buffy the Vampire Slayer)|Drusilla]] (3 episodes)
-* Mary Wilcher as [[List of minor Buffy the Vampire Slayer characters#Shannon|Shannon]] (3 episodes)
-* [[David Boreanaz]] as [[Angel (Buffy the Vampire Slayer)|Angel]] (2 episodes)
-* [[Harry Groener]] as The First Evil/[[Mayor (Buffy the Vampire Slayer)|Richard Wilkins]] (2 episodes)
-* [[Lalaine]] as [[List of minor Buffy the Vampire Slayer characters#Chloe|Chloe]]/The First Evil (2 episodes)
-* James C. Leary as [[Clem]] (2 episodes)
-* [[Kali Rocha]] as [[Halfrek]] (2 episodes)
-* [[Azura Skye]] as [[Cassie Newton]]/The First Evil (2 episodes)
-* [[Kristine Sutherland]] as The First Evil/[[Joyce Summers]] (2 episodes)
+* [[Tom Lenk]] as [[Andrew Wells]] (15 episodesIterator)
+* [[D. B. Woodside]] as [[Robin Wood (Buffy the Vampire Slayer)|Robin Wood]] (14 episodesIterator)
+* [[Anthony Stewart Head]] as [[Rupert Giles]] (13 episodesIterator)
+* [[Iyari Limon]] as [[Kennedy (Buffy the Vampire Slayer)|Kennedy]] (13 episodesIterator)
+* [[Sarah Hagan]] as [[Amanda (Buffy the Vampire Slayer)|Amanda]] (9 episodesIterator)
+* [[Felicia Day]] as [[Vi (Buffy the Vampire Slayer)|Vi]] (8 episodesIterator)
+* [[Indigo (actress)|Indigo]] as [[Rona (Buffy the Vampire Slayer)|Rona]] (8 episodesIterator)
+* [[Clara Bryant]] as [[List of minor Buffy the Vampire Slayer characters#Molly|Molly]] (5 episodesIterator)
+* [[Adam Busch]] as [[First Evil|The First Evil]]/[[Warren Mears]] (5 episodesIterator)
+* [[Eliza Dushku]] as [[Faith (Buffy the Vampire Slayer)|Faith]] (5 episodesIterator)
+* [[Nathan Fillion]] as [[Caleb (Buffy the Vampire Slayer)|Caleb]] (5 episodesIterator)
+* [[Danny Strong]] as [[Jonathan Levinson]]/The First Evil (4 episodesIterator)
+* [[Camden Toy]] as [[Turok-Han]] (4 episodesIterator)
+* [[Kristy Wu]] as [[List of minor Buffy the Vampire Slayer characters#Chao-Ahn|Chao-Ahn]] (4 episodesIterator)
+* [[Juliet Landau]] as The First Evil/[[Drusilla (Buffy the Vampire Slayer)|Drusilla]] (3 episodesIterator)
+* Mary Wilcher as [[List of minor Buffy the Vampire Slayer characters#Shannon|Shannon]] (3 episodesIterator)
+* [[David Boreanaz]] as [[Angel (Buffy the Vampire Slayer)|Angel]] (2 episodesIterator)
+* [[Harry Groener]] as The First Evil/[[Mayor (Buffy the Vampire Slayer)|Richard Wilkins]] (2 episodesIterator)
+* [[Lalaine]] as [[List of minor Buffy the Vampire Slayer characters#Chloe|Chloe]]/The First Evil (2 episodesIterator)
+* James C. Leary as [[Clem]] (2 episodesIterator)
+* [[Kali Rocha]] as [[Halfrek]] (2 episodesIterator)
+* [[Azura Skye]] as [[Cassie Newton]]/The First Evil (2 episodesIterator)
+* [[Kristine Sutherland]] as The First Evil/[[Joyce Summers]] (2 episodesIterator)
 * [[Elizabeth Anne Allen]] as [[Amy Madison]] (1 episode)
 * Sharon Ferguson as [[First Slayer]] (1 episode)
 * [[George Hertzberg]] as The First Evil/[[Adam (Buffy the Vampire Slayer)|Adam]] (1 episode)
@@ -86,12 +86,12 @@ In the last scene of the series, the survivors gather on the rim of Sunnydale's 
 }}
 
 == Crew ==
-Series creator [[Joss Whedon]] served as executive producer, and wrote two episodes – the season premiere and finale – and directed the finale as well. [[Marti Noxon]] also served as executive producer and was the [[showrunner]], but only co-wrote one episode. Noxon was originally due to write the penultimate episode of the series, but she was already busy writing a new pilot for Fox. [[Jane Espenson]] was promoted to co-executive producer and wrote or co-wrote six episodes. Co-executive producer [[David Fury]] wrote three episodes, including directing one of them. Supervising producer [[Doug Petrie|Douglas Petrie]] was promoted to co-executive producer midseason and wrote or co-wrote four episodes, including directing one of them. [[Rebecca Rand Kirshner]] was promoted to executive story editor and wrote three episodes. [[Drew Z. Greenberg]] was promoted to story editor and wrote three episodes. The only new addition was [[Drew Goddard]], who wrote or co-wrote five episodes.<ref>{{cite web|url=http://www.whedon.info/A-Brief-History-of-Mutant-Enemy.html|title=A Brief History of Mutant Enemy|work=Whedon.info|date=May 24, 2004|accessdate=July 30, 2010}}</ref>
+Series creator [[Joss Whedon]] served as executive producer, and wrote two episodesIterator – the season premiere and finale – and directed the finale as well. [[Marti Noxon]] also served as executive producer and was the [[showrunner]], but only co-wrote one episode. Noxon was originally due to write the penultimate episode of the series, but she was already busy writing a new pilot for Fox. [[Jane Espenson]] was promoted to co-executive producer and wrote or co-wrote six episodesIterator. Co-executive producer [[David Fury]] wrote three episodesIterator, including directing one of them. Supervising producer [[Doug Petrie|Douglas Petrie]] was promoted to co-executive producer midseason and wrote or co-wrote four episodesIterator, including directing one of them. [[Rebecca Rand Kirshner]] was promoted to executive story editor and wrote three episodesIterator. [[Drew Z. Greenberg]] was promoted to story editor and wrote three episodesIterator. The only new addition was [[Drew Goddard]], who wrote or co-wrote five episodesIterator.<ref>{{cite web|url=http://www.whedon.info/A-Brief-History-of-Mutant-Enemy.html|title=A Brief History of Mutant Enemy|work=Whedon.info|date=May 24, 2004|accessdate=July 30, 2010}}</ref>
 
-[[David Solomon (TV producer)|David Solomon]] directed the most episodes in the seventh season, directing five episodes and was promoted to co-executive producer. [[James A. Contner]] (also co-producer) directed three.
+[[David Solomon (TV producer)|David Solomon]] directed the most episodesIterator in the seventh season, directing five episodesIterator and was promoted to co-executive producer. [[James A. Contner]] (also co-producer) directed three.
 
 == Episodes ==
-{{See also|List of Buffy the Vampire Slayer episodes}}
+{{See also|List of Buffy the Vampire Slayer episodesIterator}}
 <onlyinclude>{| class="wikitable plainrowheaders" style="width: 100%; margin-right: 0;"
 |-
 ! style="background: #056B70; color: #ffffff;"| No. in<br />series
@@ -103,7 +103,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
 ! style="background: #056B70; color: #ffffff;"| Production<br />code
 ! style="background: #056B70; color: #ffffff;"| U.S. viewers<br />(millions)
 |-
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 123
  |EpisodeNumber2 = 1
  |Title = [[Lessons (Buffy the Vampire Slayer)|Lessons]]
@@ -115,7 +115,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Dawn finds vengeful spirits in the new Sunnydale High; Giles is rehabilitating Willow in England. Spike is living in the high school basement and going insane after being filled with guilt upon the return of his soul.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 124
  |EpisodeNumber2 = 2
  |Title = [[Beneath You]]
@@ -127,7 +127,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = The gang deals with a giant underground demon; Willow prepares to return home. Spike reveals to Buffy that he has regained his soul.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 125
  |EpisodeNumber2 = 3
  |Title = [[Same Time, Same Place]]
@@ -139,7 +139,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = A weak and vulnerable Willow returns home but cannot find her friends in Sunnydale. At the same time, they cannot find her, but bodies are being found without skin, and the resemblance to Willow's murder of Warren alarms Buffy and Xander.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 126
  |EpisodeNumber2 = 4
  |Title = [[Help (Buffy the Vampire Slayer)|Help]]
@@ -151,7 +151,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy becomes a counselor at Sunnydale High and meets a girl who predicts her own death. Buffy learns that sometimes, whatever you do, you can't always stop the bad.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 127
  |EpisodeNumber2 = 5
  |Title = [[Selfless (Buffy the Vampire Slayer)|Selfless]]
@@ -163,7 +163,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy deals with Anyanka after she grants a lethal wish; Anya's background story is also revealed. The two end up fighting, with Xander unsure of where his loyalties lie.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 128
  |EpisodeNumber2 = 6
  |Title = [[Him (Buffy the Vampire Slayer)|Him]]
@@ -175,7 +175,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = The young women of Sunnydale are falling for the high school quarterback as a result of a 'magic' jacket; Xander and Spike become reluctant roommates, but try to sort out the confusion.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 129
  |EpisodeNumber2 = 7
  |Title = [[Conversations with Dead People]]
@@ -187,7 +187,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy, Dawn, and Willow face individual encounters with familiar faces from their past. Also, Jonathan and Andrew return to Sunnydale to unearth a mysterious symbol.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 130
  |EpisodeNumber2 = 8
  |Title = [[Sleeper (Buffy the Vampire Slayer)|Sleeper]]
@@ -199,7 +199,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy probes a series of grisly murders that may be the work of Spike.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 131
  |EpisodeNumber2 = 9
  |Title = [[Never Leave Me]]
@@ -211,7 +211,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = The Summers' home gains two captives: Spike and Andrew.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 132
  |EpisodeNumber2 = 10
  |Title = [[Bring on the Night (Buffy the Vampire Slayer)|Bring on the Night]]
@@ -223,7 +223,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Giles arrives with three apprentice Slayers; the Scoobies research the First; Buffy fights an ancient vampire.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 133
  |EpisodeNumber2 = 11
  |Title = [[Showtime (Buffy the Vampire Slayer)|Showtime]]
@@ -235,7 +235,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy must win the confidence of Potential Slayers and kill the Ubervamp.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 134
  |EpisodeNumber2 = 12
  |Title = [[Potential (Buffy the Vampire Slayer)|Potential]]
@@ -247,7 +247,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy and Spike establish a boot camp to prepare the Potential Slayers for combat, while a spell from Willow reveals another Potential in Sunnydale. Dawn thinks it may be her for a short while, but then the true Potential is revealed.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 135
  |EpisodeNumber2 = 13
  |Title = [[The Killer in Me]]
@@ -259,7 +259,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Willow must face her own demons; Buffy gets in touch with the government.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 136
  |EpisodeNumber2 = 14
  |Title = [[First Date (Buffy the Vampire Slayer)|First Date]]
@@ -271,7 +271,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy accepts a dinner invitation from Principal Wood; Anya is jealous when Xander has a date, but it turns out to not be so innocent.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 137
  |EpisodeNumber2 = 15
  |Title = [[Get It Done]]
@@ -283,7 +283,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy learns more about the First Slayer and the source of power.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 138
  |EpisodeNumber2 = 16
  |Title = [[Storyteller (Buffy the Vampire Slayer)|Storyteller]]
@@ -295,7 +295,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Andrew makes a documentary on the events in Sunnydale.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 139
  |EpisodeNumber2 = 17
  |Title = [[Lies My Parents Told Me]]
@@ -307,7 +307,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = The gang investigates Spike's trigger; Principal Wood and Giles decide to eliminate Spike without Buffy's knowledge or approval, but fail. Buffy confronts them.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 140
  |EpisodeNumber2 = 18
  |Title = [[Dirty Girls]]
@@ -319,7 +319,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Faith returns to Sunnydale; a new powerful evil face appears, Caleb, a former priest who is unstoppable and works for The First; Buffy leads the troops into battle. Xander loses his eye to Caleb. Some of the Potentials are killed by Caleb.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 141
  |EpisodeNumber2 = 19
  |Title = [[Empty Places]]
@@ -331,7 +331,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = As the residents of Sunnydale evacuate, and the Potentials suffer many casualties, Buffy loses the trust of the group and is forced out of the house. Faith becomes the leader.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 142
  |EpisodeNumber2 = 20
  |Title = [[Touched (Buffy the Vampire Slayer)|Touched]]
@@ -343,7 +343,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = A depressed Buffy is comforted by Spike; Willow and Kennedy become intimate, as do Faith and Principal Wood. Anya and Xander rekindle their spark. The Scoobies capture and interrogate a Bringer; Faith decides on a plan, but it doesn't go smoothly.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 143
  |EpisodeNumber2 = 21
  |Title = [[End of Days (Buffy the Vampire Slayer)|End of Days]]
@@ -355,7 +355,7 @@ Series creator [[Joss Whedon]] served as executive producer, and wrote two episo
  |ShortSummary = Buffy finds a battleaxe in the cave and faces off with Caleb; an old ally returns to Sunnydale to help.
  |LineColor = 056B70
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
  |EpisodeNumber = 144
  |EpisodeNumber2 = 22
  |Title = [[Chosen (Buffy the Vampire Slayer)|Chosen]]
@@ -376,7 +376,7 @@ In "[[Lies My Parents Told Me]]", [[Willow Rosenberg|Willow]] ([[Alyson Hannigan
 
 In the ''Angel'' season four finale, "[[Home (Angel)|Home]]", Angel receives an amulet from [[Wolfram & Hart]] which is important to the final battle in Sunnydale. Angel goes to Sunnydale in the penultimate episode "[[End of Days (Buffy the Vampire Slayer)|End of Days]]" and also appears in the series finale "[[Chosen (Buffy the Vampire Slayer)|Chosen]]". Angel gives Buffy the amulet (which is later worn by [[Spike (Buffy the Vampire Slayer)|Spike]] in the final battle) and offers his help, but Buffy declines as she needs him to be the second front if they fail. Buffy and Angel share one final moment in a graveyard where they discuss a possible future.
 
-In the fifth and final season of ''Angel'', Spike is resurrected (after his death in "Chosen") by the magical amulet. Spike becomes a main character in the final season. [[Harmony Kendall]] ([[Mercedes McNab]]) also becomes a main character in the final season. ''Buffy'' recurring character [[Andrew Wells]] ([[Tom Lenk]]) appears in two episodes ("[[Damage (Angel)|Damage]]" and "[[The Girl in Question]]") in the final season of ''Angel'', revealed to be a [[Watcher (Buffy the Vampire Slayer)|Watcher]]-in-training. Andrew states in "Damage" that [[Xander Harris|Xander]] is in Africa, Willow and [[Kennedy (Buffy the Vampire Slayer)|Kennedy]] are in Brazil, Buffy and [[Dawn Summers|Dawn]] are in Rome, and everyone else is in England.
+In the fifth and final season of ''Angel'', Spike is resurrected (after his death in "Chosen") by the magical amulet. Spike becomes a main character in the final season. [[Harmony Kendall]] ([[Mercedes McNab]]) also becomes a main character in the final season. ''Buffy'' recurring character [[Andrew Wells]] ([[Tom Lenk]]) appears in two episodesIterator ("[[Damage (Angel)|Damage]]" and "[[The Girl in Question]]") in the final season of ''Angel'', revealed to be a [[Watcher (Buffy the Vampire Slayer)|Watcher]]-in-training. Andrew states in "Damage" that [[Xander Harris|Xander]] is in Africa, Willow and [[Kennedy (Buffy the Vampire Slayer)|Kennedy]] are in Brazil, Buffy and [[Dawn Summers|Dawn]] are in Rome, and everyone else is in England.
 
 == Reception ==
 The series received a [[Primetime Emmy Award]] nomination for Outstanding Special Visual Effects for a Series for "[[Chosen (Buffy the Vampire Slayer)|Chosen]]". While, "Chosen" won for Outstanding Visual Effects in a Television Series at the [[Visual Effects Society|Visual Effects Society Awards]].
@@ -385,7 +385,7 @@ The series received a [[Primetime Emmy Award]] nomination for Outstanding Specia
 
 The series received the [[Television Critics Association]] Heritage Award.<ref>{{cite web|url=http://www.imdb.com/title/tt0118276/awards|title="Buffy the Vampire Slayer" (1997) - Awards|work=[[IMDb]]|accessdate=August 2, 2010}}</ref>
 
-The Futon Critic named "Conversations with Dead People" the 42nd best episode of 2002<ref>{{cite web|url=http://www.thefutoncritic.com/reviews/2003/01/06/the-50-best-episodes-of-2002-number-50-41-15241/20030106_bestof2002/|title=The 50 Best Episodes of 2002 - #50-41|work=The Futon Critic|author=Brian Ford Sullivan|date=January 6, 2003|accessdate=August 2, 2010}}</ref> and "Chosen" the 50th best episode of 2003.<ref>{{cite web|url=http://www.thefutoncritic.com/reviews/2004/01/12/the-50-best-episodes-of-2003-number-50-41-16363/20040112_bestof2003/|title=The 50 Best Episodes of 2003 - #50-41|work=The Futon Critic|author=Brian Ford Sullivan|date=January 12, 2004|accessdate=August 2, 2010}}</ref>
+The Futon Critic named "Conversations with Dead People" the 42nd best episode of 2002<ref>{{cite web|url=http://www.thefutoncritic.com/reviews/2003/01/06/the-50-best-episodesIterator-of-2002-number-50-41-15241/20030106_bestof2002/|title=The 50 Best Episodes of 2002 - #50-41|work=The Futon Critic|author=Brian Ford Sullivan|date=January 6, 2003|accessdate=August 2, 2010}}</ref> and "Chosen" the 50th best episode of 2003.<ref>{{cite web|url=http://www.thefutoncritic.com/reviews/2004/01/12/the-50-best-episodesIterator-of-2003-number-50-41-16363/20040112_bestof2003/|title=The 50 Best Episodes of 2003 - #50-41|work=The Futon Critic|author=Brian Ford Sullivan|date=January 12, 2004|accessdate=August 2, 2010}}</ref>
 
 The seventh season averaged 3.8 million viewers, slightly higher than the fourth season of ''Angel''.<ref>{{cite web|url=http://www.quotenmeter.de/cms/?p1=n&p2=9939|title=Season Ratings 2002-2003|work=Nielsen Media Research|accessdate=August 2, 2010}}</ref>
 
@@ -399,22 +399,22 @@ Out of the 40 issues of ''Season Eight'', Whedon wrote 17 issues and oversaw all
 The comic book series has continued with ''[[Buffy the Vampire Slayer Season Nine]]'', which began in September 2011.
 
 == DVD release ==
-''Buffy the Vampire Slayer'': The Complete Seventh Season was released on DVD in region 1 on November 16, 2004<ref name="r1 dvd"/> and in region 2 on April 5, 2004.<ref>{{cite web |url=http://www.bbc.co.uk/cult/buffy/buffystuff/dvdvideo/index.shtml |title=Buffy DVD and VHS |publisher=BBC |accessdate=July 31, 2010}}</ref> The DVD includes all 22 episodes on 6 discs presented in full frame 1.33:1 aspect ratio (region 1) and in anamorphic widescreen 1.78:1 aspect ratio (region 2 and 4). Special features on the DVD include seven commentary tracks—"Lessons" by writer [[Joss Whedon]] and director [[David Solomon (TV producer)|David Solomon]]; Conversations with Dead People" by writers [[Jane Espenson]] and [[Drew Goddard]], director [[Nick Marck]], and actors [[Danny Strong]] and [[Tom Lenk]]; "Selfless" by writer Drew Goddard and director David Solomon; "The Killer in Me" by writer [[Drew Z. Greenberg]] and director David Solomon; "Lies My Parents Told Me" by co-writer/director [[David Fury]], co-writer Drew Goddard, and actors [[James Marsters]] and [[D. B. Woodside]]; "Dirty Girls" by writer Drew Goddard and actor [[Nicholas Brendon]]; and "Chosen" by writer and director Joss Whedon. Featurettes include, "''Buffy'': It's Always Been About the Fans", which details the fandom of the series; "''Buffy'' 101: Studying the Slayer" showcases interviews with television critics and scholars discussing the themes of show; "Generation S" showcases interviews with the "Slayerettes" introduced in the season; "The Last Sundown" has Joss Whedon list his favorite episodes and comments on the show; "''Buffy'' wraps" features interviews with cast and crew at the series wrap party; and "Season 7 Overview – ''Buffy'': Full Circle", a 30-minute featurette where cast and crew members discuss the season. Also included are series outtakes and DVD-ROM content.<ref>{{cite web|url=http://www.tvshowsondvd.com/releases/Buffy-Vampire-Slayer-Season-7/3981|title=Buffy the Vampire Slayer - Season 7|work=TVShowsOnDVD.com |accessdate=July 31, 2010}}</ref>
+''Buffy the Vampire Slayer'': The Complete Seventh Season was released on DVD in region 1 on November 16, 2004<ref name="r1 dvd"/> and in region 2 on April 5, 2004.<ref>{{cite web |url=http://www.bbc.co.uk/cult/buffy/buffystuff/dvdvideo/index.shtml |title=Buffy DVD and VHS |publisher=BBC |accessdate=July 31, 2010}}</ref> The DVD includes all 22 episodesIterator on 6 discs presented in full frame 1.33:1 aspect ratio (region 1) and in anamorphic widescreen 1.78:1 aspect ratio (region 2 and 4). Special features on the DVD include seven commentary tracks—"Lessons" by writer [[Joss Whedon]] and director [[David Solomon (TV producer)|David Solomon]]; Conversations with Dead People" by writers [[Jane Espenson]] and [[Drew Goddard]], director [[Nick Marck]], and actors [[Danny Strong]] and [[Tom Lenk]]; "Selfless" by writer Drew Goddard and director David Solomon; "The Killer in Me" by writer [[Drew Z. Greenberg]] and director David Solomon; "Lies My Parents Told Me" by co-writer/director [[David Fury]], co-writer Drew Goddard, and actors [[James Marsters]] and [[D. B. Woodside]]; "Dirty Girls" by writer Drew Goddard and actor [[Nicholas Brendon]]; and "Chosen" by writer and director Joss Whedon. Featurettes include, "''Buffy'': It's Always Been About the Fans", which details the fandom of the series; "''Buffy'' 101: Studying the Slayer" showcases interviews with television critics and scholars discussing the themes of show; "Generation S" showcases interviews with the "Slayerettes" introduced in the season; "The Last Sundown" has Joss Whedon list his favorite episodesIterator and comments on the show; "''Buffy'' wraps" features interviews with cast and crew at the series wrap party; and "Season 7 Overview – ''Buffy'': Full Circle", a 30-minute featurette where cast and crew members discuss the season. Also included are series outtakes and DVD-ROM content.<ref>{{cite web|url=http://www.tvshowsondvd.com/releases/Buffy-Vampire-Slayer-Season-7/3981|title=Buffy the Vampire Slayer - Season 7|work=TVShowsOnDVD.com |accessdate=July 31, 2010}}</ref>
 
 == References ==
 {{Reflist|2}}
 
 == External links ==
-* {{IMDb episodes|0118276|Buffy the Vampire Slayer}}
-* {{Tv.com episodes|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer|7}}
-* List of [http://www.buffyguide.com/episodes/episodes7.shtml ''Buffy the Vampire Slayer'' season 7 episodes] at [http://www.buffyguide.com BuffyGuide.com]
+* {{IMDb episodesIterator|0118276|Buffy the Vampire Slayer}}
+* {{Tv.com episodesIterator|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer|7}}
+* List of [http://www.buffyguide.com/episodesIterator/episodes7.shtml ''Buffy the Vampire Slayer'' season 7 episodesIterator] at [http://www.buffyguide.com BuffyGuide.com]
 * {{Epguides|BuffytheVampireSlayer|Buffy the Vampire Slayer}}
 
 {{Buffynav}}
 {{BuffyEpisodes}}
 
-[[Category:Buffy the Vampire Slayer (season 7) episodes| ]]
-[[Category:Lists of comedy-drama television series episodes]]
-[[Category:Lists of fantasy television series episodes]]
+[[Category:Buffy the Vampire Slayer (season 7) episodesIterator| ]]
+[[Category:Lists of comedy-drama television series episodesIterator]]
+[[Category:Lists of fantasy television series episodesIterator]]
 [[Category:2002 television seasons]]
 [[Category:2003 television seasons]]

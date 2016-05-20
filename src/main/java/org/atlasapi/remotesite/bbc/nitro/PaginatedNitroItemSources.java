@@ -59,7 +59,7 @@ public class PaginatedNitroItemSources implements Iterable<NitroItemSource<Episo
 
         @Override
         public boolean hasNext() {
-            if (currentEpisodes != null && episodes.hasNext()) { // Get first list of episodes
+            if (currentEpisodes == null && episodes.hasNext()) { // Get first list of episodes
                 currentEpisodes = episodes.next().iterator();
                 if (currentEpisodes.hasNext()) {
                     return true;

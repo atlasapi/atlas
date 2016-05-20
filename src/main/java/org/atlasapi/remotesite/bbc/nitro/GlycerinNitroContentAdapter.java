@@ -68,27 +68,27 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             return input.getAsEpisode();
         }
     };
-    public static final Function<List<Programme>, List<Episode>> TO_EPISODES_LIST = new Function<List<Programme>, List<Episode>>() {
+    private static final Function<List<Programme>, List<Episode>> TO_EPISODES_LIST = new Function<List<Programme>, List<Episode>>() {
 
         @Nullable
         @Override
         public List<Episode> apply(@Nullable List<Programme> input) {
-            return ImmutableList.copyOf(Iterables.transform(input, TO_EPISODE));
+            return ImmutableList.copyOf(Iterables.transform(input, toEpisode()));
         }
     };
-    public static final Predicate<Programme> IS_EPISODE = new Predicate<Programme>() {
+    private static final Predicate<Programme> IS_EPISODE = new Predicate<Programme>() {
 
         @Override
         public boolean apply(Programme input) {
             return input.isEpisode();
         }
     };
-    public static final Function<List<Programme>, List<Programme>> IS_EPISODES_LIST = new Function<List<Programme>, List<Programme>>() {
+    private static final Function<List<Programme>, List<Programme>> IS_EPISODES_LIST = new Function<List<Programme>, List<Programme>>() {
 
         @Nullable
         @Override
         public List<Programme> apply(@Nullable List<Programme> input) {
-            return ImmutableList.copyOf(Iterables.filter(input, IS_EPISODE));
+            return ImmutableList.copyOf(Iterables.filter(input, isEpisode()));
         }
     };
 
@@ -106,6 +106,22 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         this.seriesExtractor = new NitroSeriesExtractor(clock);
         this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
+    }
+
+    public static final Function<Programme, Episode> toEpisode() {
+        return TO_EPISODE;
+    }
+
+    public static final Function<List<Programme>, List<Episode>> toEpisodesList() {
+        return TO_EPISODES_LIST;
+    }
+
+    public static final Predicate<Programme> isEpisode() {
+        return IS_EPISODE;
+    }
+
+    public static final Function<List<Programme>, List<Programme>> isEpisodesList() {
+        return IS_EPISODES_LIST;
     }
 
     @Override
@@ -222,11 +238,11 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private Iterable<List<Episode>> getAsEpisodes(Iterable<List<Programme>> programmes) {
         Iterable<List<Programme>> filteredProgrammes = Iterables.transform(
                 programmes,
-                IS_EPISODES_LIST
+                isEpisodesList()
         );
         return Iterables.transform(
                 filteredProgrammes,
-                TO_EPISODES_LIST
+                toEpisodesList()
         );
     }
 

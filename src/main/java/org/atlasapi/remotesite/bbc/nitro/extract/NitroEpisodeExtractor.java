@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import static com.metabroadcast.atlas.glycerin.model.Brand.Contributions;
-
 import java.math.BigInteger;
 import java.util.List;
 import java.util.Set;
@@ -17,14 +15,7 @@ import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
-import org.joda.time.DateTime;
-import org.joda.time.LocalDate;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
 import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Episode;
@@ -34,6 +25,16 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.time.Clock;
+
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import org.joda.time.DateTime;
+import org.joda.time.LocalDate;
+
+import static com.metabroadcast.atlas.glycerin.model.Brand.Contributions;
 
 /**
  * <p>

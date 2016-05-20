@@ -57,8 +57,8 @@ public class UnconfiguredGlycerin implements Glycerin {
     }
 
     @Override
-    public GlycerinResponse<MasterBrand> execute(MasterBrandsQuery query) throws GlycerinException {
+    public GlycerinResponse<MasterBrand> execute(MasterBrandsQuery masterBrandsQuery)
+            throws GlycerinException {
         throw unconfigured();
     }
-
 }

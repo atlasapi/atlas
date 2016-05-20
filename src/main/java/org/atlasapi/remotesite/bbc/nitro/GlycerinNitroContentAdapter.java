@@ -221,8 +221,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             throws NitroException, GlycerinException {
         Iterable<List<Episode>> programmesAsEpisodes = getAsEpisodes(currentProgrammes);
         return toItems(programmesAsEpisodes);
-//
-//        return new LazyNitroEpisodeExtractor(sources, itemExtractor, clipsAdapter);
     }
 
     private Iterable<Item> toItems(Iterable<List<Episode>> episodes)

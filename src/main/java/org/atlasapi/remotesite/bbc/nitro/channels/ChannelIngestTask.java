@@ -1,8 +1,9 @@
-package org.atlasapi.remotesite.bbc.nitro;
+package org.atlasapi.remotesite.bbc.nitro.channels;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
+import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
 
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.common.base.Maybe;

@@ -58,9 +58,6 @@ public class PaginatedProgrammeRequest implements Iterable<Programme> {
 
             try {
                 if (currentProgrammes == null) { // Getting the first page.
-                    if (!programmeQueries.hasNext()) {
-                        return false;
-                    }
                     currentResponse = client.execute(programmeQueries.next());
                     currentProgrammes = currentResponse.getResults().iterator();
                 } else if (currentResponse.hasNext()) { // Getting the next page.

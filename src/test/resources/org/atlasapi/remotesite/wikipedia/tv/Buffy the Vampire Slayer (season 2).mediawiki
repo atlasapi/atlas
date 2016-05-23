@@ -13,9 +13,9 @@
  |region_2 = {{Start date|2001|5|21}}
  |prev_season = [[Buffy the Vampire Slayer (season 1)|Season 1]]
  |next_season = [[Buffy the Vampire Slayer (season 3)|Season 3]]
- |episode_list = [[List of Buffy the Vampire Slayer episodesIterator|List of ''Buffy the Vampire Slayer'' episodesIterator]]
+ |episode_list = [[List of Buffy the Vampire Slayer episodes|List of ''Buffy the Vampire Slayer'' episodes]]
 }}
-The '''second season''' of the television series''''' [[Buffy the Vampire Slayer (TV series)|Buffy the Vampire Slayer]]''''' premiered on September 15, 1997 on [[The WB Television Network]] and concluded its 22-episode season on May 19, 1998. The first 13 episodesIterator aired on Mondays at 9:00 pm ET, beginning with episode 14 the series moved to Tuesdays at 8:00 pm ET, a timeslot the series would occupy for the rest of its run.
+The '''second season''' of the television series''''' [[Buffy the Vampire Slayer (TV series)|Buffy the Vampire Slayer]]''''' premiered on September 15, 1997 on [[The WB Television Network]] and concluded its 22-episode season on May 19, 1998. The first 13 episodes aired on Mondays at 9:00 pm ET, beginning with episode 14 the series moved to Tuesdays at 8:00 pm ET, a timeslot the series would occupy for the rest of its run.
 
 The emotional stakes are raised in season two. New vampires [[Spike (Buffy the Vampire Slayer)|Spike]] and [[Drusilla (Buffy the Vampire Slayer)|Drusilla]] come to town along with the new slayer, [[Kendra Young]], who was activated as a result of Buffy's brief death in the [[Prophecy Girl|season one finale]]. Xander becomes involved with [[Cordelia Chase|Cordelia]], while Willow becomes involved with witchcraft and [[Oz (Buffy the Vampire Slayer)|Daniel "Oz" Osbourne]] becomes a werewolf after being bitten by a young cousin who just happens to be a werewolf. Buffy and the vampire [[Angel (Buffy the Vampire Slayer)|Angel]] develop a relationship over the course of the season, but Angel's dark past as the evil and sadistic Angelus threatens to destroy Buffy and the world.
 
@@ -42,23 +42,23 @@ During the [[Becoming (Buffy the Vampire Slayer)|season finale]], Buffy and Will
 
 === Recurring cast ===
 {{Columns-list|2|
-* [[Juliet Landau]] as [[Drusilla (Buffy the Vampire Slayer)|Drusilla]] (12 episodesIterator)
-* [[James Marsters]] as [[Spike (Buffy the Vampire Slayer)|Spike]] (12 episodesIterator)
-* [[Kristine Sutherland]] as [[Joyce Summers]] (12 episodesIterator)
-* [[Robia LaMorte]] as [[Jenny Calendar]] (11 episodesIterator)
-* [[Seth Green]] as [[Oz (Buffy the Vampire Slayer)|Daniel "Oz" Osbourne]] (10 episodesIterator)
-* [[Armin Shimerman]] as [[Principal Snyder]] (9 episodesIterator)
-* [[Danny Strong]] as [[Jonathan Levinson]] (7 episodesIterator)
-* [[Bianca Lawson]] as [[List of minor Buffy the Vampire Slayer characters#Kendra|Kendra]] (4 episodesIterator)
-* [[Larry Bagby]] as [[List of minor Buffy the Vampire Slayer characters#Larry Blaisdell|Larry Blaisdell]] (2 episodesIterator)
-* [[Andrew J. Ferchland]] as [[Anointed One (Buffyverse)|The Anointed One]] (2 episodesIterator)
-* [[Saverio Guerra]] as [[List of minor Buffy the Vampire Slayer characters#Willy the Snitch|Willy the Snitch]] (2 episodesIterator)
-* [[Jason Hall (actor)|Jason Hall]] as [[List of minor Buffy the Vampire Slayer characters#Devon MacLeish|Devon MacLeish]] (2 episodesIterator)
-* [[Max Perlich]] as [[List of minor Buffy the Vampire Slayer characters#Whistler|Whistler]] (2 episodesIterator)
-* [[Robin Sachs]] as [[Ethan Rayne]] (2 episodesIterator)
-* [[Eric Saiet]] as [[List of minor Buffy the Vampire Slayer characters#Dalton|Dalton]] (2 episodesIterator)
-* [[Vincent Schiavelli]] as Uncle Enios (2 episodesIterator)
-* [[Brian Thompson]] as [[List of minor Buffy the Vampire Slayer characters#Judge|The Judge]] (2 episodesIterator)
+* [[Juliet Landau]] as [[Drusilla (Buffy the Vampire Slayer)|Drusilla]] (12 episodes)
+* [[James Marsters]] as [[Spike (Buffy the Vampire Slayer)|Spike]] (12 episodes)
+* [[Kristine Sutherland]] as [[Joyce Summers]] (12 episodes)
+* [[Robia LaMorte]] as [[Jenny Calendar]] (11 episodes)
+* [[Seth Green]] as [[Oz (Buffy the Vampire Slayer)|Daniel "Oz" Osbourne]] (10 episodes)
+* [[Armin Shimerman]] as [[Principal Snyder]] (9 episodes)
+* [[Danny Strong]] as [[Jonathan Levinson]] (7 episodes)
+* [[Bianca Lawson]] as [[List of minor Buffy the Vampire Slayer characters#Kendra|Kendra]] (4 episodes)
+* [[Larry Bagby]] as [[List of minor Buffy the Vampire Slayer characters#Larry Blaisdell|Larry Blaisdell]] (2 episodes)
+* [[Andrew J. Ferchland]] as [[Anointed One (Buffyverse)|The Anointed One]] (2 episodes)
+* [[Saverio Guerra]] as [[List of minor Buffy the Vampire Slayer characters#Willy the Snitch|Willy the Snitch]] (2 episodes)
+* [[Jason Hall (actor)|Jason Hall]] as [[List of minor Buffy the Vampire Slayer characters#Devon MacLeish|Devon MacLeish]] (2 episodes)
+* [[Max Perlich]] as [[List of minor Buffy the Vampire Slayer characters#Whistler|Whistler]] (2 episodes)
+* [[Robin Sachs]] as [[Ethan Rayne]] (2 episodes)
+* [[Eric Saiet]] as [[List of minor Buffy the Vampire Slayer characters#Dalton|Dalton]] (2 episodes)
+* [[Vincent Schiavelli]] as Uncle Enios (2 episodes)
+* [[Brian Thompson]] as [[List of minor Buffy the Vampire Slayer characters#Judge|The Judge]] (2 episodes)
 * [[Elizabeth Anne Allen]] as [[Amy Madison]] (1 episode)
 * [[Julie Benz]] as [[Darla (Buffy the Vampire Slayer)|Darla]] (1 episode)
 * [[Dean Butler (actor)|Dean Butler]] as [[List of minor Buffy the Vampire Slayer characters#Hank Summers|Hank Summers]] (1 episode)
@@ -68,12 +68,12 @@ During the [[Becoming (Buffy the Vampire Slayer)|season finale]], Buffy and Will
 }}
 
 == Crew ==
-Series creator [[Joss Whedon]] served as executive producer and [[showrunner]]. Besides Whedon, only [[David Greenwalt]] and Rob Des Hotel & Dean Batali, now executive story editors, returned. Whedon wrote the most episodesIterator, writing five by himself and co-writing one with co-executive producer David Greenwalt, and doing another story with Greenwalt, totaling seven episodesIterator. [[Marti Noxon]] joined as a staff writer (promoted to story editor midseason) and wrote the next highest amount of episodesIterator, writing five on her own and co-writing one with [[Howard Gordon]], who joined as consulting producer for the first half of the season. Greenwalt devised the story for "School Hard" with Whedon, but wrote the teleplay solo. He then wrote and directed one episode, co-writing "Ted" with Whedon. Rob Des Hotel and Dean Batali (returning from the first season) wrote three episodesIterator together. Freelance writer [[Carl Ellsworth]] was fired following his first episode "Halloween".<ref>{{cite web |url=http://www.courier-journal.com/apps/pbcs.dll/article?AID=/20050521/FEATURES/505210319/1011/SCENE&nclick_check=1 |title=Native son set to make mark in Tinseltown |work=The Courier Journal |first=Judith |last=Egerton |date=May 20, 2005 |accessdate=August 5, 2013}}</ref><ref>{{cite web|url=http://www.whedon.info/How-I-got-fired-from-writing-for.html|title=How I got fired from writing for Buffy - Native son set to make mark in Tinseltown|work=Whedon.info|date=May 23, 2005|accessdate=August 5, 2013}}</ref> David Tyron King wrote two freelance episodesIterator (as Ty King), King was previously an executive producer on the previous series Whedon worked on, ''[[Parenthood (1990 TV series)|Parenthood]]'' (1990). Former story editors Matt Kiene and Joe Reinkemeyer returned and wrote one freelance episode. The other freelanced script of the season was "Go Fish", wrote by husband and wife team [[David Fury]] and Elin Hampton, Fury would continue to write freelance in the following season before joining the show full time.<ref>{{cite web|url=http://www.whedon.info/A-Brief-History-of-Mutant-Enemy.html|title=A Brief History of Mutant Enemy|work=Whedon.info|date=May 24, 2004|accessdate=July 30, 2010}}</ref>
+Series creator [[Joss Whedon]] served as executive producer and [[showrunner]]. Besides Whedon, only [[David Greenwalt]] and Rob Des Hotel & Dean Batali, now executive story editors, returned. Whedon wrote the most episodes, writing five by himself and co-writing one with co-executive producer David Greenwalt, and doing another story with Greenwalt, totaling seven episodes. [[Marti Noxon]] joined as a staff writer (promoted to story editor midseason) and wrote the next highest amount of episodes, writing five on her own and co-writing one with [[Howard Gordon]], who joined as consulting producer for the first half of the season. Greenwalt devised the story for "School Hard" with Whedon, but wrote the teleplay solo. He then wrote and directed one episode, co-writing "Ted" with Whedon. Rob Des Hotel and Dean Batali (returning from the first season) wrote three episodes together. Freelance writer [[Carl Ellsworth]] was fired following his first episode "Halloween".<ref>{{cite web |url=http://www.courier-journal.com/apps/pbcs.dll/article?AID=/20050521/FEATURES/505210319/1011/SCENE&nclick_check=1 |title=Native son set to make mark in Tinseltown |work=The Courier Journal |first=Judith |last=Egerton |date=May 20, 2005 |accessdate=August 5, 2013}}</ref><ref>{{cite web|url=http://www.whedon.info/How-I-got-fired-from-writing-for.html|title=How I got fired from writing for Buffy - Native son set to make mark in Tinseltown|work=Whedon.info|date=May 23, 2005|accessdate=August 5, 2013}}</ref> David Tyron King wrote two freelance episodes (as Ty King), King was previously an executive producer on the previous series Whedon worked on, ''[[Parenthood (1990 TV series)|Parenthood]]'' (1990). Former story editors Matt Kiene and Joe Reinkemeyer returned and wrote one freelance episode. The other freelanced script of the season was "Go Fish", wrote by husband and wife team [[David Fury]] and Elin Hampton, Fury would continue to write freelance in the following season before joining the show full time.<ref>{{cite web|url=http://www.whedon.info/A-Brief-History-of-Mutant-Enemy.html|title=A Brief History of Mutant Enemy|work=Whedon.info|date=May 24, 2004|accessdate=July 30, 2010}}</ref>
 
-Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episodesIterator in the second season, directing five episodesIterator each. Later regular directors on the series, [[David Solomon (TV producer)|David Solomon]] (also co-producer) and [[James A. Contner]] directed their first episodesIterator in the second season.
+Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episodes in the second season, directing five episodes each. Later regular directors on the series, [[David Solomon (TV producer)|David Solomon]] (also co-producer) and [[James A. Contner]] directed their first episodes in the second season.
 
 == Episodes ==
-{{See also|List of Buffy the Vampire Slayer episodesIterator}}
+{{See also|List of Buffy the Vampire Slayer episodes}}
 <onlyinclude>{| class="wikitable plainrowheaders" style="width: 100%; margin-right: 0;"
 |-
 ! style="background: #E34234; color: #ffffff;"| No. in<br />series
@@ -84,7 +84,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
 ! style="background: #E34234; color: #ffffff;"| Original air date
 ! style="background: #E34234; color: #ffffff;"| Production<br>code
 |-
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 13
  |EpisodeNumber2 = 1
  |Title = [[When She Was Bad]]
@@ -95,7 +95,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Buffy suffers a vision in which [[The Master (Buffy the Vampire Slayer)|the Master]], undead, kills her once again. The [[Anointed One (Buffyverse)|Anointed One]] plans to resurrect the slain Master in a ritual using his exhumed skeleton, with kidnapped [[Scooby Gang (Buffy the Vampire Slayer)|Scooby Gang]] members as blood sacrifices. Buffy rescues her friends, then deals with her residual fear and anger by obliterating the Master entirely.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 14
  |EpisodeNumber2 = 2
  |Title = [[Some Assembly Required (Buffy the Vampire Slayer)|Some Assembly Required]]
@@ -106,7 +106,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Bodies of girls killed in traffic accidents are being dug from their graves. The culprits are two science students, Chris and Eric, using pieces of the girls to create a bride for Chris' monstrous brother, Daryl. The only thing the young monsters need now is Cordy's head—can the [[Scooby Gang (Buffy the Vampire Slayer)|Scooby Gang]] members arrive in time to save her?
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 15
  |EpisodeNumber2 = 3
  |Title = [[School Hard]]
@@ -117,7 +117,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = The Night of St. Vigeous is fast approaching, when the power of all vampires will be at its peak. [[Spike (Buffy the Vampire Slayer)|Spike]] and [[Drusilla (Buffy the Vampire Slayer)|Drusilla]] blast into town and learn that Sunnydale has its very own Slayer. Impatient to add a third notch to his tally of Slayer-kills, Spike attacks Buffy at Sunnydale High on Parent Teacher Night—with disastrous results.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 16
  |EpisodeNumber2 = 4
  |Title = [[Inca Mummy Girl]]
@@ -128,7 +128,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = After the seal of protection lying in her sarcophagus is broken, a mummified [[Incan]] girl in a museum exhibit is revivified when she sucks the life-force from a touring student. An unsuspecting [[Xander Harris|Xander]] falls head over heels for the Latin beauty, Ampata, and must save [[Willow Rosenberg|Willow]] when his mistake threatens to cost her her life.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 17
  |EpisodeNumber2 = 5
  |Title = [[Reptile Boy]]
@@ -139,7 +139,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Upset again at Angel, Buffy lies to Giles and goes to a [[fraternities and sororities|frat]] party with [[Cordelia Chase|Cordelia]], where their dates drug them and chain them in the basement. The house brothers worship a snake demon and sacrifice girls to it annually in exchange for wealth and power. Giles, Angel, and Willow compare notes and meet up with Xander just in time to help Buffy break up the cabal.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 18
  |EpisodeNumber2 = 6
  |Title = [[Halloween (Buffy the Vampire Slayer)|Halloween]]
@@ -150,7 +150,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Costume shop owner [[Ethan Rayne]] casts a spell that transforms kids into their costume personae. Angel and Cordelia try to help as Willow becomes a ghost, Xander a soldier, and Buffy a brainless, helpless 18th-century noblewoman. Spike joins the fun and tries to take advantage of the Slayer's predicament, but Giles breaks Ethan's spell at a critical moment.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 19
  |EpisodeNumber2 = 7
  |Title = [[Lie to Me (Buffy the Vampire Slayer)|Lie to Me]]
@@ -161,7 +161,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Out patrolling, Buffy spies Angel with a demonstrative Drusilla, then catches him in a lie later. Billy "Ford" Fordham, Buffy's long-time LA school chum, transfers to Sunnydale High, but nobody suspects he is negotiating a deal with Spike—and offering the Slayer as trade goods. Angel discreetly enlists Willow's help.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 20
  |EpisodeNumber2 = 8
  |Title = [[The Dark Age]]
@@ -172,7 +172,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Haunted by his dark past when he was known as Ripper, Giles confronts his old crony Ethan Rayne in an attempt to save Jenny from the lethal consequences of possession by the demon Eyghon. With Giles and the Slayer slated as its next victims, demon-ridden Angel forces Eyghon to possess him instead.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 21
  |EpisodeNumber2 = 9
  |Title = [[What's My Line (Buffy the Vampire Slayer)|What's My Line (Part 1)]]
@@ -183,7 +183,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = To get help killing Buffy while he intensifies his search for Dru's cure, Spike calls upon the Order of Taraka. Buffy is attacked by a series of assassins, including her heir "Kendra, the Vampire Slayer", who was called when Buffy died at the end of Season 1 and initially mistakes Buffy for a vampire. Kendra, having seen "vampire" Buffy kissing vampire Angel, has already taken Angel out of the picture.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 22
  |EpisodeNumber2 = 10
  |Title = [[What's My Line (Buffy the Vampire Slayer)|What's My Line (Part 2)]]
@@ -194,7 +194,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = While Career Week drags on at Sunnydale High, Buffy and Kendra form an uneasy alliance to stop Spike from sacrificing Angel, whose blood, ritually spilled when the moon is full, is Drusilla's only cure. The Slayers bring Spike's plan, to host a massive killing spree for Dru's "coming out party," down around his ears.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 23
  |EpisodeNumber2 = 11
  |Title = [[Ted (Buffy the Vampire Slayer)|Ted]]
@@ -205,7 +205,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Buffy returns home one evening to find her mother kissing a stranger in the kitchen. Joyce's date, Ted, turns abusive with Buffy, who accidentally kills him in self-defense. Believing herself guilty of manslaughter, the Slayer is heartily relieved to learn that Ted is a serial killer android targeting Joyce as his next wife/victim.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 24
  |EpisodeNumber2 = 12
  |Title = [[Bad Eggs (Buffy the Vampire Slayer)|Bad Eggs]]
@@ -216,7 +216,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = For Health class, students unknowingly adopt "eggs" of a Bezoar demon growing under the school. Its arachnoid "babies" are able to directly control a person's central nervous system. Dealing with a pair of outlaw vampire brothers in addition to slaying the enormous Bezoar before its progeny take over Sunnydale, Buffy gets ultra-grounded for her trouble.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 25
  |EpisodeNumber2 = 13
  |RTitle = "[[Surprise (Buffy the Vampire Slayer)|Surprise]]" (Part 1)
@@ -227,7 +227,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Buffy turns 17 and the Scoobies plan a surprise party. Meanwhile Drusilla plans her own celebration as Spike collects her presents: the disassembled pieces of The Judge, an ancient demon called to cleanse the world of humanity. Stymied at every turn, Buffy and Angel go back to his place to regroup, where they confess their deepest feelings and make love for the first time. Afterwards, Angel wakes in the middle of the night calling Buffy's name in anguish...
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 26
  |EpisodeNumber2 = 14
  |RTitle = "[[Innocence (Buffy the Vampire Slayer)|Innocence]]" (Part 2)
@@ -238,7 +238,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Because he finds even "one moment of true happiness" in Buffy's arms, Angel's curse is nullified; he loses his soul and reverts to his former self, the vicious super-evil killer vampire, Angelus who teams up with Spike and Drusilla to have the Judge destroy humanity. Jenny Calendar turns out to be a Gypsy spy. Devastated by these betrayals, Buffy still takes out the reputedly indestructible Judge using her birthday present from Xander—a stolen rocket launcher.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 27
  |EpisodeNumber2 = 15
  |Title = [[Phases (Buffy the Vampire Slayer)|Phases]]
@@ -249,7 +249,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = There's a werewolf at large in Sunnydale and the Scoobies discover that it's [[Oz (Buffy the Vampire Slayer)|Oz]]. Buffy tries to protect Sunnydale residents from the beast's savagery, and protect the savage beast from a bounty hunter who doesn't care that his target is human 28 days out of 31. Meanwhile, Angelus stirs up more trouble for Buffy. Willow convinces Oz she still wants to see him, despite everything.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 28
  |EpisodeNumber2 = 16
  |Title = [[Bewitched, Bothered and Bewildered (Buffy the Vampire Slayer)|Bewitched, Bothered and Bewildered]]
@@ -260,7 +260,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Valentine's Day has everyone on edge. With secret reluctance, Cordelia dumps Xander to appease her friends. Crushed, Xander coerces Amy to cast a love spell, but it goes awry and every woman in Sunnydale, except Cordy, becomes pathologically attracted to him. A smitten Dru saves Xander from Angelus, but who will save him from the screaming mob?
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 29
  |EpisodeNumber2 = 17
  |Title = [[Passion (Buffy the Vampire Slayer)|Passion]]
@@ -271,7 +271,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Angelus kicks his terror campaign against Buffy and her friends into high gear, leading them to believe Joyce is his next target. Jenny makes progress rediscovering the gypsy Ritual of Restoration and, with Buffy's terse blessing, gets back together with Giles. Jenny and Giles also work with Buffy and Willow to ritually revoke Angel's invitations into their various homes.  Angelus takes his anger out on Jenny with tragic results.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 30
  |EpisodeNumber2 = 18
  |Title = [[Killed by Death (Buffy the Vampire Slayer)|Killed by Death]]
@@ -282,7 +282,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = After flu lands Buffy in the hospital, she rescues fevered children from ''Der Kindestod'', a nightmare demon invisible to healthy people. When getting well means losing her ability to fight the demon, Buffy reinfects herself. In saving the other children, she also avenges her young cousin and puts her own hospital phobia to rest.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 31
  |EpisodeNumber2 = 19
  |Title = [[I Only Have Eyes for You (Buffy the Vampire Slayer)|I Only Have Eyes for You]]
@@ -293,7 +293,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = The tortured ghost of a former Sunnydale High student re-enacts a murder-suicide on the night of the school's [[Sadie Hawkins dance]]. Bespelled to play the parts, Buffy and Angelus change the tragic outcome just enough for the lovers' spirits to find peace, and for Buffy to learn the meaning of forgiveness.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 32
  |EpisodeNumber2 = 20
  |Title = [[Go Fish (Buffy the Vampire Slayer)|Go Fish]]
@@ -304,7 +304,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Xander goes undercover on the Sunnydale swim team after members begin turning up dead. Apparently, the swim-team coach gives fish/steroid cocktails to the swim team to get them to perform, but it turns them into sea monsters.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 33
  |EpisodeNumber2 = 21
  |Title = [[Becoming (Buffy the Vampire Slayer)|Becoming (Part 1)]]
@@ -315,7 +315,7 @@ Both Joss Whedon and [[Bruce Seth Green]] directed the highest amount of episode
  |ShortSummary = Kendra's Watcher sends her back to Sunnydale because a dark power is rising: Angelus, Spike, and Drusilla have found a petrified demon called Acathla and plans to perform a ritual that will allow Acathla to wake up and suck every living thing on the planet into hell.
  |LineColor = E34234
 }}
-{{Episode list/sublist|List of Buffy the Vampire Slayer episodesIterator
+{{Episode list/sublist|List of Buffy the Vampire Slayer episodes
  |EpisodeNumber = 34
  |EpisodeNumber2 = 22
  |Title = [[Becoming (Buffy the Vampire Slayer)|Becoming (Part 2)]]
@@ -334,22 +334,22 @@ The two-part episode "[[Surprise (Buffy the Vampire Slayer)|Surprise]]"/"[[Innoc
 The second season is included on Pajiba.com's list of the best 15 seasons of the past 20 years.<ref>{{cite web|url=http://www.pajiba.com/guides/buffy-the-vampire-slayer-season-two.php|title=Buffy the Vampire Slayer, Season Two|work=Pajiba.com|author=Stacey Nosek|date=April 15, 2008|accessdate=August 2, 2010}}</ref>
 
 == DVD release ==
-''Buffy the Vampire Slayer'': The Complete Second Season was released on DVD in region 1 on June 11, 2002<ref name="r1 dvd"/> and in region 2 on May 21, 2001.<ref>{{Cite web |url=http://www.bbc.co.uk/cult/buffy/buffystuff/dvdvideo/index.shtml |title=Buffy DVD and VHS |publisher=[[BBC]] |accessdate=July 31, 2010}}</ref> The DVD includes all 22 episodesIterator on 6 discs presented in full frame 1.33:1 aspect ratio. Special features on the DVD include three commentary tracks—"Reptile Boy" by writer and director [[David Greenwalt]], "What's My Line" (Part 1 & 2) by co-writer [[Marti Noxon]] and "Innocence" by writer and director [[Joss Whedon]]. Whedon also discusses the episodesIterator "Surprise", "Innocence", "Passion", "I Only Have Eyes For You" and "Becoming" in interviews. Scripts for "Reptile Boy", "What's My Line" (Parts 1 & 2) and "Innocence" are included. Featurettes include "Designing ''Buffy''", a 15-minute featurette which details the set designs; "A ''Buffy'' Bestiary", a 30-minute featurette detailing the monsters featured in the season; and "Beauty and Beasts", a 20-minute featurette showcasing the make-up process. Also included are cast biographies, photo galleries, and series trailers.<ref>{{cite web|url=http://www.tvshowsondvd.com/releases/Buffy-Vampire-Slayer-Season-2/1120|title=Buffy the Vampire Slayer - Season 2|work=TVShowsOnDVD.com |accessdate=July 31, 2010}}</ref>
+''Buffy the Vampire Slayer'': The Complete Second Season was released on DVD in region 1 on June 11, 2002<ref name="r1 dvd"/> and in region 2 on May 21, 2001.<ref>{{Cite web |url=http://www.bbc.co.uk/cult/buffy/buffystuff/dvdvideo/index.shtml |title=Buffy DVD and VHS |publisher=[[BBC]] |accessdate=July 31, 2010}}</ref> The DVD includes all 22 episodes on 6 discs presented in full frame 1.33:1 aspect ratio. Special features on the DVD include three commentary tracks—"Reptile Boy" by writer and director [[David Greenwalt]], "What's My Line" (Part 1 & 2) by co-writer [[Marti Noxon]] and "Innocence" by writer and director [[Joss Whedon]]. Whedon also discusses the episodes "Surprise", "Innocence", "Passion", "I Only Have Eyes For You" and "Becoming" in interviews. Scripts for "Reptile Boy", "What's My Line" (Parts 1 & 2) and "Innocence" are included. Featurettes include "Designing ''Buffy''", a 15-minute featurette which details the set designs; "A ''Buffy'' Bestiary", a 30-minute featurette detailing the monsters featured in the season; and "Beauty and Beasts", a 20-minute featurette showcasing the make-up process. Also included are cast biographies, photo galleries, and series trailers.<ref>{{cite web|url=http://www.tvshowsondvd.com/releases/Buffy-Vampire-Slayer-Season-2/1120|title=Buffy the Vampire Slayer - Season 2|work=TVShowsOnDVD.com |accessdate=July 31, 2010}}</ref>
 
 == References ==
 {{Reflist}}
 
 == External links ==
-* {{Imdb episodesIterator|0118276|Buffy the Vampire Slayer}}
-* {{Tv.com episodesIterator|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer|2}}
-* List of [http://www.buffyguide.com/episodesIterator/episodes2.shtml ''Buffy the Vampire Slayer'' season 2 episodesIterator] at [http://www.buffyguide.com BuffyGuide.com]
+* {{Imdb episodes|0118276|Buffy the Vampire Slayer}}
+* {{Tv.com episodes|buffy-the-vampire-slayer|10|Buffy the Vampire Slayer|2}}
+* List of [http://www.buffyguide.com/episodes/episodes2.shtml ''Buffy the Vampire Slayer'' season 2 episodes] at [http://www.buffyguide.com BuffyGuide.com]
 * {{Epguides|BuffytheVampireSlayer|Buffy the Vampire Slayer}}
 
 {{Buffynav}}
 {{BuffyEpisodes}}
 
-[[Category:Buffy the Vampire Slayer (season 2) episodesIterator| ]]
-[[Category:Lists of comedy-drama television series episodesIterator]]
-[[Category:Lists of fantasy television series episodesIterator]]
+[[Category:Buffy the Vampire Slayer (season 2) episodes| ]]
+[[Category:Lists of comedy-drama television series episodes]]
+[[Category:Lists of fantasy television series episodes]]
 [[Category:1997 television seasons]]
 [[Category:1998 television seasons]]

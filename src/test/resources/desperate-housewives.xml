@@ -7,7 +7,7 @@
         <id>desperate-housewives</id>
         <name>Desperate Housewives</name>
         <synopsis>Dark comedy drama exploring the complicated reality behind the apparent domestic bliss of a group of housewives in a fictitious American suburb</synopsis>
-        <episodesIterator>
+        <episodes>
             <ns2:episode_details>
                 <brandId>desperate-housewives</brandId>
                 <id>16</id>
@@ -95,6 +95,6 @@ Meanwhile, Carlos receives a generous bonus when Gaby discovers his boss' dirty 
                 <image>/static/programmes/images/defaultImages/largeADefaultImage.png</image>
                 <imageAlt>Channel 4 Default</imageAlt>
             </ns2:episode_details>
-        </episodesIterator>
+        </episodes>
     </brand_details>
 </Channel4ServiceResult>

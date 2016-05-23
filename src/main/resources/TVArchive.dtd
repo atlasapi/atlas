@@ -28,7 +28,7 @@
 <!-- The id of a programme. Different showings of the same programme have the same prog_id. E.g. all showings of a particular episode of Friends have the same prog_id -->
 <!ELEMENT prog_id (#PCDATA)>
 
-<!-- The id of a series. E.g. all episodesIterator of Friends have the same series_id -->
+<!-- The id of a series. E.g. all episodes of Friends have the same series_id -->
 <!ELEMENT series_id (#PCDATA)>
 
 <!-- String containing synopsis of series -->
@@ -71,7 +71,7 @@
 <!-- episode number -->
 <!ELEMENT episode_number (#PCDATA)>
 
-<!-- total number of episodesIterator in the series -->
+<!-- total number of episodes in the series -->
 <!ELEMENT episode_total (#PCDATA)>
 
 <!-- series number -->

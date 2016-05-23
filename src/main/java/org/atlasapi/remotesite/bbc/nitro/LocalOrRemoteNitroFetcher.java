@@ -131,7 +131,7 @@ public class LocalOrRemoteNitroFetcher {
                 ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
     }
 
-    public List<ResolveOrFetchResult<Item>> resolveOrFetchItem(Iterable<Broadcast> broadcasts)
+    public ResolveOrFetchResult<Item> resolveOrFetchItem(Iterable<Broadcast> broadcasts)
             throws NitroException {
         if (Iterables.isEmpty(broadcasts)) {
             return ResolveOrFetchResult.empty();
@@ -151,37 +151,42 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        Iterable<List<Item>> fetched = contentAdapter.fetchEpisodes(toFetch);
-        return mergeItemsWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
-    }
-    
-    private List<ResolveOrFetchResult<Item>> mergeItemsWithExisting(Iterable<List<Item>> fetchedItemsIterable,
-            Set<Item> existingItems) {
-
-        ImmutableList.Builder<ResolveOrFetchResult<Item>> resolveOrFetchResults = ImmutableList.builder();
-
-        Iterator<List<Item>> fetchItemIterator = fetchedItemsIterable.iterator();
-        while (fetchItemIterator.hasNext()) {
-            List<Item> fetchedItems = fetchItemIterator.next();
-            Map<String, Item> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(
-                    fetchedItems,
-                    Identified.TO_URI
-            ));
-            ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
-            for (Item existing : existingItems) {
-                Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
-                if (fetched != null) {
-                    resolved.add(contentMerger.merge((Item) existing, (Item) fetched));
-                } else {
-                    resolved.add(existing);
-                }
-
+        Iterator<List<Item>> fetchedItemListIterator = contentAdapter.fetchEpisodes(toFetch).iterator();
+        ImmutableSet.Builder<Item> fetchedItemSet = ImmutableSet.builder();
+        while (fetchedItemListIterator.hasNext()) {
+            List<Item> itemList = fetchedItemListIterator.next();
+            for (Item item : itemList) {
+                fetchedItemSet.add(item);
             }
-
-            resolveOrFetchResults.add(new ResolveOrFetchResult<>(resolved.build(), fetchedIndex.values()));
         }
 
-        return resolveOrFetchResults.build();
+        return mergeItemsWithExisting(
+                fetchedItemSet.build(),
+                ImmutableSet.copyOf(
+                        Iterables.filter(resolvedItems.getAllResolvedResults(),
+                                Item.class)
+                )
+        );
+    }
+    
+    private ResolveOrFetchResult<Item> mergeItemsWithExisting(Iterable<Item> fetchedItems,
+            Set<Item> existingItems) {
+
+
+        Map<String, Item> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(
+                fetchedItems, Identified.TO_URI)
+        );
+
+        ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
+        for (Item existing : existingItems) {
+            Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
+            if (fetched != null) {
+                resolved.add(contentMerger.merge(existing, fetched));
+            } else {
+                resolved.add(existing);
+            }
+        }
+        return new ResolveOrFetchResult<>(resolved.build(), fetchedIndex.values());
     }
 
 

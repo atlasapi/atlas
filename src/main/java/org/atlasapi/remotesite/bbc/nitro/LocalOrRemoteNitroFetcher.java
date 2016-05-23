@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 import java.util.Map;
 import java.util.Set;
 
@@ -17,11 +19,11 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Clock;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Interval;
+import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -33,13 +35,11 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Interval;
-import org.joda.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.Clock;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class LocalOrRemoteNitroFetcher {
 
@@ -149,11 +149,11 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        Iterable<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
+        ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
         return mergeItemsWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
     }
     
-    private ResolveOrFetchResult<Item> mergeItemsWithExisting(Iterable<Item> fetchedItems,
+    private ResolveOrFetchResult<Item> mergeItemsWithExisting(ImmutableSet<Item> fetchedItems,
             Set<Item> existingItems) {
         Map<String, Item> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedItems, Identified.TO_URI));
         ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
@@ -305,10 +305,11 @@ public class LocalOrRemoteNitroFetcher {
                     ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Container.class))).getAll();
     }
     
+    
     private Multimap<String, Item> toBrandUriMap(Iterable<Item> items) {
         return Multimaps.index(Iterables.filter(items, HAS_BRAND), TO_BRAND_REF_URI);
     }
-
+    
     private static Function<Item, String> TO_BRAND_REF_URI = new Function<Item, String>() {
 
         @Override

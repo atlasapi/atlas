@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 import java.util.Set;
 
@@ -19,11 +17,11 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Interval;
-import org.joda.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.Clock;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -35,10 +33,13 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Clock;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Interval;
+import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class LocalOrRemoteNitroFetcher {
@@ -53,7 +54,7 @@ public class LocalOrRemoteNitroFetcher {
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, final Clock clock) {
         this(resolver, contentAdapter,
                 new ContentMerger(
-                        MergeStrategy.MERGE,
+                        MergeStrategy.NITRO_VERSIONS_REVOKE,
                         MergeStrategy.KEEP,
                         MergeStrategy.REPLACE
                 ),
@@ -121,7 +122,7 @@ public class LocalOrRemoteNitroFetcher {
                 resolver,
                 contentAdapter,
                 new ContentMerger(
-                        MergeStrategy.MERGE,
+                        MergeStrategy.NITRO_VERSIONS_REVOKE,
                         MergeStrategy.KEEP,
                         MergeStrategy.REPLACE
                 ),

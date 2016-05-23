@@ -52,51 +52,63 @@ public class LocalOrRemoteNitroFetcher {
 
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, final Clock clock) {
         this(resolver, contentAdapter,
-                new ContentMerger(MergeStrategy.NITRO_VERSIONS_REVOKE, MergeStrategy.KEEP, MergeStrategy.REPLACE),
+                new ContentMerger(
+                        MergeStrategy.MERGE,
+                        MergeStrategy.KEEP,
+                        MergeStrategy.REPLACE
+                ),
                 new Predicate<Item>() {
 
                     @Override
                     public boolean apply(Item input) {
-                        if (hasVersionsWithNoDurations(input)) {                        
+                        if (hasVersionsWithNoDurations(input)) {
                             return true;
                         }
-                        
+
                         LocalDate today = clock.now().toLocalDate();
-                        
+
                         // radio are more likely to publish clips after a show has been broadcast
                         // so with a limited ingest window it is more important to go back as far as possible for radio
                         // to ensure that clips are not missed
                         // tv has a longer forward interval, to ensure for repeated shows that we refetch everything, to make sure
                         // we pull in all changes on a given programme even for later repeats of something broadcast earlier.
-                        final Interval fetchForBroadcastsWithin = 
-                                MediaType.AUDIO.equals(input.getMediaType()) 
-                                    ? broadcastInterval(today.minusDays(5), today.plusDays(1)) 
-                                    : broadcastInterval(today.minusDays(3), today.plusDays(10));
-                        
-                        return Iterables.any(input.flattenBroadcasts(), new Predicate<org.atlasapi.media.entity.Broadcast>() {
+                        final Interval fetchForBroadcastsWithin =
+                                MediaType.AUDIO.equals(input.getMediaType())
+                                ? broadcastInterval(today.minusDays(5), today.plusDays(1))
+                                : broadcastInterval(today.minusDays(3), today.plusDays(10));
 
-                            @Override
-                            public boolean apply(org.atlasapi.media.entity.Broadcast input) {
-                                return fetchForBroadcastsWithin.contains(input.getTransmissionTime());
-                            }});
+                        return Iterables.any(
+                                input.flattenBroadcasts(),
+                                new Predicate<org.atlasapi.media.entity.Broadcast>() {
+
+                                    @Override
+                                    public boolean apply(
+                                            org.atlasapi.media.entity.Broadcast input) {
+                                        return fetchForBroadcastsWithin.contains(input.getTransmissionTime());
+                                    }
+                                }
+                        );
                     }
 
                     /**
-                     * Forces a full fetch from nitro if an item with no durations is encountered
+                     * Forces a full fetch from nitro if an item with no durations is
+                     * encountered
+                     *
                      * @param input
                      * @return
                      */
                     private boolean hasVersionsWithNoDurations(Item input) {
                         return Iterables.any(input.getVersions(), new Predicate<Version>() {
+
                             @Override
                             public boolean apply(Version input) {
                                 return input.getDuration() == null;
                             }
                         });
                     }
-            
-                    }
-                );
+
+                }
+        );
     }
     
     private static Interval broadcastInterval(LocalDate start, LocalDate end) {
@@ -105,7 +117,16 @@ public class LocalOrRemoteNitroFetcher {
     
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, 
             Predicate<Item> fullFetchPermitted) {
-        this(resolver, contentAdapter, new ContentMerger(MergeStrategy.NITRO_VERSIONS_REVOKE, MergeStrategy.KEEP, MergeStrategy.REPLACE), fullFetchPermitted);
+        this(
+                resolver,
+                contentAdapter,
+                new ContentMerger(
+                        MergeStrategy.MERGE,
+                        MergeStrategy.KEEP,
+                        MergeStrategy.REPLACE
+                ),
+                fullFetchPermitted
+        );
     }
     
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, 

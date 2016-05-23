@@ -25,6 +25,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
+import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
@@ -59,8 +60,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 .builder()
                 .withMixins(ProgrammesMixin.ANCESTOR_TITLES, ProgrammesMixin.CONTRIBUTIONS,
                         ProgrammesMixin.IMAGES, ProgrammesMixin.GENRE_GROUPINGS)
-                // TODO: MBST-15453
-                .withUnsafeArbitrary("availability", "PT12H")
+                .withAvailability(AvailabilityOption.AVAILABLE)
                 .withPageSize(pageSize)
                 .withAvailabilityEntityType(AvailabilityEntityTypeOption.EPISODE)
                 .withEntityType(EntityTypeOption.EPISODE)

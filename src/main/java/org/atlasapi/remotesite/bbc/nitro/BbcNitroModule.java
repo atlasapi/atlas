@@ -137,7 +137,15 @@ public class BbcNitroModule {
 
     @Bean
     PidUpdateController pidUpdateController() {
-        return new PidUpdateController(nitroContentAdapter(glycerin(null)), contentWriter());
+        Glycerin glycerin = glycerin(null);
+        return new PidUpdateController(
+                nitroContentAdapter(glycerin),
+                contentWriter(),
+                localOrRemoteNitroFetcher(
+                        glycerin,
+                        Optional.of(Predicates.<Item>alwaysTrue())
+                )
+        );
     }
 
     @Bean

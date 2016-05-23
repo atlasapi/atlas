@@ -41,10 +41,59 @@ public class PidUpdateController {
 
     private final NitroContentAdapter contentAdapter;
     private final ContentWriter contentWriter;
+    private final LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher;
 
-    public PidUpdateController(NitroContentAdapter contentAdapter, ContentWriter contentWriter) {
+    public PidUpdateController(
+            NitroContentAdapter contentAdapter,
+            ContentWriter contentWriter,
+            LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher
+    ) {
         this.contentAdapter = checkNotNull(contentAdapter);
         this.contentWriter = checkNotNull(contentWriter);
+        this.localOrRemoteNitroFetcher = checkNotNull(localOrRemoteNitroFetcher);
+    }
+
+    @RequestMapping(value = "/system/bbc/nitro/merge/content/{pid}", method = RequestMethod.POST)
+    public void mergeUpdatePidFromNitro(
+            HttpServletResponse response, @PathVariable("pid") String pid
+    ) throws IOException {
+        Set<Item> items;
+        try {
+            items = contentAdapter
+                    .fetchEpisodes(ProgrammesQuery.builder()
+                            .withPid(pid)
+                            .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS)
+                            .withPageSize(1)
+                            .build());
+            items = localOrRemoteNitroFetcher.resolveItems(items).getAll();
+        } catch (NitroException e) {
+            log.error("Failed to get Nitro item {}", pid, e);
+            writeServerErrorWithStack(response, e);
+            return;
+        }
+
+        if (items.isEmpty()) {
+            log.error("No items found in Nitro for pid {}", pid);
+            response.setStatus(HttpStatusCode.NOT_FOUND.code());
+            response.setContentLength(0);
+            return;
+        }
+
+        Item item = Iterables.getOnlyElement(items);
+
+        updateBrand(response, pid, item);
+        updateSeries(response, pid, item);
+
+        try {
+            contentWriter.createOrUpdate(item);
+            response.setStatus(HttpStatusCode.ACCEPTED.code());
+        } catch (IllegalArgumentException e) {
+            String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
+            log.error(message);
+            response.setStatus(HttpStatusCode.SERVER_ERROR.code());
+            response.setContentLength(message.length());
+            response.getWriter().write(message);
+        }
     }
 
     @RequestMapping(value = "/system/bbc/nitro/update/content/{pid}", method = RequestMethod.POST)

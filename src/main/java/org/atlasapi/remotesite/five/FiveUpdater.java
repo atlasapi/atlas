@@ -48,7 +48,7 @@ public class FiveUpdater extends ScheduledTask {
     private int processedItems = 0;
     private int failedItems =  0;
 
-    public FiveUpdater(ContentWriter contentWriter, ChannelResolver channelResolver, ContentResolver contentResolver, 
+    public FiveUpdater(ContentWriter contentWriter, ChannelResolver channelResolver, ContentResolver contentResolver,
             FiveLocationPolicyIds locationPolicyIds, int socketTimeout) {
         this.socketTimeout = socketTimeout;
         this.streamHttpClient = buildFetcher();

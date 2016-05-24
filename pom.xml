@@ -4,7 +4,7 @@
     <groupId>org.atlasapi</groupId>
     <artifactId>atlas</artifactId>
     <packaging>war</packaging>
-    <version>5.0-SNAPSHOT</version>
+    <version>5.1-SNAPSHOT</version>
     <description>Atlas 3.0 API</description>
     <build>
         <finalName>atlas</finalName>
@@ -524,6 +524,11 @@
             <groupId>org.ccil.cowan.tagsoup</groupId>
             <artifactId>tagsoup</artifactId>
             <version>1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.dataformat</groupId>
+            <artifactId>jackson-dataformat-yaml</artifactId>
+            <version>2.5.4</version>
         </dependency>
         <dependency>
             <groupId>jaxen</groupId>

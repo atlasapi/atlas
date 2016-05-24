@@ -270,7 +270,7 @@ public class ScheduleControllerTest {
         when(channelResolver.fromKey(any(String.class))).thenReturn(Maybe.just(channel));
         when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.<ApplicationConfiguration>absent())))
         .thenReturn(Schedule.fromChannelMap(ImmutableMap.<Channel,List<Item>>of(), new Interval(from, from)));
-        
+
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, "bbcone", null, "bbc.co.uk", request, response);
         
         verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));

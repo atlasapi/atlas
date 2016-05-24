@@ -45,7 +45,7 @@ public class OptaEventsModule {
     private @Value("${opta.events.http.credentials.rugby.password}") String rugbyPassword;
     private @Value("${opta.events.http.credentials.soccer.username}") String soccerUsername;
     private @Value("${opta.events.http.credentials.soccer.password}") String soccerPassword;
-    
+
     private static final RepetitionRule FOOTBALL_REPETITION_RULE = RepetitionRules.daily(new LocalTime(14, 0, 0));
     private static final RepetitionRule OTHER_SPORTS_REPETITION_RULE = RepetitionRules.daily(new LocalTime(12, 0, 0));
 
@@ -55,7 +55,7 @@ public class OptaEventsModule {
     private @Autowired EventStore eventStore;
     private @Autowired OrganisationStore organisationStore;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
-    
+
     @PostConstruct
     public void startBackgroundTasks() {
         

@@ -1,6 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.io.IOException;
+import java.util.List;
+import java.util.NoSuchElementException;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -17,6 +19,7 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.common.http.HttpStatusCode;
 
+import com.google.api.client.util.Sets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -55,73 +58,67 @@ public class PidUpdateController {
 
     @RequestMapping(value = "/system/bbc/nitro/merge/content/{pid}", method = RequestMethod.POST)
     public void mergeUpdatePidFromNitro(
-            HttpServletResponse response, @PathVariable("pid") String pid
+            HttpServletResponse response,
+            @PathVariable("pid") String pid
     ) throws IOException {
-        Set<Item> items;
+        Item item;
         try {
-            items = contentAdapter
+            Iterable<List<Item>> itemListIterable = contentAdapter
                     .fetchEpisodes(ProgrammesQuery.builder()
                             .withPid(pid)
                             .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS)
                             .withPageSize(1)
                             .build());
-            items = localOrRemoteNitroFetcher.resolveItems(items).getAll();
+
+            Iterable<Item> allItems = Iterables.concat(itemListIterable);
+            item = Iterables.getOnlyElement(localOrRemoteNitroFetcher.resolveItems(allItems).getAll());
+        } catch (NoSuchElementException e) {
+            log.error("No items found in Nitro for pid {}", pid);
+            response.setStatus(HttpStatusCode.NOT_FOUND.code());
+            response.setContentLength(0);
+            return;
         } catch (NitroException e) {
             log.error("Failed to get Nitro item {}", pid, e);
             writeServerErrorWithStack(response, e);
             return;
         }
 
-        if (items.isEmpty()) {
-            log.error("No items found in Nitro for pid {}", pid);
-            response.setStatus(HttpStatusCode.NOT_FOUND.code());
-            response.setContentLength(0);
-            return;
-        }
-
-        Item item = Iterables.getOnlyElement(items);
-
-        updateBrand(response, pid, item);
-        updateSeries(response, pid, item);
-
-        try {
-            contentWriter.createOrUpdate(item);
-            response.setStatus(HttpStatusCode.ACCEPTED.code());
-        } catch (IllegalArgumentException e) {
-            String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
-            log.error(message);
-            response.setStatus(HttpStatusCode.SERVER_ERROR.code());
-            response.setContentLength(message.length());
-            response.getWriter().write(message);
-        }
+        createOrUpdateItem(response, pid, item);
     }
 
     @RequestMapping(value = "/system/bbc/nitro/update/content/{pid}", method = RequestMethod.POST)
-    public void updatePidFromNitro(HttpServletResponse response, @PathVariable("pid") String pid)
-            throws IOException {
-        Set<Item> items;
+    public void updatePidFromNitro(
+            HttpServletResponse response,
+            @PathVariable("pid") String pid
+    ) throws IOException {
+        Item item;
         try {
-            items = contentAdapter
+            Iterable<List<Item>> items = contentAdapter
                     .fetchEpisodes(ProgrammesQuery.builder()
                             .withPid(pid)
                             .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS)
                             .withPageSize(1)
                             .build());
+            item = Iterables.getOnlyElement(items).get(0);
+        } catch (NoSuchElementException e) {
+            log.error("No items found in Nitro for pid {}", pid);
+            response.setStatus(HttpStatusCode.NOT_FOUND.code());
+            response.setContentLength(0);
+            return;
         } catch (NitroException e) {
             log.error("Failed to get Nitro item {}", pid, e);
             writeServerErrorWithStack(response, e);
             return;
         }
 
-        if (items.isEmpty()) {
-            log.error("No items found in Nitro for pid {}", pid);
-            response.setStatus(HttpStatusCode.NOT_FOUND.code());
-            response.setContentLength(0);
-            return;
-        }
+        createOrUpdateItem(response, pid, item);
+    }
 
-        Item item = Iterables.getOnlyElement(items);
-
+    private void createOrUpdateItem(
+            HttpServletResponse response,
+            String pid,
+            Item item
+    ) throws IOException {
         updateBrand(response, pid, item);
         updateSeries(response, pid, item);
 

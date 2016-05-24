@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -171,18 +173,33 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
-        return mergeItemsWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
+        Iterable<List<Item>> fetchedItems = contentAdapter.fetchEpisodes(toFetch);
+
+        ImmutableSet<Item> fetchedItemSet = ImmutableSet.copyOf(
+                Iterables.concat(
+                        fetchedItems
+                )
+        );
+
+        return mergeItemsWithExisting(
+                fetchedItemSet,
+                ImmutableSet.copyOf(
+                        Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)
+                )
+        );
     }
     
     private ResolveOrFetchResult<Item> mergeItemsWithExisting(ImmutableSet<Item> fetchedItems,
             Set<Item> existingItems) {
-        Map<String, Item> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedItems, Identified.TO_URI));
+        Map<String, Item> fetchedIndex = Maps.newHashMap(
+                Maps.uniqueIndex(fetchedItems, Identified.TO_URI)
+        );
+
         ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
         for (Item existing : existingItems) {
             Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
-                resolved.add(contentMerger.merge((Item) existing, (Item) fetched));
+                resolved.add(contentMerger.merge(existing, fetched));
             } else {
                 resolved.add(existing);
             }

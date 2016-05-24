@@ -7,6 +7,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 import javax.annotation.Nullable;
 
@@ -119,6 +121,31 @@ public class GlycerinNitroClipsAdapter {
         
     }
 
+    public List<org.atlasapi.media.entity.Clip> clipsFor(PidReference ref) throws NitroException {
+        try {
+            Iterable<com.metabroadcast.atlas.glycerin.model.Clip> nitroClips = Iterables
+                    .transform(Iterables.filter(getNitroClips(ref), isClip), toClip);
+
+            if (Iterables.isEmpty(nitroClips)) {
+                log.warn("No programmes found for clipRefs {}", ref, new Function<PidReference, String>() {
+
+                    @Override
+                    public String apply(@Nullable PidReference pidRef) {
+                        return pidRef.getPid();
+                    }
+                });
+            }
+
+            ImmutableList.Builder<org.atlasapi.media.entity.Clip> extractedClips = ImmutableList.builder();
+            for (Clip clip : nitroClips) {
+                extractedClips.add(extractClip(clip));
+            }
+            return extractedClips.build();
+        } catch (GlycerinException e) {
+            throw new NitroException(ref.toString(), e);
+        }
+    }
+
     private Multimap<String, org.atlasapi.media.entity.Clip> extractClips(List<Clip> clipPart) throws GlycerinException {
         final ListMultimap<String, Availability> availabilities = getNitroAvailabilities(clipPart);
         final ListMultimap<String, Version> versions = versions(clipPart);
@@ -146,6 +173,15 @@ public class GlycerinNitroClipsAdapter {
             }
         });
     }
+
+    private List<Version> versions(Clip clip) throws GlycerinException {
+        VersionsQuery query = VersionsQuery.builder()
+                .withDescendantsOf(clip.getPid())
+                .withPageSize(pageSize)
+                .build();
+
+        return exhaust(glycerin.execute(query));
+    }
     
     private Iterable<String> toPids(List<Clip> clips) {
         return Iterables.transform(clips, new Function<Clip, String>() {
@@ -172,6 +208,16 @@ public class GlycerinNitroClipsAdapter {
                 return checkNotNull(NitroUtil.programmePid(input));
             }
         });
+    }
+
+    private List<Availability> getNitroAvailabilities(Clip clip) throws GlycerinException {
+        AvailabilityQuery query = AvailabilityQuery.builder()
+                .withDescendantsOf(clip.getPid())
+                .withPageSize(pageSize)
+                .build();
+
+        GlycerinResponse<Availability> availabilities = glycerin.execute(query);
+        return availabilities.getResults();
     }
     
     private Iterable<String> toPid(List<Clip> clipPart) {
@@ -209,6 +255,28 @@ public class GlycerinNitroClipsAdapter {
             throw Throwables.propagate(e);
         }
     }
+
+    private ImmutableList<Programme> getNitroClips(PidReference ref) throws GlycerinException {
+
+        ProgrammesQuery query = ProgrammesQuery.builder()
+                .withEntityType(EntityTypeOption.CLIP)
+                .withChildrenOf(ref.toString())
+                .withMixins(IMAGES)
+                .withPageSize(pageSize)
+                .build();
+
+        ListenableFuture<ImmutableList<Programme>> future = executor.submit(
+                exhaustingProgrammeCallable(query));
+
+        try {
+            return ImmutableList.copyOf(future.get(10L, TimeUnit.MINUTES));
+        } catch (InterruptedException | ExecutionException | TimeoutException e) {
+            if (e.getCause() instanceof GlycerinException) {
+                throw (GlycerinException) e.getCause();
+            }
+            throw Throwables.propagate(e);
+        }
+    }
     
     private Callable<ImmutableList<Programme>> exhaustingProgrammeCallable(final ProgrammesQuery query) {
         
@@ -231,5 +299,13 @@ public class GlycerinNitroClipsAdapter {
         return programmes.build();
     }
 
-    
+    private org.atlasapi.media.entity.Clip extractClip(Clip clipPart) throws GlycerinException {
+        final List<Availability> availabilities = getNitroAvailabilities(clipPart);
+        final List<Version> versions = versions(clipPart);
+
+        NitroItemSource<Clip> source = NitroItemSource.valueOf(clipPart, availabilities,
+                ImmutableList.<Broadcast>of(), versions);
+
+        return clipExtractor.extract(source);
+    }
 }

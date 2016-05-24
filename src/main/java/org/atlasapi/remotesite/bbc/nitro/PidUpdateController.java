@@ -1,6 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
@@ -57,49 +59,35 @@ public class PidUpdateController {
     public void mergeUpdatePidFromNitro(
             HttpServletResponse response, @PathVariable("pid") String pid
     ) throws IOException {
-        Set<Item> items;
+        Set<Item> mergedItems;
         try {
-            items = contentAdapter
+            Iterable<List<Item>> items = contentAdapter
                     .fetchEpisodes(ProgrammesQuery.builder()
                             .withPid(pid)
                             .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS)
                             .withPageSize(1)
                             .build());
-            items = localOrRemoteNitroFetcher.resolveItems(items).getAll();
+            mergedItems = localOrRemoteNitroFetcher.resolveItemsForMerge(items).getAll();
         } catch (NitroException e) {
             log.error("Failed to get Nitro item {}", pid, e);
             writeServerErrorWithStack(response, e);
             return;
         }
 
-        if (items.isEmpty()) {
+        if (mergedItems.isEmpty()) {
             log.error("No items found in Nitro for pid {}", pid);
             response.setStatus(HttpStatusCode.NOT_FOUND.code());
             response.setContentLength(0);
             return;
         }
 
-        Item item = Iterables.getOnlyElement(items);
-
-        updateBrand(response, pid, item);
-        updateSeries(response, pid, item);
-
-        try {
-            contentWriter.createOrUpdate(item);
-            response.setStatus(HttpStatusCode.ACCEPTED.code());
-        } catch (IllegalArgumentException e) {
-            String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
-            log.error(message);
-            response.setStatus(HttpStatusCode.SERVER_ERROR.code());
-            response.setContentLength(message.length());
-            response.getWriter().write(message);
-        }
+        createOrUpdateItems(response, pid, mergedItems.iterator());
     }
 
     @RequestMapping(value = "/system/bbc/nitro/update/content/{pid}", method = RequestMethod.POST)
     public void updatePidFromNitro(HttpServletResponse response, @PathVariable("pid") String pid)
             throws IOException {
-        Set<Item> items;
+        Iterable<List<Item>> items;
         try {
             items = contentAdapter
                     .fetchEpisodes(ProgrammesQuery.builder()
@@ -113,27 +101,36 @@ public class PidUpdateController {
             return;
         }
 
-        if (items.isEmpty()) {
+        if (Iterables.getOnlyElement(items) == null) {
             log.error("No items found in Nitro for pid {}", pid);
             response.setStatus(HttpStatusCode.NOT_FOUND.code());
             response.setContentLength(0);
             return;
         }
 
-        Item item = Iterables.getOnlyElement(items);
+        List<Item> itemsList = Iterables.getOnlyElement(items);
+        Iterator<Item> itemIterator = itemsList.iterator();
 
-        updateBrand(response, pid, item);
-        updateSeries(response, pid, item);
+        createOrUpdateItems(response, pid, itemIterator);
+    }
 
-        try {
-            contentWriter.createOrUpdate(item);
-            response.setStatus(HttpStatusCode.ACCEPTED.code());
-        } catch (IllegalArgumentException e) {
-            String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
-            log.error(message);
-            response.setStatus(HttpStatusCode.SERVER_ERROR.code());
-            response.setContentLength(message.length());
-            response.getWriter().write(message);
+    private void createOrUpdateItems(HttpServletResponse response, @PathVariable("pid") String pid,
+            Iterator<Item> itemIterator) throws IOException {
+        while (itemIterator.hasNext()) {
+            Item item = itemIterator.next();
+            updateBrand(response, pid, item);
+            updateSeries(response, pid, item);
+
+            try {
+                contentWriter.createOrUpdate(item);
+                response.setStatus(HttpStatusCode.ACCEPTED.code());
+            } catch (IllegalArgumentException e) {
+                String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
+                log.error(message);
+                response.setStatus(HttpStatusCode.SERVER_ERROR.code());
+                response.setContentLength(message.length());
+                response.getWriter().write(message);
+            }
         }
     }
 

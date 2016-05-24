@@ -2,7 +2,11 @@ package org.atlasapi.remotesite.bbc.nitro;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Iterator;
+import java.util.List;
 import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -41,6 +45,8 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
     private final ContentWriter contentWriter;
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;
     private final GroupLock<String> lock;
+    private int written = 0;
+    private int failed = 0;
 
     public OffScheduleContentIngestTask(
             NitroContentAdapter contentAdapter, int pageSize,
@@ -68,64 +74,83 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 .withMediaType(MediaTypeOption.AUDIO_VIDEO)
                 .build();
 
-        Set<String> episodeIds = ImmutableSet.of();
-        Set<String> containerIds = ImmutableSet.of();
-
+        reportStatus("Doing the discovery call");
+        Iterable<List<Item>> fetched;
         try {
-            reportStatus("Doing the discovery call");
-            ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(query);
-
-            reportStatus(String.format("Got %d items from discovery", fetched.size()));
-
-            episodeIds = ImmutableSet.copyOf(Iterables.transform(fetched,
-                    new Function<Item, String>() {
-                        @Override
-                        public String apply(Item input) {
-                            return BbcFeeds.pidFrom(input.getCanonicalUri());
-                        }
-                    }));
-            containerIds = topLevelContainerIds(fetched);
-
-            reportStatus("Locking item IDs");
-
-            lock.lock(episodeIds);
-            lock.lock(containerIds);
-
-            reportStatus("Resolving items from Atlas");
-
-            ResolveOrFetchResult<Item> items = localOrRemoteFetcher.resolveItems(fetched);
-
-            ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(items.getAll());
-            ImmutableSet<Container> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(items.getAll());
-
-            Iterable<Series> series = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Series.class);
-            Iterable<Brand> brands = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Brand.class);
-
-            reportStatus("Writing items");
-            writeContent(items, series, brands);
+            fetched = contentAdapter.fetchEpisodes(query);
         } catch (NitroException e) {
             throw Throwables.propagate(e);
-        } catch (InterruptedException e) {
-            log.error("Could not lock item IDs", e);
-        } finally {
-            lock.unlock(episodeIds);
-            lock.unlock(containerIds);
+        }
+
+        reportStatus("Writing items");
+
+        Iterator<List<Item>> itemIterator = fetched.iterator();
+        while (itemIterator.hasNext()) {
+            ImmutableSet<Item> items = ImmutableSet.copyOf(itemIterator.next());
+
+            reportStatus("Locking item IDs");
+            Set<String> episodeIds = ImmutableSet.of();
+            Set<String> containerIds = ImmutableSet.of();
+            try {
+                episodeIds = ImmutableSet.copyOf(Iterables.transform(items,
+                        new Function<Item, String>() {
+                            @Override
+                            public String apply(Item input) {
+                                return BbcFeeds.pidFrom(input.getCanonicalUri());
+                            }
+                        }));
+
+                containerIds = topLevelContainerIds(items);
+
+                lock.lock(episodeIds);
+                lock.lock(containerIds);
+
+                reportStatus("Resolving items from Atlas");
+
+                ResolveOrFetchResult<Item> resolvedItems = localOrRemoteFetcher
+                        .resolveItems(items);
+                ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher
+                        .resolveOrFetchSeries(resolvedItems.getAll());
+                ImmutableSet<Container> resolvedBrands = localOrRemoteFetcher
+                        .resolveOrFetchBrand(resolvedItems.getAll());
+
+                Iterable<Series> series = Iterables.filter(
+                        Iterables.concat(resolvedSeries, resolvedBrands), Series.class
+                );
+
+                Iterable<Brand> brands = Iterables.filter(
+                        Iterables.concat(resolvedSeries, resolvedBrands), Brand.class
+                );
+
+                reportStatus("Writing items");
+                writeContent(resolvedItems, series, brands);
+            } catch (NitroException e) {
+                log.error("Item fetching failed", e);
+                throw Throwables.propagate(e);
+            } catch (InterruptedException e) {
+                log.error("Could not lock item IDs", e);
+            } finally {
+                lock.unlock(episodeIds);
+                lock.unlock(containerIds);
+
+                reportStatus(String.format(
+                        "Written %d items of which %d failed",
+                        written,
+                        failed
+                ));
+            }
         }
     }
 
-
     private void writeContent(
             ResolveOrFetchResult<Item> items,
-            Iterable<Series> series,
-            Iterable<Brand> brands
+            @Nullable Iterable<Series> series,
+            @Nullable Iterable<Brand> brands
     ) {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
         ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
 
         ImmutableSet<Item> allItems = items.getAll();
-        int written = 0;
-        int failed = 0;
-        int total = allItems.size();
         for (Item item : allItems) {
             try {
                 Brand brand = getBrand(item, brandIndex);
@@ -143,7 +168,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 log.error(item.getCanonicalUri(), e);
                 failed++;
             }
-            reportStatus(String.format("Written %d / %d items; %d failed", written, total, failed));
         }
     }
 
@@ -165,13 +189,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         return null;
     }
 
-    private Set<String> topLevelContainerIds(ImmutableSet<Item> items) {
+    private ImmutableSet<String> topLevelContainerIds(ImmutableSet<Item> items) {
         return ImmutableSet.copyOf(Iterables.filter(Iterables.transform(items,
                 new Function<Item, String>() {
                     @Override
-                    public String apply(Item input) {
-                        if (input.getContainer() != null) {
-                            return input.getContainer().getUri();
+                    public String apply(Item item) {
+                        if (item.getContainer() != null) {
+                            return item.getContainer().getUri();
                         }
                         return null;
                     }

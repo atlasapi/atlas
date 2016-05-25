@@ -40,7 +40,6 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
         private final Iterator<ProgrammesQuery> programmeQueries;
         private GlycerinResponse<Programme> currentResponse;
         private Iterable<Programme> currentProgrammes;
-        private boolean firstPage = false;
 
         public ProgrammeIterator(Glycerin client, Iterable<ProgrammesQuery> programmeQueries) {
             this.client = client;

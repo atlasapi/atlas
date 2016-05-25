@@ -157,7 +157,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
                     TaskQuery.Sort.Direction.DESC
             ));
         }
-        
+
         return query.build();
     }
 

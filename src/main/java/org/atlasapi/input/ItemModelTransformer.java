@@ -168,7 +168,7 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
 
         version.setBroadcasts(broadcasts);
     }
-    
+
     private void addRestrictions(org.atlasapi.media.entity.simple.Item inputItem, Version version) {
         // Since we are coalescing multiple broadcasts each with possibly its own restriction there is
         // no good way decide which restriction to keep so we are keeping the first one
@@ -196,9 +196,9 @@ public class ItemModelTransformer extends ContentModelTransformer<org.atlasapi.m
         if (simpleRestriction == null) {
             return Optional.absent();
         }
-        
+
         Restriction restriction = new Restriction();
-        
+
         restriction.setRestricted(simpleRestriction.isRestricted());
         restriction.setAuthority(simpleRestriction.getAuthority());
         restriction.setRating(simpleRestriction.getRating());

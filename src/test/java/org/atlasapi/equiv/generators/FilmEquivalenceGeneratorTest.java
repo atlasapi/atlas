@@ -41,22 +41,22 @@ public class FilmEquivalenceGeneratorTest extends TestCase {
 
     @Test
     public void testFilmWithSameTitleAndYearWithScores1() {
-        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "Test Film Title", 2000), Score.valueOf(1.0));
+        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "test film title", 2000), Score.valueOf(1.0));
     }
     
     @Test
     public void testFilmWithImdbMatchScores1NoMatterTitleAndYear() {
-        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "Wrong Title", 2010, "http://imdb.com/title/tt0409345"), Score.valueOf(1.0));
+        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "wrong title", 2010, "http://imdb.com/title/tt0409345"), Score.valueOf(1.0));
     }
 
     @Test
     public void testFilmWithSameTitleDifferentYearScoresMinusOne() {
-        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "Test Film Title", 2001, "http://imdb.com/title/wrong"), Score.valueOf(-1.0));
+        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "test film title", 2001, "http://imdb.com/title/wrong"), Score.valueOf(-1.0));
     }
 
     @Test
     public void testFilmWithDifferentTitleSameYearScores0() {
-        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "Another Film Title", 2000, "http://imdb.com/title/wrong"), Score.valueOf(0.0));
+        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "another film title", 2000, "http://imdb.com/title/wrong"), Score.valueOf(0.0));
     }
 
     private void checkScore(final Film anotherFilm, Score score) {

@@ -242,7 +242,7 @@ public class EquivModule {
             .withScorers(scorers)
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
             .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item> atLeastNTimesGreater(1.5))
+            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
             .withHandler((EquivalenceResultHandler<Item>) new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.relaxed(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
@@ -271,7 +271,7 @@ public class EquivModule {
                             TitleMatchingContainerScorer.NAME
             ))
             .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container>atLeastNTimesGreater(1.5))
+            .withExtractor(PercentThresholdEquivalenceExtractor.<Container>moreThanPercent(90))
             .withHandler(containerResultHandlers(publishers))
             .build();
     }
@@ -581,7 +581,7 @@ public class EquivModule {
                 ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
             )
             .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container> atLeastNTimesGreater(1.5))
+            .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
             .withHandler(containerResultHandlers(acceptablePublishers))
             .build();
     }
@@ -679,9 +679,9 @@ public class EquivModule {
                 new NullScoreAwareAveragingCombiner<Container>(),
                     TitleMatchingContainerScorer.NAME))
             .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container> atLeastNTimesGreater(1.5))
+            .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
             .withHandler(containerResultHandlers(sources))
-            
+
             .build();
     }
 

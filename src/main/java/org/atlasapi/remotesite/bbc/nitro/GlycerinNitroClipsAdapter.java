@@ -182,7 +182,7 @@ public class GlycerinNitroClipsAdapter {
 
         return exhaust(glycerin.execute(query));
     }
-    
+
     private Iterable<String> toPids(List<Clip> clips) {
         return Iterables.transform(clips, new Function<Clip, String>() {
             @Override
@@ -227,7 +227,7 @@ public class GlycerinNitroClipsAdapter {
 
         return availabilities.build();
     }
-    
+
     private Iterable<String> toPid(List<Clip> clipPart) {
         return Lists.transform(clipPart, new Function<Clip, String>() {
             @Override
@@ -285,7 +285,7 @@ public class GlycerinNitroClipsAdapter {
             throw Throwables.propagate(e);
         }
     }
-    
+
     private Callable<ImmutableList<Programme>> exhaustingProgrammeCallable(final ProgrammesQuery query) {
         
         return new Callable<ImmutableList<Programme>>() {

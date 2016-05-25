@@ -8,6 +8,7 @@ import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
@@ -17,6 +18,8 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
+import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHidrator;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.util.GroupLock;
 
@@ -26,6 +29,7 @@ import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.time.DayOfWeek;
 import com.metabroadcast.common.time.SystemClock;
 
 import com.google.common.base.Function;
@@ -41,6 +45,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -70,6 +75,7 @@ public class BbcNitroModule {
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired ScheduleWriter scheduleWriter;
     private @Autowired ChannelResolver channelResolver;
+    private @Autowired ChannelWriter channelWriter;
     private @Autowired QueuingPersonWriter peopleWriter;
     
     private final ThreadFactory nitroThreadFactory
@@ -84,11 +90,13 @@ public class BbcNitroModule {
             scheduler.schedule(nitroScheduleUpdateTask(0, 0, nitroTodayThreadCount, nitroTodayRateLimit, Optional.<Predicate<Item>>absent())
                 .withName("Nitro today updater"), RepetitionRules.every(Duration.standardMinutes(30)));
             scheduler.schedule(nitroScheduleUpdateTask(0, 0, nitroTodayThreadCount, nitroTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
-                    .withName("Nitro full fetch today updater"), RepetitionRules.NEVER);
+                    .withName("Nitro full fetch 15 day updater"), RepetitionRules.NEVER);
             scheduler.schedule(nitroScheduleUpdateTask(30, -8, nitroThreeWeekThreadCount, nitroThreeWeekRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
                     .withName("Nitro full fetch -8 to -30 day updater"), RepetitionRules.every(Duration.standardHours(12)));
             scheduler.schedule(nitroScheduleUpdateTask(7, 3, nitroAroundTodayThreadCount, nitroAroundTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
                     .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.every(Duration.standardHours(2)));
+            scheduler.schedule(channelIngestTask().withName("Nitro channel updater"), RepetitionRules.weekly(
+                    DayOfWeek.MONDAY, LocalTime.MIDNIGHT));
         }
         if (offScheduleIngestEnabled) {
             scheduler.schedule(
@@ -116,6 +124,11 @@ public class BbcNitroModule {
                     Optional.of(Predicates.<Item>alwaysTrue())
                 )
         );
+    }
+
+    private ScheduledTask channelIngestTask() {
+        Glycerin glycerin = glycerin(null);
+        return ChannelIngestTask.create(nitroChannelAdapter(glycerin), channelWriter, channelResolver, new NitroChannelHidrator());
     }
 
     public ContentWriter contentWriter() {
@@ -184,6 +197,10 @@ public class BbcNitroModule {
         SystemClock clock = new SystemClock();
         GlycerinNitroClipsAdapter clipsAdapter = new GlycerinNitroClipsAdapter(glycerin, clock, nitroRequestPageSize);
         return new GlycerinNitroContentAdapter(glycerin, clipsAdapter, peopleWriter, clock, nitroRequestPageSize);
+    }
+
+    GlycerinNitroChannelAdapter nitroChannelAdapter(Glycerin glycerin) {
+        return GlycerinNitroChannelAdapter.create(glycerin);
     }
 
     private Supplier<Range<LocalDate>> dayRangeSupplier(int back, int forward) {

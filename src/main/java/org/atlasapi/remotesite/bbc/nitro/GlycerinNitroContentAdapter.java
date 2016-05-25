@@ -63,15 +63,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private static final Function<Programme, Episode> TO_EPISODE = new Function<Programme, Episode>() {
 
         @Override
-        public Episode apply(@Nullable Programme input) {
+        public Episode apply(Programme input) {
             return input.getAsEpisode();
         }
     };
     private static final Function<List<Programme>, List<Episode>> TO_EPISODES_LIST = new Function<List<Programme>, List<Episode>>() {
 
-        @Nullable
         @Override
-        public List<Episode> apply(@Nullable List<Programme> input) {
+        public List<Episode> apply(List<Programme> input) {
             return ImmutableList.copyOf(Iterables.transform(input, toEpisode()));
         }
     };
@@ -82,11 +81,10 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             return input.isEpisode();
         }
     };
-    private static final Function<List<Programme>, List<Programme>> IS_EPISODES_LIST = new Function<List<Programme>, List<Programme>>() {
+    private static final Function<List<Programme>, List<Programme>> FILTER_EPISODES = new Function<List<Programme>, List<Programme>>() {
 
-        @Nullable
         @Override
-        public List<Programme> apply(@Nullable List<Programme> input) {
+        public List<Programme> apply(List<Programme> input) {
             return ImmutableList.copyOf(Iterables.filter(input, isEpisode()));
         }
     };
@@ -119,8 +117,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         return IS_EPISODE;
     }
 
-    public static final Function<List<Programme>, List<Programme>> isEpisodesList() {
-        return IS_EPISODES_LIST;
+    public static final Function<List<Programme>, List<Programme>> filterEpisodes() {
+        return FILTER_EPISODES;
     }
 
 
@@ -243,7 +241,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private Iterable<List<Episode>> getAsEpisodes(Iterable<List<Programme>> programmes) {
         Iterable<List<Programme>> episodes = Iterables.transform(
                 programmes,
-                isEpisodesList()
+                filterEpisodes()
         );
         return Iterables.transform(
                 episodes,

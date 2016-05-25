@@ -93,15 +93,12 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         public List<Item> next() {
             List<Episode> episodes = episodesIterator.next();
             ImmutableList.Builder<Item> items = ImmutableList.builder();
-            currentEpisodesIterator = episodes.iterator();
 
             ImmutableListMultimap<String, Availability> availabilities = getAvailabilities(episodes);
             ImmutableListMultimap<String, Broadcast> broadcasts = getBroadcasts(episodes);
             ImmutableListMultimap<String, Version> versions = getVersions(episodes);
 
-            while (currentEpisodesIterator.hasNext()) {
-                Episode glycerinEpisode = currentEpisodesIterator.next();
-
+            for (Episode glycerinEpisode : episodes) {
                 NitroItemSource<Episode> nitroItemSource = NitroItemSource.valueOf(
                         glycerinEpisode,
                         availabilities.get(glycerinEpisode.getPid()),
@@ -128,31 +125,28 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         private ImmutableListMultimap<String, Version> getVersions(List<Episode> episodes) {
             ImmutableListMultimap<String, Version> versions;
             try {
-                versions = versions(episodes);
+                return versions(episodes);
             } catch (GlycerinException e) {
                 throw Throwables.propagate(e);
             }
-            return versions;
         }
 
         private ImmutableListMultimap<String, Broadcast> getBroadcasts(List<Episode> episodes) {
             ImmutableListMultimap<String, Broadcast> broadcasts;
             try {
-                broadcasts = broadcasts(episodes);
+                return broadcasts(episodes);
             } catch (GlycerinException e) {
                 throw Throwables.propagate(e);
             }
-            return broadcasts;
         }
 
         private ImmutableListMultimap<String, Availability> getAvailabilities(List<Episode> episodes) {
             ImmutableListMultimap<String, Availability> availabilities;
             try {
-                availabilities = availabilities(episodes);
+                return availabilities(episodes);
             } catch (GlycerinException e) {
                 throw Throwables.propagate(e);
             }
-            return availabilities;
         }
 
         @Override

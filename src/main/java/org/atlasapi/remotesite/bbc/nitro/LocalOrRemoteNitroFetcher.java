@@ -153,24 +153,6 @@ public class LocalOrRemoteNitroFetcher {
                 ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
     }
 
-    public ResolveOrFetchResult<Item> resolveItemsForMerge(Iterable<List<Item>> items)
-            throws NitroException {
-        Iterator<List<Item>> itemsIterator = items.iterator();
-        ImmutableList.Builder<String> itemUris = ImmutableList.builder();
-        ImmutableSet.Builder<Item> processedItems = ImmutableSet.builder();
-        while (itemsIterator.hasNext()) {
-            for (Item item : itemsIterator.next()) {
-                itemUris.add(item.getCanonicalUri());
-                processedItems.add(item);
-            }
-        }
-        ResolvedContent resolvedItems = resolve(itemUris.build());
-
-        return mergeItemsWithExisting(
-                processedItems.build(),
-                ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
-    }
-
     public ResolveOrFetchResult<Item> resolveOrFetchItem(Iterable<Broadcast> broadcasts)
             throws NitroException {
         if (Iterables.isEmpty(broadcasts)) {
@@ -191,19 +173,16 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        Iterator<List<Item>> fetchedItemListIterator = contentAdapter
-                .fetchEpisodes(toFetch)
-                .iterator();
-        ImmutableSet.Builder<Item> fetchedItemSet = ImmutableSet.builder();
-        while (fetchedItemListIterator.hasNext()) {
-            List<Item> itemList = fetchedItemListIterator.next();
-            for (Item item : itemList) {
-                fetchedItemSet.add(item);
-            }
-        }
+        Iterable<List<Item>> fetchedItems = contentAdapter.fetchEpisodes(toFetch);
+
+        ImmutableSet<Item> fetchedItemSet = ImmutableSet.copyOf(
+                Iterables.concat(
+                        fetchedItems
+                )
+        );
 
         return mergeItemsWithExisting(
-                fetchedItemSet.build(),
+                fetchedItemSet,
                 ImmutableSet.copyOf(
                         Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)
                 )

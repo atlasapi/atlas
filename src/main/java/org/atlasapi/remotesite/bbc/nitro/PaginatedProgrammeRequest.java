@@ -60,19 +60,14 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
                 if (currentResponse == null) { // Getting the first page.
                     if (programmeQueries.hasNext()) {
                         currentResponse = client.execute(programmeQueries.next());
-                        return currentResponse.hasNext();
+                        return true;
                     } else {
                         return false;
                     }
                 } else if (currentResponse.hasNext()) { // Getting the next page.
                     return true;
-                } else { // Getting the next Programme response.
-                    if (programmeQueries.hasNext()) {
-                        currentResponse = client.execute(programmeQueries.next());
-                        return currentResponse.hasNext();
-                    } else {
-                        return false;
-                    }
+                } else { // If there are more programme queries, execute them.
+                    return false;
                 }
             } catch (GlycerinException e) {
                 throw Throwables.propagate(e);
@@ -82,7 +77,13 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
         @Override
         public List<Programme> next() {
             try {
-                return ImmutableList.copyOf(currentResponse.getNext().getResults());
+                ImmutableList<Programme> programmes = currentResponse.getResults();
+                if (currentResponse.hasNext()) {
+                    currentResponse = currentResponse.getNext();
+                } else {
+                    currentResponse = null;
+                }
+                return programmes;
             } catch (GlycerinException e) {
                 throw Throwables.propagate(e);
             }

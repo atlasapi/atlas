@@ -130,7 +130,7 @@ public class GlycerinNitroClipsAdapter {
                 log.warn("No programmes found for clipRefs {}", ref, new Function<PidReference, String>() {
 
                     @Override
-                    public String apply(@Nullable PidReference pidRef) {
+                    public String apply(PidReference pidRef) {
                         return pidRef.getPid();
                     }
                 });
@@ -182,7 +182,7 @@ public class GlycerinNitroClipsAdapter {
 
         return exhaust(glycerin.execute(query));
     }
-    
+
     private Iterable<String> toPids(List<Clip> clips) {
         return Iterables.transform(clips, new Function<Clip, String>() {
             @Override
@@ -211,15 +211,23 @@ public class GlycerinNitroClipsAdapter {
     }
 
     private List<Availability> getNitroAvailabilities(Clip clip) throws GlycerinException {
+        ImmutableList.Builder<Availability> availabilities = ImmutableList.builder();
+
         AvailabilityQuery query = AvailabilityQuery.builder()
                 .withDescendantsOf(clip.getPid())
                 .withPageSize(pageSize)
                 .build();
 
-        GlycerinResponse<Availability> availabilities = glycerin.execute(query);
-        return availabilities.getResults();
+        GlycerinResponse<Availability> availabilitiesResponse = glycerin.execute(query);
+        availabilities.addAll(availabilitiesResponse.getResults());
+
+        while (availabilitiesResponse.hasNext()) {
+            availabilities.addAll(availabilitiesResponse.getNext().getResults());
+        }
+
+        return availabilities.build();
     }
-    
+
     private Iterable<String> toPid(List<Clip> clipPart) {
         return Lists.transform(clipPart, new Function<Clip, String>() {
             @Override
@@ -277,7 +285,7 @@ public class GlycerinNitroClipsAdapter {
             throw Throwables.propagate(e);
         }
     }
-    
+
     private Callable<ImmutableList<Programme>> exhaustingProgrammeCallable(final ProgrammesQuery query) {
         
         return new Callable<ImmutableList<Programme>>() {

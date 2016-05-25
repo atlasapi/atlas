@@ -39,12 +39,30 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 public class OffScheduleContentIngestTask extends ScheduledTask {
 
     public static final Logger log = LoggerFactory.getLogger(OffScheduleContentIngestTask.class);
+    private static final Function<Container, Series> TO_SERIES = new Function<Container, Series>() {
+
+        @Override
+        public Series apply(Container input) {
+            return (Series) input;
+        }
+    };
+    private static final Function<Container, Brand> TO_BRANDS = new Function<Container, Brand>() {
+
+        @Override
+        public Brand apply(Container input) {
+            return (Brand) input;
+        }
+    };
 
     private final NitroContentAdapter contentAdapter;
     private final int pageSize;
     private final ContentWriter contentWriter;
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;
     private final GroupLock<String> lock;
+
+    // We maintain the state while the task is running, after that following fields are reset to 0.
+    // This has been done so that writeContent method can update these fields
+    // which then are being used by runTask method to report the status.
     private int written = 0;
     private int failed = 0;
 
@@ -60,8 +78,19 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         this.pageSize = pageSize;
     }
 
+    private Function<Container, Series> toSeries() {
+        return TO_SERIES;
+    }
+
+    private Function<Container, Brand> toBrands() {
+        return TO_BRANDS;
+    }
+
     @Override
     protected void runTask() {
+        written = 0;
+        failed = 0;
+
         ProgrammesQuery query = ProgrammesQuery
                 .builder()
                 .withMixins(ProgrammesMixin.ANCESTOR_TITLES, ProgrammesMixin.CONTRIBUTIONS,
@@ -84,10 +113,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
         reportStatus("Writing items");
 
-        Iterator<List<Item>> itemIterator = fetched.iterator();
-        while (itemIterator.hasNext()) {
-            ImmutableSet<Item> items = ImmutableSet.copyOf(itemIterator.next());
-
+        for (List<Item> items : fetched) {
             reportStatus("Locking item IDs");
             Set<String> episodeIds = ImmutableSet.of();
             Set<String> containerIds = ImmutableSet.of();
@@ -109,17 +135,15 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
                 ResolveOrFetchResult<Item> resolvedItems = localOrRemoteFetcher
                         .resolveItems(items);
-                ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher
-                        .resolveOrFetchSeries(resolvedItems.getAll());
-                ImmutableSet<Container> resolvedBrands = localOrRemoteFetcher
-                        .resolveOrFetchBrand(resolvedItems.getAll());
 
-                Iterable<Series> series = Iterables.filter(
-                        Iterables.concat(resolvedSeries, resolvedBrands), Series.class
+                Iterable<Series> series = Iterables.transform(
+                        localOrRemoteFetcher.resolveOrFetchSeries(resolvedItems.getAll()),
+                        toSeries()
                 );
 
-                Iterable<Brand> brands = Iterables.filter(
-                        Iterables.concat(resolvedSeries, resolvedBrands), Brand.class
+                Iterable<Brand> brands = Iterables.transform(
+                        localOrRemoteFetcher.resolveOrFetchBrand(resolvedItems.getAll()),
+                        toBrands()
                 );
 
                 reportStatus("Writing items");
@@ -144,8 +168,8 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
     private void writeContent(
             ResolveOrFetchResult<Item> items,
-            @Nullable Iterable<Series> series,
-            @Nullable Iterable<Brand> brands
+            Iterable<Series> series,
+            Iterable<Brand> brands
     ) {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
         ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
@@ -189,13 +213,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         return null;
     }
 
-    private ImmutableSet<String> topLevelContainerIds(ImmutableSet<Item> items) {
+    private ImmutableSet<String> topLevelContainerIds(List<Item> items) {
         return ImmutableSet.copyOf(Iterables.filter(Iterables.transform(items,
                 new Function<Item, String>() {
                     @Override
-                    public String apply(Item item) {
-                        if (item.getContainer() != null) {
-                            return item.getContainer().getUri();
+                    public String apply(Item input) {
+                        if (input.getContainer() != null) {
+                            return input.getContainer().getUri();
                         }
                         return null;
                     }

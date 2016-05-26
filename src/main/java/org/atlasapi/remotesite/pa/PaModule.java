@@ -7,11 +7,8 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 
-import com.metabroadcast.common.time.DayOfWeek;
-import com.mongodb.DBCollection;
 import org.atlasapi.equiv.PaAliasBackPopulatorTask;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
-import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
 import org.atlasapi.feeds.upload.persistence.MongoFileUploadResultStore;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -49,6 +46,8 @@ import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
 import org.atlasapi.remotesite.pa.channels.PaChannelsUpdater;
 import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
+import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
+import org.atlasapi.remotesite.pa.deletes.PaContentDeactivatorTask;
 import org.atlasapi.remotesite.pa.features.ContentGroupDetails;
 import org.atlasapi.remotesite.pa.features.PaFeaturesConfiguration;
 import org.atlasapi.remotesite.pa.features.PaFeaturesContentGroupProcessor;
@@ -67,11 +66,11 @@ import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.security.UsernameAndPassword;
+import com.metabroadcast.common.time.DayOfWeek;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
-import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
-import org.atlasapi.remotesite.pa.deletes.PaContentDeactivatorTask;
+import com.mongodb.DBCollection;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -208,7 +207,7 @@ public class PaModule {
     }
 
     @Bean PaProgDataProcessor paProgrammeProcessor() {
-        return new PaProgrammeProcessor(contentWriter, contentBuffer(), log, paTagMap());
+        return new PaProgrammeProcessor(contentBuffer(), log, paTagMap());
     }
 
     @Bean PaCompleteUpdater paCompleteUpdater() {
@@ -261,15 +260,18 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paRecentArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter, contentBuffer(), log, paTagMap());
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
+                contentBuffer(), log, paTagMap()
+        );
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaRecentArchiveUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;
     }
 
     @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(contentWriter,
-                contentBuffer(), log, paTagMap());
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
+                contentBuffer(), log, paTagMap()
+        );
         PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
         PaArchivesUpdater updater = new PaCompleteArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
         return updater;

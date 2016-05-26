@@ -54,7 +54,7 @@ public class PaArchivesUpdaterTest {
         file = new File(Resources.getResource(getClass(), "201601121258_1201_tvarchive.xml").toURI());
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
-        PaProgDataUpdatesProcessor progProcessor = new PaProgrammeProcessor(writer,resolver,log,paTagMap);
+        PaProgDataUpdatesProcessor progProcessor = new PaProgrammeProcessor(resolver,log,paTagMap);
         paUpdatesProcessor = new PaUpdatesProcessor(progProcessor, writer);
         updater = new PaCompleteArchivesUpdater(store,resultStore,paUpdatesProcessor);
         when(store.localArchivesFiles(any(Predicate.class))).thenReturn(ImmutableList.of(file));

@@ -1,9 +1,5 @@
 package org.atlasapi.remotesite.channel4.pmlsd.epg;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import javax.annotation.Nullable;
-
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Item;
@@ -11,16 +7,14 @@ import org.atlasapi.media.entity.Series;
 
 import com.google.common.base.Optional;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class ContentHierarchyAndBroadcast {
 
     private final Optional<Brand> brand;
     private final Optional<Series> series;
     private final Item item;
     private final Broadcast broadcast;
-
-    public ContentHierarchyAndBroadcast(@Nullable Brand brand, @Nullable Series series, Item item, Broadcast broadcast) {
-        this(Optional.fromNullable(brand),Optional.fromNullable(series), item, broadcast);
-    }
 
     public ContentHierarchyAndBroadcast(
             Optional<Brand> brand,

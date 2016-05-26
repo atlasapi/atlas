@@ -12,7 +12,6 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.remotesite.pa.PaProgrammeProcessor;
@@ -55,8 +54,6 @@ public class PaArchivesProgExtractorTest {
     @Mock
     private FileUploadResultStore resultStore;
     @Mock
-    private ContentWriter writer;
-    @Mock
     private AdapterLog log;
     @Mock
     private ContentResolver resolver;
@@ -71,7 +68,7 @@ public class PaArchivesProgExtractorTest {
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
         when(resolver.findByUris(anyCollection())).thenReturn(resolvedContent);
-        progProcessor = new PaProgrammeProcessor(writer,resolver,log,paTagMap);
+        progProcessor = new PaProgrammeProcessor(resolver,log,paTagMap);
         transformer = new PaDataToUpdatesTransformer();
     }
 

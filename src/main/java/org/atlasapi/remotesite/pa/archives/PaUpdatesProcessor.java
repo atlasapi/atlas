@@ -3,7 +3,6 @@ package org.atlasapi.remotesite.pa.archives;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.pa.ContentHierarchyAndSummaries;
 import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 
 import com.metabroadcast.common.time.Timestamp;
@@ -26,10 +25,13 @@ public class PaUpdatesProcessor {
 
     public void process(ProgData progData, DateTimeZone zone, Timestamp timestamp) {
         try {
-            Optional<ContentHierarchyWithoutBroadcast> hierarchy = processor.process(progData, zone, timestamp);
+            Optional<ContentHierarchyWithoutBroadcast> hierarchy = processor.process(
+                    progData, zone, timestamp
+            );
             if (hierarchy.isPresent()) {
                 Optional<Brand> brandOptional = hierarchy.get().getBrand();
                 Optional<Series> seriesOptional = hierarchy.get().getSeries();
+
                 if (brandOptional.isPresent()) {
                     contentWriter.createOrUpdate(brandOptional.get());
                 }
@@ -44,7 +46,5 @@ public class PaUpdatesProcessor {
         } catch (Exception e) {
             log.error(String.format("Error processing prog id %s", progData.getProgId()));
         }
-
     }
-
 }

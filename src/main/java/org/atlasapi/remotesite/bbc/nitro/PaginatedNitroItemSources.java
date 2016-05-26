@@ -172,7 +172,7 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
 
 
             ListenableFuture<List<ImmutableList<Availability>>> all = Futures.allAsList(futures);
-            Iterable<Availability> list = null;
+            Iterable<Availability> list;
             try {
                 list = Iterables.concat(all.get());
             } catch (InterruptedException | ExecutionException e) {

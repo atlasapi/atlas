@@ -168,8 +168,8 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
     private void writeContent(
             ResolveOrFetchResult<Item> items,
-            Iterable<Series> series,
-            Iterable<Brand> brands
+            @Nullable Iterable<Series> series,
+            @Nullable Iterable<Brand> brands
     ) {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
         ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
@@ -217,9 +217,9 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         return ImmutableSet.copyOf(Iterables.filter(Iterables.transform(items,
                 new Function<Item, String>() {
                     @Override
-                    public String apply(Item input) {
-                        if (input.getContainer() != null) {
-                            return input.getContainer().getUri();
+                    public String apply(Item item) {
+                        if (item.getContainer() != null) {
+                            return item.getContainer().getUri();
                         }
                         return null;
                     }

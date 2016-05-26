@@ -57,7 +57,7 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
     }
 
     @Override
-    public Iterator iterator() {
+    public Iterator<List<Item>> iterator() {
         return new NitroItemSourceIterator(episodes, executor, glycerin, pageSize, itemExtractor,
                 clipsAdapter);
     }

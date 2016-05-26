@@ -73,7 +73,7 @@ import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
 public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpdatesProcessor {
 
-    private static final Logger LOG = LoggerFactory.getLogger(PaProgrammeProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(PaProgrammeProcessor.class);
 
     public static final String BILLING_DESCRIPTION = "synopsis";
     public static final String BILLING_SHORT_DESCRIPTION = "pa_detail1";
@@ -113,7 +113,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     @Override
     public Optional<ContentHierarchyAndSummaries> process(ProgData progData, Channel channel, DateTimeZone zone, Timestamp updatedAt) {
         try {
-            LOG.trace("Channel: {} ProgData: {} UpdatedAt: {}", channel, progData, updatedAt);
+            log.trace("Channel: {} ProgData: {} UpdatedAt: {}", channel, progData, updatedAt);
             if (! Strings.isNullOrEmpty(progData.getSeriesId()) && IGNORED_BRANDS.contains(progData.getSeriesId())) {
                 return Optional.absent();
             }
@@ -145,7 +145,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             return Optional.of(new ContentHierarchyAndSummaries(possibleBrand, possibleSeries, item, itemAndBroadcast.getBroadcast().requireValue(),
                     Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary)));
         } catch (Exception e) {
-            LOG.error("Failed to process PA programme data", e);
+            log.error("Failed to process PA programme data", e);
             adapterLog.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
         }
         return Optional.absent();
@@ -179,7 +179,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
             return Optional.of(new ContentHierarchyWithoutBroadcast(Optional.fromNullable(brandSummary), Optional.fromNullable(seriesSummary), item));
         } catch (Exception e) {
-            LOG.warn("Failed to process PA programme data update", e);
+            log.warn("Failed to process PA programme data update", e);
             adapterLog.record(new AdapterLogEntry(Severity.ERROR).withCause(e).withSource(PaProgrammeProcessor.class).withDescription(e.getMessage()));
         }
         return Optional.absent();
@@ -627,7 +627,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private ItemAndBroadcast getEpisode(ProgData progData, Channel channel, DateTimeZone zone, boolean isEpisode, Timestamp updatedAt) {
-        Item episode = getBasicEpisodeWithoutBroadcast(progData, zone, isEpisode, updatedAt);
+        Item episode = getBasicEpisodeWithoutBroadcast(progData, isEpisode);
 
         setCommonDetails(progData, episode, Optional.of(channel), zone, updatedAt);
         Broadcast broadcast = addBroadcast(progData, episode, channel, zone, updatedAt);
@@ -641,24 +641,47 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private Item getEpisodeWithoutBroadcast(ProgData progData, DateTimeZone zone, boolean isEpisode, Timestamp updatedAt) {
-        Item episode = getBasicEpisodeWithoutBroadcast(progData, zone, isEpisode, updatedAt);
+        Item episode = getBasicEpisodeWithoutBroadcast(progData, isEpisode);
         setCommonDetails(progData, episode, Optional.<Channel>absent(), zone, updatedAt);
 
         return episode;
     }
 
-    private Item getBasicEpisodeWithoutBroadcast(ProgData progData,DateTimeZone zone, boolean isEpisode, Timestamp updatedAt) {
+    private Item getBasicEpisodeWithoutBroadcast(ProgData progData, boolean isEpisode) {
         String episodeUri = PaHelper.getEpisodeUri(identifierFor(progData));
-        Maybe<Identified> possiblePrevious = contentResolver.findByCanonicalUris(ImmutableList.of(episodeUri)).getFirstValue();
+
+        Maybe<Identified> possiblePrevious = contentResolver.findByCanonicalUris(
+                ImmutableList.of(episodeUri)
+        )
+                .getFirstValue();
 
         Item item;
         if (possiblePrevious.hasValue()) {
             item = (Item) possiblePrevious.requireValue();
             if (!(item instanceof Episode) && isEpisode) {
-                adapterLog.record(warnEntry().withSource(getClass()).withDescription("%s resolved as %s being ingested as Episode", episodeUri, item.getClass().getSimpleName()));
+                String message = String.format(
+                        "%s resolved as %s being ingested as Episode",
+                        episodeUri, item.getClass().getSimpleName()
+                );
+
+                adapterLog.record(warnEntry()
+                        .withSource(getClass())
+                        .withDescription(message)
+                );
+                log.info(message);
+
                 item = convertItemToEpisode(item);
             } else if(item instanceof Episode && !isEpisode) {
-                adapterLog.record(errorEntry().withSource(getClass()).withDescription("%s resolved as %s being ingested as Item", episodeUri, item.getClass().getSimpleName()));
+                String message = String.format(
+                        "%s resolved as %s being ingested as Item. Keeping it as Episode",
+                        episodeUri, item.getClass().getSimpleName()
+                );
+
+                adapterLog.record(errorEntry()
+                        .withSource(getClass())
+                        .withDescription(message)
+                );
+                log.warn(message);
             }
         } else {
             item = getBasicEpisode(progData, isEpisode);
@@ -679,7 +702,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             }
         } catch (NumberFormatException e) {
             // sometimes we don't get valid numbers
-            //log.
+            log.warn("Failed to parse a numeric field for PA episode {}", episodeUri, e);
         }
         return item;
     }

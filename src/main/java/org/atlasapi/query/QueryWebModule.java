@@ -484,7 +484,9 @@ public class QueryWebModule {
                 tvaModelOutputter(),
                 feedGenerator,
                 contentResolver,
-                hierarchyExpander
+                hierarchyExpander,
+                channelResolver,
+                channelSimplifier()
         );
     }
 

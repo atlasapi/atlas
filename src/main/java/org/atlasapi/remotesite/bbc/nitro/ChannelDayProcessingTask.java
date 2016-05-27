@@ -37,7 +37,7 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
 
     private static final int DEFAULT_FAILURE_THRESHOLD_PERCENTAGE = 100;
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private static final Logger log = LoggerFactory.getLogger(ChannelDayProcessingTask.class);
     
     private final ListeningExecutorService executor;
     private final Supplier<? extends Collection<ChannelDay>> channelDays;
@@ -171,7 +171,8 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
 
         @Override
         public UpdateProgress call() throws Exception {
-            System.out.println(Thread.currentThread().getName());
+            log.info("Channel day processing task {}", Thread.currentThread().getName());
+
             if (!shouldContinue()) {
                 return UpdateProgress.START;
             }

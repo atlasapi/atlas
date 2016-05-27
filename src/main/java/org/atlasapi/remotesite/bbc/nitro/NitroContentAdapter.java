@@ -1,15 +1,17 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
-import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
 
-import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Adapter for fetching data from Nitro by {@link PidReference}.  
@@ -69,4 +71,10 @@ public interface NitroContentAdapter {
      *             - if any of the {@code refs} is not for an episode.
      */
     Iterable<List<Item>> fetchEpisodes(Iterable<PidReference> refs) throws NitroException;
+
+    // TODO: MBST-15521
+    Iterable<List<Item>> fetchEpisodes(
+            Iterable<PidReference> refs,
+            ImmutableListMultimap<String, Broadcast> broadcasts
+    ) throws NitroException;
 }

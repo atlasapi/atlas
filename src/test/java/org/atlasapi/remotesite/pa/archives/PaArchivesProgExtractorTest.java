@@ -12,7 +12,6 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.remotesite.pa.PaProgrammeProcessor;
@@ -55,8 +54,6 @@ public class PaArchivesProgExtractorTest {
     @Mock
     private FileUploadResultStore resultStore;
     @Mock
-    private ContentWriter writer;
-    @Mock
     private AdapterLog log;
     @Mock
     private ContentResolver resolver;
@@ -71,7 +68,7 @@ public class PaArchivesProgExtractorTest {
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
         when(resolver.findByUris(anyCollection())).thenReturn(resolvedContent);
-        progProcessor = new PaProgrammeProcessor(writer,resolver,log,paTagMap);
+        progProcessor = new PaProgrammeProcessor(resolver,log,paTagMap);
         transformer = new PaDataToUpdatesTransformer();
     }
 
@@ -108,8 +105,8 @@ public class PaArchivesProgExtractorTest {
         ProgData archives = generateArchiveProgdata();
         org.atlasapi.remotesite.pa.listings.bindings.ProgData listing = transformer.transformToListingProgdata(archives);
         ContentHierarchyWithoutBroadcast hierarchy = progProcessor.process(listing, DateTimeZone.UTC, Timestamp.of(dateTime)).get();
-        assertThat(hierarchy.getBrand(), is(Optional.<Brand>absent()));
-        assertThat(hierarchy.getSeries(), is(Optional.<Series>absent()));
+        assertThat(hierarchy.getBrandSummary(), is(Optional.<Brand>absent()));
+        assertThat(hierarchy.getSeriesSummary(), is(Optional.<Series>absent()));
         Item item = hierarchy.getItem();
         Set<Alias> aliases = ImmutableSet.of(new Alias("pa:film", "263544"), new Alias("rt:filmid", "5217"), new Alias("gb:pressassociation:prod:prog_id", "263544"));
         assertThat(item.getAliases(), is(aliases));

@@ -8,14 +8,24 @@ import com.google.common.base.Optional;
 
 public class ContentHierarchyWithoutBroadcast {
 
-    private Optional<Brand> brand;
-    private Optional<Series> series;
-    private Item item;
+    private final Optional<Brand> brand;
+    private final Optional<Series> series;
+    private final Item item;
+    private final Optional<Brand> brandSummary;
+    private final Optional<Series> seriesSummary;
 
-    public ContentHierarchyWithoutBroadcast(Optional<Brand> brand, Optional<Series> series, Item item) {
+    public ContentHierarchyWithoutBroadcast(
+            Optional<Brand> brand,
+            Optional<Series> series,
+            Item item,
+            Optional<Brand> brandSummary,
+            Optional<Series> seriesSummary
+    ) {
         this.brand = brand;
         this.series = series;
         this.item = item;
+        this.brandSummary = brandSummary;
+        this.seriesSummary = seriesSummary;
     }
 
     public Optional<Brand> getBrand() {
@@ -28,5 +38,13 @@ public class ContentHierarchyWithoutBroadcast {
 
     public Item getItem() {
         return item;
+    }
+
+    public Optional<Brand> getBrandSummary() {
+        return brandSummary;
+    }
+
+    public Optional<Series> getSeriesSummary() {
+        return seriesSummary;
     }
 }

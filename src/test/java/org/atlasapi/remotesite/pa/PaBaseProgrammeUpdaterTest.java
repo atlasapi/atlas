@@ -116,7 +116,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
         channelResolver = new DummyChannelResolver();
         contentWriter = new MongoContentWriter(db, lookupStore, persistenceAuditLog, playerResolver, serviceResolver, clock);
-        programmeProcessor = new PaProgrammeProcessor(contentWriter, resolver, log, paTagMap);
+        programmeProcessor = new PaProgrammeProcessor(resolver, log, paTagMap);
         EquivalentContentResolver equivContentResolver = context.mock(EquivalentContentResolver.class);
         scheduleWriter = new MongoScheduleStore(db, channelResolver, contentBuffer, equivContentResolver, ms);
         contentBuffer = new ContentBuffer(resolver, contentWriter, new DummyItemsPeopleWriter());

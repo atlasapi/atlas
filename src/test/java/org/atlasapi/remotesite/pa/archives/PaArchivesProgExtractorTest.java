@@ -105,8 +105,8 @@ public class PaArchivesProgExtractorTest {
         ProgData archives = generateArchiveProgdata();
         org.atlasapi.remotesite.pa.listings.bindings.ProgData listing = transformer.transformToListingProgdata(archives);
         ContentHierarchyWithoutBroadcast hierarchy = progProcessor.process(listing, DateTimeZone.UTC, Timestamp.of(dateTime)).get();
-        assertThat(hierarchy.getBrand(), is(Optional.<Brand>absent()));
-        assertThat(hierarchy.getSeries(), is(Optional.<Series>absent()));
+        assertThat(hierarchy.getBrandSummary(), is(Optional.<Brand>absent()));
+        assertThat(hierarchy.getSeriesSummary(), is(Optional.<Series>absent()));
         Item item = hierarchy.getItem();
         Set<Alias> aliases = ImmutableSet.of(new Alias("pa:film", "263544"), new Alias("rt:filmid", "5217"), new Alias("gb:pressassociation:prod:prog_id", "263544"));
         assertThat(item.getAliases(), is(aliases));

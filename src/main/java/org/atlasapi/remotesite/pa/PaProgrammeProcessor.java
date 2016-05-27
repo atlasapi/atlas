@@ -203,9 +203,11 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             item.setLastUpdated(updatedAt.toDateTimeUTC());
 
             return Optional.of(new ContentHierarchyWithoutBroadcast(
+                    possibleBrand,
+                    possibleSeries,
+                    item,
                     Optional.fromNullable(brandSummary),
-                    Optional.fromNullable(seriesSummary),
-                    item
+                    Optional.fromNullable(seriesSummary)
             ));
         } catch (Exception e) {
             log.warn("Failed to process PA programme data update", e);

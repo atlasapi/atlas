@@ -55,7 +55,7 @@ public class PaArchivesUpdaterTest {
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
         PaProgDataUpdatesProcessor progProcessor = new PaProgrammeProcessor(resolver,log,paTagMap);
-        paUpdatesProcessor = new PaUpdatesProcessor(progProcessor, writer);
+        paUpdatesProcessor = PaUpdatesProcessor.create(progProcessor, writer);
         updater = new PaCompleteArchivesUpdater(store,resultStore,paUpdatesProcessor);
         when(store.localArchivesFiles(any(Predicate.class))).thenReturn(ImmutableList.of(file));
         when(store.copyForProcessing(file)).thenReturn(file);

@@ -263,18 +263,24 @@ public class PaModule {
         PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
                 contentBuffer(), log, paTagMap()
         );
-        PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
-        PaArchivesUpdater updater = new PaRecentArchiveUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
-        return updater;
+        PaUpdatesProcessor updatesProcessor = PaUpdatesProcessor.create(
+                paProgDataUpdatesProcessor, contentWriter
+        );
+        return new PaRecentArchiveUpdater(
+                paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor
+        );
     }
 
     @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
         PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
                 contentBuffer(), log, paTagMap()
         );
-        PaUpdatesProcessor updatesProcessor = new PaUpdatesProcessor(paProgDataUpdatesProcessor, contentWriter);
-        PaArchivesUpdater updater = new PaCompleteArchivesUpdater(paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor);
-        return updater;
+        PaUpdatesProcessor updatesProcessor = PaUpdatesProcessor.create(
+                paProgDataUpdatesProcessor, contentWriter
+        );
+        return new PaCompleteArchivesUpdater(
+                paProgrammeDataStore(), fileUploadResultStore(), updatesProcessor
+        );
     }
 
     @Bean @Qualifier("PaContentBuffer") ContentBuffer contentBuffer() {

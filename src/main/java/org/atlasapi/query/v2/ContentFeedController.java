@@ -25,6 +25,9 @@ import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.hierarchy.ItemAndVersion;
 import org.atlasapi.feeds.youview.hierarchy.ItemBroadcastHierarchy;
 import org.atlasapi.feeds.youview.hierarchy.ItemOnDemandHierarchy;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -48,6 +51,8 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 
 /**
@@ -73,6 +78,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             .withMessage("Unable to resolve content with the provided uri")
             .withErrorCode("Content not found")
             .withStatusCode(HttpStatusCode.BAD_REQUEST);
+    private static final AtlasErrorSummary CHANNEL_NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
+            .withMessage("Unable to resolve channel with the provided uri")
+            .withErrorCode("Channel not found")
+            .withStatusCode(HttpStatusCode.BAD_REQUEST);
     private static final AtlasErrorSummary CONTENT_NOT_AN_ITEM = new AtlasErrorSummary(new NullPointerException())
             .withMessage("Resolved Content is not an Item, but needs to be")
             .withErrorCode("Content not an Item")
@@ -89,15 +98,18 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
     
     private final TvAnytimeGenerator feedGenerator;
     private final ContentResolver contentResolver;
+    private final ChannelResolver channelResolver;
     private final ContentHierarchyExpander hierarchyExpander;
     
     public ContentFeedController(ApplicationConfigurationFetcher configFetcher, AdapterLog log, 
             AtlasModelWriter<JAXBElement<TVAMainType>> outputter, TvAnytimeGenerator feedGenerator, 
-            ContentResolver contentResolver, ContentHierarchyExpander hierarchyExpander) {
+            ContentResolver contentResolver, ContentHierarchyExpander hierarchyExpander,
+            ChannelResolver channelResolver) {
         super(configFetcher, log, outputter);
         this.feedGenerator = checkNotNull(feedGenerator);
         this.contentResolver = checkNotNull(contentResolver);
         this.hierarchyExpander = checkNotNull(hierarchyExpander);
+        this.channelResolver = checkNotNull(channelResolver);
     }
     
     /**
@@ -208,6 +220,74 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             }
             JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get());
             
+            modelAndViewFor(request, response, tva, appConfig);
+        } catch (TvaGenerationException e) {
+            errorViewFor(request, response, tvaGenerationError(e));
+        } catch (Exception e) {
+            errorViewFor(request, response, AtlasErrorSummary.forException(e));
+        }
+    }
+
+    /**
+     * Produces an output feed a certain provider, given a certain publisher's channel
+     * @param uri -         if present, the endpoint will return the xml generated for that
+     *                      particular item else it will check the lastUpdated parameter.
+     * @param lastUpdated - if present, the endpoint will return a delta feed of all items
+     *                      updated since lastUpdated, otherwise it will return a full
+     *                      bootstrap feed
+     * @throws IOException
+     */
+    @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/channel.xml", method = RequestMethod.GET)
+    public void generateChannelFeed(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("destinationType") String destinationTypeStr,
+            @PathVariable("publisher") String publisherStr,
+            @RequestParam(value = "uri", required = true) String uri) throws IOException {
+        try {
+            Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
+
+            ApplicationConfiguration appConfig;
+            try {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
+                return;
+            }
+
+            DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
+            if (destinationType == null) {
+                errorViewFor(request, response, INVALID_DESTINATION_TYPE);
+                return;
+            }
+
+            if (!appConfig.isEnabled(publisher)) {
+                errorViewFor(request, response, FORBIDDEN);
+                return;
+            }
+
+            Optional<String> possibleUri = Optional.fromNullable(uri);
+            if (!possibleUri.isPresent()) {
+                errorViewFor(request, response, NO_URI);
+                return;
+            }
+            Optional<Channel> channel = getChannel(possibleUri.get());
+            if (!channel.isPresent()) {
+                errorViewFor(request, response, CONTENT_NOT_FOUND);
+                return;
+            }
+
+            JAXBElement<TVAMainType> tva;
+
+            if (channel.get().getChannelType() == ChannelType.CHANNEL) {
+                Maybe<Channel> masterbrand = channelResolver.fromId(channel.get().getParent());
+
+                tva = feedGenerator.generateChannelTVAFrom(
+                        channel.get(),
+                        masterbrand.requireValue()
+                );
+            } else {
+                tva = feedGenerator.generateMasterbrandTVAFrom(channel.get());
+            }
+
             modelAndViewFor(request, response, tva, appConfig);
         } catch (TvaGenerationException e) {
             errorViewFor(request, response, tvaGenerationError(e));
@@ -429,4 +509,13 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         Collection<Identified> resolved = resolvedContent.asResolvedMap().values();
         return Optional.fromNullable((Content) Iterables.getOnlyElement(resolved, null));
     }
+
+        private Optional<Channel> getChannel(String uri) {
+            Optional<Channel> channel = Optional.absent();
+            Maybe<Channel> resolvedChannel = channelResolver.fromUri(uri);
+            if (!resolvedChannel.isNothing()) {
+                channel = Optional.of(resolvedChannel.requireValue());
+            }
+            return channel;
+        }
 }

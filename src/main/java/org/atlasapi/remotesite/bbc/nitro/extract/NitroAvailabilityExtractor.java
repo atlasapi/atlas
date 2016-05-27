@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 import java.util.Map;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.atlasapi.media.TransportType;
@@ -13,6 +14,7 @@ import org.atlasapi.media.entity.Policy.Network;
 import org.atlasapi.media.entity.Policy.Platform;
 
 import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.time.DateTimeZones;
@@ -78,35 +80,81 @@ public class NitroAvailabilityExtractor {
     private static final String VIDEO_MEDIA_TYPE = "Video";
 
     private static final Predicate<Availability> IS_HD = new Predicate<Availability>() {
-
         @Override
         public boolean apply(Availability input) {
             return !input.getMediaSet().contains("iptv-sd");
         }
     };
 
-    private static final Predicate<Availability> IS_SUBTITLED = new Predicate<Availability>() {
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_HD = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
+        @Override
+        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
+            for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
+                    .getMediaSets()
+                    .getMediaSet()) {
+                if ("iptv-sd".equals(mediaSet.getName())) {
+                    return true;
+                }
+            }
 
+            return false;
+        }
+    };
+
+    private static final Predicate<Availability> IS_SUBTITLED = new Predicate<Availability>() {
         @Override
         public boolean apply(Availability input) {
             return input.getMediaSet().contains("captions");
         }
     };
 
-    private static final Predicate<Availability> IS_AVAILABLE = new Predicate<Availability>() {
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_SUBTITLED = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
+        @Override
+        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
+            AvailableVersions.Version.Availabilities.Availability.MediaSets mediaSets = input.getMediaSets();
+            for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet ms : mediaSets.getMediaSet()) {
+                if ("captions".equals(ms.getName())) {
+                    return true;
+                }
+            }
 
+            return false;
+        }
+    };
+
+    private static final Predicate<Availability> IS_AVAILABLE = new Predicate<Availability>() {
         @Override
         public boolean apply(Availability input) {
             return AVAILABLE.equals(input.getStatus());
         }
+    };
 
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_AVAILABLE = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
+        @Override
+        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
+            return AVAILABLE.equals(input.getStatus());
+        }
     };
 
     private static final Predicate<Availability> IS_IPTV = new Predicate<Availability>() {
-
         @Override
         public boolean apply(Availability input) {
             return input.getMediaSet().contains("iptv-all");
+        }
+    };
+
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_IPTV = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
+        @Override
+        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
+            for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
+                    .getMediaSets()
+                    .getMediaSet()) {
+                if ("iptv-all".equals(mediaSet.getName())) {
+                    return true;
+                }
+            }
+
+            return false;
         }
     };
 
@@ -121,6 +169,45 @@ public class NitroAvailabilityExtractor {
             APPLE_IPHONE4_HLS, Network.WIFI,
             APPLE_IPHONE4_IPAD_HLS_3G, Network.THREE_G
     );
+
+    public Set<Encoding> extractFromMixin(
+            String programmePid,
+            Iterable<AvailableVersions.Version.Availabilities.Availability> availabilities,
+            String mediaType
+    ) {
+        Set<Equivalence.Wrapper<Location>> hdLocations = Sets.newHashSet();
+        Set<Equivalence.Wrapper<Location>> sdLocations = Sets.newHashSet();
+
+        boolean isSubtitled = Iterables.any(
+                availabilities,
+                Predicates.and(MIXIN_IS_SUBTITLED, MIXIN_IS_AVAILABLE)
+        );
+
+        for (AvailableVersions.Version.Availabilities.Availability availability : availabilities) {
+            ImmutableList<Wrapper<Location>> locations =
+                    FluentIterable.from(getLocationsFor(programmePid, availability, mediaType))
+                            .transform(TO_WRAPPED_LOCATION)
+                            .toList();
+
+            if (MIXIN_IS_IPTV.apply(availability) && MIXIN_IS_HD.apply(availability)) {
+                hdLocations.addAll(locations);
+            } else {
+                sdLocations.addAll(locations);
+            }
+        }
+        // only create encodings if locations are present for HD/SD
+        if (hdLocations.isEmpty()) {
+            if (sdLocations.isEmpty()) {
+                return ImmutableSet.of();
+            }
+            return ImmutableSet.of(createEncoding(false, isSubtitled, sdLocations));
+        }
+        if (sdLocations.isEmpty()) {
+            return ImmutableSet.of(createEncoding(true, isSubtitled, hdLocations));
+        }
+        return ImmutableSet.of(createEncoding(true, isSubtitled, hdLocations),
+                createEncoding(false, isSubtitled, sdLocations));
+    }
 
     /**
      * This simplifies the Availability extraction, by assuming that the only difference for an
@@ -198,13 +285,63 @@ public class NitroAvailabilityExtractor {
         return locations.build();
     }
 
-    private Location newLocation(Availability source, Platform platform, Network network,
-            String mediaType) {
+    private Set<Location> getLocationsFor(
+            String programmePid,
+            AvailableVersions.Version.Availabilities.Availability availability,
+            String mediaType
+    ) {
+        ImmutableSet.Builder<Location> locations = ImmutableSet.builder();
+
+        AvailableVersions.Version.Availabilities.Availability.MediaSets mediaSets = availability.getMediaSets();
+
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet ms : mediaSets.getMediaSet()) {
+            Platform platform = mediaSetPlatform.get(ms.getName());
+
+            if (platform != null) {
+                locations.add(newLocation(
+                        programmePid,
+                        availability,
+                        ms,
+                        platform,
+                        mediaSetNetwork.get(ms.getName()),
+                        mediaType
+                ));
+            }
+        }
+
+        return locations.build();
+    }
+
+    private Location newLocation(
+            Availability source,
+            Platform platform,
+            Network network,
+            String mediaType
+    ) {
         Location location = new Location();
+
         location.setUri(IPLAYER_URL_BASE + checkNotNull(NitroUtil.programmePid(source)));
         location.setTransportType(TransportType.LINK);
         location.setPolicy(policy(source, platform, network, mediaType));
         location.setAvailable(!REVOKED.equals(source.getRevocationStatus()));
+
+        return location;
+    }
+
+    private Location newLocation(
+            String programmePid,
+            AvailableVersions.Version.Availabilities.Availability availability,
+            AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet,
+            Platform platform,
+            Network network,
+            String mediaType
+    ) {
+        Location location = new Location();
+
+        location.setUri(IPLAYER_URL_BASE + checkNotNull(programmePid));
+        location.setTransportType(TransportType.LINK);
+        location.setPolicy(policy(availability, mediaSet, platform, network, mediaType));
+        location.setAvailable(!REVOKED.equals(availability.getStatus()));
 
         return location;
     }
@@ -224,6 +361,26 @@ public class NitroAvailabilityExtractor {
         policy.setPlatform(platform);
         policy.setNetwork(network);
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
+        return policy;
+    }
+
+    private Policy policy(
+            AvailableVersions.Version.Availabilities.Availability source,
+            AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet,
+            Platform platform,
+            Network network,
+            String mediaType
+    ) {
+        Policy policy = new Policy();
+
+        policy.setAvailabilityStart(toDateTime(source.getScheduledStart()));
+        policy.setAvailabilityEnd(toDateTime(source.getScheduledEnd()));
+        policy.setActualAvailabilityStart(toDateTime(mediaSet.getActualStart()));
+
+        policy.setPlatform(platform);
+        policy.setNetwork(network);
+        policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
+
         return policy;
     }
 
@@ -279,7 +436,7 @@ public class NitroAvailabilityExtractor {
         }
     }
 
-    private DateTime toDateTime(XMLGregorianCalendar start) {
+    private @Nullable DateTime toDateTime(@Nullable XMLGregorianCalendar start) {
         if (start == null) {
             return null;
         }

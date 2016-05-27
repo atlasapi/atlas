@@ -1,13 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.atlas.glycerin.model.Brand;
-import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
-import com.metabroadcast.atlas.glycerin.model.Synopses;
-import com.metabroadcast.common.time.Clock;
+import java.util.List;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+
 import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
@@ -18,13 +15,20 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.Brand;
+import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
+import com.metabroadcast.atlas.glycerin.model.Synopses;
+import com.metabroadcast.common.time.Clock;
+
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-import java.util.List;
 
 /**
  * Template extractor for extracting {@link Content} from Nitro sources.
@@ -159,6 +163,8 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
      * @return - the image of the source data, or {@code null} if there is none.
      */
     protected abstract @Nullable Brand.Images.Image extractImage(SOURCE source);
+
+    protected abstract @Nullable AvailableVersions extractVersions(SOURCE source);
 
     /**
      * Concrete implementations can override this method to perform additional

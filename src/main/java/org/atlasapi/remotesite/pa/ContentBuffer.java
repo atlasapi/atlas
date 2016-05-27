@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.pa;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,17 +15,15 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ContentHierarchyAndBroadcast;
 
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Maintain a buffer of content to write, which acts as a write-through caching implementation
@@ -76,12 +72,21 @@ public class ContentBuffer implements ContentResolver {
     
     public void add(ContentHierarchyAndBroadcast hierarchy) {
         if (hierarchy.getBrand().isPresent()) {
-            contentCache.get().put(hierarchy.getBrand().get().getCanonicalUri(), hierarchy.getBrand().get());
+            contentCache.get().put(
+                    hierarchy.getBrand().get().getCanonicalUri(),
+                    hierarchy.getBrand().get()
+            );
         }
         if (hierarchy.getSeries().isPresent()) {
-            contentCache.get().put(hierarchy.getSeries().get().getCanonicalUri(), hierarchy.getSeries().get());
+            contentCache.get().put(
+                    hierarchy.getSeries().get().getCanonicalUri(),
+                    hierarchy.getSeries().get()
+            );
         }
-        contentCache.get().put(hierarchy.getItem().getCanonicalUri(), hierarchy.getItem());
+        contentCache.get().put(
+                hierarchy.getItem().getCanonicalUri(),
+                hierarchy.getItem()
+        );
 
         for (String aliasUrl : hierarchy.getItem().getAliasUrls()) {
             aliasToCanonicalUri.get().put(aliasUrl, hierarchy.getItem().getCanonicalUri());

@@ -14,13 +14,12 @@ import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 
 import com.google.common.base.Optional;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class PaChannelProcessor {
 
@@ -52,20 +51,33 @@ public class PaChannelProcessor {
             for (ProgData programme : channelData.programmes()) {
                 String programmeLock = lockIdentifier(programme);
                 lock(currentlyProcessing, programmeLock);
-                try {
 
-                    Optional<ContentHierarchyAndSummaries> possibleHierarchy = processor.process(programme, channel,
-                            channelData.zone(), channelData.lastUpdated());
+                try {
+                    Optional<ContentHierarchyAndSummaries> possibleHierarchy = processor.process(
+                            programme,
+                            channel,
+                            channelData.zone(),
+                            channelData.lastUpdated()
+                    );
                     if (possibleHierarchy.isPresent()) {
                         ContentHierarchyAndSummaries hierarchy = possibleHierarchy.get();
                         contentBuffer.add(hierarchy);
+
                         hierarchiesAndSummaries.add(hierarchy);
-                        broadcasts.add(new ItemRefAndBroadcast(hierarchy.getItem(), hierarchy.getBroadcast()));
-                        acceptableBroadcastIds.put(hierarchy.getBroadcast().getSourceId(), hierarchy.getItem().getCanonicalUri());
+
+                        broadcasts.add(new ItemRefAndBroadcast(
+                                hierarchy.getItem(),
+                                hierarchy.getBroadcast()
+                        ));
+                        acceptableBroadcastIds.put(
+                                hierarchy.getBroadcast().getSourceId(),
+                                hierarchy.getItem().getCanonicalUri()
+                        );
                     }
                     processed++;
                 } catch (Exception e) {
-                    log.error(String.format("Error processing channel %s, prog id %s", channel.getKey(), programme.getProgId()));
+                    log.error(String.format("Error processing channel %s, prog id %s",
+                            channel.getKey(), programme.getProgId()));
                 } finally {
                     unlock(currentlyProcessing, programmeLock);
                 }

@@ -17,7 +17,6 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.NullAdapterLog;
@@ -67,7 +66,6 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class PaProgrammeProcessorTest {
 
-    private final ContentWriter contentWriter = mock(ContentWriter.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
     private final Described described = mock(Described.class);
     private final PaTagMap paTagMap = mock(PaTagMap.class);
@@ -85,7 +83,7 @@ public class PaProgrammeProcessorTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         
-        progProcessor = new PaProgrammeProcessor(contentWriter, contentResolver, log, paTagMap);
+        progProcessor = new PaProgrammeProcessor(contentResolver, log, paTagMap);
     }
     
     @Test 

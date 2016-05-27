@@ -95,8 +95,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
         ProgrammesQuery query = ProgrammesQuery
                 .builder()
-                .withMixins(ProgrammesMixin.ANCESTOR_TITLES, ProgrammesMixin.CONTRIBUTIONS,
-                        ProgrammesMixin.IMAGES, ProgrammesMixin.GENRE_GROUPINGS)
+                .withMixins(
+                        ProgrammesMixin.ANCESTOR_TITLES,
+                        ProgrammesMixin.CONTRIBUTIONS,
+                        ProgrammesMixin.IMAGES,
+                        ProgrammesMixin.GENRE_GROUPINGS,
+                        ProgrammesMixin.AVAILABLE_VERSIONS
+                )
                 .withAvailability(AvailabilityOption.AVAILABLE)
                 .withPageSize(pageSize)
                 .withAvailabilityEntityType(AvailabilityEntityTypeOption.EPISODE)
@@ -138,8 +143,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
                 reportStatus("Resolving items from Atlas");
 
-                ResolveOrFetchResult<Item> resolvedItems = localOrRemoteFetcher
-                        .resolveItems(items);
+                ResolveOrFetchResult<Item> resolvedItems = localOrRemoteFetcher.resolveItems(items);
 
                 Iterable<Series> series = Iterables.transform(
                         localOrRemoteFetcher.resolveOrFetchSeries(resolvedItems.getAll()),

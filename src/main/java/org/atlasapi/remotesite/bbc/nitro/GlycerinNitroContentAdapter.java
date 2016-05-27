@@ -17,6 +17,7 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
@@ -26,6 +27,7 @@ import com.metabroadcast.common.time.Clock;
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
@@ -202,7 +204,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     public Iterable<List<Item>> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
         try {
             Iterable<List<Programme>> programmes = fetchProgrammes(ImmutableList.of(programmesQuery));
-            return fetchEpisodesFromProgrammes(programmes);
+            return fetchEpisodesFromProgrammes(programmes, null);
         } catch (GlycerinException e) {
             throw new NitroException(programmesQuery.toString(), e);
         }
@@ -214,27 +216,46 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         try {
             Iterable<ProgrammesQuery> programmesQueries = makeProgrammeQueries(refs);
             Iterable<List<Programme>> currentProgrammes = fetchProgrammes(programmesQueries);
-            return fetchEpisodesFromProgrammes(currentProgrammes);
+            return fetchEpisodesFromProgrammes(currentProgrammes, null);
         } catch (GlycerinException e) {
             throw new NitroException(refs.toString(), e);
         }
     }
 
-    private Iterable<List<Item>> fetchEpisodesFromProgrammes(Iterable<List<Programme>> currentProgrammes)
-            throws NitroException, GlycerinException {
-        Iterable<List<Episode>> programmesAsEpisodes = getAsEpisodes(currentProgrammes);
-        return toItemsListIterable(programmesAsEpisodes);
+    @Override
+    public Iterable<List<Item>> fetchEpisodes(
+            Iterable<PidReference> refs,
+            ImmutableListMultimap<String, Broadcast> broadcasts
+    ) throws NitroException {
+        try {
+            Iterable<ProgrammesQuery> programmesQueries = makeProgrammeQueries(refs);
+            Iterable<List<Programme>> currentProgrammes = fetchProgrammes(programmesQueries);
+            return fetchEpisodesFromProgrammes(currentProgrammes, broadcasts);
+        } catch (GlycerinException e) {
+            throw new NitroException(refs.toString(), e);
+        }
     }
 
-    private Iterable<List<Item>> toItemsListIterable(Iterable<List<Episode>> episodes)
-            throws GlycerinException, NitroException {
+    private Iterable<List<Item>> fetchEpisodesFromProgrammes(
+            Iterable<List<Programme>> currentProgrammes,
+            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
+    ) throws NitroException, GlycerinException {
+        Iterable<List<Episode>> programmesAsEpisodes = getAsEpisodes(currentProgrammes);
+        return toItemsListIterable(programmesAsEpisodes, broadcasts);
+    }
+
+    private Iterable<List<Item>> toItemsListIterable(
+            Iterable<List<Episode>> episodes,
+            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
+    ) throws GlycerinException, NitroException {
         return new PaginatedNitroItemSources(
                 episodes,
                 executor,
                 glycerin,
                 pageSize,
                 itemExtractor,
-                clipsAdapter
+                clipsAdapter,
+                broadcasts
         );
     }
 

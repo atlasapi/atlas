@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -18,8 +15,14 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.util.GroupLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
+import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
+import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
+import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+import com.metabroadcast.common.scheduling.ScheduledTask;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.base.Function;
@@ -28,13 +31,10 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
-import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
-import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
-import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
-import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-import com.metabroadcast.common.scheduling.ScheduledTask;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class OffScheduleContentIngestTask extends ScheduledTask {
 
@@ -93,8 +93,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
         ProgrammesQuery query = ProgrammesQuery
                 .builder()
-                .withMixins(ProgrammesMixin.ANCESTOR_TITLES, ProgrammesMixin.CONTRIBUTIONS,
-                        ProgrammesMixin.IMAGES, ProgrammesMixin.GENRE_GROUPINGS)
+                .withMixins(
+                        ProgrammesMixin.ANCESTOR_TITLES,
+                        ProgrammesMixin.CONTRIBUTIONS,
+                        ProgrammesMixin.IMAGES,
+                        ProgrammesMixin.GENRE_GROUPINGS,
+                        ProgrammesMixin.AVAILABLE_VERSIONS
+                )
                 .withAvailability(AvailabilityOption.AVAILABLE)
                 .withPageSize(pageSize)
                 .withAvailabilityEntityType(AvailabilityEntityTypeOption.EPISODE)
@@ -133,8 +138,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
                 reportStatus("Resolving items from Atlas");
 
-                ResolveOrFetchResult<Item> resolvedItems = localOrRemoteFetcher
-                        .resolveItems(items);
+                ResolveOrFetchResult<Item> resolvedItems = localOrRemoteFetcher.resolveItems(items);
 
                 Iterable<Series> series = Iterables.transform(
                         localOrRemoteFetcher.resolveOrFetchSeries(resolvedItems.getAll()),

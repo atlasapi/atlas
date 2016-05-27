@@ -14,14 +14,10 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
-import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Version;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
-import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
 
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
@@ -38,8 +34,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class PaginatedNitroItemSources implements Iterable<List<Item>> {
 
-    private Iterable<List<Episode>> episodes;
-    private ListeningExecutorService executor;
+    private final Iterable<List<Episode>> episodes;
+    private final ListeningExecutorService executor;
     private final Glycerin glycerin;
     private final int pageSize;
     private final NitroEpisodeExtractor itemExtractor;
@@ -64,24 +60,27 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
 
     private static class NitroItemSourceIterator implements Iterator<List<Item>> {
 
-        private Iterator<List<Episode>> episodesIterator;
+        private final Iterator<List<Episode>> episodesIterator;
         private final ListeningExecutorService executor;
         private final Glycerin glycerin;
-        private Iterator<Episode> currentEpisodesIterator;
-        private int pageSize;
+        private final int pageSize;
         private final NitroEpisodeExtractor itemExtractor;
-        private GlycerinNitroClipsAdapter clipsAdapter;
+        private final GlycerinNitroClipsAdapter clipsAdapter;
 
-        public NitroItemSourceIterator(Iterable<List<Episode>> episodesIterator,
-                ListeningExecutorService executor, Glycerin glycerin,
-                int pageSize, NitroEpisodeExtractor itemExtractor,
-                GlycerinNitroClipsAdapter clipsAdapter) {
-            this.episodesIterator = episodesIterator.iterator();
-            this.executor = executor;
-            this.glycerin = glycerin;
+        public NitroItemSourceIterator(
+                Iterable<List<Episode>> episodesIterator,
+                ListeningExecutorService executor,
+                Glycerin glycerin,
+                int pageSize,
+                NitroEpisodeExtractor itemExtractor,
+                GlycerinNitroClipsAdapter clipsAdapter
+        ) {
+            this.episodesIterator = checkNotNull(episodesIterator).iterator();
+            this.executor = checkNotNull(executor);
+            this.glycerin = checkNotNull(glycerin);
             this.pageSize = pageSize;
-            this.itemExtractor = itemExtractor;
-            this.clipsAdapter = clipsAdapter;
+            this.itemExtractor = checkNotNull(itemExtractor);
+            this.clipsAdapter = checkNotNull(clipsAdapter);
         }
 
         @Override
@@ -94,16 +93,12 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
             List<Episode> episodes = episodesIterator.next();
             ImmutableList.Builder<Item> items = ImmutableList.builder();
 
-            ImmutableListMultimap<String, Availability> availabilities = getAvailabilities(episodes);
             ImmutableListMultimap<String, Broadcast> broadcasts = getBroadcasts(episodes);
-            ImmutableListMultimap<String, Version> versions = getVersions(episodes);
 
             for (Episode glycerinEpisode : episodes) {
                 NitroItemSource<Episode> nitroItemSource = NitroItemSource.valueOf(
                         glycerinEpisode,
-                        availabilities.get(glycerinEpisode.getPid()),
-                        broadcasts.get(glycerinEpisode.getPid()),
-                        versions.get(glycerinEpisode.getPid())
+                        broadcasts.get(glycerinEpisode.getPid())
                 );
 
                 Item item = itemExtractor.extract(nitroItemSource);
@@ -122,28 +117,9 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
             );
         }
 
-        private ImmutableListMultimap<String, Version> getVersions(List<Episode> episodes) {
-            ImmutableListMultimap<String, Version> versions;
-            try {
-                return versions(episodes);
-            } catch (GlycerinException e) {
-                throw Throwables.propagate(e);
-            }
-        }
-
         private ImmutableListMultimap<String, Broadcast> getBroadcasts(List<Episode> episodes) {
-            ImmutableListMultimap<String, Broadcast> broadcasts;
             try {
                 return broadcasts(episodes);
-            } catch (GlycerinException e) {
-                throw Throwables.propagate(e);
-            }
-        }
-
-        private ImmutableListMultimap<String, Availability> getAvailabilities(List<Episode> episodes) {
-            ImmutableListMultimap<String, Availability> availabilities;
-            try {
-                return availabilities(episodes);
             } catch (GlycerinException e) {
                 throw Throwables.propagate(e);
             }
@@ -152,42 +128,6 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         @Override
         public void remove() {
             throw new UnsupportedOperationException();
-        }
-
-        private ImmutableListMultimap<String, Availability> availabilities(List<Episode> episodes)
-                throws GlycerinException {
-
-            List<ListenableFuture<ImmutableList<Availability>>> futures = Lists.newArrayList();
-            AvailabilityQuery query = AvailabilityQuery.builder()
-                    .withDescendantsOf(toPids(episodes))
-                    .withPageSize(pageSize)
-                    .withMediaSet("apple-iphone4-ipad-hls-3g",
-                            "apple-iphone4-hls",
-                            "pc",
-                            "iptv-all",
-                            "captions")
-                    .build();
-
-            futures.add(executor.submit(exhaustingAvailabilityCallable(query)));
-
-
-            ListenableFuture<List<ImmutableList<Availability>>> all = Futures.allAsList(futures);
-            Iterable<Availability> list;
-            try {
-                list = Iterables.concat(all.get());
-            } catch (InterruptedException | ExecutionException e) {
-                if (e.getCause() instanceof GlycerinException) {
-                    throw (GlycerinException) e.getCause();
-                }
-                throw Throwables.propagate(e);
-            }
-
-            return Multimaps.index(list, new Function<Availability, String>() {
-                @Override
-                public String apply(Availability input) {
-                    return NitroUtil.programmePid(input);
-                }
-            });
         }
 
         private ImmutableListMultimap<String, Broadcast> broadcasts(List<Episode> episodes) throws GlycerinException {
@@ -217,34 +157,6 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
             }
         }
 
-        private ImmutableListMultimap<String, Version> versions(List<Episode> episode)
-                throws GlycerinException {
-            List<ListenableFuture<ImmutableList<Version>>> futures = Lists.newArrayList();
-
-            VersionsQuery query = VersionsQuery.builder()
-                    .withDescendantsOf(toPids(episode))
-                    .withPageSize(pageSize)
-                    .build();
-
-            futures.add(executor.submit(exhaustingVersionsCallable(query)));
-            ListenableFuture<List<ImmutableList<Version>>> all = Futures.allAsList(futures);
-
-            try {
-                return Multimaps.index(Iterables.concat(all.get()), new Function<Version, String>() {
-
-                    @Override
-                    public String apply(Version input) {
-                        return NitroUtil.programmePid(input).getPid();
-                    }
-                });
-            } catch (InterruptedException | ExecutionException e) {
-                if (e.getCause() instanceof GlycerinException) {
-                    throw (GlycerinException) e.getCause();
-                }
-                throw Throwables.propagate(e);
-            }
-        }
-
         private Iterable<String> toPids(List<Episode> episodes) {
             return Iterables.transform(episodes, new Function<Episode, String>() {
 
@@ -255,17 +167,6 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
             });
         }
 
-        private Callable<ImmutableList<Version>> exhaustingVersionsCallable(final VersionsQuery query) {
-
-            return new Callable<ImmutableList<Version>>() {
-
-                @Override
-                public ImmutableList<Version> call() throws Exception {
-                    return exhaust(glycerin.execute(query));
-                }
-            };
-        }
-
         private Callable<ImmutableList<Broadcast>> exhaustingBroadcastsCallable(
                 final BroadcastsQuery query) {
 
@@ -273,18 +174,6 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
 
                 @Override
                 public ImmutableList<Broadcast> call() throws Exception {
-                    return exhaust(glycerin.execute(query));
-                }
-            };
-        }
-
-        private Callable<ImmutableList<Availability>> exhaustingAvailabilityCallable(
-                final AvailabilityQuery query) {
-
-            return new Callable<ImmutableList<Availability>>() {
-
-                @Override
-                public ImmutableList<Availability> call() throws Exception {
                     return exhaust(glycerin.execute(query));
                 }
             };

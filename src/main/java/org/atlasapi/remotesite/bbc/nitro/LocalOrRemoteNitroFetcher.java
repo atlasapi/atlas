@@ -1,23 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.Iterator;
 import java.util.List;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.time.Clock;
+import java.util.Map;
+import java.util.Set;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
@@ -42,6 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -174,7 +161,8 @@ public class LocalOrRemoteNitroFetcher {
         Iterable<PidReference> episodeRefs = toEpisodeRefs(broadcasts);
         ImmutableSet<String> itemUris = toItemUris(episodeRefs);
         ResolvedContent resolvedItems = resolve(itemUris);
-        
+        ImmutableListMultimap<String, Broadcast> broadcastIndex = buildBroadcastIndex(broadcasts);
+
         Set<PidReference> toFetch = Sets.newHashSet();
         for (PidReference pidReference : episodeRefs) {
             Maybe<Identified> maybeId = resolvedItems.asMap().get(toItemUri(pidReference));
@@ -186,14 +174,35 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        Iterable<List<Item> > fetchedItems = contentAdapter.fetchEpisodes(toFetch);
+        Iterable<List<Item> > fetchedItems = contentAdapter.fetchEpisodes(toFetch, broadcastIndex);
 ImmutableSet<Item> fetchedItemSet = ImmutableSet.copyOf(
                 Iterables.concat(
                         fetchedItems
                 )
-        );        return mergeItemsWithExisting(fetchedItemSet, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
+        );
+
+        return mergeItemsWithExisting(
+                fetchedItemSet,
+                ImmutableSet.copyOf(
+                        Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)
+                )
+        );
     }
-    
+
+    private ImmutableListMultimap<String, Broadcast> buildBroadcastIndex(
+            Iterable<Broadcast> broadcasts
+    ) {
+        return Multimaps.index(
+                broadcasts,
+                new Function<Broadcast, String>() {
+                    @Override
+                    public String apply(Broadcast input) {
+                        return NitroUtil.programmePid(input).getPid();
+                    }
+                }
+        );
+    }
+
     private ResolveOrFetchResult<Item> mergeItemsWithExisting(ImmutableSet<Item> fetchedItems,
             Set<Item> existingItems) {
         Map<String, Item> fetchedIndex = Maps.newHashMap(

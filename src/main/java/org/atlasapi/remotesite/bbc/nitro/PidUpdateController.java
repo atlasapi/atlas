@@ -3,7 +3,6 @@ package org.atlasapi.remotesite.bbc.nitro;
 import java.io.IOException;
 import java.util.List;
 import java.util.NoSuchElementException;
-import java.util.Set;
 
 import javax.servlet.http.HttpServletResponse;
 
@@ -19,7 +18,6 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.common.http.HttpStatusCode;
 
-import com.google.api.client.util.Sets;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -33,6 +31,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.AVAILABLE_VERSIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
@@ -64,11 +63,20 @@ public class PidUpdateController {
         Item item;
         try {
             Iterable<List<Item>> itemListIterable = contentAdapter
-                    .fetchEpisodes(ProgrammesQuery.builder()
-                            .withPid(pid)
-                            .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS)
-                            .withPageSize(1)
-                            .build());
+                    .fetchEpisodes(
+                            ProgrammesQuery.builder()
+                                    .withPid(pid)
+                                    .withMixins(
+                                            ANCESTOR_TITLES,
+                                            CONTRIBUTIONS,
+                                            IMAGES,
+                                            GENRE_GROUPINGS,
+                                            AVAILABLE_VERSIONS
+                                    )
+                                    .withPageSize(1)
+                                    .build(),
+                            null
+                    );
 
             Iterable<Item> allItems = Iterables.concat(itemListIterable);
             item = Iterables.getOnlyElement(localOrRemoteNitroFetcher.resolveItems(allItems).getAll());
@@ -94,11 +102,20 @@ public class PidUpdateController {
         Item item;
         try {
             Iterable<List<Item>> items = contentAdapter
-                    .fetchEpisodes(ProgrammesQuery.builder()
-                            .withPid(pid)
-                            .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS)
-                            .withPageSize(1)
-                            .build());
+                    .fetchEpisodes(
+                            ProgrammesQuery.builder()
+                                    .withPid(pid)
+                                    .withMixins(
+                                            ANCESTOR_TITLES,
+                                            CONTRIBUTIONS,
+                                            IMAGES,
+                                            GENRE_GROUPINGS,
+                                            AVAILABLE_VERSIONS
+                                    )
+                                    .withPageSize(1)
+                                    .build(),
+                            null
+                    );
             item = Iterables.getOnlyElement(items).get(0);
         } catch (NoSuchElementException e) {
             log.error("No items found in Nitro for pid {}", pid);

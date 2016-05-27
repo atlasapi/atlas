@@ -87,6 +87,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setLongDescription(channel.getLongDescription());
                     existingChannel.setChannelType(channel.getChannelType());
                     existingChannel.setRegion(channel.getRegion());
+                    existingChannel.setInteractive(channel.getInteractive());
                     channelWriter.createOrUpdate(existingChannel);
                 } else {
                     channelWriter.createOrUpdate(channel);

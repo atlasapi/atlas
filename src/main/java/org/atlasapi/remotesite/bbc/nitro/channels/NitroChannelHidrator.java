@@ -32,6 +32,7 @@ public class NitroChannelHidrator {
     public static final String IMAGE = "image";
     public static final String WIDTH = "width";
     public static final String HEIGHT = "height";
+    public static final String INTERACTIVE = "interactive";
 
     private final String servicesPath = "/data/youview/sv.json";
     private final String masterBrandPath = "/data/youview/mb.json";
@@ -62,8 +63,16 @@ public class NitroChannelHidrator {
         populateTables();
     }
 
+    private final Predicate<Channel> inServiceTable() {
+        return IN_SERVICE_TABLE;
+    }
+
+    private final Predicate<Channel> inMasterbrandTable() {
+        return IN_MASTERBRAND_TABLE;
+    }
+
     public Iterable<Channel> filterAndHydrateServices(Iterable<Channel> services) {
-        Iterable<Channel> filteredServices = Iterables.filter(services, IN_SERVICE_TABLE);
+        Iterable<Channel> filteredServices = Iterables.filter(services, inServiceTable());
         for (Channel filteredService : filteredServices) {
             String canonicalUri = filteredService.getCanonicalUri();
             filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, locatorsToValues.get(
@@ -75,12 +84,14 @@ public class NitroChannelHidrator {
             filteredService.addImage(image);
             filteredService.setTargetRegions(ImmutableSet.copyOf(locatorsToTargetInfo.get(
                     canonicalUri)));
+            filteredService.setInteractive(Boolean.parseBoolean(locatorsToValues.get(
+                            canonicalUri, INTERACTIVE)));
         }
         return filteredServices;
     }
 
     public Iterable<Channel> filterAndHydrateMasterbrands(Iterable<Channel> masterbrands) {
-        Iterable<Channel> filteredMasterbrands = Iterables.filter(masterbrands, IN_MASTERBRAND_TABLE);
+        Iterable<Channel> filteredMasterbrands = Iterables.filter(masterbrands, inMasterbrandTable());
         for (Channel filteredService : filteredMasterbrands) {
             String name = filteredService.getTitle();
             filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, masterbrandNamesToValues.get(
@@ -110,6 +121,7 @@ public class NitroChannelHidrator {
                 locatorsToValuesBuilder.put(service.getLocator(), IMAGE, service.getImage());
                 locatorsToValuesBuilder.put(service.getLocator(), WIDTH, service.getWidth().toString());
                 locatorsToValuesBuilder.put(service.getLocator(), HEIGHT, service.getHeight().toString());
+                locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
             }
             locatorsToTargetInfo = locatorsToTargetInfoBuilder.build();
             locatorsToValues = locatorsToValuesBuilder.build();

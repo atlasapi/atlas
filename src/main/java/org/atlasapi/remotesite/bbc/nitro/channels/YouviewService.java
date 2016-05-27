@@ -21,6 +21,8 @@ public class YouviewService {
     private Integer height;
     @JsonProperty
     private Set<String> targets;
+    @JsonProperty
+    private Boolean interactive;
 
     public YouviewService() {
 
@@ -82,4 +84,11 @@ public class YouviewService {
         this.targets = targets;
     }
 
+    public Boolean getInteractive() {
+        return interactive;
+    }
+
+    public void setInteractive(Boolean interactive) {
+        this.interactive = interactive;
+    }
 }

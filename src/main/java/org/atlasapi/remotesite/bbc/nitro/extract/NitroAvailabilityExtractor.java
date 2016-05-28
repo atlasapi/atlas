@@ -201,10 +201,11 @@ public class NitroAvailabilityExtractor {
     private Location newLocation(Availability source, Platform platform, Network network,
             String mediaType) {
         Location location = new Location();
+
         location.setUri(IPLAYER_URL_BASE + checkNotNull(NitroUtil.programmePid(source)));
         location.setTransportType(TransportType.LINK);
         location.setPolicy(policy(source, platform, network, mediaType));
-        location.setAvailable(!REVOKED.equals(source.getRevocationStatus()));
+//        location.setAvailable(!REVOKED.equals(source.getRevocationStatus()));
 
         return location;
     }

@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
-import java.util.Set;
-
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class YouviewMasterbrand {
@@ -12,11 +9,17 @@ public class YouviewMasterbrand {
     @JsonProperty
     private String shortName;
     @JsonProperty
-    private String image;
+    private String imageIdent;
     @JsonProperty
-    private Integer width;
+    private Integer widthIdent;
     @JsonProperty
-    private Integer height;
+    private Integer heightIdent;
+    @JsonProperty
+    private String imageDog;
+    @JsonProperty
+    private Integer widthDog;
+    @JsonProperty
+    private Integer heightDog;
 
     public YouviewMasterbrand() {
 
@@ -38,28 +41,51 @@ public class YouviewMasterbrand {
         this.shortName = shortName;
     }
 
-    public String getImage() {
-        return image;
+    public void setImageIdent(String imageIdent) {
+        this.imageIdent = imageIdent;
     }
 
-    public void setImage(String image) {
-        this.image = image;
+    public void setWidthIdent(Integer widthIdent) {
+        this.widthIdent = widthIdent;
     }
 
-    public Integer getWidth() {
-        return width;
+    public void setHeightIdent(Integer heightIdent) {
+        this.heightIdent = heightIdent;
     }
 
-    public void setWidth(Integer width) {
-        this.width = width;
+    public void setImageDog(String imageDog) {
+        this.imageDog = imageDog;
     }
 
-    public Integer getHeight() {
-        return height;
+    public void setWidthDog(Integer widthDog) {
+        this.widthDog = widthDog;
     }
 
-    public void setHeight(Integer height) {
-        this.height = height;
+    public void setHeightDog(Integer heightDog) {
+        this.heightDog = heightDog;
     }
 
+    public String getImageIdent() {
+        return imageIdent;
+    }
+
+    public Integer getWidthIdent() {
+        return widthIdent;
+    }
+
+    public Integer getHeightIdent() {
+        return heightIdent;
+    }
+
+    public String getImageDog() {
+        return imageDog;
+    }
+
+    public Integer getWidthDog() {
+        return widthDog;
+    }
+
+    public Integer getHeightDog() {
+        return heightDog;
+    }
 }

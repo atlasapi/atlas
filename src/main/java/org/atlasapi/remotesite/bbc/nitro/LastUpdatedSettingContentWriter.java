@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -20,8 +18,10 @@ import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.Clock;
+import com.metabroadcast.common.time.SystemClock;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -34,11 +34,16 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Clock;
-import com.metabroadcast.common.time.SystemClock;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class LastUpdatedSettingContentWriter implements ContentWriter {
+
+    private static final Logger log = LoggerFactory.getLogger(LastUpdatedSettingContentWriter.class);
 
     private static final Predicate<Identified> HAS_CANONICAL_URI = new Predicate<Identified>() {
         @Override public boolean apply(Identified input) {
@@ -176,12 +181,16 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
 
     private void setLastUpdatedTimeComparingWithPreviousLocations(Set<Location> locations,
             Set<Location> prevLocations, DateTime now) {
+        log.debug("Matching locations: current {}, previous {}", locations, prevLocations);
+
         for (Location location : locations) {
             Optional<Location> prevLocation = Iterables.tryFind(prevLocations, isEqualTo(location));
 
-            if(prevLocation.isPresent() && prevLocation.get().getLastUpdated() != null) {
+            if (prevLocation.isPresent() && prevLocation.get().getLastUpdated() != null) {
+                log.debug("Matched location {}", location);
                 location.setLastUpdated(prevLocation.get().getLastUpdated());
             } else {
+                log.debug("Could not match location {}", location);
                 location.setLastUpdated(now);
             }
         }

@@ -104,12 +104,22 @@ public class NitroChannelHidrator {
             identImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)));
             identImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT)));
             identImage.setTheme(ImageTheme.LIGHT_OPAQUE);
+            identImage.setAliases(
+                    ImmutableSet.of(
+                            new Alias("bbc:imageType", "ident")
+                    )
+            );
             filteredService.addImage(identImage);
 
             Image dogImage = new Image(masterbrandNamesToValues.get(name, IMAGE_DOG));
             dogImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_DOG)));
             dogImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_DOG)));
             dogImage.setTheme(ImageTheme.LIGHT_OPAQUE);
+            dogImage.setAliases(
+                    ImmutableSet.of(
+                            new Alias("bbc:imageType", "dog")
+                    )
+            );
             filteredService.addImage(dogImage);
         }
         return filteredMasterbrands;

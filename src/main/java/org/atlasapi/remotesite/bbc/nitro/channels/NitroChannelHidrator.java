@@ -83,9 +83,9 @@ public class NitroChannelHidrator {
             String canonicalUri = filteredService.getCanonicalUri();
             filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, locatorsToValues.get(
                     canonicalUri, SHORT_NAME)));
-            Image image = new Image(locatorsToValues.get(canonicalUri, IMAGE_IDENT));
-            image.setWidth(Integer.parseInt(locatorsToValues.get(canonicalUri, WIDTH_IDENT)));
-            image.setHeight(Integer.parseInt(locatorsToValues.get(canonicalUri, HEIGHT_IDENT)));
+            Image image = new Image(locatorsToValues.get(canonicalUri, IMAGE));
+            image.setWidth(Integer.parseInt(locatorsToValues.get(canonicalUri, WIDTH)));
+            image.setHeight(Integer.parseInt(locatorsToValues.get(canonicalUri, HEIGHT)));
             image.setTheme(ImageTheme.LIGHT_OPAQUE);
             filteredService.addImage(image);
             filteredService.setTargetRegions(ImmutableSet.copyOf(locatorsToTargetInfo.get(

@@ -29,9 +29,12 @@ public class NitroChannelHidrator {
 
     public static final String NAME = "name";
     public static final String SHORT_NAME = "shortName";
-    public static final String IMAGE = "image";
-    public static final String WIDTH = "width";
-    public static final String HEIGHT = "height";
+    public static final String IMAGE_IDENT = "imageIdent";
+    public static final String WIDTH_IDENT = "widthIdent";
+    public static final String HEIGHT_IDENT = "heightIdent";
+    public static final String IMAGE_DOG = "imageDog";
+    public static final String WIDTH_DOG = "widthDog";
+    public static final String HEIGHT_DOG = "heightDog";
     public static final String INTERACTIVE = "interactive";
 
     private final String servicesPath = "/data/youview/sv.json";
@@ -77,9 +80,9 @@ public class NitroChannelHidrator {
             String canonicalUri = filteredService.getCanonicalUri();
             filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, locatorsToValues.get(
                     canonicalUri, SHORT_NAME)));
-            Image image = new Image(locatorsToValues.get(canonicalUri, IMAGE));
-            image.setWidth(Integer.parseInt(locatorsToValues.get(canonicalUri, WIDTH)));
-            image.setHeight(Integer.parseInt(locatorsToValues.get(canonicalUri, HEIGHT)));
+            Image image = new Image(locatorsToValues.get(canonicalUri, IMAGE_IDENT));
+            image.setWidth(Integer.parseInt(locatorsToValues.get(canonicalUri, WIDTH_IDENT)));
+            image.setHeight(Integer.parseInt(locatorsToValues.get(canonicalUri, HEIGHT_IDENT)));
             image.setTheme(ImageTheme.LIGHT_OPAQUE);
             filteredService.addImage(image);
             filteredService.setTargetRegions(ImmutableSet.copyOf(locatorsToTargetInfo.get(
@@ -96,11 +99,18 @@ public class NitroChannelHidrator {
             String name = filteredService.getTitle();
             filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, masterbrandNamesToValues.get(
                     name, SHORT_NAME)));
-            Image image = new Image(masterbrandNamesToValues.get(name, IMAGE));
-            image.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH)));
-            image.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT)));
-            image.setTheme(ImageTheme.LIGHT_OPAQUE);
-            filteredService.addImage(image);
+
+            Image identImage = new Image(masterbrandNamesToValues.get(name, IMAGE_IDENT));
+            identImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)));
+            identImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT)));
+            identImage.setTheme(ImageTheme.LIGHT_OPAQUE);
+            filteredService.addImage(identImage);
+
+            Image dogImage = new Image(masterbrandNamesToValues.get(name, IMAGE_DOG));
+            dogImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_DOG)));
+            dogImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_DOG)));
+            dogImage.setTheme(ImageTheme.LIGHT_OPAQUE);
+            filteredService.addImage(dogImage);
         }
         return filteredMasterbrands;
     }
@@ -118,9 +128,9 @@ public class NitroChannelHidrator {
                 }
                 locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
                 locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
-                locatorsToValuesBuilder.put(service.getLocator(), IMAGE, service.getImage());
-                locatorsToValuesBuilder.put(service.getLocator(), WIDTH, service.getWidth().toString());
-                locatorsToValuesBuilder.put(service.getLocator(), HEIGHT, service.getHeight().toString());
+                locatorsToValuesBuilder.put(service.getLocator(), IMAGE_IDENT, service.getImage());
+                locatorsToValuesBuilder.put(service.getLocator(), WIDTH_IDENT, service.getWidth().toString());
+                locatorsToValuesBuilder.put(service.getLocator(), HEIGHT_IDENT, service.getHeight().toString());
                 locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
             }
             locatorsToTargetInfo = locatorsToTargetInfoBuilder.build();
@@ -130,9 +140,12 @@ public class NitroChannelHidrator {
 
             for (YouviewMasterbrand masterbrand : masterbrands) {
                 masterbrandNamesToValuesBuilder.put(masterbrand.getName(), SHORT_NAME, masterbrand.getShortName());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE, masterbrand.getImage());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT, masterbrand.getHeight().toString());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH, masterbrand.getWidth().toString());
+                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_IDENT, masterbrand.getImageIdent());
+                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_IDENT, masterbrand.getHeightIdent().toString());
+                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_IDENT, masterbrand.getWidthIdent().toString());
+                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_DOG, masterbrand.getImageDog());
+                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_DOG, masterbrand.getHeightDog().toString());
+                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_DOG, masterbrand.getWidthDog().toString());
             }
             masterbrandNamesToValues = masterbrandNamesToValuesBuilder.build();
         } catch (Exception e) {

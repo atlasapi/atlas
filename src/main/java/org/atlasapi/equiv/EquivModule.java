@@ -19,6 +19,7 @@ import static com.google.common.base.Predicates.not;
 import static org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator.aliasResolvingGenerator;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
@@ -304,7 +305,8 @@ public class EquivModule {
         EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
-            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX, RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK, PA, BT_VOD, BT_TVE_VOD, BETTY), 
+            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX, RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK, PA, BT_VOD, BT_TVE_VOD, BETTY,
+                    AMC_EBS),
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();
@@ -315,7 +317,13 @@ public class EquivModule {
                 .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         }
-        
+
+        updaters.register(AMC_EBS, SourceSpecificEquivalenceUpdater.builder(AMC_EBS)
+                .withItemUpdater(standardItemUpdater)
+                .withTopLevelContainerUpdater(topLevelContainerUpdater)
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(ImmutableSet.of(AMC_EBS, PA)))
+                .build());
+
         updaters.register(RADIO_TIMES, SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES)
                 .withItemUpdater(rtItemEquivalenceUpdater())
                 .withTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())

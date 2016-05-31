@@ -2,6 +2,7 @@ package org.atlasapi.equiv;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
@@ -151,6 +152,7 @@ public class EquivTaskModule {
     private static final RepetitionRule VF_VUBIQUITY_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule EBMS_VF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule REDBEE_MEDIA_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
+    private static final RepetitionRule AMC_EBS_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(04, 00));
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
     private @Value("${equiv.updater.youviewschedule.enabled}") String youViewScheduleUpdaterEnabled;
@@ -231,6 +233,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"), VF_VUBIQUITY_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(REDBEE_MEDIA).withName("Redbee Statutory Listings Equivalence Updater"), REDBEE_MEDIA_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(AMC_EBS).withName("AMC EBS Equivalence Updater"), AMC_EBS_EQUIVALENCE_REPETITION, jobsAtStartup);
 
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(BBC)

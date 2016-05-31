@@ -35,6 +35,9 @@ public class NitroChannelHidrator {
     public static final String IMAGE_DOG = "imageDog";
     public static final String WIDTH_DOG = "widthDog";
     public static final String HEIGHT_DOG = "heightDog";
+    public static final String IMAGE = "image";
+    public static final String WIDTH = "width";
+    public static final String HEIGHT = "height";
     public static final String INTERACTIVE = "interactive";
 
     private final String servicesPath = "/data/youview/sv.json";
@@ -138,9 +141,9 @@ public class NitroChannelHidrator {
                 }
                 locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
                 locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
-                locatorsToValuesBuilder.put(service.getLocator(), IMAGE_IDENT, service.getImage());
-                locatorsToValuesBuilder.put(service.getLocator(), WIDTH_IDENT, service.getWidth().toString());
-                locatorsToValuesBuilder.put(service.getLocator(), HEIGHT_IDENT, service.getHeight().toString());
+                locatorsToValuesBuilder.put(service.getLocator(), IMAGE, service.getImage());
+                locatorsToValuesBuilder.put(service.getLocator(), WIDTH, service.getWidth().toString());
+                locatorsToValuesBuilder.put(service.getLocator(), HEIGHT, service.getHeight().toString());
                 locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
             }
             locatorsToTargetInfo = locatorsToTargetInfoBuilder.build();

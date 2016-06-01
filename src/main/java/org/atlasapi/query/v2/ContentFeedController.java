@@ -59,7 +59,7 @@ import com.metabroadcast.common.http.HttpStatusCode;
  * Produces an output feed a certain provider, given a certain publisher's content.
  * <p>
  * Currently, the only feed supported is the TVAnytime output for YouView
- * 
+ *
  * @author Oliver Hall (oli@metabroadcast.com)
  *
  */
@@ -95,14 +95,14 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             .withErrorCode("Feed Type not found")
             .withStatusCode(HttpStatusCode.NOT_FOUND);
     private static final DateTime START_OF_TIME = new DateTime(2000, JANUARY, 1, 0, 0, 0, UTC);
-    
+
     private final TvAnytimeGenerator feedGenerator;
     private final ContentResolver contentResolver;
     private final ChannelResolver channelResolver;
     private final ContentHierarchyExpander hierarchyExpander;
-    
-    public ContentFeedController(ApplicationConfigurationFetcher configFetcher, AdapterLog log, 
-            AtlasModelWriter<JAXBElement<TVAMainType>> outputter, TvAnytimeGenerator feedGenerator, 
+
+    public ContentFeedController(ApplicationConfigurationFetcher configFetcher, AdapterLog log,
+            AtlasModelWriter<JAXBElement<TVAMainType>> outputter, TvAnytimeGenerator feedGenerator,
             ContentResolver contentResolver, ContentHierarchyExpander hierarchyExpander,
             ChannelResolver channelResolver) {
         super(configFetcher, log, outputter);
@@ -111,15 +111,15 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         this.hierarchyExpander = checkNotNull(hierarchyExpander);
         this.channelResolver = checkNotNull(channelResolver);
     }
-    
+
     /**
      * Produces an output feed a certain provider, given a certain publisher's content
-     * @param uri -         if present, the endpoint will return the xml generated for that 
-     *                      particular item else it will check the lastUpdated parameter.                    
-     * @param lastUpdated - if present, the endpoint will return a delta feed of all items 
-     *                      updated since lastUpdated, otherwise it will return a full 
+     * @param uri -         if present, the endpoint will return the xml generated for that
+     *                      particular item else it will check the lastUpdated parameter.
+     * @param lastUpdated - if present, the endpoint will return a delta feed of all items
+     *                      updated since lastUpdated, otherwise it will return a full
      *                      bootstrap feed
-     * @throws IOException 
+     * @throws IOException
      */
     @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}.xml", method = RequestMethod.GET)
     public void generateFeed(HttpServletRequest request, HttpServletResponse response,
@@ -142,7 +142,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
             }
-            
+
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -162,18 +162,18 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 Item item = (Item) content.get();
                 // TODO what is the default here?
                 Predicate<ItemBroadcastHierarchy> broadcastFilter = FilterFactory.broadcastFilter(START_OF_TIME);
-                
+
                 Map<String, ItemAndVersion> versions = hierarchyExpander.versionHierarchiesFor(item);
                 Map<String, ItemBroadcastHierarchy> broadcasts = Maps.filterValues(hierarchyExpander.broadcastHierarchiesFor(item), broadcastFilter);
                 Map<String, ItemOnDemandHierarchy> onDemands = hierarchyExpander.onDemandHierarchiesFor(item);
-                
+
                 JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get(), versions, broadcasts, onDemands);
                 modelAndViewFor(request, response, tva, appConfig);
             } else {
                 JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get());
                 modelAndViewFor(request, response, tva, appConfig);
             }
-            
+
         } catch (TvaGenerationException e) {
             errorViewFor(request, response, tvaGenerationError(e));
         } catch (Exception e) {
@@ -202,7 +202,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
             }
-            
+
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -219,7 +219,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
             JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get());
-            
+
             modelAndViewFor(request, response, tva, appConfig);
         } catch (TvaGenerationException e) {
             errorViewFor(request, response, tvaGenerationError(e));
@@ -276,13 +276,15 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             }
 
             JAXBElement<TVAMainType> tva;
-
+            
             if (channel.get().getChannelType() == ChannelType.CHANNEL) {
-                Maybe<Channel> masterbrand = channelResolver.fromId(channel.get().getParent());
+                Long parentId = channel.get().getParent();
+                Maybe<Channel> masterbrand = parentId != null ?
+                        channelResolver.fromId(parentId) : Maybe.<Channel>nothing();
 
                 tva = feedGenerator.generateChannelTVAFrom(
                         channel.get(),
-                        masterbrand.requireValue()
+                        masterbrand.valueOrNull()
                 );
             } else {
                 tva = feedGenerator.generateMasterbrandTVAFrom(channel.get());
@@ -295,7 +297,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
     }
-    
+
     @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/versions.xml", method = RequestMethod.GET)
     public void generateVersionsFeed(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("destinationType") String destinationTypeStr,
@@ -318,7 +320,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
             }
-            
+
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -339,7 +341,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
             Map<String, ItemAndVersion> hierarchies = hierarchyExpander.versionHierarchiesFor((Item) content.get());
-            
+
             if (versionCrid != null) {
                 Optional<ItemAndVersion> versionHierarchy = Optional.fromNullable(hierarchies.get(versionCrid));
                 if (!versionHierarchy.isPresent()) {
@@ -358,7 +360,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
     }
-    
+
     @RequestMapping(value="/3.0/feeds/{destinationType}/{publisher}/broadcasts.xml", method = RequestMethod.GET)
     public void generateBroadcastFeed(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("destinationType") String destinationTypeStr,
@@ -381,7 +383,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
             }
-            
+
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -401,9 +403,9 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 errorViewFor(request, response, CONTENT_NOT_AN_ITEM);
                 return;
             }
-            
+
             Map<String, ItemBroadcastHierarchy> hierarchies = hierarchyExpander.broadcastHierarchiesFor((Item) content.get());
-            
+
             if (broadcastImi != null) {
                 Optional<ItemBroadcastHierarchy> broadcastHierarchy = Optional.fromNullable(hierarchies.get(broadcastImi));
                 if (!broadcastHierarchy.isPresent()) {
@@ -441,12 +443,12 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             }
 
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
-            
+
             if (destinationType == null) {
                 errorViewFor(request, response, INVALID_DESTINATION_TYPE);
                 return;
             }
-            
+
             if (!appConfig.isEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
@@ -468,7 +470,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             }
 
             Map<String, ItemOnDemandHierarchy> hierarchies = hierarchyExpander.onDemandHierarchiesFor((Item) content.get());
-            
+
             if (onDemandImi != null) {
                 Optional<ItemOnDemandHierarchy> onDemandHierarchy = Optional.fromNullable(hierarchies.get(onDemandImi));
                 if (!onDemandHierarchy.isPresent()) {
@@ -487,7 +489,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
     }
-    
+
     private DestinationType parseDestinationFrom(String destinationTypeStr) {
         for (DestinationType destinationType : DestinationType.values()) {
             if (destinationType.name().equalsIgnoreCase(destinationTypeStr)) {
@@ -497,13 +499,13 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         return null;
     }
 
-    private AtlasErrorSummary tvaGenerationError(TvaGenerationException e) { 
+    private AtlasErrorSummary tvaGenerationError(TvaGenerationException e) {
         return new AtlasErrorSummary(e)
                 .withMessage("Unable to generate TVAnytime output for the provided uri")
                 .withErrorCode("TVAnytime generation error")
                 .withStatusCode(HttpStatusCode.SERVER_ERROR);
     }
-    
+
     private Optional<Content> getContent(Publisher publisher, String uri) {
         ResolvedContent resolvedContent = contentResolver.findByCanonicalUris(ImmutableList.of(uri));
         Collection<Identified> resolved = resolvedContent.asResolvedMap().values();

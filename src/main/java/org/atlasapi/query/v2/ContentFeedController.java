@@ -276,7 +276,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             }
 
             JAXBElement<TVAMainType> tva;
-            
+
             if (channel.get().getChannelType() == ChannelType.CHANNEL) {
                 Long parentId = channel.get().getParent();
                 Maybe<Channel> masterbrand = parentId != null ?

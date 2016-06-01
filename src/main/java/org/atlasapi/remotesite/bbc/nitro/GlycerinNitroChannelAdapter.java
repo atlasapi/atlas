@@ -195,7 +195,10 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         Channel channel = getChannel(result);
         String locatorValue = locator.getValue();
         channel.setCanonicalUri(locatorValue);
-        channel.setAliases(ImmutableSet.of(new Alias(BBC_SERVICE_LOCATOR, locatorValue), new Alias("bbc:service:sid", result.getSid())));
+        channel.addAliases(ImmutableSet.of(
+                new Alias(BBC_SERVICE_LOCATOR, locatorValue),
+                new Alias("bbc:service:sid", result.getSid())
+        ));
         channel.setAliasUrls(ImmutableSet.of(locatorValue));
         return channel;
     }

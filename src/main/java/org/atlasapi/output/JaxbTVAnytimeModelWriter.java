@@ -47,16 +47,13 @@ public class JaxbTVAnytimeModelWriter implements AtlasModelWriter<JAXBElement<TV
         OutputStream out = response.getOutputStream();
         JAXBContext context = JAXBContext.newInstance("tva.metadata._2010");
         Marshaller marshaller = context.createMarshaller();
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        marshaller.marshal(response, baos);
         String accepts = request.getHeader(HttpHeaders.ACCEPT_ENCODING);
         if (accepts != null && accepts.contains(GZIP_HEADER_VALUE)) {
             response.setHeader(HttpHeaders.CONTENT_ENCODING, GZIP_HEADER_VALUE);
             out = new GZIPOutputStream(out);
         }
         try {
-            /* TODO FIXME This output hack was put it to support weirdness from YouView */
-            out.write(baos.toString().replace(" xsi:nil=\"true\"", "").getBytes());
+            marshaller.marshal(response, out);
         } finally {
             if (out instanceof GZIPOutputStream) {
                 ((GZIPOutputStream) out).finish();

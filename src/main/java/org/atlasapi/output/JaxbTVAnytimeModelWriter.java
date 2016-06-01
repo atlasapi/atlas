@@ -1,5 +1,6 @@
 package org.atlasapi.output;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
@@ -42,17 +43,20 @@ public class JaxbTVAnytimeModelWriter implements AtlasModelWriter<JAXBElement<TV
     
     private void writeOut(final HttpServletRequest request, final HttpServletResponse response, 
             final JAXBElement<TVAMainType> result) throws JAXBException, IOException {
-        
+
+        OutputStream out = response.getOutputStream();
         JAXBContext context = JAXBContext.newInstance("tva.metadata._2010");
         Marshaller marshaller = context.createMarshaller();
-        OutputStream out = response.getOutputStream();
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        marshaller.marshal(response, baos);
         String accepts = request.getHeader(HttpHeaders.ACCEPT_ENCODING);
         if (accepts != null && accepts.contains(GZIP_HEADER_VALUE)) {
             response.setHeader(HttpHeaders.CONTENT_ENCODING, GZIP_HEADER_VALUE);
             out = new GZIPOutputStream(out);
         }
         try {
-            marshaller.marshal(result, out);
+            /* TODO FIXME This output hack was put it to support weirdness from YouView */
+            out.write(baos.toString().replace(" xsi:nil=\"true\"", "").getBytes());
         } finally {
             if (out instanceof GZIPOutputStream) {
                 ((GZIPOutputStream) out).finish();

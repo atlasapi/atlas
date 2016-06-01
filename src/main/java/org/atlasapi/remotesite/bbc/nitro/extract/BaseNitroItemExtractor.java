@@ -68,39 +68,41 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
         ImmutableSet.Builder<Version> versions = ImmutableSet.builder();
 
         AvailableVersions nitroVersions = extractVersions(source);
-        for (AvailableVersions.Version nitroVersion : nitroVersions.getVersion()) {
+        if (nitroVersions != null) {
+            for (AvailableVersions.Version nitroVersion : nitroVersions.getVersion()) {
 
-            String mediaType = extractMediaType(source);
+                String mediaType = extractMediaType(source);
 
-            ImmutableSet.Builder<Encoding> encodingsBuilder = ImmutableSet.builder();
+                ImmutableSet.Builder<Encoding> encodingsBuilder = ImmutableSet.builder();
 
-            for (AvailableVersions.Version.Availabilities availabilities : nitroVersion.getAvailabilities()) {
-                encodingsBuilder.addAll(availabilityExtractor.extractFromMixin(
-                        extractPid(source),
-                        availabilities.getAvailableVersionsAvailability(),
-                        mediaType
-                ));
+                for (AvailableVersions.Version.Availabilities availabilities : nitroVersion.getAvailabilities()) {
+                    encodingsBuilder.addAll(availabilityExtractor.extractFromMixin(
+                            extractPid(source),
+                            availabilities.getAvailableVersionsAvailability(),
+                            mediaType
+                    ));
+                }
+
+                ImmutableSet<Encoding> encodings = encodingsBuilder.build();
+
+                Version version = new Version();
+
+                if (nitroVersion.getDuration() != null) {
+                    version.setDuration(convertDuration(nitroVersion.getDuration()));
+                }
+
+                version.setLastUpdated(now);
+                version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));
+                version.setBroadcasts(broadcasts.get(nitroVersion.getPid()));
+
+                Optional<WarningTexts.WarningText> warningText = warningTextFrom(nitroVersion);
+                version.setRestriction(generateRestriction(warningText));
+
+                setEncodingDetails(nitroVersion, encodings);
+                setLastUpdated(encodings, now);
+
+                versions.add(version);
             }
-
-            ImmutableSet<Encoding> encodings = encodingsBuilder.build();
-
-            Version version = new Version();
-
-            if (nitroVersion.getDuration() != null) {
-                version.setDuration(convertDuration(nitroVersion.getDuration()));
-            }
-
-            version.setLastUpdated(now);
-            version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));
-            version.setBroadcasts(broadcasts.get(nitroVersion.getPid()));
-
-            Optional<WarningTexts.WarningText> warningText = warningTextFrom(nitroVersion);
-            version.setRestriction(generateRestriction(warningText));
-
-            setEncodingDetails(nitroVersion, encodings);
-            setLastUpdated(encodings, now);
-
-            versions.add(version);
         }
 
         item.setVersions(versions.build());

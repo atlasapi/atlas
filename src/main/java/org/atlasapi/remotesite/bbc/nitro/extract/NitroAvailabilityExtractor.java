@@ -93,11 +93,11 @@ public class NitroAvailabilityExtractor {
                     .getMediaSets()
                     .getMediaSet()) {
                 if ("iptv-sd".equals(mediaSet.getName())) {
-                    return true;
+                    return false;
                 }
             }
 
-            return false;
+            return true;
         }
     };
 

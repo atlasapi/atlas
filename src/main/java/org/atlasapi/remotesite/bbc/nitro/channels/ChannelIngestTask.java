@@ -23,18 +23,18 @@ public class ChannelIngestTask extends ScheduledTask {
     private static final Logger log = LoggerFactory.getLogger(ChannelIngestTask.class);
 
     private final NitroChannelAdapter channelAdapter;
-    private final NitroChannelHidrator hidrator;
+    private final NitroChannelHydrator hidrator;
     private final ChannelWriter channelWriter;
     private final ChannelResolver channelResolver;
 
-    private ChannelIngestTask(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver, NitroChannelHidrator hidrator) {
+    private ChannelIngestTask(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver, NitroChannelHydrator hidrator) {
         this.channelAdapter = checkNotNull(channelAdapter);
         this.channelWriter = checkNotNull(channelWriter);
         this.channelResolver = checkNotNull(channelResolver);
         this.hidrator = checkNotNull(hidrator);
     }
 
-    public static ChannelIngestTask create(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver, NitroChannelHidrator hidrator) {
+    public static ChannelIngestTask create(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver, NitroChannelHydrator hidrator) {
         return new ChannelIngestTask(channelAdapter, channelWriter, channelResolver, hidrator);
     }
 

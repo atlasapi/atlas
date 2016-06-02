@@ -95,7 +95,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     channelWriter.createOrUpdate(channel);
                 }
             } catch (Exception e) {
-                log.error("Failed to write channel {}", channel.getCanonicalUri());
+                log.error("Failed to write channel {} - {}", channel.getCanonicalUri(), e);
                 ++failed;
             }
         }

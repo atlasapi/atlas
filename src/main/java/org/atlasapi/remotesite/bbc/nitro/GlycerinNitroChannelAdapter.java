@@ -224,7 +224,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
     private void setFieldsFromParent(String parentMid, Service child, Channel.Builder builder) throws GlycerinException {
         MasterBrandsQuery query = MasterBrandsQuery.builder()
-                .withMid(NITRO_MASTERBRAND_URI_PREFIX + parentMid)
+                .withMid(parentMid)
                 .withMixins(MasterBrandsMixin.IMAGES)
                 /* Pages are 1-indexed */
                 .withPage(1)

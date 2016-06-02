@@ -8,9 +8,11 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
+import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMultimap;
@@ -22,10 +24,15 @@ import com.google.common.collect.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class NitroChannelHidrator {
+public class NitroChannelHydrator {
 
+    private static final Logger log = LoggerFactory.getLogger(NitroChannelHydrator.class);
+
+    private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
+    private static final ObjectMapper MAPPER = new ObjectMapper(YAML_FACTORY);
     public static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
-    private final Logger log = LoggerFactory.getLogger(NitroChannelHidrator.class);
+    private static final String SERVICES_PATH = "/data/youview/sv.json";
+    private static final String MASTER_BRAND_PATH = "/data/youview/mb.json";
 
     public static final String NAME = "name";
     public static final String SHORT_NAME = "shortName";
@@ -40,20 +47,24 @@ public class NitroChannelHidrator {
     public static final String HEIGHT = "height";
     public static final String INTERACTIVE = "interactive";
 
-    private final String servicesPath = "/data/youview/sv.json";
-    private final String masterBrandPath = "/data/youview/mb.json";
-    private final YAMLFactory yamlFactory = new YAMLFactory();
-    private final ObjectMapper objectMapper = new ObjectMapper(yamlFactory);
+    private static Multimap<String, String> locatorsToTargetInfo;
+    private static Table<String, String, String> locatorsToValues;
+    private static Table<String, String, String> masterbrandNamesToValues;
 
-    private final Predicate<Channel> IN_SERVICE_TABLE = new Predicate<Channel>() {
+    static {
+        populateTables();
+    }
+
+    private static final Predicate<Channel> IN_SERVICE_TABLE = new Predicate<Channel>() {
 
         @Override
         public boolean apply(@Nullable Channel input) {
-            return locatorsToTargetInfo.containsKey(input.getCanonicalUri());
+            Optional<String> locator = getDvbLocator(input);
+            return locator.isPresent() && locatorsToTargetInfo.containsKey(locator.get());
         }
     };
 
-    private final Predicate<Channel> IN_MASTERBRAND_TABLE = new Predicate<Channel>() {
+    private static final Predicate<Channel> IN_MASTERBRAND_TABLE = new Predicate<Channel>() {
 
         @Override
         public boolean apply(@Nullable Channel input) {
@@ -61,40 +72,41 @@ public class NitroChannelHidrator {
         }
     };
 
-    private Multimap<String, String> locatorsToTargetInfo;
-    private Table<String, String, String> locatorsToValues;
-    private Table<String, String, String> masterbrandNamesToValues;
-
-    public NitroChannelHidrator() {
-        populateTables();
-    }
-
-    private final Predicate<Channel> inServiceTable() {
+    private Predicate<Channel> inServiceTable() {
         return IN_SERVICE_TABLE;
     }
 
-    private final Predicate<Channel> inMasterbrandTable() {
+    private Predicate<Channel> inMasterbrandTable() {
         return IN_MASTERBRAND_TABLE;
     }
 
     public Iterable<Channel> filterAndHydrateServices(Iterable<Channel> services) {
         Iterable<Channel> filteredServices = Iterables.filter(services, inServiceTable());
+
         for (Channel filteredService : filteredServices) {
-            String canonicalUri = filteredService.getCanonicalUri();
-            filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, locatorsToValues.get(
-                    canonicalUri, SHORT_NAME)));
+            String dvbLocator = getDvbLocator(filteredService).get();
+
+            filteredService.addAlias(new Alias(
+                    BBC_SERVICE_NAME_SHORT,
+                    locatorsToValues.get(dvbLocator, SHORT_NAME)
+            ));
+
             if (filteredService.getImages().isEmpty()) {
-                Image image = new Image(locatorsToValues.get(canonicalUri, IMAGE_IDENT));
-                image.setWidth(Integer.parseInt(locatorsToValues.get(canonicalUri, WIDTH_IDENT)));
-                image.setHeight(Integer.parseInt(locatorsToValues.get(canonicalUri, HEIGHT_IDENT)));
+                Image image = new Image(locatorsToValues.get(dvbLocator, IMAGE_IDENT));
+                image.setWidth(Integer.parseInt(locatorsToValues.get(dvbLocator, WIDTH_IDENT)));
+                image.setHeight(Integer.parseInt(locatorsToValues.get(dvbLocator, HEIGHT_IDENT)));
                 image.setTheme(ImageTheme.LIGHT_OPAQUE);
                 filteredService.addImage(image);
             }
-            filteredService.setTargetRegions(ImmutableSet.copyOf(locatorsToTargetInfo.get(
-                    canonicalUri)));
-            filteredService.setInteractive(Boolean.parseBoolean(locatorsToValues.get(
-                            canonicalUri, INTERACTIVE)));
+
+            filteredService.setTargetRegions(
+                    ImmutableSet.copyOf(locatorsToTargetInfo.get(dvbLocator))
+            );
+            filteredService.setInteractive(
+                    Boolean.parseBoolean(locatorsToValues.get(dvbLocator, INTERACTIVE))
+            );
         }
+
         return filteredServices;
     }
 
@@ -119,13 +131,21 @@ public class NitroChannelHidrator {
         return filteredMasterbrands;
     }
 
+    private static Optional<String> getDvbLocator(Channel channel) {
+        for (Alias alias : channel.getAliases()) {
+            if (GlycerinNitroChannelAdapter.BBC_SERVICE_LOCATOR.equals(alias.getNamespace())) {
+                return Optional.of(alias.getValue());
+            }
+        }
+        return Optional.absent();
+    }
 
-    private void populateTables() {
+    private static void populateTables() {
         ImmutableMultimap.Builder<String, String> locatorsToTargetInfoBuilder = ImmutableMultimap.builder();
         ImmutableTable.Builder<String, String, String> locatorsToValuesBuilder = ImmutableTable.builder();
         ImmutableTable.Builder<String, String, String> masterbrandNamesToValuesBuilder = ImmutableTable.builder();
         try {
-            YouviewService[] services = objectMapper.readValue(new File(servicesPath), YouviewService[].class);
+            YouviewService[] services = MAPPER.readValue(new File(SERVICES_PATH), YouviewService[].class);
             for (YouviewService service : services) {
                 for (String targetRegion : service.getTargets()) {
                     locatorsToTargetInfoBuilder.put(service.getLocator(), targetRegion);
@@ -140,7 +160,7 @@ public class NitroChannelHidrator {
             locatorsToTargetInfo = locatorsToTargetInfoBuilder.build();
             locatorsToValues = locatorsToValuesBuilder.build();
 
-            YouviewMasterbrand[] masterbrands = objectMapper.readValue(new File(masterBrandPath), YouviewMasterbrand[].class);
+            YouviewMasterbrand[] masterbrands = MAPPER.readValue(new File(MASTER_BRAND_PATH), YouviewMasterbrand[].class);
 
             for (YouviewMasterbrand masterbrand : masterbrands) {
                 masterbrandNamesToValuesBuilder.put(masterbrand.getName(), SHORT_NAME, masterbrand.getShortName());

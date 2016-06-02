@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
@@ -24,35 +25,35 @@ import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
+import com.google.common.collect.Iterables;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
 
 public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
     private static final Logger log = LoggerFactory.getLogger(GlycerinNitroChannelAdapter.class);
 
+    public static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
+    public static final String BBC_SERVICE_LOCATOR = "bbc:service:locator";
+
     private static final int MAXIMUM_PAGE_SIZE = 300;
-    private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrand/";
     private static final String TERRESTRIAL_SERVICE_LOCATOR = "terrestrial_service_locator";
     private static final String BBC_SERVICE_PID = "bbc:service:pid";
     private static final String BBC_SERVICE_SID = "bbc:service:sid";
     private static final String BBC_MASTERBRAND_MID = "bbc:masterbrand:mid";
-    private static final String BBC_SERVICE_LOCATOR = "bbc:service:locator";
     private static final String PID = "pid";
     private static final String MUSIC = "music";
     private static final String RADIO = "radio";
-    public static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
+    private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrands/";
 
     private final NitroImageExtractor imageExtractor = new NitroImageExtractor(1024, 576);
-
     private final Glycerin glycerin;
 
     private GlycerinNitroChannelAdapter(Glycerin glycerin) {
@@ -265,7 +266,15 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     ) throws GlycerinException {
         Channel channel = getChannel(result, uriToParentChannels);
         String locatorValue = locator.getValue();
-        channel.setCanonicalUri(locatorValue);
+
+        String canonicalUri = String.format(
+                "http://nitro.bbc.co.uk/%s/%s_%s",
+                channel.getChannelType() == ChannelType.MASTERBRAND ? "masterbrands" : "services",
+                result.getSid(),
+                locatorValue.replace("dvb://", "").replace("..", "_")
+        );
+        channel.setCanonicalUri(canonicalUri);
+
         channel.addAliases(ImmutableSet.of(
                 new Alias(BBC_SERVICE_LOCATOR, locatorValue),
                 new Alias(BBC_SERVICE_SID, result.getSid())

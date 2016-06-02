@@ -83,11 +83,13 @@ public class NitroChannelHidrator {
             String canonicalUri = filteredService.getCanonicalUri();
             filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, locatorsToValues.get(
                     canonicalUri, SHORT_NAME)));
-            Image image = new Image(locatorsToValues.get(canonicalUri, IMAGE));
-            image.setWidth(Integer.parseInt(locatorsToValues.get(canonicalUri, WIDTH)));
-            image.setHeight(Integer.parseInt(locatorsToValues.get(canonicalUri, HEIGHT)));
-            image.setTheme(ImageTheme.LIGHT_OPAQUE);
-            filteredService.addImage(image);
+            if (filteredService.getImages().isEmpty()) {
+                Image image = new Image(locatorsToValues.get(canonicalUri, IMAGE_IDENT));
+                image.setWidth(Integer.parseInt(locatorsToValues.get(canonicalUri, WIDTH_IDENT)));
+                image.setHeight(Integer.parseInt(locatorsToValues.get(canonicalUri, HEIGHT_IDENT)));
+                image.setTheme(ImageTheme.LIGHT_OPAQUE);
+                filteredService.addImage(image);
+            }
             filteredService.setTargetRegions(ImmutableSet.copyOf(locatorsToTargetInfo.get(
                     canonicalUri)));
             filteredService.setInteractive(Boolean.parseBoolean(locatorsToValues.get(
@@ -102,17 +104,6 @@ public class NitroChannelHidrator {
             String name = filteredService.getTitle();
             filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, masterbrandNamesToValues.get(
                     name, SHORT_NAME)));
-
-            Image identImage = new Image(masterbrandNamesToValues.get(name, IMAGE_IDENT));
-            identImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)));
-            identImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT)));
-            identImage.setTheme(ImageTheme.LIGHT_OPAQUE);
-            identImage.setAliases(
-                    ImmutableSet.of(
-                            new Alias("bbc:imageType", "ident")
-                    )
-            );
-            filteredService.addImage(identImage);
 
             Image dogImage = new Image(masterbrandNamesToValues.get(name, IMAGE_DOG));
             dogImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_DOG)));

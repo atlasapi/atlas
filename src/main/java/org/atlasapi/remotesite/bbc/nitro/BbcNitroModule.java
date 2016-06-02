@@ -19,7 +19,7 @@ import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
-import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHidrator;
+import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHydrator;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.util.GroupLock;
 
@@ -128,7 +128,7 @@ public class BbcNitroModule {
 
     private ScheduledTask channelIngestTask() {
         Glycerin glycerin = glycerin(null);
-        return ChannelIngestTask.create(nitroChannelAdapter(glycerin), channelWriter, channelResolver, new NitroChannelHidrator());
+        return ChannelIngestTask.create(nitroChannelAdapter(glycerin), channelWriter, channelResolver, new NitroChannelHydrator());
     }
 
     public ContentWriter contentWriter() {

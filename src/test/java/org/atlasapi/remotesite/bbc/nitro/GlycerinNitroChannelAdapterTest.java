@@ -15,7 +15,6 @@ import com.metabroadcast.atlas.glycerin.model.Ids;
 import com.metabroadcast.atlas.glycerin.model.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Service;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
-import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 
 import com.google.common.collect.ImmutableList;
@@ -30,7 +29,6 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
@@ -72,7 +70,10 @@ public class GlycerinNitroChannelAdapterTest {
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
-        assertThat(channel.getUri(), is("dvb://233a..1700"));
+        assertThat(
+                channel.getUri(),
+                is("http://nitro.bbc.co.uk/services/bbc_radio_fourlw_233a_1700")
+        );
         assertThat(channel.getMediumDescription(), is("description"));
         assertThat(channel.getMediaType(), is(MediaType.AUDIO));
         assertThat(channel.getTitle(), is("name"));
@@ -130,7 +131,10 @@ public class GlycerinNitroChannelAdapterTest {
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
-        assertThat(channel.getUri(), is("dvb://233a..1700"));
+        assertThat(
+                channel.getUri(),
+                is("http://nitro.bbc.co.uk/services/bbc_radio_fourlw_233a_1700")
+        );
         assertThat(channel.getMediumDescription(), is("description"));
         assertThat(channel.getMediaType(), is(MediaType.AUDIO));
         assertThat(channel.getTitle(), is("name"));

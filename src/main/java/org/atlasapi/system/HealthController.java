@@ -30,4 +30,10 @@ public class HealthController {
 		out.print("</body></html>");
 		out.close();
 	}
+
+	@RequestMapping("/system/alive")
+    public void isAlive(HttpServletResponse response) throws IOException {
+        response.setContentType("text/html");
+        response.setStatus(200);
+    }
 }

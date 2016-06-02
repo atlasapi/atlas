@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
+import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -33,6 +34,7 @@ import static org.hamcrest.Matchers.not;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -56,7 +58,16 @@ public class GlycerinNitroChannelAdapterTest {
         Service service = getBasicService();
         setIds(service);
         setDateRange(service);
-        when(response.getResults()).thenReturn(ImmutableList.of(service));
+
+        Brand.MasterBrand parentMb = mock(Brand.MasterBrand.class);
+        service.setMasterBrand(parentMb);
+
+        when(parentMb.getMid())
+                .thenReturn("bbc_radio_fourlw");
+        when(response.getResults())
+                .thenReturn(ImmutableList.of(service))
+                .thenReturn(ImmutableList.of(setImages(getBasicMasterbrand())));
+
         ImmutableSet<Channel> services = channelAdapter.fetchServices();
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
@@ -69,6 +80,11 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
         assertNotNull(channel.getEndDate());
         assertNotNull(channel.getStartDate());
+        assertThat(channel.getImages().isEmpty(), is(false));
+        assertThat(channel.getImages().iterator().next().getAliases().isEmpty(), is(false));
+        assertThat(channel.getAliases().isEmpty(), is(false));
+        assertThat(channel.getAliases().iterator().next().getNamespace(), is("bbc:service:name:short"));
+        assertThat(channel.getAliases().iterator().next().getValue(), is("name"));
     }
 
     @Test
@@ -101,6 +117,8 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getShortDescription(), is("short"));
         assertThat(channel.getMediumDescription(), is("medium"));
         assertThat(channel.getLongDescription(), is("long"));
+        assertThat(channel.getImages().isEmpty(), is(false));
+        assertThat(channel.getImages().iterator().next().getAliases().isEmpty(), is(false));
     }
 
     @Test
@@ -157,12 +175,13 @@ public class GlycerinNitroChannelAdapterTest {
         return masterBrand;
     }
 
-    private void setImages(MasterBrand masterBrand) {
+    private MasterBrand setImages(MasterBrand masterBrand) {
         Brand.Images images = new Brand.Images();
         Brand.Images.Image image = new Brand.Images.Image();
         image.setTemplateUrl("uri");
         images.setImage(image);
         masterBrand.setImages(images);
+        return masterBrand;
     }
 
     private void setSynopses(MasterBrand masterBrand) {

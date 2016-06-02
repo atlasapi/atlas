@@ -2,9 +2,12 @@ package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.collect.Iterables;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 
@@ -22,20 +25,32 @@ import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
+    private static final Logger log = LoggerFactory.getLogger(GlycerinNitroChannelAdapter.class);
+
     private static final int MAXIMUM_PAGE_SIZE = 300;
-    private static final String PID = "pid";
-    private static final String BBC_SERVICE_PID = "bbc:service:pid";
-    private static final String TERRESTRIAL_SERVICE_LOCATOR = "terrestrial_service_locator";
-    private static final String BBC_SERVICE_LOCATOR = "bbc:service:locator";
-    private static final String NITRO_SERVICE_URI_PREFIX = "http://nitro.bbc.co.uk/service/";
     private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrand/";
+    private static final String TERRESTRIAL_SERVICE_LOCATOR = "terrestrial_service_locator";
+    private static final String BBC_SERVICE_PID = "bbc:service:pid";
+    private static final String BBC_SERVICE_SID = "bbc:service:sid";
+    private static final String BBC_MASTERBRAND_MID = "bbc:masterbrand:mid";
+    private static final String BBC_SERVICE_LOCATOR = "bbc:service:locator";
+    private static final String PID = "pid";
+    private static final String MUSIC = "music";
+    private static final String RADIO = "radio";
+    public static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
+
+    private final NitroImageExtractor imageExtractor = new NitroImageExtractor(1024, 576);
 
     private final Glycerin glycerin;
 
@@ -69,7 +84,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     }
 
     private void generateAndAddChannelsFromLocators(ImmutableSet.Builder<Channel> channels,
-            Service result, Ids ids) {
+            Service result, Ids ids) throws GlycerinException {
         Channel channel;
         for (Id id : ids.getId()) {
             if (id.getType().equals(TERRESTRIAL_SERVICE_LOCATOR)) {
@@ -89,7 +104,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             List<MasterBrand> results = paginateMasterBrands(startingPoint);
             for (MasterBrand result : results) {
                 Channel channel = getMasterBrand(result);
-                channel.setAliases(ImmutableSet.of(new Alias("bbc:masterbrand:mid", result.getMid())));
+                channel.setAliases(ImmutableSet.of(new Alias(BBC_MASTERBRAND_MID, result.getMid())));
                 masterBrands.add(channel);
             }
             startingPoint ++;
@@ -154,18 +169,24 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         if (endDate.isPresent()) {
             builder.withEndDate(endDate.get());
         }
+
+        if (result.getImages() != null && result.getImages().getImage() != null) {
+            Image image = imageExtractor.extract(result.getImages().getImage());
+            builder.withImage(image);
+        }
+
         return builder.build();
     }
 
     private void inferAndSetMediaType(Channel.Builder builder, String name) {
-        if (name.toLowerCase().contains("music") || name.toLowerCase().contains("radio")) {
+        if (name.toLowerCase().contains(MUSIC) || name.toLowerCase().contains(RADIO)) {
             builder.withMediaType(MediaType.AUDIO);
         } else {
             builder.withMediaType(MediaType.VIDEO);
         }
     }
 
-    private Channel getChannel(Service result) {
+    private Channel getChannel(Service result) throws GlycerinException {
         Channel.Builder builder = Channel.builder()
                 .withBroadcaster(Publisher.BBC)
                 .withMediaType(MediaType.valueOf(result.getMediaType().toUpperCase()))
@@ -174,30 +195,70 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withMediumDescription(result.getDescription())
                 .withRegion(result.getRegion())
                 .withChannelType(ChannelType.CHANNEL);
+
         Optional<LocalDate> startDate = getStartDate(result);
         if (startDate.isPresent()) {
             builder.withStartDate(startDate.get());
         }
+
         Optional<LocalDate> endDate = getEndDate(result);
         if (endDate.isPresent()) {
             builder.withEndDate(endDate.get());
         }
+
+        if (result.getMasterBrand() != null &&
+                !Strings.isNullOrEmpty(result.getMasterBrand().getMid())) {
+            setFieldsFromParent(result.getMasterBrand().getMid(), result, builder);
+        }
+
         Channel channel = builder.build();
+
         for (Id id : result.getIds().getId()) {
             if (id.getType().equals(PID)) {
                 channel.addAlias(new Alias(BBC_SERVICE_PID, id.getValue()));
             }
         }
+
         return channel;
     }
 
-    private Channel getChannelWithLocatorAlias(Service result, Id locator) {
+    private void setFieldsFromParent(String parentMid, Service child, Channel.Builder builder) throws GlycerinException {
+        MasterBrandsQuery query = MasterBrandsQuery.builder()
+                .withMid(parentMid)
+                .withMixins(MasterBrandsMixin.IMAGES)
+                /* Pages are 1-indexed */
+                .withPage(1)
+                .withPageSize(1)
+                .build();
+        GlycerinResponse<MasterBrand> resp = glycerin.execute(query);
+        if (resp.getResults().isEmpty()) {
+            log.warn(
+                    "Failed to resolve masterbrand parent mid: {} for channel sid: {}",
+                    child.getMasterBrand().getMid(),
+                    child.getSid()
+            );
+        } else {
+            MasterBrand parentMb = Iterables.getOnlyElement(resp.getResults());
+            Channel parentChannel = getMasterBrand(parentMb);
+            builder.withParent(parentChannel);
+            builder.withImage(Iterables.getFirst(parentChannel.getImages(), null));
+            if (!Strings.isNullOrEmpty(parentChannel.getTitle())) {
+                builder.withAliases(
+                        ImmutableSet.of(
+                                new Alias(BBC_SERVICE_NAME_SHORT, parentChannel.getTitle())
+                        )
+                );
+            }
+        }
+    }
+
+    private Channel getChannelWithLocatorAlias(Service result, Id locator) throws GlycerinException {
         Channel channel = getChannel(result);
         String locatorValue = locator.getValue();
         channel.setCanonicalUri(locatorValue);
         channel.addAliases(ImmutableSet.of(
                 new Alias(BBC_SERVICE_LOCATOR, locatorValue),
-                new Alias("bbc:service:sid", result.getSid())
+                new Alias(BBC_SERVICE_SID, result.getSid())
         ));
         channel.setAliasUrls(ImmutableSet.of(locatorValue));
         return channel;

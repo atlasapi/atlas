@@ -21,7 +21,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
-import org.hamcrest.Matchers;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -95,7 +94,7 @@ public class GlycerinNitroChannelAdapterTest {
         ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
-        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrand/bbc_radio_fourlw"));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw"));
         assertThat(channel.getTitle(), is("name"));
         assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
@@ -111,7 +110,7 @@ public class GlycerinNitroChannelAdapterTest {
         ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
-        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrand/bbc_radio_fourlw"));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw"));
         assertThat(channel.getTitle(), is("name"));
         assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));

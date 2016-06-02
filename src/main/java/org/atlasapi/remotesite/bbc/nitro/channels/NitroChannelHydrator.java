@@ -82,19 +82,23 @@ public class NitroChannelHydrator {
 
     public Iterable<Channel> filterAndHydrateServices(Iterable<Channel> services) {
         Iterable<Channel> filteredServices = Iterables.filter(services, inServiceTable());
+
         for (Channel filteredService : filteredServices) {
-            // used to be filteredService.getCanonicalUri()
             String dvbLocator = getDvbLocator(filteredService).get();
 
             filteredService.addAlias(new Alias(
                     BBC_SERVICE_NAME_SHORT,
                     locatorsToValues.get(dvbLocator, SHORT_NAME)
             ));
-            Image image = new Image(locatorsToValues.get(dvbLocator, IMAGE));
-            image.setWidth(Integer.parseInt(locatorsToValues.get(dvbLocator, WIDTH)));
-            image.setHeight(Integer.parseInt(locatorsToValues.get(dvbLocator, HEIGHT)));
-            image.setTheme(ImageTheme.LIGHT_OPAQUE);
-            filteredService.addImage(image);
+
+            if (filteredService.getImages().isEmpty()) {
+                Image image = new Image(locatorsToValues.get(dvbLocator, IMAGE_IDENT));
+                image.setWidth(Integer.parseInt(locatorsToValues.get(dvbLocator, WIDTH_IDENT)));
+                image.setHeight(Integer.parseInt(locatorsToValues.get(dvbLocator, HEIGHT_IDENT)));
+                image.setTheme(ImageTheme.LIGHT_OPAQUE);
+                filteredService.addImage(image);
+            }
+
             filteredService.setTargetRegions(
                     ImmutableSet.copyOf(locatorsToTargetInfo.get(dvbLocator))
             );
@@ -102,6 +106,7 @@ public class NitroChannelHydrator {
                     Boolean.parseBoolean(locatorsToValues.get(dvbLocator, INTERACTIVE))
             );
         }
+
         return filteredServices;
     }
 
@@ -111,17 +116,6 @@ public class NitroChannelHydrator {
             String name = filteredService.getTitle();
             filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, masterbrandNamesToValues.get(
                     name, SHORT_NAME)));
-
-            Image identImage = new Image(masterbrandNamesToValues.get(name, IMAGE_IDENT));
-            identImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)));
-            identImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT)));
-            identImage.setTheme(ImageTheme.LIGHT_OPAQUE);
-            identImage.setAliases(
-                    ImmutableSet.of(
-                            new Alias("bbc:imageType", "ident")
-                    )
-            );
-            filteredService.addImage(identImage);
 
             Image dogImage = new Image(masterbrandNamesToValues.get(name, IMAGE_DOG));
             dogImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_DOG)));

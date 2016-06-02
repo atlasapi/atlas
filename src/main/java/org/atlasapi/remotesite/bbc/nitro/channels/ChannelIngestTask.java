@@ -1,5 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Multimaps;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
@@ -41,18 +45,21 @@ public class ChannelIngestTask extends ScheduledTask {
     @Override
     protected void runTask() {
         try {
-            reportStatus("Fetching channels");
-            ImmutableSet<Channel> services = channelAdapter.fetchServices();
-
             reportStatus("Fetching masterbrands");
             ImmutableSet<Channel> masterbrands = channelAdapter.fetchMasterbrands();
-
-            reportStatus("Writing channels");
-            Iterable<Channel> filteredServices = hidrator.filterAndHydrateServices(services);
-            writeAndMergeChannels(filteredServices);
-
             Iterable<Channel> filteredMasterBrands = hidrator.filterAndHydrateMasterbrands(masterbrands);
-            writeAndMergeChannels(filteredMasterBrands);
+            reportStatus("Writing masterbrands");
+            ImmutableMap.Builder<String, Channel> uriToId = ImmutableMap.builder();
+            for (Channel channel : writeAndMergeChannels(filteredMasterBrands)) {
+                uriToId.put(channel.getUri(), channel);
+            }
+
+
+            reportStatus("Fetching channels");
+            ImmutableSet<Channel> services = channelAdapter.fetchServices(uriToId.build());
+            Iterable<Channel> filteredServices = hidrator.filterAndHydrateServices(services);
+            reportStatus("Writing channels");
+            writeAndMergeChannels(filteredServices);
 
         } catch (GlycerinException e) {
             throw Throwables.propagate(e);
@@ -60,7 +67,8 @@ public class ChannelIngestTask extends ScheduledTask {
 
     }
 
-    private void writeAndMergeChannels(Iterable<Channel> channels) {
+    private Iterable<Channel> writeAndMergeChannels(Iterable<Channel> channels) {
+        ImmutableList.Builder<Channel> written = ImmutableList.builder();
         int failed = 0;
         for (Channel channel : channels) {
             Maybe<Channel> existing = channelResolver.fromUri(channel.getCanonicalUri());
@@ -90,9 +98,9 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setInteractive(channel.getInteractive());
                     existingChannel.addAliases(channel.getAliases());
 
-                    channelWriter.createOrUpdate(existingChannel);
+                    written.add(channelWriter.createOrUpdate(existingChannel));
                 } else {
-                    channelWriter.createOrUpdate(channel);
+                    written.add(channelWriter.createOrUpdate(channel));
                 }
             } catch (Exception e) {
                 log.error("Failed to write channel {} - {}", channel.getCanonicalUri(), e);
@@ -102,5 +110,6 @@ public class ChannelIngestTask extends ScheduledTask {
         reportStatus(String.format("%d channels failed out of %d", failed,
                 Iterables.size(channels)
         ));
+        return written.build();
     }
 }

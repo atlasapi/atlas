@@ -1,18 +1,11 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-
 import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelType;
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
-
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -24,14 +17,20 @@ import com.metabroadcast.atlas.glycerin.queries.MasterBrandsMixin;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
-
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelType;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -52,6 +51,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     private static final String MUSIC = "music";
     private static final String RADIO = "radio";
     private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrands/";
+    public static final String BBC_IMAGE_TYPE = "bbc:imageType";
+    public static final String MASTERBRAND = "masterbrand";
 
     private final NitroImageExtractor imageExtractor = new NitroImageExtractor(1024, 576);
     private final Glycerin glycerin;
@@ -248,7 +249,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         } else {
             Channel parentChannel = parentUriToId.get(NITRO_MASTERBRAND_URI_PREFIX + parentMid);
             builder.withParent(parentChannel);
-            builder.withImage(Iterables.getFirst(parentChannel.getImages(), null));
+            builder.withImages(addMasterbrandAlias(parentChannel.getImages()));
             if (!Strings.isNullOrEmpty(parentChannel.getTitle())) {
                 builder.withAliases(
                         ImmutableSet.of(
@@ -257,6 +258,17 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 );
             }
         }
+    }
+
+    private Iterable<Image> addMasterbrandAlias(Iterable<Image> images) {
+        return Iterables.transform(images, new Function<Image, Image>() {
+                    @Override public Image apply(@Nullable Image input) {
+                        input.addAlias(
+                                new Alias(BBC_IMAGE_TYPE,  MASTERBRAND)
+                        );
+                        return input;
+                    }
+                });
     }
 
     private Channel getChannelWithLocatorAlias(

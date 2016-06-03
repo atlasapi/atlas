@@ -2,6 +2,9 @@ package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.Alias;
@@ -63,6 +66,11 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
     @Override
     public ImmutableSet<Channel> fetchServices() throws GlycerinException {
+        return fetchServices(ImmutableMap.<String, Channel>of());
+    }
+
+    @Override
+    public ImmutableSet<Channel> fetchServices(ImmutableMap<String, Channel> uriToParentChannels) throws GlycerinException {
         ImmutableSet.Builder<Channel> channels = ImmutableSet.builder();
 
         boolean exhausted = false;
@@ -72,7 +80,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             for (Service result : results) {
                 Ids ids = result.getIds();
                 if (ids != null) {
-                    generateAndAddChannelsFromLocators(channels, result, ids);
+                    generateAndAddChannelsFromLocators(channels, result, ids, uriToParentChannels);
                 }
             }
             startingPoint ++;
@@ -82,12 +90,16 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return channels.build();
     }
 
-    private void generateAndAddChannelsFromLocators(ImmutableSet.Builder<Channel> channels,
-            Service result, Ids ids) throws GlycerinException {
+    private void generateAndAddChannelsFromLocators(
+            ImmutableSet.Builder<Channel> channels,
+            Service result,
+            Ids ids,
+            ImmutableMap<String, Channel> uriToParentChannels
+    ) throws GlycerinException {
         Channel channel;
         for (Id id : ids.getId()) {
             if (id.getType().equals(TERRESTRIAL_SERVICE_LOCATOR)) {
-                channel = getChannelWithLocatorAlias(result, id);
+                channel = getChannelWithLocatorAlias(result, id, uriToParentChannels);
                 channels.add(channel);
             }
         }
@@ -185,7 +197,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         }
     }
 
-    private Channel getChannel(Service result) throws GlycerinException {
+    private Channel getChannel(Service result, ImmutableMap<String, Channel> parentUriToId) throws GlycerinException {
         Channel.Builder builder = Channel.builder()
                 .withBroadcaster(Publisher.BBC)
                 .withMediaType(MediaType.valueOf(result.getMediaType().toUpperCase()))
@@ -207,7 +219,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
         if (result.getMasterBrand() != null &&
                 !Strings.isNullOrEmpty(result.getMasterBrand().getMid())) {
-            setFieldsFromParent(result.getMasterBrand().getMid(), result, builder);
+            setFieldsFromParent(result.getMasterBrand().getMid(), result, builder, parentUriToId);
         }
 
         Channel channel = builder.build();
@@ -221,24 +233,20 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return channel;
     }
 
-    private void setFieldsFromParent(String parentMid, Service child, Channel.Builder builder) throws GlycerinException {
-        MasterBrandsQuery query = MasterBrandsQuery.builder()
-                .withMid(parentMid)
-                .withMixins(MasterBrandsMixin.IMAGES)
-                /* Pages are 1-indexed */
-                .withPage(1)
-                .withPageSize(1)
-                .build();
-        GlycerinResponse<MasterBrand> resp = glycerin.execute(query);
-        if (resp.getResults().isEmpty()) {
+    private void setFieldsFromParent(
+            String parentMid,
+            Service child,
+            Channel.Builder builder,
+            ImmutableMap<String, Channel> parentUriToId
+    ) throws GlycerinException {
+        if (!parentUriToId.containsKey(NITRO_MASTERBRAND_URI_PREFIX + parentMid)) {
             log.warn(
                     "Failed to resolve masterbrand parent mid: {} for channel sid: {}",
                     child.getMasterBrand().getMid(),
                     child.getSid()
             );
         } else {
-            MasterBrand parentMb = Iterables.getOnlyElement(resp.getResults());
-            Channel parentChannel = getMasterBrand(parentMb);
+            Channel parentChannel = parentUriToId.get(NITRO_MASTERBRAND_URI_PREFIX + parentMid);
             builder.withParent(parentChannel);
             builder.withImage(Iterables.getFirst(parentChannel.getImages(), null));
             if (!Strings.isNullOrEmpty(parentChannel.getTitle())) {
@@ -251,8 +259,12 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         }
     }
 
-    private Channel getChannelWithLocatorAlias(Service result, Id locator) throws GlycerinException {
-        Channel channel = getChannel(result);
+    private Channel getChannelWithLocatorAlias(
+            Service result,
+            Id locator,
+            ImmutableMap<String, Channel> uriToParentChannels
+    ) throws GlycerinException {
+        Channel channel = getChannel(result, uriToParentChannels);
         String locatorValue = locator.getValue();
 
         String canonicalUri = String.format(

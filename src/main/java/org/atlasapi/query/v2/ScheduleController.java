@@ -1,8 +1,10 @@
 package org.atlasapi.query.v2;
 
 import java.io.IOException;
+import java.text.MessageFormat;
 import java.util.Set;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -34,19 +36,28 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.joda.time.Interval;
+import org.joda.time.format.PeriodFormat;
+import org.joda.time.format.PeriodFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import static com.google.common.base.Preconditions.checkArgument;
+import static org.atlasapi.application.query.IpCheckingApiKeyConfigurationFetcher.API_KEY_QUERY_PARAMETER;
 
 @Controller
 public class ScheduleController extends BaseController<Iterable<ScheduleChannel>> {
 
     private static final Range<Integer> COUNT_RANGE = Range.closed(1, 10);
 
+    private static final Duration MAX_SCHEDULE_REQUEST_DURATION = Duration.standardDays(1);
+    private static final PeriodFormatter PERIOD_FORMATTER = PeriodFormat.getDefault();
+
     private final ScheduleResolver scheduleResolver;
     private final ChannelResolver channelResolver;
+    private final ImmutableSet<String> privilegedKeys;
 
     private final ApplicationConfiguration defaultConfig
             = ApplicationConfiguration.forNoApiKey();
@@ -54,22 +65,28 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
     private final DateTimeInQueryParser dateTimeInQueryParser = new DateTimeInQueryParser();
     private final NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
 
-    public ScheduleController(ScheduleResolver scheduleResolver, ChannelResolver channelResolver,
-            ApplicationConfigurationFetcher configFetcher, AdapterLog log,
-            AtlasModelWriter<Iterable<ScheduleChannel>> outputter) {
+    public ScheduleController(
+            ScheduleResolver scheduleResolver,
+            ChannelResolver channelResolver,
+            ApplicationConfigurationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<Iterable<ScheduleChannel>> outputter,
+            Iterable<String> privilegedApiKeys
+    ) {
         super(configFetcher, log, outputter);
         this.scheduleResolver = scheduleResolver;
         this.channelResolver = channelResolver;
+        this.privilegedKeys = ImmutableSet.copyOf(privilegedApiKeys);
     }
 
     @RequestMapping("/3.0/schedule.*")
     public void schedule(@RequestParam(required = false) String from,
-            @RequestParam(required = false) String to,
-            @RequestParam(required = false, value = "count") String itemCount,
-            @RequestParam(required = false) String on,
-            @RequestParam(required = false) String channel,
-            @RequestParam(value = "channel_id", required = false) String channelId,
-            @RequestParam(required = false) String publisher,
+            @Nullable @RequestParam(required = false) String to,
+            @Nullable @RequestParam(required = false, value = "count") String itemCount,
+            @Nullable @RequestParam(required = false) String on,
+            @Nullable @RequestParam(required = false) String channel,
+            @Nullable @RequestParam(value = "channel_id", required = false) String channelId,
+            @Nullable @RequestParam(required = false) String publisher,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
             Maybe<ApplicationConfiguration> requestedConfig;
@@ -80,7 +97,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                 return;
             }
 
-            DateTime fromWhen = null;
+            DateTime fromWhen;
             DateTime toWhen = null;
             Integer count = null;
 
@@ -116,6 +133,8 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         + "or 'from' and 'count'");
             }
 
+            checkRequestedInterval(request, fromWhen, toWhen);
+
             ApplicationConfiguration appConfig = requestedConfig.valueOrDefault(defaultConfig);
 
             boolean publishersSupplied = !Strings.isNullOrEmpty(publisher);
@@ -127,7 +146,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         "You must specify at least one publisher that you have permission to view");
             }
 
-            if (!(Strings.isNullOrEmpty(channelId) ^ Strings.isNullOrEmpty(channel))) {
+            if (Strings.isNullOrEmpty(channelId) == Strings.isNullOrEmpty(channel)) {
                 throw new IllegalArgumentException(
                         "You must specify exactly one of channel and channel_id");
             }
@@ -206,5 +225,34 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             }
         }
         return channels.build();
+    }
+
+    private void checkRequestedInterval(
+            HttpServletRequest request,
+            DateTime fromWhen,
+            DateTime toWhen
+    ) {
+        String apiKey = getApiKey(request);
+
+        // These API keys are allowed to make big schedule requests
+        if (privilegedKeys.contains(apiKey)) {
+            return;
+        }
+
+        Interval interval = new Interval(fromWhen, toWhen);
+        if (interval.toDuration().isLongerThan(MAX_SCHEDULE_REQUEST_DURATION)) {
+            throw new IllegalArgumentException(MessageFormat.format(
+                    "Schedule requests for more than {0} are not allowed",
+                    PERIOD_FORMATTER.print(MAX_SCHEDULE_REQUEST_DURATION.toPeriod())
+            ));
+        }
+    }
+
+    private String getApiKey(HttpServletRequest request) {
+        String apiKey = request.getParameter(API_KEY_QUERY_PARAMETER);
+        if (apiKey == null) {
+            apiKey = request.getHeader(API_KEY_QUERY_PARAMETER);
+        }
+        return apiKey;
     }
 }

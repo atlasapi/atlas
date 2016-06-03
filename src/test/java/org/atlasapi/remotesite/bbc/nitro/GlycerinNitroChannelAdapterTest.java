@@ -1,7 +1,11 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableMap;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 
@@ -26,6 +30,8 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import javax.annotation.Nullable;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertNotNull;
@@ -56,16 +62,19 @@ public class GlycerinNitroChannelAdapterTest {
         setIds(service);
         setDateRange(service);
 
-        Brand.MasterBrand parentMb = mock(Brand.MasterBrand.class);
-        service.setMasterBrand(parentMb);
-
-        when(parentMb.getMid())
-                .thenReturn("bbc_radio_fourlw");
-        when(response.getResults())
-                .thenReturn(ImmutableList.of(service))
-                .thenReturn(ImmutableList.of(setImages(getBasicMasterbrand())));
-
-        ImmutableSet<Channel> services = channelAdapter.fetchServices();
+        when(response.getResults()).thenReturn(ImmutableList.of(service));
+        Image image = new Image("uri");
+        image.setAliases(ImmutableList.of(new Alias("bbc:service:name:short", "name")));
+        ImmutableSet<Channel> services = channelAdapter.fetchServices(
+                ImmutableMap.of(
+                        "http://nitro.bbc.co.uk/masterbrand/bbc_radio_fourlw",
+                        Channel.builder()
+                        .withUri("http://nitro.bbc.co.uk/masterbrand/bbc_radio_fourlw")
+                        .withImage(image)
+                        .withTitle("parent")
+                        .build()
+                )
+        );
         Channel channel = Iterables.getOnlyElement(services);
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
@@ -83,8 +92,13 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getImages().isEmpty(), is(false));
         assertThat(channel.getImages().iterator().next().getAliases().isEmpty(), is(false));
         assertThat(channel.getAliases().isEmpty(), is(false));
-        assertThat(channel.getAliases().iterator().next().getNamespace(), is("bbc:service:name:short"));
-        assertThat(channel.getAliases().iterator().next().getValue(), is("name"));
+        assertThat(Iterables.isEmpty(Iterables.filter(channel.getAliases(), new Predicate<Alias>() {
+            @Override
+            public boolean apply(@Nullable Alias alias) {
+                return alias.getNamespace().equals("bbc:service:name:short") &&
+                        alias.getValue().equals("parent");
+            }
+        })), is(false));
     }
 
     @Test
@@ -168,6 +182,9 @@ public class GlycerinNitroChannelAdapterTest {
         service.setDescription("description");
         service.setRegion("ALL");
         service.setMediaType("Audio");
+        Brand.MasterBrand masterBrand = new Brand.MasterBrand();
+        masterBrand.setMid("bbc_radio_fourlw");
+        service.setMasterBrand(masterBrand);
         return service;
     }
 

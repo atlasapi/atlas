@@ -166,8 +166,8 @@ public class NitroChannelHydrator {
             boolean isIdent = Iterables.any(oldImage.getAliases(), new Predicate<Alias>() {
                 @Override
                 public boolean apply(@Nullable Alias input) {
-                    return BBC_IMAGE_TYPE.equals(input.getNamespace()) &&
-                            BBC_NITRO_TYPE.equals(input.getValue());
+                    return BBC_NITRO_TYPE.equals(input.getNamespace()) &&
+                            IDENT.equals(input.getValue());
                 }
             });
             if (!isIdent) {

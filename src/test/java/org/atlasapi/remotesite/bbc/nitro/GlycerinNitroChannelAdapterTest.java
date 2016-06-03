@@ -67,7 +67,7 @@ public class GlycerinNitroChannelAdapterTest {
         image.setAliases(ImmutableList.of(new Alias("bbc:service:name:short", "name")));
         ImmutableSet<Channel> services = channelAdapter.fetchServices(
                 ImmutableMap.of(
-                        "http://nitro.bbc.co.uk/masterbrand/bbc_radio_fourlw",
+                        "http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw",
                         Channel.builder()
                         .withUri("http://nitro.bbc.co.uk/masterbrand/bbc_radio_fourlw")
                         .withImage(image)

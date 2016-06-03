@@ -4,7 +4,10 @@ import java.io.File;
 
 import javax.annotation.Nullable;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
@@ -30,19 +33,24 @@ public class NitroChannelHydrator {
 
     private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
     private static final ObjectMapper MAPPER = new ObjectMapper(YAML_FACTORY);
-    public static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
+    private static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
     private static final String SERVICES_PATH = "/data/youview/sv.json";
     private static final String MASTER_BRAND_PATH = "/data/youview/mb.json";
 
     public static final String NAME = "name";
-    public static final String SHORT_NAME = "shortName";
-    public static final String IMAGE_IDENT = "imageIdent";
-    public static final String WIDTH_IDENT = "widthIdent";
-    public static final String HEIGHT_IDENT = "heightIdent";
-    public static final String IMAGE_DOG = "imageDog";
-    public static final String WIDTH_DOG = "widthDog";
-    public static final String HEIGHT_DOG = "heightDog";
-    public static final String INTERACTIVE = "interactive";
+    private static final String SHORT_NAME = "shortName";
+    private static final String IMAGE_IDENT = "imageIdent";
+    private static final String WIDTH_IDENT = "widthIdent";
+    private static final String HEIGHT_IDENT = "heightIdent";
+    private static final String IMAGE_DOG = "imageDog";
+    private static final String WIDTH_DOG = "widthDog";
+    private static final String HEIGHT_DOG = "heightDog";
+    private static final String INTERACTIVE = "interactive";
+    private static final String BBC_IMAGE_TYPE = "bbc:imageType";
+    private static final String DOG = "dog";
+    private static final String IDENT = "ident";
+    public static final String IPLAYER_LOGO = "http://www.bbc.co.uk/iplayer/images/youview/bbc_iplayer.png";
+    public static final String OVERRIDE = "override";
 
     private static Multimap<String, String> locatorsToTargetInfo;
     private static Table<String, String, String> locatorsToValues;
@@ -80,26 +88,25 @@ public class NitroChannelHydrator {
     public Iterable<Channel> filterAndHydrateServices(Iterable<Channel> services) {
         Iterable<Channel> filteredServices = Iterables.filter(services, inServiceTable());
 
-        for (Channel filteredService : filteredServices) {
-            String dvbLocator = getDvbLocator(filteredService).get();
+        for (Channel channel : filteredServices) {
+            String dvbLocator = getDvbLocator(channel).get();
 
-            filteredService.addAlias(new Alias(
-                    BBC_SERVICE_NAME_SHORT,
-                    locatorsToValues.get(dvbLocator, SHORT_NAME)
-            ));
+            channel.addAlias(
+                    new Alias(
+                            BBC_SERVICE_NAME_SHORT,
+                            locatorsToValues.get(dvbLocator, SHORT_NAME)
+                    )
+            );
 
-            if (filteredService.getImages().isEmpty()) {
-                Image image = new Image(locatorsToValues.get(dvbLocator, IMAGE_IDENT));
-                image.setWidth(Integer.parseInt(locatorsToValues.get(dvbLocator, WIDTH_IDENT)));
-                image.setHeight(Integer.parseInt(locatorsToValues.get(dvbLocator, HEIGHT_IDENT)));
-                image.setTheme(ImageTheme.LIGHT_OPAQUE);
-                filteredService.addImage(image);
+            if (!Strings.isNullOrEmpty(locatorsToValues.get(dvbLocator, IMAGE_IDENT))) {
+                overrideIdent(channel, dvbLocator);
             }
 
-            filteredService.setTargetRegions(
+            channel.setTargetRegions(
                     ImmutableSet.copyOf(locatorsToTargetInfo.get(dvbLocator))
             );
-            filteredService.setInteractive(
+
+            channel.setInteractive(
                     Boolean.parseBoolean(locatorsToValues.get(dvbLocator, INTERACTIVE))
             );
         }
@@ -109,23 +116,82 @@ public class NitroChannelHydrator {
 
     public Iterable<Channel> filterAndHydrateMasterbrands(Iterable<Channel> masterbrands) {
         Iterable<Channel> filteredMasterbrands = Iterables.filter(masterbrands, inMasterbrandTable());
-        for (Channel filteredService : filteredMasterbrands) {
-            String name = filteredService.getTitle();
-            filteredService.addAlias(new Alias(BBC_SERVICE_NAME_SHORT, masterbrandNamesToValues.get(
-                    name, SHORT_NAME)));
-
-            Image dogImage = new Image(masterbrandNamesToValues.get(name, IMAGE_DOG));
-            dogImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_DOG)));
-            dogImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_DOG)));
-            dogImage.setTheme(ImageTheme.LIGHT_OPAQUE);
-            dogImage.setAliases(
-                    ImmutableSet.of(
-                            new Alias("bbc:imageType", "dog")
+        for (Channel channel : filteredMasterbrands) {
+            String name = channel.getTitle();
+            channel.addAlias(
+                    new Alias(
+                            BBC_SERVICE_NAME_SHORT,
+                            masterbrandNamesToValues.get(name, SHORT_NAME)
                     )
             );
-            filteredService.addImage(dogImage);
+            if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_IDENT))) {
+                overrideIdent(channel, name);
+            }
+
+            if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_DOG))) {
+                overrideDog(channel, name);
+            } else {
+                Image iplayerDog = new Image(IPLAYER_LOGO);
+                iplayerDog.setHeight(1024);
+                iplayerDog.setWidth(169);
+                iplayerDog.setAliases(
+                        ImmutableSet.of(
+                                new Alias(BBC_IMAGE_TYPE, DOG),
+                                new Alias(BBC_IMAGE_TYPE, OVERRIDE)
+                        )
+                );
+                channel.addImage(iplayerDog);
+            }
         }
         return filteredMasterbrands;
+    }
+
+    private void overrideIdent(Channel channel, String name) {
+        Image overrideImage = new Image(masterbrandNamesToValues.get(name, IMAGE_IDENT));
+        overrideImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)));
+        overrideImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT)));
+        overrideImage.setTheme(ImageTheme.LIGHT_OPAQUE);
+        overrideImage.setAliases(
+                ImmutableSet.of(
+                        new Alias(BBC_IMAGE_TYPE, IDENT),
+                        new Alias(BBC_IMAGE_TYPE, OVERRIDE)
+                )
+        );
+
+        for (Image oldImage : channel.getImages()) {
+            for (Alias oldAlias : oldImage.getAliases()) {
+                if (BBC_IMAGE_TYPE.equals(oldAlias.getNamespace()) &&
+                        IDENT.equals(oldAlias.getValue())) {
+                    channel.getImages().remove(oldImage);
+                }
+            }
+        }
+
+        channel.addImage(overrideImage);
+    }
+
+    private void overrideDog(Channel channel, String name) {
+        Image overrideImage = new Image(masterbrandNamesToValues.get(name, IMAGE_DOG));
+        overrideImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_DOG)));
+        overrideImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_DOG)));
+        overrideImage.setTheme(ImageTheme.LIGHT_OPAQUE);
+        overrideImage.setAliases(
+                ImmutableSet.of(
+                        new Alias(BBC_IMAGE_TYPE, DOG),
+                        new Alias(BBC_IMAGE_TYPE, OVERRIDE)
+                )
+        );
+
+        for (Image oldImage : channel.getImages()) {
+            for (Alias oldAlias : oldImage.getAliases()) {
+                if (BBC_IMAGE_TYPE.equals(oldAlias.getNamespace()) &&
+                        DOG.equals(oldAlias.getValue())) {
+                    channel.getImages().remove(oldImage);
+                }
+            }
+        }
+
+        channel.addImage(overrideImage);
     }
 
     private static Optional<String> getDvbLocator(Channel channel) {

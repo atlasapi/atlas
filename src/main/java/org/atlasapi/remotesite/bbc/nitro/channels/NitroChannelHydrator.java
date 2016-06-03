@@ -50,8 +50,9 @@ public class NitroChannelHydrator {
     private static final String BBC_IMAGE_TYPE = "bbc:imageType";
     private static final String DOG = "dog";
     private static final String IDENT = "ident";
-    public static final String IPLAYER_LOGO = "http://www.bbc.co.uk/iplayer/images/youview/bbc_iplayer.png";
-    public static final String OVERRIDE = "override";
+    private static final String IPLAYER_LOGO = "http://www.bbc.co.uk/iplayer/images/youview/bbc_iplayer.png";
+    private static final String OVERRIDE = "override";
+    private static final String BBC_NITRO_TYPE = "bbc:nitro:type";
 
     private static Multimap<String, String> locatorsToTargetInfo;
     private static Table<String, String, String> locatorsToValues;
@@ -166,7 +167,7 @@ public class NitroChannelHydrator {
                 @Override
                 public boolean apply(@Nullable Alias input) {
                     return BBC_IMAGE_TYPE.equals(input.getNamespace()) &&
-                            IDENT.equals(input.getValue());
+                            BBC_NITRO_TYPE.equals(input.getValue());
                 }
             });
             if (!isIdent) {

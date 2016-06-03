@@ -131,6 +131,7 @@ public class NitroChannelHydrator {
             if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_DOG))) {
                 overrideDog(channel, name, masterbrandNamesToValues);
             } else {
+                log.info("Adding iplayer image for {}", channel.getCanonicalUri());
                 Image iplayerDog = new Image(IPLAYER_LOGO);
                 iplayerDog.setHeight(1024);
                 iplayerDog.setWidth(169);
@@ -168,6 +169,7 @@ public class NitroChannelHydrator {
             }
         }
         images.add(new TemporalField<>(overrideImage, null, null));
+        log.info("Adding override ident {} for {}", overrideImage.getCanonicalUri(), channel.getUri());
         channel.setImages(images.build());
     }
 
@@ -192,6 +194,7 @@ public class NitroChannelHydrator {
             }
         }
         images.add(new TemporalField<>(overrideImage, null, null));
+        log.info("Adding override dog {} for {}", overrideImage.getCanonicalUri(), channel.getUri());
         channel.setImages(images.build());
     }
 

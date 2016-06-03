@@ -24,6 +24,7 @@ import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
+import org.atlasapi.remotesite.bbc.nitro.PaginatedNitroItemSources;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -161,11 +162,15 @@ public class NitroChannelHydrator {
 
         ImmutableSet.Builder<TemporalField<Image>> images = ImmutableSet.builder();
         for (Image oldImage : channel.getImages()) {
-            for (Alias oldAlias : oldImage.getAliases()) {
-                if (!BBC_IMAGE_TYPE.equals(oldAlias.getNamespace()) &&
-                        !IDENT.equals(oldAlias.getValue())) {
-                    images.add(new TemporalField<>(oldImage, null, null));
+            boolean isIdent = Iterables.any(oldImage.getAliases(), new Predicate<Alias>() {
+                @Override
+                public boolean apply(@Nullable Alias input) {
+                    return BBC_IMAGE_TYPE.equals(input.getNamespace()) &&
+                            IDENT.equals(input.getValue());
                 }
+            });
+            if (!isIdent) {
+                images.add(new TemporalField<>(oldImage, null, null));
             }
         }
         images.add(new TemporalField<>(overrideImage, null, null));
@@ -186,11 +191,15 @@ public class NitroChannelHydrator {
         );
         ImmutableSet.Builder<TemporalField<Image>> images = ImmutableSet.builder();
         for (Image oldImage : channel.getImages()) {
-            for (Alias oldAlias : oldImage.getAliases()) {
-                if (!BBC_IMAGE_TYPE.equals(oldAlias.getNamespace()) &&
-                        !DOG.equals(oldAlias.getValue())) {
-                    images.add(new TemporalField<>(oldImage, null, null));
+            boolean isDog = Iterables.any(oldImage.getAliases(), new Predicate<Alias>() {
+                @Override
+                public boolean apply(@Nullable Alias input) {
+                    return BBC_IMAGE_TYPE.equals(input.getNamespace()) &&
+                            DOG.equals(input.getValue());
                 }
+            });
+            if (!isDog) {
+                images.add(new TemporalField<>(oldImage, null, null));
             }
         }
         images.add(new TemporalField<>(overrideImage, null, null));

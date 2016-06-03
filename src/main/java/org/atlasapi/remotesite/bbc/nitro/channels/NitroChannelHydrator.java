@@ -158,16 +158,17 @@ public class NitroChannelHydrator {
                 )
         );
 
+        ImmutableSet.Builder<TemporalField<Image>> images = ImmutableSet.builder();
         for (Image oldImage : channel.getImages()) {
             for (Alias oldAlias : oldImage.getAliases()) {
-                if (BBC_IMAGE_TYPE.equals(oldAlias.getNamespace()) &&
-                        IDENT.equals(oldAlias.getValue())) {
-                    channel.getImages().remove(oldImage);
+                if (!BBC_IMAGE_TYPE.equals(oldAlias.getNamespace()) &&
+                        !IDENT.equals(oldAlias.getValue())) {
+                    images.add(new TemporalField<>(oldImage, null, null));
                 }
             }
         }
-
-        channel.addImage(overrideImage);
+        images.add(new TemporalField<>(overrideImage, null, null));
+        channel.setImages(images.build());
     }
 
     private void overrideDog(Channel channel, String name, Table<String, String, String> fields) {
@@ -181,17 +182,17 @@ public class NitroChannelHydrator {
                         new Alias(BBC_IMAGE_TYPE, OVERRIDE)
                 )
         );
-
+        ImmutableSet.Builder<TemporalField<Image>> images = ImmutableSet.builder();
         for (Image oldImage : channel.getImages()) {
             for (Alias oldAlias : oldImage.getAliases()) {
-                if (BBC_IMAGE_TYPE.equals(oldAlias.getNamespace()) &&
-                        DOG.equals(oldAlias.getValue())) {
-                    channel.getImages().remove(oldImage);
+                if (!BBC_IMAGE_TYPE.equals(oldAlias.getNamespace()) &&
+                        !DOG.equals(oldAlias.getValue())) {
+                    images.add(new TemporalField<>(oldImage, null, null));
                 }
             }
         }
-
-        channel.addImage(overrideImage);
+        images.add(new TemporalField<>(overrideImage, null, null));
+        channel.setImages(images.build());
     }
 
     private static Optional<String> getDvbLocator(Channel channel) {

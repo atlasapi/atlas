@@ -1,47 +1,5 @@
 package org.atlasapi.equiv;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-import static org.atlasapi.media.entity.Publisher.AMC_EBS;
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
-import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
-import static org.atlasapi.media.entity.Publisher.BETTY;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_SYSTEST2_CONFIG_1;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLD_CONFIG_1;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLE_CONFIG_1;
-import static org.atlasapi.media.entity.Publisher.BT_VOD;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
-import static org.atlasapi.media.entity.Publisher.C4;
-import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
-import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
-import static org.atlasapi.media.entity.Publisher.FIVE;
-import static org.atlasapi.media.entity.Publisher.ITUNES;
-import static org.atlasapi.media.entity.Publisher.ITV;
-import static org.atlasapi.media.entity.Publisher.ITV_INTERLINKING;
-import static org.atlasapi.media.entity.Publisher.LOVEFILM;
-import static org.atlasapi.media.entity.Publisher.NETFLIX;
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.REDBEE_MEDIA;
-import static org.atlasapi.media.entity.Publisher.ROVI_EN;
-import static org.atlasapi.media.entity.Publisher.RTE;
-import static org.atlasapi.media.entity.Publisher.TALK_TALK;
-import static org.atlasapi.media.entity.Publisher.UKTV;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
-import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
-import static org.atlasapi.media.entity.Publisher.VF_BBC;
-import static org.atlasapi.media.entity.Publisher.VF_C5;
-import static org.atlasapi.media.entity.Publisher.VF_ITV;
-import static org.atlasapi.media.entity.Publisher.VF_AE;
-import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
-import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
-
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
@@ -83,9 +41,27 @@ import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.kafka.KafkaConsumer;
+import com.metabroadcast.common.scheduling.RepetitionRule;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.time.DayOfWeek;
+
 import com.google.api.client.util.Lists;
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.google.common.util.concurrent.Service.Listener;
+import com.google.common.util.concurrent.Service.State;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -98,23 +74,47 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Lazy;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.google.common.util.concurrent.Service.Listener;
-import com.google.common.util.concurrent.Service.State;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.kafka.KafkaConsumer;
-import com.metabroadcast.common.scheduling.RepetitionRule;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.time.DayOfWeek;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BBC;
+import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
+import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
+import static org.atlasapi.media.entity.Publisher.BETTY;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_SYSTEST2_CONFIG_1;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLD_CONFIG_1;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLE_CONFIG_1;
+import static org.atlasapi.media.entity.Publisher.BT_VOD;
+import static org.atlasapi.media.entity.Publisher.C4;
+import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
+import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
+import static org.atlasapi.media.entity.Publisher.FIVE;
+import static org.atlasapi.media.entity.Publisher.ITUNES;
+import static org.atlasapi.media.entity.Publisher.ITV;
+import static org.atlasapi.media.entity.Publisher.ITV_INTERLINKING;
+import static org.atlasapi.media.entity.Publisher.LOVEFILM;
+import static org.atlasapi.media.entity.Publisher.NETFLIX;
+import static org.atlasapi.media.entity.Publisher.PA;
+import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
+import static org.atlasapi.media.entity.Publisher.REDBEE_MEDIA;
+import static org.atlasapi.media.entity.Publisher.ROVI_EN;
+import static org.atlasapi.media.entity.Publisher.RTE;
+import static org.atlasapi.media.entity.Publisher.TALK_TALK;
+import static org.atlasapi.media.entity.Publisher.UKTV;
+import static org.atlasapi.media.entity.Publisher.VF_AE;
+import static org.atlasapi.media.entity.Publisher.VF_BBC;
+import static org.atlasapi.media.entity.Publisher.VF_C5;
+import static org.atlasapi.media.entity.Publisher.VF_ITV;
+import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
+import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
+import static org.atlasapi.media.entity.Publisher.WIKIPEDIA;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 
 @Configuration
 @Import({EquivModule.class, KafkaMessagingModule.class, YouViewCoreModule.class })
@@ -282,8 +282,10 @@ public class EquivTaskModule {
 
     private void addYouViewScheduleEquivalenceJobs(List<ScheduledTask> jobsAtStartup) {
 
+        // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
+        // coverage from the next day onwards
         scheduleEquivalenceJob(
-                taskBuilder(0, 7)
+                taskBuilder(0, 8)
                         .withPublishers(YOUVIEW)
                         .withChannelsSupplier(youviewChannelsSupplier())
                         .build().withName("YouView Schedule Equivalence (8 day) Updater"),
@@ -298,8 +300,11 @@ public class EquivTaskModule {
                 YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
+
+        // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
+        // coverage from the next day onwards
         scheduleEquivalenceJob(
-                taskBuilder(0, 7)
+                taskBuilder(0, 8)
                         .withPublishers(YOUVIEW_BT)
                         .withChannelsSupplier(youviewChannelsSupplier())
                         .build().withName("YouView BT Schedule Equivalence (8 day) Updater"),
@@ -315,8 +320,11 @@ public class EquivTaskModule {
                 YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
+
+        // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
+        // coverage from the next day onwards
         scheduleEquivalenceJob(
-                taskBuilder(0, 7)
+                taskBuilder(0, 8)
                         .withPublishers(YOUVIEW_SCOTLAND_RADIO)
                         .withChannelsSupplier(youviewChannelsSupplier())
                         .build()

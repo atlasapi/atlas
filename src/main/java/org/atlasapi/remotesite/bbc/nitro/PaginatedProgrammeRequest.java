@@ -1,7 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
@@ -9,8 +10,8 @@ import com.metabroadcast.atlas.glycerin.GlycerinResponse;
 import com.metabroadcast.atlas.glycerin.model.Programme;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 
-import java.util.Iterator;
-import java.util.List;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 
 /**
  * Used to paginate over Nitro Programmes to reduce the heap overhead.
@@ -24,7 +25,7 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
     private final Iterable<ProgrammesQuery> programmeQueries;
     private final Glycerin client;
 
-    public PaginatedProgrammeRequest(Glycerin client, Iterable<ProgrammesQuery> queries) throws GlycerinException {
+    public PaginatedProgrammeRequest(Glycerin client, Iterable<ProgrammesQuery> queries) {
         this.client = client;
         this.programmeQueries = queries;
     }
@@ -39,7 +40,6 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
         private final Glycerin client;
         private final Iterator<ProgrammesQuery> programmeQueries;
         private GlycerinResponse<Programme> currentResponse;
-        private Iterable<Programme> currentProgrammes;
 
         public ProgrammeIterator(Glycerin client, Iterable<ProgrammesQuery> programmeQueries) {
             this.client = client;
@@ -56,17 +56,19 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
          */
         @Override
         public boolean hasNext() {
-            try {
                 if (currentResponse == null) { // Getting the first page.
-                    if (programmeQueries.hasNext()) {
-                        currentResponse = client.execute(programmeQueries.next());
-                        return true;
-                    } else {
-                        return false;
-                    }
-                } else if (currentResponse.hasNext()) { // Getting the next page.
+                    return executeRequest();
+                } else {
+                    return currentResponse.hasNext();
+                }
+        }
+
+        private boolean executeRequest() {
+            try {
+                if (programmeQueries.hasNext()) {
+                    currentResponse = client.execute(programmeQueries.next());
                     return true;
-                } else { // If there are more programme queries, execute them.
+                } else {
                     return false;
                 }
             } catch (GlycerinException e) {
@@ -77,6 +79,13 @@ public class PaginatedProgrammeRequest implements Iterable<List<Programme>> {
         @Override
         public List<Programme> next() {
             try {
+                if (currentResponse == null) {
+                    boolean gotSomething = executeRequest();
+                    if (!gotSomething) {
+                        throw new NoSuchElementException();
+                    }
+                }
+
                 ImmutableList<Programme> programmes = currentResponse.getResults();
                 if (currentResponse.hasNext()) {
                     currentResponse = currentResponse.getNext();

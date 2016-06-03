@@ -1,23 +1,10 @@
 package org.atlasapi.query.v2;
 
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.instanceOf;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Matchers.eq;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
@@ -37,6 +24,15 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.NullAdapterLog;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.servlet.StubHttpServletRequest;
+import com.metabroadcast.common.servlet.StubHttpServletResponse;
+import com.metabroadcast.common.time.DateTimeZones;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.Before;
@@ -45,13 +41,18 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.servlet.StubHttpServletRequest;
-import com.metabroadcast.common.servlet.StubHttpServletResponse;
-import com.metabroadcast.common.time.DateTimeZones;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.instanceOf;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyCollectionOf;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScheduleControllerTest {
@@ -62,14 +63,31 @@ public class ScheduleControllerTest {
     private static final String NO_ON = null;
     private static final String NO_CHANNEL_KEY = null;
 
-    private final ScheduleResolver scheduleResolver = mock(ScheduleResolver.class);
-    private final ChannelResolver channelResolver = mock(ChannelResolver.class);
-    private final ApplicationConfigurationFetcher configFetcher = mock(ApplicationConfigurationFetcher.class);
+    private static final String PRIVILEGED_KEY = "privilegedKey";
+    private static final String NON_PRIVILEGED_KEY = "nonPrivilegedKey";
+
+    private final ScheduleResolver scheduleResolver =
+            mock(ScheduleResolver.class);
+    private final ChannelResolver channelResolver =
+            mock(ChannelResolver.class);
+    private final ApplicationConfigurationFetcher configFetcher =
+            mock(ApplicationConfigurationFetcher.class);
+
     private final AdapterLog log = new NullAdapterLog();
+
     @SuppressWarnings("unchecked")
-    private final AtlasModelWriter<Iterable<ScheduleChannel>> outputter = mock(AtlasModelWriter.class);
-    private final ScheduleController controller = new ScheduleController(scheduleResolver, channelResolver, configFetcher, log, outputter);
-    
+    private final AtlasModelWriter<Iterable<ScheduleChannel>> outputter =
+            mock(AtlasModelWriter.class);
+
+    private final ScheduleController controller = new ScheduleController(
+            scheduleResolver,
+            channelResolver,
+            configFetcher,
+            log,
+            outputter,
+            ImmutableList.of(PRIVILEGED_KEY)
+    );
+
     private DateTime to;
     private DateTime from;
     private StubHttpServletRequest request;
@@ -295,6 +313,127 @@ public class ScheduleControllerTest {
         verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
+    }
+
+    @Test
+    public void privilegedKeysAreAllowedToAskForBigSchedules() throws IOException {
+        when(
+                scheduleResolver.schedule(
+                        any(DateTime.class),
+                        any(DateTime.class),
+                        anyCollectionOf(Channel.class),
+                        anyCollectionOf(Publisher.class),
+                        eq(Optional.<ApplicationConfiguration>absent())
+                )
+        )
+                .thenReturn(Schedule.fromChannelMap(
+                        ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)
+                ));
+
+        request.withParam("apiKey", PRIVILEGED_KEY);
+
+        to = from.plusDays(7);
+
+        controller.schedule(
+                from.toString(),
+                to.toString(),
+                NO_COUNT,
+                NO_ON,
+                NO_CHANNEL_KEY,
+                "cbbh",
+                "bbc.co.uk",
+                request,
+                response
+        );
+
+        verify(outputter).writeTo(
+                argThat(is(request)),
+                argThat(is(response)),
+                anyChannelSchedules(),
+                anySetOfPublishers(),
+                any(ApplicationConfiguration.class)
+        );
+    }
+
+    @Test
+    public void nonPrivilegedKeysAreAllowedToAskForOneScheduleDay() throws IOException {
+        when(
+                scheduleResolver.schedule(
+                        any(DateTime.class),
+                        any(DateTime.class),
+                        argThat(hasItems(channel)),
+                        argThat(hasItems(Publisher.BBC)),
+                        eq(Optional.<ApplicationConfiguration>absent())
+                )
+        )
+                .thenReturn(Schedule.fromChannelMap(
+                        ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)
+                ));
+
+        request.withParam("apiKey", NON_PRIVILEGED_KEY);
+
+        to = from.plusDays(1);
+
+        controller.schedule(
+                from.toString(),
+                to.toString(),
+                NO_COUNT,
+                NO_ON,
+                NO_CHANNEL_KEY,
+                "cbbh",
+                "bbc.co.uk",
+                request,
+                response
+        );
+
+        verify(outputter).writeTo(
+                argThat(is(request)),
+                argThat(is(response)),
+                anyChannelSchedules(),
+                anySetOfPublishers(),
+                any(ApplicationConfiguration.class)
+        );
+    }
+
+    @Test
+    public void nonPrivilegedKeysAreNotAllowedToAskForMoreThanOneScheduleDay() throws IOException {
+        when(
+                scheduleResolver.schedule(
+                        any(DateTime.class),
+                        any(DateTime.class),
+                        argThat(hasItems(channel)),
+                        argThat(hasItems(Publisher.BBC)),
+                        eq(Optional.<ApplicationConfiguration>absent())
+                )
+        )
+                .thenReturn(Schedule.fromChannelMap(
+                        ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)
+                ));
+
+        request.withParam("apiKey", NON_PRIVILEGED_KEY);
+
+        to = from.plusDays(7);
+
+        controller.schedule(
+                from.toString(),
+                to.toString(),
+                NO_COUNT,
+                NO_ON,
+                NO_CHANNEL_KEY,
+                "cbbh",
+                "bbc.co.uk",
+                request,
+                response
+        );
+
+        verify(outputter, never()).writeTo(
+                argThat(is(request)),
+                argThat(is(response)),
+                anyChannelSchedules(),
+                anySetOfPublishers(),
+                any(ApplicationConfiguration.class)
+        );
+        verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
     }
 
     @SuppressWarnings("unchecked")

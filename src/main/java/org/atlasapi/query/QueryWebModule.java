@@ -158,6 +158,7 @@ public class QueryWebModule {
     private @Value("${local.host.name}") String localHostName;
     private @Value("${ids.expose}") String exposeIds;
     private @Value("${events.whitelist.ids}") String eventsWhitelist;
+    private @Value("${apiKey.privileged}") String privilegedApiKeys;
 
     private @Autowired DatabasedMongo mongo;
     private @Autowired ContentGroupWriter contentGroupWriter;
@@ -381,7 +382,8 @@ public class QueryWebModule {
                 channelResolver,
                 configFetcher,
                 log,
-                scheduleChannelModelOutputter()
+                scheduleChannelModelOutputter(),
+                Splitter.on(',').split(privilegedApiKeys)
         );
     }
 

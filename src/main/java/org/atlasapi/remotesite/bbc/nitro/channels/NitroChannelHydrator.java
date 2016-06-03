@@ -147,9 +147,9 @@ public class NitroChannelHydrator {
     }
 
     private void overrideIdent(Channel channel, String name) {
-        Image overrideImage = new Image(masterbrandNamesToValues.get(name, IMAGE_IDENT));
-        overrideImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)));
-        overrideImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT)));
+        Image overrideImage = new Image(locatorsToValues.get(name, IMAGE_IDENT));
+        overrideImage.setWidth(Integer.parseInt(locatorsToValues.get(name, WIDTH_IDENT)));
+        overrideImage.setHeight(Integer.parseInt(locatorsToValues.get(name, HEIGHT_IDENT)));
         overrideImage.setTheme(ImageTheme.LIGHT_OPAQUE);
         overrideImage.setAliases(
                 ImmutableSet.of(

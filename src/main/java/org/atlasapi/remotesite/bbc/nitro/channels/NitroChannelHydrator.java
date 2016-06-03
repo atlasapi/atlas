@@ -99,7 +99,7 @@ public class NitroChannelHydrator {
             );
 
             if (!Strings.isNullOrEmpty(locatorsToValues.get(dvbLocator, IMAGE_IDENT))) {
-                overrideIdent(channel, dvbLocator);
+                overrideIdent(channel, dvbLocator, locatorsToValues);
             }
 
             channel.setTargetRegions(
@@ -125,11 +125,11 @@ public class NitroChannelHydrator {
                     )
             );
             if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_IDENT))) {
-                overrideIdent(channel, name);
+                overrideIdent(channel, name, masterbrandNamesToValues);
             }
 
             if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_DOG))) {
-                overrideDog(channel, name);
+                overrideDog(channel, name, masterbrandNamesToValues);
             } else {
                 Image iplayerDog = new Image(IPLAYER_LOGO);
                 iplayerDog.setHeight(1024);
@@ -146,10 +146,10 @@ public class NitroChannelHydrator {
         return filteredMasterbrands;
     }
 
-    private void overrideIdent(Channel channel, String name) {
-        Image overrideImage = new Image(locatorsToValues.get(name, IMAGE_IDENT));
-        overrideImage.setWidth(Integer.parseInt(locatorsToValues.get(name, WIDTH_IDENT)));
-        overrideImage.setHeight(Integer.parseInt(locatorsToValues.get(name, HEIGHT_IDENT)));
+    private void overrideIdent(Channel channel, String name, Table<String, String, String> fields) {
+        Image overrideImage = new Image(fields.get(name, IMAGE_IDENT));
+        overrideImage.setWidth(Integer.parseInt(fields.get(name, WIDTH_IDENT)));
+        overrideImage.setHeight(Integer.parseInt(fields.get(name, HEIGHT_IDENT)));
         overrideImage.setTheme(ImageTheme.LIGHT_OPAQUE);
         overrideImage.setAliases(
                 ImmutableSet.of(
@@ -170,10 +170,10 @@ public class NitroChannelHydrator {
         channel.addImage(overrideImage);
     }
 
-    private void overrideDog(Channel channel, String name) {
-        Image overrideImage = new Image(masterbrandNamesToValues.get(name, IMAGE_DOG));
-        overrideImage.setWidth(Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_DOG)));
-        overrideImage.setHeight(Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_DOG)));
+    private void overrideDog(Channel channel, String name, Table<String, String, String> fields) {
+        Image overrideImage = new Image(fields.get(name, IMAGE_DOG));
+        overrideImage.setWidth(Integer.parseInt(fields.get(name, WIDTH_DOG)));
+        overrideImage.setHeight(Integer.parseInt(fields.get(name, HEIGHT_DOG)));
         overrideImage.setTheme(ImageTheme.LIGHT_OPAQUE);
         overrideImage.setAliases(
                 ImmutableSet.of(

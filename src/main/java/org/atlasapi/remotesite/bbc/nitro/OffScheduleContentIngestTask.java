@@ -16,6 +16,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.util.GroupLock;
 
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
@@ -27,6 +28,7 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.base.Function;
 import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -111,7 +113,10 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         reportStatus("Doing the discovery call");
         Iterable<List<Item>> fetched;
         try {
-            fetched = contentAdapter.fetchEpisodes(query);
+            fetched = contentAdapter.fetchEpisodes(
+                    query,
+                    ImmutableListMultimap.<String, Broadcast>of()
+            );
         } catch (NitroException e) {
             throw Throwables.propagate(e);
         }

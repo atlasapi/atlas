@@ -201,10 +201,17 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<List<Item>> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
+    public Iterable<List<Item>> fetchEpisodes(
+            ProgrammesQuery programmesQuery,
+            ImmutableListMultimap<String, Broadcast> broadcasts
+    ) throws NitroException {
+
         try {
             Iterable<List<Programme>> programmes = fetchProgrammes(ImmutableList.of(programmesQuery));
-            return fetchEpisodesFromProgrammes(programmes, null);
+            return fetchEpisodesFromProgrammes(
+                    programmes,
+                    broadcasts
+            );
         } catch (GlycerinException e) {
             throw new NitroException(programmesQuery.toString(), e);
         }

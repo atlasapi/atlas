@@ -1,20 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
-import java.io.File;
-
-import javax.annotation.Nullable;
-
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.TemporalField;
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.ImageTheme;
-import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
-
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
@@ -24,9 +12,17 @@ import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
-import org.atlasapi.remotesite.bbc.nitro.PaginatedNitroItemSources;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.TemporalField;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageTheme;
+import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.io.File;
 
 public class NitroChannelHydrator {
 
@@ -224,15 +220,29 @@ public class NitroChannelHydrator {
         try {
             YouviewService[] services = MAPPER.readValue(new File(SERVICES_PATH), YouviewService[].class);
             for (YouviewService service : services) {
-                for (String targetRegion : service.getTargets()) {
-                    locatorsToTargetInfoBuilder.put(service.getLocator(), targetRegion);
+                if (!Strings.isNullOrEmpty(service.getLocator())) {
+                    if (service.getTargets() != null) {
+                        for (String targetRegion : service.getTargets()) {
+                            locatorsToTargetInfoBuilder.put(service.getLocator(), targetRegion);
+                        }
+                    }
+                    if (!Strings.isNullOrEmpty(service.getName())) {
+                        locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
+                    }
+                    if (!Strings.isNullOrEmpty(service.getShortName())) {
+                        locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
+                    }
+                    if (!Strings.isNullOrEmpty(service.getImage()) &&
+                            service.getWidth() != null &&
+                            service.getHeight() != null) {
+                        locatorsToValuesBuilder.put(service.getLocator(), IMAGE_IDENT, service.getImage());
+                        locatorsToValuesBuilder.put(service.getLocator(), WIDTH_IDENT, service.getWidth().toString());
+                        locatorsToValuesBuilder.put(service.getLocator(), HEIGHT_IDENT, service.getHeight().toString());
+                    }
+                    if (service.getInteractive() != null) {
+                        locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
+                    }
                 }
-                locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
-                locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
-                locatorsToValuesBuilder.put(service.getLocator(), IMAGE_IDENT, service.getImage());
-                locatorsToValuesBuilder.put(service.getLocator(), WIDTH_IDENT, service.getWidth().toString());
-                locatorsToValuesBuilder.put(service.getLocator(), HEIGHT_IDENT, service.getHeight().toString());
-                locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
             }
             locatorsToTargetInfo = locatorsToTargetInfoBuilder.build();
             locatorsToValues = locatorsToValuesBuilder.build();
@@ -240,13 +250,29 @@ public class NitroChannelHydrator {
             YouviewMasterbrand[] masterbrands = MAPPER.readValue(new File(MASTER_BRAND_PATH), YouviewMasterbrand[].class);
 
             for (YouviewMasterbrand masterbrand : masterbrands) {
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), SHORT_NAME, masterbrand.getShortName());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_IDENT, masterbrand.getImageIdent());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_IDENT, masterbrand.getHeightIdent().toString());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_IDENT, masterbrand.getWidthIdent().toString());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_DOG, masterbrand.getImageDog());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_DOG, masterbrand.getHeightDog().toString());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_DOG, masterbrand.getWidthDog().toString());
+                if (!Strings.isNullOrEmpty(masterbrand.getName())) {
+                    if (!Strings.isNullOrEmpty(masterbrand.getShortName())) {
+                        masterbrandNamesToValuesBuilder.put(masterbrand.getName(), SHORT_NAME, masterbrand.getShortName());
+                    }
+
+                    if (!Strings.isNullOrEmpty(masterbrand.getImageIdent()) &&
+                        masterbrand.getWidthIdent() != null &&
+                            masterbrand.getHeightIdent() != null) {
+
+                        masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_IDENT, masterbrand.getImageIdent());
+                        masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_IDENT, masterbrand.getHeightIdent().toString());
+                        masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_IDENT, masterbrand.getWidthIdent().toString());
+                    }
+
+                    if (!Strings.isNullOrEmpty(masterbrand.getImageDog()) &&
+                            masterbrand.getHeightDog() != null &&
+                            masterbrand.getWidthDog() != null) {
+
+                        masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_DOG, masterbrand.getImageDog());
+                        masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_DOG, masterbrand.getHeightDog().toString());
+                        masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_DOG, masterbrand.getWidthDog().toString());
+                    }
+                }
             }
             masterbrandNamesToValues = masterbrandNamesToValuesBuilder.build();
         } catch (Exception e) {

@@ -221,11 +221,17 @@ public class NitroChannelHydrator {
             YouviewService[] services = MAPPER.readValue(new File(SERVICES_PATH), YouviewService[].class);
             for (YouviewService service : services) {
                 if (!Strings.isNullOrEmpty(service.getLocator())) {
-                    for (String targetRegion : service.getTargets()) {
-                        locatorsToTargetInfoBuilder.put(service.getLocator(), targetRegion);
+                    if (service.getTargets() != null) {
+                        for (String targetRegion : service.getTargets()) {
+                            locatorsToTargetInfoBuilder.put(service.getLocator(), targetRegion);
+                        }
                     }
-                    locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
-                    locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
+                    if (!Strings.isNullOrEmpty(service.getName())) {
+                        locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
+                    }
+                    if (!Strings.isNullOrEmpty(service.getShortName())) {
+                        locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
+                    }
                     if (!Strings.isNullOrEmpty(service.getImage()) &&
                             service.getWidth() != null &&
                             service.getHeight() != null) {
@@ -233,7 +239,9 @@ public class NitroChannelHydrator {
                         locatorsToValuesBuilder.put(service.getLocator(), WIDTH_IDENT, service.getWidth().toString());
                         locatorsToValuesBuilder.put(service.getLocator(), HEIGHT_IDENT, service.getHeight().toString());
                     }
-                    locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
+                    if (service.getInteractive() != null) {
+                        locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
+                    }
                 }
             }
             locatorsToTargetInfo = locatorsToTargetInfoBuilder.build();
@@ -243,7 +251,9 @@ public class NitroChannelHydrator {
 
             for (YouviewMasterbrand masterbrand : masterbrands) {
                 if (!Strings.isNullOrEmpty(masterbrand.getName())) {
-                    masterbrandNamesToValuesBuilder.put(masterbrand.getName(), SHORT_NAME, masterbrand.getShortName());
+                    if (!Strings.isNullOrEmpty(masterbrand.getShortName())) {
+                        masterbrandNamesToValuesBuilder.put(masterbrand.getName(), SHORT_NAME, masterbrand.getShortName());
+                    }
 
                     if (!Strings.isNullOrEmpty(masterbrand.getImageIdent()) &&
                         masterbrand.getWidthIdent() != null &&

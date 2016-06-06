@@ -94,6 +94,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
                 version.setLastUpdated(now);
                 version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));
                 version.setBroadcasts(broadcasts.get(nitroVersion.getPid()));
+                version.setManifestedAs(encodings);
 
                 Optional<WarningTexts.WarningText> warningText = warningTextFrom(nitroVersion);
                 version.setRestriction(generateRestriction(warningText));

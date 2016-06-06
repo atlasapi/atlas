@@ -1,15 +1,6 @@
 package org.atlasapi.remotesite.channel4.epg;
 
-import static com.google.common.collect.Iterables.getOnlyElement;
-import static com.metabroadcast.common.time.DateTimeZones.UTC;
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-
 import java.util.List;
-
-import junit.framework.TestCase;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Brand;
@@ -24,13 +15,21 @@ import org.atlasapi.persistence.logging.SystemOutAdapterLog;
 import org.atlasapi.persistence.testing.StubContentResolver;
 import org.atlasapi.remotesite.channel4.C4BrandUpdater;
 import org.atlasapi.remotesite.channel4.RecordingContentWriter;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import junit.framework.TestCase;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.junit.Test;
+
+import static com.google.common.collect.Iterables.getOnlyElement;
+import static com.metabroadcast.common.time.DateTimeZones.UTC;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
 
 public class C4EpgBrandlessEntryProcessorTest extends TestCase {
 
@@ -114,19 +113,32 @@ public class C4EpgBrandlessEntryProcessorTest extends TestCase {
         
         C4EpgBrandlessEntryProcessor processor = new C4EpgBrandlessEntryProcessor(writer, resolver, brandUpdater, log);
         
-        processor.process(buildEntry().withLinks(ImmutableList.<String>of("http://api.channel4.com/programmes/gilmore-girls.atom")), CHANNEL_FOUR);
+        processor.process(buildEntry().withLinks(ImmutableList.of("http://api.channel4.com/programmes/gilmore-girls.atom")), CHANNEL_FOUR);
         
         Episode ep = Iterables.getOnlyElement(Iterables.filter(writer.updatedItems, Episode.class));
         Version v = Iterables.getOnlyElement(ep.getVersions());
         assertEquals(2, v.getBroadcasts().size());
-        
-        Broadcast b0 = Iterables.get(v.getBroadcasts(), 1);
-        Broadcast b1 = Iterables.get(v.getBroadcasts(), 0);
-        
-        assertEquals("c4:616", b1.getSourceId());
-        assertEquals(new DateTime(0, UTC), b1.getTransmissionTime());
 
-        assertEquals(new DateTime("2011-01-08T00:05:00.000Z"), b0.getTransmissionTime());
+        boolean firstBroadcastFound = false;
+        boolean secondBroadcastFound = false;
+
+        for (Broadcast broadcast : v.getBroadcasts()) {
+            if (broadcast.getSourceId().equals("c4:616")) {
+                assertThat(
+                        broadcast.getTransmissionTime(),
+                        is(new DateTime(0, UTC))
+                );
+                firstBroadcastFound = true;
+            } else if(broadcast.getSourceId().equals("c4:606")) {
+                assertThat(
+                        broadcast.getTransmissionTime(),
+                        is(new DateTime("2011-01-08T00:05:00.000Z") )
+                );
+                secondBroadcastFound = true;
+            }
+        }
+        assertThat(firstBroadcastFound, is(true));
+        assertThat(secondBroadcastFound, is(true));
     }
     
     private final Episode episode = new Episode("ep1", "ep1", Publisher.C4);

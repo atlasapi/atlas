@@ -1,9 +1,5 @@
 package org.atlasapi.remotesite.music.emipub;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.intl.Countries;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
@@ -11,6 +7,7 @@ import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.regex.Pattern;
+
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Location;
@@ -21,6 +18,12 @@ import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
+
+import com.metabroadcast.common.intl.Countries;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 /**
  */
@@ -67,7 +70,7 @@ public class EmiPubProcessor {
                     //
                     String right = Iterables.get(data, 9);
                     Float share = Float.parseFloat(Iterables.get(data, 11));
-                    Float currentShareForRight = currentRights.containsKey(right) ? currentRights.get(right) : 0;
+                    Float currentShareForRight = currentRights.getOrDefault(right, 0F);
                     currentRights.put(right, currentShareForRight + share);
                     currentWork = csv.readLine();
                 } else {

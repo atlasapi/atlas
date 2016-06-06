@@ -1,22 +1,18 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
-import com.google.common.base.Function;
+import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimaps;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.scheduling.ScheduledTask;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
-
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,19 +23,29 @@ public class ChannelIngestTask extends ScheduledTask {
     private static final Logger log = LoggerFactory.getLogger(ChannelIngestTask.class);
 
     private final NitroChannelAdapter channelAdapter;
-    private final NitroChannelHydrator hidrator;
+    private final NitroChannelHydrator hydrator;
     private final ChannelWriter channelWriter;
     private final ChannelResolver channelResolver;
 
-    private ChannelIngestTask(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver, NitroChannelHydrator hidrator) {
+    private ChannelIngestTask(
+            NitroChannelAdapter channelAdapter,
+            ChannelWriter channelWriter,
+            ChannelResolver channelResolver,
+            NitroChannelHydrator hydrator
+    ) {
         this.channelAdapter = checkNotNull(channelAdapter);
         this.channelWriter = checkNotNull(channelWriter);
         this.channelResolver = checkNotNull(channelResolver);
-        this.hidrator = checkNotNull(hidrator);
+        this.hydrator = checkNotNull(hydrator);
     }
 
-    public static ChannelIngestTask create(NitroChannelAdapter channelAdapter, ChannelWriter channelWriter, ChannelResolver channelResolver, NitroChannelHydrator hidrator) {
-        return new ChannelIngestTask(channelAdapter, channelWriter, channelResolver, hidrator);
+    public static ChannelIngestTask create(
+            NitroChannelAdapter channelAdapter,
+            ChannelWriter channelWriter,
+            ChannelResolver channelResolver,
+            NitroChannelHydrator hydrator
+    ) {
+        return new ChannelIngestTask(channelAdapter, channelWriter, channelResolver, hydrator);
     }
 
     @Override
@@ -47,24 +53,22 @@ public class ChannelIngestTask extends ScheduledTask {
         try {
             reportStatus("Fetching masterbrands");
             ImmutableSet<Channel> masterbrands = channelAdapter.fetchMasterbrands();
-            Iterable<Channel> filteredMasterBrands = hidrator.filterAndHydrateMasterbrands(masterbrands);
+            Iterable<Channel> filteredMasterBrands =
+                    hydrator.filterAndHydrateMasterbrands(masterbrands);
             reportStatus("Writing masterbrands");
             ImmutableMap.Builder<String, Channel> uriToId = ImmutableMap.builder();
             for (Channel channel : writeAndMergeChannels(filteredMasterBrands)) {
                 uriToId.put(channel.getUri(), channel);
             }
 
-
             reportStatus("Fetching channels");
             ImmutableSet<Channel> services = channelAdapter.fetchServices(uriToId.build());
-            Iterable<Channel> filteredServices = hidrator.filterAndHydrateServices(services);
+            Iterable<Channel> filteredServices = hydrator.filterAndHydrateServices(services);
             reportStatus("Writing channels");
             writeAndMergeChannels(filteredServices);
-
         } catch (GlycerinException e) {
             throw Throwables.propagate(e);
         }
-
     }
 
     private Iterable<Channel> writeAndMergeChannels(Iterable<Channel> channels) {
@@ -89,7 +93,11 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setRegional(channel.getRegional());
                     existingChannel.setTimeshift(channel.getTimeshift());
                     existingChannel.setGenres(channel.getGenres());
-                    existingChannel.setAvailableFrom(Sets.union(existingChannel.getAvailableFrom(), channel.getAvailableFrom()));
+                    existingChannel.setAvailableFrom(
+                            Sets.union(
+                                    existingChannel.getAvailableFrom(), channel.getAvailableFrom()
+                            )
+                    );
                     existingChannel.setShortDescription(channel.getShortDescription());
                     existingChannel.setMediumDescription(channel.getMediumDescription());
                     existingChannel.setLongDescription(channel.getLongDescription());

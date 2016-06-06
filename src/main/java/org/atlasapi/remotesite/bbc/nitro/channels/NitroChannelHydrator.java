@@ -224,15 +224,17 @@ public class NitroChannelHydrator {
         try {
             YouviewService[] services = MAPPER.readValue(new File(SERVICES_PATH), YouviewService[].class);
             for (YouviewService service : services) {
-                for (String targetRegion : service.getTargets()) {
-                    locatorsToTargetInfoBuilder.put(service.getLocator(), targetRegion);
+                if (!Strings.isNullOrEmpty(service.getLocator())) {
+                    for (String targetRegion : service.getTargets()) {
+                        locatorsToTargetInfoBuilder.put(service.getLocator(), targetRegion);
+                    }
+                    locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
+                    locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
+                    locatorsToValuesBuilder.put(service.getLocator(), IMAGE_IDENT, service.getImage());
+                    locatorsToValuesBuilder.put(service.getLocator(), WIDTH_IDENT, service.getWidth().toString());
+                    locatorsToValuesBuilder.put(service.getLocator(), HEIGHT_IDENT, service.getHeight().toString());
+                    locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
                 }
-                locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
-                locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
-                locatorsToValuesBuilder.put(service.getLocator(), IMAGE_IDENT, service.getImage());
-                locatorsToValuesBuilder.put(service.getLocator(), WIDTH_IDENT, service.getWidth().toString());
-                locatorsToValuesBuilder.put(service.getLocator(), HEIGHT_IDENT, service.getHeight().toString());
-                locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
             }
             locatorsToTargetInfo = locatorsToTargetInfoBuilder.build();
             locatorsToValues = locatorsToValuesBuilder.build();
@@ -240,13 +242,15 @@ public class NitroChannelHydrator {
             YouviewMasterbrand[] masterbrands = MAPPER.readValue(new File(MASTER_BRAND_PATH), YouviewMasterbrand[].class);
 
             for (YouviewMasterbrand masterbrand : masterbrands) {
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), SHORT_NAME, masterbrand.getShortName());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_IDENT, masterbrand.getImageIdent());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_IDENT, masterbrand.getHeightIdent().toString());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_IDENT, masterbrand.getWidthIdent().toString());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_DOG, masterbrand.getImageDog());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_DOG, masterbrand.getHeightDog().toString());
-                masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_DOG, masterbrand.getWidthDog().toString());
+                if (!Strings.isNullOrEmpty(masterbrand.getName())) {
+                    masterbrandNamesToValuesBuilder.put(masterbrand.getName(), SHORT_NAME, masterbrand.getShortName());
+                    masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_IDENT, masterbrand.getImageIdent());
+                    masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_IDENT, masterbrand.getHeightIdent().toString());
+                    masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_IDENT, masterbrand.getWidthIdent().toString());
+                    masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_DOG, masterbrand.getImageDog());
+                    masterbrandNamesToValuesBuilder.put(masterbrand.getName(), HEIGHT_DOG, masterbrand.getHeightDog().toString());
+                    masterbrandNamesToValuesBuilder.put(masterbrand.getName(), WIDTH_DOG, masterbrand.getWidthDog().toString());
+                }
             }
             masterbrandNamesToValues = masterbrandNamesToValuesBuilder.build();
         } catch (Exception e) {

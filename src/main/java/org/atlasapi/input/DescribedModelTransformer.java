@@ -77,6 +77,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
             result.setReviews(reviews(result.getPublisher(), inputContent.getReviews()));
         }
         result.setAwards(transformAwards(inputContent.getAwards()));
+        result.setPresentationChannel(inputContent.getPresentationChannel());
 
         return result;
     }

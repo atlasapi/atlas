@@ -245,7 +245,9 @@ public class NitroChannelHydrator {
                         locatorsToValuesBuilder.put(service.getLocator(), WIDTH_IDENT, service.getWidth().toString());
                         locatorsToValuesBuilder.put(service.getLocator(), HEIGHT_IDENT, service.getHeight().toString());
                     }
-                    locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
+                    if (service.getInteractive() != null) {
+                        locatorsToValuesBuilder.put(service.getLocator(), INTERACTIVE, service.getInteractive().toString());
+                    }
                 }
             }
             locatorsToTargetInfo = locatorsToTargetInfoBuilder.build();

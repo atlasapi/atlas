@@ -214,7 +214,7 @@ public class AtlasMain {
         metrics.registerAll(new JvmAttributeGaugeSet());
         try {
             final GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics)
-                    .prefixedWith(InetAddress.getLocalHost().getHostName())
+                    .prefixedWith("atlas-owl-api.".concat(InetAddress.getLocalHost().getHostName()))
                     .convertRatesTo(TimeUnit.SECONDS)
                     .convertDurationsTo(TimeUnit.MILLISECONDS)
                     .filter(MetricFilter.ALL)

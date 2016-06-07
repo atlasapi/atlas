@@ -170,7 +170,7 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>org.eclipse.jetty,com.codahale.metrics,com.google.guava</includeGroupIds>
+                            <includeGroupIds>org.eclipse.jetty,com.codahale.metrics,io.dropwizard.metrics,com.google.guava,org.slf4j,log4j</includeGroupIds>
                             <outputDirectory>target/atlas</outputDirectory>
                             <!-- See https://bugs.eclipse.org/bugs/show_bug.cgi?id=371954 and https://bugs.eclipse.org/bugs/show_bug.cgi?id=406753 for why we exclude some files -->
                             <excludes>META-INF/*.RSA,META-INF/*.DSA,META-INF/*.SF</excludes>

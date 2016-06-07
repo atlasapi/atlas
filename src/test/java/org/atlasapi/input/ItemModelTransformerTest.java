@@ -195,6 +195,14 @@ public class ItemModelTransformerTest {
 
     }
 
+    @Test
+    public void testTransformingPresentationChannel() {
+        simpleItem.setPresentationChannel("channel");
+        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
+        assertEquals("channel", complex.getPresentationChannel());
+
+    }
+
     public void testTransformItemWithEventRefs() {
         when(idCodec.decode("12345")).thenReturn(BigInteger.valueOf(12345));
         when(idCodec.decode("1234")).thenReturn(BigInteger.valueOf(1234));

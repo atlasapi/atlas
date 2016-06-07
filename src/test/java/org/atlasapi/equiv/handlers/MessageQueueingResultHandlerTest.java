@@ -1,9 +1,5 @@
 package org.atlasapi.equiv.handlers;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
 import java.util.List;
 import java.util.Map;
 import java.util.Properties;
@@ -11,8 +7,6 @@ import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicReference;
 
-import org.apache.log4j.Level;
-import org.apache.log4j.Logger;
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ReadableDescription;
@@ -27,47 +21,99 @@ import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage.AdjacentRef;
 import org.atlasapi.messaging.v3.JacksonMessageSerializer;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
 import org.atlasapi.messaging.v3.MessagingModule;
-import org.junit.Before;
-import org.junit.Test;
+
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.queue.MessageSerializer;
+import com.metabroadcast.common.queue.Worker;
+import com.metabroadcast.common.queue.kafka.KafkaConsumer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.queue.MessageSerializer;
-import com.metabroadcast.common.queue.Worker;
-import com.metabroadcast.common.queue.kafka.KafkaConsumer;
-import com.metabroadcast.common.queue.kafka.KafkaTestBase;
-
+import com.google.common.collect.Lists;
 import kafka.admin.AdminUtils;
+import kafka.server.KafkaConfig;
+import kafka.server.KafkaServer;
+import kafka.utils.SystemTime$;
 import kafka.utils.TestUtils;
+import kafka.utils.ZKStringSerializer$;
 import kafka.zk.EmbeddedZookeeper;
+import org.I0Itec.zkclient.ZkClient;
+import org.I0Itec.zkclient.serialize.ZkSerializer;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
 import scala.Option;
 import scala.collection.JavaConversions;
+import scala.collection.mutable.Buffer;
 
-public class MessageQueueingResultHandlerTest extends KafkaTestBase {
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
+
+public class MessageQueueingResultHandlerTest {
+
+    private static String topic = "EquivAssert";
+    private static String system = "AtlasOwlTest";
+    private static String namespacedTopic = system + topic;
+
+    private static EmbeddedZookeeper zkServer;
+    private static ZkClient zkClient;
+    private static List<KafkaServer> kafkaServers;
 
     private MessageQueueingResultHandler<Item> handler;
     private MessagingModule mm;
     private MessageSerializer<ContentEquivalenceAssertionMessage> serializer;
-    
-    private String topic = "EquivAssert";
-    private String system = "AtlasOwlTest";
-    private String namespacedTopic = system + topic;
+
+    @BeforeClass
+    public static void init() throws Exception {
+        String zkConnect = "127.0.0.1:" + TestUtils.choosePort();
+        zkServer = new EmbeddedZookeeper(zkConnect);
+        zkClient = createZkClient(zkConnect);
+
+        ImmutableList.Builder builder = ImmutableList.builder();
+        int port1 = TestUtils.choosePort();
+        Properties brokerConfig1 = TestUtils.createBrokerConfig(0, port1);
+        brokerConfig1.put("zookeeper.connect", zkConnect);
+        KafkaConfig config1 = new KafkaConfig(brokerConfig1);
+        builder.add(TestUtils.createServer(config1, SystemTime$.MODULE$));
+
+        int port2 = TestUtils.choosePort();
+        Properties brokerConfig2 = TestUtils.createBrokerConfig(1, port2);
+        brokerConfig2.put("zookeeper.connect", zkConnect);
+        KafkaConfig config2 = new KafkaConfig(brokerConfig2);
+        config2.props().props().put("zookeeper.connect", zkConnect);
+        builder.add(TestUtils.createServer(config2, SystemTime$.MODULE$));
+
+        kafkaServers = builder.build();
+
+        AdminUtils.createTopic(
+                zkClient, namespacedTopic, 2, 2, new Properties()
+        );
+        TestUtils.waitUntilMetadataIsPropagated(
+                JavaConversions.asScalaBuffer(kafkaServers), namespacedTopic, 0, 1000
+        );
+        TestUtils.waitUntilLeaderIsElectedOrChanged(
+                zkClient, namespacedTopic, 0, 500, Option.empty()
+        );
+    }
 
     @Before
     public void setup() throws Exception {
-        Logger.getRootLogger().setLevel(Level.FATAL);
-        Logger.getLogger("com.metabroadcast").setLevel(Level.TRACE);
-        super.setup();
-        EmbeddedZookeeper zkServer = super.zkServer();
-        mm = new KafkaMessagingModule(super.brokersString(), zkServer.connectString(), system, 100L, 1000L);
+        mm = new KafkaMessagingModule(
+                brokersString(),
+                zkServer.connectString(),
+                system,
+                100L,
+                1000L
+        );
         serializer = JacksonMessageSerializer.forType(ContentEquivalenceAssertionMessage.class);
         
         MessageSender<ContentEquivalenceAssertionMessage> sender
             = mm.messageSenderFactory().makeMessageSender(topic, serializer);
-        handler = new MessageQueueingResultHandler<Item>(sender, Publisher.all());
+        handler = new MessageQueueingResultHandler<>(sender, Publisher.all());
     }
 
     @Test
@@ -87,20 +133,13 @@ public class MessageQueueingResultHandlerTest extends KafkaTestBase {
         final AtomicReference<ContentEquivalenceAssertionMessage> message
             = new AtomicReference<ContentEquivalenceAssertionMessage>();
         
-        Worker<ContentEquivalenceAssertionMessage> worker
-            = new Worker<ContentEquivalenceAssertionMessage>() {
-                @Override
-                public void process(ContentEquivalenceAssertionMessage equivalenceAssertionMessage) {
-                    message.set(equivalenceAssertionMessage);
-                    latch.countDown();
-                }
-            };
+        Worker<ContentEquivalenceAssertionMessage> worker = equivalenceAssertionMessage -> {
+            message.set(equivalenceAssertionMessage);
+            latch.countDown();
+        };
             
-        AdminUtils.createTopic(zkClient(), namespacedTopic, 1, 2, new Properties());
-        TestUtils.waitUntilMetadataIsPropagated(JavaConversions.asScalaBuffer(kafkaServers()), namespacedTopic, 0, 5000);
-        TestUtils.waitUntilLeaderIsElectedOrChanged(zkClient(), namespacedTopic, 0, 500, Option.empty());
-        
-        KafkaConsumer consumer = (KafkaConsumer) mm.messageConsumerFactory().createConsumer(worker, serializer, topic, "Deserializer")
+        KafkaConsumer consumer = (KafkaConsumer) mm.messageConsumerFactory()
+                .createConsumer(worker, serializer, topic, "Deserializer")
                 .withDefaultConsumers(2)
                 .build();
         consumer.startAsync().awaitRunning(10, TimeUnit.SECONDS);
@@ -111,7 +150,8 @@ public class MessageQueueingResultHandlerTest extends KafkaTestBase {
         ContentEquivalenceAssertionMessage assertionMessage = message.get();
         
         assertThat(assertionMessage.getEntityId(), is("cyp"));
-        assertThat(assertionMessage.getEntityType(), is(subject.getClass().getSimpleName().toLowerCase()));
+        assertThat(assertionMessage.getEntityType(),
+                is(subject.getClass().getSimpleName().toLowerCase()));
         assertThat(assertionMessage.getEntitySource(), is(subject.getPublisher().key()));
 
         AdjacentRef adjRef = Iterables.getOnlyElement(assertionMessage.getAdjacent());
@@ -121,7 +161,32 @@ public class MessageQueueingResultHandlerTest extends KafkaTestBase {
         
         assertThat(ImmutableSet.copyOf(assertionMessage.getSources()), 
                 is(ImmutableSet.copyOf(Iterables.transform(Publisher.all(),Publisher.TO_KEY))));
-        
     }
 
+    @AfterClass
+    public static void cleanUp() throws Exception {
+        for (KafkaServer kafkaServer : kafkaServers) {
+            kafkaServer.shutdown();
+            kafkaServer.awaitShutdown();
+            Thread.sleep(1000);
+        }
+        zkClient.close();
+        zkServer.shutdown();
+    }
+
+    private static ZkClient createZkClient(String zkAddr) {
+        int sessTimeout = 6000;
+        int connTimeout = 6000;
+        ZkSerializer zkStringSerializer = ZKStringSerializer$.MODULE$;
+        ZkClient zkClient = new ZkClient(zkAddr, sessTimeout, connTimeout, zkStringSerializer);
+        zkClient.waitUntilConnected();
+        return zkClient;
+    }
+
+    private String brokersString() {
+        Buffer<KafkaConfig> cfgs = JavaConversions.asScalaBuffer(
+                Lists.transform(kafkaServers, KafkaServer::config)
+        );
+        return TestUtils.getBrokerListStrFromConfigs(cfgs);
+    }
 }

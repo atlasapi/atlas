@@ -45,23 +45,23 @@ public class AtlasMain {
     private static final int DEFAULT_SERVER_REQUEST_THREADS = 100;
     private static final String SERVER_REQUEST_THREAD_PREFIX = "api-request-thread";
     private static final int SERVER_ACCEPT_QUEUE_SIZE = 200;
-    
+
     private static final String SERVER_PORT_OVERRIDE_PROPERTY_NAME = "server.port";
     private static final int API_DEFAULT_PORT = 8080;
     private static final int PROCESSING_DEFAULT_PORT = 8282;
-    
+
     private static final int MONITORING_REQUEST_THREADS = 20;
     private static final String MONITORING_REQUEST_THREAD_PREFIX = "monitoring-request-thread";
     private static final int MONITORING_DEFAULT_PORT = 8081;
     private static final String MONITORING_PORT_OVERRIDE_PROPERTY_NAME = "monitoring.port";
-    
+
     public static final String CONTEXT_ATTRIBUTE = "ATLAS_MAIN";
     private static final String LOCAL_WAR_DIR = "./src/main/webapp";
 
     private static final boolean IS_PROCESSING = Boolean.parseBoolean(
-                                                    System.getProperty("processing.config")
-                                                 );
-    
+            System.getProperty("processing.config")
+    );
+
     private static final String SAMPLING_PERIOD_PROPERTY = "samplingPeriodMinutes";
     private static final int DEFAULT_SAMPLING_PERIOD_MINUTES = 3;
     public static final InetSocketAddress GRAPHITE_ADDRESS = new InetSocketAddress("graphite.mbst.tv", 2003);
@@ -77,7 +77,7 @@ public class AtlasMain {
     }
 
     public void start() throws Exception {
-       
+
         WebAppContext apiContext = createWebApp(warBase() + "/WEB-INF/web.xml", createApiServer());
         apiContext.setAttribute(CONTEXT_ATTRIBUTE, this);
         if (!IS_PROCESSING) {
@@ -92,7 +92,7 @@ public class AtlasMain {
         ctx.setDescriptor(descriptor);
         server.setHandler(ctx);
         server.start();
-        
+
         return ctx;
     }
 
@@ -113,59 +113,59 @@ public class AtlasMain {
             requestThreads = Integer.parseInt(requestThreadsString);
         }
 
-        return createServer(defaultPort(), SERVER_PORT_OVERRIDE_PROPERTY_NAME, requestThreads, 
+        return createServer(defaultPort(), SERVER_PORT_OVERRIDE_PROPERTY_NAME, requestThreads,
                 SERVER_ACCEPT_QUEUE_SIZE, SERVER_REQUEST_THREAD_PREFIX);
     }
 
     private Server createMonitoringServer() throws Exception {
         int defaultAcceptQueueSize = 0;
-        return createServer(MONITORING_DEFAULT_PORT, MONITORING_PORT_OVERRIDE_PROPERTY_NAME, 
+        return createServer(MONITORING_DEFAULT_PORT, MONITORING_PORT_OVERRIDE_PROPERTY_NAME,
                 MONITORING_REQUEST_THREADS, defaultAcceptQueueSize, MONITORING_REQUEST_THREAD_PREFIX);
     }
 
     private Server createServer(int defaultPort, String portPropertyName, int maxThreads,
-            int acceptQueueSize, String threadNamePrefix) {
-         
+                                int acceptQueueSize, String threadNamePrefix) {
+
         Server server = new Server(createRequestThreadPool(maxThreads, threadNamePrefix));
-        createServerConnector(server, createHttpConnectionFactory(), defaultPort, portPropertyName, 
+        createServerConnector(server, createHttpConnectionFactory(), defaultPort, portPropertyName,
                 acceptQueueSize);
 
         return server;
     }
-    
+
     private QueuedThreadPool createRequestThreadPool(int maxThreads, String threadNamePrefix) {
-        QueuedThreadPool pool = new InstrumentedQueuedThreadPool(metrics, getSamplingPeriod(), 
+        QueuedThreadPool pool = new InstrumentedQueuedThreadPool(metrics, getSamplingPeriod(),
                 maxThreads);
         pool.setName(threadNamePrefix);
-        
+
         return pool;
     }
 
     private void createServerConnector(Server server, HttpConnectionFactory connectionFactory,
-            int defaultPort, String portPropertyName, int acceptQueueSize) {
-        
+                                       int defaultPort, String portPropertyName, int acceptQueueSize) {
+
         int acceptors = Runtime.getRuntime().availableProcessors();
         Executor defaultExecutor = null;
         Scheduler defaultScheduler = null;
         ByteBufferPool defaultByteBufferPool = null;
         int selectors = 0;
-        
-        ServerConnector connector = new ServerConnector(server, defaultExecutor, defaultScheduler, 
+
+        ServerConnector connector = new ServerConnector(server, defaultExecutor, defaultScheduler,
                 defaultByteBufferPool, acceptors, selectors, connectionFactory);
-        
+
         connector.setPort(getPort(defaultPort, portPropertyName));
         connector.setAcceptQueueSize(acceptQueueSize);
-        server.setConnectors(new Connector[] { connector });
+        server.setConnectors(new Connector[]{connector});
     }
-    
+
     private HttpConnectionFactory createHttpConnectionFactory() {
         HttpConfiguration config = new HttpConfiguration();
         config.setRequestHeaderSize(8192);
         config.setResponseHeaderSize(1024);
-        
+
         return new HttpConnectionFactory(config);
     }
-    
+
     private int getPort(int defaultPort, String portProperty) {
         String customPort = System.getProperty(portProperty);
         if (customPort != null) {
@@ -173,7 +173,7 @@ public class AtlasMain {
         }
         return defaultPort;
     }
-    
+
     private int getSamplingPeriod() {
         String customSamplingDuration = System.getProperty(SAMPLING_PERIOD_PROPERTY);
         if (customSamplingDuration != null) {
@@ -193,7 +193,7 @@ public class AtlasMain {
         Class<? extends Object> clazz = atlasMain.getClass();
         if (clazz.getCanonicalName() != AtlasMain.class.getCanonicalName()) {
             throw new IllegalArgumentException("Parameter must be instance of "
-                + AtlasMain.class.getCanonicalName());
+                    + AtlasMain.class.getCanonicalName());
         }
 
         try {
@@ -225,5 +225,18 @@ public class AtlasMain {
         } catch (Exception e) {
             throw Throwables.propagate(e);
         }
+    }
+
+    public Map<String, String> getMetrics() {
+        DecimalFormat dpsFormat = new DecimalFormat("0.00");
+
+        Builder<String, String> metricsResults = ImmutableMap.builder();
+        for (Entry<String, Histogram> entry : metrics.getHistograms().entrySet()) {
+            metricsResults.put(entry.getKey() + "-mean", dpsFormat.format(entry.getValue().getSnapshot().getMean()));
+            metricsResults.put(entry.getKey() + "-max", Long.toString(entry.getValue().getSnapshot().getMax()));
+            metricsResults.put(entry.getKey() + "-99th", dpsFormat.format(entry.getValue().getSnapshot().get99thPercentile()));
+        }
+
+        return metricsResults.build();
     }
 }

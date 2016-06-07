@@ -54,7 +54,7 @@ public class ChannelIngestTask extends ScheduledTask {
             reportStatus("Fetching masterbrands");
             ImmutableSet<Channel> masterbrands = channelAdapter.fetchMasterbrands();
             Iterable<Channel> filteredMasterBrands =
-                    hydrator.filterAndHydrateMasterbrands(masterbrands);
+                    hydrator.hydrateMasterbrands(masterbrands);
             reportStatus("Writing masterbrands");
             ImmutableMap.Builder<String, Channel> uriToId = ImmutableMap.builder();
             for (Channel channel : writeAndMergeChannels(filteredMasterBrands)) {
@@ -63,7 +63,7 @@ public class ChannelIngestTask extends ScheduledTask {
 
             reportStatus("Fetching channels");
             ImmutableSet<Channel> services = channelAdapter.fetchServices(uriToId.build());
-            Iterable<Channel> filteredServices = hydrator.filterAndHydrateServices(services);
+            Iterable<Channel> filteredServices = hydrator.hydrateServices(services);
             reportStatus("Writing channels");
             writeAndMergeChannels(filteredServices);
         } catch (GlycerinException e) {

@@ -58,35 +58,8 @@ public class NitroChannelHydrator {
         populateTables();
     }
 
-    private static final Predicate<Channel> IN_SERVICE_TABLE = new Predicate<Channel>() {
-
-        @Override
-        public boolean apply(@Nullable Channel input) {
-            Optional<String> locator = getDvbLocator(input);
-            return locator.isPresent() && locatorsToTargetInfo.containsKey(locator.get());
-        }
-    };
-
-    private static final Predicate<Channel> IN_MASTERBRAND_TABLE = new Predicate<Channel>() {
-
-        @Override
-        public boolean apply(@Nullable Channel input) {
-            return masterbrandNamesToValues.containsRow(input.getTitle());
-        }
-    };
-
-    private Predicate<Channel> inServiceTable() {
-        return IN_SERVICE_TABLE;
-    }
-
-    private Predicate<Channel> inMasterbrandTable() {
-        return IN_MASTERBRAND_TABLE;
-    }
-
-    public Iterable<Channel> filterAndHydrateServices(Iterable<Channel> services) {
-        Iterable<Channel> filteredServices = Iterables.filter(services, inServiceTable());
-
-        for (Channel channel : filteredServices) {
+    public Iterable<Channel> hydrateServices(Iterable<Channel> services) {
+        for (Channel channel : services) {
             String dvbLocator = getDvbLocator(channel).get();
 
             channel.addAlias(
@@ -109,12 +82,11 @@ public class NitroChannelHydrator {
             );
         }
 
-        return filteredServices;
+        return services;
     }
 
-    public Iterable<Channel> filterAndHydrateMasterbrands(Iterable<Channel> masterbrands) {
-        Iterable<Channel> filteredMasterbrands = Iterables.filter(masterbrands, inMasterbrandTable());
-        for (Channel channel : filteredMasterbrands) {
+    public Iterable<Channel> hydrateMasterbrands(Iterable<Channel> masterbrands) {
+        for (Channel channel : masterbrands) {
             String name = channel.getTitle();
             channel.addAlias(
                     new Alias(
@@ -142,7 +114,7 @@ public class NitroChannelHydrator {
                 channel.addImage(iplayerDog);
             }
         }
-        return filteredMasterbrands;
+        return masterbrands;
     }
 
     private void overrideIdent(Channel channel, String name, Table<String, String, String> fields) {

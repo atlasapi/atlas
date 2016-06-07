@@ -539,6 +539,16 @@
             <groupId>com.metabroadcast.common.social</groupId>
             <artifactId>common-social</artifactId>
             <version>${common.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>com.codahale.metrics</groupId>
+                    <artifactId>metrics-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>com.codahale.metrics</groupId>
+                    <artifactId>metrics-jetty9</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.common.webapp</groupId>
@@ -639,12 +649,12 @@
        <dependency>
            <groupId>com.codahale.metrics</groupId>
            <artifactId>metrics-core</artifactId>
-           <version>3.0.1</version>
+           <version>3.0.2</version>
        </dependency>
        <dependency>
            <groupId>com.codahale.metrics</groupId>
            <artifactId>metrics-jetty9</artifactId>
-           <version>3.0.1</version>
+           <version>3.0.2</version>
        </dependency>
        <dependency>
            <groupId>net.sourceforge</groupId>
@@ -665,6 +675,21 @@
             <groupId>org.apache.commons</groupId>
             <artifactId>commons-csv</artifactId>
             <version>1.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-graphite</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-core</artifactId>
+            <version>3.1.2</version>
+        </dependency>
+        <dependency>
+            <groupId>io.dropwizard.metrics</groupId>
+            <artifactId>metrics-jvm</artifactId>
+            <version>3.1.2</version>
         </dependency>
     </dependencies>
     <properties>

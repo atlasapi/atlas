@@ -1,13 +1,27 @@
 package org.atlasapi;
 
 import java.io.File;
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.UnknownHostException;
 import java.security.ProtectionDomain;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
 
+import com.codahale.metrics.JvmAttributeGaugeSet;
+import com.codahale.metrics.MetricFilter;
+import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
+import com.codahale.metrics.jvm.BufferPoolMetricSet;
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import org.atlasapi.util.jetty.InstrumentedQueuedThreadPool;
 import org.eclipse.jetty.io.ByteBufferPool;
 import org.eclipse.jetty.server.Connector;
@@ -50,10 +64,11 @@ public class AtlasMain {
     
     private static final String SAMPLING_PERIOD_PROPERTY = "samplingPeriodMinutes";
     private static final int DEFAULT_SAMPLING_PERIOD_MINUTES = 3;
+    public static final InetSocketAddress GRAPHITE_ADDRESS = new InetSocketAddress("graphite.mbst.tv", 2003);
 
-    private final MetricRegistry metrics = new MetricRegistry();
+    public final MetricRegistry metrics = new MetricRegistry();
+    private final GraphiteReporter reporter = startGraphiteReporter();
 
-    
     public static void main(String[] args) throws Exception {
         if (IS_PROCESSING) {
             System.out.println(">>> Launching processing configuration");
@@ -171,19 +186,6 @@ public class AtlasMain {
         return IS_PROCESSING ? PROCESSING_DEFAULT_PORT : API_DEFAULT_PORT;
     }
 
-    public Map<String, String> getMetrics() {
-        DecimalFormat dpsFormat = new DecimalFormat("0.00");
-        
-        Builder<String, String> metricsResults = ImmutableMap.builder();
-        for (Entry<String, Histogram> entry : metrics.getHistograms().entrySet()) {
-            metricsResults.put(entry.getKey() + "-mean", dpsFormat.format(entry.getValue().getSnapshot().getMean()));
-            metricsResults.put(entry.getKey() + "-max", Long.toString(entry.getValue().getSnapshot().getMax()));
-            metricsResults.put(entry.getKey() + "-99th", dpsFormat.format(entry.getValue().getSnapshot().get99thPercentile()));
-        }
-        
-        return metricsResults.build();
-    }
-
     @SuppressWarnings("unchecked")
     public static Map<String, String> getMetrics(Object atlasMain)
             throws IllegalArgumentException,
@@ -200,6 +202,28 @@ public class AtlasMain {
             throw new IllegalArgumentException(
                     "Couldn't find method " + METRIC_METHOD_NAME + ": Perhaps a mismatch between AtlasMain objects across classloaders?",
                     e);
+        }
+    }
+
+    private GraphiteReporter startGraphiteReporter() {
+        metrics.registerAll(
+                new GarbageCollectorMetricSet(ManagementFactory.getGarbageCollectorMXBeans())
+        );
+        metrics.registerAll(new MemoryUsageGaugeSet());
+        metrics.registerAll(new ThreadStatesGaugeSet());
+        metrics.registerAll(new JvmAttributeGaugeSet());
+        try {
+            final GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics)
+                    .prefixedWith("atlas-owl-api.".concat(InetAddress.getLocalHost().getHostName()))
+                    .convertRatesTo(TimeUnit.SECONDS)
+                    .convertDurationsTo(TimeUnit.MILLISECONDS)
+                    .filter(MetricFilter.ALL)
+                    .build(new Graphite(GRAPHITE_ADDRESS));
+            reporter.start(30, TimeUnit.SECONDS);
+            System.out.println("Started Graphite reporter");
+            return reporter;
+        } catch (Exception e) {
+            throw Throwables.propagate(e);
         }
     }
 }

@@ -61,25 +61,29 @@ public class NitroChannelHydrator {
     public Iterable<Channel> hydrateServices(Iterable<Channel> services) {
         for (Channel channel : services) {
             String dvbLocator = getDvbLocator(channel).get();
-
-            channel.addAlias(
-                    new Alias(
-                            BBC_SERVICE_NAME_SHORT,
-                            locatorsToValues.get(dvbLocator, SHORT_NAME)
-                    )
-            );
+            if (locatorsToValues.contains(dvbLocator, SHORT_NAME)) {
+                channel.addAlias(
+                        new Alias(
+                                BBC_SERVICE_NAME_SHORT,
+                                locatorsToValues.get(dvbLocator, SHORT_NAME)
+                        )
+                );
+            }
 
             if (!Strings.isNullOrEmpty(locatorsToValues.get(dvbLocator, IMAGE_IDENT))) {
                 overrideIdent(channel, dvbLocator, locatorsToValues);
             }
 
-            channel.setTargetRegions(
-                    ImmutableSet.copyOf(locatorsToTargetInfo.get(dvbLocator))
-            );
-
-            channel.setInteractive(
-                    Boolean.parseBoolean(locatorsToValues.get(dvbLocator, INTERACTIVE))
-            );
+            if (locatorsToTargetInfo.containsKey(dvbLocator)) {
+                channel.setTargetRegions(
+                        ImmutableSet.copyOf(locatorsToTargetInfo.get(dvbLocator))
+                );
+            }
+            if (locatorsToValues.contains(dvbLocator, INTERACTIVE)) {
+                channel.setInteractive(
+                        Boolean.parseBoolean(locatorsToValues.get(dvbLocator, INTERACTIVE))
+                );
+            }
         }
 
         return services;
@@ -88,12 +92,14 @@ public class NitroChannelHydrator {
     public Iterable<Channel> hydrateMasterbrands(Iterable<Channel> masterbrands) {
         for (Channel channel : masterbrands) {
             String name = channel.getTitle();
-            channel.addAlias(
-                    new Alias(
-                            BBC_SERVICE_NAME_SHORT,
-                            masterbrandNamesToValues.get(name, SHORT_NAME)
-                    )
-            );
+            if (masterbrandNamesToValues.contains(name, SHORT_NAME)) {
+                channel.addAlias(
+                        new Alias(
+                                BBC_SERVICE_NAME_SHORT,
+                                masterbrandNamesToValues.get(name, SHORT_NAME)
+                        )
+                );
+            }
             if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_IDENT))) {
                 overrideIdent(channel, name, masterbrandNamesToValues);
             }
@@ -234,7 +240,7 @@ public class NitroChannelHydrator {
                     }
 
                     if (!Strings.isNullOrEmpty(masterbrand.getImageIdent()) &&
-                        masterbrand.getWidthIdent() != null &&
+                            masterbrand.getWidthIdent() != null &&
                             masterbrand.getHeightIdent() != null) {
 
                         masterbrandNamesToValuesBuilder.put(masterbrand.getName(), IMAGE_IDENT, masterbrand.getImageIdent());

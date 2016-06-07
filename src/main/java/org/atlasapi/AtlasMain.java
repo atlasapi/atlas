@@ -226,4 +226,17 @@ public class AtlasMain {
             throw Throwables.propagate(e);
         }
     }
+
+    public Map<String, String> getMetrics() {
+        DecimalFormat dpsFormat = new DecimalFormat("0.00");
+
+        Builder<String, String> metricsResults = ImmutableMap.builder();
+        for (Entry<String, Histogram> entry : metrics.getHistograms().entrySet()) {
+            metricsResults.put(entry.getKey() + "-mean", dpsFormat.format(entry.getValue().getSnapshot().getMean()));
+            metricsResults.put(entry.getKey() + "-max", Long.toString(entry.getValue().getSnapshot().getMax()));
+            metricsResults.put(entry.getKey() + "-99th", dpsFormat.format(entry.getValue().getSnapshot().get99thPercentile()));
+        }
+
+        return metricsResults.build();
+    }
 }

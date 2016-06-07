@@ -210,11 +210,13 @@ public class BbcNitroModule {
     }
 
     @Bean
-    PidUpdateController pidUpdateController() {
+    NitroForceUpdateController pidUpdateController() {
         Glycerin glycerin = glycerin(null);
-        return new PidUpdateController(
+        return new NitroForceUpdateController(
                 nitroContentAdapter(glycerin),
+                nitroChannelAdapter(glycerin),
                 contentWriter(),
+                channelWriter,
                 localOrRemoteNitroFetcher(
                         glycerin,
                         Optional.of(Predicates.alwaysTrue()),

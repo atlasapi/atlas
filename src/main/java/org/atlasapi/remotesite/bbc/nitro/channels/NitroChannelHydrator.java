@@ -60,67 +60,90 @@ public class NitroChannelHydrator {
 
     public Iterable<Channel> hydrateServices(Iterable<Channel> services) {
         for (Channel channel : services) {
-            String dvbLocator = getDvbLocator(channel).get();
-            if (locatorsToValues.contains(dvbLocator, SHORT_NAME)) {
-                channel.addAlias(
-                        new Alias(
-                                BBC_SERVICE_NAME_SHORT,
-                                locatorsToValues.get(dvbLocator, SHORT_NAME)
-                        )
-                );
-            }
-
-            if (!Strings.isNullOrEmpty(locatorsToValues.get(dvbLocator, IMAGE_IDENT))) {
-                overrideIdent(channel, dvbLocator, locatorsToValues);
-            }
-
-            if (locatorsToTargetInfo.containsKey(dvbLocator)) {
-                channel.setTargetRegions(
-                        ImmutableSet.copyOf(locatorsToTargetInfo.get(dvbLocator))
-                );
-            }
-            if (locatorsToValues.contains(dvbLocator, INTERACTIVE)) {
-                channel.setInteractive(
-                        Boolean.parseBoolean(locatorsToValues.get(dvbLocator, INTERACTIVE))
+            try {
+                hydrateService(channel);
+            } catch (Exception e) {
+                log.error(
+                        "Failed to hydrate service {} - {}",
+                        channel.getUri(),
+                        Throwables.getStackTraceAsString(e)
                 );
             }
         }
-
         return services;
+    }
+
+    private void hydrateService(Channel channel) {
+        String dvbLocator = getDvbLocator(channel).get();
+        if (locatorsToValues.contains(dvbLocator, SHORT_NAME)) {
+            channel.addAlias(
+                    new Alias(
+                            BBC_SERVICE_NAME_SHORT,
+                            locatorsToValues.get(dvbLocator, SHORT_NAME)
+                    )
+            );
+        }
+
+        if (!Strings.isNullOrEmpty(locatorsToValues.get(dvbLocator, IMAGE_IDENT))) {
+            overrideIdent(channel, dvbLocator, locatorsToValues);
+        }
+
+        if (locatorsToTargetInfo.containsKey(dvbLocator)) {
+            channel.setTargetRegions(
+                    ImmutableSet.copyOf(locatorsToTargetInfo.get(dvbLocator))
+            );
+        }
+        if (locatorsToValues.contains(dvbLocator, INTERACTIVE)) {
+            channel.setInteractive(
+                    Boolean.parseBoolean(locatorsToValues.get(dvbLocator, INTERACTIVE))
+            );
+        }
     }
 
     public Iterable<Channel> hydrateMasterbrands(Iterable<Channel> masterbrands) {
         for (Channel channel : masterbrands) {
-            String name = channel.getTitle();
-            if (masterbrandNamesToValues.contains(name, SHORT_NAME)) {
-                channel.addAlias(
-                        new Alias(
-                                BBC_SERVICE_NAME_SHORT,
-                                masterbrandNamesToValues.get(name, SHORT_NAME)
-                        )
+            try {
+                hydrateMasterbrand(channel);
+            } catch (Exception e) {
+                log.error(
+                        "Failed to hydrate masterbrand {} - {}",
+                        channel.getUri(),
+                        Throwables.getStackTraceAsString(e)
                 );
-            }
-            if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_IDENT))) {
-                overrideIdent(channel, name, masterbrandNamesToValues);
-            }
-
-            if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_DOG))) {
-                overrideDog(channel, name, masterbrandNamesToValues);
-            } else {
-                log.info("Adding iplayer image for {}", channel.getCanonicalUri());
-                Image iplayerDog = new Image(IPLAYER_LOGO);
-                iplayerDog.setHeight(1024);
-                iplayerDog.setWidth(169);
-                iplayerDog.setAliases(
-                        ImmutableSet.of(
-                                new Alias(BBC_IMAGE_TYPE, DOG),
-                                new Alias(BBC_IMAGE_TYPE, OVERRIDE)
-                        )
-                );
-                channel.addImage(iplayerDog);
             }
         }
         return masterbrands;
+    }
+
+    private void hydrateMasterbrand(Channel channel) {
+        String name = channel.getTitle();
+        if (masterbrandNamesToValues.contains(name, SHORT_NAME)) {
+            channel.addAlias(
+                    new Alias(
+                            BBC_SERVICE_NAME_SHORT,
+                            masterbrandNamesToValues.get(name, SHORT_NAME)
+                    )
+            );
+        }
+        if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_IDENT))) {
+            overrideIdent(channel, name, masterbrandNamesToValues);
+        }
+
+        if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_DOG))) {
+            overrideDog(channel, name, masterbrandNamesToValues);
+        } else {
+            log.info("Adding iplayer image for {}", channel.getCanonicalUri());
+            Image iplayerDog = new Image(IPLAYER_LOGO);
+            iplayerDog.setHeight(1024);
+            iplayerDog.setWidth(169);
+            iplayerDog.setAliases(
+                    ImmutableSet.of(
+                            new Alias(BBC_IMAGE_TYPE, DOG),
+                            new Alias(BBC_IMAGE_TYPE, OVERRIDE)
+                    )
+            );
+            channel.addImage(iplayerDog);
+        }
     }
 
     private void overrideIdent(Channel channel, String name, Table<String, String, String> fields) {

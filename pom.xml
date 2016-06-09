@@ -559,20 +559,6 @@
             <groupId>com.metabroadcast.common.webapp</groupId>
             <artifactId>common-webapp</artifactId>
             <version>${common.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-aop</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-context-support</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>org.springframework</groupId>
-                    <artifactId>spring-aspects</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.common.ingest</groupId>
@@ -659,12 +645,6 @@
 	       <groupId>com.google.gdata</groupId>
 	       <artifactId>core</artifactId>
 	       <version>1.47.1</version>
-           <exclusions>
-               <exclusion>
-                   <groupId>org.mortbay.jetty</groupId>
-                   <artifactId>servlet-api</artifactId>
-               </exclusion>
-           </exclusions>
 	   </dependency>
 	   <dependency>
 	       <groupId>com.google.apis</groupId>

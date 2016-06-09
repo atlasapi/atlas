@@ -16,6 +16,7 @@ import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.AvailabilityOf;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.Format;
@@ -31,8 +32,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import org.hamcrest.Matchers;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
-import org.junit.Assert;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.mockito.Mockito;
@@ -316,6 +318,101 @@ public class NitroEpisodeExtractorTest {
     }
 
     @Test
+    public void versionsWithNullDurationsAreIgnored() throws Exception {
+        Episode tli = new Episode();
+        tli.setPid("b012cl84");
+        tli.setTitle("Fubar");
+
+        AvailableVersions availableVersions = new AvailableVersions();
+
+        String withDurationPid = "p02ccx71";
+        String withoutDurationPid = "p02ccx72";
+
+        AvailableVersions.Version withDuration = makeVersion(withDurationPid);
+
+        AvailableVersions.Version withoutDuration = makeVersion(withoutDurationPid);
+        withoutDuration.setDuration(null);
+
+        availableVersions.getVersion().add(withDuration);
+        availableVersions.getVersion().add(withoutDuration);
+
+        tli.setAvailableVersions(availableVersions);
+
+        Item extracted = extractor.extract(NitroItemSource.valueOf(
+                tli,
+                ImmutableList.of())
+        );
+
+        Set<org.atlasapi.media.entity.Version> versions = extracted.getVersions();
+        assertThat(versions.size(), is(1));
+
+        org.atlasapi.media.entity.Version version = versions.iterator().next();
+        assertThat(version.getCanonicalUri(), endsWith(withDurationPid));
+    }
+
+    private AvailableVersions.Version makeVersion(String pid) throws DatatypeConfigurationException {
+        DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+
+        AvailableVersions.Version version = new AvailableVersions.Version();
+
+        version.setPid(pid);
+        version.setDuration(datatypeFactory.newDuration(VERSION_DURATION.getMillis()));
+
+        AvailableVersions.Version.Availabilities availabilities =
+                new AvailableVersions.Version.Availabilities();
+
+        AvailableVersions.Version.Availabilities.Availability availability =
+                new AvailableVersions.Version.Availabilities.Availability();
+
+        DateTime start = DateTime.now(DateTimeZone.UTC);
+        DateTime end = start.plusHours(2);
+
+        availability.setScheduledStart(datatypeFactory.newXMLGregorianCalendar(
+                start.getYear(),
+                start.getMonthOfYear(),
+                start.getDayOfMonth(),
+                start.getHourOfDay(),
+                start.getMinuteOfHour(),
+                start.getSecondOfMinute(),
+                start.getMillisOfSecond(),
+                0
+        ));
+
+        availability.setScheduledStart(datatypeFactory.newXMLGregorianCalendar(
+                end.getYear(),
+                end.getMonthOfYear(),
+                end.getDayOfMonth(),
+                end.getHourOfDay(),
+                end.getMinuteOfHour(),
+                end.getSecondOfMinute(),
+                end.getMillisOfSecond(),
+                0
+        ));
+
+        AvailableVersions.Version.Availabilities.Availability.MediaSets mediaSets =
+                new AvailableVersions.Version.Availabilities.Availability.MediaSets();
+
+        AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet iptvAll =
+                new AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet();
+        iptvAll.setName("iptv-all");
+
+        AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet iptvSd =
+                new AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet();
+        iptvSd.setName("iptv-sd");
+
+        mediaSets.getMediaSet().add(iptvAll);
+        mediaSets.getMediaSet().add(iptvSd);
+
+        availability.setMediaSets(mediaSets);
+
+        availabilities.getAvailableVersionsAvailability()
+                .add(availability);
+        version.getAvailabilities().add(availabilities);
+
+        return version;
+    }
+
+    @Test
     public void testMediaTypeIsProperlySet() {
         Episode audioEpisode = new Episode();
         audioEpisode.setPid("b012cl84");
@@ -327,7 +424,7 @@ public class NitroEpisodeExtractorTest {
                 ImmutableList.<Broadcast>of()
         ));
 
-        Assert.assertEquals(MediaType.AUDIO, audioExtracted.getMediaType());
+        assertEquals(MediaType.AUDIO, audioExtracted.getMediaType());
 
         Episode videoEpisode = new Episode();
         videoEpisode.setPid("b012cl84");
@@ -339,7 +436,7 @@ public class NitroEpisodeExtractorTest {
                 ImmutableList.<Broadcast>of()
         ));
 
-        Assert.assertEquals(MediaType.VIDEO, videoExtracted.getMediaType());
+        assertEquals(MediaType.VIDEO, videoExtracted.getMediaType());
     }
 
     private ProgrammeFormats filmFormatsType() {

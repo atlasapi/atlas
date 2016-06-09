@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
@@ -69,7 +70,16 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
 
         AvailableVersions nitroVersions = extractVersions(source);
         if (nitroVersions != null) {
-            for (AvailableVersions.Version nitroVersion : nitroVersions.getVersion()) {
+
+            // Versions without durations are basically invalid Nitro data. They aren't playable
+            // and only cause issues down the line, so we don't ingest them. These usually get
+            // fixed at some point by the beeb, so the next ingest job will pick them up.
+            Iterable<AvailableVersions.Version> eligibleVersions = nitroVersions.getVersion()
+                    .stream()
+                    .filter(v -> v.getDuration() != null)
+                    .collect(Collectors.toList());
+
+            for (AvailableVersions.Version nitroVersion : eligibleVersions) {
 
                 String mediaType = extractMediaType(source);
 
@@ -87,9 +97,7 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
 
                 Version version = new Version();
 
-                if (nitroVersion.getDuration() != null) {
-                    version.setDuration(convertDuration(nitroVersion.getDuration()));
-                }
+                version.setDuration(convertDuration(nitroVersion.getDuration()));
 
                 version.setLastUpdated(now);
                 version.setCanonicalUri(BbcFeeds.nitroUriForPid(nitroVersion.getPid()));

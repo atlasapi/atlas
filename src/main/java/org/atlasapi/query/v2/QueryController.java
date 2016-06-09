@@ -162,7 +162,12 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
                     errorViewFor(request, response, AtlasErrorSummary.forException(e));
                 } catch (IOException e1) {
                     throw Throwables.propagate(e1);
+                } finally {
+                    asyncCtxt.complete();
                 }
+            }
+            finally {
+                asyncCtxt.complete();
             }
         });
 	}

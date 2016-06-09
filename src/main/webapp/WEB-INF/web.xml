@@ -21,6 +21,7 @@
                org.atlasapi.ConfigurableAnnotationWebApplicationContext
             </param-value>
         </init-param>
+        <async-supported>true</async-supported>
     </servlet>
 
     <servlet-mapping>
@@ -40,6 +41,7 @@
     <filter>
        <filter-name>cors</filter-name>
        <filter-class>org.atlasapi.query.CorsFilter</filter-class>
+        <async-supported>true</async-supported>
     </filter>
     <filter-mapping>
        <filter-name>cors</filter-name>

@@ -95,7 +95,7 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 	
 	@RequestMapping(value="/3.0/content.*",method=RequestMethod.GET)
 	public void content(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        AsyncContext asyncCtxt = request.startAsync(request, response);
+        AsyncContext asyncCtxt = request.startAsync();
         asyncCtxt.start(() -> {
             try {
                 ContentQuery filter;

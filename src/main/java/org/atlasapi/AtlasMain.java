@@ -41,7 +41,7 @@ public class AtlasMain {
     private static final String SERVER_REQUEST_THREADS_OVERRIDE_PROPERTY_NAME = "request.threads";
     private static final int DEFAULT_SERVER_REQUEST_THREADS = 100;
     private static final String SERVER_REQUEST_THREAD_PREFIX = "api-request-thread";
-    private static final int SERVER_ACCEPT_QUEUE_SIZE = 200;
+    private static final int SERVER_ACCEPT_QUEUE_SIZE = 500;
 
     private static final String SERVER_PORT_OVERRIDE_PROPERTY_NAME = "server.port";
     private static final int API_DEFAULT_PORT = 8080;

@@ -5,6 +5,7 @@ import java.text.MessageFormat;
 import java.util.Set;
 
 import javax.annotation.Nullable;
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -88,6 +89,9 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             @Nullable @RequestParam(value = "channel_id", required = false) String channelId,
             @Nullable @RequestParam(required = false) String publisher,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
+        AsyncContext asyncCtxt = request.startAsync(request, response);
+        request = (HttpServletRequest) asyncCtxt.getRequest();
+        response = (HttpServletResponse) asyncCtxt.getResponse();
         try {
             Maybe<ApplicationConfiguration> requestedConfig;
             try {

@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.servlet.AsyncContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -79,17 +80,26 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     
     @RequestMapping(value = {"/2.0/*.*"})
     public void onePointZero(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        AsyncContext asyncCtxt = request.startAsync(request, response);
+        request = (HttpServletRequest) asyncCtxt.getRequest();
+        response = (HttpServletResponse) asyncCtxt.getResponse();
         outputter.writeError(request, response, UNSUPPORTED);
     }
 	
 	@RequestMapping("/3.0/discover.*")
 	public void discover(HttpServletRequest request, HttpServletResponse response) throws IOException {
-	    outputter.writeError(request, response, UNSUPPORTED);
+        AsyncContext asyncCtxt = request.startAsync(request, response);
+        request = (HttpServletRequest) asyncCtxt.getRequest();
+        response = (HttpServletResponse) asyncCtxt.getResponse();
+        outputter.writeError(request, response, UNSUPPORTED);
 	}
 	
 	@RequestMapping(value="/3.0/content.*",method=RequestMethod.GET)
 	public void content(HttpServletRequest request, HttpServletResponse response) throws IOException {
-		try {
+        AsyncContext asyncCtxt = request.startAsync(request, response);
+        request = (HttpServletRequest) asyncCtxt.getRequest();
+        response = (HttpServletResponse) asyncCtxt.getResponse();
+        try {
             ContentQuery filter;
             try {
                 filter = builder.build(request);
@@ -149,7 +159,6 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             }
 	            
 	        throw new IllegalArgumentException("Must specify content uri(s) or id(s) or alias(es)");
-			
 		} catch (Exception e) {
 			errorViewFor(request, response, AtlasErrorSummary.forException(e));
 		}
@@ -202,6 +211,9 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
     public Void postContent(HttpServletRequest req, HttpServletResponse resp) {
+        AsyncContext asyncCtxt = req.startAsync(req, resp);
+        req = (HttpServletRequest) asyncCtxt.getRequest();
+        resp = (HttpServletResponse) asyncCtxt.getResponse();
         return contentWriteController.postContent(req, resp);
     }
 

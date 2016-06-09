@@ -14,14 +14,14 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query.v2;
 
-import java.io.IOException;
-import java.util.Iterator;
-import java.util.List;
-
-import javax.servlet.AsyncContext;
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
@@ -40,13 +40,12 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import javax.servlet.AsyncContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Iterator;
+import java.util.List;
 
 @Controller
 public class QueryController extends BaseController<QueryResult<Identified, ? extends Identified>> {
@@ -97,71 +96,75 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 	@RequestMapping(value="/3.0/content.*",method=RequestMethod.GET)
 	public void content(HttpServletRequest request, HttpServletResponse response) throws IOException {
         AsyncContext asyncCtxt = request.startAsync(request, response);
-        request = (HttpServletRequest) asyncCtxt.getRequest();
-        response = (HttpServletResponse) asyncCtxt.getResponse();
-        try {
-            ContentQuery filter;
+        asyncCtxt.start(() -> {
             try {
-                filter = builder.build(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-                errorViewFor(request, response, AtlasErrorSummary.forException(ex));
-                return;
-            }
-			
-			List<String> uris = getUriList(request);
-			if(!uris.isEmpty()) {
-			    modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executeUriQuery(uris, filter).values()),Identified.class)),filter.getConfiguration());
-			    return;
-			}
-			
-		    List<String> ids = getIdList(request);
-		    if(!ids.isEmpty()) {
-		        modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executeIdQuery(decode(ids), filter).values()),Identified.class)),filter.getConfiguration());
-		        return;
-		    }
-		    
-	        List<String> values = getAliasValueList(request);
-	        if (!values.isEmpty()) {
-	            String namespace = getAliasNamespace(request);
-	            modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executeAliasQuery(Optional.fromNullable(namespace), values, filter).values()),Identified.class)),filter.getConfiguration());
-	            return;
-	        }
-	        
-	        String publisher = request.getParameter("publisher");
-	        
-	        if (publisher != null) {
-	            // Only a single publisher is supported, since it's the requirement and 
-	            // is the most efficient index to build
-    	        List<Publisher> publishers = ImmutableList.of(Publisher.fromKey(publisher).requireValue());
-    	        
-                for (Publisher pub : publishers) {
-                    if (!filter.getConfiguration().isEnabled(pub)) {
-                        errorViewFor(request, response, FORBIDDEN);
-                        return;
-                    }
+                ContentQuery filter;
+                try {
+                    filter = builder.build(request);
+                } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                    errorViewFor(request, response, AtlasErrorSummary.forException(ex));
+                    return;
                 }
-                modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executePublisherQuery(publishers, filter).values()),Identified.class)),filter.getConfiguration());
-                return;
-	        }
 
-            List<String> eventIds = getEventRefIds(request);
+                List<String> uris = getUriList(request);
+                if(!uris.isEmpty()) {
+                    modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executeUriQuery(uris, filter).values()),Identified.class)),filter.getConfiguration());
+                    return;
+                }
 
-            if(!eventIds.isEmpty()) {
-                modelAndViewFor(
-                        request,
-                        response,
-                        QueryResult.of(Iterables.filter(
-                                iterable(contentLister.contentForEvent(
-                                        ImmutableList.copyOf(decode(eventIds)), filter)),
-                                Identified.class)),
-                        filter.getConfiguration());
-                return;
+                List<String> ids = getIdList(request);
+                if(!ids.isEmpty()) {
+                    modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executeIdQuery(decode(ids), filter).values()),Identified.class)),filter.getConfiguration());
+                    return;
+                }
+
+                List<String> values = getAliasValueList(request);
+                if (!values.isEmpty()) {
+                    String namespace = getAliasNamespace(request);
+                    modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executeAliasQuery(Optional.fromNullable(namespace), values, filter).values()),Identified.class)),filter.getConfiguration());
+                    return;
+                }
+
+                String publisher = request.getParameter("publisher");
+
+                if (publisher != null) {
+                    // Only a single publisher is supported, since it's the requirement and
+                    // is the most efficient index to build
+                    List<Publisher> publishers = ImmutableList.of(Publisher.fromKey(publisher).requireValue());
+
+                    for (Publisher pub : publishers) {
+                        if (!filter.getConfiguration().isEnabled(pub)) {
+                            errorViewFor(request, response, FORBIDDEN);
+                            return;
+                        }
+                    }
+                    modelAndViewFor(request, response, QueryResult.of(Iterables.filter(Iterables.concat(executor.executePublisherQuery(publishers, filter).values()),Identified.class)),filter.getConfiguration());
+                    return;
+                }
+
+                List<String> eventIds = getEventRefIds(request);
+
+                if(!eventIds.isEmpty()) {
+                    modelAndViewFor(
+                            request,
+                            response,
+                            QueryResult.of(Iterables.filter(
+                                    iterable(contentLister.contentForEvent(
+                                            ImmutableList.copyOf(decode(eventIds)), filter)),
+                                    Identified.class)),
+                            filter.getConfiguration());
+                    return;
+                }
+
+                throw new IllegalArgumentException("Must specify content uri(s) or id(s) or alias(es)");
+            } catch (Exception e) {
+                try {
+                    errorViewFor(request, response, AtlasErrorSummary.forException(e));
+                } catch (IOException e1) {
+                    throw Throwables.propagate(e1);
+                }
             }
-	            
-	        throw new IllegalArgumentException("Must specify content uri(s) or id(s) or alias(es)");
-		} catch (Exception e) {
-			errorViewFor(request, response, AtlasErrorSummary.forException(e));
-		}
+        });
 	}
 
     private Iterable<Long> decode(List<String> ids) {
@@ -211,9 +214,6 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
     public Void postContent(HttpServletRequest req, HttpServletResponse resp) {
-        AsyncContext asyncCtxt = req.startAsync(req, resp);
-        req = (HttpServletRequest) asyncCtxt.getRequest();
-        resp = (HttpServletResponse) asyncCtxt.getResponse();
         return contentWriteController.postContent(req, resp);
     }
 

@@ -3,11 +3,11 @@ package org.atlasapi.remotesite.bbc.nitro;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Item;
@@ -18,7 +18,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
-import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
 import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHydrator;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
@@ -27,7 +26,6 @@ import org.atlasapi.util.GroupLock;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -217,19 +215,9 @@ public class BbcNitroModule {
     }
 
     private Supplier<ImmutableSet<Channel>> bbcChannelSupplier() {
-
-        return () -> ImmutableSet.copyOf(BbcIonServices.services.values()
-                .stream()
-                .map(uri -> {
-                    Maybe<Channel> channelMaybe = channelResolver.fromUri(uri);
-                    if (!channelMaybe.hasValue()) {
-                        log.error("Did not resolve channel for uri: {}", uri);
-                    }
-                    return channelMaybe;
-                })
-                .filter(Maybe::hasValue)
-                .map(Maybe::requireValue)
-                .collect(Collectors.toList()));
+        return () -> ImmutableSet.copyOf(channelResolver.allChannels(ChannelQuery.builder()
+                .withPublisher(Publisher.BBC_NITRO)
+                .build()));
     }
     
     

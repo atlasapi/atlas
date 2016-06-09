@@ -7,6 +7,7 @@ import java.util.concurrent.ThreadFactory;
 import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Item;
@@ -17,7 +18,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
-import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
 import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHydrator;
 import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
@@ -32,14 +32,12 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.time.DayOfWeek;
 import com.metabroadcast.common.time.SystemClock;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
@@ -211,20 +209,9 @@ public class BbcNitroModule {
     }
 
     private Supplier<ImmutableSet<Channel>> bbcChannelSupplier() {
-        return new Supplier<ImmutableSet<Channel>>() {
-            //TODO: really need that alias for bbc services...
-            @Override
-            public ImmutableSet<Channel> get() {
-                return ImmutableSet.copyOf(Iterables.transform(BbcIonServices.services.values(),
-                    new Function<String, Channel>() {
-                        @Override
-                        public Channel apply(String input) {
-                            return channelResolver.fromUri(input).requireValue();
-                        }
-                    }
-                ));
-            }
-        };
+        return () -> ImmutableSet.copyOf(channelResolver.allChannels(ChannelQuery.builder()
+                .withPublisher(Publisher.BBC_NITRO)
+                .build()));
     }
     
     

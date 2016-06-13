@@ -39,6 +39,8 @@ import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ingest.monitorclient.IngestMonitorClient;
+import com.metabroadcast.common.ingest.monitorclient.config.IngesterConfiguration;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.persistence.MongoTestHelper;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
@@ -88,7 +90,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 	private final ServiceResolver serviceResolver = mock(ServiceResolver.class);
     private final PlayerResolver playerResolver = mock(PlayerResolver.class);
     private final PersistenceAuditLog persistenceAuditLog = new NoLoggingPersistenceAuditLog();
-    
+
 	private ChannelResolver channelResolver;
 	private ContentBuffer contentBuffer;
 	private MessageSender<ScheduleUpdateMessage> ms = new MessageSender<ScheduleUpdateMessage>(){
@@ -261,14 +263,19 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
     }
 
     static class TestPaProgrammeUpdater extends PaBaseProgrammeUpdater {
-
         private List<File> files;
 
         public TestPaProgrammeUpdater(PaProgDataProcessor processor, ChannelResolver channelResolver, AdapterLog log,
                 MongoScheduleStore scheduleWriter, List<File> files, BroadcastTrimmer trimmer,
                 PaScheduleVersionStore scheduleVersionStore, ContentBuffer contentBuffer, ContentWriter contentWriter) {
-
-            super(MoreExecutors.sameThreadExecutor(), new PaChannelProcessor(processor, trimmer, scheduleWriter, scheduleVersionStore, contentBuffer, contentWriter),
+            super(MoreExecutors.sameThreadExecutor(), new PaChannelProcessor(processor, trimmer, scheduleWriter, scheduleVersionStore, contentBuffer, contentWriter,
+                    new IngestMonitorClient(IngesterConfiguration.builder().
+                            environment(IngesterConfiguration.Environment.STAGE)
+                            .key("key")
+                            .monitorUri("http://ingest-monitor-stage.mbst.tv/1/ingests")
+                            .name("name")
+                            .publisher(ImmutableList.of("pressassociation.com"))
+                            .build())),
                     new DefaultPaProgrammeDataStore(TMP_TEST_DIRECTORY, null), channelResolver, Optional.fromNullable(scheduleVersionStore));
             this.files = files;
         }

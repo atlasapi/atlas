@@ -9,15 +9,7 @@ import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.channel4.epg.BroadcastTrimmer;
-import org.joda.time.DateTime;
-import org.joda.time.Interval;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -25,6 +17,15 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.metabroadcast.common.time.DateTimeZones;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import org.joda.time.DateTime;
+import org.joda.time.Interval;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * <p>
@@ -42,7 +43,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     
     private static final Integer MAX_PAGE_SIZE = 300;
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private static final Logger log = LoggerFactory.getLogger(NitroScheduleDayUpdater.class);
 
     private final Glycerin glycerin;
     private final NitroBroadcastHandler<? extends List<Optional<ItemRefAndBroadcast>>> broadcastHandler;
@@ -62,7 +63,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         String serviceId = BbcIonServices.services.inverse().get(channelDay.getChannel().getUri());
         DateTime from = channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZones.UTC);
         DateTime to = from.plusDays(1);
-        log.debug("updating {}: {} -> {}", new Object[]{serviceId, from, to});
+        log.debug("updating {}: {} -> {}", serviceId, from, to);
         
         ImmutableList<Broadcast> broadcasts = getBroadcasts(serviceId, from, to);
         ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(broadcasts);
@@ -71,7 +72,15 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         int processedCount = Iterables.size(Optional.presentInstances(processingResults));
         int failedCount = processingResults.size() - processedCount;
 
-        log.debug("updated {}: {} -> {}: {} broadcasts ({} failed)", new Object[]{serviceId, from, to, processedCount, failedCount});
+        log.debug(
+                "updated {}: {} -> {}: {} broadcasts ({} failed)",
+                serviceId,
+                from,
+                to,
+                processedCount,
+                failedCount
+        );
+
         return new UpdateProgress(processedCount, failedCount);
     }
 

@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -18,16 +15,8 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.util.GroupLock;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
-import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
@@ -35,6 +24,19 @@ import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.common.scheduling.ScheduledTask;
+
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
+import com.google.common.base.Function;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class OffScheduleContentIngestTask extends ScheduledTask {
 
@@ -106,7 +108,10 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         reportStatus("Doing the discovery call");
         Iterable<List<Item>> fetched;
         try {
-            fetched = contentAdapter.fetchEpisodes(query);
+            fetched = contentAdapter.fetchEpisodes(
+                    query,
+                    ImmutableListMultimap.<String, Broadcast>of()
+            );
         } catch (NitroException e) {
             throw Throwables.propagate(e);
         }

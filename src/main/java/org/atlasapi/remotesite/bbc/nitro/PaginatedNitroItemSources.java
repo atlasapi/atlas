@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
@@ -38,50 +40,71 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class PaginatedNitroItemSources implements Iterable<List<Item>> {
 
-    private Iterable<List<Episode>> episodes;
-    private ListeningExecutorService executor;
+    private final Iterable<List<Episode>> episodes;
+    private final ListeningExecutorService executor;
     private final Glycerin glycerin;
     private final int pageSize;
     private final NitroEpisodeExtractor itemExtractor;
     private final GlycerinNitroClipsAdapter clipsAdapter;
+    private final ImmutableListMultimap<String, Broadcast> broadcasts;
 
-    public PaginatedNitroItemSources(Iterable<List<Episode>> episodes, ListeningExecutorService executor,
-            Glycerin glycerin, int pageSize, NitroEpisodeExtractor itemExtractor,
-            GlycerinNitroClipsAdapter clipsAdapter) {
+    public PaginatedNitroItemSources(
+            Iterable<List<Episode>> episodes,
+            ListeningExecutorService executor,
+            Glycerin glycerin,
+            int pageSize,
+            NitroEpisodeExtractor itemExtractor,
+            GlycerinNitroClipsAdapter clipsAdapter,
+            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
+    ) {
         this.episodes = checkNotNull(episodes);
         this.executor = checkNotNull(executor);
         this.glycerin = checkNotNull(glycerin);
         this.pageSize = checkNotNull(pageSize);
         this.itemExtractor = checkNotNull(itemExtractor);
         this.clipsAdapter = checkNotNull(clipsAdapter);
+        this.broadcasts = broadcasts;
     }
 
     @Override
     public Iterator<List<Item>> iterator() {
-        return new NitroItemSourceIterator(episodes, executor, glycerin, pageSize, itemExtractor,
-                clipsAdapter);
+        return new NitroItemSourceIterator(
+                episodes,
+                executor,
+                glycerin,
+                pageSize,
+                itemExtractor,
+                clipsAdapter,
+                broadcasts
+        );
     }
 
     private static class NitroItemSourceIterator implements Iterator<List<Item>> {
 
-        private Iterator<List<Episode>> episodesIterator;
         private final ListeningExecutorService executor;
         private final Glycerin glycerin;
-        private Iterator<Episode> currentEpisodesIterator;
-        private int pageSize;
+        private final int pageSize;
+        private final Iterator<List<Episode>> episodesIterator;
         private final NitroEpisodeExtractor itemExtractor;
-        private GlycerinNitroClipsAdapter clipsAdapter;
+        private final GlycerinNitroClipsAdapter clipsAdapter;
+        private final ImmutableListMultimap<String, Broadcast> broadcasts;
 
-        public NitroItemSourceIterator(Iterable<List<Episode>> episodesIterator,
-                ListeningExecutorService executor, Glycerin glycerin,
-                int pageSize, NitroEpisodeExtractor itemExtractor,
-                GlycerinNitroClipsAdapter clipsAdapter) {
+        public NitroItemSourceIterator(
+                Iterable<List<Episode>> episodesIterator,
+                ListeningExecutorService executor,
+                Glycerin glycerin,
+                int pageSize,
+                NitroEpisodeExtractor itemExtractor,
+                GlycerinNitroClipsAdapter clipsAdapter,
+                ImmutableListMultimap<String, Broadcast> broadcasts
+        ) {
             this.episodesIterator = episodesIterator.iterator();
             this.executor = executor;
             this.glycerin = glycerin;
             this.pageSize = pageSize;
             this.itemExtractor = itemExtractor;
             this.clipsAdapter = clipsAdapter;
+            this.broadcasts = broadcasts;
         }
 
         @Override
@@ -95,8 +118,10 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
             ImmutableList.Builder<Item> items = ImmutableList.builder();
 
             ImmutableListMultimap<String, Availability> availabilities = getAvailabilities(episodes);
-            ImmutableListMultimap<String, Broadcast> broadcasts = getBroadcasts(episodes);
             ImmutableListMultimap<String, Version> versions = getVersions(episodes);
+
+            ImmutableListMultimap<String, Broadcast> broadcasts =
+                    this.broadcasts != null ? this.broadcasts : getBroadcasts(episodes);
 
             for (Episode glycerinEpisode : episodes) {
                 NitroItemSource<Episode> nitroItemSource = NitroItemSource.valueOf(
@@ -123,7 +148,6 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         }
 
         private ImmutableListMultimap<String, Version> getVersions(List<Episode> episodes) {
-            ImmutableListMultimap<String, Version> versions;
             try {
                 return versions(episodes);
             } catch (GlycerinException e) {
@@ -132,7 +156,6 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         }
 
         private ImmutableListMultimap<String, Broadcast> getBroadcasts(List<Episode> episodes) {
-            ImmutableListMultimap<String, Broadcast> broadcasts;
             try {
                 return broadcasts(episodes);
             } catch (GlycerinException e) {
@@ -141,7 +164,6 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         }
 
         private ImmutableListMultimap<String, Availability> getAvailabilities(List<Episode> episodes) {
-            ImmutableListMultimap<String, Availability> availabilities;
             try {
                 return availabilities(episodes);
             } catch (GlycerinException e) {

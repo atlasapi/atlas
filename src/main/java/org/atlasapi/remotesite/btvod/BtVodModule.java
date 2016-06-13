@@ -176,6 +176,11 @@ public class BtVodModule {
     @Value("${bt.vod.mpx.vold.feed.new.suffix}")
     private String btVodMpxVolDFeedNewSuffix;
 
+    @Value("${bt.vod.mpx.vole.feed.guidLookup.baseUrl}")
+    private String btVodMpxVoleFeedBaseUrlForGuidLookup;
+    @Value("${bt.vod.mpx.vole.feed.guidLookup.name}")
+    private String btVodMpxVoleFeedNameForGuidLookup;
+
     @Value("${bt.vod.mpx.vole.feed.baseUrl}")
     private String btVodMpxVoleFeedBaseUrl;
     @Value("${bt.vod.mpx.vole.feed.name}")
@@ -269,8 +274,8 @@ public class BtVodModule {
                 btVodMpxVoleFeedName,
                 btVodMpxVoleFeedQParam,
                 btVodMpxVolEFeedNewSuffix,
-                btVodMpxVoleFeedBaseUrl,
-                btVodMpxVoleFeedName,
+                btVodMpxVoleFeedBaseUrlForGuidLookup,
+                btVodMpxVoleFeedNameForGuidLookup,
                 ImmutableMap.<String, BtVodContentMatchingPredicate>of()
         );
     }

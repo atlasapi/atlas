@@ -235,12 +235,6 @@ public class NitroChannelHydrator {
                     if (!Strings.isNullOrEmpty(service.getShortName())) {
                         locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
                     }
-                    if (!Strings.isNullOrEmpty(service.getName())) {
-                        locatorsToValuesBuilder.put(service.getLocator(), NAME, service.getName());
-                    }
-                    if (!Strings.isNullOrEmpty(service.getShortName())) {
-                        locatorsToValuesBuilder.put(service.getLocator(), SHORT_NAME, service.getShortName());
-                    }
                     if (!Strings.isNullOrEmpty(service.getImage()) &&
                             service.getWidth() != null &&
                             service.getHeight() != null) {

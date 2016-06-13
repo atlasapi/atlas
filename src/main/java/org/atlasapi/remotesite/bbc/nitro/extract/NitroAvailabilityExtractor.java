@@ -375,13 +375,73 @@ public class NitroAvailabilityExtractor {
 
         policy.setAvailabilityStart(toDateTime(source.getScheduledStart()));
         policy.setAvailabilityEnd(toDateTime(source.getScheduledEnd()));
-        policy.setActualAvailabilityStart(toDateTime(mediaSet.getActualStart()));
+
+        if (shouldIngestActualAvailabilityStart(source, mediaSet, mediaType, policy)) {
+            policy.setActualAvailabilityStart(toDateTime(mediaSet.getActualStart()));
+        }
 
         policy.setPlatform(platform);
         policy.setNetwork(network);
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
 
         return policy;
+    }
+
+    private boolean shouldIngestActualAvailabilityStart(
+            AvailableVersions.Version.Availabilities.Availability source,
+            AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet,
+            String mediaType,
+            Policy policy
+    ) {
+
+        DateTime actualStart = toDateTime(mediaSet.getActualStart());
+
+        if (actualStart == null) {
+            // Ensures we remove it if not set in Nitro
+            return true;
+        }
+
+        if (REVOKED.equals(source.getStatus())) {
+            // A revoked availability isn't actually available
+            return false;
+        }
+
+        if (actualStart.isAfterNow()) {
+            // This is not an expected case on the Nitro API, and would cause
+            // problems in output feeds that make relative date checks to set a
+            // "media available" flag, since content would not change when
+            // the media becomes available
+            return false;
+        }
+
+        if (policy.getAvailabilityEnd() != null
+                && policy.getAvailabilityEnd().isBeforeNow()) {
+            // If we've passed the end of the availability window then ingest
+            // the actual availability start for reference, since there's the
+            // possibility of having missed it if we never ingested during the
+            // availability window.
+            return true;
+        }
+
+        if (!VIDEO_MEDIA_TYPE.equals(mediaType)) {
+            // Since media type is only reliably set on video, not audio,
+            // our condition is inverted to check for this being a radio asset
+
+            // Radio assets are delivered by a range of systems, which don't
+            // reliably record an actual availability start time. However,
+            // Nitro synthesises it, and also has logic in the setting of
+            // the status field to determine if assets are actually available.
+            //
+            // Therefore radio actual availability start can only be trusted
+            // (and should only be ingested into Atlas) iff status == available
+            return AVAILABLE.equals(source.getStatus());
+        } else {
+            // Video assets' actual availability start time is reliably set
+            // in Nitro, since all assets are delivered by video factory which
+            // does so. Therefore actual availability start can always be trusted
+            // when on video content
+            return true;
+        }
     }
 
     private boolean shouldIngestActualAvailabilityStart(Availability source, String mediaType,

@@ -219,11 +219,11 @@ public class PaModule {
     @Bean IngestMonitorClient ingestMonitorClient() {
         IngesterConfiguration ingesterConfiguration = IngesterConfiguration
                 .builder()
-                .environment(IngesterConfiguration.Environment.from(environment))
+                .environment(IngesterConfiguration.Environment.STAGE)
                 .publisher(ImmutableList.of(Publisher.PA.key()))
                 .name("PA ingester")
                 .key("pa-ingester")
-                .monitorUri(monitoringUri)
+                .monitorUri("http://ingest-monitor-stage.mbst.tv/1/ingests")
                 .build();
 
 

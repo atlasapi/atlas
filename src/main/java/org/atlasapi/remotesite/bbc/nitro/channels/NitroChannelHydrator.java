@@ -1,5 +1,16 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
+import java.io.File;
+
+import javax.annotation.Nullable;
+
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.TemporalField;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageTheme;
+import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
+
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
@@ -12,17 +23,8 @@ import com.google.common.collect.ImmutableTable;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.TemporalField;
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.ImageTheme;
-import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.io.File;
 
 public class NitroChannelHydrator {
 
@@ -46,7 +48,7 @@ public class NitroChannelHydrator {
     private static final String BBC_IMAGE_TYPE = "bbc:imageType";
     private static final String DOG = "dog";
     private static final String IDENT = "ident";
-    private static final String IPLAYER_LOGO = "http://www.bbc.co.uk/iplayer/images/youview/bbc_iplayer.png";
+    private static final String IPLAYER_LOGO = "http://images.atlas.metabroadcast.com/youview.com/201606131640_bbc_iplayer_mono.png";
     private static final String OVERRIDE = "override";
     private static final String BBC_NITRO_TYPE = "bbc:nitro:type";
 

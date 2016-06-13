@@ -50,11 +50,9 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     private static final String BBC_SERVICE_SID = "bbc:service:sid";
     private static final String BBC_MASTERBRAND_MID = "bbc:masterbrand:mid";
     private static final String PID = "pid";
-    private static final String MUSIC = "music";
-    private static final String RADIO = "radio";
     private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrands/";
-    public static final String BBC_IMAGE_TYPE = "bbc:imageType";
-    public static final String MASTERBRAND = "masterbrand";
+    private static final String BBC_IMAGE_TYPE = "bbc:imageType";
+    private static final String MASTERBRAND = "masterbrand";
 
     private final NitroImageExtractor imageExtractor = new NitroImageExtractor(1024, 576);
     private final Glycerin glycerin;
@@ -162,11 +160,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         String name = result.getName();
         if (name != null) {
             builder.withTitle(name);
-            inferAndSetMediaType(builder, name);
         } else {
-            String title = result.getTitle();
-            inferAndSetMediaType(builder, title);
-            builder.withTitle(title);
+            builder.withTitle(result.getTitle());
         }
 
         if (result.getSynopses() != null) {
@@ -190,14 +185,6 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         }
 
         return builder.build();
-    }
-
-    private void inferAndSetMediaType(Channel.Builder builder, String name) {
-        if (name.toLowerCase().contains(MUSIC) || name.toLowerCase().contains(RADIO)) {
-            builder.withMediaType(MediaType.AUDIO);
-        } else {
-            builder.withMediaType(MediaType.VIDEO);
-        }
     }
 
     private Channel getChannel(Service result, ImmutableMap<String, Channel> parentUriToId) throws GlycerinException {

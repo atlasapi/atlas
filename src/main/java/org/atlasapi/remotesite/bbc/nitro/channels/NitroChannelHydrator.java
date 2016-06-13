@@ -51,7 +51,7 @@ public class NitroChannelHydrator {
     private static final String BBC_IMAGE_TYPE = "bbc:imageType";
     private static final String DOG = "dog";
     private static final String IDENT = "ident";
-    private static final String IPLAYER_LOGO = "http://www.bbc.co.uk/iplayer/images/youview/bbc_iplayer.png";
+    private static final String IPLAYER_LOGO = "http://images.atlas.metabroadcast.com/youview.com/201606131640_bbc_iplayer_mono.png";
     private static final String OVERRIDE = "override";
     private static final String BBC_NITRO_TYPE = "bbc:nitro:type";
 

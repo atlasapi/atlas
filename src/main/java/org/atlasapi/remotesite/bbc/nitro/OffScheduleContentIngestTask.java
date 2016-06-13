@@ -18,7 +18,6 @@ import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
@@ -102,7 +101,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         ProgrammesMixin.GENRE_GROUPINGS,
                         ProgrammesMixin.AVAILABLE_VERSIONS
                 )
-                .withAvailability(AvailabilityOption.AVAILABLE)
+                .withUnsafeArbitrary("availability", "PT12H")
                 .withPageSize(pageSize)
                 .withAvailabilityEntityType(AvailabilityEntityTypeOption.EPISODE)
                 .withEntityType(EntityTypeOption.EPISODE)

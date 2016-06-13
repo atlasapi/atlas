@@ -1,11 +1,17 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
+import java.util.List;
+
+import javax.annotation.Nullable;
+
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelType;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
+
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -17,20 +23,16 @@ import com.metabroadcast.atlas.glycerin.queries.MasterBrandsMixin;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelType;
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
+
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import javax.annotation.Nullable;
-import java.util.List;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -48,11 +50,9 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     private static final String BBC_SERVICE_SID = "bbc:service:sid";
     private static final String BBC_MASTERBRAND_MID = "bbc:masterbrand:mid";
     private static final String PID = "pid";
-    private static final String MUSIC = "music";
-    private static final String RADIO = "radio";
     private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrands/";
-    public static final String BBC_IMAGE_TYPE = "bbc:imageType";
-    public static final String MASTERBRAND = "masterbrand";
+    private static final String BBC_IMAGE_TYPE = "bbc:imageType";
+    private static final String MASTERBRAND = "masterbrand";
 
     private final NitroImageExtractor imageExtractor = new NitroImageExtractor(1024, 576);
     private final Glycerin glycerin;
@@ -160,11 +160,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         String name = result.getName();
         if (name != null) {
             builder.withTitle(name);
-            inferAndSetMediaType(builder, name);
         } else {
-            String title = result.getTitle();
-            inferAndSetMediaType(builder, title);
-            builder.withTitle(title);
+            builder.withTitle(result.getTitle());
         }
 
         if (result.getSynopses() != null) {
@@ -188,14 +185,6 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         }
 
         return builder.build();
-    }
-
-    private void inferAndSetMediaType(Channel.Builder builder, String name) {
-        if (name.toLowerCase().contains(MUSIC) || name.toLowerCase().contains(RADIO)) {
-            builder.withMediaType(MediaType.AUDIO);
-        } else {
-            builder.withMediaType(MediaType.VIDEO);
-        }
     }
 
     private Channel getChannel(Service result, ImmutableMap<String, Channel> parentUriToId) throws GlycerinException {

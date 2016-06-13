@@ -1,7 +1,5 @@
 package org.atlasapi.query.v2;
 
-import static com.google.common.collect.Iterables.transform;
-
 import java.io.IOException;
 import java.util.Set;
 
@@ -16,20 +14,20 @@ import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.format.DateTimeFormat;
-import org.joda.time.format.DateTimeFormatter;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.base.MoreOrderings;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.query.Selection.SelectionBuilder;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -42,12 +40,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.base.MoreOrderings;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.query.Selection.SelectionBuilder;
+import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import static com.google.common.collect.Iterables.transform;
 
 @Controller
 public class ChannelController extends BaseController<Iterable<Channel>> {
@@ -104,8 +104,9 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             @RequestParam(value = "genres", required = false) String genresString,
             @RequestParam(value = "advertised", required = false) String advertiseFromKey,
             @RequestParam(value = "publisher", required = false) String publisherKey,
-            @RequestParam(value = "uri", required = false) String uriKey)
-    throws IOException {
+            @RequestParam(value = "uri", required = false) String uriKey,
+            @RequestParam(value = "type", required = false) String channelType
+    ) throws IOException {
         try {
             final ApplicationConfiguration appConfig;
             try {
@@ -126,7 +127,8 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                     genresString,
                     advertiseFromKey,
                     publisherKey,
-                    uriKey
+                    uriKey,
+                    channelType
             );
 
             Iterable<Channel> channels = channelResolver.allChannels(query);
@@ -189,10 +191,18 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         return validAnnotations.containsAll(annotations);
     }
 
-    private ChannelQuery constructQuery(String platformId, String regionIds,
-            String broadcasterKey, String mediaTypeKey, String availableFromKey,
-            String genresString, String advertiseFromKey, String publisherKey,
-            String uri) {
+    private ChannelQuery constructQuery(
+            String platformId,
+            String regionIds,
+            String broadcasterKey,
+            String mediaTypeKey,
+            String availableFromKey,
+            String genresString,
+            String advertiseFromKey,
+            String publisherKey,
+            String uri,
+            String channelType
+    ) {
         ChannelQuery.Builder query = ChannelQuery.builder();
 
         Set<Long> channelGroups = getChannelGroups(platformId, regionIds);
@@ -228,6 +238,11 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         if (!Strings.isNullOrEmpty(uri)) {
             query.withUri(uri);
         }
+
+        if (!Strings.isNullOrEmpty(channelType)) {
+            query.withChannelType(ChannelType.fromKey(channelType).get());
+        }
+
         return query.build();
     }
 

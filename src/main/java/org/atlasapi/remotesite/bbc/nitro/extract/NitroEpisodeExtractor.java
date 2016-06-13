@@ -17,6 +17,7 @@ import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 
 import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.Format;
@@ -60,7 +61,6 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
             return FILM_FORMAT_ID.equals(input.getFormatId());
         }
     };
-
 
     private final ContentExtractor<List<GenreGroup>, Set<String>> genresExtractor = new NitroGenresExtractor();
 
@@ -125,6 +125,11 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
             return null;
         }
         return source.getProgramme().getImages().getImage();
+    }
+
+    @Override
+    protected AvailableVersions extractVersions(NitroItemSource<Episode> episodeNitroItemSource) {
+        return episodeNitroItemSource.getProgramme().getAvailableVersions();
     }
 
     protected XMLGregorianCalendar extractReleaseDate(NitroItemSource<Episode> source) {

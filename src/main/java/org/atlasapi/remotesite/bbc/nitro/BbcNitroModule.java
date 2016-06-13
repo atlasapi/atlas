@@ -215,10 +215,13 @@ public class BbcNitroModule {
     }
 
     private Supplier<ImmutableSet<Channel>> bbcChannelSupplier() {
-        return () -> ImmutableSet.copyOf(channelResolver.allChannels(ChannelQuery.builder()
-                .withPublisher(Publisher.BBC_NITRO)
-                .build()));
+        return new Supplier<ImmutableSet<Channel>>() {
+            @Override
+            public ImmutableSet<Channel> get() {
+                return ImmutableSet.copyOf(channelResolver.allChannels(ChannelQuery.builder()
+                        .withPublisher(Publisher.BBC_NITRO)
+                        .build()));
+            }
+        };
     }
-    
-    
 }

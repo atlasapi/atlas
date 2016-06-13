@@ -2,8 +2,9 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.util.List;
 import java.util.Set;
-import java.util.stream.Collectors;
 
+import com.google.common.collect.FluentIterable;
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
@@ -31,6 +32,8 @@ import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
+
+import javax.annotation.Nullable;
 
 /**
  * Base extractor for extracting common properties of {@link Item}s from a
@@ -74,11 +77,15 @@ public abstract class BaseNitroItemExtractor<SOURCE, ITEM extends Item>
             // Versions without durations are basically invalid Nitro data. They aren't playable
             // and only cause issues down the line, so we don't ingest them. These usually get
             // fixed at some point by the beeb, so the next ingest job will pick them up.
-            Iterable<AvailableVersions.Version> eligibleVersions = nitroVersions.getVersion()
-                    .stream()
-                    .filter(v -> v.getDuration() != null)
-                    .collect(Collectors.toList());
-
+            ImmutableList<AvailableVersions.Version> eligibleVersions =
+                    FluentIterable.from(nitroVersions.getVersion())
+                        .filter(new Predicate<AvailableVersions.Version>() {
+                            @Override
+                            public boolean apply(@Nullable AvailableVersions.Version input) {
+                                return input.getDuration() != null;
+                            }
+                        })
+                        .toList();
             for (AvailableVersions.Version nitroVersion : eligibleVersions) {
 
                 String mediaType = extractMediaType(source);

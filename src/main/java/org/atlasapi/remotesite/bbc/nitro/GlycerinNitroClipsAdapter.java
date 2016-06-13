@@ -142,11 +142,14 @@ public class GlycerinNitroClipsAdapter {
     }
 
     private Multimap<String, org.atlasapi.media.entity.Clip> extractClips(List<Clip> clipPart) throws GlycerinException {
-        ImmutableListMultimap.Builder<String, org.atlasapi.media.entity.Clip> extracted =
-                ImmutableListMultimap.builder();
+        ImmutableListMultimap.Builder<String, org.atlasapi.media.entity.Clip> extracted
+            = ImmutableListMultimap.builder();
 
         for (Clip clip : clipPart) {
-            NitroItemSource<Clip> source = NitroItemSource.valueOf(clip, ImmutableList.<Broadcast>of());
+            NitroItemSource<Clip> source = NitroItemSource.valueOf(
+                    clip,
+                    ImmutableList.of()
+            );
             extracted.put(BbcFeeds.nitroUriForPid(clip.getClipOf().getPid()), clipExtractor.extract(source));
         }
 

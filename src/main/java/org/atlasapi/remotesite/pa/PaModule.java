@@ -130,7 +130,8 @@ public class PaModule {
     private @Value("${pa.s3.bucket}") String s3bucket;
     private @Value("${pa.people.enabled}") boolean peopleEnabled;
     private @Value("${pa.content.updater.threads}") int contentUpdaterThreadCount;
-    private @Value("") String
+    private @Value("${pa.monitoring.uri}") String monitoringUri;
+    private @Value("${pa.monitoring.environment}") String environment;
 
     @PostConstruct
     public void startBackgroundTasks() {
@@ -218,11 +219,11 @@ public class PaModule {
     @Bean IngestMonitorClient ingestMonitorClient() {
         IngesterConfiguration ingesterConfiguration = IngesterConfiguration
                 .builder()
-                .environment(IngesterConfiguration.Environment.from("stage"))
+                .environment(IngesterConfiguration.Environment.from(environment))
                 .publisher(ImmutableList.of(Publisher.PA.key()))
                 .name("PA ingester")
                 .key("pa-ingester")
-                .monitorUri("http://ingest-monitor-stage.mbst.tv/1/ingests")
+                .monitorUri(monitoringUri)
                 .build();
 
 

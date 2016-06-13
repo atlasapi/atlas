@@ -62,10 +62,10 @@ public class PaChannelProcessor {
         this.ingestMonitorClient = ingestMonitorClient;
     }
 
-    public int process(PaChannelData channelData, File fileToProcess, Set<String> currentlyProcessing) throws IOException{
+    public int process(PaChannelData channelData, File fileToProcess, Set<String> currentlyProcessing) {
         int processed = 0;
         ProcessingResult processingResult = ProcessingResult.builder().build();
-        Optional<InputStream> idOptional = Optional.absent();
+        Optional<Float> idOptional = Optional.absent();
         try {
             idOptional = ingestMonitorClient.sendResult(processingResult,
                     DateTime.now(),
@@ -105,12 +105,8 @@ public class PaChannelProcessor {
             //TODO: should we just throw e?
             log.error(String.format("Error processing channel %s", channel.getKey()), e);
         } finally {
-            if  (idOptional.isPresent()) {
-                float id = getIngestId(idOptional);
-                writeContent(hierarchiesAndSummaries, channel, Optional.of(id));
-            } else {
-                writeContent(hierarchiesAndSummaries, channel, Optional.<Float>absent());
-            }
+            writeContent(hierarchiesAndSummaries, channel, idOptional);
+
         }
         
         try {
@@ -129,9 +125,8 @@ public class PaChannelProcessor {
 
             scheduleVersionStore.store(channel, channelData.scheduleDay(), channelData.version());
             if (idOptional.isPresent()) {
-                float id = getIngestId(idOptional);
                 for (ItemRefAndBroadcast itemRefAndBroadcast : broadcasts) {
-                    sendUpdateMessage(id, itemRefAndBroadcast.getItemUri(), "episode");
+                    sendUpdateMessage(idOptional.get(), itemRefAndBroadcast.getItemUri(), "episode");
                 }
             }
         } catch (Exception e) {
@@ -141,24 +136,15 @@ public class PaChannelProcessor {
             );
             log.error(message, e);
             if (idOptional.isPresent()) {
-                float id = getIngestId(idOptional);
-                sendUpdateErrorMessage(channel, id, e, message);
+                sendUpdateErrorMessage(channel, idOptional.get(), e, message);
             }
         }
 
         if (idOptional.isPresent()) {
-            float id = getIngestId(idOptional);
-            sendClosingMessage(id, DateTime.now());
+            sendClosingMessage(idOptional.get(), DateTime.now());
         }
         
         return processed;
-    }
-
-    private float getIngestId(Optional<InputStream> idOptional) throws IOException {
-        InputStream idStream = idOptional.get();
-        DataInputStream input = new DataInputStream(idStream);
-        float id = input.readFloat();
-        return id;
     }
 
     private void writeContent(Set<ContentHierarchyAndSummaries> hierarchies, Channel channel, Optional<Float> ingestId) {

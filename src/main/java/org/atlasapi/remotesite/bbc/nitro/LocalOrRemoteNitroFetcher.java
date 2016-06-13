@@ -56,7 +56,7 @@ public class LocalOrRemoteNitroFetcher {
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, final Clock clock) {
         this(resolver, contentAdapter,
                 new ContentMerger(
-                        MergeStrategy.MERGE,
+                        MergeStrategy.NITRO_VERSIONS_REVOKE,
                         MergeStrategy.KEEP,
                         MergeStrategy.REPLACE
                 ),
@@ -124,7 +124,7 @@ public class LocalOrRemoteNitroFetcher {
                 resolver,
                 contentAdapter,
                 new ContentMerger(
-                        MergeStrategy.MERGE,
+                        MergeStrategy.NITRO_VERSIONS_REVOKE,
                         MergeStrategy.KEEP,
                         MergeStrategy.REPLACE
                 ),

@@ -102,8 +102,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         ProgrammesMixin.GENRE_GROUPINGS,
                         ProgrammesMixin.AVAILABLE_VERSIONS
                 )
-//                .withUnsafeArbitrary("availability", "PT12H")
-                .withAvailability(AvailabilityOption.AVAILABLE)
+                .withUnsafeArbitrary("availability", "available", "PT12H")
                 .withPageSize(pageSize)
                 .withAvailabilityEntityType(AvailabilityEntityTypeOption.EPISODE)
                 .withEntityType(EntityTypeOption.EPISODE)

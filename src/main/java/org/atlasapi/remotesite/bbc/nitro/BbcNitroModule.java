@@ -9,6 +9,7 @@ import javax.annotation.PostConstruct;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -220,6 +221,7 @@ public class BbcNitroModule {
             public ImmutableSet<Channel> get() {
                 return ImmutableSet.copyOf(channelResolver.allChannels(ChannelQuery.builder()
                         .withPublisher(Publisher.BBC_NITRO)
+                        .withChannelType(ChannelType.CHANNEL)
                         .build()));
             }
         };

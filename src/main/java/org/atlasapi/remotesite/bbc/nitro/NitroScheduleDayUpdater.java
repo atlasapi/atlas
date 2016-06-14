@@ -6,10 +6,10 @@ import java.util.Map;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
-import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
@@ -72,8 +72,12 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     
     @Override
     public UpdateProgress process(ChannelDay channelDay) throws Exception {
-        
-        String serviceId = BbcIonServices.services.inverse().get(channelDay.getChannel().getUri());
+
+        String serviceId = getSid(channelDay.getChannel());
+        if (serviceId == null) {
+            return new UpdateProgress(0, 0);
+        }
+
         DateTime from = channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZones.UTC);
         DateTime to = from.plusDays(1);
         log.debug("updating {}: {} -> {}", serviceId, from, to);
@@ -95,6 +99,16 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         );
 
         return new UpdateProgress(processedCount, failedCount);
+    }
+
+    private String getSid(Channel channel) {
+        for (Alias alias : channel.getAliases()) {
+            if ("bbc:service:sid".equals(alias.getNamespace())) {
+                return alias.getValue();
+            }
+        }
+
+        return null;
     }
 
     private void updateSchedule(Channel channel, DateTime from, DateTime to, 

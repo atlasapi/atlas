@@ -18,7 +18,6 @@ import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
-import com.metabroadcast.atlas.glycerin.queries.AvailabilityOption;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;

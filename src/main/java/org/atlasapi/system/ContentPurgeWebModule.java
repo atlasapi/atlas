@@ -2,6 +2,12 @@ package org.atlasapi.system;
 
 import org.atlasapi.persistence.MongoContentPersistenceModule;
 import org.atlasapi.persistence.content.ContentPurger;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,7 +28,16 @@ public class ContentPurgeWebModule {
 
     @Autowired
     private ContentPurger contentPurger;
-    
+
+    @Autowired
+    private ContentResolver contentResolver;
+
+    @Autowired
+    private LookupEntryStore lookupEntryStore;
+
+    @Autowired
+    private ContentWriter contentWriter;
+
     @Bean
     public LyrebirdYoutubeContentPurgeController lyrebirdYoutubeContentPurgeController() {
         return new LyrebirdYoutubeContentPurgeController(contentPurger);
@@ -36,5 +51,14 @@ public class ContentPurgeWebModule {
     @Bean
     public ContentPurgeController btVodContentPurgeController() {
         return new ContentPurgeController(contentPurger);
+    }
+
+    @Bean
+    public UnpublishContentController unpublishContentController() {
+        return new UnpublishContentController(
+                new SubstitutionTableNumberCodec(),
+                contentResolver,
+                lookupEntryStore,
+                contentWriter);
     }
 }

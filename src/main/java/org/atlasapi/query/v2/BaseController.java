@@ -13,6 +13,7 @@ import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationAccessRole;
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.output.AtlasErrorSummary;
@@ -21,7 +22,6 @@ import org.atlasapi.output.MissingApplicationOwlAccessRoleException;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
-import org.atlasapi.query.content.parser.ApplicationConfigurationIncludingQueryBuilder;
 import org.atlasapi.query.content.parser.QueryStringBackedQueryBuilder;
 
 import com.metabroadcast.common.base.Maybe;
@@ -45,10 +45,10 @@ public abstract class BaseController<T> {
 
     public final NumberToShortStringCodec idCodec;
 
-    protected final ApplicationConfigurationIncludingQueryBuilder builder;
     protected final AdapterLog log;
     protected final AtlasModelWriter<? super T> outputter;
 
+    private QueryStringBackedQueryBuilder queryBuilder;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
     private final ApplicationConfigurationFetcher configFetcher;
 
@@ -58,10 +58,9 @@ public abstract class BaseController<T> {
         this.configFetcher = configFetcher;
         this.log = log;
         this.outputter = outputter;
-        this.builder = new ApplicationConfigurationIncludingQueryBuilder(
-                new QueryStringBackedQueryBuilder(),
-                configFetcher
-        );
+        this.queryBuilder = new QueryStringBackedQueryBuilder()
+                .withIgnoreParams("apiKey")
+                .withIgnoreParams("uri", "id", "event_ids");
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
         this.idCodec = idCodec;
     }
@@ -120,6 +119,19 @@ public abstract class BaseController<T> {
         }
 
         return configuration;
+    }
+
+    protected ContentQuery buildQuery(HttpServletRequest request)
+            throws ApiKeyNotFoundException, RevokedApiKeyException, InvalidIpForApiKeyException {
+        ContentQuery query = queryBuilder.build(request);
+
+        Maybe<ApplicationConfiguration> configuration = possibleAppConfig(request);
+
+        if (configuration.hasValue()) {
+            query = query.copyWithApplicationConfiguration(configuration.requireValue());
+        }
+
+        return query;
     }
 
     protected Set<Publisher> publishers(String publisherString, ApplicationConfiguration config) {

@@ -1,7 +1,6 @@
 package org.atlasapi.query.v2;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,11 +9,11 @@ import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationAccessRole;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
@@ -33,6 +32,7 @@ import com.metabroadcast.common.time.DateTimeZones;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.Before;
@@ -103,7 +103,7 @@ public class ScheduleControllerTest {
         channel = new Channel.Builder().build();
         
         when(configFetcher.configurationFor(request))
-            .thenReturn(Maybe.<ApplicationConfiguration>nothing());
+            .thenReturn(Maybe.nothing());
         when(channelResolver.fromId(any(Long.class)))
             .thenReturn(Maybe.just(channel));
     }
@@ -121,8 +121,8 @@ public class ScheduleControllerTest {
     @Test
     public void testScheduleRequestPassWithJustPublishers() throws IOException {
         
-        when(scheduleResolver.schedule(eq(from), eq(to), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.<ApplicationConfiguration>absent())))
-            .thenReturn(Schedule.fromChannelMap(ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)));
+        when(scheduleResolver.schedule(eq(from), eq(to), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
+            .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, to)));
         
         controller.schedule(from.toString(), to.toString(), NO_COUNT, NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
@@ -132,8 +132,8 @@ public class ScheduleControllerTest {
     @Test
     public void testScheduleRequestWithOnParameter() throws IOException {
         
-        when(scheduleResolver.schedule(eq(from), eq(to), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.<ApplicationConfiguration>absent())))
-            .thenReturn(Schedule.fromChannelMap(ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)));
+        when(scheduleResolver.schedule(eq(from), eq(to), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
+            .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, to)));
         
         controller.schedule(NO_FROM, NO_TO, NO_COUNT, from.toString(), NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
@@ -144,8 +144,8 @@ public class ScheduleControllerTest {
     public void testScheduleRequestWithCountParameter() throws IOException {
         
         int count = 10;
-        when(scheduleResolver.schedule(eq(from), eq(count), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.<ApplicationConfiguration>absent())))
-            .thenReturn(Schedule.fromChannelMap(ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)));
+        when(scheduleResolver.schedule(eq(from), eq(count), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
+            .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, to)));
         
         controller.schedule(from.toString(), NO_TO, String.valueOf(count), NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
@@ -234,7 +234,7 @@ public class ScheduleControllerTest {
     public void testErrorsWhenMissingChannelIsSupplied() throws Exception {
         
         when(channelResolver.fromId(any(Long.class)))
-            .thenReturn(Maybe.<Channel>nothing());
+            .thenReturn(Maybe.nothing());
         
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
@@ -247,13 +247,14 @@ public class ScheduleControllerTest {
     public void testPassesAppConfigToResolverWhenNoPublishersSupplied() throws Exception {
         
         HttpServletRequest req = request.withParam("apiKey", "key");
-        ApplicationConfiguration appConfig = ApplicationConfiguration.defaultConfiguration()
-                .copyWithPrecedence(ImmutableList.<Publisher>of());
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
+                .build();
         
         when(configFetcher.configurationFor(req))
             .thenReturn(Maybe.just(appConfig));
         when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.of(appConfig))))
-            .thenReturn(Schedule.fromChannelMap(ImmutableMap.<Channel,List<Item>>of(), new Interval(from, from)));
+            .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, from)));
         
         String NO_PUBLISHERS = null;
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", NO_PUBLISHERS, req, response);
@@ -266,15 +267,15 @@ public class ScheduleControllerTest {
     public void testDoesntPassAppConfigToResolverWhenPublishersSuppliedWithApiKey() throws Exception {
         
         HttpServletRequest req = request.withParam("apiKey", "key");
-        ApplicationConfiguration appConfig = ApplicationConfiguration.defaultConfiguration()
-                .withSource(Publisher.BBC, SourceStatus.AVAILABLE_ENABLED)
-                .copyWithPrecedence(ImmutableList.<Publisher>of());
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
+                .build();
         
         HttpServletRequest matchRequest = req;
         when(configFetcher.configurationFor(matchRequest))
             .thenReturn(Maybe.just(appConfig));
-        when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.<ApplicationConfiguration>absent())))
-            .thenReturn(Schedule.fromChannelMap(ImmutableMap.<Channel,List<Item>>of(), new Interval(from, from)));
+        when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
+            .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, from)));
         
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", matchRequest, response);
         
@@ -286,8 +287,8 @@ public class ScheduleControllerTest {
     public void testResolvesChannelByKey() throws Exception {
         
         when(channelResolver.fromKey(any(String.class))).thenReturn(Maybe.just(channel));
-        when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.<ApplicationConfiguration>absent())))
-        .thenReturn(Schedule.fromChannelMap(ImmutableMap.<Channel,List<Item>>of(), new Interval(from, from)));
+        when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
+        .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, from)));
         
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, "bbcone", null, "bbc.co.uk", request, response);
         
@@ -323,11 +324,11 @@ public class ScheduleControllerTest {
                         any(DateTime.class),
                         anyCollectionOf(Channel.class),
                         anyCollectionOf(Publisher.class),
-                        eq(Optional.<ApplicationConfiguration>absent())
+                        eq(Optional.absent())
                 )
         )
                 .thenReturn(Schedule.fromChannelMap(
-                        ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)
+                        ImmutableMap.of(), new Interval(from, to)
                 ));
 
         request.withParam("apiKey", PRIVILEGED_KEY);
@@ -363,11 +364,11 @@ public class ScheduleControllerTest {
                         any(DateTime.class),
                         argThat(hasItems(channel)),
                         argThat(hasItems(Publisher.BBC)),
-                        eq(Optional.<ApplicationConfiguration>absent())
+                        eq(Optional.absent())
                 )
         )
                 .thenReturn(Schedule.fromChannelMap(
-                        ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)
+                        ImmutableMap.of(), new Interval(from, to)
                 ));
 
         request.withParam("apiKey", NON_PRIVILEGED_KEY);
@@ -403,11 +404,11 @@ public class ScheduleControllerTest {
                         any(DateTime.class),
                         argThat(hasItems(channel)),
                         argThat(hasItems(Publisher.BBC)),
-                        eq(Optional.<ApplicationConfiguration>absent())
+                        eq(Optional.absent())
                 )
         )
                 .thenReturn(Schedule.fromChannelMap(
-                        ImmutableMap.<Channel,List<Item>>of(), new Interval(from, to)
+                        ImmutableMap.of(), new Interval(from, to)
                 ));
 
         request.withParam("apiKey", NON_PRIVILEGED_KEY);
@@ -452,5 +453,13 @@ public class ScheduleControllerTest {
         verify(outputter).writeError(argThat(is(request)), argThat(is(response)), errorCaptor.capture());
         assertThat(errorCaptor.getValue().exception(), is(instanceOf(expectedException)));
     }
-    
+
+    private ApplicationConfiguration.Builder getApplicationConfigurationBuilder() {
+        return ApplicationConfiguration
+                .builder()
+                .withSourceStatuses(ImmutableMap.of(Publisher.BBC,  SourceStatus.AVAILABLE_ENABLED))
+                .withPrecedence(ImmutableList.of())
+                .withWritableSources(ImmutableList.of())
+                .withContentHierarchyPrecedence(Optional.absent());
+    }
 }

@@ -11,15 +11,17 @@ import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationAccessRole;
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.MissingApplicationOwlAccessRoleException;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
-import org.atlasapi.query.content.parser.ApplicationConfigurationIncludingQueryBuilder;
 import org.atlasapi.query.content.parser.QueryStringBackedQueryBuilder;
 
 import com.metabroadcast.common.base.Maybe;
@@ -43,10 +45,10 @@ public abstract class BaseController<T> {
 
     public final NumberToShortStringCodec idCodec;
 
-    protected final ApplicationConfigurationIncludingQueryBuilder builder;
     protected final AdapterLog log;
     protected final AtlasModelWriter<? super T> outputter;
 
+    private QueryStringBackedQueryBuilder queryBuilder;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
     private final ApplicationConfigurationFetcher configFetcher;
 
@@ -56,10 +58,9 @@ public abstract class BaseController<T> {
         this.configFetcher = configFetcher;
         this.log = log;
         this.outputter = outputter;
-        this.builder = new ApplicationConfigurationIncludingQueryBuilder(
-                new QueryStringBackedQueryBuilder(),
-                configFetcher
-        );
+        this.queryBuilder = new QueryStringBackedQueryBuilder()
+                .withIgnoreParams("apiKey")
+                .withIgnoreParams("uri", "id", "event_ids");
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
         this.idCodec = idCodec;
     }
@@ -108,7 +109,29 @@ public abstract class BaseController<T> {
 
     protected Maybe<ApplicationConfiguration> possibleAppConfig(HttpServletRequest request)
             throws ApiKeyNotFoundException, RevokedApiKeyException, InvalidIpForApiKeyException {
-        return configFetcher.configurationFor(request);
+        Maybe<ApplicationConfiguration> configuration = configFetcher.configurationFor(request);
+
+        // Use of Owl that does require an API key is still allowed so only check for the
+        // appropriate access role if a configuration has been found.
+        if (configuration.hasValue()
+                && !configuration.requireValue().hasAccessRole(ApplicationAccessRole.OWL_ACCESS)) {
+            throw MissingApplicationOwlAccessRoleException.create();
+        }
+
+        return configuration;
+    }
+
+    protected ContentQuery buildQuery(HttpServletRequest request)
+            throws ApiKeyNotFoundException, RevokedApiKeyException, InvalidIpForApiKeyException {
+        ContentQuery query = queryBuilder.build(request);
+
+        Maybe<ApplicationConfiguration> configuration = possibleAppConfig(request);
+
+        if (configuration.hasValue()) {
+            query = query.copyWithApplicationConfiguration(configuration.requireValue());
+        }
+
+        return query;
     }
 
     protected Set<Publisher> publishers(String publisherString, ApplicationConfiguration config) {

@@ -18,18 +18,19 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.logging.AdapterLog;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.query.Selection;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.query.Selection;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class ProductController extends BaseController<Iterable<Product>> {
@@ -53,7 +54,7 @@ public class ProductController extends BaseController<Iterable<Product>> {
     @RequestMapping(value={"3.0/products.*","/products.*"})
     public void products(HttpServletRequest req, HttpServletResponse resp) throws IOException  {
         try {
-            final ContentQuery query = builder.build(req);
+            final ContentQuery query = buildQuery(req);
             modelAndViewFor(req, resp, Iterables.filter(productResolver.products(), new Predicate<Product>() {
                 @Override
                 public boolean apply(Product input) {
@@ -70,7 +71,7 @@ public class ProductController extends BaseController<Iterable<Product>> {
         
         ContentQuery query;
         try {
-            query = builder.build(req);
+            query = buildQuery(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             outputter.writeError(req, resp, AtlasErrorSummary.forException(e));
             return;
@@ -90,14 +91,14 @@ public class ProductController extends BaseController<Iterable<Product>> {
             return;
         }
         
-        modelAndViewFor(req, resp, ImmutableSet.<Product>of(product), query.getConfiguration());
+        modelAndViewFor(req, resp, ImmutableSet.of(product), query.getConfiguration());
     }
     
     @RequestMapping(value={"3.0/products/{id}/content.*", "/products/{id}/content"})
     public void topicContents(HttpServletRequest req, HttpServletResponse resp, @PathVariable("id") String id) throws IOException {
         ContentQuery query;
         try {
-            query = builder.build(req);
+            query = buildQuery(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             outputter.writeError(req, resp, AtlasErrorSummary.forException(e));
             return;

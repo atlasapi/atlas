@@ -35,17 +35,18 @@ import org.atlasapi.output.QueryResult;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.event.EventContentLister;
 import org.atlasapi.persistence.logging.AdapterLog;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
+
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class QueryController extends BaseController<QueryResult<Identified, ? extends Identified>> {
@@ -92,7 +93,7 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 		try {
             ContentQuery filter;
             try {
-                filter = builder.build(request);
+                filter = buildQuery(request);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;

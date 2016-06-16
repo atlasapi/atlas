@@ -1,8 +1,5 @@
 package org.atlasapi.query.v2;
 
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
@@ -13,26 +10,27 @@ import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.content.criteria.ContentQuery;
-import org.atlasapi.output.AtlasErrorSummary;
-import org.atlasapi.output.AtlasModelWriter;
-import org.atlasapi.output.QueryResult;
-import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
-import org.atlasapi.persistence.logging.AdapterLog;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.query.Selection;
-
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.ContentGroup;
 import org.atlasapi.media.entity.Identified;
+import org.atlasapi.output.AtlasErrorSummary;
+import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.QueryResult;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
+import org.atlasapi.persistence.logging.AdapterLog;
+
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.query.Selection;
+
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 @Controller
 public class ContentGroupController extends BaseController<Iterable<ContentGroup>> {
@@ -55,7 +53,7 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
     public void contentGroup(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         ContentQuery query;
         try {
-            query = builder.build(req);
+            query = buildQuery(req);
             modelAndViewFor(req, resp, query.getSelection().apply(Iterables.filter(contentGroupResolver.findAll(), publisherFilter(query))), query.getConfiguration());
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
@@ -74,7 +72,7 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
         
         ContentQuery query;
         try {
-            query = builder.build(req);
+            query = buildQuery(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
             return;
@@ -105,7 +103,7 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
         
         ContentQuery query;
         try {
-            query = builder.build(req);
+            query = buildQuery(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
             return;

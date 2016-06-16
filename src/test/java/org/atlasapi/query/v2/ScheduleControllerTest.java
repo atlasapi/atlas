@@ -63,9 +63,6 @@ public class ScheduleControllerTest {
     private static final String NO_ON = null;
     private static final String NO_CHANNEL_KEY = null;
 
-    private static final String PRIVILEGED_KEY = "privilegedKey";
-    private static final String NON_PRIVILEGED_KEY = "nonPrivilegedKey";
-
     private final ScheduleResolver scheduleResolver =
             mock(ScheduleResolver.class);
     private final ChannelResolver channelResolver =
@@ -84,8 +81,7 @@ public class ScheduleControllerTest {
             channelResolver,
             configFetcher,
             log,
-            outputter,
-            ImmutableList.of(PRIVILEGED_KEY)
+            outputter
     );
 
     private DateTime to;
@@ -245,7 +241,6 @@ public class ScheduleControllerTest {
 
     @Test
     public void testPassesAppConfigToResolverWhenNoPublishersSupplied() throws Exception {
-        
         HttpServletRequest req = request.withParam("apiKey", "key");
         ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
                 .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
@@ -262,7 +257,7 @@ public class ScheduleControllerTest {
         verify(outputter).writeTo(argThat(is(req)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), argThat(is(appConfig)));
         
     }
-    
+
     @Test
     public void testDoesntPassAppConfigToResolverWhenPublishersSuppliedWithApiKey() throws Exception {
         
@@ -317,7 +312,17 @@ public class ScheduleControllerTest {
     }
 
     @Test
-    public void privilegedKeysAreAllowedToAskForBigSchedules() throws IOException {
+    public void privilegedKeysAreAllowedToAskForBigSchedules() throws Exception {
+        HttpServletRequest request = this.request.withParam("apiKey", "key");
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(
+                        ApplicationAccessRole.OWL_ACCESS,
+                        ApplicationAccessRole.SUNSETTED_API_FEATURES_ACCESS
+                ))
+                .build();
+
+        when(configFetcher.configurationFor(request)).thenReturn(Maybe.just(appConfig));
+
         when(
                 scheduleResolver.schedule(
                         any(DateTime.class),
@@ -330,8 +335,6 @@ public class ScheduleControllerTest {
                 .thenReturn(Schedule.fromChannelMap(
                         ImmutableMap.of(), new Interval(from, to)
                 ));
-
-        request.withParam("apiKey", PRIVILEGED_KEY);
 
         to = from.plusDays(7);
 
@@ -357,7 +360,14 @@ public class ScheduleControllerTest {
     }
 
     @Test
-    public void nonPrivilegedKeysAreAllowedToAskForOneScheduleDay() throws IOException {
+    public void nonPrivilegedKeysAreAllowedToAskForOneScheduleDay() throws Exception {
+        HttpServletRequest request = this.request.withParam("apiKey", "key");
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
+                .build();
+
+        when(configFetcher.configurationFor(request)).thenReturn(Maybe.just(appConfig));
+
         when(
                 scheduleResolver.schedule(
                         any(DateTime.class),
@@ -370,8 +380,6 @@ public class ScheduleControllerTest {
                 .thenReturn(Schedule.fromChannelMap(
                         ImmutableMap.of(), new Interval(from, to)
                 ));
-
-        request.withParam("apiKey", NON_PRIVILEGED_KEY);
 
         to = from.plusDays(1);
 
@@ -397,7 +405,14 @@ public class ScheduleControllerTest {
     }
 
     @Test
-    public void nonPrivilegedKeysAreNotAllowedToAskForMoreThanOneScheduleDay() throws IOException {
+    public void nonPrivilegedKeysAreNotAllowedToAskForMoreThanOneScheduleDay() throws Exception {
+        HttpServletRequest request = this.request.withParam("apiKey", "key");
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
+                .build();
+
+        when(configFetcher.configurationFor(request)).thenReturn(Maybe.just(appConfig));
+
         when(
                 scheduleResolver.schedule(
                         any(DateTime.class),
@@ -410,8 +425,6 @@ public class ScheduleControllerTest {
                 .thenReturn(Schedule.fromChannelMap(
                         ImmutableMap.of(), new Interval(from, to)
                 ));
-
-        request.withParam("apiKey", NON_PRIVILEGED_KEY);
 
         to = from.plusDays(7);
 

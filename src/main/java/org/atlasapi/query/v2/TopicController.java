@@ -10,7 +10,6 @@ import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
@@ -21,18 +20,18 @@ import org.atlasapi.output.QueryResult;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.topic.TopicContentLister;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
-import org.atlasapi.query.content.FilterActivelyPublishedOnlyQueryExecutor;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.query.Selection;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 
 @Controller
 public class TopicController extends BaseController<Iterable<Topic>> {
@@ -58,7 +57,7 @@ public class TopicController extends BaseController<Iterable<Topic>> {
         try {
             ContentQuery query;
             try {
-                query = builder.build(req);
+                query = buildQuery(req);
             } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
                 errorViewFor(req, resp, AtlasErrorSummary.forException(ex));
                 return;
@@ -75,7 +74,7 @@ public class TopicController extends BaseController<Iterable<Topic>> {
         
         ContentQuery query;
         try {
-            query = builder.build(req);
+            query = buildQuery(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             outputter.writeError(req, resp, AtlasErrorSummary.forException(e));
             return;
@@ -96,14 +95,14 @@ public class TopicController extends BaseController<Iterable<Topic>> {
         }
         
         
-        modelAndViewFor(req, resp, ImmutableSet.<Topic>of(topicForUri.requireValue()), query.getConfiguration());
+        modelAndViewFor(req, resp, ImmutableSet.of(topicForUri.requireValue()), query.getConfiguration());
     }
     
     @RequestMapping(value={"3.0/topics/{id}/content.*", "/topics/{id}/content"})
     public void topicContents(HttpServletRequest req, HttpServletResponse resp, @PathVariable("id") String id) throws IOException {
         ContentQuery query;
         try {
-            query = builder.build(req);
+            query = buildQuery(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             outputter.writeError(req, resp, AtlasErrorSummary.forException(e));
             return;

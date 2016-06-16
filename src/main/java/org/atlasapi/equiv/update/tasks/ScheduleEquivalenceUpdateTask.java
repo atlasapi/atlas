@@ -88,6 +88,14 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         UpdateProgress progress = UpdateProgress.START;
         for (Publisher publisher : publishers) {
             for (Channel channel : channelsSupplier.get()) {
+                if (publisher.equals(Publisher.YOUVIEW)) {
+                    log.debug("YOUVIEW: started equivalating schedule for channel {}", channel.getTitle());
+                }
+
+                if (publisher.equals(Publisher.YOUVIEW) && channel.getUri().equals("http://www.itv.com/channels/itv1/hd")) {
+                    log.debug("ITV on YOUVIEW STARTED EQUIVALATING");
+                }
+
                 if (!shouldContinue()) {
                     return progress;
                 }

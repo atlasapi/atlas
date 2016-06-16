@@ -11,11 +11,13 @@ import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationAccessRole;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.MissingApplicationOwlAccessRoleException;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
@@ -108,7 +110,16 @@ public abstract class BaseController<T> {
 
     protected Maybe<ApplicationConfiguration> possibleAppConfig(HttpServletRequest request)
             throws ApiKeyNotFoundException, RevokedApiKeyException, InvalidIpForApiKeyException {
-        return configFetcher.configurationFor(request);
+        Maybe<ApplicationConfiguration> configuration = configFetcher.configurationFor(request);
+
+        // Use of Owl that does require an API key is still allowed so only check for the
+        // appropriate access role if a configuration has been found.
+        if (configuration.hasValue()
+                && !configuration.requireValue().hasAccessRole(ApplicationAccessRole.OWL_ACCESS)) {
+            throw MissingApplicationOwlAccessRoleException.create();
+        }
+
+        return configuration;
     }
 
     protected Set<Publisher> publishers(String publisherString, ApplicationConfiguration config) {

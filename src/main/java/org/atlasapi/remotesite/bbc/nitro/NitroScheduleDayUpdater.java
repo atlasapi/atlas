@@ -51,23 +51,17 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     private final NitroBroadcastHandler<? extends List<Optional<ItemRefAndBroadcast>>> broadcastHandler;
     private final BroadcastTrimmer trimmer;
     private final ScheduleWriter scheduleWriter;
-    private final MetricRegistry metricRegistry;
-    private final String metricPrefix;
 
     public NitroScheduleDayUpdater(
             ScheduleWriter scheduleWriter,
             BroadcastTrimmer trimmer,
             NitroBroadcastHandler<? extends List<Optional<ItemRefAndBroadcast>>> handler,
-            Glycerin glycerin,
-            MetricRegistry metricRegistry,
-            String metricPrefix
+            Glycerin glycerin
     ) {
         this.scheduleWriter = scheduleWriter;
         this.trimmer = trimmer;
         this.broadcastHandler = handler;
         this.glycerin = glycerin;
-        this.metricRegistry = metricRegistry;
-        this.metricPrefix = metricPrefix;
     }
     
     @Override
@@ -143,9 +137,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
                 .withPageSize(MAX_PAGE_SIZE)
                 .build();
 
-        Timer.Context timer = metricRegistry.timer(metricPrefix + "glycerin.broadcasts").time();
         GlycerinResponse<Broadcast> resp = glycerin.execute(query);
-        timer.stop();
 
         if (!resp.hasNext()) {
             return resp.getResults();

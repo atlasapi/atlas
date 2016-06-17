@@ -3,13 +3,12 @@ package org.atlasapi.remotesite.bbc.nitro;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
 import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -19,6 +18,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
 import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHydrator;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
@@ -27,6 +27,7 @@ import org.atlasapi.util.GroupLock;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -71,7 +72,7 @@ public class BbcNitroModule {
     private @Value("${bbc.nitro.threadCount.aroundtoday}") Integer nitroAroundTodayThreadCount;
     private @Value("${bbc.nitro.requestPageSize}") Integer nitroRequestPageSize;
     private @Value("${bbc.nitro.jobFailureThresholdPercent}") Integer jobFailureThresholdPercent;
-    
+
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;
     private @Autowired ContentResolver contentResolver;
@@ -80,11 +81,11 @@ public class BbcNitroModule {
     private @Autowired ChannelResolver channelResolver;
     private @Autowired ChannelWriter channelWriter;
     private @Autowired QueuingPersonWriter peopleWriter;
-    
+
     private final ThreadFactory nitroThreadFactory
         = new ThreadFactoryBuilder().setNameFormat("nitro %s").build();
     private final GroupLock<String> pidLock = GroupLock.<String>natural();
-    
+
     @PostConstruct
     public void configure() {
         if (tasksEnabled) {
@@ -155,8 +156,8 @@ public class BbcNitroModule {
 
     @Bean
     ScheduleDayUpdateController nitroScheduleUpdateController() {
-        return new ScheduleDayUpdateController(channelResolver, 
-                            nitroChannelDayProcessor(nitroTodayRateLimit, 
+        return new ScheduleDayUpdateController(channelResolver,
+                            nitroChannelDayProcessor(nitroTodayRateLimit,
                             Optional.of(Predicates.<Item>alwaysTrue())));
     }
 
@@ -165,7 +166,7 @@ public class BbcNitroModule {
         ScheduleResolverBroadcastTrimmer scheduleTrimmer
             = new ScheduleResolverBroadcastTrimmer(Publisher.BBC_NITRO, scheduleResolver, contentResolver, contentWriter);
         Glycerin glycerin = glycerin(rateLimit);
-        return new NitroScheduleDayUpdater(scheduleWriter, scheduleTrimmer, 
+        return new NitroScheduleDayUpdater(scheduleWriter, scheduleTrimmer,
                 nitroBroadcastHandler(glycerin, fullFetchPermitted, contentWriter), glycerin);
     }
 
@@ -181,13 +182,13 @@ public class BbcNitroModule {
         return glycerin.build();
     }
 
-    NitroBroadcastHandler<ImmutableList<Optional<ItemRefAndBroadcast>>> nitroBroadcastHandler(Glycerin glycerin, 
+    NitroBroadcastHandler<ImmutableList<Optional<ItemRefAndBroadcast>>> nitroBroadcastHandler(Glycerin glycerin,
             Optional<Predicate<Item>> fullFetchPermitted, ContentWriter contentWriter) {
         return new ContentUpdatingNitroBroadcastHandler(contentResolver, contentWriter,
                         localOrRemoteNitroFetcher(glycerin, fullFetchPermitted), pidLock);
     }
-    
-    LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher(Glycerin glycerin, 
+
+    LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher(Glycerin glycerin,
             Optional<Predicate<Item>> fullFetchPermitted) {
         if (fullFetchPermitted.isPresent()) {
             return new LocalOrRemoteNitroFetcher(contentResolver, nitroContentAdapter(glycerin), fullFetchPermitted.get());
@@ -195,8 +196,6 @@ public class BbcNitroModule {
             return new LocalOrRemoteNitroFetcher(contentResolver, nitroContentAdapter(glycerin), new SystemClock());
         }
     }
-    
-    
 
     GlycerinNitroContentAdapter nitroContentAdapter(Glycerin glycerin) {
         SystemClock clock = new SystemClock();
@@ -216,14 +215,10 @@ public class BbcNitroModule {
     }
 
     private Supplier<ImmutableSet<Channel>> bbcChannelSupplier() {
-        return new Supplier<ImmutableSet<Channel>>() {
-            @Override
-            public ImmutableSet<Channel> get() {
-                return ImmutableSet.copyOf(channelResolver.allChannels(ChannelQuery.builder()
-                        .withPublisher(Publisher.BBC_NITRO)
-                        .withChannelType(ChannelType.CHANNEL)
-                        .build()));
-            }
-        };
+        return () -> ImmutableSet.copyOf(BbcIonServices.services.values()
+                .stream()
+                .map(channelResolver::fromUri)
+                .map(Maybe::requireValue)
+                .collect(Collectors.toList()));
     }
 }

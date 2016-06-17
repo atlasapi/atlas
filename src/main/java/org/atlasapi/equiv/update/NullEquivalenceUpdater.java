@@ -5,7 +5,8 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     private enum NullUpdater implements EquivalenceUpdater<Object> {
         INSTANCE {
             @Override
-            public void updateEquivalences(Object content) {
+            public boolean updateEquivalences(Object content) {
+                return false;
             }
         };
 
@@ -23,8 +24,8 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     }
 
     @Override
-    public void updateEquivalences(T content) {
-
+    public boolean updateEquivalences(T content) {
+        return false;
     }
 
 }

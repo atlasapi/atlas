@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.channel4.epg;
+package org.atlasapi.remotesite.channel4.pmlsd.epg;
 
 import java.util.Map;
 

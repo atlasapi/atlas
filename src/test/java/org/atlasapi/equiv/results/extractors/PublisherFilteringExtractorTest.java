@@ -26,14 +26,14 @@ public class PublisherFilteringExtractorTest {
         
         assertFalse(filter.apply(paScore, itemWithPublisher(Publisher.PA), new DefaultDescription()).iterator().hasNext());
         assertTrue(filter.apply(paScore, itemWithPublisher(Publisher.BBC), new DefaultDescription()).iterator().hasNext());
-        assertTrue(filter.apply(paScore, itemWithPublisher(Publisher.C4), new DefaultDescription()).iterator().hasNext());
+        assertTrue(filter.apply(paScore, itemWithPublisher(Publisher.C4_PMLSD), new DefaultDescription()).iterator().hasNext());
         
         List<ScoredCandidate<Item>> BbcScore = ImmutableList.of(scoreOneFor(Publisher.BBC));
-        assertFalse(filter.apply(BbcScore, itemWithPublisher(Publisher.C4), new DefaultDescription()).iterator().hasNext());
+        assertFalse(filter.apply(BbcScore, itemWithPublisher(Publisher.C4_PMLSD), new DefaultDescription()).iterator().hasNext());
         assertTrue(filter.apply(BbcScore, itemWithPublisher(Publisher.SEESAW), new DefaultDescription()).iterator().hasNext());
         
         List<ScoredCandidate<Item>> dmScore = ImmutableList.of(scoreOneFor(Publisher.DAILYMOTION));
-        assertTrue(filter.apply(dmScore, itemWithPublisher(Publisher.C4), new DefaultDescription()).iterator().hasNext());
+        assertTrue(filter.apply(dmScore, itemWithPublisher(Publisher.C4_PMLSD), new DefaultDescription()).iterator().hasNext());
         
     }
 

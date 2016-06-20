@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.channel4;
+package org.atlasapi.remotesite.channel4.pmlsd;
 
 import org.atlasapi.persistence.system.RemoteSiteClient;
 

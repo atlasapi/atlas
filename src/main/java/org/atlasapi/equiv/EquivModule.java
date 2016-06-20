@@ -481,7 +481,7 @@ public class EquivModule {
         
         ImmutableSet<Publisher> roviMatchPublishers = ImmutableSet.of(
             Publisher.BBC, Publisher.PA, Publisher.YOUVIEW, Publisher.BBC_NITRO, 
-            Publisher.BBC_REDUX, Publisher.ITV, Publisher.C4,Publisher.C4_PMLSD,
+            Publisher.BBC_REDUX, Publisher.ITV, Publisher.C4_PMLSD,
             Publisher.C4_PMLSD_P06,Publisher.FIVE
         );
         updaters.register(Publisher.ROVI_EN_GB, roviUpdater(Publisher.ROVI_EN_GB, roviMatchPublishers));

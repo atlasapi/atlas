@@ -46,16 +46,7 @@ public class RemoteSiteHealthModule {
                 "http://www.bbc.co.uk/programmes/b006wknd" // Rob da Bank
         ), store);
     }
-    
-    public @Bean HealthProbe c4Probe() {
-        return new BroadcasterProbe(Publisher.C4, new AToZUriSource("http://www.channel4.com/programmes/atoz/", "", true), store);
-    }
-    
-    public @Bean HealthProbe c4ScheduleProbe() {
-        Maybe<Channel> possibleChannel4 = channelResolver.fromUri("http://www.channel4.com");
-        return new ScheduleProbe(Publisher.C4, possibleChannel4.valueOrNull(), scheduleResolver, clock);
-    }
-    
+
     public @Bean HealthProbe bbcScheduleProbe() {
         Maybe<Channel> possibleBbcOneLondon = channelResolver.fromUri("http://www.bbc.co.uk/services/bbcone/london");
         return new ScheduleProbe(Publisher.BBC, possibleBbcOneLondon.valueOrNull(), scheduleResolver, clock);

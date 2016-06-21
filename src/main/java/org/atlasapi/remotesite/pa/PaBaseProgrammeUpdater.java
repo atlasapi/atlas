@@ -276,7 +276,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
                                 @Override
                                 public Integer call() {
                                     try {
-                                        return processor.process(data, fileToProcess, currentlyProcessing);
+                                        return processor.process(data, currentlyProcessing);
                                     } finally {
                                         jobsCounter.decrementAndGet();
                                     }

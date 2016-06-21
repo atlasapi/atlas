@@ -268,14 +268,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         public TestPaProgrammeUpdater(PaProgDataProcessor processor, ChannelResolver channelResolver, AdapterLog log,
                 MongoScheduleStore scheduleWriter, List<File> files, BroadcastTrimmer trimmer,
                 PaScheduleVersionStore scheduleVersionStore, ContentBuffer contentBuffer, ContentWriter contentWriter) {
-            super(MoreExecutors.sameThreadExecutor(), new PaChannelProcessor(processor, trimmer, scheduleWriter, scheduleVersionStore, contentBuffer, contentWriter,
-                    new IngestMonitorClient(IngesterConfiguration.builder().
-                            environment(IngesterConfiguration.Environment.STAGE)
-                            .key("key")
-                            .monitorUri("http://ingest-monitor-stage.mbst.tv/1/ingests")
-                            .name("name")
-                            .publisher(ImmutableList.of("pressassociation.com"))
-                            .build())),
+            super(MoreExecutors.sameThreadExecutor(), new PaChannelProcessor(processor, trimmer, scheduleWriter, scheduleVersionStore, contentBuffer, contentWriter),
                     new DefaultPaProgrammeDataStore(TMP_TEST_DIRECTORY, null), channelResolver, Optional.fromNullable(scheduleVersionStore));
             this.files = files;
         }

@@ -32,6 +32,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     private final EquivalenceUpdater<Content> updater;
     private final ScheduleResolver scheduleResolver;
     private final List<Publisher> publishers;
+    private final List<String> equivalatedItems = Lists.newCopyOnWriteArrayList();
     private final Supplier<Iterable<Channel>> channelsSupplier;
     private final int back;
     private final int forward;
@@ -88,13 +89,6 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         UpdateProgress progress = UpdateProgress.START;
         for (Publisher publisher : publishers) {
             for (Channel channel : channelsSupplier.get()) {
-                if (publisher.equals(Publisher.YOUVIEW)) {
-                    log.debug("YOUVIEW: started equivalating schedule for channel {}", channel.getTitle());
-                }
-
-                if (publisher.equals(Publisher.YOUVIEW) && channel.getUri().equals("http://www.itv.com/channels/itv1/hd")) {
-                    log.debug("ITV on YOUVIEW STARTED EQUIVALATING");
-                }
 
                 if (!shouldContinue()) {
                     return progress;
@@ -121,11 +115,14 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 Iterator<Item> channelItems = scheduleChannel.items().iterator();
                 while (channelItems.hasNext() && shouldContinue()) {
                     Item scheduleItem = channelItems.next();
-                    progress = progress.reduce(process(scheduleItem));
-                    reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
+                    if (!equivalatedItems.contains(scheduleItem.getCanonicalUri())) {
+                        progress = progress.reduce(process(scheduleItem));
+                        reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
+                    }
                 }
             }   
         }
+        equivalatedItems.clear();
         return progress;
     }
 
@@ -144,7 +141,10 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
     private UpdateProgress process(Item item) {
         try {
-            updater.updateEquivalences(item);
+            boolean hasCandidates = updater.updateEquivalences(item);
+            if (hasCandidates) {
+                equivalatedItems.add(item.getCanonicalUri());
+            }
             log.info("successfully updated equivalences on " + item.getCanonicalUri());
             return SUCCESS;
         } catch (Exception e) {

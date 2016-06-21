@@ -32,30 +32,31 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     }
 
     @Override
-    public void updateEquivalences(Content content) {
+    public boolean updateEquivalences(Content content) {
         if (content instanceof Container) {
-            updateContainer((Container) content);
+            return updateContainer((Container) content);
         } else if (content instanceof Item){
-            updateContentEquivalence(content);
+            return updateContentEquivalence(content);
         }
+        return false;
     }
 
-    private void updateContentEquivalence(Content content) {
+    private boolean updateContentEquivalence(Content content) {
         log.trace("equiv update {}", content);
-        updater.updateEquivalences(content);
+        return updater.updateEquivalences(content);
     }
 
-    private void updateContainer(Container container) {
+    private boolean updateContainer(Container container) {
         updateContentEquivalence(container);
         for (Item child : childrenOf(container)) {
             updateContentEquivalence(child);
         }
         if (container instanceof Brand) {
             for (Series series : seriesOf((Brand) container)) {
-                updateContentEquivalence(series);
+               updateContentEquivalence(series);
             }
         }
-        updateContentEquivalence(container);
+        return updateContentEquivalence(container);
     }
 
     private Iterable<Series> seriesOf(Brand brand) {

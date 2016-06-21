@@ -21,8 +21,8 @@ public class EquivalenceUpdaters implements EquivalenceUpdater<Content> {
     }
 
     @Override
-    public void updateEquivalences(Content subject) {
-        updaters.get(subject.getPublisher()).updateEquivalences(subject);
+    public boolean updateEquivalences(Content subject) {
+        return updaters.get(subject.getPublisher()).updateEquivalences(subject);
     }
 
 }

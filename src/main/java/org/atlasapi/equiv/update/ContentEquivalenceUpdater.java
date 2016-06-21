@@ -126,7 +126,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     @Override
-    public void updateEquivalences(T content) {
+    public boolean updateEquivalences(T content) {
 
         ReadableDescription desc = new DefaultDescription();
 
@@ -139,8 +139,11 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
         
         EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
-        
         handler.handle(result);
+
+        boolean hasCandidates = !result.combinedEquivalences().candidates().isEmpty();
+
+        return hasCandidates;
     }
     
     private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {

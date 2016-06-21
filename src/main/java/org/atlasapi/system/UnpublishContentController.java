@@ -20,6 +20,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 
@@ -44,7 +46,9 @@ public class UnpublishContentController {
     }
 
     @RequestMapping(value = "/system/content/unpublish/{id}", method = RequestMethod.POST)
-    public void unpublish(HttpServletResponse response, @PathVariable("id") String id) {
+    public void unpublish(HttpServletResponse response,
+            @PathVariable("id") String id,
+            @RequestParam(value = "publisher") String publisher) {
 
         // if we cannot resolve the ID we want a notfound exception
         Long contentId = idCodec.decode(id).longValue();
@@ -74,6 +78,13 @@ public class UnpublishContentController {
 
         // now unpublish item (strictly we only need a Described but restricting to items is safer)
         Item item = (Item) identified.get();
+
+        // check publisher constraint is met
+        if(! item.getPublisher().key().equals(publisher)) {
+            throw new RuntimeException((String.format(
+                    "Identified %d is not published by '%s'", contentId, publisher)));
+        }
+
         item.setActivelyPublished(false);
         contentWriter.createOrUpdate(item);
 

@@ -6,6 +6,8 @@ import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -85,23 +87,30 @@ public class UnpublishContentController {
                     "Unable to resolve Item from ID %d, URI %s", contentId, contentUri.uri()));
         }
 
-        if(! (identified.get() instanceof Item)) {
-            throw new RuntimeException((String.format(
-                    "Identified %d is not Item", contentId)));
-        }
-
-        // now unpublish item (strictly we only need a Described but restricting to items is safer)
-        Item item = (Item) identified.get();
-
         // check publisher constraint is met
+        Described described = (Described) identified.get();
         publisher.ifPresent(key -> {
-            if(! key.equals(item.getPublisher().key())) {
+            if (!key.equals(described.getPublisher().key())) {
                 throw new RuntimeException((String.format(
-                        "Identified %d is not published by '%s'", contentId, publisher)));
+                        "Described %d is not published by '%s'", contentId, publisher)));
             }
         });
 
-        item.setActivelyPublished(status);
-        contentWriter.createOrUpdate(item);
+        // change publish status
+        described.setActivelyPublished(status);
+
+        // now write in the appropriate manner
+        if(described instanceof Item) {
+            contentWriter.createOrUpdate((Item) described);
+            return;
+        }
+
+        if(described instanceof Container) {
+            contentWriter.createOrUpdate((Container) described);
+            return;
+        }
+
+        throw new IllegalStateException((String.format(
+                "Described %d is not Item/Container", contentId)));
     }
 }

@@ -110,7 +110,7 @@ public class PaArchivesProgExtractorTest {
         Item item = hierarchy.getItem();
         Set<Alias> aliases = ImmutableSet.of(new Alias("pa:film", "263544"), new Alias("rt:filmid", "5217"), new Alias("gb:pressassociation:prod:prog_id", "263544"));
         assertThat(item.getAliases(), is(aliases));
-        Set<String> aliasUrls = ImmutableSet.of("http://pressassociation.com/263544");
+        Set<String> aliasUrls = ImmutableSet.of("http://pressassociation.com/263544", "http://pressassociation.com/films/5217");
         assertThat(item.getAliasUrls(), is(aliasUrls));
         assertThat(item.getBlackAndWhite(), is(false));
         assertThat(item.getCanonicalUri(), is("http://pressassociation.com/episodes/263544"));

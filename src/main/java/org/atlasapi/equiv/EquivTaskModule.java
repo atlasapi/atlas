@@ -34,7 +34,7 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
-import org.atlasapi.remotesite.channel4.C4AtomApi;
+import org.atlasapi.remotesite.channel4.pmlsd.C4AtomApi;
 import org.atlasapi.remotesite.five.FiveChannelMap;
 import org.atlasapi.remotesite.itv.whatson.ItvWhatsonChannelMap;
 import org.atlasapi.remotesite.redux.ReduxServices;
@@ -86,7 +86,6 @@ import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_SYSTEST2_CONFIG_1;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLD_CONFIG_1;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLE_CONFIG_1;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
-import static org.atlasapi.media.entity.Publisher.C4;
 import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
@@ -218,7 +217,6 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(publisherUpdateTask(BBC_MUSIC).withName("Music Equivalence Updater"), BBC_MUSIC_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(PA).withName("PA Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(BBC).withName("BBC Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
-        scheduleEquivalenceJob(publisherUpdateTask(C4).withName("C4 Equivalence Updater"), RepetitionRules.NEVER,jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(C4_PMLSD).withName("C4 PMLSD Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(BBC_REDUX).withName("Redux Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
         //scheduleEquivalenceJob(publisherUpdateTask(LOVEFILM).withName("Lovefilm Equivalence Updater"), RepetitionRules.every(Duration.standardHours(12)).withOffset(Duration.standardHours(10)), jobsAtStartup);
@@ -252,12 +250,6 @@ public class EquivTaskModule {
                         .withChannelsSupplier(itvChannels())
                         .build().withName("ITV Interlinking Schedule Equivalence (8 day) Updater"),
                 ITV_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup);
-        scheduleEquivalenceJob(taskBuilder(0, 7)
-                        .withPublishers(C4)
-                        .withChannelsSupplier(c4Channels())
-                        .build().withName("C4 Schedule Equivalence (8 day) Updater"),
-                C4_SCHEDULE_EQUIVALENCE_REPETITION,
                 jobsAtStartup);
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(C4_PMLSD)
@@ -421,13 +413,13 @@ public class EquivTaskModule {
                 (Iterable<Channel>) new ItvWhatsonChannelMap(channelResolver).values()
         );
     }
-        
+
     private Supplier<Iterable<Channel>> c4Channels() {
         return Suppliers.ofInstance(
                 (Iterable<Channel>) new C4AtomApi(channelResolver).getChannelMap().values()
         );
     }
-    
+
     private Supplier<Iterable<Channel>> fiveChannels() {
         return Suppliers.ofInstance(
                 (Iterable<Channel>) new FiveChannelMap(channelResolver).values()
@@ -450,7 +442,7 @@ public class EquivTaskModule {
             Predicates.or(ImmutableList.<Predicate<? super Content>>of(
                 sourceIsIn(BBC_REDUX, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BETTY, BT_TVE_VOD, BT_VOD),
                 Predicates.and(Predicates.instanceOf(Container.class),
-                    sourceIsIn(BBC, C4, C4_PMLSD, ITV, FIVE, BBC_REDUX, ITUNES, 
+                    sourceIsIn(BBC, C4_PMLSD, ITV, FIVE, BBC_REDUX, ITUNES,
                         RADIO_TIMES, LOVEFILM, TALK_TALK, YOUVIEW, NETFLIX))
             ))
         );

@@ -5,6 +5,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import junit.framework.TestCase;
 
 import org.atlasapi.persistence.system.RemoteSiteClient;
+import org.atlasapi.remotesite.channel4.pmlsd.RequestLimitingRemoteSiteClient;
 
 public class RequestLimitingRemoteSiteClientTest extends TestCase {
 

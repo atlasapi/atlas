@@ -62,7 +62,7 @@ public class YouViewContentExtractor {
             ImmutableOptionalMap.fromMap(ImmutableMap.of(
                 Publisher.BBC, Platform.YOUVIEW_IPLAYER,
                 Publisher.ITV, Platform.YOUVIEW_ITVPLAYER,
-                Publisher.C4, Platform.YOUVIEW_4OD,
+                Publisher.C4_PMLSD, Platform.YOUVIEW_4OD,
                 Publisher.FIVE, Platform.YOUVIEW_DEMAND5
             ));
             

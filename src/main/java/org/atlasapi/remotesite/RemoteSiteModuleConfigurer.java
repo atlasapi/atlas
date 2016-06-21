@@ -15,7 +15,6 @@ import org.atlasapi.remotesite.bt.channels.BtChannelsModule;
 import org.atlasapi.remotesite.bt.events.BtEventsModule;
 import org.atlasapi.remotesite.btfeatured.BtFeaturedContentModule;
 import org.atlasapi.remotesite.btvod.BtVodModule;
-import org.atlasapi.remotesite.channel4.C4Module;
 import org.atlasapi.remotesite.channel4.pmlsd.C4PmlsdModule;
 import org.atlasapi.remotesite.five.FiveModule;
 import org.atlasapi.remotesite.getty.GettyModule;
@@ -55,7 +54,6 @@ public class RemoteSiteModuleConfigurer {
 
     private Map<String, Class<?>> moduleMap = ImmutableMap.<String, Class<?>>builder()
         .put("itv",     ItvModule.class)
-        .put("c4",      C4Module.class)
         .put("c4pmlsd", C4PmlsdModule.class)
         .put("five",    FiveModule.class)
  //       .put("ict",     ICTomorrowModule.class)

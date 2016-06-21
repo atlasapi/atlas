@@ -12,6 +12,7 @@ import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationAccessRole;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -45,7 +46,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import static com.google.common.base.Preconditions.checkArgument;
-import static org.atlasapi.application.query.IpCheckingApiKeyConfigurationFetcher.API_KEY_QUERY_PARAMETER;
 
 @Controller
 public class ScheduleController extends BaseController<Iterable<ScheduleChannel>> {
@@ -57,7 +57,6 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
 
     private final ScheduleResolver scheduleResolver;
     private final ChannelResolver channelResolver;
-    private final ImmutableSet<String> privilegedKeys;
 
     private final ApplicationConfiguration defaultConfig
             = ApplicationConfiguration.forNoApiKey();
@@ -70,13 +69,11 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             ChannelResolver channelResolver,
             ApplicationConfigurationFetcher configFetcher,
             AdapterLog log,
-            AtlasModelWriter<Iterable<ScheduleChannel>> outputter,
-            Iterable<String> privilegedApiKeys
+            AtlasModelWriter<Iterable<ScheduleChannel>> outputter
     ) {
         super(configFetcher, log, outputter);
         this.scheduleResolver = scheduleResolver;
         this.channelResolver = channelResolver;
-        this.privilegedKeys = ImmutableSet.copyOf(privilegedApiKeys);
     }
 
     @RequestMapping("/3.0/schedule.*")
@@ -133,9 +130,11 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         + "or 'from' and 'count'");
             }
 
-            checkRequestedInterval(request, fromWhen, toWhen);
-
             ApplicationConfiguration appConfig = requestedConfig.valueOrDefault(defaultConfig);
+
+            if (toWhen != null) {
+                checkRequestedInterval(appConfig, fromWhen, toWhen);
+            }
 
             boolean publishersSupplied = !Strings.isNullOrEmpty(publisher);
 
@@ -213,7 +212,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         return channelResolver.fromId(idCodec.decode(input).longValue());
                     }
                 }
-        ), Maybe.HAS_VALUE), Maybe.<Channel>requireValueFunction()));
+        ), Maybe.HAS_VALUE), Maybe.requireValueFunction()));
     }
 
     private Set<Channel> channelsFromKeys(String channelString) {
@@ -228,14 +227,12 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
     }
 
     private void checkRequestedInterval(
-            HttpServletRequest request,
+            ApplicationConfiguration configuration,
             DateTime fromWhen,
             DateTime toWhen
     ) {
-        String apiKey = getApiKey(request);
-
         // These API keys are allowed to make big schedule requests
-        if (privilegedKeys.contains(apiKey)) {
+        if (configuration.hasAccessRole(ApplicationAccessRole.SUNSETTED_API_FEATURES_ACCESS)) {
             return;
         }
 
@@ -246,13 +243,5 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                     PERIOD_FORMATTER.print(MAX_SCHEDULE_REQUEST_DURATION.toPeriod())
             ));
         }
-    }
-
-    private String getApiKey(HttpServletRequest request) {
-        String apiKey = request.getParameter(API_KEY_QUERY_PARAMETER);
-        if (apiKey == null) {
-            apiKey = request.getHeader(API_KEY_QUERY_PARAMETER);
-        }
-        return apiKey;
     }
 }

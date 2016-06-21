@@ -75,7 +75,7 @@ public class UnpublishContentController {
         Optional<Identified> identified =
                 Optional.ofNullable(
                         contentResolver
-                                .findByUris(Lists.newArrayList(contentUri.uri()))
+                                .findByCanonicalUris(Lists.newArrayList(contentUri.uri()))
                                 .getFirstValue()
                                 .valueOrNull());
 

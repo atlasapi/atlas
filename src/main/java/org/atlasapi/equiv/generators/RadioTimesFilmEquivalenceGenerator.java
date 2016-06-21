@@ -38,7 +38,7 @@ public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<
         Matcher uriMatcher = rtFilmUriPattern.matcher(content.getCanonicalUri());
         if (uriMatcher.matches()) {
             String paUri = paFilmUriPrefix + uriMatcher.group(1);
-            Maybe<Identified> resolvedContent = resolver.findByCanonicalUris(ImmutableSet.of(paUri)).get(paUri);
+            Maybe<Identified> resolvedContent = resolver.findByUris(ImmutableSet.of(paUri)).get(paUri);
             if (resolvedContent.hasValue()
                     && resolvedContent.requireValue() instanceof Film
                     && ((Film) resolvedContent.requireValue()).isActivelyPublished()) {

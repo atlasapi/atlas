@@ -623,13 +623,13 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             episode.addAlias(PaHelper.getFilmAlias(identifierFor(progData)));
         }
 
+        episode.setAliasUrls(ImmutableSet.of(PaHelper.getAlias(progData.getProgId())));
+
         Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
         if (rtFilmIdentifier.isPresent()) {
             episode.addAlias(PaHelper.getRtFilmAlias(rtFilmIdentifier.get()));
+            episode.addAliasUrl(PaHelper.getFilmRtAlias(rtFilmIdentifier.get()));
         }
-
-        episode.setAliasUrls(ImmutableSet.of(PaHelper.getAlias(progData.getProgId())));
-
 
     }
 

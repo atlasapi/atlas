@@ -63,16 +63,16 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public void updateEquivalences(Content content) {
+    public boolean updateEquivalences(Content content) {
         checkArgument(content.getPublisher().equals(source),"%s can't update data for %s", source, content.getPublisher());
         if (content instanceof Item) {
-            update(itemUpdater, (Item) content);
+            return update(itemUpdater, (Item) content);
         } else if (content instanceof Brand) {
-            update(topLevelContainerUpdater, (Container) content);
+            return update(topLevelContainerUpdater, (Container) content);
         } else if (topLevelSeries(content)) {
-            update(topLevelContainerUpdater, (Container) content);
+            return update(topLevelContainerUpdater, (Container) content);
         } else if (!topLevelSeries(content)) {
-            update(nonTopLevelContainerUpdater, (Container) content);
+            return update(nonTopLevelContainerUpdater, (Container) content);
         } else {
             throw new IllegalStateException(String.format("No updater for %s for %s", source, content));
         }
@@ -83,9 +83,9 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
             && ((Series)content).getParent() == null;
     }
 
-    private <T> void update(EquivalenceUpdater<T> updater,
+    private <T> boolean update(EquivalenceUpdater<T> updater,
             T content) {
         checkNotNull(updater, "No updater for %s %s", source, content);
-        updater.updateEquivalences(content);
+        return updater.updateEquivalences(content);
     }
 }

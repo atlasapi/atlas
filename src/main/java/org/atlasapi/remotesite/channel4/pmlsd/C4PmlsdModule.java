@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.io.File;
-import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -17,7 +15,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.HttpClients;
-import org.atlasapi.remotesite.channel4.epg.ScheduleResolverBroadcastTrimmer;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgChannelDayUpdater;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgClient;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgEntryUriExtractor;
@@ -40,7 +38,6 @@ import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.time.DayRangeGenerator;
-import sun.security.ssl.SSLSocketFactoryImpl;
 
 @Configuration
 public class C4PmlsdModule {

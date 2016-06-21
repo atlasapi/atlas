@@ -15,7 +15,8 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.HttpClients;
-import org.atlasapi.remotesite.channel4.RequestLimitingRemoteSiteClient;
+import org.atlasapi.remotesite.channel4.pmlsd.RequestLimitingRemoteSiteClient;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +54,7 @@ public class FiveUpdater extends ScheduledTask {
         this.socketTimeout = socketTimeout;
         this.streamHttpClient = buildFetcher();
         this.processor = new FiveBrandProcessor(contentWriter, contentResolver, BASE_API_URL, 
-            new RequestLimitingRemoteSiteClient<HttpResponse>(new HttpRemoteSiteClient(buildFetcher()), 20), 
+            new RequestLimitingRemoteSiteClient<HttpResponse>(new HttpRemoteSiteClient(buildFetcher()), 20),
             channelMap(channelResolver), locationPolicyIds
         );
     }

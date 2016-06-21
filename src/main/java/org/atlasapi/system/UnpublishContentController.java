@@ -20,6 +20,8 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 
 
@@ -43,9 +45,25 @@ public class UnpublishContentController {
         this.contentWriter = checkNotNull(contentWriter);
     }
 
-    @RequestMapping(value = "/system/content/unpublish/{id}", method = RequestMethod.POST)
-    public void unpublish(HttpServletResponse response, @PathVariable("id") String id) {
+    @RequestMapping(value = "/system/content/publish/{id}", method = RequestMethod.POST)
+    public void publish(HttpServletResponse response,
+            @PathVariable("id") String id,
+            @RequestParam(value = "publisher", required = false) String publisher) {
 
+        setPublishStatusOfItem(id, Optional.ofNullable(publisher), true);
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    @RequestMapping(value = "/system/content/unpublish/{id}", method = RequestMethod.POST)
+    public void unpublish(HttpServletResponse response,
+            @PathVariable("id") String id,
+            @RequestParam(value = "publisher") String publisher) {
+
+        setPublishStatusOfItem(id, Optional.ofNullable(publisher), false);
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
+    private void setPublishStatusOfItem(String id, Optional<String> publisher, boolean status) {
         // if we cannot resolve the ID we want a notfound exception
         Long contentId = idCodec.decode(id).longValue();
         LookupEntry contentUri = lookupEntryStore
@@ -57,7 +75,7 @@ public class UnpublishContentController {
         Optional<Identified> identified =
                 Optional.ofNullable(
                         contentResolver
-                                .findByUris(Lists.newArrayList(contentUri.uri()))
+                                .findByCanonicalUris(Lists.newArrayList(contentUri.uri()))
                                 .getFirstValue()
                                 .valueOrNull());
 
@@ -74,9 +92,16 @@ public class UnpublishContentController {
 
         // now unpublish item (strictly we only need a Described but restricting to items is safer)
         Item item = (Item) identified.get();
-        item.setActivelyPublished(false);
-        contentWriter.createOrUpdate(item);
 
-        response.setStatus(HttpServletResponse.SC_OK);
+        // check publisher constraint is met
+        publisher.ifPresent(key -> {
+            if(! key.equals(item.getPublisher().key())) {
+                throw new RuntimeException((String.format(
+                        "Identified %d is not published by '%s'", contentId, publisher)));
+            }
+        });
+
+        item.setActivelyPublished(status);
+        contentWriter.createOrUpdate(item);
     }
 }

@@ -56,7 +56,7 @@ public class ContentPurgeWebModule {
     @Bean
     public UnpublishContentController unpublishContentController() {
         return new UnpublishContentController(
-                new SubstitutionTableNumberCodec(),
+                SubstitutionTableNumberCodec.lowerCaseOnly(),
                 contentResolver,
                 lookupEntryStore,
                 contentWriter);

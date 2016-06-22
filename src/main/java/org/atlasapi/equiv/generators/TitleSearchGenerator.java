@@ -73,13 +73,20 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         ApplicationConfiguration appConfig = defaultConfiguration().withSources(enabledPublishers(publishers));
 
         String title = titleTransform.apply(content.getTitle());
-        title = titleExpander.expand(title);
-        SearchQuery.Builder query = SearchQuery.builder(title)
+        SearchQuery.Builder titleQuery = SearchQuery.builder(title)
                 .withSelection(new Selection(0, searchLimit))
                 .withPublishers(publishers)
                 .withTitleWeighting(TITLE_WEIGHTING);
+
+
+        String expandedTitle = titleExpander.expand(title);
+        SearchQuery.Builder expandedTitleQuery = SearchQuery.builder(expandedTitle)
+                .withSelection(new Selection(0, searchLimit))
+                .withPublishers(publishers)
+                .withTitleWeighting(TITLE_WEIGHTING);
+
         if (content.getSpecialization() != null) {
-            query.withSpecializations(ImmutableSet.of(content.getSpecialization()));
+            expandedTitleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
         }
         
         desc.appendText("query: %s, specialization: %s, publishers: %s",
@@ -87,10 +94,18 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                 content.getSpecialization(),
                 publishers);
 
-        Iterable<? extends T> search =
-                Iterables.filter(searchResolver.search(query.build(), appConfig), cls);
+        Iterable<? extends T> filteredTitleResults = Iterables.filter(searchResolver.search(
+                titleQuery.build(),
+                appConfig
+        ), cls);
 
-        return Iterables.filter(search, IS_ACTIVELY_PUBLISHED);
+        Iterable<? extends T> filteredExpandedTitleResults = Iterables.filter(searchResolver.search(
+                expandedTitleQuery.build(),
+                appConfig
+        ), cls);
+        Iterable<? extends T> results = Iterables.concat(filteredTitleResults, filteredExpandedTitleResults);
+
+        return Iterables.filter(results, IS_ACTIVELY_PUBLISHED);
     }
 
     private Map<Publisher, SourceStatus> enabledPublishers(Set<Publisher> enabledSources) {

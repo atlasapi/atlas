@@ -50,8 +50,8 @@ public class FilmEquivalenceGeneratorTest extends TestCase {
     }
 
     @Test
-    public void testFilmWithSameTitleDifferentYearScoresMinusOne() {
-        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "test film title", 2001, "http://imdb.com/title/wrong"), Score.valueOf(-1.0));
+    public void testFilmWithSameTitleButNotTolerableDifferenceYearScoresMinusOne() {
+        checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "Test Film Title", 2002, "http://imdb.com/title/wrong"), Score.valueOf(-1.0));
     }
 
     @Test

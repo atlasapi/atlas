@@ -32,6 +32,7 @@ import com.metabroadcast.common.query.Selection;
 public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     
     private static final Pattern IMDB_REF = Pattern.compile("http://imdb.com/title/[\\d\\w]+");
+    private static final int NUMBER_OF_YEARS_DIFFERENT_TOLERANCE = 1;
 
     private static final float TITLE_WEIGHTING = 1.0f;
     private static final float BROADCAST_WEIGHTING = 0.0f;
@@ -114,7 +115,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
                 desc.appendText("%s (%s) scored 1.0 (IMDB match)", equivFilm.getTitle(), equivFilm.getCanonicalUri());
                 scores.addEquivalent(equivFilm, Score.valueOf(1.0));
                 
-            } else if ((film.getYear() != null && sameYear(film, equivFilm)) || (film.getYear() == null && acceptNullYears)) { 
+            } else if ((film.getYear() != null && tolerableYearDifference(film, equivFilm)) || (film.getYear() == null && acceptNullYears)) {
                 Score score = Score.valueOf(titleMatcher.titleMatch(film, equivFilm));
                 desc.appendText("%s (%s) scored %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), score);
                 scores.addEquivalent(equivFilm, score);
@@ -142,8 +143,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
                 BROADCAST_WEIGHTING, CATCHUP_WEIGHTING);
     }
 
-    private boolean sameYear(Film film, Film equivFilm) {
-        return film.getYear().equals(equivFilm.getYear());
+    private boolean tolerableYearDifference(Film film, Film equivFilm) {
+        return Math.abs(film.getYear() - equivFilm.getYear()) <= NUMBER_OF_YEARS_DIFFERENT_TOLERANCE;
     }
     
     @Override

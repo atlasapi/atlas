@@ -4,12 +4,12 @@ import java.util.Set;
 
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class YouViewCoreModule {
@@ -22,6 +22,6 @@ public class YouViewCoreModule {
     
     @Bean
     public YouViewChannelResolver youviewChannelResolver() {
-        return new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
+        return DefaultYouViewChannelResolver.create(channelResolver, ALIAS_PREFIXES);
     }
 }

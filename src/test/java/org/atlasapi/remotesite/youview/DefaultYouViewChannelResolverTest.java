@@ -32,7 +32,8 @@ public class DefaultYouViewChannelResolverTest {
         when(channelResolver.forAliases("http://youview.com/service/"))
             .thenReturn(ImmutableMap.of("http://youview.com/service/123", BBC_ONE));
         
-        DefaultYouViewChannelResolver yvChannelResolver = new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
+        DefaultYouViewChannelResolver yvChannelResolver =
+                DefaultYouViewChannelResolver.create(channelResolver, ALIAS_PREFIXES);
         
         assertThat(yvChannelResolver.getChannel(123).get(), is(BBC_ONE));
     }
@@ -45,7 +46,8 @@ public class DefaultYouViewChannelResolverTest {
             .thenReturn(ImmutableMap.of("http://overrides.youview.com/service/456", BBC_ONE));
     
         
-        DefaultYouViewChannelResolver yvChannelResolver = new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
+        DefaultYouViewChannelResolver yvChannelResolver =
+                DefaultYouViewChannelResolver.create(channelResolver, ALIAS_PREFIXES);
         
         assertThat(yvChannelResolver.getChannel(456).get(), is(BBC_ONE));
         assertFalse("Shouldn't be able to look up by overridden service ID", 
@@ -60,7 +62,8 @@ public class DefaultYouViewChannelResolverTest {
         when(channelResolver.forAliases("http://overrides.youview.com/service/"))
             .thenReturn(ImmutableMap.of("http://overrides.youview.com/service/456", BBC_ONE));
 
-        DefaultYouViewChannelResolver yvChannelResolver = new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
+        DefaultYouViewChannelResolver yvChannelResolver =
+                DefaultYouViewChannelResolver.create(channelResolver, ALIAS_PREFIXES);
     
         assertThat(yvChannelResolver.getChannel(456).get(), is(BBC_ONE));
     }
@@ -74,7 +77,7 @@ public class DefaultYouViewChannelResolverTest {
 
 
         DefaultYouViewChannelResolver yvChannelResolver =
-                new DefaultYouViewChannelResolver(channelResolver, ALIAS_PREFIXES);
+                DefaultYouViewChannelResolver.create(channelResolver, ALIAS_PREFIXES);
 
         assertThat(yvChannelResolver.getChannel(123).get(), is(BBC_TWO));
     }

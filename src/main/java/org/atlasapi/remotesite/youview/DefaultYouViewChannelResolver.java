@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,6 +14,9 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 
 import com.google.common.base.Optional;
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableMultimap;
@@ -21,29 +25,42 @@ import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
 
     private static final Logger log = LoggerFactory.getLogger(DefaultYouViewChannelResolver.class);
 
+    private static final String CACHE_KEY = "key";
+
     private static final String HTTP_PREFIX = "http://";
     private static final String OVERRIDES_PREFIX = "http://overrides.";
 
-    private final Map<Integer, Channel> channelMap;
-    private final Map<Integer, String> aliasMap;
-    
+    private final ChannelResolver channelResolver;
+    private final Set<String> aliasPrefixes;
+
+    // The channels have to be resolved in their entirety every time so that overrides can be
+    // processed correctly. To cope with that this cache resolves all channels at once and stores
+    // the result under a single key
+    private final LoadingCache<String, ResolvedChannels> channelsCache = CacheBuilder
+            .newBuilder()
+            .expireAfterWrite(1, TimeUnit.HOURS)
+            .build(
+                    new CacheLoader<String, ResolvedChannels>() {
+
+                        @Override
+                        public ResolvedChannels load(String key) throws Exception {
+                            return resolveChannels();
+                        }
+                    }
+            );
+
     private DefaultYouViewChannelResolver(
             ChannelResolver channelResolver,
             Set<String> aliasPrefixes
     ) {
-        Builder<Integer, Channel> channelMapBuilder = ImmutableMap.builder();
-        Builder<Integer, String> aliasMapBuilder = ImmutableMap.builder();
-        
-        for (String prefix : aliasPrefixes) {
-            buildEntriesForPrefix(channelResolver, prefix, channelMapBuilder, aliasMapBuilder);
-        }
-        
-        channelMap = channelMapBuilder.build();
-        aliasMap = aliasMapBuilder.build();
+        this.channelResolver = checkNotNull(channelResolver);
+        this.aliasPrefixes = checkNotNull(aliasPrefixes);
     }
 
     public static DefaultYouViewChannelResolver create(
@@ -56,6 +73,8 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
     @Override
     @Nullable
     public String getChannelUri(int serviceId) {
+        Map<Integer, Channel> channelMap = getResolvedChannels().getChannelMap();
+
         if (channelMap.containsKey(serviceId)) {
             return channelMap.get(serviceId).getUri();
         }
@@ -64,11 +83,13 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
     
     @Override
     public String getChannelServiceAlias(int serviceId) {
-        return aliasMap.get(serviceId);
+        return getResolvedChannels().getAliasMap().get(serviceId);
     }
-    
+
     @Override
     public Optional<Channel> getChannel(int serviceId) {
+        Map<Integer, Channel> channelMap = getResolvedChannels().getChannelMap();
+
         if (channelMap.containsKey(serviceId)) {
             return Optional.fromNullable(channelMap.get(serviceId));
         }
@@ -77,16 +98,33 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
 
     @Override
     public Iterable<Channel> getAllChannels() {
-        return channelMap.values();
+        return getResolvedChannels().getChannelMap().values();
     }
 
     @Override
     public Map<Integer, Channel> getAllChannelsByServiceId() {
-        return channelMap;
+        return getResolvedChannels().getChannelMap();
+    }
+
+    private ResolvedChannels getResolvedChannels() {
+        return channelsCache.getUnchecked(CACHE_KEY);
+    }
+
+    private ResolvedChannels resolveChannels() {
+        Builder<Integer, Channel> channelMapBuilder = ImmutableMap.builder();
+        Builder<Integer, String> aliasMapBuilder = ImmutableMap.builder();
+
+        for (String prefix : aliasPrefixes) {
+            buildEntriesForPrefix(prefix, channelMapBuilder, aliasMapBuilder);
+        }
+
+        return ResolvedChannels.create(
+                channelMapBuilder.build(),
+                aliasMapBuilder.build()
+        );
     }
 
     private void buildEntriesForPrefix(
-            ChannelResolver channelResolver,
             String prefix, Builder<Integer, Channel> channelMapBuilder,
             Builder<Integer, String> aliasMapBuilder
     ) {
@@ -187,5 +225,34 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
             channelToAlias.put(entry.getValue(), entry.getKey());
         }
         return channelToAlias.build();
+    }
+
+    private static class ResolvedChannels {
+
+        private final Map<Integer, Channel> channelMap;
+        private final Map<Integer, String> aliasMap;
+
+        private ResolvedChannels(
+                Map<Integer, Channel> channelMap,
+                Map<Integer, String> aliasMap
+        ) {
+            this.channelMap = checkNotNull(channelMap);
+            this.aliasMap = checkNotNull(aliasMap);
+        }
+
+        public static ResolvedChannels create(
+                Map<Integer, Channel> channelMap,
+                Map<Integer, String> aliasMap
+        ) {
+            return new ResolvedChannels(channelMap, aliasMap);
+        }
+
+        public Map<Integer, Channel> getChannelMap() {
+            return channelMap;
+        }
+
+        public Map<Integer, String> getAliasMap() {
+            return aliasMap;
+        }
     }
 }

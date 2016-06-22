@@ -154,6 +154,8 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private String replaceSpecialChars(String title) {
         return title.replaceAll(" & ", " and ")
                     .replaceAll("fc ", "")
+                    .replaceAll(":", "")
+                    .replaceAll("\\.", "")
                     .replaceAll("\\s?\\/\\s?", "-") // normalize spacing around back-to-back titles
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
                     .replace("'","")

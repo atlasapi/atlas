@@ -95,7 +95,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
 
         Iterable<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(title), searchConfig);
 
-        if (!title.equals(expandedTitle)) {
+        if (!title.toLowerCase().equals(expandedTitle)) {
             List<Identified> expandedTitleResults = searchResolver.search(
                     searchQueryFor(expandedTitle),
                     searchConfig
@@ -144,6 +144,11 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     }
 
     private boolean tolerableYearDifference(Film film, Film equivFilm) {
+        if (equivFilm.getYear() == null && !acceptNullYears) {
+            return false;
+        } else if (equivFilm.getYear() == null && acceptNullYears) {
+            return true;
+        }
         return Math.abs(film.getYear() - equivFilm.getYear()) <= NUMBER_OF_YEARS_DIFFERENT_TOLERANCE;
     }
     

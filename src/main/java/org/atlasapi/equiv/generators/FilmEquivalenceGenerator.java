@@ -92,10 +92,16 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         String title = film.getTitle();
         String expandedTitle = titleExpander.expand(title);
 
-        List<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(title), searchConfig);
+        Iterable<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(title), searchConfig);
 
         if (!title.equals(expandedTitle)) {
-            possibleEquivalentFilms.addAll(searchResolver.search(searchQueryFor(expandedTitle), searchConfig));
+            List<Identified> expandedTitleResults = searchResolver.search(
+                    searchQueryFor(expandedTitle),
+                    searchConfig
+            );
+            possibleEquivalentFilms = Iterables.concat(possibleEquivalentFilms,
+                    expandedTitleResults
+            );
         }
 
         Iterable<Film> foundFilms = filter(possibleEquivalentFilms, Film.class);

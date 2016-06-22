@@ -73,39 +73,47 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         ApplicationConfiguration appConfig = defaultConfiguration().withSources(enabledPublishers(publishers));
 
         String title = titleTransform.apply(content.getTitle());
-        SearchQuery.Builder titleQuery = SearchQuery.builder(title)
-                .withSelection(new Selection(0, searchLimit))
-                .withPublishers(publishers)
-                .withTitleWeighting(TITLE_WEIGHTING);
-
-
-        String expandedTitle = titleExpander.expand(title);
-        SearchQuery.Builder expandedTitleQuery = SearchQuery.builder(expandedTitle)
-                .withSelection(new Selection(0, searchLimit))
-                .withPublishers(publishers)
-                .withTitleWeighting(TITLE_WEIGHTING);
+        SearchQuery.Builder titleQuery = getSearchQueryBuilder(publishers, title);
 
         if (content.getSpecialization() != null) {
-            expandedTitleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
+            titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
         }
-        
+
         desc.appendText("query: %s, specialization: %s, publishers: %s",
                 title,
                 content.getSpecialization(),
                 publishers);
 
-        Iterable<? extends T> filteredTitleResults = Iterables.filter(searchResolver.search(
+        Iterable<? extends T> results = Iterables.filter(searchResolver.search(
                 titleQuery.build(),
                 appConfig
         ), cls);
 
-        Iterable<? extends T> filteredExpandedTitleResults = Iterables.filter(searchResolver.search(
-                expandedTitleQuery.build(),
-                appConfig
-        ), cls);
-        Iterable<? extends T> results = Iterables.concat(filteredTitleResults, filteredExpandedTitleResults);
+        String expandedTitle = titleExpander.expand(title);
+
+        if (!title.equals(expandedTitle)) {
+            SearchQuery.Builder expandedTitleQuery = getSearchQueryBuilder(publishers,
+                    expandedTitle);
+            if (content.getSpecialization() != null) {
+                titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
+            }
+            Iterable<? extends T> filteredExpandedTitleResults = Iterables.filter(searchResolver.search(
+                    expandedTitleQuery.build(),
+                    appConfig
+            ), cls);
+
+            results = Iterables.concat(results, filteredExpandedTitleResults);
+        }
 
         return Iterables.filter(results, IS_ACTIVELY_PUBLISHED);
+    }
+
+    private SearchQuery.Builder getSearchQueryBuilder(Set<Publisher> publishers,
+            String expandedTitle) {
+        return SearchQuery.builder(expandedTitle)
+                        .withSelection(new Selection(0, searchLimit))
+                        .withPublishers(publishers)
+                        .withTitleWeighting(TITLE_WEIGHTING);
     }
 
     private Map<Publisher, SourceStatus> enabledPublishers(Set<Publisher> enabledSources) {

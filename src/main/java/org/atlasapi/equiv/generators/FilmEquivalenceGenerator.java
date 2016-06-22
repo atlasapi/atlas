@@ -23,6 +23,7 @@ import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.base.Maybe;
@@ -88,12 +89,19 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             desc.appendText("Using IMDB ref %s", imdbRef.requireValue());
         }
 
-        List<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(film), searchConfig);
+        String title = film.getTitle();
+        String expandedTitle = titleExpander.expand(title);
+
+        List<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(title), searchConfig);
+
+        if (!title.equals(expandedTitle)) {
+            possibleEquivalentFilms.addAll(searchResolver.search(searchQueryFor(expandedTitle), searchConfig));
+        }
 
         Iterable<Film> foundFilms = filter(possibleEquivalentFilms, Film.class);
         desc.appendText("Found %s films through title search", Iterables.size(foundFilms));
 
-        for (Film equivFilm : foundFilms) {
+        for (Film equivFilm : ImmutableSet.copyOf(foundFilms)) {
             
             Maybe<String> equivImdbRef = getImdbRef(equivFilm);
             if(imdbRef.hasValue() && equivImdbRef.hasValue() && Objects.equal(imdbRef.requireValue(), equivImdbRef.requireValue())) {
@@ -123,9 +131,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         return Maybe.nothing();
     }
 
-    private SearchQuery searchQueryFor(Film film) {
-        String expandedTitle = titleExpander.expand(film.getTitle());
-        return new SearchQuery(expandedTitle, Selection.ALL, publishers, TITLE_WEIGHTING,
+    private SearchQuery searchQueryFor(String title) {
+        return  new SearchQuery(title, Selection.ALL, publishers, TITLE_WEIGHTING,
                 BROADCAST_WEIGHTING, CATCHUP_WEIGHTING);
     }
 

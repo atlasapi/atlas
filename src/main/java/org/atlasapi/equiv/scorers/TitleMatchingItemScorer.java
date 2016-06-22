@@ -111,13 +111,25 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         Score score = Score.NULL_SCORE;
 
         if(subjectType == suggestionType) {
-            return compareTitles(subject.getTitle(), suggestion.getTitle());
+            String subjectTitle = removeYearFromTitle(subject);
+            String suggestionTitle = removeYearFromTitle(suggestion);
+            return compareTitles(subjectTitle, suggestionTitle);
 
         }
         
         return score;
     }
-    
+
+    private String removeYearFromTitle(Item item) {
+        String title = item.getTitle();
+
+        if (item.getYear() != null) {
+            return title.replaceAll("\\(" + item.getYear() + "\\)", "");
+        } else {
+            return title;
+        }
+    }
+
     private Score compareTitles(final String subjectTitle, final String suggestionTitle) {
         boolean matches;
         String subjTitle = normalize(subjectTitle);

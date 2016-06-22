@@ -132,6 +132,17 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(2, scorer.score(itemWithTitle("Mr. & Mrs. Smith"), of(itemWithTitle("Mr & Mrs Smith")), desc));
     }
 
+    @Test
+    public void testMatchingTitlesWithYearsInTitles() {
+        //This test case covers cases when non-abbrivating apostrophe is used in the end of the word
+        // like "Girls' Night In" with "Girls' Night In"
+        DefaultDescription desc = new DefaultDescription();
+        score(2, scorer.score(itemWithTitle("Cold Comes the Night (2013)"), of(itemWithTitle("Cold Comes the Night")), desc));
+        score(2, scorer.score(itemWithTitle("Get Carter (2013)"), of(itemWithTitle("Get Carter")), desc));
+        score(0, scorer.score(itemWithTitle("Space Odessey 2013"), of(itemWithTitle("Space Odessey")), desc));
+        score(0, scorer.score(itemWithTitle("Apollo: 2013"), of(itemWithTitle("Apollo")), desc));
+    }
+
 
     @Test
     public void testMatchingWithApostropheWithinWord() {
@@ -156,6 +167,7 @@ public class TitleMatchingItemScorerTest extends TestCase {
     private Item itemWithTitle(String title) {
         Item item = new Item("uri","curie",Publisher.BBC);
         item.setTitle(title);
+        item.setYear(2013);
         return item;
     }
 

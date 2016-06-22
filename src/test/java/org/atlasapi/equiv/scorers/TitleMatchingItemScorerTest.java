@@ -123,6 +123,17 @@ public class TitleMatchingItemScorerTest extends TestCase {
     }
 
     @Test
+    public void testMatchingWithPunctuation() {
+        //This test case covers cases when non-abbrivating apostrophe is used in the end of the word
+        // like "Girls' Night In" with "Girls' Night In"
+        DefaultDescription desc = new DefaultDescription();
+        score(2, scorer.score(itemWithTitle("48 hrs"), of(itemWithTitle("48 HRS.")), desc));
+        score(2, scorer.score(itemWithTitle("The 7:51"), of(itemWithTitle("The 7.51")), desc));
+        score(2, scorer.score(itemWithTitle("Mr. & Mrs. Smith"), of(itemWithTitle("Mr & Mrs Smith")), desc));
+    }
+
+
+    @Test
     public void testMatchingWithApostropheWithinWord() {
         DefaultDescription desc = new DefaultDescription();
         //This test case covers cases when non-abbrivating apostrophe is used within a word

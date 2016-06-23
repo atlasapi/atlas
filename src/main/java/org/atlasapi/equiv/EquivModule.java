@@ -81,6 +81,7 @@ import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtracto
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
+import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.FilmFilter;
@@ -218,7 +219,8 @@ public class EquivModule {
             new SpecializationFilter<T>(),
             new PublisherFilter<T>(),
             new ExclusionListFilter<T>(excludedUrisFromProperties()),
-            new FilmFilter<T>()
+            new FilmFilter<T>(),
+            new DummyContainerFilter<T>()
         ), additional));
     }
     

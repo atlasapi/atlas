@@ -59,6 +59,7 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
 	private final KnownTypeQueryExecutor executor;
 
     private final ContentWriteController contentWriteController;
+    private final ChannelWriteController channelWriteController;
     private final EventContentLister contentLister;
 	
     public QueryController(KnownTypeQueryExecutor executor,
@@ -66,10 +67,12 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             AdapterLog log,
             AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter,
             ContentWriteController contentWriteController,
+            ChannelWriteController channelWriteController,
             EventContentLister contentLister) {
 	    super(configFetcher, log, outputter, SubstitutionTableNumberCodec.lowerCaseOnly());
         this.executor = executor;
         this.contentWriteController = contentWriteController;
+        this.channelWriteController = channelWriteController;
         this.contentLister = contentLister;
 	}
     
@@ -209,5 +212,10 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.PUT)
     public Void putContent(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.putContent(req, resp);
+    }
+
+    @RequestMapping(value="/3.0/channels.json", method = RequestMethod.POST)
+    public Void postChannel(HttpServletRequest req, HttpServletResponse resp) {
+        return channelWriteController.postChannel(req, resp);
     }
 }

@@ -30,7 +30,7 @@ import com.metabroadcast.common.webapp.serializers.JodaDateTimeSerializer;
 
 public final class DefaultGsonModelReader extends GsonModelReader {
 
-    public DefaultGsonModelReader() {
+    private DefaultGsonModelReader() {
         super(new GsonBuilder()
             .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
             .registerTypeAdapter(Date.class, new DateDeserializer())
@@ -40,6 +40,10 @@ public final class DefaultGsonModelReader extends GsonModelReader {
             .registerTypeAdapter(Country.class, new CountryDeserializer())
             .registerTypeAdapter(Description.class, new DescriptionDeserializer())
             .registerTypeAdapter(DateTime.class, new JodaDateTimeSerializer()));
+    }
+
+    public static DefaultGsonModelReader create() {
+        return new DefaultGsonModelReader();
     }
     
     private static final class DescriptionDeserializer implements JsonDeserializer<Description> {

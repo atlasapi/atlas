@@ -23,7 +23,7 @@ public class ImageModelTranslator implements ModelTransformer<org.atlasapi.media
             complex.withColor(ImageColor.valueOf(simple.getColor().toUpperCase()));
         }
         if (simple.getTheme() != null) {
-            complex.withTheme(ImageTheme.valueOf(simple.getTheme()));
+            complex.withTheme(ImageTheme.valueOf(simple.getTheme().toUpperCase()));
         }
         if (simple.getWidth() != null) {
             complex.withWidth(simple.getWidth());

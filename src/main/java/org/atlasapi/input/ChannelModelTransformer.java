@@ -1,6 +1,7 @@
 package org.atlasapi.input;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -16,23 +17,36 @@ import org.atlasapi.media.entity.simple.PublisherDetails;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 
+import com.google.api.client.util.Lists;
 import com.google.common.base.Optional;
-import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 public class ChannelModelTransformer implements ModelTransformer<Channel, org.atlasapi.media.channel.Channel> {
+
+    private final Logger LOG = LoggerFactory.getLogger(ChannelModelTransformer.class);
 
     private final NumberToShortStringCodec v4Codec;
     private final ImageModelTranslator imageTranslator;
 
-    public ChannelModelTransformer(
+    private ChannelModelTransformer(
             NumberToShortStringCodec v4Codec,
             ImageModelTranslator imageTranslator
     ) {
-        this.v4Codec = v4Codec;
-        this.imageTranslator = imageTranslator;
+        this.v4Codec = checkNotNull(v4Codec);
+        this.imageTranslator = checkNotNull(imageTranslator);
+    }
+
+    public static ChannelModelTransformer create(
+            NumberToShortStringCodec v4Codec,
+            ImageModelTranslator imageTranslator
+    ) {
+        return new ChannelModelTransformer(v4Codec, imageTranslator);
     }
 
     @Override
@@ -45,16 +59,39 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         complex.withAdult(simple.getAdult());
         complex.withTitle(simple.getTitle());
 
-        Set<Alias> aliases = simple.getV4Aliases().stream().map(simpleAlias -> new Alias(
-                simpleAlias.getNamespace(),
-                simpleAlias.getValue()
-        )).collect(Collectors.toSet());
+        Set<Alias> aliases = simple.getV4Aliases()
+                .stream()
+                .map(simpleAlias -> new Alias(
+                        simpleAlias.getNamespace(),
+                        simpleAlias.getValue()))
+                .collect(Collectors.toSet());
+
         complex.withAliases(aliases);
 
         if (simple.getMediaType() != null) {
             Optional<MediaType> mediaType = MediaType.fromKey(simple.getMediaType().toUpperCase());
             if (mediaType.isPresent()) {
                 complex.withMediaType(mediaType.get());
+            } else {
+                throw new RuntimeException("Media type is not present.");
+            }
+        }
+
+        if (simple.getPublisherDetails() != null) {
+            Maybe<Publisher> publisher = Publisher.fromKey(simple.getPublisherDetails().getKey());
+            if (!publisher.isNothing()) {
+                complex.withSource(publisher.requireValue());
+            } else {
+                throw new RuntimeException("Publisher is not present.");
+            }
+        }
+
+        if (simple.getBroadcaster() != null) {
+            Maybe<Publisher> publisher = Publisher.fromKey(simple.getBroadcaster().getKey());
+            if (!publisher.isNothing()) {
+                complex.withBroadcaster(publisher.requireValue());
+            } else {
+                throw new RuntimeException("Publisher is not present.");
             }
         }
 
@@ -84,32 +121,28 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
             complex.withGenres(simple.getGenres());
         }
 
-        if (simple.getPublisherDetails() != null) {
-            Maybe<Publisher> publisher = Publisher.fromKey(simple.getPublisherDetails().getKey());
-            if (!publisher.isNothing()) {
-                complex.withSource(publisher.requireValue());
-            }
-        }
-
-        if (simple.getBroadcaster() != null) {
-            Maybe<Publisher> publisher = Publisher.fromKey(simple.getBroadcaster().getKey());
-            if (!publisher.isNothing()) {
-                complex.withBroadcaster(publisher.requireValue());
-            }
-        }
-
         if (simple.getImages() != null && !simple.getImages().isEmpty()) {
-            complex.withImages(Iterables.transform(
-                    simple.getImages(),
-                    input -> imageTranslator.transform(input)
-            ));
+            List<Image> images = Lists.newArrayList();
+
+            simple.getImages()
+                    .stream()
+                    .forEach(image ->
+                            images.add(imageTranslator.transform(image))
+                    );
+
+            complex.withImages(images);
         }
 
         if (simple.getAvailableFrom() != null && !simple.getAvailableFrom().isEmpty()) {
-            complex.withAvailableFrom(Iterables.transform(
-                    simple.getAvailableFrom(),
-                    input -> translatePublisherDetails(input)
-            ));
+            List<Publisher> publisherDetails = Lists.newArrayList();
+
+            simple.getAvailableFrom()
+                    .stream()
+                    .forEach(publisher ->
+                            publisherDetails.add(translatePublisherDetails(publisher))
+                    );
+
+            complex.withAvailableFrom(publisherDetails);
         }
 
         if (simple.getParent() != null) {
@@ -120,21 +153,33 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         }
 
         if (simple.getVariations() != null && !simple.getVariations().isEmpty()) {
-            complex.withVariations(Iterables.transform(
-                    simple.getVariations(),
-                    channel -> transform(channel)
-            ));
+            List<org.atlasapi.media.channel.Channel> variations = Lists.newArrayList();
+
+            simple.getVariations()
+                    .stream()
+                    .forEach(variation ->
+                            variations.add(transform(variation))
+                    );
+
+            complex.withVariations(variations);
         }
 
-        simple.getRelatedLinks().stream().forEach(relatedLink -> {
-            complex.withRelatedLink(translateRelatedLink(relatedLink));
-        });
+        simple.getRelatedLinks()
+                .stream()
+                .forEach(relatedLink -> complex.withRelatedLink(
+                        translateRelatedLink(relatedLink)
+                ));
 
         if (simple.getChannelGroups() != null && !simple.getChannelGroups().isEmpty()) {
-            complex.withChannelNumbers(Iterables.transform(
-                    simple.getChannelGroups(),
-                    channelNumbering -> translateChannelNumbering(channelNumbering)
-            ));
+            List<ChannelNumbering> channelNumberings = Lists.newArrayList();
+
+            simple.getChannelGroups()
+                    .stream()
+                    .forEach(channelNumbering ->
+                            channelNumberings.add(translateChannelNumbering(channelNumbering))
+                    );
+
+            complex.withChannelNumbers(channelNumberings);
         }
 
         return complex.build();
@@ -160,8 +205,9 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         Maybe<Publisher> complex = Publisher.fromKey(simple.getKey());
         if (!complex.isNothing()) {
             return complex.requireValue();
+        } else {
+            throw new RuntimeException("Publisher is not present.");
         }
-        return null;
     }
 
     private ChannelNumbering translateChannelNumbering(

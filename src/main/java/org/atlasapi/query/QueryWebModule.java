@@ -13,7 +13,9 @@ import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
+import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.DefaultGsonModelReader;
+import org.atlasapi.input.ImageModelTranslator;
 import org.atlasapi.input.PersonModelTransformer;
 import org.atlasapi.input.TopicModelTransformer;
 import org.atlasapi.media.channel.CachingChannelGroupStore;
@@ -22,6 +24,7 @@ import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupStore;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelStore;
 import org.atlasapi.media.entity.ContentGroup;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.Identified;
@@ -117,6 +120,7 @@ import org.atlasapi.query.topic.PublisherFilteringTopicContentLister;
 import org.atlasapi.query.topic.PublisherFilteringTopicResolver;
 import org.atlasapi.query.v2.ChannelController;
 import org.atlasapi.query.v2.ChannelGroupController;
+import org.atlasapi.query.v2.ChannelWriteController;
 import org.atlasapi.query.v2.ContentFeedController;
 import org.atlasapi.query.v2.ContentGroupController;
 import org.atlasapi.query.v2.ContentWriteController;
@@ -189,6 +193,7 @@ public class QueryWebModule {
     private @Autowired SegmentWriter segmentWriter;
     private @Autowired TaskStore taskStore;
     private @Autowired ContentHierarchyExpander hierarchyExpander;
+    private @Autowired ChannelStore channelStore;
 
     private @Autowired KnownTypeQueryExecutor queryExecutor;
     private @Autowired ApplicationConfigurationFetcher configFetcher;
@@ -365,11 +370,24 @@ public class QueryWebModule {
         );
     }
 
+    @Bean
+    ChannelWriteController channelWriteController() {
+        return ChannelWriteController.create(
+                configFetcher,
+                channelStore,
+                DefaultGsonModelReader.create(),
+                ChannelModelTransformer.create(
+                        v4ChannelCodec(),
+                        ImageModelTranslator.create()
+                )
+        );
+    }
+
     TopicWriteController topicWriteController() {
         return new TopicWriteController(
                 configFetcher,
                 topicStore,
-                new DefaultGsonModelReader(),
+                DefaultGsonModelReader.create(),
                 new TopicModelTransformer()
         );
     }
@@ -400,7 +418,7 @@ public class QueryWebModule {
         return new PeopleWriteController(
                 configFetcher,
                 personStore,
-                new DefaultGsonModelReader(),
+                DefaultGsonModelReader.create(),
                 new PersonModelTransformer(new SystemClock(), personStore)
         );
     }

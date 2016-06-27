@@ -44,7 +44,7 @@ public class GsonDescriptionReaderTest {
         
         String respBody = response.getResponseAsString();
         
-        DefaultGsonModelReader descReader = new DefaultGsonModelReader();
+        DefaultGsonModelReader descReader = DefaultGsonModelReader.create();
         
         Description desc = descReader.read(new StringReader(respBody), Description.class);
         

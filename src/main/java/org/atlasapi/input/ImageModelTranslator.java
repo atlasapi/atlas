@@ -11,15 +11,19 @@ import org.joda.time.DateTime;
 
 public class ImageModelTranslator implements ModelTransformer<org.atlasapi.media.entity.simple.Image, Image> {
 
+    public static ImageModelTranslator create() {
+        return new ImageModelTranslator();
+    }
+
     @Override
     public Image transform(org.atlasapi.media.entity.simple.Image simple) {
         Image.Builder complex = Image.builder(simple.getUri());
 
         if (simple.getColor() != null) {
-            complex.withColor(ImageColor.valueOf(simple.getColor()));
+            complex.withColor(ImageColor.valueOf(simple.getColor().toUpperCase()));
         }
         if (simple.getTheme() != null) {
-            complex.withTheme(ImageTheme.valueOf(simple.getTheme()));
+            complex.withTheme(ImageTheme.valueOf(simple.getTheme().toUpperCase()));
         }
         if (simple.getWidth() != null) {
             complex.withWidth(simple.getWidth());

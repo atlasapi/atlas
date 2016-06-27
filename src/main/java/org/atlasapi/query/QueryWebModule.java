@@ -353,7 +353,6 @@ public class QueryWebModule {
                 log,
                 contentModelOutputter(),
                 contentWriteController(),
-                channelWriteController(),
                 eventContentLister
         );
     }
@@ -371,14 +370,15 @@ public class QueryWebModule {
         );
     }
 
-    private ChannelWriteController channelWriteController() {
-        return new ChannelWriteController(
+    @Bean
+    ChannelWriteController channelWriteController() {
+        return ChannelWriteController.create(
                 configFetcher,
                 channelStore,
-                new DefaultGsonModelReader(),
-                new ChannelModelTransformer(
+                DefaultGsonModelReader.create(),
+                ChannelModelTransformer.create(
                         v4ChannelCodec(),
-                        new ImageModelTranslator()
+                        ImageModelTranslator.create()
                 )
         );
     }
@@ -387,7 +387,7 @@ public class QueryWebModule {
         return new TopicWriteController(
                 configFetcher,
                 topicStore,
-                new DefaultGsonModelReader(),
+                DefaultGsonModelReader.create(),
                 new TopicModelTransformer()
         );
     }
@@ -418,7 +418,7 @@ public class QueryWebModule {
         return new PeopleWriteController(
                 configFetcher,
                 personStore,
-                new DefaultGsonModelReader(),
+                DefaultGsonModelReader.create(),
                 new PersonModelTransformer(new SystemClock(), personStore)
         );
     }

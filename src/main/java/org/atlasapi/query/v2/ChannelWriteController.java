@@ -4,8 +4,6 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.time.Instant;
-import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -17,12 +15,9 @@ import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.ModelReader;
-import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelStore;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.simple.PublisherDetails;
 
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
@@ -31,21 +26,23 @@ import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+@Controller
 public class ChannelWriteController {
 
-    private final Logger LOG = LoggerFactory.getLogger(ChannelWriteController.class);
+    private final Logger log = LoggerFactory.getLogger(ChannelWriteController.class);
 
     private final ApplicationConfigurationFetcher appConfigFetcher;
     private final ChannelStore store;
     private final ModelReader reader;
     private final ChannelModelTransformer channelTransformer;
 
-    public ChannelWriteController(
+    private ChannelWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
             ChannelStore store,
             ModelReader reader,
@@ -57,7 +54,21 @@ public class ChannelWriteController {
         this.channelTransformer = checkNotNull(channelTransformer);
     }
 
-    @RequestMapping(value = "/3.0/channels.json", method = RequestMethod.POST)
+    public static ChannelWriteController create(
+            ApplicationConfigurationFetcher appConfigFetcher,
+            ChannelStore store,
+            ModelReader reader,
+            ChannelModelTransformer channelTransformer
+    ) {
+        return new ChannelWriteController(
+                appConfigFetcher,
+                store,
+                reader,
+                channelTransformer
+        );
+    }
+
+    @RequestMapping(value="/3.0/channels", method = RequestMethod.POST)
     public Void postChannel(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateChannel(req, resp);
     }
@@ -80,10 +91,10 @@ public class ChannelWriteController {
                     deserialize(new InputStreamReader(req.getInputStream()))
             );
         } catch (IOException ioe) {
-            LOG.error("Error reading input for request " + req.getRequestURL(), ioe);
+            log.error("Error reading input for request " + req.getRequestURL(), ioe);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
         } catch (Exception e) {
-            LOG.error("Error reading input for request " + req.getRequestURL(), e);
+            log.error("Error reading input for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
 
@@ -98,7 +109,7 @@ public class ChannelWriteController {
         try {
             store.createOrUpdate(channel);
         } catch (Exception e) {
-            LOG.error("Error while creating/updating channel for request " + req.getRequestURL(), e);
+            log.error("Error while creating/updating channel for request " + req.getRequestURL(), e);
             return error(resp, HttpStatusCode.SERVER_ERROR.code());
         }
 

@@ -69,7 +69,7 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         complex.withAliases(aliases);
 
         if (simple.getMediaType() != null) {
-            Optional<MediaType> mediaType = MediaType.fromKey(simple.getMediaType().toUpperCase());
+            Optional<MediaType> mediaType = MediaType.fromKey(simple.getMediaType());
             if (mediaType.isPresent()) {
                 complex.withMediaType(mediaType.get());
             } else {

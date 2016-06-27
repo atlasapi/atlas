@@ -73,7 +73,8 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
             if (mediaType.isPresent()) {
                 complex.withMediaType(mediaType.get());
             } else {
-                throw new RuntimeException("Media type is not present.");
+                throw new IllegalArgumentException("Couldn't get media type from simple model, "
+                        + "media type either not AUDIO or VIDEO.");
             }
         }
 
@@ -82,7 +83,8 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
             if (!publisher.isNothing()) {
                 complex.withSource(publisher.requireValue());
             } else {
-                throw new RuntimeException("Publisher is not present.");
+                throw new IllegalArgumentException("Publisher is not present while trying to set "
+                        + "source.");
             }
         }
 
@@ -91,7 +93,8 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
             if (!publisher.isNothing()) {
                 complex.withBroadcaster(publisher.requireValue());
             } else {
-                throw new RuntimeException("Publisher is not present.");
+                throw new IllegalArgumentException("Couldn't extract publisher from simple "
+                        + "model broadcaster field.");
             }
         }
 
@@ -206,7 +209,8 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         if (!complex.isNothing()) {
             return complex.requireValue();
         } else {
-            throw new RuntimeException("Publisher is not present.");
+            throw new IllegalArgumentException("Publisher is not present while extracting "
+                    + "publisher details from the simple model.");
         }
     }
 

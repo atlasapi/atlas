@@ -18,6 +18,7 @@ import org.atlasapi.media.entity.simple.Playlist;
 import org.atlasapi.media.entity.simple.TopicRef;
 import org.atlasapi.media.entity.testing.ItemTestDataBuilder;
 import org.atlasapi.output.Annotation;
+import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.JsonTranslator;
 
 import com.metabroadcast.common.intl.Countries;
@@ -26,6 +27,8 @@ import com.metabroadcast.common.servlet.StubHttpServletRequest;
 import com.metabroadcast.common.servlet.StubHttpServletResponse;
 import com.metabroadcast.common.time.DateTimeZones;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
@@ -232,6 +235,43 @@ public class DefaultJacksonModelReaderTest {
         Person actual = reader.read(new StringReader(respBody), Person.class);
 
         assertEquals(person.getUri(), actual.getUri());
+
+    }
+
+    @Test
+    public void jacksonParseExceptionTest() throws IOException, ReadException {
+        String jsonString = "{"
+                + "\"uri\" : \"abs\","
+                + "\"description\" : \"description\","
+                + "\"type\" : \"item\","
+                + "\"locations\" : \"[]\","
+                + "}";
+
+        try {
+            reader.read(new StringReader(jsonString), Description.class);
+            fail();
+        } catch (JsonParseException exception) {
+            assertEquals(Boolean.TRUE, exception.getMessage().startsWith("Unexpected character"));
+        }
+    }
+
+    @Test
+    public void jacksonUnknownPropertiesExceptionTest() throws IOException, ReadException {
+        Item item = ItemTestDataBuilder.item().build();
+
+        HttpServletRequest request = new StubHttpServletRequest();
+        StubHttpServletResponse response = new StubHttpServletResponse();
+        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration
+                .defaultConfiguration());
+
+        String respBody = response.getResponseAsString().replace("locations", "hello");
+
+        try {
+            reader.read(new StringReader(respBody), Description.class);
+            fail();
+        } catch (UnrecognizedPropertyException exception) {
+            assertEquals(Boolean.TRUE, exception.getMessage().startsWith("Unrecognized field \"hello\""));
+        }
 
     }
 

@@ -68,7 +68,7 @@ public class ChannelWriteController {
         );
     }
 
-    @RequestMapping(value="/3.0/channels.json", method = RequestMethod.POST)
+    @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
     public Void postChannel(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateChannel(req, resp);
     }

@@ -1,15 +1,23 @@
 package org.atlasapi.output;
 
+import java.io.IOException;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
+
+import javax.validation.ConstraintViolationException;
 
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.output.exceptions.ForbiddenException;
+import org.atlasapi.output.exceptions.UnauthorizedException;
 
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.webapp.query.DateTimeInQueryParser.MalformedDateTimeException;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.ImmutableMap;
 
 public class AtlasErrorSummary {
@@ -33,19 +41,41 @@ public class AtlasErrorSummary {
         }
 
         public AtlasErrorSummary build(Exception exception) {
-            return new AtlasErrorSummary(exception).withErrorCode(friendly()).withStatusCode(httpStatus());
+            return new AtlasErrorSummary(exception).withErrorCode(friendly())
+                    .withStatusCode(httpStatus());
         }
+
+        public AtlasErrorSummary buildConstraintViolation(ConstraintViolationException exception) {
+
+            Map<String, String> violations = new HashMap<>();
+
+            exception.getConstraintViolations()
+                    .forEach(violation -> violations.put(
+                            violation.getPropertyPath().toString(),
+                            violation.getMessage()
+                    ));
+            return new AtlasErrorSummary().withStatusCode(httpStatus())
+                    .withErrorCode(friendly())
+                    .withViolations(violations)
+                    .withMessage(exception.getMessage());
+
+        }
+
     }
 
-    private static class ExceptionExposingAtlasExceptionBuilder extends AtlasExceptionBuilder{
+    private static class ExceptionExposingAtlasExceptionBuilder extends AtlasExceptionBuilder {
 
-        public ExceptionExposingAtlasExceptionBuilder(String friendlyCode, HttpStatusCode httpStatusCode) {
+        public ExceptionExposingAtlasExceptionBuilder(String friendlyCode,
+                HttpStatusCode httpStatusCode) {
             super(friendlyCode, httpStatusCode);
         }
 
         public AtlasErrorSummary build(Exception exception) {
-            return new AtlasErrorSummary(exception).withErrorCode(friendly()).withStatusCode(httpStatus()).withMessage(exception.getMessage());
+            return new AtlasErrorSummary(exception).withErrorCode(friendly())
+                    .withStatusCode(httpStatus())
+                    .withMessage(exception.getMessage());
         }
+
     }
 
     private static Map<Class<? extends Exception>, AtlasExceptionBuilder> exceptionCodes = exceptionMap();
@@ -53,7 +83,11 @@ public class AtlasErrorSummary {
     public static AtlasErrorSummary forException(Exception exception) {
         AtlasExceptionBuilder builder = exceptionCodes.get(exception.getClass());
         if (builder != null) {
-            return builder.build(exception);
+            if(exception instanceof ConstraintViolationException) {
+                return builder.buildConstraintViolation((ConstraintViolationException) exception);
+            } else {
+                return builder.build(exception);
+            }
         } else {
             return new AtlasErrorSummary(exception);
         }
@@ -83,7 +117,8 @@ public class AtlasErrorSummary {
                         InvalidIpForApiKeyException.class,
                         new ExceptionExposingAtlasExceptionBuilder(
                                 "INVALID_IP_FOR_API_KEY", HttpStatusCode.FORBIDDEN
-                        ))
+                        )
+                )
                 .put(
                         RevokedApiKeyException.class,
                         new ExceptionExposingAtlasExceptionBuilder(
@@ -96,6 +131,40 @@ public class AtlasErrorSummary {
                                 "API_KEY_NO_OWL_ACCESS", HttpStatusCode.FORBIDDEN
                         )
                 )
+                .put(
+                        ForbiddenException.class,
+                        new ExceptionExposingAtlasExceptionBuilder(
+                                "FORBIDDEN_TO_PERFORM_THIS_REQUEST", HttpStatusCode.FORBIDDEN
+                        )
+                )
+                .put(
+                        UnauthorizedException.class,
+                        new ExceptionExposingAtlasExceptionBuilder(
+                                "UNAUTHORISED_TO_EXECUTE_THIS_REQUEST", HttpStatusCode.UNAUTHORIZED
+                        )
+
+                )
+
+                .put(   ConstraintViolationException.class,
+                        new ExceptionExposingAtlasExceptionBuilder(
+                                "INVALID_JSON_OBJECT", HttpStatusCode.BAD_REQUEST
+                        )
+                )
+                .put(   UnrecognizedPropertyException.class,
+                        new ExceptionExposingAtlasExceptionBuilder(
+                                "UNRECOGNISED_PROPERTY", HttpStatusCode.BAD_REQUEST
+                        )
+                )
+                .put(   JsonParseException.class,
+                        new ExceptionExposingAtlasExceptionBuilder(
+                                "INVALID_JSON_FORMAT", HttpStatusCode.BAD_REQUEST
+                        )
+                )
+                .put(   IOException.class,
+                        new ExceptionExposingAtlasExceptionBuilder(
+                                "INTERNAL_ERROR", HttpStatusCode.SERVER_ERROR
+                        )
+                )
                 .build();
     }
 
@@ -104,13 +173,15 @@ public class AtlasErrorSummary {
     private String errorCode = "INTERNAL_ERROR";
     private HttpStatusCode statusCode = HttpStatusCode.SERVER_ERROR;
     private String message = "An internal server error occurred";
+    private Map<String, String> violations;
 
     public AtlasErrorSummary(Exception exception) {
         this.exception = exception;
         this.id = UUID.randomUUID().toString();
     }
 
-    public AtlasErrorSummary() {}
+    public AtlasErrorSummary() {
+    }
 
     public String id() {
         return id;
@@ -118,6 +189,10 @@ public class AtlasErrorSummary {
 
     public Exception exception() {
         return exception;
+    }
+
+    public Map<String, String> violations() {
+        return violations;
     }
 
     public AtlasErrorSummary withStatusCode(HttpStatusCode statusCode) {
@@ -133,6 +208,7 @@ public class AtlasErrorSummary {
         this.errorCode = errorCode;
         return this;
     }
+
     public String errorCode() {
         return errorCode;
     }
@@ -141,6 +217,12 @@ public class AtlasErrorSummary {
         this.message = message;
         return this;
     }
+
+    public AtlasErrorSummary withViolations(Map<String, String> violations) {
+        this.violations = violations;
+        return this;
+    }
+
     public String message() {
         return this.message;
     }

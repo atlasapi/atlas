@@ -159,8 +159,14 @@ public class JsonTranslator<T> implements AtlasModelWriter<T> {
 			error.addProperty("message", src.message());
 			error.addProperty("error_code", src.errorCode());
 			error.addProperty("error_id", src.id());
+
+			if(src.violations() != null) {
+				error.add("violations", context.serialize(src.violations()));
+			}
+
 			serialized.add("error", error);
-			return serialized;// ;
+
+			return serialized;
 		}
 
 	}

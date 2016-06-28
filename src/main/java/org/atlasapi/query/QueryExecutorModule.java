@@ -90,7 +90,7 @@ public class QueryExecutorModule {
     @Bean
     public ContentWriteExecutor contentWriteExecutor() {
         return new ContentWriteExecutor(
-                new DefaultGsonModelReader(),
+                DefaultGsonModelReader.create(),
                 delegatingModelTransformer(),
                 contentResolver,
                 contentWriter,

@@ -29,6 +29,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.base.Function;
@@ -93,7 +94,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
     }
 
-    @RequestMapping(value={"/3.0/channels.*", "/channels.*"})
+    @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.GET)
     public void listChannels(HttpServletRequest request, HttpServletResponse response,
             @RequestParam(value = "platforms", required = false) String platformKey,
             @RequestParam(value = "regions", required = false) String regionKeys,
@@ -157,7 +158,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         }
     }
 
-    @RequestMapping(value={"/3.0/channels/{id}.*", "/channels/{id}.*"})
+    @RequestMapping(value={"/3.0/channels/{id}.*", "/channels/{id}.*"}, method = RequestMethod.GET)
     public void listChannel(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("id") String id) throws IOException {
         try {

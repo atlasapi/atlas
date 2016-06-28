@@ -34,7 +34,7 @@ public class ImageModelTranslatorTest {
         simple.setWidth(1080);
         simple.setHeight(720);
         simple.setAspectRatio("16x9");
-        simple.setMimeType("jpeg");
+        simple.setMimeType("image/jpeg");
         simple.setAvailabilityStart(Date.from(Instant.parse("2016-06-06T00:00:00Z")));
         simple.setAvailabilityEnd(Date.from(Instant.parse("2016-06-06T01:00:00Z")));
 
@@ -46,7 +46,7 @@ public class ImageModelTranslatorTest {
         assertThat(complex.getHeight(), is(720));
         assertThat(complex.getAspectRatio(), is(ImageAspectRatio.SIXTEEN_BY_NINE));
         assertThat(complex.getMimeType(), is(MimeType.IMAGE_JPG));
-        assertThat(complex.getAvailabilityStart().toString(), is(""));
-        assertThat(complex.getAvailabilityEnd().toString(), is(""));
+        assertThat(complex.getAvailabilityStart().toString(), is("2016-06-06T01:00:00.000+01:00"));
+        assertThat(complex.getAvailabilityEnd().toString(), is("2016-06-06T02:00:00.000+01:00"));
     }
 }

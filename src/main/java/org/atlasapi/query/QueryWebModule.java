@@ -377,11 +377,12 @@ public class QueryWebModule {
         return ChannelWriteController.create(
                 configFetcher,
                 channelStore,
-                DefaultGsonModelReader.create(),
+                new DefaultJacksonModelReader(),
                 ChannelModelTransformer.create(
                         v4ChannelCodec(),
                         ImageModelTranslator.create()
-                )
+                ),
+                channelModelWriter()
         );
     }
 

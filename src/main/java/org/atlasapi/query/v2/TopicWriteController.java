@@ -37,7 +37,6 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
@@ -70,8 +69,8 @@ public class TopicWriteController {
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
             possibleConfig = appConfigFetcher.configurationFor(req);
-        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e1) {
-            return error(req, resp, AtlasErrorSummary.forException(e1));
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
+            return error(req, resp, AtlasErrorSummary.forException(e));
 
         }
 
@@ -80,7 +79,8 @@ public class TopicWriteController {
                     req,
                     resp,
                     AtlasErrorSummary.forException(new UnauthorizedException(
-                            "API key is unauthorised"))
+                            "API key is unauthorised"
+                    ))
             );
         }
 
@@ -90,10 +90,10 @@ public class TopicWriteController {
 
         } catch (UnrecognizedPropertyException |
                 JsonParseException |
-                ConstraintViolationException exception) {
-            return error(req, resp, AtlasErrorSummary.forException(exception));
+                ConstraintViolationException e) {
+            return error(req, resp, AtlasErrorSummary.forException(e));
 
-        }catch (IOException ioe) {
+        } catch (IOException ioe) {
             log.error("Error reading input for request " + req.getRequestURL(), ioe);
             return error(req, resp, AtlasErrorSummary.forException(ioe));
 

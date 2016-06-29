@@ -104,8 +104,13 @@ public class ContentWriteController {
 
         if (possibleConfig.isNothing()) {
 
-            return error(req, resp, AtlasErrorSummary.forException(new UnauthorizedException(
-                    "API key is unauthorised")));
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
+            );
         }
 
         byte[] inputStreamBytes;
@@ -120,9 +125,9 @@ public class ContentWriteController {
             inputContent = writeExecutor.parseInputStream(inputStream);
         } catch (UnrecognizedPropertyException |
                 JsonParseException |
-                ConstraintViolationException exception) {
+                ConstraintViolationException e) {
 
-            return error(req, resp, AtlasErrorSummary.forException(exception));
+            return error(req, resp, AtlasErrorSummary.forException(e));
 
         } catch (IOException e) {
             logError("Error reading input for request", e, req);
@@ -144,7 +149,8 @@ public class ContentWriteController {
                     req,
                     resp,
                     AtlasErrorSummary.forException(new ForbiddenException(
-                            "API key does not have write permission"))
+                            "API key does not have write permission"
+                    ))
             );
         }
 
@@ -157,8 +163,8 @@ public class ContentWriteController {
                 content.setId(contentId);
                 writeExecutor.writeContent(content, inputContent.getType(), merge);
             }
-        } catch (IllegalArgumentException | NullPointerException exception) {
-            AtlasErrorSummary errorSummary = new AtlasErrorSummary(exception).withStatusCode(
+        } catch (IllegalArgumentException | NullPointerException e) {
+            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e).withStatusCode(
                     HttpStatusCode.BAD_REQUEST);
             return error(req, resp, errorSummary);
         } catch (Exception e) {

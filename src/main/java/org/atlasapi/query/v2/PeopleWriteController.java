@@ -89,7 +89,8 @@ public class PeopleWriteController {
                     req,
                     resp,
                     AtlasErrorSummary.forException(new UnauthorizedException(
-                            "API key is unauthorised"))
+                            "API key is unauthorised"
+                    ))
             );
         }
 
@@ -99,8 +100,8 @@ public class PeopleWriteController {
 
         } catch (UnrecognizedPropertyException |
                 JsonParseException |
-                ConstraintViolationException exception) {
-            return error(req, resp, AtlasErrorSummary.forException(exception));
+                ConstraintViolationException e) {
+            return error(req, resp, AtlasErrorSummary.forException(e));
 
         } catch (IOException ioe) {
             log.error("Error reading input for request " + req.getRequestURL(), ioe);

@@ -14,7 +14,6 @@ import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
 import org.atlasapi.input.ChannelModelTransformer;
-import org.atlasapi.input.DefaultGsonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.PersonModelTransformer;
@@ -121,7 +120,6 @@ import org.atlasapi.query.topic.PublisherFilteringTopicContentLister;
 import org.atlasapi.query.topic.PublisherFilteringTopicResolver;
 import org.atlasapi.query.v2.ChannelController;
 import org.atlasapi.query.v2.ChannelGroupController;
-import org.atlasapi.query.v2.ChannelWriteController;
 import org.atlasapi.query.v2.ContentFeedController;
 import org.atlasapi.query.v2.ContentGroupController;
 import org.atlasapi.query.v2.ContentWriteController;
@@ -211,7 +209,13 @@ public class QueryWebModule {
                 log,
                 channelModelWriter(),
                 channelResolver,
-                new SubstitutionTableNumberCodec()
+                new SubstitutionTableNumberCodec(),
+                channelStore,
+                new DefaultJacksonModelReader(),
+                ChannelModelTransformer.create(
+                        v4ChannelCodec(),
+                        ImageModelTranslator.create()
+                )
         );
     }
 
@@ -369,20 +373,6 @@ public class QueryWebModule {
                 lookupBackedContentIdGenerator,
                 contentWriteMessageSender,
                 contentModelOutputter()
-        );
-    }
-
-    @Bean
-    ChannelWriteController channelWriteController() {
-        return ChannelWriteController.create(
-                configFetcher,
-                channelStore,
-                new DefaultJacksonModelReader(),
-                ChannelModelTransformer.create(
-                        v4ChannelCodec(),
-                        ImageModelTranslator.create()
-                ),
-                channelModelWriter()
         );
     }
 

@@ -67,8 +67,6 @@ import static com.google.common.collect.Iterables.transform;
 @Controller
 public class ChannelController extends BaseController<Iterable<Channel>> {
 
-    private final Logger log = LoggerFactory.getLogger(ChannelController.class);
-
     private static final Splitter SPLIT_ON_COMMA = Splitter.on(',');
 
     private static final ImmutableSet<Annotation> validAnnotations = ImmutableSet.<Annotation>builder()
@@ -102,10 +100,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     private final NumberToShortStringCodec codec;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
     private final ChannelResolver channelResolver;
-    private final ApplicationConfigurationFetcher configFetcher;
-    private final ChannelStore store;
-    private final ModelReader reader;
-    private final ChannelModelTransformer channelTransformer;
+    private final ChannelWriteController channelWriteController;
 
     public ChannelController(
             ApplicationConfigurationFetcher configFetcher,
@@ -113,18 +108,13 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             AtlasModelWriter<Iterable<Channel>> outputter,
             ChannelResolver channelResolver,
             NumberToShortStringCodec codec,
-            ChannelStore store,
-            ModelReader reader,
-            ChannelModelTransformer channelTransformer
+            ChannelWriteController channelWriteController
     ) {
         super(configFetcher, log, outputter);
-        this.configFetcher = configFetcher;
         this.channelResolver = checkNotNull(channelResolver);
         this.codec = checkNotNull(codec);
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
-        this.store = checkNotNull(store);
-        this.reader = checkNotNull(reader);
-        this.channelTransformer = checkNotNull(channelTransformer);
+        this.channelWriteController = checkNotNull(channelWriteController);
     }
 
     @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.GET)
@@ -220,8 +210,8 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     }
 
     @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
-    public Void postChannel(HttpServletRequest req, HttpServletResponse resp) {
-        return deserializeAndUpdateChannel(req, resp);
+    public void postChannel(HttpServletRequest request, HttpServletResponse response) {
+        channelWriteController.postChannel(request, response);
     }
 
     private boolean validAnnotations(Set<Annotation> annotations) {
@@ -307,82 +297,4 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             return codec.decode(input).longValue();
         }
     };
-
-    private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
-        Maybe<ApplicationConfiguration> possibleConfig;
-        try {
-            possibleConfig = configFetcher.configurationFor(req);
-        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-            return error(req, resp, AtlasErrorSummary.forException(ex));
-        }
-
-        if (possibleConfig.isNothing()) {
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new UnauthorizedException(
-                            "API key is unauthorised"
-                    ))
-            );
-        }
-
-        Channel channel;
-        try {
-            channel = channelTransformer.transform(
-                    deserialize(new InputStreamReader(req.getInputStream()))
-            );
-        } catch (UnrecognizedPropertyException |
-                JsonParseException |
-                ConstraintViolationException e) {
-            return error(req, resp, AtlasErrorSummary.forException(e));
-
-        } catch (IOException ioe) {
-            log.error("Error reading input for request " + req.getRequestURL(), ioe);
-            return error(req, resp, AtlasErrorSummary.forException(ioe));
-
-        } catch (Exception e) {
-            log.error("Error reading input for request " + req.getRequestURL(), e);
-            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
-                    .withMessage("Error reading input for the request")
-                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
-            return error(req, resp, errorSummary);
-        }
-
-        if (!possibleConfig.requireValue().canWrite(channel.getSource())) {
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new ForbiddenException(
-                            "API key does not have write permission"
-                    ))
-            );
-        }
-
-        try {
-            store.createOrUpdate(channel);
-        } catch (Exception e) {
-            log.error("Error while creating/updating channel for request " + req.getRequestURL(), e);
-            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
-                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
-            return error(req, resp, errorSummary);
-        }
-
-        resp.setStatus(HttpStatusCode.OK.code());
-        resp.setContentLength(0);
-        return null;
-    }
-
-    private org.atlasapi.media.entity.simple.Channel deserialize(Reader input) throws IOException,
-            ReadException {
-        return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Channel.class);
-    }
-
-    private Void error(HttpServletRequest request, HttpServletResponse response,
-            AtlasErrorSummary summary) {
-        try {
-            outputter.writeError(request, response, summary);
-        } catch (IOException e) {
-        }
-        return null;
-    }
 }

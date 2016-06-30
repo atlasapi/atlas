@@ -14,6 +14,7 @@ import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
 import org.atlasapi.input.ChannelModelTransformer;
+import org.atlasapi.input.DefaultGsonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.PersonModelTransformer;
@@ -194,7 +195,6 @@ public class QueryWebModule {
     private @Autowired ContentHierarchyExpander hierarchyExpander;
     private @Autowired ChannelStore channelStore;
 
-
     private @Autowired KnownTypeQueryExecutor queryExecutor;
     private @Autowired ApplicationConfigurationFetcher configFetcher;
     private @Autowired AdapterLog log;
@@ -211,11 +211,15 @@ public class QueryWebModule {
                 channelModelWriter(),
                 channelResolver,
                 new SubstitutionTableNumberCodec(),
-                channelStore,
-                new DefaultJacksonModelReader(),
-                ChannelModelTransformer.create(
-                        v4ChannelCodec(),
-                        ImageModelTranslator.create()
+                ChannelWriteController.create(
+                        configFetcher,
+                        channelStore,
+                        new DefaultJacksonModelReader(),
+                        ChannelModelTransformer.create(
+                                v4ChannelCodec(),
+                                ImageModelTranslator.create()
+                        ),
+                        channelModelWriter()
                 )
         );
     }
@@ -498,8 +502,7 @@ public class QueryWebModule {
                 tvaModelOutputter(),
                 feedGenerator,
                 contentResolver,
-                hierarchyExpander,
-                channelResolver
+                hierarchyExpander
         );
     }
 

@@ -1,7 +1,6 @@
 package org.atlasapi.input;
 
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -24,6 +23,8 @@ import org.joda.time.Duration;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
@@ -56,16 +57,14 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         complex.withUri(simple.getUri());
         complex.withHighDefinition(simple.getHighDefinition());
         complex.withRegional(simple.getRegional());
+        complex.withRegion(simple.getRegion());
         complex.withAdult(simple.getAdult());
         complex.withTitle(simple.getTitle());
 
-        Set<Alias> aliases = simple.getV4Aliases()
-                .stream()
-                .map(simpleAlias -> new Alias(
-                        simpleAlias.getNamespace(),
-                        simpleAlias.getValue()))
-                .collect(Collectors.toSet());
-
+        Set<Alias> aliases = simple.getV4Aliases().stream().map(simpleAlias -> new Alias(
+                simpleAlias.getNamespace(),
+                simpleAlias.getValue()
+        )).collect(Collectors.toSet());
         complex.withAliases(aliases);
 
         if (simple.getMediaType() != null) {
@@ -98,6 +97,10 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
             }
         }
 
+        if (!simple.getTargetRegions().isEmpty()) {
+            complex.withTargetRegions(simple.getTargetRegions());
+        }
+
         if (simple.getStartDate() != null) {
             LocalDate startDate = new LocalDate(simple.getStartDate());
             complex.withStartDate(startDate);
@@ -124,16 +127,25 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
             complex.withGenres(simple.getGenres());
         }
 
+        if (simple.getPublisherDetails() != null) {
+            Maybe<Publisher> publisher = Publisher.fromKey(simple.getPublisherDetails().getKey());
+            if (!publisher.isNothing()) {
+                complex.withSource(publisher.requireValue());
+            }
+        }
+
+        if (simple.getBroadcaster() != null) {
+            Maybe<Publisher> publisher = Publisher.fromKey(simple.getBroadcaster().getKey());
+            if (!publisher.isNothing()) {
+                complex.withBroadcaster(publisher.requireValue());
+            }
+        }
+
         if (simple.getImages() != null && !simple.getImages().isEmpty()) {
-            List<Image> images = Lists.newArrayList();
-
-            simple.getImages()
-                    .stream()
-                    .forEach(image ->
-                            images.add(imageTranslator.transform(image))
-                    );
-
-            complex.withImages(images);
+            complex.withImages(Iterables.transform(
+                    simple.getImages(),
+                    input -> imageTranslator.transform(input)
+            ));
         }
 
         if (simple.getAvailableFrom() != null && !simple.getAvailableFrom().isEmpty()) {

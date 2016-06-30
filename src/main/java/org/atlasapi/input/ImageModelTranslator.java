@@ -32,10 +32,14 @@ public class ImageModelTranslator implements ModelTransformer<org.atlasapi.media
             complex.withHeight(simple.getHeight());
         }
         if (simple.getAspectRatio() != null) {
-            complex.withAspectRatio(ImageAspectRatio.valueOf(simple.getAspectRatio()));
+            if (ImageAspectRatio.FOUR_BY_THREE.getName().equals(simple.getAspectRatio())) {
+                complex.withAspectRatio(ImageAspectRatio.FOUR_BY_THREE);
+            } else if (ImageAspectRatio.SIXTEEN_BY_NINE.getName().equals(simple.getAspectRatio())) {
+                complex.withAspectRatio(ImageAspectRatio.SIXTEEN_BY_NINE);
+            }
         }
         if (simple.getMimeType() != null) {
-            complex.withMimeType(MimeType.valueOf(simple.getMimeType()));
+            complex.withMimeType(MimeType.fromString(simple.getMimeType()));
         }
         if (simple.getAvailabilityStart() != null) {
             complex.withAvailabilityStart(new DateTime(simple.getAvailabilityStart()));

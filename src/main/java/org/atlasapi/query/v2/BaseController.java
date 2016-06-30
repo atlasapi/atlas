@@ -35,6 +35,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.output.Annotation.defaultAnnotations;
 
 public abstract class BaseController<T> {
@@ -55,14 +56,14 @@ public abstract class BaseController<T> {
     protected BaseController(ApplicationConfigurationFetcher configFetcher, AdapterLog log,
             AtlasModelWriter<? super T> outputter,
             NumberToShortStringCodec idCodec) {
-        this.configFetcher = configFetcher;
-        this.log = log;
-        this.outputter = outputter;
+        this.configFetcher = checkNotNull(configFetcher);
+        this.log = checkNotNull(log);
+        this.outputter = checkNotNull(outputter);
         this.queryBuilder = new QueryStringBackedQueryBuilder()
                 .withIgnoreParams("apiKey")
                 .withIgnoreParams("uri", "id", "event_ids");
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
-        this.idCodec = idCodec;
+        this.idCodec = checkNotNull(idCodec);
     }
 
     protected BaseController(ApplicationConfigurationFetcher configFetcher, AdapterLog log,

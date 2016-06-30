@@ -7,6 +7,7 @@ import java.io.Reader;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
 
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
@@ -18,10 +19,16 @@ import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelStore;
+import org.atlasapi.output.AtlasErrorSummary;
+import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.exceptions.ForbiddenException;
+import org.atlasapi.output.exceptions.UnauthorizedException;
 
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,30 +48,37 @@ public class ChannelWriteController {
     private final ChannelStore store;
     private final ModelReader reader;
     private final ChannelModelTransformer channelTransformer;
+    private final AtlasModelWriter<Iterable<Channel>> outputter;
 
     private ChannelWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
             ChannelStore store,
             ModelReader reader,
-            ChannelModelTransformer channelTransformer
+            ChannelModelTransformer channelTransformer,
+            AtlasModelWriter<Iterable<Channel>> outputter
     ) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
         this.store = checkNotNull(store);
         this.reader = checkNotNull(reader);
         this.channelTransformer = checkNotNull(channelTransformer);
+        this.outputter = checkNotNull(outputter);
     }
 
     public static ChannelWriteController create(
             ApplicationConfigurationFetcher appConfigFetcher,
             ChannelStore store,
             ModelReader reader,
-            ChannelModelTransformer channelTransformer
+            ChannelModelTransformer channelTransformer,
+            AtlasModelWriter<Iterable<Channel>> outputter
+
+
     ) {
         return new ChannelWriteController(
                 appConfigFetcher,
                 store,
                 reader,
-                channelTransformer
+                channelTransformer,
+                outputter
         );
     }
 
@@ -78,11 +92,17 @@ public class ChannelWriteController {
         try {
             possibleConfig = appConfigFetcher.configurationFor(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-            return error(resp, HttpStatusCode.FORBIDDEN.code());
+            return error(req, resp, AtlasErrorSummary.forException(ex));
         }
 
         if (possibleConfig.isNothing()) {
-            return error(resp, HttpStatus.UNAUTHORIZED.value());
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
+            );
         }
 
         Channel channel;
@@ -90,27 +110,40 @@ public class ChannelWriteController {
             channel = channelTransformer.transform(
                     deserialize(new InputStreamReader(req.getInputStream()))
             );
+        } catch (UnrecognizedPropertyException |
+                JsonParseException |
+                ConstraintViolationException e) {
+            return error(req, resp, AtlasErrorSummary.forException(e));
+
         } catch (IOException ioe) {
             log.error("Error reading input for request " + req.getRequestURL(), ioe);
-            return error(resp, HttpStatusCode.SERVER_ERROR.code());
+            return error(req, resp, AtlasErrorSummary.forException(ioe));
+
         } catch (Exception e) {
             log.error("Error reading input for request " + req.getRequestURL(), e);
-            return error(resp, HttpStatusCode.BAD_REQUEST.code());
+            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
+                    .withMessage("Error reading input for the request")
+                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
+            return error(req, resp, errorSummary);
         }
 
         if (!possibleConfig.requireValue().canWrite(channel.getSource())) {
-            return error(resp, HttpStatusCode.FORBIDDEN.code());
-        }
-
-        if (Strings.isNullOrEmpty(channel.getCanonicalUri())) {
-            return error(resp, HttpStatusCode.BAD_REQUEST.code());
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new ForbiddenException(
+                            "API key does not have write permission"
+                    ))
+            );
         }
 
         try {
             store.createOrUpdate(channel);
         } catch (Exception e) {
             log.error("Error while creating/updating channel for request " + req.getRequestURL(), e);
-            return error(resp, HttpStatusCode.SERVER_ERROR.code());
+            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
+                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
+            return error(req, resp, errorSummary);
         }
 
         resp.setStatus(HttpStatusCode.OK.code());
@@ -123,9 +156,12 @@ public class ChannelWriteController {
         return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Channel.class);
     }
 
-    private Void error(HttpServletResponse response, int code) {
-        response.setStatus(code);
-        response.setContentLength(0);
+    private Void error(HttpServletRequest request, HttpServletResponse response,
+            AtlasErrorSummary summary) {
+        try {
+            outputter.writeError(request, response, summary);
+        } catch (IOException e) {
+        }
         return null;
     }
 }

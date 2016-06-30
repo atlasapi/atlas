@@ -1,6 +1,7 @@
 package org.atlasapi.input;
 
 import java.math.BigInteger;
+import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -18,6 +19,7 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 
 import com.google.api.client.util.Lists;
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;

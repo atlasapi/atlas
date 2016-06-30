@@ -14,7 +14,6 @@ import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
 import org.atlasapi.input.ChannelModelTransformer;
-import org.atlasapi.input.DefaultGsonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.PersonModelTransformer;
@@ -211,7 +210,17 @@ public class QueryWebModule {
                 log,
                 channelModelWriter(),
                 channelResolver,
-                new SubstitutionTableNumberCodec()
+                new SubstitutionTableNumberCodec(),
+                ChannelWriteController.create(
+                        configFetcher,
+                        channelStore,
+                        new DefaultJacksonModelReader(),
+                        ChannelModelTransformer.create(
+                                v4ChannelCodec(),
+                                ImageModelTranslator.create()
+                        ),
+                        channelModelWriter()
+                )
         );
     }
 
@@ -369,20 +378,6 @@ public class QueryWebModule {
                 lookupBackedContentIdGenerator,
                 contentWriteMessageSender,
                 contentModelOutputter()
-        );
-    }
-
-    @Bean
-    ChannelWriteController channelWriteController() {
-        return ChannelWriteController.create(
-                configFetcher,
-                channelStore,
-                new DefaultJacksonModelReader(),
-                ChannelModelTransformer.create(
-                        v4ChannelCodec(),
-                        ImageModelTranslator.create()
-                ),
-                channelModelWriter()
         );
     }
 

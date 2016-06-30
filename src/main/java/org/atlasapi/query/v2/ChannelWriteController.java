@@ -29,17 +29,13 @@ import com.metabroadcast.common.http.HttpStatusCode;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.http.HttpStatus;
-import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-@Controller
 public class ChannelWriteController {
 
     private final Logger log = LoggerFactory.getLogger(ChannelWriteController.class);
@@ -70,8 +66,6 @@ public class ChannelWriteController {
             ModelReader reader,
             ChannelModelTransformer channelTransformer,
             AtlasModelWriter<Iterable<Channel>> outputter
-
-
     ) {
         return new ChannelWriteController(
                 appConfigFetcher,

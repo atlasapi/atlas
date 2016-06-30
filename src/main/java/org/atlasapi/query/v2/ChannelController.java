@@ -1,25 +1,34 @@
 package org.atlasapi.query.v2;
 
+import static com.google.common.collect.Iterables.transform;
+
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
 
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.input.ChannelModelTransformer;
+import org.atlasapi.input.ModelReader;
+import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.exceptions.ForbiddenException;
+import org.atlasapi.output.exceptions.UnauthorizedException;
 import org.atlasapi.persistence.logging.AdapterLog;
 
 import com.metabroadcast.common.base.Maybe;
@@ -29,6 +38,8 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.query.Selection.SelectionBuilder;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -42,16 +53,21 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.collect.Iterables.transform;
 
 @Controller
 public class ChannelController extends BaseController<Iterable<Channel>> {
+
+    private final Logger log = LoggerFactory.getLogger(ChannelController.class);
 
     private static final Splitter SPLIT_ON_COMMA = Splitter.on(',');
 
@@ -86,12 +102,29 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     private final NumberToShortStringCodec codec;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
     private final ChannelResolver channelResolver;
+    private final ApplicationConfigurationFetcher configFetcher;
+    private final ChannelStore store;
+    private final ModelReader reader;
+    private final ChannelModelTransformer channelTransformer;
 
-    public ChannelController(ApplicationConfigurationFetcher configFetcher, AdapterLog log, AtlasModelWriter<Iterable<Channel>> outputter, ChannelResolver channelResolver, NumberToShortStringCodec codec) {
+    public ChannelController(
+            ApplicationConfigurationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<Iterable<Channel>> outputter,
+            ChannelResolver channelResolver,
+            NumberToShortStringCodec codec,
+            ChannelStore store,
+            ModelReader reader,
+            ChannelModelTransformer channelTransformer
+    ) {
         super(configFetcher, log, outputter);
-        this.channelResolver = channelResolver;
-        this.codec = codec;
+        this.configFetcher = configFetcher;
+        this.channelResolver = checkNotNull(channelResolver);
+        this.codec = checkNotNull(codec);
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
+        this.store = checkNotNull(store);
+        this.reader = checkNotNull(reader);
+        this.channelTransformer = checkNotNull(channelTransformer);
     }
 
     @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.GET)
@@ -188,6 +221,11 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         }
     }
 
+    @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
+    public Void postChannel(HttpServletRequest req, HttpServletResponse resp) {
+        return deserializeAndUpdateChannel(req, resp);
+    }
+
     private boolean validAnnotations(Set<Annotation> annotations) {
         return validAnnotations.containsAll(annotations);
     }
@@ -239,11 +277,6 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         if (!Strings.isNullOrEmpty(uri)) {
             query.withUri(uri);
         }
-
-        if (!Strings.isNullOrEmpty(channelType)) {
-            query.withChannelType(ChannelType.fromKey(channelType).get());
-        }
-
         return query.build();
     }
 
@@ -284,4 +317,82 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             return codec.decode(input).longValue();
         }
     };
+
+    private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
+        Maybe<ApplicationConfiguration> possibleConfig;
+        try {
+            possibleConfig = configFetcher.configurationFor(req);
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+            return error(req, resp, AtlasErrorSummary.forException(ex));
+        }
+
+        if (possibleConfig.isNothing()) {
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
+            );
+        }
+
+        Channel channel;
+        try {
+            channel = channelTransformer.transform(
+                    deserialize(new InputStreamReader(req.getInputStream()))
+            );
+        } catch (UnrecognizedPropertyException |
+                JsonParseException |
+                ConstraintViolationException e) {
+            return error(req, resp, AtlasErrorSummary.forException(e));
+
+        } catch (IOException ioe) {
+            log.error("Error reading input for request " + req.getRequestURL(), ioe);
+            return error(req, resp, AtlasErrorSummary.forException(ioe));
+
+        } catch (Exception e) {
+            log.error("Error reading input for request " + req.getRequestURL(), e);
+            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
+                    .withMessage("Error reading input for the request")
+                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
+            return error(req, resp, errorSummary);
+        }
+
+        if (!possibleConfig.requireValue().canWrite(channel.getSource())) {
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new ForbiddenException(
+                            "API key does not have write permission"
+                    ))
+            );
+        }
+
+        try {
+            store.createOrUpdate(channel);
+        } catch (Exception e) {
+            log.error("Error while creating/updating channel for request " + req.getRequestURL(), e);
+            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
+                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
+            return error(req, resp, errorSummary);
+        }
+
+        resp.setStatus(HttpStatusCode.OK.code());
+        resp.setContentLength(0);
+        return null;
+    }
+
+    private org.atlasapi.media.entity.simple.Channel deserialize(Reader input) throws IOException,
+            ReadException {
+        return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Channel.class);
+    }
+
+    private Void error(HttpServletRequest request, HttpServletResponse response,
+            AtlasErrorSummary summary) {
+        try {
+            outputter.writeError(request, response, summary);
+        } catch (IOException e) {
+        }
+        return null;
+    }
 }

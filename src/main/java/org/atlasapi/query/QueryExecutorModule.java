@@ -9,7 +9,6 @@ import javax.annotation.PreDestroy;
 import org.atlasapi.input.BrandModelTransformer;
 import org.atlasapi.input.ClipModelTransformer;
 import org.atlasapi.input.DefaultGsonModelReader;
-import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.DelegatingModelTransformer;
 import org.atlasapi.input.ItemModelTransformer;
 import org.atlasapi.input.SegmentModelTransformer;
@@ -91,7 +90,7 @@ public class QueryExecutorModule {
     @Bean
     public ContentWriteExecutor contentWriteExecutor() {
         return new ContentWriteExecutor(
-                new DefaultJacksonModelReader(),
+                DefaultGsonModelReader.create(),
                 delegatingModelTransformer(),
                 contentResolver,
                 contentWriter,

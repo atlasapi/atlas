@@ -16,7 +16,6 @@ import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.DefaultGsonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
-import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.PersonModelTransformer;
 import org.atlasapi.input.TopicModelTransformer;
 import org.atlasapi.media.channel.CachingChannelGroupStore;
@@ -211,17 +210,7 @@ public class QueryWebModule {
                 log,
                 channelModelWriter(),
                 channelResolver,
-                new SubstitutionTableNumberCodec(),
-                ChannelWriteController.create(
-                        configFetcher,
-                        channelStore,
-                        new DefaultJacksonModelReader(),
-                        ChannelModelTransformer.create(
-                                v4ChannelCodec(),
-                                ImageModelTranslator.create()
-                        ),
-                        channelModelWriter()
-                )
+                new SubstitutionTableNumberCodec()
         );
     }
 
@@ -377,8 +366,7 @@ public class QueryWebModule {
                 configFetcher,
                 contentWriteExecutor,
                 lookupBackedContentIdGenerator,
-                contentWriteMessageSender,
-                contentModelOutputter()
+                contentWriteMessageSender
         );
     }
 
@@ -386,9 +374,8 @@ public class QueryWebModule {
         return new TopicWriteController(
                 configFetcher,
                 topicStore,
-                new DefaultJacksonModelReader(),
-                new TopicModelTransformer(),
-                topicModelOutputter()
+                DefaultGsonModelReader.create(),
+                new TopicModelTransformer()
         );
     }
 
@@ -418,9 +405,8 @@ public class QueryWebModule {
         return new PeopleWriteController(
                 configFetcher,
                 personStore,
-                new DefaultJacksonModelReader(),
-                new PersonModelTransformer(new SystemClock(), personStore),
-                personModelOutputter()
+                DefaultGsonModelReader.create(),
+                new PersonModelTransformer(new SystemClock(), personStore)
         );
     }
 

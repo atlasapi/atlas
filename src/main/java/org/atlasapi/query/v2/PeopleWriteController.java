@@ -8,7 +8,6 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
 
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
@@ -19,27 +18,22 @@ import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
 import org.atlasapi.media.entity.Person;
-import org.atlasapi.output.AtlasErrorSummary;
-import org.atlasapi.output.AtlasModelWriter;
-import org.atlasapi.output.exceptions.ForbiddenException;
-import org.atlasapi.output.exceptions.UnauthorizedException;
 import org.atlasapi.persistence.content.people.PersonStore;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpStatusCode;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-public class PeopleWriteController {
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.http.HttpStatusCode;
 
+public class PeopleWriteController {
+    
     //TODO: replace with proper merge strategies.
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
@@ -51,25 +45,20 @@ public class PeopleWriteController {
     private final ModelReader reader;
 
     private ModelTransformer<org.atlasapi.media.entity.simple.Person, Person> transformer;
-    private AtlasModelWriter<Iterable<Person>> outputter;
 
-    public PeopleWriteController(ApplicationConfigurationFetcher appConfigFetcher,
-            PersonStore store, ModelReader reader,
-            ModelTransformer<org.atlasapi.media.entity.simple.Person, Person> transformer,
-            AtlasModelWriter<Iterable<Person>> outputter) {
+    public PeopleWriteController(ApplicationConfigurationFetcher appConfigFetcher, PersonStore store, ModelReader reader, ModelTransformer<org.atlasapi.media.entity.simple.Person, Person> transformer) {
         this.appConfigFetcher = appConfigFetcher;
         this.store = store;
         this.reader = reader;
         this.transformer = transformer;
-        this.outputter = outputter;
     }
-
-    @RequestMapping(value = "/3.0/person.json", method = RequestMethod.POST)
+    
+    @RequestMapping(value="/3.0/person.json", method = RequestMethod.POST)
     public Void postPerson(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdatePerson(req, resp, MERGE);
     }
 
-    @RequestMapping(value = "/3.0/person.json", method = RequestMethod.PUT)
+    @RequestMapping(value="/3.0/person.json", method = RequestMethod.PUT)
     public Void putPerson(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdatePerson(req, resp, OVERWRITE);
     }
@@ -81,65 +70,45 @@ public class PeopleWriteController {
             possibleConfig = appConfigFetcher.configurationFor(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             log.error("Problem with API key for request " + req.getRequestURL(), e);
-            return error(req, resp, AtlasErrorSummary.forException(e));
+            return error(resp, HttpStatus.UNAUTHORIZED.value());
         }
-
+        
         if (possibleConfig.isNothing()) {
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new UnauthorizedException(
-                            "API key is unauthorised"
-                    ))
-            );
+            return error(resp, HttpStatus.UNAUTHORIZED.value());
         }
-
+        
         Person person;
         try {
             person = complexify(deserialize(new InputStreamReader(req.getInputStream())));
-
-        } catch (UnrecognizedPropertyException |
-                JsonParseException |
-                ConstraintViolationException e) {
-            return error(req, resp, AtlasErrorSummary.forException(e));
-
         } catch (IOException ioe) {
             log.error("Error reading input for request " + req.getRequestURL(), ioe);
-            return error(req, resp, AtlasErrorSummary.forException(ioe));
-
+            return error(resp, HttpStatusCode.SERVER_ERROR.code());
         } catch (Exception e) {
             log.error("Error reading input for request " + req.getRequestURL(), e);
-            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
-                    .withMessage("Error reading input for the request")
-                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
-
-            return error(req, resp, errorSummary);
+            return error(resp, HttpStatusCode.BAD_REQUEST.code());
         }
-
+        
         if (!possibleConfig.requireValue().canWrite(person.getPublisher())) {
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new ForbiddenException(
-                            "API key does not have write permission"))
-            );
+            return error(resp, HttpStatusCode.FORBIDDEN.code());
         }
-
+        
+        if (Strings.isNullOrEmpty(person.getCanonicalUri())) {
+            return error(resp, HttpStatusCode.BAD_REQUEST.code());
+        }
+        
         try {
             person = merge(resolveExisting(person), person, merge);
             store.createOrUpdatePerson(person);
         } catch (Exception e) {
             log.error("Error reading input for request " + req.getRequestURL(), e);
-            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
-                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
-            return error(req, resp, errorSummary);
+            return error(resp, HttpStatusCode.SERVER_ERROR.code());
         }
-
+        
         resp.setStatus(HttpStatusCode.OK.code());
         resp.setContentLength(0);
         return null;
     }
-
+    
     private Person merge(Optional<Person> possibleExisting, Person update, boolean merge) {
         if (!possibleExisting.isPresent()) {
             return update;
@@ -148,9 +117,7 @@ public class PeopleWriteController {
     }
 
     private Person merge(Person existing, Person update, boolean merge) {
-        existing.setEquivalentTo(merge
-                                 ? merge(existing.getEquivalentTo(), update.getEquivalentTo())
-                                 : update.getEquivalentTo());
+        existing.setEquivalentTo(merge ? merge(existing.getEquivalentTo(), update.getEquivalentTo()) : update.getEquivalentTo());
         existing.setLastUpdated(update.getLastUpdated());
         existing.setTitle(update.getTitle());
         existing.setDescription(update.getDescription());
@@ -158,17 +125,13 @@ public class PeopleWriteController {
         existing.setThumbnail(update.getThumbnail());
         existing.setMediaType(update.getMediaType());
         existing.setSpecialization(update.getSpecialization());
-        existing.setRelatedLinks(merge
-                                 ? merge(existing.getRelatedLinks(), update.getRelatedLinks())
-                                 : update.getRelatedLinks());
+        existing.setRelatedLinks(merge ? merge(existing.getRelatedLinks(), update.getRelatedLinks()) : update.getRelatedLinks());
         existing.setGivenName(update.getGivenName());
         existing.setFamilyName(update.getFamilyName());
         existing.setGender(update.getGender());
         existing.setBirthDate(update.getBirthDate());
         existing.setBirthPlace(update.getBirthPlace());
-        existing.setQuotes(merge
-                           ? merge(existing.getQuotes(), update.getQuotes())
-                           : update.getQuotes());
+        existing.setQuotes(merge ? merge(existing.getQuotes(),update.getQuotes()) : update.getQuotes());
         existing.setImages(merge ?
                            merge(existing.getImages(), update.getImages()) :
                            update.getImages());
@@ -190,23 +153,14 @@ public class PeopleWriteController {
         return transformer.transform(inputPerson);
     }
 
-    private org.atlasapi.media.entity.simple.Person deserialize(Reader input)
-            throws IOException, ReadException {
-        return reader.read(
-                new BufferedReader(input),
-                org.atlasapi.media.entity.simple.Person.class
-        );
+    private org.atlasapi.media.entity.simple.Person deserialize(Reader input) throws IOException, ReadException {
+        return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Person.class);
     }
-
-    private Void error(HttpServletRequest request, HttpServletResponse response,
-            AtlasErrorSummary summary) {
-        try {
-            outputter.writeError(request, response, summary);
-        } catch (IOException e) {
-            log.error("Error executing request {}" , e);
-
-        }
+    
+    private Void error(HttpServletResponse response, int code) {
+        response.setStatus(code);
+        response.setContentLength(0);
         return null;
     }
-
+    
 }

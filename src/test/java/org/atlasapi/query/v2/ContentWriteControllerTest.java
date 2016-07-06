@@ -14,7 +14,6 @@ import org.atlasapi.application.v3.SourceStatus;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.worker.ContentWriteMessage;
@@ -65,7 +64,6 @@ public class ContentWriteControllerTest {
 
     private @Mock HttpServletRequest request;
     private @Mock HttpServletResponse response;
-    private @Mock AtlasModelWriter modelWriter;
 
     private NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
@@ -95,7 +93,7 @@ public class ContentWriteControllerTest {
         when(idGenerator.getId(any(Content.class))).thenReturn(contentId);
 
         controller = new ContentWriteController(
-                configurationFetcher, writeExecutor, idGenerator, messageSender, modelWriter
+                configurationFetcher, writeExecutor, idGenerator, messageSender
         );
     }
 

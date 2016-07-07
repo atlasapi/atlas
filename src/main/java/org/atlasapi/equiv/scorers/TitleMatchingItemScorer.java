@@ -16,11 +16,13 @@ import org.atlasapi.media.entity.Item;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import org.apache.commons.lang3.StringUtils;
 
 public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     
     public static final String NAME = "Title";
     private static final ImmutableSet<String> PREFIXES = ImmutableSet.of("the ", "Live ");
+    private static final ImmutableSet<String> POSTFIXES = ImmutableSet.of("\\(Unrated\\)", "\\(Rated\\)");
     private static final Pattern TRAILING_APOSTROPHE_PATTERN =Pattern.compile("\\w' ");
     private final ExpandingTitleTransformer titleExpander = new ExpandingTitleTransformer();
 
@@ -104,13 +106,25 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         Score score = Score.NULL_SCORE;
 
         if(subjectType == suggestionType) {
-            String subjectTitle = removeYearFromTitle(subject);
-            String suggestionTitle = removeYearFromTitle(suggestion);
+            String subjectTitle = removePostfix(subject);
+            String suggestionTitle = removePostfix(suggestion);
             return compareTitles(subjectTitle, suggestionTitle);
 
         }
         
         return score;
+    }
+
+    private String removePostfix(Item item) {
+        String removedYear = removeYearFromTitle(item);
+        return removeRatings(removedYear).trim();
+    }
+
+    private String removeRatings(String title) {
+        for (String postfix : POSTFIXES) {
+            title = title.replaceAll(postfix, "");
+        }
+        return title;
     }
 
     private String removeYearFromTitle(Item item) {
@@ -135,18 +149,19 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
             String regexp = normalizeRegularExpression(suggestionTitle);
             matches = Pattern.matches(regexp, subjTitle);
         } else {
-            matches = subjTitle.equals(suggTitle);
+            matches = matchWithoutDashes(subjTitle, suggTitle) || subjTitle.equals(suggTitle);
         }
-        
+
         return matches ? Score.valueOf(2D) 
                        : scoreOnMismatch;
     }
-    
+
     private String normalize(String title) {
         String withoutSequencePrefix = removeSequencePrefix(title);
         String expandedTitle = titleExpander.expand(withoutSequencePrefix);
         String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle);
-        return replaceSpecialChars(withoutCommonPrefixes);
+        String removedAccents = StringUtils.stripAccents(withoutCommonPrefixes);
+        return replaceSpecialChars(removedAccents);
     }
 
     private String normalizeRegularExpression(String title) {
@@ -160,6 +175,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return title.replaceAll(" & ", " and ")
                     .replaceAll("fc ", "")
                     .replaceAll(":", "")
+                    .replaceAll(",", "")
                     .replaceAll("\\.", "")
                     .replaceAll("\\s?\\/\\s?", "-") // normalize spacing around back-to-back titles
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
@@ -185,6 +201,10 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
             }
         }
         return titleWithoutPrefix;
+    }
+
+    private boolean matchWithoutDashes(String subject, String suggestion) {
+        return subject.replaceAll("-", "").equals(suggestion.replaceAll("-", ""));
     }
 
     //Matches e.g. "2. Kinross"

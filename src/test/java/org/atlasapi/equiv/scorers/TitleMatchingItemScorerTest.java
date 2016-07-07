@@ -91,13 +91,15 @@ public class TitleMatchingItemScorerTest extends TestCase {
     public void testMatchingWithThePrefix() {
         DefaultDescription desc = new DefaultDescription();
 
+        score(2, scorer.score(itemWithTitle("Funny People"), of(itemWithTitle("Funny People (Unrated)")), desc));
+        score(2, scorer.score(itemWithTitle("Unrated People"), of(itemWithTitle("Unrated People")), desc));
         score(2, scorer.score(itemWithTitle("Sports"), of(itemWithTitle("Live Sports")), desc));
         score(2, scorer.score(itemWithTitle("The Great Escape"), of(itemWithTitle("Great Escape")), desc));
         score(2, scorer.score(itemWithTitle("the Great Escape"), of(itemWithTitle("Great Escape")), desc));
         score(0, scorer.score(itemWithTitle("Theatreland"), of(itemWithTitle("The atreland")), desc));
         score(0, scorer.score(itemWithTitle("theatreland"), of(itemWithTitle("the atreland")), desc));
         score(0, scorer.score(itemWithTitle("liveandnotlive live"), of(itemWithTitle("live")), desc));
-
+        score(0, scorer.score(itemWithTitle("Funny People"), of(itemWithTitle("Funny People Unrated")), desc));
     }
     
     @Test
@@ -130,12 +132,13 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(2, scorer.score(itemWithTitle("48 hrs"), of(itemWithTitle("48 HRS.")), desc));
         score(2, scorer.score(itemWithTitle("The 7:51"), of(itemWithTitle("The 7.51")), desc));
         score(2, scorer.score(itemWithTitle("Mr. & Mrs. Smith"), of(itemWithTitle("Mr & Mrs Smith")), desc));
+        score(2, scorer.score(itemWithTitle("The way, way back"), of(itemWithTitle("The way way back")), desc));
+        score(2, scorer.score(itemWithTitle("The weekend"), of(itemWithTitle("The week-end")), desc));
+        score(2, scorer.score(itemWithTitle("'Allo 'Allo!"), of(itemWithTitle("Allo Allo")), desc));
     }
 
     @Test
     public void testMatchingTitlesWithYearsInTitles() {
-        //This test case covers cases when non-abbrivating apostrophe is used in the end of the word
-        // like "Girls' Night In" with "Girls' Night In"
         DefaultDescription desc = new DefaultDescription();
         score(2, scorer.score(itemWithTitle("Cold Comes the Night (2013)"), of(itemWithTitle("Cold Comes the Night")), desc));
         score(2, scorer.score(itemWithTitle("Get Carter (2013)"), of(itemWithTitle("Get Carter")), desc));
@@ -158,6 +161,24 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(2, scorer.score(itemWithTitle("C'harlies Big Catch"), of(itemWithTitle("C'harlies Big Catch")), desc));
         score(0, scorer.score(itemWithTitle("C'harlie Big Catch"), of(itemWithTitle("C'harlies Big Catch")), desc));
     }
+
+    @Test
+    public void testMatchingWithDifferentSpacing() {
+        DefaultDescription desc = new DefaultDescription();
+        score(2, scorer.score(itemWithTitle("HouseBusters"), of(itemWithTitle("House Busters")), desc));
+        score(2, scorer.score(itemWithTitle("House  Busters  "), of(itemWithTitle("  House Busters")), desc));
+        score(2, scorer.score(itemWithTitle("Iron Man 3"), of(itemWithTitle("IronMan 3")), desc));
+    }
+
+    @Test
+    public void testMatchingWithDifferentAccents() {
+        DefaultDescription desc = new DefaultDescription();
+        score(2, scorer.score(itemWithTitle("En Equilibre"), of(itemWithTitle("En équilibre")), desc));
+        score(2, scorer.score(itemWithTitle("Vie héroïque"), of(itemWithTitle("Vie heroique")), desc));
+        score(2, scorer.score(itemWithTitle("François Cluzet"), of(itemWithTitle("Francois Cluzet")), desc));
+    }
+
+
     
     private void score(double expected, ScoredCandidates<Item> scores) {
         Score value = Iterables.getOnlyElement(scores.candidates().entrySet()).getValue();

@@ -165,10 +165,10 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
 		            final String scheduleDay = matcher.group(1);
 
 		            AtomicInteger jobsRemaining = new AtomicInteger();
-		            jobsRemainingPerFile.put(file.getName(), jobsRemaining);
-		            
+
 		            unmarshaller.setListener(channelDataProcessingListener(jobsRemaining, completion, submitted, fileToProcess, scheduleDay));
 		            reader.parse(fileToProcess.toURI().toString());
+                    jobsRemainingPerFile.put(file.getName(), jobsRemaining);
 		        }
 		        else {
 		            log.info("Not processing file " + file.toString() + " as filename format is not recognised");

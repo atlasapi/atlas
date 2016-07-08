@@ -14,8 +14,8 @@ import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
 import org.atlasapi.input.ChannelModelTransformer;
-import org.atlasapi.input.DefaultGsonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
+import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.PersonModelTransformer;
 import org.atlasapi.input.TopicModelTransformer;
 import org.atlasapi.media.channel.CachingChannelGroupStore;
@@ -210,7 +210,17 @@ public class QueryWebModule {
                 log,
                 channelModelWriter(),
                 channelResolver,
-                new SubstitutionTableNumberCodec()
+                new SubstitutionTableNumberCodec(),
+                ChannelWriteController.create(
+                        configFetcher,
+                        channelStore,
+                        new DefaultJacksonModelReader(),
+                        ChannelModelTransformer.create(
+                                v4ChannelCodec(),
+                                ImageModelTranslator.create()
+                        ),
+                        channelModelWriter()
+                )
         );
     }
 
@@ -366,7 +376,8 @@ public class QueryWebModule {
                 configFetcher,
                 contentWriteExecutor,
                 lookupBackedContentIdGenerator,
-                contentWriteMessageSender
+                contentWriteMessageSender,
+                contentModelOutputter()
         );
     }
 
@@ -374,8 +385,9 @@ public class QueryWebModule {
         return new TopicWriteController(
                 configFetcher,
                 topicStore,
-                DefaultGsonModelReader.create(),
-                new TopicModelTransformer()
+                new DefaultJacksonModelReader(),
+                new TopicModelTransformer(),
+                topicModelOutputter()
         );
     }
 
@@ -405,8 +417,9 @@ public class QueryWebModule {
         return new PeopleWriteController(
                 configFetcher,
                 personStore,
-                DefaultGsonModelReader.create(),
-                new PersonModelTransformer(new SystemClock(), personStore)
+                new DefaultJacksonModelReader(),
+                new PersonModelTransformer(new SystemClock(), personStore),
+                personModelOutputter()
         );
     }
 
@@ -779,7 +792,6 @@ public class QueryWebModule {
     ContentGroupModelSimplifier contentGroupSimplifier() {
         return new ContentGroupModelSimplifier(imageSimplifier());
     }
-
     @Bean
     TopicModelSimplifier topicSimplifier() {
         return new TopicModelSimplifier(localHostName);

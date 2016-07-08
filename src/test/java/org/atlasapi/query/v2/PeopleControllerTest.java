@@ -50,7 +50,7 @@ public class PeopleControllerTest {
     private ModelReader reader = mock(ModelReader.class);
     @SuppressWarnings("unchecked")
     private ModelTransformer<org.atlasapi.media.entity.simple.Person, Person> transformer = mock(ModelTransformer.class);
-    private PeopleWriteController writeController = new PeopleWriteController(configFetcher, store, reader, transformer );
+    private PeopleWriteController writeController = new PeopleWriteController(configFetcher, store, reader, transformer, outputter );
 
     private final PeopleController peopleController = new PeopleController(resolver, configFetcher, log, outputter, writeController);
     private final SubstitutionTableNumberCodec idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();

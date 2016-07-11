@@ -37,6 +37,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
+import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.Interval;
 import org.joda.time.format.PeriodFormat;
@@ -98,22 +99,29 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             DateTime toWhen = null;
             Integer count = null;
 
+            // Fix this moment in time as "now" so all calls to the dateTime parser have the same
+            // concept of when now is. This is to ensure that requests like:
+            // from=now&to=now.plus.24h always resolve to exactly a 24hr interval. Otherwise
+            // they could be either 24hrs or 24hrs + 1ms. The second would then trigger the filter
+            // that checks schedule calls are not longer than 24hrs
+            DateTime now = DateTime.now(DateTimeZone.UTC);
+
             if (!Strings.isNullOrEmpty(on)) {
-                fromWhen = dateTimeInQueryParser.parse(on);
-                toWhen = dateTimeInQueryParser.parse(on);
+                fromWhen = dateTimeInQueryParser.parse(on, now);
+                toWhen = dateTimeInQueryParser.parse(on, now);
                 checkArgument(
                         allNullOrEmpty(to, from, itemCount),
                         "'from', 'to' or 'count' cannot be provided with 'on'"
                 );
             } else if (!Strings.isNullOrEmpty(to) && !Strings.isNullOrEmpty(from)) {
-                fromWhen = dateTimeInQueryParser.parse(from);
-                toWhen = dateTimeInQueryParser.parse(to);
+                fromWhen = dateTimeInQueryParser.parse(from, now);
+                toWhen = dateTimeInQueryParser.parse(to, now);
                 checkArgument(
                         allNullOrEmpty(on, itemCount),
                         "'on' or 'count' cannot be provided with 'from' and 'to'"
                 );
             } else if (!Strings.isNullOrEmpty(from) && !Strings.isNullOrEmpty(itemCount)) {
-                fromWhen = dateTimeInQueryParser.parse(from);
+                fromWhen = dateTimeInQueryParser.parse(from, now);
                 count = Integer.parseInt(itemCount);
                 checkArgument(
                         COUNT_RANGE.contains(count),

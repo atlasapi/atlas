@@ -90,16 +90,16 @@ public class ContentWriteController {
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
-    public Void postContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public Id postContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
-    public Void putContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public Id putContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
 
-    private Void deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
+    private Id deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) throws IOException {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
 
@@ -187,16 +187,8 @@ public class ContentWriteController {
 
         HttpStatus responseStatus = async ? HttpStatus.ACCEPTED : HttpStatus.OK;
         resp.setStatus(responseStatus.value());
-        OutputStream out = resp.getOutputStream();
-        OutputStreamWriter writer = new OutputStreamWriter(out, Charsets.UTF_8);
-        try {
-            String str = gson.toJson(encodeId(contentId));
-            resp.setContentLength(str.getBytes().length);
-            writer.write(str);
-        } finally {
-            Flushables.flushQuietly(out);
-        }
-        return null;
+        Id id1 = new Id(encodeId(contentId));
+        return id1;
     }
 
     private void sendMessage(byte[] inputStreamBytes, Long contentId, boolean merge)
@@ -249,7 +241,7 @@ public class ContentWriteController {
         log.error(errorBuilder.toString(), e);
     }
 
-    private Void error(HttpServletRequest request, HttpServletResponse response,
+    private Id error(HttpServletRequest request, HttpServletResponse response,
             AtlasErrorSummary summary) {
         try {
             outputWriter.writeError(request, response, summary);

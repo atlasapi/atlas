@@ -187,12 +187,13 @@ public class ContentWriteController {
 
         HttpStatus responseStatus = async ? HttpStatus.ACCEPTED : HttpStatus.OK;
         resp.setStatus(responseStatus.value());
-        resp.setContentLength(0);
         OutputStream out = resp.getOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(out, Charsets.UTF_8);
         Id id1 = new Id(encodeId(contentId));
         try {
-            writer.write(gson.toJson(id1));
+            String str = gson.toJson(id1);
+            resp.setContentLength(str.getBytes(Charsets.UTF_8).length);
+            writer.write(str);
         } finally {
             Flushables.flushQuietly(out);
         }

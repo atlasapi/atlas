@@ -2,8 +2,10 @@ package org.atlasapi.query.v2;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 
+import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
@@ -66,6 +68,7 @@ public class ContentWriteControllerTest {
     private @Mock HttpServletRequest request;
     private @Mock HttpServletResponse response;
     private @Mock AtlasModelWriter modelWriter;
+    private @Mock ServletOutputStream outputStream;
 
     private NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
@@ -93,7 +96,7 @@ public class ContentWriteControllerTest {
         when(request.getInputStream()).thenReturn(inputStream);
         when(writeExecutor.parseInputStream(any(InputStream.class))).thenReturn(inputContent);
         when(idGenerator.getId(any(Content.class))).thenReturn(contentId);
-
+        when(response.getOutputStream()).thenReturn(outputStream);
         controller = new ContentWriteController(
                 configurationFetcher, writeExecutor, idGenerator, messageSender, modelWriter
         );

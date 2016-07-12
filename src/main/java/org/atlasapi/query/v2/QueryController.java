@@ -202,12 +202,12 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     }
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
-    public Void postContent(HttpServletRequest req, HttpServletResponse resp) {
+    public Void postContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         return contentWriteController.postContent(req, resp);
     }
 
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.PUT)
-    public Void putContent(HttpServletRequest req, HttpServletResponse resp) {
+    public Void putContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         return contentWriteController.putContent(req, resp);
     }
 }

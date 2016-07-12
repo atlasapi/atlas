@@ -3,6 +3,8 @@ package org.atlasapi.query.v2;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.UUID;
@@ -40,6 +42,11 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
 import com.google.api.client.util.Maps;
+import com.google.common.base.Charsets;
+import com.google.common.base.Strings;
+import com.google.common.io.Flushables;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -66,6 +73,7 @@ public class ContentWriteController {
     private final LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     private final MessageSender<ContentWriteMessage> messageSender;
     private final AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter;
+    private final Gson gson = new GsonBuilder().create();
 
     public ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
@@ -82,17 +90,17 @@ public class ContentWriteController {
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
-    public Void postContent(HttpServletRequest req, HttpServletResponse resp) {
+    public Void postContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
-    public Void putContent(HttpServletRequest req, HttpServletResponse resp) {
+    public Void putContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
 
     private Void deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
-            boolean merge) {
+            boolean merge) throws IOException {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
 
         Maybe<ApplicationConfiguration> possibleConfig;
@@ -180,6 +188,14 @@ public class ContentWriteController {
         HttpStatus responseStatus = async ? HttpStatus.ACCEPTED : HttpStatus.OK;
         resp.setStatus(responseStatus.value());
         resp.setContentLength(0);
+        OutputStream out = resp.getOutputStream();
+        OutputStreamWriter writer = new OutputStreamWriter(out, Charsets.UTF_8);
+        String id = encodeId(contentId);
+        try {
+            gson.toJson(new Id(id), writer);
+        } finally {
+            Flushables.flushQuietly(out);
+        }
         return null;
     }
 
@@ -201,8 +217,12 @@ public class ContentWriteController {
                 HttpHeaders.LOCATION,
                 hostName
                         + "/3.0/content.json?id="
-                        + codec.encode(BigInteger.valueOf(contentId))
+                        + encodeId(contentId)
         );
+    }
+
+    private String encodeId(Long contentId) {
+        return codec.encode(BigInteger.valueOf(contentId));
     }
 
     private void logError(String errorMessage, Exception e, HttpServletRequest req) {
@@ -239,4 +259,17 @@ public class ContentWriteController {
         return null;
     }
 
+    private class Id {
+
+        private final String id;
+
+        public Id(String id) {
+            this.id = id;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+    }
 }

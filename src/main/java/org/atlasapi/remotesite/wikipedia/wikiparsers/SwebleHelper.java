@@ -1,18 +1,24 @@
 package org.atlasapi.remotesite.wikipedia.wikiparsers;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.regex.Pattern;
 
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import de.fau.cs.osr.ptk.common.AstVisitor;
+import de.fau.cs.osr.ptk.common.ast.AstNode;
+import de.fau.cs.osr.ptk.common.ast.NodeList;
+import de.fau.cs.osr.ptk.common.ast.Text;
 import info.bliki.api.Connector;
 import info.bliki.api.Page;
 import info.bliki.api.User;
+import info.bliki.wiki.filter.PlainTextConverter;
+import info.bliki.wiki.model.WikiModel;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -29,19 +35,9 @@ import org.sweble.wikitext.lazy.preprocessor.LazyPreprocessedPage;
 import org.sweble.wikitext.lazy.preprocessor.Template;
 import org.sweble.wikitext.lazy.preprocessor.TemplateArgument;
 import org.sweble.wikitext.lazy.utils.SimpleParserConfig;
-
-import info.bliki.wiki.filter.PlainTextConverter;
-import info.bliki.wiki.model.WikiModel;
-
 import xtc.parser.ParseException;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-
-import de.fau.cs.osr.ptk.common.AstVisitor;
-import de.fau.cs.osr.ptk.common.ast.AstNode;
-import de.fau.cs.osr.ptk.common.ast.NodeList;
-import de.fau.cs.osr.ptk.common.ast.Text;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Contains helper methods for dealing with the SWEBLE wikitext parser ({@link org.sweble.wikitext.lazy}) and its AST output.
@@ -51,7 +47,7 @@ public class SwebleHelper {
     private static final ParserConfigInterface cfg = new SimpleParserConfig();
     private static final LazyPreprocessor preprocessor = new LazyPreprocessor(cfg);
     private static final Connector connector = new Connector();
-    private static final User user = connector.login(new User("", "", "http://en.wikipedia.org/w/api.php"));
+    private static final User user = connector.login(new User("", "", "https://en.wikipedia.org/w/api.php"));
 
     /**
      * Performs the first half of the Mediawiki parsing process -- the resulting AST includes templates and their arguments (the usual intention being to expand and include these before the remaining parse) but no awareness of formatting or any other textual abnormalities.
@@ -243,8 +239,8 @@ public class SwebleHelper {
         protected Object visitNotFound(AstNode node) {
             return null;
         }
-    };
-    
+    }
+
     public static class ListItemResult {
         public final String name;
         public final Optional<String> articleTitle;

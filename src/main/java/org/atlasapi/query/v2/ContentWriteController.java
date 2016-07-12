@@ -187,8 +187,7 @@ public class ContentWriteController {
 
         HttpStatus responseStatus = async ? HttpStatus.ACCEPTED : HttpStatus.OK;
         resp.setStatus(responseStatus.value());
-        Id id1 = new Id(encodeId(contentId));
-        return id1;
+        return new Id(encodeId(contentId));
     }
 
     private void sendMessage(byte[] inputStreamBytes, Long contentId, boolean merge)

@@ -191,7 +191,7 @@ public class ContentWriteController {
         OutputStreamWriter writer = new OutputStreamWriter(out, Charsets.UTF_8);
         try {
             String str = gson.toJson(encodeId(contentId));
-            resp.setContentLength(str.getBytes(Charsets.UTF_8).length);
+            resp.setContentLength(str.getBytes().length);
             writer.write(str);
         } finally {
             Flushables.flushQuietly(out);

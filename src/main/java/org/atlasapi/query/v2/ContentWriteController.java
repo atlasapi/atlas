@@ -190,13 +190,13 @@ public class ContentWriteController {
         resp.setContentLength(0);
         OutputStream out = resp.getOutputStream();
         OutputStreamWriter writer = new OutputStreamWriter(out, Charsets.UTF_8);
-        String id = encodeId(contentId);
+        Id id1 = new Id(encodeId(contentId));
         try {
-            gson.toJson(new Id(id), writer);
+            writer.write(gson.toJson(id1));
         } finally {
             Flushables.flushQuietly(out);
         }
-        return new Id(id);
+        return id1;
     }
 
     private void sendMessage(byte[] inputStreamBytes, Long contentId, boolean merge)

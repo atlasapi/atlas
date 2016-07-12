@@ -1,28 +1,24 @@
 package org.atlasapi.remotesite.wikipedia;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
 import java.io.IOException;
 import java.util.Collection;
 
-import org.apache.commons.io.IOUtils;
 import org.atlasapi.media.entity.Person;
-import org.atlasapi.remotesite.wikipedia.film.FilmExtractor;
-import org.atlasapi.remotesite.wikipedia.football.EuropeanTeamListScraper;
-import org.atlasapi.remotesite.wikipedia.people.ActorsNamesListScrapper;
 import org.atlasapi.remotesite.wikipedia.people.FootballListScrapper;
 import org.atlasapi.remotesite.wikipedia.people.PeopleExtractor;
 import org.atlasapi.remotesite.wikipedia.wikiparsers.Article;
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
 
 import com.google.common.base.Charsets;
 import com.google.common.collect.Iterables;
 import com.google.common.io.Resources;
-
+import org.apache.commons.io.IOUtils;
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
 import xtc.parser.ParseException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 public class PeopleExtractionTest {
     private PeopleExtractor extractor;
@@ -72,7 +68,7 @@ public class PeopleExtractionTest {
         assertTrue(fabregas.profileLinks().isEmpty());
         assertEquals("Cesc Fàbregas",fabregas.getTitle());
         assertTrue(fabregas.getAliases().isEmpty());
-        assertEquals("http://upload.wikimedia.org/wikipedia/commons/b/b4/Cesc_Fabregas_vs_Maccabi_Tel-Aviv%2C_Sep_2015.jpg", Iterables.getOnlyElement(fabregas.getImages()).getCanonicalUri());
+        assertEquals("https://upload.wikimedia.org/wikipedia/commons/b/b4/Cesc_Fabregas_vs_Maccabi_Tel-Aviv%2C_Sep_2015.jpg", Iterables.getOnlyElement(fabregas.getImages()).getCanonicalUri());
         assertEquals("Cesc Fàbregas",fabregas.name());
     }
 }

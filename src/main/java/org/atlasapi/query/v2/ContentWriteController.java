@@ -90,16 +90,16 @@ public class ContentWriteController {
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
-    public Void postContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public Id postContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
-    public Void putContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public Id putContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
 
-    private Void deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
+    private Id deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) throws IOException {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
 
@@ -196,7 +196,7 @@ public class ContentWriteController {
         } finally {
             Flushables.flushQuietly(out);
         }
-        return null;
+        return new Id(id);
     }
 
     private void sendMessage(byte[] inputStreamBytes, Long contentId, boolean merge)
@@ -249,7 +249,7 @@ public class ContentWriteController {
         log.error(errorBuilder.toString(), e);
     }
 
-    private Void error(HttpServletRequest request, HttpServletResponse response,
+    private Id error(HttpServletRequest request, HttpServletResponse response,
             AtlasErrorSummary summary) {
         try {
             outputWriter.writeError(request, response, summary);
@@ -259,7 +259,7 @@ public class ContentWriteController {
         return null;
     }
 
-    private class Id {
+    protected class Id {
 
         private final String id;
 

@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.btvod;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
@@ -60,6 +61,10 @@ public class BtVodDescribedFieldsExtractor {
     private final Topic kidsTopic;
     private final Topic tvBoxsetTopic;
     private final Topic subCatchupTopic;
+
+    private final Double BT_MAX_PRIORITY = 1D;
+    private final Double BT_MIN_PRIORITY = 1000D;
+    private final Double MBST_MAX_PRIORITY = 1D;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -206,17 +211,25 @@ public class BtVodDescribedFieldsExtractor {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());
         if (row.getProductPriority() != null && Double.valueOf(row.getProductPriority()) > 0) {
-            Double priority = Double.valueOf(row.getProductPriority());
-            if (priority > 0) {
-                described.setPriority(new Priority(Math.abs(priority) * 0.33,
-                        new PriorityScoreReasons(
-                                ImmutableList.of(""),
-                                ImmutableList.of("")
-                        )
-                ));
+            Double btPriority = Double.valueOf(row.getProductPriority());
+
+            Double mbstPriority;
+            if (btPriority.equals(BT_MAX_PRIORITY)) {
+                mbstPriority = MBST_MAX_PRIORITY;
+            } else {
+                mbstPriority = Math.abs((((
+                        btPriority - BT_MIN_PRIORITY) * MBST_MAX_PRIORITY)
+                        / BT_MAX_PRIORITY) * (-0.001));
             }
-        } else {
-            described.setPriority(new Priority(100d,
+
+            described.setPriority(new Priority(mbstPriority,
+                    new PriorityScoreReasons(
+                            ImmutableList.of(""),
+                            ImmutableList.of("")
+                    )
+            ));
+        } else { // If priority isn't present, set to max by default.
+            described.setPriority(new Priority(MBST_MAX_PRIORITY,
                     new PriorityScoreReasons(
                             ImmutableList.of(""),
                             ImmutableList.of("")

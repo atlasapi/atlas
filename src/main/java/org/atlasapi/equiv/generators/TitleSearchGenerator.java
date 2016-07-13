@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.generators;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -30,6 +31,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
 
     private final static float TITLE_WEIGHTING = 1.0f;
     public final static String NAME = "Title";
+    private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
     
     public static final <T extends Content> TitleSearchGenerator<T> create(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, double exactMatchScore) {
         return new TitleSearchGenerator<T>(searchResolver, cls, publishers, exactMatchScore);
@@ -73,6 +75,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         ApplicationConfiguration appConfig = defaultConfiguration().withSources(enabledPublishers(publishers));
 
         String title = titleTransform.apply(content.getTitle());
+        title = normalize(title);
         SearchQuery.Builder titleQuery = getSearchQueryBuilder(publishers, title);
 
         if (content.getSpecialization() != null) {
@@ -126,6 +129,13 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             }
         }
         return builder.build();
+    }
+
+    private String normalize(String title) {
+        for (String removed : TO_REMOVE) {
+            title = title.toLowerCase().replaceAll(removed, "");
+        }
+        return title;
     }
     
     @Override

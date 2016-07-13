@@ -71,16 +71,16 @@ public class ContentWriteController {
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
-    public Void postContent(HttpServletRequest req, HttpServletResponse resp) {
+    public Id postContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
-    public Void putContent(HttpServletRequest req, HttpServletResponse resp) {
+    public Id putContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
 
-    private Void deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
+    private Id deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
 
@@ -141,8 +141,7 @@ public class ContentWriteController {
 
         HttpStatus responseStatus = async ? HttpStatus.ACCEPTED : HttpStatus.OK;
         resp.setStatus(responseStatus.value());
-        resp.setContentLength(0);
-        return null;
+        return new Id(encodeId(contentId));
     }
 
     private void sendMessage(byte[] inputStreamBytes, Long contentId, boolean merge)
@@ -163,8 +162,12 @@ public class ContentWriteController {
                 HttpHeaders.LOCATION,
                 hostName
                         + "/3.0/content.json?id="
-                        + codec.encode(BigInteger.valueOf(contentId))
+                        + encodeId(contentId)
         );
+    }
+
+    private String encodeId(Long contentId) {
+        return codec.encode(BigInteger.valueOf(contentId));
     }
 
     private void logError(String errorMessage, Exception e, HttpServletRequest req) {
@@ -191,9 +194,23 @@ public class ContentWriteController {
         log.error(errorBuilder.toString(), e);
     }
 
-    private Void error(HttpServletResponse response, int code) {
+    private Id error(HttpServletResponse response, int code) {
         response.setStatus(code);
         response.setContentLength(0);
         return null;
+    }
+
+    protected class Id {
+
+        private final String id;
+
+        public Id(String id) {
+            this.id = id;
+        }
+
+        public String getId() {
+            return id;
+        }
+
     }
 }

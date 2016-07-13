@@ -3,6 +3,7 @@ package org.atlasapi.equiv.generators;
 import static com.google.common.collect.Iterables.filter;
 
 import java.util.List;
+import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
@@ -37,6 +38,8 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     private static final float TITLE_WEIGHTING = 1.0f;
     private static final float BROADCAST_WEIGHTING = 0.0f;
     private static final float CATCHUP_WEIGHTING = 0.0f;
+
+    private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
 
     private final SearchResolver searchResolver;
     private final ApplicationConfiguration searchConfig;
@@ -91,6 +94,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         }
 
         String title = film.getTitle();
+        title = normalize(title);
         String expandedTitle = titleExpander.expand(title);
 
         Iterable<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(title), searchConfig);
@@ -150,6 +154,13 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             return true;
         }
         return Math.abs(film.getYear() - equivFilm.getYear()) <= NUMBER_OF_YEARS_DIFFERENT_TOLERANCE;
+    }
+
+    private String normalize(String title) {
+        for (String removed : TO_REMOVE) {
+            title = title.toLowerCase().replaceAll(removed, "");
+        }
+        return title;
     }
     
     @Override

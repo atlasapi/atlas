@@ -65,6 +65,7 @@ public class BtVodDescribedFieldsExtractor {
     private final Double BT_MAX_PRIORITY = 1D;
     private final Double BT_MIN_PRIORITY = 1000D;
     private final Double MBST_MAX_PRIORITY = 1D;
+    private final Double MBST_MIN_PRIORITY = 0D;
 
     private static final Map<String, String> BT_TO_YOUVIEW_GENRE = ImmutableMap.<String,String>builder()
     .put("Talk Show", ":FormatCS:2010:2.1.5")
@@ -217,9 +218,10 @@ public class BtVodDescribedFieldsExtractor {
             if (btPriority.equals(BT_MAX_PRIORITY)) {
                 mbstPriority = MBST_MAX_PRIORITY;
             } else {
-                mbstPriority = Math.abs((((
-                        btPriority - BT_MIN_PRIORITY) * MBST_MAX_PRIORITY)
-                        / BT_MAX_PRIORITY) * (-0.001));
+                mbstPriority = -(btPriority - BT_MIN_PRIORITY)
+                        * ((MBST_MAX_PRIORITY - MBST_MIN_PRIORITY)
+                        / (BT_MIN_PRIORITY - BT_MAX_PRIORITY))
+                        + MBST_MIN_PRIORITY;
             }
 
             described.setPriority(new Priority(mbstPriority,

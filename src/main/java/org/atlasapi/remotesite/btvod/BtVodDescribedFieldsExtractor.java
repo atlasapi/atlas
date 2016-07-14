@@ -205,18 +205,17 @@ public class BtVodDescribedFieldsExtractor {
     public void setDescribedFieldsFrom(BtVodEntry row, Described described) {
         described.setDescription(row.getDescription());
         described.setLongDescription(row.getProductLongDescription());
-        if (row.getProductPriority() != null && Double.valueOf(row.getProductPriority()) > 0) {
+        if (row.getProductPriority() != null && Double.valueOf(row.getProductPriority()) >= 0) {
             Double priority = Double.valueOf(row.getProductPriority());
-            if (priority > 0) {
-                described.setPriority(new Priority(Math.abs(priority) * 0.33,
-                        new PriorityScoreReasons(
-                                ImmutableList.of(""),
-                                ImmutableList.of("")
-                        )
-                ));
-            }
-        } else {
-            described.setPriority(new Priority(100d,
+
+            described.setPriority(new Priority(Math.abs(priority) * 0.001,
+                    new PriorityScoreReasons(
+                            ImmutableList.of(""),
+                            ImmutableList.of("")
+                    )
+            ));
+        } else { // If priority isn't present, set to max by default.
+            described.setPriority(new Priority(1d,
                     new PriorityScoreReasons(
                             ImmutableList.of(""),
                             ImmutableList.of("")

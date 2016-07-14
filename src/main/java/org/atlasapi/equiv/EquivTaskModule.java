@@ -50,6 +50,7 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.time.DayOfWeek;
 
 import com.google.api.client.util.Lists;
+import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -124,7 +125,6 @@ public class EquivTaskModule {
     private static final Set<String> ignored = ImmutableSet.of("http://www.bbc.co.uk/programmes/b006mgyl"); 
 //  private static final RepetitionRule EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(9, 00));
     private static final RepetitionRule RT_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(7, 00));
-    private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.weekly(DayOfWeek.FRIDAY, new LocalTime(7, 00));
     private static final RepetitionRule TALKTALK_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(11, 15));
     private static final RepetitionRule YOUVIEW_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(15, 00));
     private static final RepetitionRule YOUVIEW_STAGE_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(8, 00));
@@ -143,6 +143,7 @@ public class EquivTaskModule {
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(20, 00));
     private static final RepetitionRule WIKIPEDIA_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(18, 00));
     private static final RepetitionRule BBC_MUSIC_EQUIVALENCE_REPETITION = RepetitionRules.every(Duration.standardHours(6));
+    private static final RepetitionRule ITUNES_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_BBC_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_C5_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule VF_ITV_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
@@ -175,14 +176,14 @@ public class EquivTaskModule {
     
     private @Autowired KafkaMessagingModule messaging;
 
-    private final int NUM_OF_THREADS_FOR_STARTUP_JOBS = 4;
+    private final int NUM_OF_THREADS_FOR_STARTUP_JOBS = 3;
     
     @PostConstruct
     public void scheduleUpdater() {
         ExecutorService executorService = Executors.newFixedThreadPool(
                 NUM_OF_THREADS_FOR_STARTUP_JOBS);
 
-        List<ScheduledTask> jobsAtStartup = Lists.newArrayList();
+        Set<ScheduledTask> jobsAtStartup = Sets.newHashSet();
 
         if (Boolean.parseBoolean(youViewScheduleUpdaterEnabled)) {
             addYouViewScheduleEquivalenceJobs(jobsAtStartup);
@@ -197,7 +198,7 @@ public class EquivTaskModule {
         }
     }
 
-    private void addEquivalenceJobs(List<ScheduledTask> jobsAtStartup) {
+    private void addEquivalenceJobs(Set<ScheduledTask> jobsAtStartup) {
         scheduleEquivalenceJob(publisherUpdateTask(ITV).withName("ITV Equivalence Updater"), ITUNES_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(ITV_INTERLINKING).withName("ITV Interlinking Equivalence Updater"), ITV_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(FIVE).withName("Five Equivalence Updater"), FIVE_SCHEDULE_EQUIVALENCE_REPETITION, jobsAtStartup);
@@ -272,7 +273,7 @@ public class EquivTaskModule {
 
     }
 
-    private void addYouViewScheduleEquivalenceJobs(List<ScheduledTask> jobsAtStartup) {
+    private void addYouViewScheduleEquivalenceJobs(Set<ScheduledTask> jobsAtStartup) {
 
         // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
         // coverage from the next day onwards
@@ -336,9 +337,9 @@ public class EquivTaskModule {
         );
     }
 
-    private List<ScheduledTask> scheduleEquivalenceJob(ScheduledTask task,
+    private Set<ScheduledTask> scheduleEquivalenceJob(ScheduledTask task,
             RepetitionRule repetitionRule,
-            List<ScheduledTask> jobsAtStartup) {
+            Set<ScheduledTask> jobsAtStartup) {
         taskScheduler.schedule(task, repetitionRule);
         if (!repetitionRule.equals(RepetitionRules.NEVER)) {
             jobsAtStartup.add(task);

@@ -143,7 +143,6 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(2, scorer.score(itemWithTitle("Cold Comes the Night (2013)"), of(itemWithTitle("Cold Comes the Night")), desc));
         score(2, scorer.score(itemWithTitle("Get Carter (2013)"), of(itemWithTitle("Get Carter")), desc));
         score(0, scorer.score(itemWithTitle("Space Odessey 2013"), of(itemWithTitle("Space Odessey")), desc));
-        score(0, scorer.score(itemWithTitle("Apollo: 2013"), of(itemWithTitle("Apollo")), desc));
     }
 
 
@@ -177,6 +176,16 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(2, scorer.score(itemWithTitle("Vie héroïque"), of(itemWithTitle("Vie heroique")), desc));
         score(2, scorer.score(itemWithTitle("François Cluzet"), of(itemWithTitle("Francois Cluzet")), desc));
     }
+
+    @Test
+    public void testPartialMatchAfterSemicolon() {
+        DefaultDescription desc = new DefaultDescription();
+        score(1, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle("Storage Hunters: UK")), desc));
+        score(1, scorer.score(itemWithTitle("Storage Hunters: UK"), of(itemWithTitle("Storage Hunters")), desc));
+        score(1, scorer.score(itemWithTitle("CSI: NY"), of(itemWithTitle("CSI: New York")), desc));
+        score(1, scorer.score(itemWithTitle("CSI: NY"), of(itemWithTitle("CSI")), desc));
+    }
+
 
 
     

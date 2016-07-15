@@ -10,6 +10,8 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
+import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Publisher;
 
@@ -40,6 +42,10 @@ public class NullScoreAwareAveragingCombiner<T extends Described> implements Sco
         // For each equivalent, count the sources that produced a non-null Score 
         // and total those Scores.
         for (ScoredCandidates<T> sourceEquivalents : scoredEquivalents) {
+            if (sourceEquivalents.source().equals(TitleSubsetBroadcastItemScorer.NAME)
+                    && source.contains(TitleMatchingItemScorer.NAME)) {
+                continue;
+            }
             source.add(sourceEquivalents.source());
             
             for (Entry<T, Score> equivScore : sourceEquivalents.candidates().entrySet()) {

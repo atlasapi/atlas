@@ -266,7 +266,7 @@ public class BtVodDescribedFieldsExtractorTest {
 
         objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
 
-        assertThat(described.getPriority().getScore(), is(1d));
+        assertThat(described.getPriority().getScore(), is(0d));
     }
 
     @Test
@@ -279,7 +279,7 @@ public class BtVodDescribedFieldsExtractorTest {
 
         objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
 
-        assertThat(described.getPriority().getScore(), is(0d));
+        assertThat(described.getPriority().getScore(), is(1d));
     }
 
     @Test

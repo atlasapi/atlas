@@ -3,7 +3,10 @@ package org.atlasapi.remotesite.btvod;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Priority;
+import org.atlasapi.media.entity.PriorityScoreReasons;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
@@ -28,6 +31,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -61,7 +65,10 @@ public class BtVodDescribedFieldsExtractorTest {
 
     @Mock
     private BtVodContentMatchingPredicate newTopicContentMatchingPredicate;
-    
+
+    @Mock
+    private BtVodEntry btVodEntry;
+
     @Before
     public void setUp() {
         objectUnderTest = new BtVodDescribedFieldsExtractor(
@@ -236,5 +243,83 @@ public class BtVodDescribedFieldsExtractorTest {
         assertThat(Iterables.get(aliases, 1).getNamespace(),
                 is(BT_VOD_SYNTHESISED_FROM_ID_ALIAS_NAMESPACE));
         assertThat(Iterables.get(aliases, 1).getValue(), is(entry.getId()));
+    }
+
+    @Test
+    public void whenPriorityIsNotPresentThenSetToBe1ByDefault() {
+        Described described = new Item();
+
+        when(btVodEntry.getDescription()).thenReturn("description");
+        when(btVodEntry.getProductLongDescription()).thenReturn("long description");
+        when(btVodEntry.getProductPriority()).thenReturn(null);
+
+        objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
+
+        assertThat(described.getPriority().getScore(), is(1d));
+    }
+
+    @Test
+    public void whenPriorityIs1000TheSetPriorityIs0() {
+        Described described = new Item();
+
+        when(btVodEntry.getDescription()).thenReturn("description");
+        when(btVodEntry.getProductLongDescription()).thenReturn("long description");
+        when(btVodEntry.getProductPriority()).thenReturn(1000);
+
+        objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
+
+        assertThat(described.getPriority().getScore(), is(0d));
+    }
+
+    @Test
+    public void whenPriorityIs1TheSetPriorityIs1() {
+        Described described = new Item();
+
+        when(btVodEntry.getDescription()).thenReturn("description");
+        when(btVodEntry.getProductLongDescription()).thenReturn("long description");
+        when(btVodEntry.getProductPriority()).thenReturn(1);
+
+        objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
+
+        assertThat(described.getPriority().getScore(), is(1d));
+    }
+
+    @Test
+    public void whenPriorityIs0TheSetPriorityIs1() {
+        Described described = new Item();
+
+        when(btVodEntry.getDescription()).thenReturn("description");
+        when(btVodEntry.getProductLongDescription()).thenReturn("long description");
+        when(btVodEntry.getProductPriority()).thenReturn(0);
+
+        objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
+
+        assertThat(described.getPriority().getScore(), is(1d));
+    }
+
+    @Test
+    public void whenPriorityIs500TheSetPriorityIs0point5() {
+        Described described = new Item();
+
+        when(btVodEntry.getDescription()).thenReturn("description");
+        when(btVodEntry.getProductLongDescription()).thenReturn("long description");
+        when(btVodEntry.getProductPriority()).thenReturn(500);
+
+        objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
+
+        assertThat(described.getPriority().getScore(), closeTo(0.5d, 0.01d));
+    }
+
+    @Test
+    public void whenPriorityIsNegativeTheSetPriorityIs1() {
+        Described described = new Item();
+
+        when(btVodEntry.getDescription()).thenReturn("description");
+        when(btVodEntry.getProductLongDescription()).thenReturn("long description");
+        when(btVodEntry.getProductPriority()).thenReturn(-100);
+
+        objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
+
+        assertThat(described.getPriority().getScore(), is(1d));
     }
 }

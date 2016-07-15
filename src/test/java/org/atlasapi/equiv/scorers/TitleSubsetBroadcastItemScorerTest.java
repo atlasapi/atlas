@@ -5,10 +5,14 @@ import static org.junit.Assert.assertEquals;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.testing.StubContentResolver;
+
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
@@ -48,6 +52,20 @@ public class TitleSubsetBroadcastItemScorerTest {
         assertEquals(Score.nullScore(), score(
             itemWithTitle("Title Which Has Only One Word In Common With The Other"), 
             itemWithTitle("Title That Contains Single Utterance In Subject")
+        ));
+    }
+
+    @Test
+    public void testSportsChannelScoreNull() {
+        Item item1 = itemWithTitle("Title That Contains Single Utterance In Subject");
+        Item item2 = itemWithTitle("Title That Contains Single Utterance In Subject");
+        Version version = new Version();
+        Broadcast broadcast = new Broadcast("http://ref.atlasapi.org/channels/pressassociation.com/2021", DateTime.now(), DateTime.now());
+        version.addBroadcast(broadcast);
+        item1.addVersion(version);
+        assertEquals(Score.nullScore(), score(
+                item1,
+                item2
         ));
     }
 

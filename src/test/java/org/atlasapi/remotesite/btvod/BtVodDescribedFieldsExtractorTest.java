@@ -29,6 +29,7 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.core.Is.is;
+import static org.hamcrest.number.IsCloseTo.closeTo;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -291,6 +292,19 @@ public class BtVodDescribedFieldsExtractorTest {
 
         objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
 
-        assertThat(described.getPriority().getScore(), is(0.5d));
+        assertThat(described.getPriority().getScore(), closeTo(0.5d, 0.01d));
+    }
+
+    @Test
+    public void whenPriorityIsNegativeTheSetPriorityIs1() {
+        Described described = new Item();
+
+        when(btVodEntry.getDescription()).thenReturn("description");
+        when(btVodEntry.getProductLongDescription()).thenReturn("long description");
+        when(btVodEntry.getProductPriority()).thenReturn(-100);
+
+        objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
+
+        assertThat(described.getPriority().getScore(), is(1d));
     }
 }

@@ -152,16 +152,45 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
             matches = matchWithoutDashes(subjTitle, suggTitle) || subjTitle.equals(suggTitle);
         }
 
-        return matches ? Score.valueOf(2D) 
-                       : scoreOnMismatch;
+        if (!matches) {
+            return partialTitleScore(subjectTitle, suggestionTitle);
+        } else {
+            return Score.valueOf(2D);
+        }
+    }
+
+    private Score partialTitleScore(String subjectTitle, String suggestionTitle) {
+        if (subjectTitle.contains(":") && suggestionTitle.contains(":")) {
+            String subjTitle = normalizeWithoutReplacing(subjectTitle);
+            subjTitle = subjTitle.substring(0, subjTitle.indexOf(":"));
+            String suggTitle = normalizeWithoutReplacing(suggestionTitle);
+            suggTitle = suggTitle.substring(0, suggTitle.indexOf(":"));
+            return subjTitle.equals(suggTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+        } else if (subjectTitle.contains(":") && subjectTitle.length() > suggestionTitle.length()) {
+            String subjTitle = normalizeWithoutReplacing(subjectTitle);
+            String suggTitle = normalizeWithoutReplacing(suggestionTitle);
+            String subjSubstring = subjTitle.substring(0, subjTitle.indexOf(":"));
+            return subjSubstring.equals(suggTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+        } else if (suggestionTitle.contains(":")) {
+            String subjTitle = normalizeWithoutReplacing(subjectTitle);
+            String suggTitle = normalizeWithoutReplacing(suggestionTitle);
+            String suggSubstring = suggTitle.substring(0, suggestionTitle.indexOf(":"));
+            return suggSubstring.equals(subjTitle) ? Score.valueOf(1D) : scoreOnMismatch;
+        }
+
+        return scoreOnMismatch;
     }
 
     private String normalize(String title) {
+        String normalized = normalizeWithoutReplacing(title);
+        return replaceSpecialChars(normalized);
+    }
+
+    private String normalizeWithoutReplacing(String title) {
         String withoutSequencePrefix = removeSequencePrefix(title);
         String expandedTitle = titleExpander.expand(withoutSequencePrefix);
         String withoutCommonPrefixes = removeCommonPrefixes(expandedTitle);
-        String removedAccents = StringUtils.stripAccents(withoutCommonPrefixes);
-        return replaceSpecialChars(removedAccents);
+        return StringUtils.stripAccents(withoutCommonPrefixes);
     }
 
     private String normalizeRegularExpression(String title) {
@@ -174,7 +203,6 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     private String replaceSpecialChars(String title) {
         return title.replaceAll(" & ", " and ")
                     .replaceAll("fc ", "")
-                    .replaceAll(":", "")
                     .replaceAll(",", "")
                     .replaceAll("\\.", "")
                     .replaceAll("\\s?\\/\\s?", "-") // normalize spacing around back-to-back titles

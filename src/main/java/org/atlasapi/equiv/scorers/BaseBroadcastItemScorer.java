@@ -3,23 +3,32 @@ package org.atlasapi.equiv.scorers;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
+import java.util.TreeSet;
+
+import javax.annotation.Nullable;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
+import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+
 import com.metabroadcast.common.base.Maybe;
 
 /**
@@ -43,6 +52,123 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
     
     private final ContentResolver resolver;
     private final Score misMatchScore;
+    private final Set<String> SPORTS_CHANNEL = new TreeSet<>(ImmutableSet.of(
+            "http://ref.atlasapi.org/channels/pressassociation.com/1745",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1970",
+            "http://ref.atlasapi.org/channels/theactivechannel",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1045",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/150",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/195",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/955",
+            "http://ref.atlasapi.org/channels/liverpoolfctv",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1679",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1678",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1677",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1676",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1899",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1150",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1158",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1155",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1957",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1958",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/944",
+            "http://ref.atlasapi.org/channels/setantaireland",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1745",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1970",
+            "http://ref.atlasapi.org/channels/theactivechannel",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1045",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/150",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/195",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/955",
+            "http://ref.atlasapi.org/channels/liverpoolfctv",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1679",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1678",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1677",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1676",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1899",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1150",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1158",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1155",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1957",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1958",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/944",
+            "http://ref.atlasapi.org/channels/setantaireland",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1896",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1046",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1110",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/152",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1928",
+            "http://ref.atlasapi.org/channels/racinguk",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/652",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1139",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/637",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1941",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/877",
+            "http://ref.atlasapi.org/channels/espn",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1156",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1157",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1152",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1154",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1153",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1951",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1954",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1962",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1961",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1966",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1965",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1955",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1959",
+            "http://ref.atlasapi.org/channels/mutv",
+            "http://ref.atlasapi.org/channels/skysports3hd",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1953",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/798",
+            "http://ref.atlasapi.org/channels/motorstv",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/936",
+            "http://ref.atlasapi.org/channels/skysportsf1",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1939",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1938",
+            "http://ref.atlasapi.org/channels/chelseatv",
+            "http://ref.atlasapi.org/channels/eurosport",
+            "http://ref.atlasapi.org/channels/eurosporthd",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1804",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1805",
+            "http://ref.atlasapi.org/channels/eurosport2",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1638",
+            "http://ref.atlasapi.org/channels/skysports4",
+            "http://ref.atlasapi.org/channels/skysports3",
+            "http://ref.atlasapi.org/channels/skysports2",
+            "http://ref.atlasapi.org/channels/skysports1",
+            "http://ref.atlasapi.org/channels/skysportsnews",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1898",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1889",
+            "http://ref.atlasapi.org/channels/espnhd",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1807",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1806",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1960",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1964",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1963",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1968",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1967",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1956",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1890",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1671",
+            "http://ref.atlasapi.org/channels/extremesports",
+            "http://ref.atlasapi.org/channels/skysports1hd",
+            "http://ref.atlasapi.org/channels/skysports2hd",
+            "http://ref.atlasapi.org/channels/skysportsnewshd",
+            "http://ref.atlasapi.org/channels/skysports4hd",
+            "http://ref.atlasapi.org/channels/setantasports1ireland",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1971",
+            "http://ref.atlasapi.org/channels/attheraces",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1952",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1984",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/635",
+            "http://ref.atlasapi.org/channels/pressassociation.com/1992",
+            "http://ref.atlasapi.org/channels/pressassociation.com/2011",
+            "http://ref.atlasapi.org/channels/pressassociation.com/2015",
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/1104",
+            "http://ref.atlasapi.org/channels/pressassociation.com/2020",
+            "http://ref.atlasapi.org/channels/pressassociation.com/2021"));
     
     public BaseBroadcastItemScorer(ContentResolver resolver, Score misMatchScore) {
         this.resolver = checkNotNull(resolver);
@@ -94,7 +220,17 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
     }
 
     private Score score(Item subject, Optional<Container> subjectContainer, Item candidate, ResultDescription desc) {
-        
+
+        boolean broadcastOnSportChannel = subject.getVersions()
+                .stream()
+                .anyMatch(o -> o.getBroadcasts()
+                        .stream()
+                        .anyMatch(b -> SPORTS_CHANNEL.contains(b.getBroadcastOn())));
+
+        if (broadcastOnSportChannel) {
+            return Score.nullScore();
+        }
+
         if (subjectAndCandidateMatch(subject, candidate)) {
             desc.appendText("%s scores %s through subject",  uriAndTitle(candidate), Score.ONE); 
             return Score.ONE;

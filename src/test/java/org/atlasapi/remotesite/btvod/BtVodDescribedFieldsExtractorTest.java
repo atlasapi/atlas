@@ -5,6 +5,8 @@ import java.util.Set;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Priority;
+import org.atlasapi.media.entity.PriorityScoreReasons;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.TopicRef;
@@ -66,7 +68,7 @@ public class BtVodDescribedFieldsExtractorTest {
 
     @Mock
     private BtVodEntry btVodEntry;
-    
+
     @Before
     public void setUp() {
         objectUnderTest = new BtVodDescribedFieldsExtractor(
@@ -257,7 +259,7 @@ public class BtVodDescribedFieldsExtractorTest {
     }
 
     @Test
-    public void whenPriorityIs1000TheSetPriorityIs1() {
+    public void whenPriorityIs1000TheSetPriorityIs0() {
         Described described = new Item();
 
         when(btVodEntry.getDescription()).thenReturn("description");
@@ -270,7 +272,20 @@ public class BtVodDescribedFieldsExtractorTest {
     }
 
     @Test
-    public void whenPriorityIs0TheSetPriorityIs0() {
+    public void whenPriorityIs1TheSetPriorityIs1() {
+        Described described = new Item();
+
+        when(btVodEntry.getDescription()).thenReturn("description");
+        when(btVodEntry.getProductLongDescription()).thenReturn("long description");
+        when(btVodEntry.getProductPriority()).thenReturn(1);
+
+        objectUnderTest.setDescribedFieldsFrom(btVodEntry, described);
+
+        assertThat(described.getPriority().getScore(), is(1d));
+    }
+
+    @Test
+    public void whenPriorityIs0TheSetPriorityIs1() {
         Described described = new Item();
 
         when(btVodEntry.getDescription()).thenReturn("description");

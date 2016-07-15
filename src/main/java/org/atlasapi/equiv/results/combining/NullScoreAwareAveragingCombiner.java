@@ -4,14 +4,20 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
+import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.base.Joiner;
+import com.google.common.base.Predicate;
+import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Maps.EntryTransformer;
@@ -36,6 +42,10 @@ public class NullScoreAwareAveragingCombiner<T extends Described> implements Sco
         // For each equivalent, count the sources that produced a non-null Score 
         // and total those Scores.
         for (ScoredCandidates<T> sourceEquivalents : scoredEquivalents) {
+            if (sourceEquivalents.source().equals(TitleSubsetBroadcastItemScorer.NAME)
+                    && source.contains(TitleMatchingItemScorer.NAME)) {
+                continue;
+            }
             source.add(sourceEquivalents.source());
             
             for (Entry<T, Score> equivScore : sourceEquivalents.candidates().entrySet()) {

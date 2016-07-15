@@ -33,11 +33,7 @@ public class ExpandingTitleTransformer {
         input = input.toLowerCase();
         List<String> words = Arrays.asList(input.split(" "));
         Iterable<String> transform = Iterables.transform(words, expander);
-        StringBuilder builder = new StringBuilder();
-        for (String word : transform) {
-            builder.append(word).append(" ");
-        }
-        return builder.toString().trim();
+        return String.join(" ", transform);
     }
 
     private Function<String, String> expander = new Function<String, String>() {

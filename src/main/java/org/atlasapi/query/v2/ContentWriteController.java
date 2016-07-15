@@ -3,8 +3,6 @@ package org.atlasapi.query.v2;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.UUID;
@@ -90,17 +88,17 @@ public class ContentWriteController {
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
-    public Id postContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public Id postContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
-    public Id putContent(HttpServletRequest req, HttpServletResponse resp) throws IOException {
+    public Id putContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
 
     private Id deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
-            boolean merge) throws IOException {
+            boolean merge) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
 
         Maybe<ApplicationConfiguration> possibleConfig;

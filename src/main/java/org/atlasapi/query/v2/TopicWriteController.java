@@ -64,7 +64,7 @@ public class TopicWriteController {
     }
 
     @RequestMapping(value = "/3.0/topics.json", method = RequestMethod.POST)
-    public Void writeContent(HttpServletRequest req, HttpServletResponse resp) {
+    public Id writeContent(HttpServletRequest req, HttpServletResponse resp) {
 
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
@@ -141,8 +141,8 @@ public class TopicWriteController {
                         + codec.encode(BigInteger.valueOf(topic.getId()))
         );
         resp.setStatus(HttpStatusCode.OK.code());
-        resp.setContentLength(0);
-        return null;
+
+        return new Id(codec.encode(BigInteger.valueOf(topic.getId())));
     }
 
     private Topic merge(Maybe<Topic> possibleExisting, Topic posted) {
@@ -174,13 +174,27 @@ public class TopicWriteController {
         return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Topic.class);
     }
 
-    private Void error(HttpServletRequest request, HttpServletResponse response,
+    private Id error(HttpServletRequest request, HttpServletResponse response,
             AtlasErrorSummary summary) {
         try {
             outputter.writeError(request, response, summary);
         } catch (IOException e) {
         }
         return null;
+    }
+
+    protected class Id {
+
+        private final String id;
+
+        public Id(String id) {
+            this.id = id;
+        }
+
+        public String getId() {
+            return id;
+        }
+
     }
 
 }

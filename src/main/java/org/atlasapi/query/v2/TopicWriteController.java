@@ -1,4 +1,4 @@
-package org.atlasapi.query.v2;
+    package org.atlasapi.query.v2;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -62,7 +62,7 @@ public class TopicWriteController {
     
     
     @RequestMapping(value="/3.0/topics.json", method = RequestMethod.POST)
-    public Void writeContent(HttpServletRequest req, HttpServletResponse resp) {
+    public Id writeContent(HttpServletRequest req, HttpServletResponse resp) {
         
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
@@ -109,8 +109,8 @@ public class TopicWriteController {
                         + "/3.0/topic.json?id="
                         + codec.encode(BigInteger.valueOf(topic.getId())));
         resp.setStatus(HttpStatusCode.OK.code());
-        resp.setContentLength(0);
-        return null;
+
+        return new Id(codec.encode(BigInteger.valueOf(topic.getId())));
     }
     
     private Topic merge(Maybe<Topic> possibleExisting, Topic posted) {
@@ -140,11 +140,24 @@ public class TopicWriteController {
     private org.atlasapi.media.entity.simple.Topic deserialize(Reader input) throws IOException, ReadException {
         return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Topic.class);
     }
-    
-    private Void error(HttpServletResponse response, int code) {
+
+    private Id error(HttpServletResponse response, int code) {
         response.setStatus(code);
         response.setContentLength(0);
         return null;
     }
-    
+
+    protected class Id {
+
+        private final String id;
+
+        public Id(String id) {
+            this.id = id;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+    }
 }

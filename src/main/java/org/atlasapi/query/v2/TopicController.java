@@ -144,7 +144,7 @@ public class TopicController extends BaseController<Iterable<Topic>> {
     }
      
     @RequestMapping(value="/3.0/topics.json", method = RequestMethod.POST)
-    public Void writeContent(HttpServletRequest req, HttpServletResponse resp) {
+    public TopicWriteController.Id writeContent(HttpServletRequest req, HttpServletResponse resp) {
         return topicWriteController.writeContent(req, resp);
     }
 }

@@ -1,12 +1,17 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.function.BiFunction;
+
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
 
-import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+
+import com.google.common.collect.ImmutableSet;
 
 /**
  * Adapter for fetching data from Nitro by {@link PidReference}.  
@@ -52,6 +57,11 @@ public interface NitroContentAdapter {
      *             - if any of the {@code refs} is not for an episode.
      */
     ImmutableSet<Item> fetchEpisodes(ProgrammesQuery query) throws NitroException;
+
+    ImmutableSet<Item> fetchEpisodes(
+            ProgrammesQuery query,
+            @Nullable BiFunction<String, String, Void> callback
+    ) throws NitroException;
 
     /**
      * Fetch and transform data for the given ref into a {@link Item}.

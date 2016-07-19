@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
+import java.util.function.BiFunction;
+
+import javax.annotation.Nullable;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Clip;
@@ -74,6 +77,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private final int pageSize;
 
     private final ListeningExecutorService executor;
+    private final GlycerinNitroPayloadXmlSerializer xmlTranslator;
 
     public GlycerinNitroContentAdapter(
             Glycerin glycerin,
@@ -89,6 +93,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         this.seriesExtractor = new NitroSeriesExtractor(clock);
         this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
+        this.xmlTranslator = GlycerinNitroPayloadXmlSerializer.create();
     }
 
     @Override
@@ -162,7 +167,10 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public ImmutableSet<Item> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
+    public ImmutableSet<Item> fetchEpisodes(
+            ProgrammesQuery programmesQuery,
+            @Nullable BiFunction<String, String, Void> callback
+    ) throws NitroException {
         try {
             ImmutableList<Programme> programmes = fetchProgrammes(ImmutableList.of(programmesQuery));
 
@@ -171,10 +179,15 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                 return ImmutableSet.of();
             }
 
-            return fetchEpisodesFromProgrammes(programmes);
+            return fetchEpisodesFromProgrammes(programmes, callback);
         } catch (GlycerinException e) {
             throw new NitroException(programmesQuery.toString(), e);
         }
+    }
+
+    @Override
+    public ImmutableSet<Item> fetchEpisodes(ProgrammesQuery programmesQuery) throws NitroException {
+        return fetchEpisodes(programmesQuery, null);
     }
 
     @Override
@@ -189,14 +202,16 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                 return ImmutableSet.of();
             }
 
-            return fetchEpisodesFromProgrammes(programmes);
+            return fetchEpisodesFromProgrammes(programmes, null);
         } catch (GlycerinException e) {
             throw new NitroException(refs.toString(), e);
         }
     }
 
-    private ImmutableSet<Item> fetchEpisodesFromProgrammes(ImmutableList<Programme> programmes)
-            throws NitroException, GlycerinException {
+    private ImmutableSet<Item> fetchEpisodesFromProgrammes(
+            ImmutableList<Programme> programmes,
+            @Nullable BiFunction<String, String, Void> callback
+    ) throws NitroException, GlycerinException {
         ImmutableList<Episode> episodes = getAsEpisodes(programmes);
         ImmutableList<NitroItemSource<Episode>> sources = toItemSources(episodes);
 
@@ -204,23 +219,35 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                  the PIDs in string form, the public interface only takes PidRef's, which aren't
                  available here. */
         Iterable<PidReference> episodeRefs = Iterables.transform(episodes,
-                new Function<Episode, PidReference>() {
+                input -> {
+                    PidReference pidReference = new PidReference();
+                    pidReference.setHref(input.getUri());
+                    pidReference.setPid(input.getPid());
+                    return pidReference;
+                }
+        );
 
-                    @Override
-                    public PidReference apply(Episode input) {
-                        PidReference pidReference = new PidReference();
-                        pidReference.setHref(input.getUri());
-                        pidReference.setPid(input.getPid());
-                        return pidReference;
-                    }
-                });
-
-        Multimap<String, Clip> clips = clipsAdapter.clipsFor(episodeRefs);
+        ImmutableListMultimap.Builder<String, NitroItemSource<com.metabroadcast.atlas.glycerin.model.Clip>> rawClipsBuilder = ImmutableListMultimap.builder();
+        Multimap<String, Clip> clips = clipsAdapter.clipsFor(episodeRefs, (clipUri, source) -> {
+            rawClipsBuilder.put(clipUri, source);
+            return null;
+        });
+        ImmutableListMultimap<String, NitroItemSource<com.metabroadcast.atlas.glycerin.model.Clip>> rawClips = rawClipsBuilder.build();
 
         ImmutableSet.Builder<Item> fetched = ImmutableSet.builder();
         for (NitroItemSource<Episode> source : sources) {
             Item item = itemExtractor.extract(source);
-            item.setClips(clips.get(item.getCanonicalUri()));
+
+            String canonicalUri = item.getCanonicalUri();
+            
+            if (callback != null) {
+                callback.apply(
+                        canonicalUri,
+                        xmlTranslator.marshal(source, rawClips.get(canonicalUri))
+                );
+            }
+
+            item.setClips(clips.get(canonicalUri));
             fetched.add(item);
         }
         return fetched.build();

@@ -1,6 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
+import java.util.function.BiFunction;
+
+import javax.annotation.Nullable;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
@@ -76,5 +79,11 @@ public interface NitroContentAdapter {
     Iterable<List<Item>> fetchEpisodes(
             ProgrammesQuery query,
             ImmutableListMultimap<String, Broadcast> broadcasts
+    ) throws NitroException;
+
+    Iterable<List<Item>> fetchEpisodes(
+            ProgrammesQuery query,
+            ImmutableListMultimap<String, Broadcast> broadcasts,
+            @Nullable BiFunction<String, String, Void> callback
     ) throws NitroException;
 }

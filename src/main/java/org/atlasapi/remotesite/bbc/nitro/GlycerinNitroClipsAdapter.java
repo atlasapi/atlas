@@ -4,8 +4,7 @@ import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 
@@ -17,7 +16,6 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Clip;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
@@ -54,20 +52,8 @@ public class GlycerinNitroClipsAdapter {
     
     private static final int BATCH_SIZE = 100;
     
-    private static final Predicate<Programme> isClip
-        = new Predicate<Programme>() {
-            @Override
-            public boolean apply(Programme input) {
-                return input.isClip();
-            }
-        };
-    private static final Function<Programme, com.metabroadcast.atlas.glycerin.model.Clip> toClip
-        = new Function<Programme, com.metabroadcast.atlas.glycerin.model.Clip>() {
-            @Override
-            public com.metabroadcast.atlas.glycerin.model.Clip apply(Programme input) {
-                return input.getAsClip();
-            }
-        };
+    private static final Predicate<Programme> isClip = Programme::isClip;
+    private static final Function<Programme, com.metabroadcast.atlas.glycerin.model.Clip> toClip = Programme::getAsClip;
 
     private final Glycerin glycerin;
     private final NitroClipExtractor clipExtractor;
@@ -81,67 +67,58 @@ public class GlycerinNitroClipsAdapter {
         this.pageSize = pageSize;
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(15));
     }
-    
+
     public Multimap<String, org.atlasapi.media.entity.Clip> clipsFor(Iterable<PidReference> refs) throws NitroException {
+        return clipsFor(refs, null);
+    }
+
+    public Multimap<String, org.atlasapi.media.entity.Clip> clipsFor(
+            Iterable<PidReference> refs,
+            @Nullable BiFunction<String, NitroItemSource<Clip>, Void> callback
+    ) throws NitroException {
+
         try {
             if (Iterables.isEmpty(refs)) {
                 return ImmutableMultimap.of();
             }
-            
-            Iterable<com.metabroadcast.atlas.glycerin.model.Clip> nitroClips
-                = Iterables.transform(Iterables.filter(getNitroClips(refs), isClip), toClip);
-            
-            if (Iterables.isEmpty(nitroClips)) {
-                log.warn("No programmes found for clipRefs {}", Iterables.transform(refs, new Function<PidReference, String>() {
 
-                    @Override
-                    public String apply(@Nullable PidReference pidRef) {
-                        return pidRef.getPid();
-                    }
-                    
-                }));
+            Iterable<com.metabroadcast.atlas.glycerin.model.Clip> nitroClips
+                    = Iterables.transform(Iterables.filter(getNitroClips(refs), isClip), toClip);
+
+            if (Iterables.isEmpty(nitroClips)) {
+                log.warn("No programmes found for clipRefs {}", Iterables.transform(
+                        refs,
+                        PidReference::getPid
+                ));
                 return ImmutableMultimap.of();
             }
-            
+
             Iterable<List<Clip>> clipParts = Iterables.partition(nitroClips, BATCH_SIZE);
             ImmutableListMultimap.Builder<String, org.atlasapi.media.entity.Clip> clips
-                = ImmutableListMultimap.builder();
+                    = ImmutableListMultimap.builder();
             for (List<Clip> clipPart : clipParts) {
-                clips.putAll(extractClips(clipPart));
+                clips.putAll(extractClips(clipPart, callback));
             }
             return clips.build();
         } catch (GlycerinException e) {
             throw new NitroException(NitroUtil.toPids(refs).toString(), e);
         }
-        
+
     }
 
-    public List<org.atlasapi.media.entity.Clip> clipsFor(PidReference ref) throws NitroException {
-        try {
-            Iterable<com.metabroadcast.atlas.glycerin.model.Clip> nitroClips = Iterables
-                    .transform(Iterables.filter(getNitroClips(ref), isClip), toClip);
+    public List<org.atlasapi.media.entity.Clip> clipsFor(
+            PidReference ref,
+            BiFunction<String, NitroItemSource<Clip>, Void> callback
+    ) throws NitroException {
 
-            if (Iterables.isEmpty(nitroClips)) {
-                log.warn("No programmes found for clipRefs {}", ref, new Function<PidReference, String>() {
-
-                    @Override
-                    public String apply(PidReference pidRef) {
-                        return pidRef.getPid();
-                    }
-                });
-            }
-
-            ImmutableList.Builder<org.atlasapi.media.entity.Clip> extractedClips = ImmutableList.builder();
-            for (Clip clip : nitroClips) {
-                extractedClips.add(extractClip(clip));
-            }
-            return extractedClips.build();
-        } catch (GlycerinException e) {
-            throw new NitroException(ref.toString(), e);
-        }
+        return ImmutableList.copyOf(clipsFor(ImmutableList.of(ref), callback).values());
     }
 
-    private Multimap<String, org.atlasapi.media.entity.Clip> extractClips(List<Clip> clipPart) throws GlycerinException {
+    private Multimap<String, org.atlasapi.media.entity.Clip> extractClips(
+            List<Clip> clipPart,
+            @Nullable BiFunction<String, NitroItemSource<Clip>, Void> callback
+    ) throws GlycerinException {
+
         ImmutableListMultimap.Builder<String, org.atlasapi.media.entity.Clip> extracted
             = ImmutableListMultimap.builder();
 
@@ -150,6 +127,12 @@ public class GlycerinNitroClipsAdapter {
                     clip,
                     ImmutableList.of()
             );
+
+            String key = BbcFeeds.nitroUriForPid(clip.getClipOf().getPid());
+            if (callback != null) {
+                callback.apply(key, source);
+            }
+
             extracted.put(BbcFeeds.nitroUriForPid(clip.getClipOf().getPid()), clipExtractor.extract(source));
         }
 
@@ -183,37 +166,9 @@ public class GlycerinNitroClipsAdapter {
         }
     }
 
-    private ImmutableList<Programme> getNitroClips(PidReference ref) throws GlycerinException {
-
-        ProgrammesQuery query = ProgrammesQuery.builder()
-                .withEntityType(EntityTypeOption.CLIP)
-                .withChildrenOf(ref.toString())
-                .withMixins(IMAGES)
-                .withPageSize(pageSize)
-                .build();
-
-        ListenableFuture<ImmutableList<Programme>> future = executor.submit(
-                exhaustingProgrammeCallable(query));
-
-        try {
-            return ImmutableList.copyOf(future.get(10L, TimeUnit.MINUTES));
-        } catch (InterruptedException | ExecutionException | TimeoutException e) {
-            if (e.getCause() instanceof GlycerinException) {
-                throw (GlycerinException) e.getCause();
-            }
-            throw Throwables.propagate(e);
-        }
-    }
-
     private Callable<ImmutableList<Programme>> exhaustingProgrammeCallable(final ProgrammesQuery query) {
-        
-        return new Callable<ImmutableList<Programme>>() {
 
-            @Override
-            public ImmutableList<Programme> call() throws Exception {
-                return exhaust(glycerin.execute(query));
-            }
-        };
+        return () -> exhaust(glycerin.execute(query));
     }
 
     private <T> ImmutableList<T> exhaust(GlycerinResponse<T> resp) throws GlycerinException {
@@ -226,12 +181,4 @@ public class GlycerinNitroClipsAdapter {
         return programmes.build();
     }
 
-    private org.atlasapi.media.entity.Clip extractClip(Clip clipPart) throws GlycerinException {
-        NitroItemSource<Clip> source = NitroItemSource.valueOf(
-                clipPart,
-                ImmutableList.<Broadcast>of()
-        );
-
-        return clipExtractor.extract(source);
-    }
 }

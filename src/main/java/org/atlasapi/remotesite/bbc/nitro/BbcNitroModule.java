@@ -28,6 +28,9 @@ import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClient;
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
@@ -68,7 +71,8 @@ public class BbcNitroModule {
     private @Value("${bbc.nitro.threadCount.aroundtoday}") Integer nitroAroundTodayThreadCount;
     private @Value("${bbc.nitro.requestPageSize}") Integer nitroRequestPageSize;
     private @Value("${bbc.nitro.jobFailureThresholdPercent}") Integer jobFailureThresholdPercent;
-
+    private @Value("${columbus.telescopeHost}") String telescopeHost;
+    
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;
     private @Autowired ContentResolver contentResolver;
@@ -80,7 +84,7 @@ public class BbcNitroModule {
 
     private final ThreadFactory nitroThreadFactory
         = new ThreadFactoryBuilder().setNameFormat("nitro %s").build();
-    private final GroupLock<String> pidLock = GroupLock.<String>natural();
+    private final GroupLock<String> pidLock = GroupLock.natural();
 
     @PostConstruct
     public void configure() {
@@ -122,7 +126,8 @@ public class BbcNitroModule {
                 localOrRemoteNitroFetcher(
                     glycerin,
                     Optional.of(Predicates.<Item>alwaysTrue())
-                )
+                ),
+                telescopeClient()
         );
     }
 
@@ -133,6 +138,10 @@ public class BbcNitroModule {
 
     public ContentWriter contentWriter() {
         return new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
+    }
+
+    IngestTelescopeClient telescopeClient() {
+        return IngestTelescopeClientImpl.create(TelescopeClientImpl.create(telescopeHost));
     }
 
     @Bean

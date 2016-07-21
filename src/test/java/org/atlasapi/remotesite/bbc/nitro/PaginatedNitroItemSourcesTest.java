@@ -71,7 +71,8 @@ public class PaginatedNitroItemSourcesTest {
                 pageSize,
                 nitroEpisodeExtractor,
                 clipsAdapter,
-                ImmutableListMultimap.of()
+                ImmutableListMultimap.of(),
+                null
         );
     }
 

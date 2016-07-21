@@ -4,6 +4,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
+import java.util.function.BiFunction;
 
 import javax.annotation.Nullable;
 
@@ -26,6 +27,7 @@ import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.LinkedListMultimap;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.Futures;
@@ -43,6 +45,9 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
     private final NitroEpisodeExtractor itemExtractor;
     private final GlycerinNitroClipsAdapter clipsAdapter;
     private final ImmutableListMultimap<String, Broadcast> broadcasts;
+    private final BiFunction<String, String, Void> callback;
+    private final GlycerinNitroPayloadXmlSerializer xmlTranslator =
+            GlycerinNitroPayloadXmlSerializer.create();
 
     public PaginatedNitroItemSources(
             Iterable<List<Episode>> episodes,
@@ -51,7 +56,8 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
             int pageSize,
             NitroEpisodeExtractor itemExtractor,
             GlycerinNitroClipsAdapter clipsAdapter,
-            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
+            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts,
+            @Nullable BiFunction<String, String, Void> callback
     ) {
         this.episodes = checkNotNull(episodes);
         this.executor = checkNotNull(executor);
@@ -60,6 +66,7 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         this.itemExtractor = checkNotNull(itemExtractor);
         this.clipsAdapter = checkNotNull(clipsAdapter);
         this.broadcasts = broadcasts;
+        this.callback = callback;
     }
 
     @Override
@@ -71,7 +78,9 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
                 pageSize,
                 itemExtractor,
                 clipsAdapter,
-                broadcasts
+                broadcasts,
+                callback,
+                xmlTranslator
         );
     }
 
@@ -84,6 +93,8 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         private final NitroEpisodeExtractor itemExtractor;
         private final GlycerinNitroClipsAdapter clipsAdapter;
         private final ImmutableListMultimap<String, Broadcast> broadcasts;
+        private final BiFunction<String, String, Void> callback;
+        private final GlycerinNitroPayloadXmlSerializer xmlTranslator;
 
         public NitroItemSourceIterator(
                 Iterable<List<Episode>> episodesIterator,
@@ -92,7 +103,9 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
                 int pageSize,
                 NitroEpisodeExtractor itemExtractor,
                 GlycerinNitroClipsAdapter clipsAdapter,
-                ImmutableListMultimap<String, Broadcast> broadcasts
+                ImmutableListMultimap<String, Broadcast> broadcasts,
+                @Nullable BiFunction<String, String, Void> callback,
+                GlycerinNitroPayloadXmlSerializer xmlTranslator
         ) {
             this.episodesIterator = episodesIterator.iterator();
             this.executor = executor;
@@ -101,6 +114,8 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
             this.itemExtractor = itemExtractor;
             this.clipsAdapter = clipsAdapter;
             this.broadcasts = broadcasts;
+            this.callback = callback;
+            this.xmlTranslator = xmlTranslator;
         }
 
         @Override
@@ -123,7 +138,24 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
                 );
 
                 Item item = itemExtractor.extract(nitroItemSource);
-                List<Clip> clips = getClips(nitroItemSource);
+
+                LinkedListMultimap<String, NitroItemSource<com.metabroadcast.atlas.glycerin.model.Clip>> rawClips =
+                        LinkedListMultimap.create();
+
+                List<Clip> clips = getClips(nitroItemSource, (clipUri, source) -> {
+                    rawClips.put(clipUri, source);
+                    return null;
+                });
+
+                String canonicalUri = item.getCanonicalUri();
+
+                if (callback != null) {
+                    callback.apply(
+                            canonicalUri,
+                            xmlTranslator.marshal(nitroItemSource, rawClips.get(canonicalUri))
+                    );
+                }
+
                 item.setClips(clips);
                 items.add(item);
             }
@@ -131,10 +163,14 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
             return items.build();
         }
 
-        private List<Clip> getClips(NitroItemSource<Episode> nitroItemSource) {
+        private List<Clip> getClips(
+                NitroItemSource<Episode> nitroItemSource,
+                BiFunction<String, NitroItemSource<com.metabroadcast.atlas.glycerin.model.Clip>, Void> callback
+        ) {
             return getClips(
                     nitroItemSource.getProgramme().getPid(),
-                    nitroItemSource.getProgramme().getUri()
+                    nitroItemSource.getProgramme().getUri(),
+                    callback
             );
         }
 
@@ -214,17 +250,23 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         /**
          * Returns a list of clips for the given episode, that later is used
          * to set the Atlas item clips.
+         *
          * @param pid - the episode programme PID.
          * @param uri - the episode prgramme URI.
          * @return List of Atlas clips.
          */
-        public List<Clip> getClips(String pid, String uri) {
+        public List<Clip> getClips(
+                String pid,
+                String uri,
+                BiFunction<String, NitroItemSource<com.metabroadcast.atlas.glycerin.model.Clip>, Void> callback
+        ) {
+
             PidReference pidReference = new PidReference();
             pidReference.setPid(pid);
             pidReference.setHref(uri);
 
             try {
-                return clipsAdapter.clipsFor(pidReference);
+                return clipsAdapter.clipsFor(pidReference, callback);
             } catch (NitroException e) {
                 throw Throwables.propagate(e);
             }

@@ -2,6 +2,8 @@ package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
 import java.util.concurrent.Executors;
+import java.util.function.BiFunction;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -61,35 +63,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private final int pageSize;
 
     private final ListeningExecutorService executor;
+    private final GlycerinNitroPayloadXmlSerializer xmlTranslator;
 
-    private static final Function<Programme, Episode> TO_EPISODE = new Function<Programme, Episode>() {
-
-        @Override
-        public Episode apply(Programme input) {
-            return input.getAsEpisode();
-        }
-    };
-    private static final Function<List<Programme>, List<Episode>> TO_EPISODES_LIST = new Function<List<Programme>, List<Episode>>() {
-
-        @Override
-        public List<Episode> apply(List<Programme> input) {
-            return ImmutableList.copyOf(Iterables.transform(input, toEpisode()));
-        }
-    };
-    private static final Predicate<Programme> IS_EPISODE = new Predicate<Programme>() {
-
-        @Override
-        public boolean apply(Programme input) {
-            return input.isEpisode();
-        }
-    };
-    private static final Function<List<Programme>, List<Programme>> FILTER_EPISODES = new Function<List<Programme>, List<Programme>>() {
-
-        @Override
-        public List<Programme> apply(List<Programme> input) {
-            return ImmutableList.copyOf(Iterables.filter(input, isEpisode()));
-        }
-    };
+    private static final Function<Programme, Episode> TO_EPISODE = Programme::getAsEpisode;
+    private static final Function<List<Programme>, List<Episode>> TO_EPISODES_LIST = input -> ImmutableList
+            .copyOf(input.stream().map(toEpisode()::apply).collect(Collectors.toList()));
+    private static final Predicate<Programme> IS_EPISODE = Programme::isEpisode;
+    private static final Function<List<Programme>, List<Programme>> FILTER_EPISODES = input -> ImmutableList
+            .copyOf(input.stream().filter(isEpisode()::apply).collect(Collectors.toList()));
 
     public GlycerinNitroContentAdapter(
             Glycerin glycerin,
@@ -105,6 +86,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         this.seriesExtractor = new NitroSeriesExtractor(clock);
         this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
+        this.xmlTranslator = GlycerinNitroPayloadXmlSerializer.create();
     }
 
     public static final Function<Programme, Episode> toEpisode() {
@@ -203,14 +185,16 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     @Override
     public Iterable<List<Item>> fetchEpisodes(
             ProgrammesQuery programmesQuery,
-            ImmutableListMultimap<String, Broadcast> broadcasts
+            ImmutableListMultimap<String, Broadcast> broadcasts,
+            @Nullable BiFunction<String, String, Void> callback
     ) throws NitroException {
 
         try {
             Iterable<List<Programme>> programmes = fetchProgrammes(ImmutableList.of(programmesQuery));
             return fetchEpisodesFromProgrammes(
                     programmes,
-                    broadcasts
+                    broadcasts,
+                    callback
             );
         } catch (GlycerinException e) {
             throw new NitroException(programmesQuery.toString(), e);
@@ -223,7 +207,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         try {
             Iterable<ProgrammesQuery> programmesQueries = makeProgrammeQueries(refs);
             Iterable<List<Programme>> currentProgrammes = fetchProgrammes(programmesQueries);
-            return fetchEpisodesFromProgrammes(currentProgrammes, null);
+            return fetchEpisodesFromProgrammes(currentProgrammes, null, null);
         } catch (GlycerinException e) {
             throw new NitroException(refs.toString(), e);
         }
@@ -237,23 +221,31 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         try {
             Iterable<ProgrammesQuery> programmesQueries = makeProgrammeQueries(refs);
             Iterable<List<Programme>> currentProgrammes = fetchProgrammes(programmesQueries);
-            return fetchEpisodesFromProgrammes(currentProgrammes, broadcasts);
+            return fetchEpisodesFromProgrammes(currentProgrammes, broadcasts, null);
         } catch (GlycerinException e) {
             throw new NitroException(refs.toString(), e);
         }
     }
 
+    @Override
+    public Iterable<List<Item>> fetchEpisodes(ProgrammesQuery query,
+            ImmutableListMultimap<String, Broadcast> broadcasts) throws NitroException {
+        return fetchEpisodes(query, broadcasts, null);
+    }
+
     private Iterable<List<Item>> fetchEpisodesFromProgrammes(
             Iterable<List<Programme>> currentProgrammes,
-            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
+            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts,
+            @Nullable BiFunction<String, String, Void> callback
     ) throws NitroException, GlycerinException {
         Iterable<List<Episode>> programmesAsEpisodes = getAsEpisodes(currentProgrammes);
-        return toItemsListIterable(programmesAsEpisodes, broadcasts);
+        return toItemsListIterable(programmesAsEpisodes, broadcasts, callback);
     }
 
     private Iterable<List<Item>> toItemsListIterable(
             Iterable<List<Episode>> episodes,
-            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
+            @Nullable ImmutableListMultimap<String, Broadcast> broadcasts,
+            @Nullable BiFunction<String, String, Void> callback
     ) throws GlycerinException, NitroException {
         return new PaginatedNitroItemSources(
                 episodes,
@@ -262,7 +254,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                 pageSize,
                 itemExtractor,
                 clipsAdapter,
-                broadcasts
+                broadcasts,
+                callback
         );
     }
 
@@ -284,12 +277,6 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     private Iterable<String> toStrings(Iterable<PidReference> refs) {
-        return Iterables.transform(refs, new Function<PidReference, String>() {
-
-            @Override
-            public String apply(PidReference input) {
-                return input.getPid();
-            }
-        });
+        return Iterables.transform(refs, PidReference::getPid);
     }
 }

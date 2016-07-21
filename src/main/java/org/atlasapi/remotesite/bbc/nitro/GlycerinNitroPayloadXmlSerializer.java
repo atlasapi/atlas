@@ -70,18 +70,6 @@ public class GlycerinNitroPayloadXmlSerializer {
     ) throws JAXBException {
         marshaller.marshal(source.getProgramme(), sw);
 
-        sw.write("<versions>");
-        for (Version version : source.getVersions()) {
-            marshaller.marshal(version, sw);
-        }
-        sw.write("</versions>");
-
-        sw.write("<availabilities>");
-        for (Availability availability : source.getAvailabilities()) {
-            marshaller.marshal(availability, sw);
-        }
-        sw.write("</availabilities>");
-
         sw.write("<broadcasts>");
         for (Broadcast broadcast : source.getBroadcasts()) {
             marshaller.marshal(broadcast, sw);

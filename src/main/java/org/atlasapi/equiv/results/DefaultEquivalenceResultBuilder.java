@@ -18,7 +18,9 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedSet;
+import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
@@ -43,7 +45,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
     public EquivalenceResult<T> resultFor(T target, List<ScoredCandidates<T>> equivalents, ReadableDescription desc) {
         ScoredCandidates<T> combined = combine(equivalents, desc);
         List<ScoredCandidate<T>> filteredCandidates = filter(target, desc, combined);
-        Map<Publisher, ScoredCandidate<T>> extractedScores = extract(target, filteredCandidates, desc);
+        Multimap<Publisher, ScoredCandidate<T>> extractedScores = extract(target, filteredCandidates, desc);
         return new EquivalenceResult<T>(target, equivalents, combined, extractedScores, desc);
     }
     
@@ -68,11 +70,11 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return filteredCandidates;
     }
 
-    private Map<Publisher, ScoredCandidate<T>> extract(T target, List<ScoredCandidate<T>> filteredCandidates, ResultDescription desc) {
+    private Multimap<Publisher, ScoredCandidate<T>> extract(T target, List<ScoredCandidate<T>> filteredCandidates, ResultDescription desc) {
         desc.startStage("Extracting strong equivalents");
         SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins = publisherBin(filteredCandidates);
         
-        Builder<Publisher, ScoredCandidate<T>> builder = ImmutableMap.builder();
+        ImmutableMultimap.Builder<Publisher, ScoredCandidate<T>> builder = ImmutableMultimap.builder();
         
         for (Publisher publisher : publisherBins.keySet()) {
             desc.startStage(String.format("Publisher: %s", publisher));

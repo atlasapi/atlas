@@ -21,8 +21,11 @@ import org.atlasapi.media.entity.Series;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 
 public class EquivalenceSummaryWritingHandler<T extends Content> implements EquivalenceResultHandler<T> {
 
@@ -41,7 +44,7 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
         String canonicalUri = result.subject().getCanonicalUri();
         String parent = parentOf(result.subject());
         List<String> candidates = candidatesFrom(result.combinedEquivalences());
-        Map<Publisher, ContentRef> equivalents = equivalentsFrom(result.strongEquivalences());
+        Multimap<Publisher, ContentRef> equivalents = equivalentsFrom(result.strongEquivalences());
         return new EquivalenceSummary(canonicalUri,parent,candidates,equivalents);
     }
 
@@ -64,8 +67,8 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
         return ImmutableList.copyOf(Iterables.transform(combinedEquivalences.candidates().keySet(), Identified.TO_URI));
     }
 
-    private Map<Publisher, ContentRef> equivalentsFrom(Map<Publisher, ScoredCandidate<T>> strongEquivalences) {
-        return ImmutableMap.copyOf(Maps.transformValues(strongEquivalences, new Function<ScoredCandidate<T>, ContentRef>() {
+    private Multimap<Publisher, ContentRef> equivalentsFrom(Multimap<Publisher, ScoredCandidate<T>> strongEquivalences) {
+        return ImmutableMultimap.copyOf(Multimaps.transformValues(strongEquivalences, new Function<ScoredCandidate<T>, ContentRef>() {
             @Override
             public ContentRef apply(@Nullable ScoredCandidate<T> input) {
                 return contentRefFrom(input.candidate());

@@ -81,7 +81,7 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
     private void stitch(Episode subjectEpisode, EquivalenceSummary equivalenceSummary, Multimap<Container, Episode> equivalentsChildren, ReadableDescription desc) {
         String subjectUri = subjectEpisode.getCanonicalUri();
         desc.startStage(subjectUri);
-        Map<Publisher, ContentRef> equivalents = equivalenceSummary.getEquivalents();
+        Multimap<Publisher, ContentRef> equivalents = equivalenceSummary.getEquivalents();
 
         Set<ContentRef> additionalEquivs = Sets.newHashSet();
         for (Entry<Container, Collection<Episode>> contentHierarchy : equivalentsChildren.asMap().entrySet()) {
@@ -89,8 +89,8 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
             for (Episode equivChild : contentHierarchy.getValue()) {
                 if(matchingSequenceNumbers(subjectEpisode, equivChild)) {
                     Publisher publisher = equivChild.getPublisher();
-                    ContentRef existingEquiv = equivalents.get(publisher);
-                    if (existingEquiv != null) {
+                    Collection<ContentRef> existingEquiv = equivalents.get(publisher);
+                    if (!existingEquiv.isEmpty()) {
                         desc.appendText("existing strong equiv %s not overwritten by %s",existingEquiv, equivChild);
                     } else {
                         desc.appendText("adding %s (%s)", equivChild, container);

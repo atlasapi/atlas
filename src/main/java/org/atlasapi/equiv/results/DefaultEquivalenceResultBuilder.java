@@ -27,6 +27,9 @@ import com.google.common.collect.TreeMultimap;
 
 public class DefaultEquivalenceResultBuilder<T extends Content> implements EquivalenceResultBuilder<T> {
 
+    public static final String TELESHOPPING = "teleshopping";
+    public static final String THIS_IS_BT_SPORT = "this is bt sport";
+
     public static <T extends Content> EquivalenceResultBuilder<T> create(ScoreCombiner<T> combiner, EquivalenceFilter<T> filter, EquivalenceExtractor<T> marker) {
         return new DefaultEquivalenceResultBuilder<T>(combiner, filter, marker);
     }
@@ -80,19 +83,34 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
             desc.startStage(String.format("Publisher: %s", publisher));
             
             ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted = ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
-            
-            Optional<ScoredCandidate<T>> extracted = extractor.extract(copyOfSorted.asList().reverse(), target, desc);
-            if(extracted.isPresent()) {
-                builder.put(publisher, extracted.get());
+
+            if(canBeEquivalatedToSamePublisher(target)) {
+                for (ScoredCandidate<T> scoredCandidate : copyOfSorted) {
+                    builder.put(publisher, scoredCandidate);
+                }
+            } else {
+                Optional<ScoredCandidate<T>> extracted = extractor.extract(copyOfSorted.asList().reverse(), target, desc);
+                if(extracted.isPresent()) {
+                    builder.put(publisher, extracted.get());
+                }
             }
-            
+
             desc.finishStage();
         }
         
         desc.finishStage();
         return builder.build();
     }
-    
+
+    private boolean canBeEquivalatedToSamePublisher(T target) {
+        if (target.getTitle() == null) {
+            return false;
+        }
+        String title = target.getTitle().toLowerCase();
+        return title.equals(TELESHOPPING) || title
+                .startsWith(THIS_IS_BT_SPORT);
+    }
+
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {
         SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins = TreeMultimap.create(Ordering.natural(), ScoredCandidate.SCORE_ORDERING.compound(Ordering.usingToString()));
         

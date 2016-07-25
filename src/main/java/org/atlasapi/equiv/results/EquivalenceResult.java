@@ -13,6 +13,8 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 
 public class EquivalenceResult<T> {
     
@@ -29,14 +31,14 @@ public class EquivalenceResult<T> {
     private final T subject;
     private final List<ScoredCandidates<T>> scores;
     private final ScoredCandidates<T> combined;
-    private final Map<Publisher, ScoredCandidate<T>> strong;
+    private final Multimap<Publisher, ScoredCandidate<T>> strong;
     private final ReadableDescription desc;
 
-    public EquivalenceResult(T subject, List<ScoredCandidates<T>> scores, ScoredCandidates<T> combined, Map<Publisher, ScoredCandidate<T>> strong, ReadableDescription desc) {
+    public EquivalenceResult(T subject, List<ScoredCandidates<T>> scores, ScoredCandidates<T> combined, Multimap<Publisher, ScoredCandidate<T>> strong, ReadableDescription desc) {
         this.subject = subject;
         this.scores = ImmutableList.copyOf(scores);
         this.combined = combined;
-        this.strong = ImmutableMap.copyOf(strong);
+        this.strong = ImmutableMultimap.copyOf(strong);
         this.desc = desc;
     }
 
@@ -71,7 +73,7 @@ public class EquivalenceResult<T> {
         return this.combined;
     }
     
-    public Map<Publisher, ScoredCandidate<T>> strongEquivalences() {
+    public Multimap<Publisher, ScoredCandidate<T>> strongEquivalences() {
         return strong;
     }
 

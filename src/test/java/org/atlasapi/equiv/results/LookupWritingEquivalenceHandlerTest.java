@@ -11,6 +11,8 @@ import static org.mockito.Mockito.verify;
 import java.util.Map;
 import java.util.Set;
 
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
 import junit.framework.TestCase;
 
 import org.atlasapi.equiv.ContentRef;
@@ -88,7 +90,7 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
     }
     
     private EquivalenceResult<Item> equivResultFor(Item content, Iterable<Item> equivalents) {
-        Map<Publisher, ScoredCandidate<Item>> strong = Maps.transformValues(Maps.uniqueIndex(equivalents, TO_PUBLISHER),RANDOM_SCORE);
+        Multimap<Publisher, ScoredCandidate<Item>> strong = Multimaps.transformValues(Multimaps.index(equivalents, TO_PUBLISHER),RANDOM_SCORE);
         return new EquivalenceResult<Item>(content, ImmutableList.<ScoredCandidates<Item>>of(), null, strong , null);
     }
     

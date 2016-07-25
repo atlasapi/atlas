@@ -18,6 +18,9 @@ import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableList;
@@ -58,9 +61,9 @@ public class EquivalenceResultBuilderTest {
                 c4Item, Score.valueOf(10.0)
         ), equivalences.candidates());
         
-        Map<Publisher, ScoredCandidate<Item>> strongEquivalences = result.strongEquivalences();
+        Multimap<Publisher, ScoredCandidate<Item>> strongEquivalences = result.strongEquivalences();
         
-        assertEquals(ImmutableMap.of(
+        assertEquals(ImmutableMultimap.of(
                 Publisher.BBC, ScoredCandidate.valueOf(bbcItem, Score.valueOf(10.0)),
                 Publisher.C4, ScoredCandidate.valueOf(c4Item, Score.valueOf(10.0))
         ), strongEquivalences);

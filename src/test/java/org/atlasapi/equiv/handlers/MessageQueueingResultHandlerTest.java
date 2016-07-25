@@ -29,9 +29,11 @@ import com.metabroadcast.common.queue.kafka.KafkaConsumer;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.collect.Multimap;
 import kafka.admin.AdminUtils;
 import kafka.server.KafkaConfig;
 import kafka.server.KafkaServer;
@@ -125,7 +127,7 @@ public class MessageQueueingResultHandlerTest {
         equivalent.setId(830L);
         List<ScoredCandidates<Item>> scores = ImmutableList.of();
         ScoredCandidates<Item> combined = DefaultScoredCandidates.<Item>fromSource("src").build();
-        Map<Publisher, ScoredCandidate<Item>> strong = ImmutableMap.of(
+        Multimap<Publisher, ScoredCandidate<Item>> strong = ImmutableMultimap.of(
             Publisher.PA, ScoredCandidate.valueOf(equivalent, Score.ONE));
         ReadableDescription desc = new DefaultDescription();
         

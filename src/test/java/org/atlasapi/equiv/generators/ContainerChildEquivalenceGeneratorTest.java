@@ -6,6 +6,8 @@ import static org.hamcrest.Matchers.hasItems;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
+
+import com.google.common.collect.ImmutableMultimap;
 import junit.framework.TestCase;
 
 import org.atlasapi.equiv.ContentRef;
@@ -39,7 +41,7 @@ public class ContainerChildEquivalenceGeneratorTest extends TestCase {
     
     @Test
     public void testExtractsContainerFromStrongItemEquivalents() {
-        
+
         Container subject = new Container("subject","s",Publisher.BBC);
         subject.setChildRefs(ImmutableSet.of(
             new Episode("child1","c1",Publisher.BBC).childRef(),
@@ -47,32 +49,32 @@ public class ContainerChildEquivalenceGeneratorTest extends TestCase {
         ));
         Container equiv1 = new Container("equivalent1","e1",Publisher.PA);
         Container equiv2 = new Container("equivalent2","e2",Publisher.ITV);
-        
+
         when(equivSummaryStore.summariesForUris(argThat(hasItems("child1","child2")))).thenReturn(
             ImmutableOptionalMap.fromMap(ImmutableMap.of(
                 "child1",
-                new EquivalenceSummary("child1","subject",NO_CANDIDATES,ImmutableMap.of(
+                new EquivalenceSummary("child1","subject",NO_CANDIDATES, ImmutableMultimap.of(
                     Publisher.BBC, new ContentRef("equivItem",Publisher.BBC,""),
                     Publisher.PA, new ContentRef("equivC1", Publisher.PA, "equivalent1"))),
                 "child2",
-                new EquivalenceSummary("child2","subject",NO_CANDIDATES,ImmutableMap.of(
+                new EquivalenceSummary("child2","subject",NO_CANDIDATES,ImmutableMultimap.of(
                     Publisher.BBC, new ContentRef("equivC2",Publisher.BBC,"equivalent2"),
                     Publisher.PA, new ContentRef("equivC1",Publisher.PA, "equivalent1"))
                 )
             ))
         );
-        
+
         ResolvedContent content = ResolvedContent.builder()
                 .put(equiv1.getCanonicalUri(), equiv1)
                 .put(equiv2.getCanonicalUri(), equiv2)
                 .build();
-        
+
         when(resolver.findByCanonicalUris(argThat(hasItems("equivalent1","equivalent2")))).thenReturn(
             content
         );
-        
+
         ScoredCandidates<Container> scores = generator.generate(subject, new DefaultDescription());
-        
+
         assertThat(scores.candidates(), hasEntry(equiv1, Score.ONE));
         assertThat(scores.candidates(), hasEntry(equiv2, Score.valueOf(0.5)));
     }

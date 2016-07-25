@@ -36,6 +36,7 @@ public class BtVodUpdater extends ScheduledTask {
     private final BtVodOldContentDeactivator oldContentDeactivator;
     private final ImageExtractor imageExtractor;
     private final BrandUriExtractor brandUriExtractor;
+    private final BtVodContentMatchingPredicate newFeedContentMatchingPredicate;
     private final Set<Topic> topicsToPropagateToParent;
     private final Set<String> topicNamespacesToPropagateToParent;
     private final BtVodSeriesUriExtractor seriesUriExtractor;
@@ -59,6 +60,7 @@ public class BtVodUpdater extends ScheduledTask {
             BtVodOldContentDeactivator oldContentDeactivator,
             ImageExtractor imageExtractor,
             BrandUriExtractor brandUriExtractor,
+            BtVodContentMatchingPredicate newFeedContentMatchingPredicate,
             Set<Topic> topicsToPropagateToParent,
             Set<String> topicNamespacesToPropagateToParent,
             BtVodSeriesUriExtractor seriesUriExtractor,
@@ -73,6 +75,7 @@ public class BtVodUpdater extends ScheduledTask {
             String btVodImagesGuidAliasNamespace
     ) {
         this.contentWriter = checkNotNull(contentWriter);
+        this.newFeedContentMatchingPredicate = checkNotNull(newFeedContentMatchingPredicate);
         this.topicsToPropagateToParent = checkNotNull(topicsToPropagateToParent);
         this.topicNamespacesToPropagateToParent = checkNotNull(topicNamespacesToPropagateToParent);
         this.vodData = checkNotNull(vodData);
@@ -98,11 +101,12 @@ public class BtVodUpdater extends ScheduledTask {
 
     @Override
     public void runTask() {
+        newFeedContentMatchingPredicate.init();
         describedFieldsExtractor.init();
 
         MultiplexingVodContentListener listeners 
             = new MultiplexingVodContentListener(
-                ImmutableList.of(contentGroupUpdater)
+                ImmutableList.<BtVodContentListener>of(contentGroupUpdater)
         );
         Set<String> processedRows = Sets.newHashSet();
         

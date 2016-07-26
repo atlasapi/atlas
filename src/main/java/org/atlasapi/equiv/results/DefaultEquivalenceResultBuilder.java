@@ -10,6 +10,7 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
@@ -101,20 +102,25 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
 
     private boolean canBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
         ScoredCandidate<T> previous = null;
-        for (ScoredCandidate<T> candidate : candidates) {
-            if(previous!= null &&
-                    !(candidate.score().equals(previous.score()) &&
-                    candidate.candidate().getPublisher().equals(previous.candidate().getPublisher()))) {
-                return false;
-
+        if (candidates.size() > 3) {
+            for (ScoredCandidate<T> candidate : candidates) {
+                if(previous!= null) {
+                    Score score = candidate.score();
+                    Score previousScore = previous.score();
+                    if (!(Math.abs(score.asDouble()-previousScore.asDouble()) <= 0.5)) {
+                        return false;
+                    }
+                }
+                previous = candidate;
             }
-            previous = candidate;
+            return true;
         }
-        return true;
+        return false;
     }
 
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {
-        SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins = TreeMultimap.create(Ordering.natural(), ScoredCandidate.SCORE_ORDERING.compound(Ordering.usingToString()));
+        SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins =
+                TreeMultimap.create(Ordering.natural(), ScoredCandidate.SCORE_ORDERING.compound(Ordering.usingToString()));
         
         for (ScoredCandidate<T> candidate : filteredCandidates) {
             publisherBins.put(candidate.candidate().getPublisher(), candidate);

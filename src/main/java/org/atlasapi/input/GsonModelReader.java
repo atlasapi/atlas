@@ -21,7 +21,7 @@ public class GsonModelReader implements ModelReader {
     }
     
     @Override
-    public <T> T read(Reader reader, Class<T> cls) throws IOException, ReadException{
+    public <T> T read(Reader reader, Class<T> cls, Boolean strict) throws IOException, ReadException{
         try {
             return gson.fromJson(reader, cls);
         } catch (JsonSyntaxException jse) {

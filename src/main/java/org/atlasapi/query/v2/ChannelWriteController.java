@@ -45,6 +45,8 @@ public class ChannelWriteController {
     private final ModelReader reader;
     private final ChannelModelTransformer channelTransformer;
     private final AtlasModelWriter<Iterable<Channel>> outputter;
+    public static final String STRICT = "strict";
+
 
     private ChannelWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
@@ -82,6 +84,7 @@ public class ChannelWriteController {
     }
 
     private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
+        Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
             possibleConfig = appConfigFetcher.configurationFor(req);
@@ -102,7 +105,7 @@ public class ChannelWriteController {
         Channel channel;
         try {
             channel = channelTransformer.transform(
-                    deserialize(new InputStreamReader(req.getInputStream()))
+                    deserialize(new InputStreamReader(req.getInputStream()), strict)
             );
         } catch (UnrecognizedPropertyException |
                 JsonParseException |
@@ -145,9 +148,9 @@ public class ChannelWriteController {
         return null;
     }
 
-    private org.atlasapi.media.entity.simple.Channel deserialize(Reader input) throws IOException,
+    private org.atlasapi.media.entity.simple.Channel deserialize(Reader input, Boolean strict) throws IOException,
             ReadException {
-        return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Channel.class);
+        return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Channel.class, strict);
     }
 
     private Void error(HttpServletRequest request, HttpServletResponse response,

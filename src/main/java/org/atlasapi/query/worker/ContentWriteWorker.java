@@ -17,6 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ContentWriteWorker implements Worker<ContentWriteMessage> {
 
     private static final Logger log = LoggerFactory.getLogger(ContentWriteWorker.class);
+    private static final Boolean strict = Boolean.FALSE;
 
     private final ContentWriteExecutor writeExecutor;
 
@@ -30,7 +31,8 @@ public class ContentWriteWorker implements Worker<ContentWriteMessage> {
             log.debug("Processing message on {}", message.getContentId());
 
             ContentWriteExecutor.InputContent inputContent = writeExecutor.parseInputStream(
-                    new ByteArrayInputStream(message.getContentBytes())
+                    new ByteArrayInputStream(message.getContentBytes()),
+                    strict
             );
             Content content = inputContent.getContent();
             content.setId(message.getContentId());

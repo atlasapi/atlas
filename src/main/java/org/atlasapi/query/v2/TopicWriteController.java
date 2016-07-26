@@ -44,6 +44,8 @@ public class TopicWriteController {
 
     private static final Logger log = LoggerFactory.getLogger(TopicWriteController.class);
 
+    public static final String STRICT = "strict";
+
     private final ApplicationConfigurationFetcher appConfigFetcher;
     private final TopicStore store;
     private final ModelReader reader;
@@ -66,6 +68,8 @@ public class TopicWriteController {
     @RequestMapping(value = "/3.0/topics.json", method = RequestMethod.POST)
     public Id writeContent(HttpServletRequest req, HttpServletResponse resp) {
 
+        Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
+
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
             possibleConfig = appConfigFetcher.configurationFor(req);
@@ -86,7 +90,7 @@ public class TopicWriteController {
 
         Topic topic;
         try {
-            topic = complexify(deserialize(new InputStreamReader(req.getInputStream())));
+            topic = complexify(deserialize(new InputStreamReader(req.getInputStream()), strict));
 
         } catch (UnrecognizedPropertyException |
                 JsonParseException |
@@ -169,9 +173,9 @@ public class TopicWriteController {
         return transformer.transform(inputContent);
     }
 
-    private org.atlasapi.media.entity.simple.Topic deserialize(Reader input)
+    private org.atlasapi.media.entity.simple.Topic deserialize(Reader input, Boolean strict)
             throws IOException, ReadException {
-        return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Topic.class);
+        return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Topic.class, strict);
     }
 
     private Id error(HttpServletRequest request, HttpServletResponse response,

@@ -42,6 +42,7 @@ public class DefaultJacksonModelReaderTest {
 
     private DefaultJacksonModelReader reader;
     private JsonTranslator<Item> writer;
+    private Boolean strict = Boolean.TRUE;
 
     @Before
     public void setUp() {
@@ -84,7 +85,7 @@ public class DefaultJacksonModelReaderTest {
 
         String respBody = response.getResponseAsString();
 
-        Item actual = (Item) reader.read(new StringReader(respBody), Description.class);
+        Item actual = (Item) reader.read(new StringReader(respBody), Description.class, strict);
 
         assertEquals(testItem.getUri(), actual.getUri());
         assertEquals(testItem.getDuration(), actual.getDuration());
@@ -110,7 +111,7 @@ public class DefaultJacksonModelReaderTest {
 
         String respBody = response.getResponseAsString();
         try {
-            reader.read(new StringReader(respBody), Description.class);
+            reader.read(new StringReader(respBody), Description.class, strict);
             fail();
 
         } catch (ConstraintViolationException exception) {
@@ -144,7 +145,7 @@ public class DefaultJacksonModelReaderTest {
 
         String respBody = response.getResponseAsString();
 
-        Item description = (Item) reader.read(new StringReader(respBody), Description.class);
+        Item description = (Item) reader.read(new StringReader(respBody), Description.class, strict);
 
         Country actual = Iterables.getOnlyElement(description.getCountriesOfOrigin());
 
@@ -174,7 +175,7 @@ public class DefaultJacksonModelReaderTest {
 
         String respBody = response.getResponseAsString();
 
-        Item description = (Item) reader.read(new StringReader(respBody), Description.class);
+        Item description = (Item) reader.read(new StringReader(respBody), Description.class, strict);
 
         ContentIdentifier actual = Iterables.getOnlyElement(description.getSimilarContent());
 
@@ -204,7 +205,7 @@ public class DefaultJacksonModelReaderTest {
 
         String respBody = response.getResponseAsString();
 
-        Description description = reader.read(new StringReader(respBody), Description.class);
+        Description description = reader.read(new StringReader(respBody), Description.class, strict);
 
         assertEquals(Boolean.TRUE, description instanceof Playlist);
 
@@ -232,7 +233,7 @@ public class DefaultJacksonModelReaderTest {
 
         String respBody = response.getResponseAsString();
 
-        Person actual = reader.read(new StringReader(respBody), Person.class);
+        Person actual = reader.read(new StringReader(respBody), Person.class, strict);
 
         assertEquals(person.getUri(), actual.getUri());
 
@@ -248,7 +249,7 @@ public class DefaultJacksonModelReaderTest {
                 + "}";
 
         try {
-            reader.read(new StringReader(jsonString), Description.class);
+            reader.read(new StringReader(jsonString), Description.class, strict);
             fail();
         } catch (JsonParseException exception) {
             assertEquals(Boolean.TRUE, exception.getMessage().startsWith("Unexpected character"));
@@ -256,7 +257,7 @@ public class DefaultJacksonModelReaderTest {
     }
 
     @Test
-    public void jacksonUnknownPropertiesExceptionTest() throws IOException, ReadException {
+    public void failOnJacksonUnknownPropertiesExceptionTest() throws IOException, ReadException {
         Item item = ItemTestDataBuilder.item().build();
 
         HttpServletRequest request = new StubHttpServletRequest();
@@ -267,12 +268,31 @@ public class DefaultJacksonModelReaderTest {
         String respBody = response.getResponseAsString().replace("locations", "hello");
 
         try {
-            reader.read(new StringReader(respBody), Description.class);
+            reader.read(new StringReader(respBody), Description.class, strict);
             fail();
         } catch (UnrecognizedPropertyException exception) {
             assertEquals(Boolean.TRUE, exception.getMessage().startsWith("Unrecognized field \"hello\""));
         }
 
+    }
+
+    @Test
+    public void passOnJacksonUnknownPropertiesExceptionTest() throws IOException, ReadException {
+        Item item = ItemTestDataBuilder.item().build();
+
+        HttpServletRequest request = new StubHttpServletRequest();
+        StubHttpServletResponse response = new StubHttpServletResponse();
+        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration
+                .defaultConfiguration());
+
+        String respBody = response.getResponseAsString().replace("locations", "hello");
+
+        try {
+            reader.read(new StringReader(respBody), Description.class, Boolean.FALSE);
+
+        } catch (UnrecognizedPropertyException exception) {
+            fail();
+        }
     }
 
 }

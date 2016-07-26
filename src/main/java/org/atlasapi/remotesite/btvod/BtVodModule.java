@@ -88,7 +88,7 @@ public class BtVodModule {
     private static final String PORTAL_BUY_TO_OWN_GROUP = "01_boxoffice/Must_Own_Movies_Categories/New_To_Own";
     private static final String BOX_OFFICE_PICKS_GROUP = "50_misc_car_you/Misc_metabroadcast/Misc_metabroadcast_1";
     
-    private static final String DEFAULT_NEW_CONTENT_MPX_FEED_NAME = "btv-prd-nav-new";
+    private static final String NEW_CONTENT_MPX_FEED_NAME = "btv-prd-nav-new";
     
     private static final String MUSIC_CATEGORY = "Music";
     private static final String FILM_CATEGORY = "Film";
@@ -154,63 +154,81 @@ public class BtVodModule {
     @Value("${bt.portal.contentGroups.baseUri}")
     private String btPortalContentGroupsBaseUri;
 
-    // Prod configuration
+    // Prod config
     @Value("${bt.vod.mpx.prod.feed.baseUrl}")
     private String btVodMpxProdFeedBaseUrl;
     @Value("${bt.vod.mpx.prod.feed.name}")
     private String btVodMpxProdFeedName;
-    @Value("${bt.vod.mpx.prod.feed.guidLookup.baseUrl}")
-    private String btVodMpxProdFeedBaseUrlForGuidLookup;
-    @Value("${bt.vod.mpx.prod.feed.guidLookup.name}")
-    private String btVodMpxProdFeedNameForGuidLookup;
-    
+
     @Value("${bt.vod.mpx.prod.feed.params.q}")
     private String btVodMpxProdFeedQParam;
+
+    @Value("${bt.vod.mpx.prod.feed.guidLookup.baseUrl}")
+    private String btVodMpxProdFeedGuidLookupBaseUrl;
+    @Value("${bt.vod.mpx.prod.feed.guidLookup.name}")
+    private String btVodMpxProdFeedGuidLookupName;
+
+    @Value("${bt.vod.mpx.prod.feed.new.baseUrl}")
+    private String btVodMpxProdFeedNewBaseUrl;
     @Value("${bt.vod.mpx.prod.feed.new.suffix}")
     private String btVodMpxProdFeedNewSuffix;
-    @Value("${bt.vod.mpx.prod.feed.newContent.name}")
-    private String btVodMpxProdFeedNameForNewContent;
 
-    // Vol-D configuration
+    // Vol-D config
     @Value("${bt.vod.mpx.vold.feed.baseUrl}")
-    private String btVodMpxVolDFeedBaseUrl;
+    private String btVodMpxVoldFeedBaseUrl;
     @Value("${bt.vod.mpx.vold.feed.name}")
-    private String btVodMpxVolDFeedName;
+    private String btVodMpxVoldFeedName;
+
     @Value("${bt.vod.mpx.vold.feed.params.q}")
-    private String btVodMpxVolDFeedQParam;
+    private String btVodMpxVoldFeedQParam;
+
+    @Value("${bt.vod.mpx.vold.feed.guidLookup.baseUrl}")
+    private String btVodMpxVoldGuidLookupBaseUrl;
+    @Value("${bt.vod.mpx.vold.feed.guidLookup.name}")
+    private String btVodMpxVoldGuidLookupName;
+
+    @Value("${bt.vod.mpx.vold.feed.new.baseUrl}")
+    private String btVodMpxVoldFeedNewBaseUrl;
     @Value("${bt.vod.mpx.vold.feed.new.suffix}")
-    private String btVodMpxVolDFeedNewSuffix;
-    @Value("${bt.vod.mpx.vold.feed.newContent.name}")
-    private String btVodMpxVolDFeedNameForNewContent;
+    private String btVodMpxVoldFeedNewSuffix;
 
-    @Value("${bt.vod.mpx.vole.feed.guidLookup.baseUrl}")
-    private String btVodMpxVoleFeedBaseUrlForGuidLookup;
-    @Value("${bt.vod.mpx.vole.feed.guidLookup.name}")
-    private String btVodMpxVoleFeedNameForGuidLookup;
-
-    // Vol-E configuration
+    // Vol-E config
     @Value("${bt.vod.mpx.vole.feed.baseUrl}")
     private String btVodMpxVoleFeedBaseUrl;
     @Value("${bt.vod.mpx.vole.feed.name}")
     private String btVodMpxVoleFeedName;
+
     @Value("${bt.vod.mpx.vole.feed.params.q}")
     private String btVodMpxVoleFeedQParam;
+
+    @Value("${bt.vod.mpx.vole.feed.guidLookup.baseUrl}")
+    private String btVodMpxVoleFeedGuidLookupBaseUrl;
+    @Value("${bt.vod.mpx.vole.feed.guidLookup.name}")
+    private String btVodMpxVoleFeedGuidLookupName;
+
     @Value("${bt.vod.mpx.vole.feed.new.suffix}")
     private String btVodMpxVoleFeedNewSuffix;
-    @Value("${bt.vod.mpx.vole.feed.newContent.name}")
-    private String btVodMpxVoleFeedNameForNewContent;
+    @Value("${bt.vod.mpx.vole.feed.new.baseUrl}")
+    private String btVodMpxVoleFeedNewBaseUrl;
 
-    // Systest2 configuration
+    // Systest2 config
     @Value("${bt.vod.mpx.systest2.feed.baseUrl}")
     private String btVodMpxSystest2FeedBaseUrl;
     @Value("${bt.vod.mpx.systest2.feed.name}")
     private String btVodMpxSystest2FeedName;
+
     @Value("${bt.vod.mpx.systest2.feed.params.q}")
     private String btVodMpxSystest2FeedQParam;
+
+    @Value("${bt.vod.mpx.systest2.feed.guidLookup.baseUrl}")
+    private String btVodMpxSystest2GuidLookupBaseUrl;
+    @Value("${bt.vod.mpx.systest2.feed.guidLookup.name}")
+    private String btVodMpxSystest2GuidLookupName;
+
     @Value("${bt.vod.mpx.systest2.feed.new.suffix}")
     private String btVodMpxSystest2FeedNewSuffix;
-    @Value("${bt.vod.mpx.systest2.feed.newContent.name}")
-    private String btVodMpxSystest2FeedNameForNewContent;
+    @Value("${bt.vod.mpx.systest2.feed.new.baseUrl}")
+    private String btVodMpxSystest2FeedNewBaseUrl;
 
     @Value("${service.bttv.id}")
     private Long btTvServiceId;
@@ -237,11 +255,13 @@ public class BtVodModule {
                 ImmutableSet.of(String.format(BT_VOD_KEYWORD_NAMESPACE_FORMAT, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG)),
                 seriesUriExtractor(URI_PREFIX),
                 versionsExtractor(URI_PREFIX, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG),
-                describedFieldsExtractor(Publisher.BT_VOD, BT_VOD_UPDATER_ENV, BT_VOD_UPDATER_CONFIG,
-                        newFeedSuffix,
-                        btVodMpxProdFeedQParam,
+                describedFieldsExtractor(
+                        Publisher.BT_VOD,
+                        BT_VOD_UPDATER_ENV,
+                        BT_VOD_UPDATER_CONFIG,
                         btVodMpxProdFeedBaseUrl,
-                        DEFAULT_NEW_CONTENT_MPX_FEED_NAME
+                        newFeedSuffix,
+                        btVodMpxProdFeedQParam
                 ),
                 mpxVodClient(btVodMpxProdFeedBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam),
                 topicQueryResolver,
@@ -273,10 +293,10 @@ public class BtVodModule {
                 btVodMpxProdFeedBaseUrl,
                 btVodMpxProdFeedName,
                 btVodMpxProdFeedQParam,
-                btVodMpxProdFeedNewSuffix, 
-                btVodMpxProdFeedBaseUrlForGuidLookup,
-                btVodMpxProdFeedNameForGuidLookup,
-                btVodMpxProdFeedNameForNewContent,
+                btVodMpxProdFeedNewBaseUrl,
+                btVodMpxProdFeedNewSuffix,
+                btVodMpxProdFeedGuidLookupBaseUrl,
+                btVodMpxProdFeedGuidLookupName,
                 ImmutableMap.of()
         );
     }
@@ -290,10 +310,10 @@ public class BtVodModule {
                 btVodMpxVoleFeedBaseUrl,
                 btVodMpxVoleFeedName,
                 btVodMpxVoleFeedQParam,
+                btVodMpxVoleFeedNewBaseUrl,
                 btVodMpxVoleFeedNewSuffix,
-                btVodMpxVoleFeedBaseUrlForGuidLookup,
-                btVodMpxVoleFeedNameForGuidLookup,
-                btVodMpxVoleFeedNameForNewContent,
+                btVodMpxVoleFeedGuidLookupBaseUrl,
+                btVodMpxVoleFeedGuidLookupName,
                 ImmutableMap.of()
         );
     }
@@ -304,13 +324,13 @@ public class BtVodModule {
                 Publisher.BT_TVE_VOD_VOLD_CONFIG_1,
                 "vold",
                 "config1",
-                btVodMpxVolDFeedBaseUrl,
-                btVodMpxVolDFeedName,
-                btVodMpxVolDFeedQParam,
-                btVodMpxVolDFeedNewSuffix,
-                btVodMpxVolDFeedBaseUrl,
-                btVodMpxVolDFeedName,
-                btVodMpxVolDFeedNameForNewContent,
+                btVodMpxVoldFeedBaseUrl,
+                btVodMpxVoldFeedName,
+                btVodMpxVoldFeedQParam,
+                btVodMpxVoldFeedNewBaseUrl,
+                btVodMpxVoldFeedNewSuffix,
+                btVodMpxVoldGuidLookupBaseUrl,
+                btVodMpxVoldGuidLookupName,
                 ImmutableMap.of()
         );
     }
@@ -324,10 +344,10 @@ public class BtVodModule {
                 btVodMpxSystest2FeedBaseUrl,
                 btVodMpxSystest2FeedName,
                 btVodMpxSystest2FeedQParam,
+                btVodMpxSystest2FeedNewBaseUrl,
                 btVodMpxSystest2FeedNewSuffix,
-                btVodMpxSystest2FeedBaseUrl,
-                btVodMpxSystest2FeedName,
-                btVodMpxSystest2FeedNameForNewContent,
+                btVodMpxSystest2GuidLookupBaseUrl,
+                btVodMpxSystest2GuidLookupName,
                 ImmutableMap.of()
         );
     }
@@ -339,10 +359,10 @@ public class BtVodModule {
             String feedBaseUrl,
             String feedName,
             String feedQParam,
-            String newFeedSuffix,
+            String baseUrlForNewContent,
+            String feedNameForNewContent,
             String baseUrlForItemLookup,
             String feedNameForItemLookup,
-            String newContentFeedName,
             Map<String, BtVodContentMatchingPredicate> contentGroupsAndCritera
     ) {
         String uriPrefix = String.format(TVE_URI_PREFIX_FORMAT, publisher.key());
@@ -370,10 +390,9 @@ public class BtVodModule {
                         publisher,
                         envName,
                         conf,
-                        newFeedSuffix,
-                        feedQParam,
-                        baseUrlForItemLookup,
-                        newContentFeedName
+                        baseUrlForNewContent,
+                        feedNameForNewContent,
+                        feedQParam
                 ),
                 mpxVodClient(baseUrlForItemLookup, feedNameForItemLookup, btVodMpxProdFeedQParam),
                 topicQueryResolver,
@@ -426,13 +445,12 @@ public class BtVodModule {
             Publisher publisher,
             String env,
             String conf,
-            String newFeedSuffix,
-            String qParam,
-            String btVodMpxProdFeedBaseUrlForGuidLookup,
-            String newContentFeedName
+            String baseUrlForNewContent,
+            String feedNameForNewContent,
+            String qParam
     ) {
         BtVodContentMatchingPredicate newContentPredicate = newFeedContentMatchingPredicate(
-                btVodMpxProdFeedBaseUrlForGuidLookup, newFeedSuffix, qParam, newContentFeedName
+                baseUrlForNewContent, feedNameForNewContent, qParam
         );
         return new BtVodDescribedFieldsExtractor(
                 topicResolver,
@@ -493,8 +511,7 @@ public class BtVodModule {
         );
     }
     
-    private Map<String, BtVodContentMatchingPredicate> salesContentGroupsAndCriteria(String baseUrl,
-            String feedName, String qParam) {
+    private Map<String, BtVodContentMatchingPredicate> salesContentGroupsAndCriteria(String baseUrl, String feedName, String qParam) {
         return ImmutableMap.<String, BtVodContentMatchingPredicate> builder()
                 .put(MUSIC_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.schedulerChannelPredicate(MUSIC_CATEGORY))
                 .put(FILM_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.filmPredicate())
@@ -506,12 +523,7 @@ public class BtVodModule {
                 .put(BOX_OFFICE_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), PORTAL_BOXOFFICE_GROUP, null))
                 .put(TV_BOX_SETS_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), PORTAL_BOXSET_GROUP, Series.class))
                 .put(BOX_OFFICE_PICKS_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.portalGroupContentMatchingPredicate(portalClient(), BOX_OFFICE_PICKS_GROUP, null))
-                .put(
-                        NEW_CATEGORY.toLowerCase(),
-                        newFeedContentMatchingPredicate(
-                                baseUrl, feedName, qParam, DEFAULT_NEW_CONTENT_MPX_FEED_NAME
-                        )
-                )
+                .put(NEW_CATEGORY.toLowerCase(), BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(mpxVodClient(baseUrl, feedName, qParam), NEW_CONTENT_MPX_FEED_NAME))
                 .build();
     }
     
@@ -522,10 +534,10 @@ public class BtVodModule {
     }
     
     private BtVodContentMatchingPredicate newFeedContentMatchingPredicate(String baseUri,
-            String itemLookupFeedName, String qParam, String newContentFeedName) {
+            String feedName, String qParam) {
         return BtVodContentMatchingPredicates.mpxFeedContentMatchingPredicate(
-                mpxVodClient(baseUri, itemLookupFeedName, qParam),
-                newContentFeedName
+                mpxVodClient(baseUri, feedName, qParam),
+                feedName
         );
     }
 
@@ -540,7 +552,7 @@ public class BtVodModule {
     
     @PostConstruct
     public void scheduleTask() {
-        scheduler.schedule(btVodUpdater(btVodMpxProdFeedNewSuffix, salesContentGroupsAndCriteria(btVodMpxProdFeedBaseUrlForGuidLookup, btVodMpxProdFeedName, btVodMpxProdFeedQParam)).withName("BT VoD Updater"), MPX_REPETITION_RULE);
+        scheduler.schedule(btVodUpdater(btVodMpxProdFeedNewSuffix, salesContentGroupsAndCriteria(btVodMpxProdFeedGuidLookupBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam)).withName("BT VoD Updater"), MPX_REPETITION_RULE);
 
         scheduleBtTveVodProdConfig1Updater();
 

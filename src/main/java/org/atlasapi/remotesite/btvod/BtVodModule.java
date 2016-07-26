@@ -220,9 +220,9 @@ public class BtVodModule {
     @Value("${bt.vod.mpx.systest2.feed.params.q}")
     private String btVodMpxSystest2FeedQParam;
 
-    @Value("${bt.vod.mpx.systest2.guidLookup.baseUrl}")
+    @Value("${bt.vod.mpx.systest2.feed.guidLookup.baseUrl}")
     private String btVodMpxSystest2GuidLookupBaseUrl;
-    @Value("${bt.vod.mpx.systest2.guidLookup.name}")
+    @Value("${bt.vod.mpx.systest2.feed.guidLookup.name}")
     private String btVodMpxSystest2GuidLookupName;
 
     @Value("${bt.vod.mpx.systest2.feed.new.suffix}")

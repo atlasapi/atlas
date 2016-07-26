@@ -16,6 +16,8 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
+
+import com.google.common.collect.ImmutableList;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -35,6 +37,8 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     private final Duration flexibility;
 	private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> filter;
+    private final ImmutableList FLEXIBLE_ITEM_BROADCASTS = ImmutableList.of("teleshopping");
+    private final Duration EXTENDED_END_TIME_FLEXIBILITY = Duration.standardHours(3);
 
     public BroadcastMatchingItemEquivalenceGenerator(ScheduleResolver resolver, ChannelResolver channelResolver, Set<Publisher> supportedPublishers, Duration flexibility, Predicate<? super Broadcast> filter) {
         this.resolver = resolver;
@@ -76,7 +80,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                         && (!onIgnoredChannel(broadcast) || broadcastCount == 1) 
                         && filter.apply(broadcast)) {
                     processedBroadcasts++;
-                    findMatchesForBroadcast(scores, broadcast, validPublishers);
+                    findMatchesForBroadcast(scores, content, broadcast, validPublishers);
                 }
             }
         }
@@ -86,8 +90,14 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
         return scale(scores.build(), processedBroadcasts, desc);
     }
 
-    public void findMatchesForBroadcast(Builder<Item> scores, Broadcast broadcast, Set<Publisher> validPublishers) {
-        Schedule schedule = scheduleAround(broadcast, validPublishers);
+    public void findMatchesForBroadcast(Builder<Item> scores, Item content, Broadcast broadcast, Set<Publisher> validPublishers) {
+
+        Schedule schedule = scheduleAround(broadcast, validPublishers, flexibility);
+
+        if(schedule !=null && schedule.scheduleChannels().isEmpty()
+                && FLEXIBLE_ITEM_BROADCASTS.contains(content.getTitle().toLowerCase())) {
+            schedule = scheduleAround(broadcast, validPublishers, EXTENDED_END_TIME_FLEXIBILITY);
+        }
         if (schedule == null) {
             return;
         }
@@ -171,9 +181,10 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
             && !transmissionTime.isAfter(transmissionTime2.plus(flexibility));
     }
 
-    private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers) {
+    private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers,
+            Duration endtimeflexibility) {
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);
-        DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
+        DateTime end = broadcast.getTransmissionEndTime().plus(endtimeflexibility);
         Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
         if (channel.hasValue()) {
             return resolver.unmergedSchedule(start, end, ImmutableSet.of(channel.requireValue()), publishers);

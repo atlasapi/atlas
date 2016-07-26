@@ -2,6 +2,7 @@ package org.atlasapi.equiv.results;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.atlasapi.equiv.results.combining.ScoreCombiner;
 import org.atlasapi.equiv.results.description.ReadableDescription;
@@ -9,6 +10,7 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
+import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
@@ -26,9 +28,6 @@ import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
 public class DefaultEquivalenceResultBuilder<T extends Content> implements EquivalenceResultBuilder<T> {
-
-    public static final String TELESHOPPING = "teleshopping";
-    public static final String THIS_IS_BT_SPORT = "this is bt sport";
 
     public static <T extends Content> EquivalenceResultBuilder<T> create(ScoreCombiner<T> combiner, EquivalenceFilter<T> filter, EquivalenceExtractor<T> marker) {
         return new DefaultEquivalenceResultBuilder<T>(combiner, filter, marker);
@@ -83,8 +82,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
             desc.startStage(String.format("Publisher: %s", publisher));
             
             ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted = ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
-
-            if(canBeEquivalatedToSamePublisher(target)) {
+            if(canBeEquivalatedToSamePublisher(copyOfSorted)) {
                 for (ScoredCandidate<T> scoredCandidate : copyOfSorted) {
                     builder.put(publisher, scoredCandidate);
                 }
@@ -102,17 +100,27 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return builder.build();
     }
 
-    private boolean canBeEquivalatedToSamePublisher(T target) {
-        if (target.getTitle() == null) {
-            return false;
+    private boolean canBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
+        ScoredCandidate<T> previous = null;
+        if (candidates.size() > 3) {
+            for (ScoredCandidate<T> candidate : candidates) {
+                if(previous!= null) {
+                    Score score = candidate.score();
+                    Score previousScore = previous.score();
+                    if (!(Math.abs(score.asDouble()-previousScore.asDouble()) <= 0.5)) {
+                        return false;
+                    }
+                }
+                previous = candidate;
+            }
+            return true;
         }
-        String title = target.getTitle().toLowerCase();
-        return title.equals(TELESHOPPING) || title
-                .startsWith(THIS_IS_BT_SPORT);
+        return false;
     }
 
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {
-        SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins = TreeMultimap.create(Ordering.natural(), ScoredCandidate.SCORE_ORDERING.compound(Ordering.usingToString()));
+        SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins =
+                TreeMultimap.create(Ordering.natural(), ScoredCandidate.SCORE_ORDERING.compound(Ordering.usingToString()));
         
         for (ScoredCandidate<T> candidate : filteredCandidates) {
             publisherBins.put(candidate.candidate().getPublisher(), candidate);

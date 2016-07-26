@@ -29,6 +29,7 @@ import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.simple.response.AtlasResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
@@ -202,12 +203,12 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     }
     
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
-    public ContentWriteController.Id postContent(HttpServletRequest req, HttpServletResponse resp) {
+    public AtlasResponse postContent(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.postContent(req, resp);
     }
 
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.PUT)
-    public ContentWriteController.Id putContent(HttpServletRequest req, HttpServletResponse resp) {
+    public AtlasResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.putContent(req, resp);
     }
 }

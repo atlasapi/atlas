@@ -4,6 +4,7 @@ import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
 import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -22,6 +23,7 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.HashMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
@@ -127,9 +129,11 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     if (processedBroadcasts.containsKey(scheduleItem.getCanonicalUri())) {
                         Collection<Broadcast> broadcasts = processedBroadcasts.get(scheduleItem.getCanonicalUri());
                         for (Version version : scheduleItem.getVersions()) {
-                            for (Broadcast broadcast : broadcasts) {
-                                version.addBroadcast(broadcast);
-                            }
+                            Set<Broadcast> broadcastSet = new HashSet<>();
+                            broadcastSet.addAll(broadcasts);
+                            broadcastSet.addAll(version.getBroadcasts());
+                            Version versionCopy = version.copyWithBroadcasts(broadcastSet);
+                            scheduleItem.setVersions(ImmutableSet.of(versionCopy));
                             break;
                         }
                     } else {

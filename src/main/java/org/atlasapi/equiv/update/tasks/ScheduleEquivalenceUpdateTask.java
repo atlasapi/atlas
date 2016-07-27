@@ -28,6 +28,7 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
+import org.apache.commons.collections.bag.SynchronizedBag;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,7 +44,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     private final EquivalenceUpdater<Content> updater;
     private final ScheduleResolver scheduleResolver;
     private final List<Publisher> publishers;
-    private final Multimap<String, Broadcast> processedBroadcasts = HashMultimap.create();
+    private final Multimap<String, Broadcast> processedBroadcasts = Multimaps.synchronizedSetMultimap(HashMultimap.create());
     private final Supplier<Iterable<Channel>> channelsSupplier;
     private final int back;
     private final int forward;

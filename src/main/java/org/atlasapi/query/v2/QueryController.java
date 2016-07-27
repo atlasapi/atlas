@@ -48,6 +48,7 @@ import com.google.common.collect.Lists;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 @Controller
 public class QueryController extends BaseController<QueryResult<Identified, ? extends Identified>> {
@@ -203,12 +204,12 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     }
 
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.POST)
-    public AtlasResponse postContent(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody AtlasResponse postContent(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.postContent(req, resp);
     }
 
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.PUT)
-    public AtlasResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
+    public @ResponseBody AtlasResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.putContent(req, resp);
     }
 }

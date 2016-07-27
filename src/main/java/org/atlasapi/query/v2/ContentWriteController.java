@@ -19,6 +19,7 @@ import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.simple.response.AtlasResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
@@ -89,16 +90,16 @@ public class ContentWriteController {
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
-    public Id postContent(HttpServletRequest req, HttpServletResponse resp) {
+    public AtlasResponse postContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
-    public Id putContent(HttpServletRequest req, HttpServletResponse resp) {
+    public AtlasResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
 
-    private Id deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
+    private AtlasResponse deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
@@ -187,7 +188,7 @@ public class ContentWriteController {
 
         HttpStatus responseStatus = async ? HttpStatus.ACCEPTED : HttpStatus.OK;
         resp.setStatus(responseStatus.value());
-        return new Id(encodeId(contentId));
+        return new AtlasResponse(encodeId(contentId));
     }
 
     private void sendMessage(byte[] inputStreamBytes, Long contentId, boolean merge)
@@ -240,7 +241,7 @@ public class ContentWriteController {
         log.error(errorBuilder.toString(), e);
     }
 
-    private Id error(HttpServletRequest request, HttpServletResponse response,
+    private AtlasResponse error(HttpServletRequest request, HttpServletResponse response,
             AtlasErrorSummary summary) {
         try {
             outputWriter.writeError(request, response, summary);
@@ -250,17 +251,4 @@ public class ContentWriteController {
         return null;
     }
 
-    protected class Id {
-
-        private final String id;
-
-        public Id(String id) {
-            this.id = id;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-    }
 }

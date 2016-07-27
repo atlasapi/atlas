@@ -1,34 +1,27 @@
 package org.atlasapi.equiv.update.tasks;
 
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
-import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
 import org.junit.Test;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.is;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -70,26 +63,11 @@ public class ScheduleEquivalenceUpdateTaskTest {
         Channel bbcOne = new Channel(Publisher.METABROADCAST, "BBC One", "bbcone", false, MediaType.VIDEO, "bbconeuri");
         
         Item yvItemOne = new Item("yv1", "yv1c", Publisher.YOUVIEW);
-        Version version = new Version();
-        Broadcast broadcast = new Broadcast("bbcone", DateTime.now(), DateTime.now());
-        version.addBroadcast(broadcast);
-        yvItemOne.addVersion(version);
-
         Item yvItemTwo = new Item("yv2", "yv2c", Publisher.YOUVIEW);
-        Version version1 = new Version();
-        Broadcast broadcast1 = new Broadcast("bbcone", DateTime.now(), DateTime.now());
-        version1.addBroadcast(broadcast1);
-        yvItemTwo.addVersion(version1);
-
-        Item yvItemSecondOne = new Item("yv1", "yv1c", Publisher.YOUVIEW);
-        Version version2 = new Version();
-        Broadcast broadcast2 = new Broadcast("bbcone", DateTime.now().plusMinutes(1), DateTime.now());
-        version2.addBroadcast(broadcast2);
-        yvItemSecondOne.addVersion(version2);
         
         DateTime now = new DateTime().withZone(DateTimeZone.UTC);
         
-        ScheduleChannel schChannel1 = new ScheduleChannel(bbcOne, ImmutableList.of(yvItemOne, yvItemTwo, yvItemSecondOne));
+        ScheduleChannel schChannel1 = new ScheduleChannel(bbcOne, ImmutableList.of(yvItemOne, yvItemTwo));
         LocalDate today = new LocalDate();
         LocalDate tomorrow = today.plusDays(1);
         Schedule schedule1 = new Schedule(ImmutableList.of(schChannel1), new Interval(today.toDateTimeAtStartOfDay(), tomorrow.toDateTimeAtStartOfDay()));
@@ -105,11 +83,9 @@ public class ScheduleEquivalenceUpdateTaskTest {
             .withUpdater(updater)
             .build().run();
         
-
-        verify(updater, times(2)).updateEquivalences(yvItemOne);
+        
+        verify(updater).updateEquivalences(yvItemOne);
         verify(updater).updateEquivalences(yvItemTwo);
-        verify(updater, times(2)).updateEquivalences(yvItemSecondOne);
-        assertThat(Iterables.getOnlyElement(yvItemSecondOne.getVersions()).getBroadcasts().size(), is(2));
     }
 
 }

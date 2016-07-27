@@ -3,29 +3,20 @@ package org.atlasapi.equiv.update.tasks;
 import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
 import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
 
-import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
 import com.google.common.base.Supplier;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,7 +32,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     private final EquivalenceUpdater<Content> updater;
     private final ScheduleResolver scheduleResolver;
     private final List<Publisher> publishers;
-    private final Multimap<String, Broadcast> processedBroadcasts = HashMultimap.create();
+    private final List<String> equivalatedItems = Lists.newCopyOnWriteArrayList();
     private final Supplier<Iterable<Channel>> channelsSupplier;
     private final int back;
     private final int forward;
@@ -124,25 +115,14 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 Iterator<Item> channelItems = scheduleChannel.items().iterator();
                 while (channelItems.hasNext() && shouldContinue()) {
                     Item scheduleItem = channelItems.next();
-                    if (processedBroadcasts.containsKey(scheduleItem.getCanonicalUri())) {
-                        Collection<Broadcast> broadcasts = processedBroadcasts.get(scheduleItem.getCanonicalUri());
-                        for (Version version : scheduleItem.getVersions()) {
-                            for (Broadcast broadcast : broadcasts) {
-                                version.addBroadcast(broadcast);
-                            }
-                            break;
-                        }
-                    } else {
-                        for (Version version : scheduleItem.getVersions()) {
-                            processedBroadcasts.putAll(scheduleItem.getCanonicalUri(),version.getBroadcasts());
-                        }
+                    if (!equivalatedItems.contains(scheduleItem.getCanonicalUri())) {
+                        progress = progress.reduce(process(scheduleItem));
+                        reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                     }
-                    progress = progress.reduce(process(scheduleItem));
-                    reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                 }
             }   
         }
-        processedBroadcasts.clear();
+        equivalatedItems.clear();
         return progress;
     }
 
@@ -163,9 +143,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         try {
             boolean hasCandidates = updater.updateEquivalences(item);
             if (hasCandidates) {
-                for (Version version : item.getVersions()) {
-                    processedBroadcasts.putAll(item.getCanonicalUri(), version.getBroadcasts());
-                }
+                equivalatedItems.add(item.getCanonicalUri());
             }
             log.info("successfully updated equivalences on " + item.getCanonicalUri());
             return SUCCESS;

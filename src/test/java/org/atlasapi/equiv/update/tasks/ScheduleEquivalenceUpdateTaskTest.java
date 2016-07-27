@@ -86,9 +86,7 @@ public class ScheduleEquivalenceUpdateTaskTest {
         Broadcast broadcast2 = new Broadcast("bbcone", DateTime.now().plusMinutes(1), DateTime.now());
         version2.addBroadcast(broadcast2);
         yvItemSecondOne.addVersion(version2);
-
         DateTime now = new DateTime().withZone(DateTimeZone.UTC);
-
         ScheduleChannel schChannel1 = new ScheduleChannel(bbcOne, ImmutableList.of(yvItemOne, yvItemTwo, yvItemSecondOne));
         LocalDate today = new LocalDate();
         LocalDate tomorrow = today.plusDays(1);
@@ -104,7 +102,6 @@ public class ScheduleEquivalenceUpdateTaskTest {
             .withScheduleResolver(resolver)
             .withUpdater(updater)
             .build().run();
-
 
         verify(updater, times(2)).updateEquivalences(yvItemOne);
         verify(updater).updateEquivalences(yvItemTwo);

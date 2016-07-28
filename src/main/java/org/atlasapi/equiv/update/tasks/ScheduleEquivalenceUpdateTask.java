@@ -14,11 +14,14 @@ import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
 import com.google.common.base.Supplier;
@@ -34,6 +37,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
+
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.metabroadcast.common.time.DayRange;
@@ -44,8 +49,8 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     private final EquivalenceUpdater<Content> updater;
     private final ScheduleResolver scheduleResolver;
     private final List<Publisher> publishers;
-    private final Multimap<String, Broadcast> processedBroadcasts = Multimaps.synchronizedSetMultimap(HashMultimap.create());
     private final Supplier<Iterable<Channel>> channelsSupplier;
+    private final ContentResolver contentResolver;
     private final int back;
     private final int forward;
 
@@ -55,10 +60,11 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         return new Builder();
     }
 
-    private ScheduleEquivalenceUpdateTask(EquivalenceUpdater<Content> updater,
+    private ScheduleEquivalenceUpdateTask(ContentResolver contentResolver, EquivalenceUpdater<Content> updater,
             ScheduleResolver scheduleResolver, List<Publisher> publishers,
             Supplier<Iterable<Channel>> channelsSupplier,
             int back, int forward) {
+        this.contentResolver = contentResolver;
         this.updater = updater;
         this.scheduleResolver = scheduleResolver;
         this.publishers = publishers;
@@ -127,28 +133,17 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 Iterator<Item> channelItems = scheduleChannel.items().iterator();
                 while (channelItems.hasNext() && shouldContinue()) {
                     Item scheduleItem = channelItems.next();
-                    if (processedBroadcasts.containsKey(scheduleItem.getCanonicalUri())) {
-                        Collection<Broadcast> broadcasts = processedBroadcasts.get(scheduleItem.getCanonicalUri());
-                        for (Version version : scheduleItem.getVersions()) {
-                            Set<Broadcast> broadcastSet = new HashSet<>();
-                            broadcastSet.addAll(broadcasts);
-                            broadcastSet.addAll(version.getBroadcasts());
-                            Version versionCopy = version.copyWithBroadcasts(broadcastSet);
-                            scheduleItem.setVersions(ImmutableSet.of(versionCopy));
-                            processedBroadcasts.putAll(scheduleItem.getCanonicalUri(), version.getBroadcasts());
-                            break;
-                        }
-                    } else {
-                        for (Version version : scheduleItem.getVersions()) {
-                            processedBroadcasts.putAll(scheduleItem.getCanonicalUri(),version.getBroadcasts());
-                        }
+                    ResolvedContent resolvedContent = contentResolver.findByCanonicalUris(
+                            ImmutableSet.of(scheduleItem.getCanonicalUri()));
+                    Maybe<Identified> identified = resolvedContent.get(scheduleItem.getCanonicalUri());
+                    if (identified.hasValue()) {
+                        Item value = (Item) identified.requireValue();
+                        progress = progress.reduce(process(value));
+                        reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                     }
-                    progress = progress.reduce(process(scheduleItem));
-                    reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                 }
             }   
         }
-        processedBroadcasts.clear();
         return progress;
     }
 
@@ -167,12 +162,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
     private UpdateProgress process(Item item) {
         try {
-            boolean hasCandidates = updater.updateEquivalences(item);
-            if (hasCandidates) {
-                for (Version version : item.getVersions()) {
-                    processedBroadcasts.putAll(item.getCanonicalUri(), version.getBroadcasts());
-                }
-            }
+            updater.updateEquivalences(item);
             log.info("successfully updated equivalences on " + item.getCanonicalUri());
             return SUCCESS;
         } catch (Exception e) {
@@ -184,6 +174,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     public static class Builder {
 
         private EquivalenceUpdater<Content> updater;
+        private ContentResolver contentResolver;
         private ScheduleResolver scheduleResolver;
         private List<Publisher> publishers;
         private Supplier<Iterable<Channel>> channelsSupplier;
@@ -192,6 +183,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
         public ScheduleEquivalenceUpdateTask build() {
             return new ScheduleEquivalenceUpdateTask(
+                    contentResolver,
                     updater,
                     scheduleResolver,
                     publishers,
@@ -205,6 +197,11 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
         public Builder withUpdater(EquivalenceUpdater<Content> updater) {
             this.updater = updater;
+            return this;
+        }
+
+        public Builder withContentResolver(ContentResolver contentResolver) {
+            this.contentResolver = contentResolver;
             return this;
         }
 

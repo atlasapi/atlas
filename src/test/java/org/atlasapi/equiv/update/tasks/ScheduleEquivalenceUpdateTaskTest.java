@@ -86,8 +86,34 @@ public class ScheduleEquivalenceUpdateTaskTest {
         Broadcast broadcast2 = new Broadcast("bbcone", DateTime.now().plusMinutes(1), DateTime.now());
         version2.addBroadcast(broadcast2);
         yvItemSecondOne.addVersion(version2);
+
+        Item yvItem3 = new Item("yv1", "yv1c", Publisher.YOUVIEW);
+        Version version3 = new Version();
+        Broadcast broadcast3 = new Broadcast("bbcone", DateTime.now().plusMinutes(3), DateTime.now());
+        version3.addBroadcast(broadcast3);
+        yvItem3.addVersion(version3);
+
+        Item yvItem4 = new Item("yv1", "yv1c", Publisher.YOUVIEW);
+        Version version4 = new Version();
+        Broadcast broadcast4 = new Broadcast("bbcone", DateTime.now().plusMinutes(4), DateTime.now());
+        version4.addBroadcast(broadcast4);
+        yvItem4.addVersion(version4);
+
+        Item yvItem5 = new Item("yv1", "yv1c", Publisher.YOUVIEW);
+        Version version5 = new Version();
+        Broadcast broadcast5 = new Broadcast("bbcone", DateTime.now().plusMinutes(5), DateTime.now());
+        version5.addBroadcast(broadcast5);
+        yvItem5.addVersion(version5);
+
+        Item yvItem6 = new Item("yv1", "yv1c", Publisher.YOUVIEW);
+        Version version6 = new Version();
+        Broadcast broadcast6 = new Broadcast("bbcone", DateTime.now().plusMinutes(6), DateTime.now());
+        version6.addBroadcast(broadcast6);
+        yvItem6.addVersion(version6);
+        
         DateTime now = new DateTime().withZone(DateTimeZone.UTC);
-        ScheduleChannel schChannel1 = new ScheduleChannel(bbcOne, ImmutableList.of(yvItemOne, yvItemTwo, yvItemSecondOne));
+        
+        ScheduleChannel schChannel1 = new ScheduleChannel(bbcOne, ImmutableList.of(yvItemOne, yvItemTwo, yvItemSecondOne,yvItem3, yvItem4, yvItem5, yvItem6));
         LocalDate today = new LocalDate();
         LocalDate tomorrow = today.plusDays(1);
         Schedule schedule1 = new Schedule(ImmutableList.of(schChannel1), new Interval(today.toDateTimeAtStartOfDay(), tomorrow.toDateTimeAtStartOfDay()));
@@ -103,10 +129,10 @@ public class ScheduleEquivalenceUpdateTaskTest {
             .withUpdater(updater)
             .build().run();
 
-        verify(updater, times(2)).updateEquivalences(yvItemOne);
+        verify(updater, times(6)).updateEquivalences(yvItemOne);
         verify(updater).updateEquivalences(yvItemTwo);
-        verify(updater, times(2)).updateEquivalences(yvItemSecondOne);
-        assertThat(Iterables.getOnlyElement(yvItemSecondOne.getVersions()).getBroadcasts().size(), is(2));
+        verify(updater, times(6)).updateEquivalences(yvItemSecondOne);
+        assertThat(Iterables.getOnlyElement(yvItem6.getVersions()).getBroadcasts().size(), is(6));
     }
 
 }

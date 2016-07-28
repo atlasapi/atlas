@@ -282,16 +282,14 @@ public class EquivTaskModule {
                         .withPublishers(YOUVIEW)
                         .withChannelsSupplier(youviewChannelsSupplier())
                         .build().withName("YouView Schedule Equivalence (8 day) Updater"),
-                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION
         );
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(YOUVIEW_STAGE)
                         .withChannelsSupplier(youviewChannelsSupplier())
                         .build().withName("YouView Stage Schedule Equivalence (8 day) Updater"),
-                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION
         );
 
         // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
@@ -301,8 +299,7 @@ public class EquivTaskModule {
                         .withPublishers(YOUVIEW_BT)
                         .withChannelsSupplier(youviewChannelsSupplier())
                         .build().withName("YouView BT Schedule Equivalence (8 day) Updater"),
-                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION
         );
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
@@ -310,8 +307,7 @@ public class EquivTaskModule {
                         .withChannelsSupplier(youviewChannelsSupplier())
                         .build()
                         .withName("YouView Stage BT Schedule Equivalence (8 day) Updater"),
-                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION
         );
 
         // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
@@ -322,8 +318,7 @@ public class EquivTaskModule {
                         .withChannelsSupplier(youviewChannelsSupplier())
                         .build()
                         .withName("YouView Scotland Radio Schedule Equivalence (8 day) Updater"),
-                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION
         );
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
@@ -332,8 +327,7 @@ public class EquivTaskModule {
                         .build()
                         .withName(
                                 "YouView Stage Scotland Radio Schedule Equivalence (8 day) Updater"),
-                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION,
-                jobsAtStartup
+                YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION
         );
     }
 
@@ -347,8 +341,14 @@ public class EquivTaskModule {
         return jobsAtStartup;
     }
 
+    private void scheduleEquivalenceJob(ScheduledTask task,
+            RepetitionRule repetitionRule) {
+        taskScheduler.schedule(task, repetitionRule);
+    }
+
     private Builder taskBuilder(int back, int forward) {
         return ScheduleEquivalenceUpdateTask.builder()
+            .withContentResolver(contentResolver)
             .withUpdater(equivUpdater)
             .withScheduleResolver(scheduleResolver)
             .withBack(back)

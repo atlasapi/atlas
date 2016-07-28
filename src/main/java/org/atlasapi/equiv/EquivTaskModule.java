@@ -82,6 +82,7 @@ import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
+import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_SYSTEST2_CONFIG_1;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD_VOLD_CONFIG_1;
@@ -153,6 +154,7 @@ public class EquivTaskModule {
     private static final RepetitionRule EBMS_VF_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule REDBEE_MEDIA_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMC_EBS_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(04, 00));
+    private static final RepetitionRule EBS_SPORTS_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(04, 00));
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
     private @Value("${equiv.updater.youviewschedule.enabled}") String youViewScheduleUpdaterEnabled;
@@ -233,6 +235,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(REDBEE_MEDIA).withName("Redbee Statutory Listings Equivalence Updater"), REDBEE_MEDIA_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(AMC_EBS).withName("AMC EBS Equivalence Updater"), AMC_EBS_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(publisherUpdateTask(BT_SPORT_EBS).withName("EBS Sports Equivalence Updater"), EBS_SPORTS_EQUIVALENCE_REPETITION, jobsAtStartup);
 
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(BBC)

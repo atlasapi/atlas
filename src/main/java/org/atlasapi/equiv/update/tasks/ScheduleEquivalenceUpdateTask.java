@@ -135,6 +135,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                             broadcastSet.addAll(version.getBroadcasts());
                             Version versionCopy = version.copyWithBroadcasts(broadcastSet);
                             scheduleItem.setVersions(ImmutableSet.of(versionCopy));
+                            processedBroadcasts.putAll(scheduleItem.getCanonicalUri(), version.getBroadcasts());
                             break;
                         }
                     } else {

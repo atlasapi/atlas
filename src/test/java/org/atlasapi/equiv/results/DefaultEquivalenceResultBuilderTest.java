@@ -32,7 +32,7 @@ public class DefaultEquivalenceResultBuilderTest {
         Item item = new Item();
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
-        List<ScoredCandidates<Item>> equivalents = getScoredCandidates(5.0, 5.0, 4.5, 4.5);
+        List<ScoredCandidates<Item>> equivalents = getScoredCandidates(5.0, 5.0, 4.6, 4.6);
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
@@ -113,7 +113,7 @@ public class DefaultEquivalenceResultBuilderTest {
                 new DefaultDescription()
         );
 
-        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
     }
     @Test
     public void checkDoesntEquivalatesTwoItemsWithDifferentScore() {
@@ -136,7 +136,7 @@ public class DefaultEquivalenceResultBuilderTest {
                 new DefaultDescription()
         );
 
-        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
     }
 
 

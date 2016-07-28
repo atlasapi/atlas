@@ -38,8 +38,6 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
     private final EquivalenceExtractor<T> extractor;
     private final EquivalenceFilter<T> filter;
 
-    private final List<String> ALLOWED_TITLES = ImmutableList.of("Teleshopping", "Access", "Judge Judy");
-
     public DefaultEquivalenceResultBuilder(ScoreCombiner<T> combiner, EquivalenceFilter<T> filter, EquivalenceExtractor<T> extractor) {
         this.combiner = combiner;
         this.filter = filter;
@@ -85,7 +83,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
             desc.startStage(String.format("Publisher: %s", publisher));
             
             ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted = ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
-            if(canBeEquivalatedToSamePublisher(copyOfSorted, target)) {
+            if(canBeEquivalatedToSamePublisher(copyOfSorted)) {
                 for (ScoredCandidate<T> scoredCandidate : copyOfSorted) {
                     builder.put(publisher, scoredCandidate);
                 }
@@ -103,22 +101,19 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return builder.build();
     }
 
-    private boolean canBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates, T target) {
+    private boolean canBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
         ScoredCandidate<T> previous = null;
-        if (candidates.size() > 3 || ALLOWED_TITLES.contains(target.getTitle())) {
-            for (ScoredCandidate<T> candidate : candidates) {
-                if(previous!= null) {
-                    Score score = candidate.score();
-                    Score previousScore = previous.score();
-                    if (!(Math.abs(score.asDouble()-previousScore.asDouble()) <= 0.5)) {
-                        return false;
-                    }
+        for (ScoredCandidate<T> candidate : candidates) {
+            if(previous!= null) {
+                Score score = candidate.score();
+                Score previousScore = previous.score();
+                if (!(Math.floor(Math.abs(score.asDouble()-previousScore.asDouble())) <= 0.4)) {
+                    return false;
                 }
-                previous = candidate;
             }
-            return true;
+            previous = candidate;
         }
-        return false;
+        return true;
     }
 
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {

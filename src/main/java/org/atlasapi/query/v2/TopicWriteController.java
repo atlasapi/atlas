@@ -24,7 +24,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.simple.Description;
-import org.atlasapi.media.entity.simple.response.AtlasResponse;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
@@ -63,7 +63,7 @@ public class TopicWriteController {
     
     
     @RequestMapping(value="/3.0/topics.json", method = RequestMethod.POST)
-    public AtlasResponse writeContent(HttpServletRequest req, HttpServletResponse resp) {
+    public WriteResponse writeContent(HttpServletRequest req, HttpServletResponse resp) {
         
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
@@ -111,7 +111,7 @@ public class TopicWriteController {
                         + codec.encode(BigInteger.valueOf(topic.getId())));
         resp.setStatus(HttpStatusCode.OK.code());
 
-        return new AtlasResponse(codec.encode(BigInteger.valueOf(topic.getId())));
+        return new WriteResponse(codec.encode(BigInteger.valueOf(topic.getId())));
     }
     
     private Topic merge(Maybe<Topic> possibleExisting, Topic posted) {
@@ -142,7 +142,7 @@ public class TopicWriteController {
         return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Topic.class);
     }
 
-    private AtlasResponse error(HttpServletResponse response, int code) {
+    private WriteResponse error(HttpServletResponse response, int code) {
         response.setStatus(code);
         response.setContentLength(0);
         return null;

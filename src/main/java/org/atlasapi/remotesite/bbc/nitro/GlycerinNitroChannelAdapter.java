@@ -67,7 +67,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
     @Override
     public ImmutableSet<Channel> fetchServices() throws GlycerinException {
-        return fetchServices(ImmutableMap.<String, Channel>of());
+        return fetchServices(ImmutableMap.of());
     }
 
     @Override
@@ -157,6 +157,10 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withUri(NITRO_MASTERBRAND_URI_PREFIX + result.getMid())
                 .withChannelType(ChannelType.MASTERBRAND);
 
+        // Even though it's deprecated all channels must have a key or parts
+        // of the code will NPE
+        builder.withKey(result.getMid());
+
         String name = result.getName();
         if (name != null) {
             builder.withTitle(name);
@@ -196,6 +200,10 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withMediumDescription(result.getDescription())
                 .withRegion(result.getRegion())
                 .withChannelType(ChannelType.CHANNEL);
+
+        // Even though it's deprecated all channels must have a key or parts
+        // of the code will NPE
+        builder.withKey(result.getSid());
 
         Optional<LocalDate> startDate = getStartDate(result);
         if (startDate.isPresent()) {

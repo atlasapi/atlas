@@ -77,7 +77,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                         && (!onIgnoredChannel(broadcast) || broadcastCount == 1) 
                         && filter.apply(broadcast)) {
                     processedBroadcasts++;
-                    findMatchesForBroadcast(scores, content, broadcast, validPublishers);
+                    findMatchesForBroadcast(scores, broadcast, validPublishers);
                 }
             }
         }

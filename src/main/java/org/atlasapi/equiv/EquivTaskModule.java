@@ -235,7 +235,13 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(REDBEE_MEDIA).withName("Redbee Statutory Listings Equivalence Updater"), REDBEE_MEDIA_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(AMC_EBS).withName("AMC EBS Equivalence Updater"), AMC_EBS_EQUIVALENCE_REPETITION, jobsAtStartup);
-        scheduleEquivalenceJob(publisherUpdateTask(BT_SPORT_EBS).withName("EBS Sports Equivalence Updater"), EBS_SPORTS_EQUIVALENCE_REPETITION, jobsAtStartup);
+
+        scheduleEquivalenceJob(taskBuilder(0, 7)
+                        .withPublishers(BT_SPORT_EBS)
+                        .withChannelsSupplier(youviewChannelsSupplier())
+                        .build().withName("EBS Sports Equivalence (8 day) Updater"),
+                EBS_SPORTS_EQUIVALENCE_REPETITION,
+                jobsAtStartup);
 
         scheduleEquivalenceJob(taskBuilder(0, 7)
                         .withPublishers(BBC)

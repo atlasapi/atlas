@@ -14,7 +14,7 @@ import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Topic;
-import org.atlasapi.media.entity.simple.response.AtlasResponse;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
@@ -145,7 +145,7 @@ public class TopicController extends BaseController<Iterable<Topic>> {
     }
      
     @RequestMapping(value="/3.0/topics.json", method = RequestMethod.POST)
-    public AtlasResponse writeContent(HttpServletRequest req, HttpServletResponse resp) {
+    public WriteResponse writeContent(HttpServletRequest req, HttpServletResponse resp) {
         return topicWriteController.writeContent(req, resp);
     }
 }

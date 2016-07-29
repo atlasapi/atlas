@@ -1,7 +1,5 @@
 package org.atlasapi.equiv.scorers;
 
-import static org.junit.Assert.assertEquals;
-
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
@@ -12,30 +10,35 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.testing.StubContentResolver;
 
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
-import com.google.common.collect.ImmutableSet;
+import static org.junit.Assert.*;
 
-public class TitleSubsetBroadcastItemScorerTest {
+/**
+ * Created by adam on 27/07/2016.
+ */
+public class PLStemmingTitleSubsetBroadcastItemScorerTest {
+
 
     private final ContentResolver resolver = new StubContentResolver();
-    private final TitleSubsetBroadcastItemScorer scorer
-        = new TitleSubsetBroadcastItemScorer(resolver, Score.nullScore(), 80);
-    
+    private final PLStemmingTitleSubsetBroadcastItemScorer scorer
+            = new PLStemmingTitleSubsetBroadcastItemScorer(resolver, Score.nullScore(), 80);
+
     @Test
     public void testMatches() {
         assertEquals(Score.ONE, score(
-            itemWithTitle("The Ren & Stimpy Show"), 
-            itemWithTitle("Ren and Stimpy!")
+                itemWithTitle("The Ren & Stimpy Show"),
+                itemWithTitle("Ren and Stimpy!")
         ));
         assertEquals(Score.ONE, score(
-            itemWithTitle("New: Uncle"), 
-            itemWithTitle("Uncle")
+                itemWithTitle("New: Uncle"),
+                itemWithTitle("Uncle")
         ));
         assertEquals(Score.ONE, score(
-            itemWithTitle("Doctor Who?"), 
-            itemWithTitle("Doctor Who Confidential")
+                itemWithTitle("Doctor Who?"),
+                itemWithTitle("Doctor Who Confidential")
         ));
         assertEquals(Score.ONE, score(
                 itemWithTitle("Power Rangers: R.P.M."),
@@ -46,12 +49,12 @@ public class TitleSubsetBroadcastItemScorerTest {
                 itemWithTitle("Power Rangers RPM")
         ));
     }
-    
+
     @Test
     public void testMisMatches() {
         assertEquals(Score.nullScore(), score(
-            itemWithTitle("Title Which Has Only One Word In Common With The Other"), 
-            itemWithTitle("Title That Contains Single Utterance In Subject")
+                itemWithTitle("Title Which Has Only One Word In Common With The Other"),
+                itemWithTitle("Title That Contains Single Utterance In Subject")
         ));
     }
 
@@ -60,7 +63,8 @@ public class TitleSubsetBroadcastItemScorerTest {
         Item item1 = itemWithTitle("Title That Contains Single Utterance In Subject");
         Item item2 = itemWithTitle("Title That Contains Single Utterance In Subject");
         Version version = new Version();
-        Broadcast broadcast = new Broadcast("http://ref.atlasapi.org/channels/pressassociation.com/2021", DateTime.now(), DateTime.now());
+        Broadcast broadcast = new Broadcast("http://ref.atlasapi.org/channels/pressassociation.com/2021", DateTime
+                .now(), DateTime.now());
         version.addBroadcast(broadcast);
         item1.addVersion(version);
         assertEquals(Score.nullScore(), score(
@@ -90,5 +94,6 @@ public class TitleSubsetBroadcastItemScorerTest {
         item.setTitle(title);
         return item;
     }
+
 
 }

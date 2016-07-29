@@ -22,6 +22,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringUtils;
 
 /**
  * <p>
@@ -34,7 +35,7 @@ import com.google.common.collect.Sets;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -53,7 +54,7 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
                 }
             });
     private final Set<String> commonWords = ImmutableSet.of(
-        "the", "in", "a", "and", "&", "of", "to", "show"
+            "the", "in", "a", "and", "&", "of", "to", "show"
     );
 
     private final double threshold;
@@ -61,7 +62,7 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
     /**
      * <p>Creates a new TitleSubsetBroadcastItemScorer which scores based on the
      * number of words in one title occurring in the other.</p>
-     * 
+     *
      * @param resolver
      *            - used to find containers of the subject and candidates.
      * @param misMatchScore
@@ -70,11 +71,11 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public TitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public LDistanceTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
-            "%s must be in %s", percentThreshold, percentRange);
+                "%s must be in %s", percentThreshold, percentRange);
         this.threshold = percentThreshold/100.0;
     }
 
@@ -106,14 +107,20 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
         String sanitizedCandidateTitle = sanitize(candidate.getTitle());
         Set<String> subjectWords = filterCommon(titleWords(sanitizedSubjectTitle));
         Set<String> candidateWords = filterCommon(titleWords(sanitizedCandidateTitle));
-        Set<String> shorter = collectionSize.min(subjectWords, candidateWords);
-        Set<String> longer = collectionSize.max(candidateWords, subjectWords);
-        return percentOfShorterInLonger(shorter, longer) >= threshold;
+        double lDistance = (double) StringUtils.getLevenshteinDistance(
+                subjectWords.toString(),
+                candidateWords.toString());
+        double maxTitleSize = (double) returnLargestStringSize(sanitizedSubjectTitle, sanitizedCandidateTitle);
+        return (lDistance / maxTitleSize) * 100 >= threshold;
     }
 
     private String sanitize(String title) {
         return titleTransformer.expand(title)
                 .replaceAll("[^\\d\\w\\s]", "").toLowerCase();
+    }
+
+    private int returnLargestStringSize(String stringOne, String stringTwo) {
+        return stringOne.length() > stringTwo.length() ? stringOne.length() : stringTwo.length();
     }
 
     private Set<String> filterCommon(Set<String> words) {

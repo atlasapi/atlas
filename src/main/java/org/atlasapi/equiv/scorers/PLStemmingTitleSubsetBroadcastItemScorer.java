@@ -3,6 +3,8 @@ package org.atlasapi.equiv.scorers;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
@@ -34,7 +36,7 @@ import com.google.common.collect.Sets;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -53,7 +55,7 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
                 }
             });
     private final Set<String> commonWords = ImmutableSet.of(
-        "the", "in", "a", "and", "&", "of", "to", "show"
+            "the", "in", "a", "and", "&", "of", "to", "show"
     );
 
     private final double threshold;
@@ -61,7 +63,7 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
     /**
      * <p>Creates a new TitleSubsetBroadcastItemScorer which scores based on the
      * number of words in one title occurring in the other.</p>
-     * 
+     *
      * @param resolver
      *            - used to find containers of the subject and candidates.
      * @param misMatchScore
@@ -70,11 +72,11 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public TitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public PLStemmingTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
-            "%s must be in %s", percentThreshold, percentRange);
+                "%s must be in %s", percentThreshold, percentRange);
         this.threshold = percentThreshold/100.0;
     }
 
@@ -106,8 +108,12 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
         String sanitizedCandidateTitle = sanitize(candidate.getTitle());
         Set<String> subjectWords = filterCommon(titleWords(sanitizedSubjectTitle));
         Set<String> candidateWords = filterCommon(titleWords(sanitizedCandidateTitle));
-        Set<String> shorter = collectionSize.min(subjectWords, candidateWords);
-        Set<String> longer = collectionSize.max(candidateWords, subjectWords);
+
+        Set<String> stemmedSubjectWords = stem(subjectWords);
+        Set<String> stemmedCandidateWords = stem(candidateWords);
+
+        Set<String> shorter = collectionSize.min(stemmedSubjectWords, stemmedCandidateWords);
+        Set<String> longer = collectionSize.max(stemmedCandidateWords, stemmedSubjectWords);
         return percentOfShorterInLonger(shorter, longer) >= threshold;
     }
 
@@ -132,4 +138,16 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
     }
+
+    private Set<String> stem(Set<String> words) {
+        Stemmer stemmer = new Stemmer();
+        Set<String> stemmedWords = new HashSet<String>();
+        for (String word: words) {
+            stemmer.add(word);
+            stemmedWords.add(stemmer.stem());
+            stemmer.clear();
+        }
+        return stemmedWords;
+    }
+
 }

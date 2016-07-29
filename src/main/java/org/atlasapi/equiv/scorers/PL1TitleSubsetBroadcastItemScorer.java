@@ -34,7 +34,7 @@ import com.google.common.collect.Sets;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class PL1TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -53,7 +53,7 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
                 }
             });
     private final Set<String> commonWords = ImmutableSet.of(
-        "the", "in", "a", "and", "&", "of", "to", "show"
+            "the", "in", "a", "and", "&", "of", "to", "show"
     );
 
     private final double threshold;
@@ -61,7 +61,7 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
     /**
      * <p>Creates a new TitleSubsetBroadcastItemScorer which scores based on the
      * number of words in one title occurring in the other.</p>
-     * 
+     *
      * @param resolver
      *            - used to find containers of the subject and candidates.
      * @param misMatchScore
@@ -70,11 +70,11 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public TitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public PL1TitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
-            "%s must be in %s", percentThreshold, percentRange);
+                "%s must be in %s", percentThreshold, percentRange);
         this.threshold = percentThreshold/100.0;
     }
 
@@ -125,11 +125,17 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
     }
 
     private double percentOfShorterInLonger(Set<String> shorter, Set<String> longer) {
-        int contained = Sets.intersection(shorter, longer).size();
+        int contained = Sets.intersection(pluralChecker(shorter), pluralChecker(longer)).size();
         return (contained * 1.0) / shorter.size();
     }
 
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
+    }
+
+    private ImmutableSet<String> pluralChecker(Set<String> words) {
+        return words.stream()
+                .map(word -> word.endsWith("s") ? word : word + "s")
+                .collect(MoreCollectors.toImmutableSet());
     }
 }

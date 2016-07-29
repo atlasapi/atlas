@@ -17,25 +17,25 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
 
-public class TitleSubsetBroadcastItemScorerTest {
+public class LDistanceTitleSubsetBroadcastItemScorerTest {
 
     private final ContentResolver resolver = new StubContentResolver();
-    private final TitleSubsetBroadcastItemScorer scorer
-        = new TitleSubsetBroadcastItemScorer(resolver, Score.nullScore(), 80);
-    
+    private final LDistanceTitleSubsetBroadcastItemScorer scorer
+            = new LDistanceTitleSubsetBroadcastItemScorer(resolver, Score.nullScore(), 80);
+
     @Test
     public void testMatches() {
         assertEquals(Score.ONE, score(
-            itemWithTitle("The Ren & Stimpy Show"), 
-            itemWithTitle("Ren and Stimpy!")
+                itemWithTitle("The Ren & Stimpy Show"),
+                itemWithTitle("Ren and Stimpy!")
         ));
         assertEquals(Score.ONE, score(
-            itemWithTitle("New: Uncle"), 
-            itemWithTitle("Uncle")
+                itemWithTitle("New: Uncle"),
+                itemWithTitle("Uncle")
         ));
         assertEquals(Score.ONE, score(
-            itemWithTitle("Doctor Who?"), 
-            itemWithTitle("Doctor Who Confidential")
+                itemWithTitle("Doctor Who?"),
+                itemWithTitle("Doctor Who Confidential")
         ));
         assertEquals(Score.ONE, score(
                 itemWithTitle("Power Rangers: R.P.M."),
@@ -46,12 +46,12 @@ public class TitleSubsetBroadcastItemScorerTest {
                 itemWithTitle("Power Rangers RPM")
         ));
     }
-    
+
     @Test
     public void testMisMatches() {
         assertEquals(Score.nullScore(), score(
-            itemWithTitle("Title Which Has Only One Word In Common With The Other"), 
-            itemWithTitle("Title That Contains Single Utterance In Subject")
+                itemWithTitle("Title Which Has Only One Word In Common With The Other"),
+                itemWithTitle("Title That Contains Single Utterance In Subject")
         ));
     }
 

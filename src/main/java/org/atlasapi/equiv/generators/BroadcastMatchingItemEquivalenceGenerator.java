@@ -17,7 +17,6 @@ import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
-import com.google.common.collect.ImmutableList;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -37,8 +36,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     private final Duration flexibility;
 	private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> filter;
-    private final ImmutableList FLEXIBLE_ITEM_BROADCASTS = ImmutableList.of("teleshopping");
-    private final Duration EXTENDED_END_TIME_FLEXIBILITY = Duration.standardHours(3);
+    private final Duration EXTENDED_END_TIME_FLEXIBILITY = Duration.standardHours(3).plus(Duration.standardMinutes(5));
 
     public BroadcastMatchingItemEquivalenceGenerator(ScheduleResolver resolver, ChannelResolver channelResolver, Set<Publisher> supportedPublishers, Duration flexibility, Predicate<? super Broadcast> filter) {
         this.resolver = resolver;
@@ -94,10 +92,6 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
 
         Schedule schedule = scheduleAround(broadcast, validPublishers, flexibility);
 
-        if(schedule !=null && schedule.scheduleChannels().isEmpty()
-                && FLEXIBLE_ITEM_BROADCASTS.contains(content.getTitle().toLowerCase())) {
-            schedule = scheduleAround(broadcast, validPublishers, EXTENDED_END_TIME_FLEXIBILITY);
-        }
         if (schedule == null) {
             return;
         }
@@ -106,7 +100,11 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                 if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasQualifyingBroadcast(scheduleItem, broadcast)) {
-                    scores.addEquivalent((Item) scheduleItem, Score.valueOf(1.0));
+                    scores.addEquivalent(scheduleItem, Score.valueOf(1.0));
+                } else if (scheduleItem instanceof Item
+                        && scheduleItem.isActivelyPublished()
+                        && hasFlexibleQualifyingBroadcast(scheduleItem, broadcast)) {
+                    scores.addEquivalent(scheduleItem, Score.valueOf(0.5));
                 }
             }
         }
@@ -161,7 +159,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     private boolean hasQualifyingBroadcast(Item item, Broadcast referenceBroadcast) {
         for (Version version : item.nativeVersions()) {
             for (Broadcast broadcast : version.getBroadcasts()) {
-                if (around(broadcast, referenceBroadcast) && broadcast.getBroadcastOn() != null 
+                if (around(broadcast, referenceBroadcast) && broadcast.getBroadcastOn() != null
                         && broadcast.getBroadcastOn().equals(referenceBroadcast.getBroadcastOn())
                         && broadcast.isActivelyPublished()) {
                     return true;
@@ -171,6 +169,20 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
         return false;
     }
 
+    private boolean hasFlexibleQualifyingBroadcast(Item item, Broadcast referenceBroadcast) {
+        for (Version version : item.nativeVersions()) {
+            for (Broadcast broadcast : version.getBroadcasts()) {
+                if (flexibleAround(broadcast, referenceBroadcast) && broadcast.getBroadcastOn() != null
+                        && broadcast.getBroadcastOn().equals(referenceBroadcast.getBroadcastOn())
+                        && broadcast.isActivelyPublished()) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+
     private boolean around(Broadcast broadcast, Broadcast referenceBroadcast) {
         return around(broadcast.getTransmissionTime(), referenceBroadcast.getTransmissionTime())
             && around(broadcast.getTransmissionEndTime(), referenceBroadcast.getTransmissionEndTime());
@@ -179,6 +191,16 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     private boolean around(DateTime transmissionTime, DateTime transmissionTime2) {
         return !transmissionTime.isBefore(transmissionTime2.minus(flexibility))
             && !transmissionTime.isAfter(transmissionTime2.plus(flexibility));
+    }
+
+    private boolean flexibleAround(Broadcast broadcast, Broadcast referenceBroadcast) {
+        return around(broadcast.getTransmissionTime(), referenceBroadcast.getTransmissionTime())
+                && flexibleAroundEndTime(broadcast.getTransmissionEndTime(), referenceBroadcast.getTransmissionEndTime());
+    }
+
+    private boolean flexibleAroundEndTime(DateTime transmissionTime, DateTime transmissionTime2) {
+        return !transmissionTime.isBefore(transmissionTime2.minus(flexibility))
+                && !transmissionTime.isAfter(transmissionTime2.plus(EXTENDED_END_TIME_FLEXIBILITY));
     }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers,

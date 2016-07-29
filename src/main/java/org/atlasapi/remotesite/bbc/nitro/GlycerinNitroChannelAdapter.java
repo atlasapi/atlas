@@ -151,15 +151,17 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     }
 
     private Channel getMasterBrand(MasterBrand result) {
+        String uri = NITRO_MASTERBRAND_URI_PREFIX + result.getMid();
+
         Channel.Builder builder = Channel.builder()
                 .withBroadcaster(Publisher.BBC)
                 .withSource(Publisher.BBC_NITRO)
-                .withUri(NITRO_MASTERBRAND_URI_PREFIX + result.getMid())
+                .withUri(uri)
                 .withChannelType(ChannelType.MASTERBRAND);
 
         // Even though it's deprecated all channels must have a key or parts
         // of the code will NPE
-        builder.withKey(result.getMid());
+        builder.withKey(uri);
 
         String name = result.getName();
         if (name != null) {
@@ -203,7 +205,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
         // Even though it's deprecated all channels must have a key or parts
         // of the code will NPE
-        builder.withKey(result.getSid());
+        builder.withKey(NITRO_MASTERBRAND_URI_PREFIX + result.getSid());
 
         Optional<LocalDate> startDate = getStartDate(result);
         if (startDate.isPresent()) {

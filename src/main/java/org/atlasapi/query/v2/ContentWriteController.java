@@ -17,6 +17,7 @@ import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.worker.ContentWriteMessage;
@@ -71,16 +72,16 @@ public class ContentWriteController {
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
-    public Id postContent(HttpServletRequest req, HttpServletResponse resp) {
+    public WriteResponse postContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
-    public Id putContent(HttpServletRequest req, HttpServletResponse resp) {
+    public WriteResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
 
-    private Id deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
+    private WriteResponse deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
 
@@ -141,7 +142,7 @@ public class ContentWriteController {
 
         HttpStatus responseStatus = async ? HttpStatus.ACCEPTED : HttpStatus.OK;
         resp.setStatus(responseStatus.value());
-        return new Id(encodeId(contentId));
+        return new WriteResponse(encodeId(contentId));
     }
 
     private void sendMessage(byte[] inputStreamBytes, Long contentId, boolean merge)
@@ -194,23 +195,11 @@ public class ContentWriteController {
         log.error(errorBuilder.toString(), e);
     }
 
-    private Id error(HttpServletResponse response, int code) {
+    private WriteResponse error(HttpServletResponse response, int code) {
         response.setStatus(code);
         response.setContentLength(0);
         return null;
     }
 
-    protected class Id {
 
-        private final String id;
-
-        public Id(String id) {
-            this.id = id;
-        }
-
-        public String getId() {
-            return id;
-        }
-
-    }
 }

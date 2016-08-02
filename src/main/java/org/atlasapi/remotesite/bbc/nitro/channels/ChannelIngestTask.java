@@ -82,6 +82,10 @@ public class ChannelIngestTask extends ScheduledTask {
                 if (existing.hasValue()) {
                     Channel existingChannel = existing.requireValue();
 
+                    // Despite key being deprecated it needs to be set otherwise parts of
+                    // Atlas will NPE
+                    existingChannel.setKey(channel.getKey());
+
                     existingChannel.setTitles(channel.getAllTitles());
                     existingChannel.setAdult(channel.getAdult());
                     existingChannel.setImages(channel.getAllImages());

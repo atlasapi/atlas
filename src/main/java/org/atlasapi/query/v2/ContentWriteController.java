@@ -173,6 +173,7 @@ public class ContentWriteController {
                 writeExecutor.writeContent(content, inputContent.getType(), merge);
             }
         } catch (IllegalArgumentException | NullPointerException e) {
+            logError("Error executing request", e, req);
             AtlasErrorSummary errorSummary = new AtlasErrorSummary(e).withStatusCode(
                     HttpStatusCode.BAD_REQUEST);
             return error(req, resp, errorSummary);

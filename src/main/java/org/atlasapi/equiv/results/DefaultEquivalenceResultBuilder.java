@@ -107,7 +107,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
             if(previous!= null) {
                 Score score = candidate.score();
                 Score previousScore = previous.score();
-                if (!(Math.floor(Math.abs(score.asDouble()-previousScore.asDouble())) <= 0.4)) {
+                if (!(Math.abs(score.asDouble()-previousScore.asDouble()) < 0.3)) {
                     return false;
                 }
             }

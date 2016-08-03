@@ -32,7 +32,7 @@ public class DefaultEquivalenceResultBuilderTest {
         Item item = new Item();
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
-        List<ScoredCandidates<Item>> equivalents = getScoredCandidates(5.0, 5.0, 4.6, 4.6);
+        List<ScoredCandidates<Item>> equivalents = getScoredCandidates(5.0, 5.0, 4.7, 4.7);
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,

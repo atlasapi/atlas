@@ -103,7 +103,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                 } else if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasFlexibleQualifyingBroadcast(scheduleItem, broadcast)) {
-                    scores.addEquivalent(scheduleItem, Score.valueOf(0.5));
+                    scores.addEquivalent(scheduleItem, Score.valueOf(0.35));
                 }
             }
         }
@@ -198,7 +198,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     }
 
     private boolean flexibleAroundEndTime(DateTime transmissionTime, DateTime transmissionTime2) {
-        return !transmissionTime.isBefore(transmissionTime2.minus(flexibility))
+        return !transmissionTime.isBefore(transmissionTime2.minus(EXTENDED_END_TIME_FLEXIBILITY))
                 && !transmissionTime.isAfter(transmissionTime2.plus(EXTENDED_END_TIME_FLEXIBILITY));
     }
 

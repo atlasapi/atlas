@@ -19,9 +19,13 @@ import com.google.common.collect.ImmutableSet;
 
 public class TitleSubsetBroadcastItemScorerTest {
 
-    private final ContentResolver resolver = new StubContentResolver();
-    private final TitleSubsetBroadcastItemScorer scorer
-        = new TitleSubsetBroadcastItemScorer(resolver, Score.nullScore(), 80);
+
+    private final BaseBroadcastItemScorer scorer;
+
+    public TitleSubsetBroadcastItemScorerTest(BaseBroadcastItemScorer scorer) {
+        this.scorer =  scorer; //new TitleSubsetBroadcastItemScorer(resolver, Score.nullScore(), 80);
+    }
+
     
     @Test
     public void testMatches() {

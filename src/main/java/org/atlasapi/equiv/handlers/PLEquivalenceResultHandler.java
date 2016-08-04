@@ -14,6 +14,7 @@ import java.util.Map;
 import java.util.function.BiConsumer;
 
 import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
@@ -27,20 +28,30 @@ import com.google.common.collect.Multimap;
 public class PLEquivalenceResultHandler implements EquivalenceResultHandler {
 
 
+    private String titleAddOn;
+    private EquivalenceResultStore store;
+
+    public PLEquivalenceResultHandler(String titleAddOn) {
+
+        this.titleAddOn = titleAddOn;
+        this.store = new PLFileEquivalenceResultStore(titleAddOn);
+    }
+
 
     @Override
     public void handle(EquivalenceResult result) {
 
-        System.out.println(result.toString());
-        try {
-            convert(result);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
+        store.store(result);
+
+//        try {
+//            convert(result);
+//        } catch (IOException e) {
+//            e.printStackTrace();
+//        }
     }
 
     private void convert(EquivalenceResult<Item> result) throws IOException {
-        String filename = "output/newFile.txt";
+        String filename = "output/" + titleAddOn + "-" + result.subject().getId() + ".txt";
         CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
 
         FileWriter writer = new FileWriter(filename);
@@ -54,6 +65,7 @@ public class PLEquivalenceResultHandler implements EquivalenceResultHandler {
         List<String> subjectList = new LinkedList();
         subjectList.add(subject.getTitle());
         subjectList.add(subject.getCanonicalUri());
+        printer.printRecord(subjectList);
 
         List<String> header = new LinkedList<>();
         header.add("Title");

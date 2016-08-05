@@ -5,6 +5,7 @@ import java.io.Reader;
 
 public interface ModelReader {
 
-    <T> T read(Reader reader, Class<T> cls) throws IOException, ReadException;
+    <T> T read(Reader reader, Class<T> cls, Boolean strict) throws IOException, ReadException;
+
 
 }

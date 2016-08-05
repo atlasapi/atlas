@@ -55,6 +55,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ContentWriteController {
 
     public static final String ASYNC_PARAMETER = "async";
+    private static final String STRICT = "strict";
+
 
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
@@ -95,6 +97,7 @@ public class ContentWriteController {
     private WriteResponse deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
+        Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
 
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
@@ -123,7 +126,7 @@ public class ContentWriteController {
             // without having to reserialise it
             inputStreamBytes = IOUtils.toByteArray(req.getInputStream());
             InputStream inputStream = new ByteArrayInputStream(inputStreamBytes);
-            inputContent = writeExecutor.parseInputStream(inputStream);
+            inputContent = writeExecutor.parseInputStream(inputStream, strict);
         } catch (UnrecognizedPropertyException |
                 JsonParseException |
                 ConstraintViolationException e) {

@@ -47,7 +47,7 @@ public class AtlasErrorSummaryTest {
 
 
         try {
-            reader.read(new StringReader(respBody), Description.class);
+            reader.read(new StringReader(respBody), Description.class, Boolean.TRUE);
             fail();
         } catch (ConstraintViolationException exception) {
 
@@ -68,7 +68,7 @@ public class AtlasErrorSummaryTest {
                 + "}";
 
         try {
-            reader.read(new StringReader(jsonString), Description.class);
+            reader.read(new StringReader(jsonString), Description.class, Boolean.TRUE);
             fail();
         } catch (JsonParseException exception) {
             AtlasErrorSummary summary = AtlasErrorSummary.forException(exception);
@@ -88,7 +88,7 @@ public class AtlasErrorSummaryTest {
         String respBody = response.getResponseAsString().replace("locations", "hello");
 
         try {
-            reader.read(new StringReader(respBody), Description.class);
+            reader.read(new StringReader(respBody), Description.class, Boolean.TRUE);
             fail();
         } catch (UnrecognizedPropertyException exception) {
             AtlasErrorSummary summary = AtlasErrorSummary.forException(exception);

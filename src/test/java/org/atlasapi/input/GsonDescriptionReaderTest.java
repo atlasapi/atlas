@@ -35,26 +35,26 @@ public class GsonDescriptionReaderTest {
         TopicRef topicRef = new TopicRef();
         topicRef.setRelationship("about");
         testItem.setTopics(ImmutableSet.of(topicRef));
-        
+
         JsonTranslator<Item> writer = new JsonTranslator<Item>();
-        
+
         HttpServletRequest request = new StubHttpServletRequest();
         StubHttpServletResponse response = new StubHttpServletResponse();
         writer.writeTo(request, response, testItem, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration.defaultConfiguration());
-        
+
         String respBody = response.getResponseAsString();
-        
+
         DefaultGsonModelReader descReader = DefaultGsonModelReader.create();
-        
-        Description desc = descReader.read(new StringReader(respBody), Description.class);
-        
+
+        Description desc = descReader.read(new StringReader(respBody), Description.class, Boolean.TRUE);
+
         assertThat(desc, is(instanceOf(Item.class)));
         assertThat(desc.getUri(), is(testItem.getUri()));
         assertThat(desc.getTitle(), is(testItem.getTitle()));
         assertThat(desc.getTopics().isEmpty(), is(false));
         assertEquals(2, desc.getClips().size());
         assertTrue(desc.getClips().containsAll(ImmutableSet.of(item1, item2)));
-        
+
     }
 
 }

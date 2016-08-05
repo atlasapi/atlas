@@ -14,17 +14,22 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JacksonModelReader implements ModelReader {
 
+    private ObjectMapper failOnUnknownPropertyMapper;
     private ObjectMapper mapper;
     private Validator validator;
 
-    public JacksonModelReader(ObjectMapper mapper) {
+    public JacksonModelReader(ObjectMapper failOnUnknownPropertyMapper, ObjectMapper mapper) {
+        this.failOnUnknownPropertyMapper = failOnUnknownPropertyMapper;
         this.mapper = mapper;
         ValidatorFactory factory = Validation.buildDefaultValidatorFactory();
         this.validator = factory.getValidator();
     }
 
     @Override
-    public <T> T read(Reader reader, Class<T> cls) throws IOException, ReadException {
+    public <T> T read(Reader reader, Class<T> cls, Boolean strict) throws IOException, ReadException {
+        if(strict) {
+            return validate(failOnUnknownPropertyMapper.readValue(reader, cls));
+        }
         return validate(mapper.readValue(reader, cls));
     }
 

@@ -33,6 +33,7 @@ import org.joda.time.format.ISODateTimeFormat;
 public class DefaultJacksonModelReader extends JacksonModelReader {
 
 
+    private static ObjectMapper failOnUnknownPropertyMapper;
     private static ObjectMapper mapper;
 
     static {
@@ -49,18 +50,27 @@ public class DefaultJacksonModelReader extends JacksonModelReader {
 
         mapper = new ObjectMapper();
 
-        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
         mapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
         mapper.setPropertyNamingStrategy(
                 PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+        mapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, false);
 
         mapper.registerModule(genericModule);
         mapper.registerModule(new GuavaModule());
+
+        failOnUnknownPropertyMapper = new ObjectMapper();
+        failOnUnknownPropertyMapper.configure(DeserializationFeature.FAIL_ON_UNKNOWN_PROPERTIES, true);
+        failOnUnknownPropertyMapper.configure(DeserializationFeature.ACCEPT_SINGLE_VALUE_AS_ARRAY, true);
+        failOnUnknownPropertyMapper.setPropertyNamingStrategy(
+                PropertyNamingStrategy.CAMEL_CASE_TO_LOWER_CASE_WITH_UNDERSCORES);
+
+        failOnUnknownPropertyMapper.registerModule(genericModule);
+        failOnUnknownPropertyMapper.registerModule(new GuavaModule());
     }
 
 
     public DefaultJacksonModelReader() {
-        super(mapper);
+        super(failOnUnknownPropertyMapper, mapper);
     }
 
 

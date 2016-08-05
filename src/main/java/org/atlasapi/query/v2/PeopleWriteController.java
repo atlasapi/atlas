@@ -43,6 +43,7 @@ public class PeopleWriteController {
     //TODO: replace with proper merge strategies.
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
+    private static final String STRICT = "strict";
 
     private static final Logger log = LoggerFactory.getLogger(PeopleWriteController.class);
 
@@ -77,6 +78,7 @@ public class PeopleWriteController {
     private Void deserializeAndUpdatePerson(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) {
         Maybe<ApplicationConfiguration> possibleConfig;
+        Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
         try {
             possibleConfig = appConfigFetcher.configurationFor(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
@@ -96,7 +98,7 @@ public class PeopleWriteController {
 
         Person person;
         try {
-            person = complexify(deserialize(new InputStreamReader(req.getInputStream())));
+            person = complexify(deserialize(new InputStreamReader(req.getInputStream()), strict));
 
         } catch (UnrecognizedPropertyException |
                 JsonParseException |
@@ -190,11 +192,12 @@ public class PeopleWriteController {
         return transformer.transform(inputPerson);
     }
 
-    private org.atlasapi.media.entity.simple.Person deserialize(Reader input)
+    private org.atlasapi.media.entity.simple.Person deserialize(Reader input, Boolean strict)
             throws IOException, ReadException {
         return reader.read(
                 new BufferedReader(input),
-                org.atlasapi.media.entity.simple.Person.class
+                org.atlasapi.media.entity.simple.Person.class,
+                strict
         );
     }
 

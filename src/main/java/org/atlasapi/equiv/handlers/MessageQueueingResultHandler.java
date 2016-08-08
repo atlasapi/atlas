@@ -42,19 +42,10 @@ public class MessageQueueingResultHandler<T extends Content>
     private final Timestamper stamper;
     private final ImmutableSet<String> sourceKeys;
     private final LookupEntryStore lookupEntryStore;
-    
+
     private final NumberToShortStringCodec entityIdCodec;
 
-    public MessageQueueingResultHandler(
-            MessageSender<ContentEquivalenceAssertionMessage> sender,
-            Iterable<Publisher> sources,
-            LookupEntryStore lookupEntryStore
-    ) {
-        this(sender, sources, lookupEntryStore, new SystemClock());
-    }
-
-    @VisibleForTesting
-    MessageQueueingResultHandler(
+    private MessageQueueingResultHandler(
             MessageSender<ContentEquivalenceAssertionMessage> sender,
             Iterable<Publisher> sources,
             LookupEntryStore lookupEntryStore,
@@ -69,7 +60,29 @@ public class MessageQueueingResultHandler<T extends Content>
 
         this.entityIdCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
-    
+
+    public static <T extends Content> MessageQueueingResultHandler<T> create(
+            MessageSender<ContentEquivalenceAssertionMessage> sender,
+            Iterable<Publisher> sources,
+            LookupEntryStore lookupEntryStore
+    ) {
+        return new MessageQueueingResultHandler<>(
+                sender, sources, lookupEntryStore, new SystemClock()
+        );
+    }
+
+    @VisibleForTesting
+    static <T extends Content> MessageQueueingResultHandler<T> create(
+            MessageSender<ContentEquivalenceAssertionMessage> sender,
+            Iterable<Publisher> sources,
+            LookupEntryStore lookupEntryStore,
+            Timestamper timestamper
+    ) {
+        return new MessageQueueingResultHandler<>(
+                sender, sources, lookupEntryStore, timestamper
+        );
+    }
+
     @Override
     public void handle(EquivalenceResult<T> result) {
         try {

@@ -175,7 +175,7 @@ public class EquivModule {
             new EpisodeMatchingEquivalenceHandler(contentResolver, equivSummaryStore, lookupWriter, publishers),
             new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
             new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
-            new MessageQueueingResultHandler<Container>(
+                MessageQueueingResultHandler.create(
                     equivAssertDestination(), publishers, lookupEntryStore
             )
         ));
@@ -192,7 +192,7 @@ public class EquivModule {
                 ))
                 .add(new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()))
                 .add(new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore));
-        handlers.add(new MessageQueueingResultHandler<Item>(
+        handlers.add(MessageQueueingResultHandler.create(
                 equivAssertDestination(), acceptablePublishers, lookupEntryStore
         ));
         return new BroadcastingEquivalenceResultHandler<Item>(handlers.build());
@@ -259,7 +259,7 @@ public class EquivModule {
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
                 new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                new MessageQueueingResultHandler<Item>(
+                MessageQueueingResultHandler.create(
                         equivAssertDestination(), acceptablePublishers, lookupEntryStore
                 )
             )));

@@ -69,9 +69,9 @@ public class ContentWriteExecutor {
         this.eventResolver = checkNotNull(eventResolver);
     }
 
-    public InputContent parseInputStream(InputStream inputStream) throws IOException,
+    public InputContent parseInputStream(InputStream inputStream, Boolean strict) throws IOException,
             ReadException {
-        Description description = deserialize(new InputStreamReader(inputStream));
+        Description description = deserialize(new InputStreamReader(inputStream), strict);
         Content content = complexify(description);
 
         return new InputContent(content, description.getType());
@@ -98,8 +98,8 @@ public class ContentWriteExecutor {
         }
     }
 
-    private Description deserialize(Reader input) throws IOException, ReadException {
-        return reader.read(new BufferedReader(input), Description.class);
+    private Description deserialize(Reader input, Boolean strict) throws IOException, ReadException {
+        return reader.read(new BufferedReader(input), Description.class, strict);
     }
 
     private Content complexify(Description inputContent) {

@@ -20,6 +20,8 @@ public class ContentWriteWorker implements Worker<ContentWriteMessage> {
 
     private final ContentWriteExecutor writeExecutor;
 
+    private static final Boolean strict = Boolean.FALSE;
+
     public ContentWriteWorker(ContentWriteExecutor writeExecutor) {
         this.writeExecutor = checkNotNull(writeExecutor);
     }
@@ -30,7 +32,7 @@ public class ContentWriteWorker implements Worker<ContentWriteMessage> {
             log.debug("Processing message on {}", message.getContentId());
 
             ContentWriteExecutor.InputContent inputContent = writeExecutor.parseInputStream(
-                    new ByteArrayInputStream(message.getContentBytes())
+                    new ByteArrayInputStream(message.getContentBytes()), strict
             );
             Content content = inputContent.getContent();
             content.setId(message.getContentId());

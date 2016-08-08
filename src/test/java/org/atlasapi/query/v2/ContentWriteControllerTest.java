@@ -2,6 +2,7 @@ package org.atlasapi.query.v2;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
 
 import javax.servlet.ServletOutputStream;
@@ -15,6 +16,7 @@ import org.atlasapi.application.v3.SourceStatus;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.worker.ContentWriteMessage;
@@ -65,6 +67,7 @@ public class ContentWriteControllerTest {
 
     private @Mock HttpServletRequest request;
     private @Mock HttpServletResponse response;
+    private @Mock AtlasModelWriter modelWriter;
     private @Mock ServletOutputStream outputStream;
 
     private NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
@@ -91,11 +94,11 @@ public class ContentWriteControllerTest {
 
         when(configurationFetcher.configurationFor(request)).thenReturn(Maybe.just(configuration));
         when(request.getInputStream()).thenReturn(inputStream);
-        when(writeExecutor.parseInputStream(any(InputStream.class))).thenReturn(inputContent);
+        when(writeExecutor.parseInputStream(any(InputStream.class), anyBoolean())).thenReturn(inputContent);
         when(idGenerator.getId(any(Content.class))).thenReturn(contentId);
         when(response.getOutputStream()).thenReturn(outputStream);
         controller = new ContentWriteController(
-                configurationFetcher, writeExecutor, idGenerator, messageSender
+                configurationFetcher, writeExecutor, idGenerator, messageSender, modelWriter
         );
     }
 
@@ -106,7 +109,7 @@ public class ContentWriteControllerTest {
 
         controller.postContent(request, response);
 
-        verify(writeExecutor).parseInputStream(streamCaptor.capture());
+        verify(writeExecutor).parseInputStream(streamCaptor.capture(), anyBoolean());
         assertThat(IOUtils.toByteArray(streamCaptor.getValue()), is(inputBytes));
 
         verify(writeExecutor).writeContent(
@@ -138,7 +141,7 @@ public class ContentWriteControllerTest {
 
         controller.postContent(request, response);
 
-        verify(writeExecutor).parseInputStream(streamCaptor.capture());
+        verify(writeExecutor).parseInputStream(streamCaptor.capture(), anyBoolean());
         assertThat(IOUtils.toByteArray(streamCaptor.getValue()), is(inputBytes));
 
         verify(writeExecutor, never()).writeContent(any(Content.class), anyString(), anyBoolean());

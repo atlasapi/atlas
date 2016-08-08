@@ -9,6 +9,7 @@ import java.util.UUID;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.HttpHeaders;
 
 import org.atlasapi.application.query.ApiKeyNotFoundException;
@@ -18,6 +19,12 @@ import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.output.AtlasErrorSummary;
+import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.QueryResult;
+import org.atlasapi.output.exceptions.ForbiddenException;
+import org.atlasapi.output.exceptions.UnauthorizedException;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.worker.ContentWriteMessage;
@@ -30,9 +37,10 @@ import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.Timestamp;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
 import com.google.api.client.util.Maps;
-import com.google.common.base.Strings;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -47,6 +55,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ContentWriteController {
 
     public static final String ASYNC_PARAMETER = "async";
+    private static final String STRICT = "strict";
+
 
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
@@ -58,17 +68,20 @@ public class ContentWriteController {
     private final ContentWriteExecutor writeExecutor;
     private final LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     private final MessageSender<ContentWriteMessage> messageSender;
+    private final AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter;
 
     public ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
             ContentWriteExecutor contentWriteExecutor,
             LookupBackedContentIdGenerator lookupBackedContentIdGenerator,
-            MessageSender<ContentWriteMessage> messageSender
+            MessageSender<ContentWriteMessage> messageSender,
+            AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter
     ) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
         this.writeExecutor = checkNotNull(contentWriteExecutor);
         this.lookupBackedContentIdGenerator = checkNotNull(lookupBackedContentIdGenerator);
         this.messageSender = checkNotNull(messageSender);
+        this.outputWriter = outputWriter;
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
@@ -84,16 +97,24 @@ public class ContentWriteController {
     private WriteResponse deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
+        Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
 
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
             possibleConfig = appConfigFetcher.configurationFor(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-            return error(resp, HttpStatusCode.FORBIDDEN.code());
+            return error(req, resp, AtlasErrorSummary.forException(ex));
         }
 
         if (possibleConfig.isNothing()) {
-            return error(resp, HttpStatus.UNAUTHORIZED.value());
+
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
+            );
         }
 
         byte[] inputStreamBytes;
@@ -105,23 +126,36 @@ public class ContentWriteController {
             // without having to reserialise it
             inputStreamBytes = IOUtils.toByteArray(req.getInputStream());
             InputStream inputStream = new ByteArrayInputStream(inputStreamBytes);
-            inputContent = writeExecutor.parseInputStream(inputStream);
+            inputContent = writeExecutor.parseInputStream(inputStream, strict);
+        } catch (UnrecognizedPropertyException |
+                JsonParseException |
+                ConstraintViolationException e) {
+
+            return error(req, resp, AtlasErrorSummary.forException(e));
+
         } catch (IOException e) {
             logError("Error reading input for request", e, req);
-            return error(resp, HttpStatusCode.SERVER_ERROR.code());
+            return error(req, resp, AtlasErrorSummary.forException(e));
+
         } catch (Exception e) {
             logError("Error reading input for request", e, req);
-            return error(resp, HttpStatusCode.BAD_REQUEST.code());
+            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
+                    .withMessage("Error reading input for the request")
+                    .withStatusCode(HttpStatusCode.BAD_REQUEST);
+            return error(req, resp, errorSummary);
         }
 
         Content content = inputContent.getContent();
 
         if (!possibleConfig.requireValue().canWrite(content.getPublisher())) {
-            return error(resp, HttpStatusCode.FORBIDDEN.code());
-        }
 
-        if (Strings.isNullOrEmpty(content.getCanonicalUri())) {
-            return error(resp, HttpStatusCode.BAD_REQUEST.code());
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new ForbiddenException(
+                            "API key does not have write permission"
+                    ))
+            );
         }
 
         Long contentId = lookupBackedContentIdGenerator.getId(content);
@@ -133,9 +167,17 @@ public class ContentWriteController {
                 content.setId(contentId);
                 writeExecutor.writeContent(content, inputContent.getType(), merge);
             }
+        } catch (IllegalArgumentException | NullPointerException e) {
+            logError("Error executing request", e, req);
+            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e).withStatusCode(
+                    HttpStatusCode.BAD_REQUEST);
+            return error(req, resp, errorSummary);
         } catch (Exception e) {
             logError("Error executing request", e, req);
-            return error(resp, HttpStatusCode.SERVER_ERROR.code());
+            AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
+                    .withMessage("Error reading input for the request")
+                    .withStatusCode(HttpStatusCode.SERVER_ERROR);
+            return error(req, resp, errorSummary);
         }
 
         setLocationHeader(resp, contentId);
@@ -195,11 +237,14 @@ public class ContentWriteController {
         log.error(errorBuilder.toString(), e);
     }
 
-    private WriteResponse error(HttpServletResponse response, int code) {
-        response.setStatus(code);
-        response.setContentLength(0);
+    private WriteResponse error(HttpServletRequest request, HttpServletResponse response,
+            AtlasErrorSummary summary) {
+        try {
+            outputWriter.writeError(request, response, summary);
+        } catch (IOException e) {
+            logError("Error executing request", e, request);
+        }
         return null;
     }
-
 
 }

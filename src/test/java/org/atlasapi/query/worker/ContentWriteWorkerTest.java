@@ -22,6 +22,7 @@ import org.mockito.runners.MockitoJUnitRunner;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,7 +50,7 @@ public class ContentWriteWorkerTest {
         inputContent = new ContentWriteExecutor.InputContent(
                 new Item("uri", "curie", Publisher.METABROADCAST), "item"
         );
-        when(writeExecutor.parseInputStream(any(ByteArrayInputStream.class)))
+        when(writeExecutor.parseInputStream(any(ByteArrayInputStream.class), anyBoolean()))
                 .thenReturn(inputContent);
 
         worker = new ContentWriteWorker(writeExecutor);
@@ -62,7 +63,7 @@ public class ContentWriteWorkerTest {
     public void processCallsWriteExecutor() throws Exception {
         worker.process(message);
 
-        verify(writeExecutor).parseInputStream(inputStreamCaptor.capture());
+        verify(writeExecutor).parseInputStream(inputStreamCaptor.capture(), anyBoolean());
 
         byte[] actualBytes = IOUtils.toByteArray(inputStreamCaptor.getValue());
         assertThat(actualBytes, is(messageBytes));

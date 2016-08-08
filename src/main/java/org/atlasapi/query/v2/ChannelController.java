@@ -1,24 +1,34 @@
 package org.atlasapi.query.v2;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
 import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
 
 import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.input.ChannelModelTransformer;
+import org.atlasapi.input.ModelReader;
+import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelStore;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.exceptions.ForbiddenException;
+import org.atlasapi.output.exceptions.UnauthorizedException;
 import org.atlasapi.persistence.logging.AdapterLog;
 
 import com.metabroadcast.common.base.Maybe;
@@ -28,6 +38,8 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.query.Selection.SelectionBuilder;
 
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
@@ -41,6 +53,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -86,18 +100,21 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     private final NumberToShortStringCodec codec;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
     private final ChannelResolver channelResolver;
+    private final ChannelWriteController channelWriteController;
 
     public ChannelController(
             ApplicationConfigurationFetcher configFetcher,
             AdapterLog log,
             AtlasModelWriter<Iterable<Channel>> outputter,
             ChannelResolver channelResolver,
-            NumberToShortStringCodec codec
+            NumberToShortStringCodec codec,
+            ChannelWriteController channelWriteController
     ) {
         super(configFetcher, log, outputter);
         this.channelResolver = checkNotNull(channelResolver);
         this.codec = checkNotNull(codec);
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
+        this.channelWriteController = checkNotNull(channelWriteController);
     }
 
     @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.GET)
@@ -190,6 +207,11 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             response.sendError(HttpStatusCode.FORBIDDEN.code(), e.getMessage());
         }
+    }
+
+    @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
+    public void postChannel(HttpServletRequest request, HttpServletResponse response) {
+        channelWriteController.postChannel(request, response);
     }
 
     private boolean validAnnotations(Set<Annotation> annotations) {

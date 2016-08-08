@@ -89,7 +89,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
 
     public void findMatchesForBroadcast(Builder<Item> scores, Broadcast broadcast, Set<Publisher> validPublishers) {
 
-        Schedule schedule = scheduleAround(broadcast, validPublishers, flexibility);
+        Schedule schedule = scheduleAround(broadcast, validPublishers);
 
         if (schedule == null) {
             return;
@@ -103,7 +103,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                 } else if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasFlexibleQualifyingBroadcast(scheduleItem, broadcast)) {
-                    scores.addEquivalent(scheduleItem, Score.valueOf(0.3));
+                    scores.addEquivalent(scheduleItem, Score.valueOf(0.1));
                 }
             }
         }
@@ -202,8 +202,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                 && !transmissionTime.isAfter(transmissionTime2.plus(EXTENDED_END_TIME_FLEXIBILITY));
     }
 
-    private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers,
-            Duration endtimeflexibility) {
+    private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers) {
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);
         DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
         Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());

@@ -2,14 +2,18 @@ package org.atlasapi.equiv.handlers;
 
 import java.math.BigInteger;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
 import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage.AdjacentRef;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -23,6 +27,7 @@ import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.common.primitives.Longs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -36,20 +41,23 @@ public class MessageQueueingResultHandler<T extends Content>
     private final MessageSender<ContentEquivalenceAssertionMessage> sender;
     private final Timestamper stamper;
     private final ImmutableSet<String> sourceKeys;
+    private final LookupEntryStore lookupEntryStore;
     
     private final NumberToShortStringCodec entityIdCodec;
 
     public MessageQueueingResultHandler(
             MessageSender<ContentEquivalenceAssertionMessage> sender,
-            Iterable<Publisher> sources
+            Iterable<Publisher> sources,
+            LookupEntryStore lookupEntryStore
     ) {
-        this(sender, sources, new SystemClock());
+        this(sender, sources, lookupEntryStore, new SystemClock());
     }
 
     @VisibleForTesting
     MessageQueueingResultHandler(
             MessageSender<ContentEquivalenceAssertionMessage> sender,
             Iterable<Publisher> sources,
+            LookupEntryStore lookupEntryStore,
             Timestamper stamper
     ) {
         this.sender = checkNotNull(sender);
@@ -57,6 +65,7 @@ public class MessageQueueingResultHandler<T extends Content>
         this.sourceKeys = StreamSupport.stream(sources.spliterator(), false)
                 .map(Publisher::key)
                 .collect(MoreCollectors.toImmutableSet());
+        this.lookupEntryStore = checkNotNull(lookupEntryStore);
 
         this.entityIdCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
@@ -72,7 +81,7 @@ public class MessageQueueingResultHandler<T extends Content>
                         adjacentRef.toString()
                 );
             }
-            sender.sendMessage(message, message.getEntityId().getBytes());
+            sender.sendMessage(message, getMessagePartitionKey(result.subject()));
         } catch (Exception e) {
             log.error("Failed to send equiv update message: " + result.subject(), e);
         }
@@ -110,5 +119,44 @@ public class MessageQueueingResultHandler<T extends Content>
                     );
                 }
         ));
+    }
+
+    private byte[] getMessagePartitionKey(T subject) {
+        Iterable<LookupEntry> lookupEntries = lookupEntryStore.entriesForIds(
+                ImmutableSet.of(subject.getId())
+        );
+
+        Optional<LookupEntry> lookupEntryOptional = StreamSupport.stream(
+                lookupEntries.spliterator(),
+                false
+        )
+                .findFirst();
+
+        if (lookupEntryOptional.isPresent()) {
+            LookupEntry lookupEntry = lookupEntryOptional.get();
+
+            // Given most of the time the equivalence results do not change the existing graph
+            // (due to the fact that we are often rerunning equivalence on the same items with
+            // the same results) the underlying graph will remain unchanged. Therefore if we get
+            // the smallest lookup entry ID from that graph that ID should be consistent enough
+            // to use as a partition key and ensure updates on the same graph end up on the same
+            // partition.
+            Optional<Long> graphId = ImmutableSet.<LookupRef>builder()
+                    .addAll(lookupEntry.equivalents())
+                    .addAll(lookupEntry.explicitEquivalents())
+                    .addAll(lookupEntry.directEquivalents())
+                    .build()
+                    .stream()
+                    .map(LookupRef::id)
+                    .sorted()
+                    .findFirst();
+
+            if (graphId.isPresent()) {
+                return Longs.toByteArray(graphId.get());
+            }
+        }
+
+        // Default to returning the subject ID as the partition key
+        return Longs.toByteArray(subject.getId());
     }
 }

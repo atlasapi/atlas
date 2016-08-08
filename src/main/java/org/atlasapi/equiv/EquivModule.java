@@ -14,44 +14,6 @@ permissions and limitations under the License. */
 
 package org.atlasapi.equiv;
 
-import static com.google.common.base.Predicates.in;
-import static com.google.common.base.Predicates.not;
-import static org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator.aliasResolvingGenerator;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-import static org.atlasapi.media.entity.Publisher.AMC_EBS;
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
-import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
-import static org.atlasapi.media.entity.Publisher.BETTY;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
-import static org.atlasapi.media.entity.Publisher.BT_VOD;
-import static org.atlasapi.media.entity.Publisher.FACEBOOK;
-import static org.atlasapi.media.entity.Publisher.ITUNES;
-import static org.atlasapi.media.entity.Publisher.LOVEFILM;
-import static org.atlasapi.media.entity.Publisher.NETFLIX;
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.RDIO;
-import static org.atlasapi.media.entity.Publisher.RTE;
-import static org.atlasapi.media.entity.Publisher.SOUNDCLOUD;
-import static org.atlasapi.media.entity.Publisher.SPOTIFY;
-import static org.atlasapi.media.entity.Publisher.TALK_TALK;
-import static org.atlasapi.media.entity.Publisher.VF_AE;
-import static org.atlasapi.media.entity.Publisher.VF_BBC;
-import static org.atlasapi.media.entity.Publisher.VF_C5;
-import static org.atlasapi.media.entity.Publisher.VF_ITV;
-import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
-import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
-import static org.atlasapi.media.entity.Publisher.YOUTUBE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
-
 import java.io.File;
 import java.util.Set;
 
@@ -124,13 +86,11 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.Import;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+
+import com.metabroadcast.common.collect.MoreSets;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.time.DateTimeZones;
 
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
@@ -140,9 +100,51 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.collect.MoreSets;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.time.DateTimeZones;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
+
+import static com.google.common.base.Predicates.in;
+import static com.google.common.base.Predicates.not;
+import static org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator.aliasResolvingGenerator;
+import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
+import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BBC;
+import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
+import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
+import static org.atlasapi.media.entity.Publisher.BETTY;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
+import static org.atlasapi.media.entity.Publisher.BT_VOD;
+import static org.atlasapi.media.entity.Publisher.FACEBOOK;
+import static org.atlasapi.media.entity.Publisher.ITUNES;
+import static org.atlasapi.media.entity.Publisher.LOVEFILM;
+import static org.atlasapi.media.entity.Publisher.NETFLIX;
+import static org.atlasapi.media.entity.Publisher.PA;
+import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
+import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
+import static org.atlasapi.media.entity.Publisher.RDIO;
+import static org.atlasapi.media.entity.Publisher.RTE;
+import static org.atlasapi.media.entity.Publisher.SOUNDCLOUD;
+import static org.atlasapi.media.entity.Publisher.SPOTIFY;
+import static org.atlasapi.media.entity.Publisher.TALK_TALK;
+import static org.atlasapi.media.entity.Publisher.VF_AE;
+import static org.atlasapi.media.entity.Publisher.VF_BBC;
+import static org.atlasapi.media.entity.Publisher.VF_C5;
+import static org.atlasapi.media.entity.Publisher.VF_ITV;
+import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
+import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
+import static org.atlasapi.media.entity.Publisher.YOUTUBE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 
 @Configuration
 @Import({KafkaMessagingModule.class})
@@ -159,7 +161,8 @@ public class EquivModule {
     private @Autowired ChannelResolver channelResolver;
     private @Autowired EquivalenceSummaryStore equivSummaryStore;
     private @Autowired LookupWriter lookupWriter;
-    
+    private @Autowired LookupEntryStore lookupEntryStore;
+
     private @Autowired KafkaMessagingModule messaging;
 
     public @Bean RecentEquivalenceResultStore equivalenceResultStore() {
@@ -172,7 +175,9 @@ public class EquivModule {
             new EpisodeMatchingEquivalenceHandler(contentResolver, equivSummaryStore, lookupWriter, publishers),
             new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
             new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
-            new MessageQueueingResultHandler<Container>(equivAssertDestination(), publishers)
+                MessageQueueingResultHandler.create(
+                    equivAssertDestination(), publishers, lookupEntryStore
+            )
         ));
     }
 
@@ -187,8 +192,9 @@ public class EquivModule {
                 ))
                 .add(new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()))
                 .add(new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore));
-        handlers.add(new MessageQueueingResultHandler<Item>(equivAssertDestination(),
-                acceptablePublishers));
+        handlers.add(MessageQueueingResultHandler.create(
+                equivAssertDestination(), acceptablePublishers, lookupEntryStore
+        ));
         return new BroadcastingEquivalenceResultHandler<Item>(handlers.build());
     }
 
@@ -244,16 +250,18 @@ public class EquivModule {
             .withExcludedUris(excludedUrisFromProperties())
             .withScorers(scorers)
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-            .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
-            .withHandler((EquivalenceResultHandler<Item>) new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
+            .withFilter(this.standardFilter())
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
+            .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.relaxed(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
                     equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
                 new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                new MessageQueueingResultHandler<Item>(equivAssertDestination(), acceptablePublishers)
+                MessageQueueingResultHandler.create(
+                        equivAssertDestination(), acceptablePublishers, lookupEntryStore
+                )
             )));
     }
     
@@ -273,8 +281,8 @@ public class EquivModule {
                 new NullScoreAwareAveragingCombiner<Container>(),
                             TitleMatchingContainerScorer.NAME
             ))
-            .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Container>moreThanPercent(90))
+            .withFilter(this.standardFilter())
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
             .withHandler(containerResultHandlers(publishers))
             .build();
     }
@@ -328,8 +336,8 @@ public class EquivModule {
 
         updaters.register(RADIO_TIMES, SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES)
                 .withItemUpdater(rtItemEquivalenceUpdater())
-                .withTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
 
         registerYouViewUpdaterForPublisher(
@@ -367,28 +375,28 @@ public class EquivModule {
         updaters.register(BBC_REDUX, SourceSpecificEquivalenceUpdater.builder(BBC_REDUX)
                 .withItemUpdater(broadcastItemEquivalenceUpdater(reduxPublishers, Score.nullScore(), Predicates.alwaysTrue()))
                 .withTopLevelContainerUpdater(broadcastItemContainerEquivalenceUpdater(reduxPublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
         
         updaters.register(BETTY, SourceSpecificEquivalenceUpdater.builder(BETTY)
                 .withItemUpdater(aliasIdentifiedBroadcastItemEquivalenceUpdater(ImmutableSet.of(
                         BETTY,
                         YOUVIEW)))
-                .withTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
         
         Set<Publisher> facebookAcceptablePublishers = Sets.union(acceptablePublishers, ImmutableSet.of(FACEBOOK));
         updaters.register(FACEBOOK, SourceSpecificEquivalenceUpdater.builder(FACEBOOK)
-                .withItemUpdater(NullEquivalenceUpdater.<Item>get())
+                .withItemUpdater(NullEquivalenceUpdater.get())
                 .withTopLevelContainerUpdater( facebookContainerEquivalenceUpdater(facebookAcceptablePublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
 
         updaters.register(ITUNES, SourceSpecificEquivalenceUpdater.builder(ITUNES)
                 .withItemUpdater(vodItemUpdater(acceptablePublishers).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(acceptablePublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
 
         Set<Publisher> lfPublishers = Sets.union(acceptablePublishers, ImmutableSet.of(LOVEFILM));
@@ -396,28 +404,28 @@ public class EquivModule {
                 .withItemUpdater(vodItemUpdater(lfPublishers)
                         .withScorer(new SeriesSequenceItemScorer()).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(lfPublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
         
         Set<Publisher> netflixPublishers = ImmutableSet.of(BBC, NETFLIX);
         updaters.register(NETFLIX, SourceSpecificEquivalenceUpdater.builder(NETFLIX)
                 .withItemUpdater(vodItemUpdater(netflixPublishers).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(netflixPublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
         
         Set<Publisher> amazonUnboxPublishers = ImmutableSet.of(AMAZON_UNBOX, PA);
         updaters.register(AMAZON_UNBOX, SourceSpecificEquivalenceUpdater.builder(AMAZON_UNBOX)
                 .withItemUpdater(vodItemUpdater(amazonUnboxPublishers).build())
                 .withTopLevelContainerUpdater(vodContainerUpdater(amazonUnboxPublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
 
         Set<Publisher> rtePublishers = ImmutableSet.of(PA);
         updaters.register(RTE, SourceSpecificEquivalenceUpdater.builder(RTE)
                 .withTopLevelContainerUpdater(vodContainerUpdater(rtePublishers))
-                .withItemUpdater(NullEquivalenceUpdater.<Item>get())
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withItemUpdater(NullEquivalenceUpdater.get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
         
         updaters.register(TALK_TALK, SourceSpecificEquivalenceUpdater.builder(TALK_TALK)
@@ -461,7 +469,7 @@ public class EquivModule {
             ).withScorer(new CrewMemberScorer(new SongCrewMemberExtractor()))
                 .withExcludedUris(excludedUrisFromProperties())
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-            .withFilter(AlwaysTrueFilter.<Item>get())
+            .withFilter(AlwaysTrueFilter.get())
             .withExtractor(new MusicEquivalenceExtractor())
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.relaxed(
@@ -476,8 +484,8 @@ public class EquivModule {
         for (Publisher publisher : musicPublishers) {
             updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
                     .withItemUpdater(muiscPublisherUpdater)
-                    .withTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
-                    .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                    .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                    .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                     .build());
         }
         
@@ -497,7 +505,7 @@ public class EquivModule {
         updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
                 .withItemUpdater(broadcastItemEquivalenceUpdater(matchTo, Score.negativeOne(), YOUVIEW_BROADCAST_FILTER))
                 .withTopLevelContainerUpdater(broadcastItemContainerEquivalenceUpdater(matchTo))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
         
     }
@@ -509,10 +517,10 @@ public class EquivModule {
             .withGenerator(new ContainerCandidatesContainerEquivalenceGenerator(contentResolver, equivSummaryStore))
             .withScorer(new SequenceContainerScorer())
             .withCombiner(new NullScoreAwareAveragingCombiner<Container>())
-            .withFilter(this.<Container>standardFilter(ImmutableList.<EquivalenceFilter<Container>>of(
+            .withFilter(this.standardFilter(ImmutableList.of(
                 new ContainerHierarchyFilter()
             )))
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
+            .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
             .withHandler(new BroadcastingEquivalenceResultHandler<Container>(ImmutableList.of(
                 new LookupWritingEquivalenceHandler<Container>(lookupWriter, acceptablePublishers),
                 new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
@@ -538,8 +546,8 @@ public class EquivModule {
                             new NullScoreAwareAveragingCombiner<Item>(),
                             TitleMatchingItemScorer.NAME
                         ))
-                        .withFilter(this.<Item>standardFilter())
-                        .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
+                        .withFilter(this.standardFilter())
+                        .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
                         .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                             EpisodeFilteringEquivalenceResultHandler.strict(
                                 new LookupWritingEquivalenceHandler<Item>(lookupWriter, roviMatchPublishers),
@@ -548,7 +556,7 @@ public class EquivModule {
                             new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
                             new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
                         ))).build())
-            .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.<Container>get())
+            .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
             .withTopLevelContainerUpdater(topLevelContainerUpdater(roviMatchPublishers))
             .build();
         return roviUpdater;
@@ -561,13 +569,13 @@ public class EquivModule {
                     TitleSearchGenerator.create(searchResolver, Container.class, facebookAcceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                     aliasResolvingGenerator(contentResolver, Container.class)
             ))
-            .withScorers(ImmutableSet.<EquivalenceScorer<Container>> of())
-            .withCombiner(NullScoreAwareAveragingCombiner.<Container> get())
+            .withScorers(ImmutableSet.of())
+            .withCombiner(NullScoreAwareAveragingCombiner.get())
             .withFilter(ConjunctiveFilter.valueOf(ImmutableList.of(
                 new MinimumScoreFilter<Container>(0.2),
                 new SpecializationFilter<Container>()
             )))
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
+            .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
             .withHandler(containerResultHandlers(facebookAcceptablePublishers))
             .build();
     }
@@ -590,8 +598,8 @@ public class EquivModule {
                 TitleMatchingContainerScorer.NAME,
                 ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
             )
-            .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
+            .withFilter(this.standardFilter())
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
             .withHandler(containerResultHandlers(acceptablePublishers))
             .build();
     }
@@ -613,8 +621,8 @@ public class EquivModule {
                         new NullScoreAwareAveragingCombiner<Container>(),
                         TitleMatchingContainerScorer.NAME)
                 )
-                .withFilter(this.<Container>standardFilter())
-                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Container> atLeastNTimesGreater(1.5))
+                .withFilter(this.standardFilter())
+                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
                 .withHandler(containerResultHandlers(acceptablePublishers))
                 .build();
     }
@@ -634,8 +642,8 @@ public class EquivModule {
                 new NullScoreAwareAveragingCombiner<Item>(),
                 TitleMatchingItemScorer.NAME
             ))
-            .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
+            .withFilter(this.standardFilter())
+            .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.strict(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
@@ -665,8 +673,8 @@ public class EquivModule {
                 new NullScoreAwareAveragingCombiner<Item>(),
                 ImmutableSet.of(TitleMatchingItemScorer.NAME, SequenceItemScorer.SEQUENCE_SCORER)
             ))
-            .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item> atLeastNTimesGreater(1.5))
+            .withFilter(this.standardFilter())
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.strict(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
@@ -688,10 +696,10 @@ public class EquivModule {
             .withCombiner(new RequiredScoreFilteringCombiner<Container>(
                 new NullScoreAwareAveragingCombiner<Container>(),
                     TitleMatchingContainerScorer.NAME))
-            .withFilter(this.<Container>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Container> moreThanPercent(90))
+            .withFilter(this.standardFilter())
+            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
             .withHandler(containerResultHandlers(sources))
-
+            
             .build();
     }
 
@@ -716,7 +724,7 @@ public class EquivModule {
                         Predicates.alwaysTrue()))
                 .withScorer(new BroadcastAliasScorer(Score.negativeOne()))
                 .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-                .withFilter(AlwaysTrueFilter.<Item>get())
+                .withFilter(AlwaysTrueFilter.get())
                 .withExtractor(new PercentThresholdEquivalenceExtractor<Item>(0.95))
                 .withHandler(itemResultHandlers(sources))
                 .build();
@@ -729,10 +737,10 @@ public class EquivModule {
                 new RadioTimesFilmEquivalenceGenerator(contentResolver),
                 new FilmEquivalenceGenerator(searchResolver, ImmutableSet.of(Publisher.PREVIEW_NETWORKS), false)
             ))
-            .withScorers(ImmutableSet.<EquivalenceScorer<Item>> of())
+            .withScorers(ImmutableSet.of())
             .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-            .withFilter(this.<Item>standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.<Item> moreThanPercent(90))
+            .withFilter(this.standardFilter())
+            .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                 EpisodeFilteringEquivalenceResultHandler.relaxed(
                     new LookupWritingEquivalenceHandler<Item>(lookupWriter, 

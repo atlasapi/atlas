@@ -12,7 +12,7 @@
     You should have received a copy of the GNU General Public License
     along with this program.  If not, see <http://www.gnu.org/licenses/>. 
  */
-package org.atlasapi.equiv.scorers;
+package org.atlasapi.equiv.scorers.proposed;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;

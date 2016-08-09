@@ -8,6 +8,7 @@ import java.util.Map;
 import org.atlasapi.equiv.results.persistence.CombinedEquivalenceScore;
 import org.atlasapi.equiv.results.persistence.StoredEquivalenceResult;
 
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Table;
 import org.apache.commons.csv.CSVFormat;
 import org.apache.commons.csv.CSVPrinter;
@@ -24,7 +25,7 @@ public class EquivResultsReader {
 
     public void visualiseData() throws Exception {
         String filename = "output/" + titleAddOn + "_" +
-                result.id().replaceAll("[^a-zA-Z0-9.-]", "") + ".txt";
+                result.id().replaceAll("[^a-zA-Z0-9.-]", "") + ".csv";
         CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
 
         FileWriter writer = new FileWriter(filename);
@@ -32,34 +33,75 @@ public class EquivResultsReader {
 
         List<String> resultInfo = new LinkedList<>();
         resultInfo.add("ID: " + result.id());
-        resultInfo.add("title" + result.title());
+        resultInfo.add("Title: " + result.title());
         printer.printRecord(resultInfo);
 
 
 
         Table<String, String, Double> table = result.sourceResults();
-        printer.printRecord(table.toString());
-        for (String tableKey: table.columnKeySet()) {
-            Map<String, Double> row = table.row(tableKey);
-            for (String rowKey: row.keySet()) {
-                List<String> rowList = new LinkedList<>();
-                rowList.add("row key: " + rowKey);
-                rowList.add("row Contents: " + row.get(rowKey));
-                rowList.add("table list: " + tableKey);
-                printer.printRecord(rowList);
-            }
+//        printer.printRecord(table.toString());
+
+        printer.printRecord("---------------");
+        printer.printRecord("result.sourceResults() table: ");
+        printer.printRecord("---------------");
+        List<String> columnIndex = new LinkedList<>();
+
+        for (String rowKey: table.rowKeySet()) {
+            columnIndex.add("rowkey: " + rowKey);
         }
+        printer.printRecord(columnIndex);
+        for (String columnKey: table.columnKeySet()) {
+            List<String> cellList = new LinkedList<>();
+            for (String rowKey: table.rowKeySet()) {
+                if (table.get(rowKey, columnKey) != null) {
+                    cellList.add(table.get(rowKey, columnKey).toString());
+                }
+
+
+            }
+            printer.printRecord(cellList);
+        }
+        printer.printRecord("---------------");
+        for (String columnKey: table.columnKeySet()) {
+            printer.printRecord(columnKey);
+        }
+
+//        for (String tableKey: table.columnKeySet()) {
+//            Map<String, Double> row = table.row(tableKey);
+//            for (String rowKey: row.keySet()) {
+//                List<String> rowList = new LinkedList<>();
+//                rowList.add("row key: " + rowKey);
+//                rowList.add("row Contents: " + row.get(rowKey));
+//                rowList.add("table list: " + tableKey);
+//                printer.printRecord(rowList);
+//            }
+//        }
+
+        printer.printRecord("---------------");
+        printer.printRecord("result.combinedResults() :");
+        printer.printRecord("---------------");
+        List<String> titleList = new LinkedList<>();
+        titleList.add("title");
+        titleList.add("score");
+        titleList.add("publisher");
+        titleList.add("result title");
+        titleList.add("strong");
+        titleList.add("id");
+        printer.printRecord(titleList);
 
         for (CombinedEquivalenceScore combinedEquivalenceScore: result.combinedResults()) {
             List<String> record = new LinkedList<>();
-            record.add("title: " + combinedEquivalenceScore.title());
-            record.add("score: " + combinedEquivalenceScore.score());
-            record.add("publisher: " + combinedEquivalenceScore.publisher());
-            record.add("result title: " + result.title());
-            record.add("result description" + result.description());
+            record.add(combinedEquivalenceScore.title());
+            record.add(combinedEquivalenceScore.score().toString());
+            record.add(combinedEquivalenceScore.publisher());
+            record.add(result.title()); //just the title of the result being checked for equiv
+            record.add(combinedEquivalenceScore.strong()?"true":"false");
+            record.add(combinedEquivalenceScore.id());
+
 
             printer.printRecord(record);
         }
+        printer.printRecord("---------------");
 
         writer.flush();
         writer.close();

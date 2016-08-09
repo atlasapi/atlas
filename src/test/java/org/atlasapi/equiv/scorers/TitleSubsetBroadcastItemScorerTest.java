@@ -12,6 +12,7 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.testing.StubContentResolver;
 
+import com.sun.javafx.scene.control.behavior.ScrollBarBehavior;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
@@ -81,6 +82,46 @@ public class TitleSubsetBroadcastItemScorerTest {
     @Test
     public void testPlurals() {
         assertEquals(Score.ONE, score(itemWithTitle("Motives and Murder"), itemWithTitle("Motives and Murders")));
+    }
+
+    @Test
+    public void testPunctuation() {
+        assertEquals(Score.ONE, score(itemWithTitle("Mr. Robot"), itemWithTitle("Mr Robot")));
+    }
+
+    @Test
+    public void testAcronyms() {
+        assertEquals(Score.ONE, score(itemWithTitle("Title (US)"), itemWithTitle("Title (U.S.A)")));
+    }
+
+    @Test
+    public void testDescriptionMatching() {
+        Item item1 = itemWithTitle("something");
+        Item item2 = itemWithTitle("s else");
+        item1.setLongDescription("Suicide Squad is a film about several evil villains from DC Comics that get sent off to fight an impossible scenario");
+        item2.setLongDescription("the new Comics hit film Suicide Squad is about DC villains sent off to fight a battle to the death");
+
+        assertEquals(Score.ONE, score(item1, item2));
+    }
+
+    @Test
+    public void testDescriptionMatching2() {
+        Item item1 = itemWithTitle("something");
+        Item item2 = itemWithTitle("s else");
+        item1.setLongDescription("Suicide Squad is a film about several evil villains from DC Comics that get sent off to fight an impossible scenario");
+        item2.setLongDescription("The new Comics hit film Suicide Squad is about DC Villains sent off to fight a battle to the Death");
+
+        assertEquals(Score.ONE, score(item1, item2));
+    }
+
+    @Test
+    public void testDescriptionMatching3() {
+        Item item1 = itemWithTitle("something");
+        Item item2 = itemWithTitle("s else");
+        item1.setLongDescription("suicide squad Is a film about Several evil villains From DC Comics that get sent off to fight an impossible scenario");
+        item2.setLongDescription("The new Comics hit film Suicide Squad is about DC Villains sent off to fight a battle to the Death");
+
+        assertEquals(Score.nullScore(), score(item1, item2));
     }
 
     private Score score(Item subject, Item candidate) {

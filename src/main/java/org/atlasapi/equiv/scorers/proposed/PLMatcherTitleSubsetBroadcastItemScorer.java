@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.scorers;
+package org.atlasapi.equiv.scorers.proposed;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -8,6 +8,7 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.BaseBroadcastItemScorer;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;

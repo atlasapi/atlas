@@ -2,8 +2,12 @@ package org.atlasapi.equiv.scorers;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import javax.annotation.Nullable;
 
@@ -235,6 +239,10 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
             desc.appendText("%s scores %s through subject",  uriAndTitle(candidate), Score.ONE); 
             return Score.ONE;
         }
+
+        if (descriptionMatch(subject, candidate)) {
+            return Score.ONE;
+        }
         
         if (subjectContainer.isPresent()
                 && subjectContainerAndCandidateMatch(subjectContainer.get(), candidate)) {
@@ -259,6 +267,29 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
     
     private String uriAndTitle(Content c) {
         return String.format("'%s' (%s)", c.getTitle(), c.getCanonicalUri());
+    }
+
+    private Boolean descriptionMatch(Item subject, Item candidate) {
+        if (subject.getLongDescription() == null || candidate.getLongDescription() == null || subject.getLongDescription().isEmpty() || candidate.getLongDescription().isEmpty()) {
+            return false;
+        }
+
+        Pattern pattern = Pattern.compile("\\b([A-Z]\\w*)\\b");
+        Matcher subjectMatcher = pattern.matcher(subject.getLongDescription());
+        Matcher candidateMatcher = pattern.matcher(candidate.getLongDescription());
+        List<String> subjectList = new LinkedList<>();
+        List<String> candidateList = new LinkedList<>();
+        while (subjectMatcher.find()) {
+            subjectList.add(subjectMatcher.group(1));
+        }
+        while (candidateMatcher.find()) {
+            candidateList.add(candidateMatcher.group(1));
+        }
+        // check if the average size of capitalised words is less than
+        // the words found in both descriptions
+        double averageSize = (subjectList.size() + candidateList.size()) / 2;
+        subjectList.retainAll(candidateList);
+        return (subjectList.size() * 1.4) > averageSize;
     }
     
     /**

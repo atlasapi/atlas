@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.scorers;
+package org.atlasapi.equiv.scorers.proposed;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -7,6 +7,7 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.BaseBroadcastItemScorer;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
@@ -34,7 +35,7 @@ import com.google.common.collect.Sets;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class PL1TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class PunctuationTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -70,7 +71,7 @@ public final class PL1TitleSubsetBroadcastItemScorer extends BaseBroadcastItemSc
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public PL1TitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public PunctuationTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
@@ -113,7 +114,7 @@ public final class PL1TitleSubsetBroadcastItemScorer extends BaseBroadcastItemSc
 
     private String sanitize(String title) {
         return titleTransformer.expand(title)
-                .replaceAll("[^\\d\\w\\s]", "").toLowerCase();
+                .replaceAll("[^a-zA-Z ]", "").toLowerCase();
     }
 
     private Set<String> filterCommon(Set<String> words) {
@@ -125,17 +126,11 @@ public final class PL1TitleSubsetBroadcastItemScorer extends BaseBroadcastItemSc
     }
 
     private double percentOfShorterInLonger(Set<String> shorter, Set<String> longer) {
-        int contained = Sets.intersection(pluralChecker(shorter), pluralChecker(longer)).size();
+        int contained = Sets.intersection(shorter, longer).size();
         return (contained * 1.0) / shorter.size();
     }
 
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
-    }
-
-    private ImmutableSet<String> pluralChecker(Set<String> words) {
-        return words.stream()
-                .map(word -> word.endsWith("s") ? word : word + "s")
-                .collect(MoreCollectors.toImmutableSet());
     }
 }

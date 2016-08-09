@@ -1,18 +1,18 @@
-package org.atlasapi.equiv.scorers;
+package org.atlasapi.equiv.scorers.proposed;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.BaseBroadcastItemScorer;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
-
-import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
@@ -22,7 +22,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import org.apache.commons.lang.StringUtils;
 
 /**
  * <p>
@@ -35,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -71,7 +70,7 @@ public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcast
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public LDistanceTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public PLStemmingTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
@@ -107,20 +106,18 @@ public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcast
         String sanitizedCandidateTitle = sanitize(candidate.getTitle());
         Set<String> subjectWords = filterCommon(titleWords(sanitizedSubjectTitle));
         Set<String> candidateWords = filterCommon(titleWords(sanitizedCandidateTitle));
-        double lDistance = (double) StringUtils.getLevenshteinDistance(
-                subjectWords.toString(),
-                candidateWords.toString());
-        double maxTitleSize = (double) returnLargestStringSize(sanitizedSubjectTitle, sanitizedCandidateTitle);
-        return (lDistance / maxTitleSize) * 100 >= threshold;
+
+        Set<String> stemmedSubjectWords = stem(subjectWords);
+        Set<String> stemmedCandidateWords = stem(candidateWords);
+
+        Set<String> shorter = collectionSize.min(stemmedSubjectWords, stemmedCandidateWords);
+        Set<String> longer = collectionSize.max(stemmedCandidateWords, stemmedSubjectWords);
+        return percentOfShorterInLonger(shorter, longer) >= threshold;
     }
 
     private String sanitize(String title) {
         return titleTransformer.expand(title)
                 .replaceAll("[^\\d\\w\\s]", "").toLowerCase();
-    }
-
-    private int returnLargestStringSize(String stringOne, String stringTwo) {
-        return stringOne.length() > stringTwo.length() ? stringOne.length() : stringTwo.length();
     }
 
     private Set<String> filterCommon(Set<String> words) {
@@ -139,4 +136,16 @@ public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcast
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
     }
+
+    private Set<String> stem(Set<String> words) {
+        Stemmer stemmer = new Stemmer();
+        Set<String> stemmedWords = new HashSet<String>();
+        for (String word: words) {
+            stemmer.add(word);
+            stemmedWords.add(stemmer.stem());
+            stemmer.clear();
+        }
+        return stemmedWords;
+    }
+
 }

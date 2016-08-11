@@ -3,7 +3,11 @@ package org.atlasapi.equiv.scorers.proposed;
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.scores.Score;
@@ -35,7 +39,7 @@ import com.google.common.collect.Sets;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class PL1TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class DescriptionTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -71,7 +75,7 @@ public final class PL1TitleSubsetBroadcastItemScorer extends BaseBroadcastItemSc
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public PL1TitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public DescriptionTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
@@ -126,20 +130,34 @@ public final class PL1TitleSubsetBroadcastItemScorer extends BaseBroadcastItemSc
     }
 
     private double percentOfShorterInLonger(Set<String> shorter, Set<String> longer) {
-        int contained = Sets.intersection(pluralChecker(shorter), pluralChecker(longer)).size();
+        int contained = Sets.intersection(shorter, longer).size();
         return (contained * 1.0) / shorter.size();
+    }
+
+    protected boolean descriptionMatch(Item subject, Item candidate) {
+        if (subject.getLongDescription() == null || candidate.getLongDescription() == null || subject.getLongDescription().isEmpty() || candidate.getLongDescription().isEmpty()) {
+            return false;
+        }
+
+        Pattern pattern = Pattern.compile("\\b([A-Z]\\w*)\\b");
+        Matcher subjectMatcher = pattern.matcher(subject.getLongDescription());
+        Matcher candidateMatcher = pattern.matcher(candidate.getLongDescription());
+        List<String> subjectList = new LinkedList<>();
+        List<String> candidateList = new LinkedList<>();
+        while (subjectMatcher.find()) {
+            subjectList.add(subjectMatcher.group(1));
+        }
+        while (candidateMatcher.find()) {
+            candidateList.add(candidateMatcher.group(1));
+        }
+        // check if the average size of capitalised words is less than
+        // the words found in both descriptions
+        double averageSize = (subjectList.size() + candidateList.size()) / 2;
+        subjectList.retainAll(candidateList);
+        return (subjectList.size() * 1.4) > averageSize;
     }
 
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
     }
-
-    private ImmutableSet<String> pluralChecker(Set<String> words) {
-        return words.stream()
-                .map(word -> word.endsWith("s") ? word : word + "s")
-                .collect(MoreCollectors.toImmutableSet());
-    }
-
-    protected boolean descriptionMatch(Item subject, Item candidate){ return false; }
-
 }

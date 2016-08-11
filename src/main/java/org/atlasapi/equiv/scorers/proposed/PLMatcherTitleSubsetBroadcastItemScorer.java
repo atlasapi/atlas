@@ -148,4 +148,7 @@ public final class PLMatcherTitleSubsetBroadcastItemScorer extends BaseBroadcast
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
     }
+
+    protected boolean descriptionMatch(Item subject, Item candidate){ return false; }
+
 }

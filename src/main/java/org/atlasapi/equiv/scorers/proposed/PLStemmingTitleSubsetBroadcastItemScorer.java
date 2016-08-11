@@ -148,4 +148,6 @@ public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcas
         return stemmedWords;
     }
 
+    protected boolean descriptionMatch(Item subject, Item candidate){ return false; }
+
 }

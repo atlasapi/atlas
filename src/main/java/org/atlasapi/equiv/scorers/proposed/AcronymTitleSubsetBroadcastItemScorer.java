@@ -134,6 +134,8 @@ public final class AcronymTitleSubsetBroadcastItemScorer extends BaseBroadcastIt
         return (contained * 1.0) / shorter.size();
     }
 
+    protected boolean descriptionMatch(Item subject, Item candidate){ return false; }
+
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
     }

@@ -19,16 +19,12 @@ import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.BaseBroadcastItemScorer;
-import org.atlasapi.equiv.scorers.BroadcastAliasScorer;
-import org.atlasapi.equiv.scorers.EquivalenceScorer;
+import org.atlasapi.equiv.scorers.*;
 import org.atlasapi.equiv.scorers.proposed.LDistanceTitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.scorers.proposed.PL1TitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.scorers.proposed.PLMatcherTitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.scorers.proposed.PLStemmingTitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.scorers.SequenceItemScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
-import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
+import org.atlasapi.equiv.scorers.proposed.DescriptionTitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -109,6 +105,7 @@ import com.netflix.astyanax.thrift.ThriftFamilyFactory;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
+import static java.lang.Enum.valueOf;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.mockito.Mockito.mock;
 
@@ -237,10 +234,15 @@ public class EquivModuleTest {
         runTest(new TitleSubsetBroadcastItemScorer(contentResolver, Score.negativeOne(), 80/*percent*/), "Original");
     }
 
+    @Test
+    public void testDescription() throws Exception {
+        runTest(new DescriptionTitleSubsetBroadcastItemScorer(contentResolver, Score.negativeOne(), 80/*percent*/), "Description");
+    }
+
 
     public void runTest(BaseBroadcastItemScorer baseScorer, String titleAddOn) throws Exception {
         EquivalenceUpdater<Item> equivalenceUpdater = broadcastItemEquivalenceUpdater(
-                ImmutableSet.of(Publisher.PA, Publisher.YOUVIEW), //TODO ADD A TARGET
+                ImmutableSet.of(Publisher.PA, Publisher.YOUVIEW, Publisher.BBC_NITRO), //TODO ADD A TARGET
                 Score.negativeOne(),
                 YOUVIEW_BROADCAST_FILTER,
                 baseScorer,
@@ -323,47 +325,62 @@ public class EquivModuleTest {
 
     private List<String> getContentList() {
         List<String> contentList = new LinkedList<String>();
-//        contentList.add("http://youview.com/programmecrid/20160729/movies4men.co.uk/E2713312"); //no title but same description
-//        contentList.add("http://youview.com/programmecrid/20160729/movies4men.co.uk/E2707926"); //no title but same description
-//        contentList.add("http://youview.com/programmecrid/20160716/movies4men.co.uk/E1913523"); //no title but same description
-//        //Similar spelling/ american spelling
-//        contentList.add("http://radiotimes.com/films/53183");
-//        contentList.add("http://youview.com/scheduleevent/33031768");
-//        //mismatches in search
-//        //further language changes
-//        contentList.add("http://itv.com/1046766");
-//        contentList.add("http://youview.com/programmecrid/20151215/fp.bbc.co.uk/A7ETND");
-//        contentList.add("http://youview.com/scheduleevent/32911802");
-//        contentList.add("https://pdb.five.tv/internal/watchables/C5155250122");
-//        contentList.add("http://youview.com/programmecrid/20150716/fp.bbc.co.uk/AX01S1");
-//        contentList.add("http://youview.com/scheduleevent/33114169");
-//        contentList.add("http://youview.com/scheduleevent/33729396");
-//        contentList.add("http://youview.com/scheduleevent/17319225");
-//
-//
-//        contentList.add("http://youview.com/scheduleevent/17813416");
-//        contentList.add("http://youview.com/programmecrid/20151113/fp.bbc.co.uk/DBYGGX");
-//        //contentList.add("http://bt.youview.com/programmecrid/20160725/bds.tv/138153538"); // motives and murder - wrong type
-//
-//        contentList.add("http://youview.com/programmecrid/20160606/www.channel4.com/52096/019");
-//        contentList.add("http://youview.com/programmecrid/20160720/www.channel4.com/48467/023");
-//        contentList.add("http://youview.com/programmecrid/20160708/www.channel4.com/48467/008");
-//        contentList.add("http://g.bbcredux.com/programme/6062016485369359592");
-//        contentList.add("http://youview.com/programmecrid/20160708/www.channel4.com/48467/009");
-//        contentList.add("http://g.bbcredux.com/programme/6088332608985424265");
+        contentList.add("http://youview.com/programmecrid/20160729/movies4men.co.uk/E2713312"); //no title but same description
+        contentList.add("http://youview.com/programmecrid/20160729/movies4men.co.uk/E2707926"); //no title but same description
+        contentList.add("http://youview.com/programmecrid/20160716/movies4men.co.uk/E1913523"); //no title but same description
+        //Similar spelling/ american spelling
+        contentList.add("http://radiotimes.com/films/53183");
+        contentList.add("http://youview.com/scheduleevent/33031768");
+        //mismatches in search
+        //further language changes
+        contentList.add("http://itv.com/1046766");
+        contentList.add("http://youview.com/programmecrid/20151215/fp.bbc.co.uk/A7ETND");
+        contentList.add("http://youview.com/scheduleevent/32911802");
+        contentList.add("https://pdb.five.tv/internal/watchables/C5155250122");
+        contentList.add("http://youview.com/programmecrid/20150716/fp.bbc.co.uk/AX01S1");
+        contentList.add("http://youview.com/scheduleevent/33114169");
+        contentList.add("http://youview.com/scheduleevent/33729396");
+        contentList.add("http://youview.com/scheduleevent/17319225");
+
+
+        contentList.add("http://youview.com/scheduleevent/17813416");
+        contentList.add("http://youview.com/programmecrid/20151113/fp.bbc.co.uk/DBYGGX");
+        //contentList.add("http://bt.youview.com/programmecrid/20160725/bds.tv/138153538"); // motives and murder - wrong type
+
+        contentList.add("http://youview.com/programmecrid/20160606/www.channel4.com/52096/019");
+        contentList.add("http://youview.com/programmecrid/20160720/www.channel4.com/48467/023");
+        contentList.add("http://youview.com/programmecrid/20160708/www.channel4.com/48467/008");
+        contentList.add("http://g.bbcredux.com/programme/6062016485369359592");
+        contentList.add("http://youview.com/programmecrid/20160708/www.channel4.com/48467/009");
+        contentList.add("http://g.bbcredux.com/programme/6088332608985424265");
         contentList.add("http://youview.com/programmecrid/20160306/www.channel4.com/39876/043"); // come die with me? misspelling worth checking equiv accuracy
 //
 //
 //        // No Broadcasts
-//        contentList.add("http://priorities.metabroadcast.com/d877js");
-//        contentList.add("http://unbox.amazon.co.uk/B00HV8XEUW");
-//        contentList.add("http://itunes.apple.com/video/id473589343");
-//        contentList.add("http://itunes.apple.com/video/id943873419");
-//        contentList.add("http://vod.bt.com/items/BBJ819052A");
-//        contentList.add("http://p06.pmlsc.channel4.com/pmlsd/39876/025");
+        contentList.add("http://priorities.metabroadcast.com/d877js");
+        contentList.add("http://unbox.amazon.co.uk/B00HV8XEUW");
+        contentList.add("http://itunes.apple.com/video/id473589343");
+        contentList.add("http://itunes.apple.com/video/id943873419");
+        contentList.add("http://vod.bt.com/items/BBJ819052A");
+        contentList.add("http://p06.pmlsc.channel4.com/pmlsd/39876/025");
 
 
         //count = 28
+
+
+        contentList.add("http://youview.com/scheduleevent/33858911");
+        contentList.add("http://youview.com/scheduleevent/33786584");
+        contentList.add("http://youview.com/scheduleevent/33902443");
+        contentList.add("http://youview.com/scheduleevent/33786579");
+        contentList.add("http://youview.com/scheduleevent/33786583");
+        contentList.add("http://youview.com/scheduleevent/33786583");
+        contentList.add("http://youview.com/scheduleevent/33884514");
+        contentList.add("http://youview.com/scheduleevent/33902507");
+        contentList.add("http://youview.com/scheduleevent/33902504");
+        contentList.add("http://youview.com/scheduleevent/33786396");
+        contentList.add("http://youview.com/scheduleevent/33902333");
+        contentList.add("http://youview.com/scheduleevent/33902331");
+
 
 
 

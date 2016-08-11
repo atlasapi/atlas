@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.analytics;
 
 import java.io.FileWriter;
+import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -24,12 +25,25 @@ public class EquivResultsReader {
     }
 
     public void visualiseData() throws Exception {
-        String filename = "output/" + titleAddOn + "_" +
-                result.id().replaceAll("[^a-zA-Z0-9.-]", "") + ".csv";
+        String filename = "output/" +
+                result.id().replaceAll("[^a-zA-Z0-9]", "") + "_" + titleAddOn + ".csv";
         CSVFormat csvFileFormat = CSVFormat.DEFAULT.withRecordSeparator("\n");
 
         FileWriter writer = new FileWriter(filename);
         CSVPrinter printer = new CSVPrinter(writer, csvFileFormat);
+
+        List<CombinedEquivalenceScore> candidateList = new LinkedList<>();
+        int strong = 0;
+        for (CombinedEquivalenceScore combinedEquivalenceScore: result.combinedResults()) {
+            candidateList.add(combinedEquivalenceScore);
+            if (combinedEquivalenceScore.strong()) {
+                strong++;
+            }
+        }
+        printer.printRecord("candidates:" + candidateList.size());
+        printer.printRecord("strong:" + strong);
+
+
 
         List<String> resultInfo = new LinkedList<>();
         resultInfo.add("ID: " + result.id());
@@ -80,21 +94,13 @@ public class EquivResultsReader {
         printer.printRecord("---------------");
         printer.printRecord("result.combinedResults() :");
         printer.printRecord("---------------");
-        List<String> titleList = new LinkedList<>();
-        titleList.add("title");
-        titleList.add("score");
-        titleList.add("publisher");
-        titleList.add("result title");
-        titleList.add("strong");
-        titleList.add("id");
-        printer.printRecord(titleList);
+        printer.printRecord(Arrays.asList("title", "combined score", "publisher", "strong", "id"));
 
         for (CombinedEquivalenceScore combinedEquivalenceScore: result.combinedResults()) {
             List<String> record = new LinkedList<>();
             record.add(combinedEquivalenceScore.title());
             record.add(combinedEquivalenceScore.score().toString());
             record.add(combinedEquivalenceScore.publisher());
-            record.add(result.title()); //just the title of the result being checked for equiv
             record.add(combinedEquivalenceScore.strong()?"true":"false");
             record.add(combinedEquivalenceScore.id());
 

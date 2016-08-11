@@ -28,6 +28,7 @@ import org.atlasapi.equiv.generators.ScalingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.SongTitleTransform;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
+import org.atlasapi.equiv.handlers.ColumbusTelescopeReportHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeMatchingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
@@ -195,6 +196,7 @@ public class EquivModule {
         handlers.add(MessageQueueingResultHandler.create(
                 equivAssertDestination(), acceptablePublishers, lookupEntryStore
         ));
+        handlers.add(new ColumbusTelescopeReportHandler<Item>());
         return new BroadcastingEquivalenceResultHandler<Item>(handlers.build());
     }
 

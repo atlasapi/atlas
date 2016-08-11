@@ -67,8 +67,6 @@ public class EquivalenceResultBuilderTest {
                 Publisher.BBC, ScoredCandidate.valueOf(bbcItem, Score.valueOf(10.0)),
                 Publisher.C4, ScoredCandidate.valueOf(c4Item, Score.valueOf(10.0))
         ), strongEquivalences);
-        
-        
     }
 
 }

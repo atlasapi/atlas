@@ -45,8 +45,6 @@ public class TopicWriteController {
 
     private static final Logger log = LoggerFactory.getLogger(TopicWriteController.class);
 
-    public static final String STRICT = "strict";
-
     private final ApplicationConfigurationFetcher appConfigFetcher;
     private final TopicStore store;
     private final ModelReader reader;
@@ -54,6 +52,7 @@ public class TopicWriteController {
 
     private ModelTransformer<org.atlasapi.media.entity.simple.Topic, Topic> transformer;
     private AtlasModelWriter<Iterable<Topic>> outputter;
+    private static final String STRICT = "strict";
 
     public TopicWriteController(ApplicationConfigurationFetcher appConfigFetcher, TopicStore store,
             ModelReader reader,
@@ -68,7 +67,6 @@ public class TopicWriteController {
 
     @RequestMapping(value = "/3.0/topics.json", method = RequestMethod.POST)
     public WriteResponse writeContent(HttpServletRequest req, HttpServletResponse resp) {
-
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
 
         Maybe<ApplicationConfiguration> possibleConfig;
@@ -178,7 +176,6 @@ public class TopicWriteController {
             throws IOException, ReadException {
         return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Topic.class, strict);
     }
-
     private WriteResponse error(HttpServletRequest request, HttpServletResponse response,
             AtlasErrorSummary summary) {
         try {
@@ -187,7 +184,5 @@ public class TopicWriteController {
         }
         return null;
     }
-
-
 
 }

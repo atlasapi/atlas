@@ -2,7 +2,6 @@ package org.atlasapi.query.v2;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 
 import javax.servlet.ServletOutputStream;

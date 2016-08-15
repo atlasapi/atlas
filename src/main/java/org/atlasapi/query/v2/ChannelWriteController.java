@@ -45,8 +45,7 @@ public class ChannelWriteController {
     private final ModelReader reader;
     private final ChannelModelTransformer channelTransformer;
     private final AtlasModelWriter<Iterable<Channel>> outputter;
-    public static final String STRICT = "strict";
-
+    private static final String STRICT = "strict";
 
     private ChannelWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,

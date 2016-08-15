@@ -17,9 +17,10 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ContentWriteWorker implements Worker<ContentWriteMessage> {
 
     private static final Logger log = LoggerFactory.getLogger(ContentWriteWorker.class);
-    private static final Boolean strict = Boolean.FALSE;
 
     private final ContentWriteExecutor writeExecutor;
+
+    private static final Boolean strict = Boolean.FALSE;
 
     public ContentWriteWorker(ContentWriteExecutor writeExecutor) {
         this.writeExecutor = checkNotNull(writeExecutor);

@@ -162,7 +162,6 @@ public class EquivModule {
     private @Autowired EquivalenceSummaryStore equivSummaryStore;
     private @Autowired LookupWriter lookupWriter;
     private @Autowired LookupEntryStore lookupEntryStore;
-
     private @Autowired KafkaMessagingModule messaging;
 
     public @Bean RecentEquivalenceResultStore equivalenceResultStore() {

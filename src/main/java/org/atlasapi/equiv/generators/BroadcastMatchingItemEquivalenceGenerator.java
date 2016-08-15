@@ -78,7 +78,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                         && (!onIgnoredChannel(broadcast) || broadcastCount == 1) 
                         && filter.apply(broadcast)) {
                     processedBroadcasts++;
-                    findMatchesForBroadcast(scores, content, broadcast, validPublishers);
+                    findMatchesForBroadcast(scores, broadcast, validPublishers);
                 }
             }
         }
@@ -88,9 +88,9 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
         return scale(scores.build(), processedBroadcasts, desc);
     }
 
-    public void findMatchesForBroadcast(Builder<Item> scores, Item content, Broadcast broadcast, Set<Publisher> validPublishers) {
+    public void findMatchesForBroadcast(Builder<Item> scores, Broadcast broadcast, Set<Publisher> validPublishers) {
 
-        Schedule schedule = scheduleAround(broadcast, validPublishers, flexibility);
+        Schedule schedule = scheduleAround(broadcast, validPublishers);
 
         if (schedule == null) {
             return;
@@ -104,7 +104,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                 } else if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasFlexibleQualifyingBroadcast(scheduleItem, broadcast)) {
-                    scores.addEquivalent(scheduleItem, Score.valueOf(0.5));
+                    scores.addEquivalent(scheduleItem, Score.valueOf(0.1));
                 }
             }
         }
@@ -199,14 +199,13 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     }
 
     private boolean flexibleAroundEndTime(DateTime transmissionTime, DateTime transmissionTime2) {
-        return !transmissionTime.isBefore(transmissionTime2.minus(flexibility))
+        return !transmissionTime.isBefore(transmissionTime2.minus(EXTENDED_END_TIME_FLEXIBILITY))
                 && !transmissionTime.isAfter(transmissionTime2.plus(EXTENDED_END_TIME_FLEXIBILITY));
     }
 
-    private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers,
-            Duration endtimeflexibility) {
+    private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers) {
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);
-        DateTime end = broadcast.getTransmissionEndTime().plus(endtimeflexibility);
+        DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
         Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
         if (channel.hasValue()) {
             return resolver.unmergedSchedule(start, end, ImmutableSet.of(channel.requireValue()), publishers);

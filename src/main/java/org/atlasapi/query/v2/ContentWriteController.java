@@ -41,11 +41,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
 import com.google.api.client.util.Maps;
-import com.google.common.base.Charsets;
-import com.google.common.base.Strings;
-import com.google.common.io.Flushables;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -60,7 +55,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ContentWriteController {
 
     public static final String ASYNC_PARAMETER = "async";
-    public static final String STRICT = "strict";
+    private static final String STRICT = "strict";
 
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
@@ -73,7 +68,6 @@ public class ContentWriteController {
     private final LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     private final MessageSender<ContentWriteMessage> messageSender;
     private final AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter;
-    private final Gson gson = new GsonBuilder().create();
 
     public ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,

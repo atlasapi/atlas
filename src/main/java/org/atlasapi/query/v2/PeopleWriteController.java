@@ -43,7 +43,7 @@ public class PeopleWriteController {
     //TODO: replace with proper merge strategies.
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
-    public static final String STRICT = "strict";
+    private static final String STRICT = "strict";
 
     private static final Logger log = LoggerFactory.getLogger(PeopleWriteController.class);
 
@@ -77,8 +77,8 @@ public class PeopleWriteController {
 
     private Void deserializeAndUpdatePerson(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) {
-        Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
         Maybe<ApplicationConfiguration> possibleConfig;
+        Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
         try {
             possibleConfig = appConfigFetcher.configurationFor(req);
         } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {

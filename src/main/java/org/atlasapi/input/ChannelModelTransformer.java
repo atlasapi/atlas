@@ -56,7 +56,11 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
     public org.atlasapi.media.channel.Channel transform(Channel simple) {
         org.atlasapi.media.channel.Channel.Builder complex = org.atlasapi.media.channel.Channel.builder();
 
+        if (simple.getUri() == null) {
+            throw new IllegalArgumentException("Channel uri should be provided");
+        }
         complex.withUri(simple.getUri());
+        complex.withKey(simple.getUri());
         complex.withHighDefinition(simple.getHighDefinition());
         complex.withRegional(simple.getRegional());
         complex.withRegion(simple.getRegion());

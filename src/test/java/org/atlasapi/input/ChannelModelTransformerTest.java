@@ -82,6 +82,7 @@ public class ChannelModelTransformerTest {
         assertTrue(complex.getAdvertiseFrom() != null);
         assertTrue(complex.getStartDate() != null);
         assertThat(complex.getGenres().size(), is(1));
+        assertThat(complex.getKey(), is("http://test.channel"));
         assertThat(complex.getGenres().stream().findFirst().get(), is("action"));
     }
 

@@ -1,28 +1,32 @@
 package org.atlasapi.input;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Strings.isNullOrEmpty;
-
 import java.util.List;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Actor;
+import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.CrewMember.Role;
-import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.KeyPhrase;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.Topic.Type;
 import org.atlasapi.media.entity.TopicRef;
-import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.TopicRef.Relationship;
-import org.atlasapi.media.entity.simple.*;
+import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.media.entity.simple.Person;
+import org.atlasapi.media.entity.simple.PublisherDetails;
+import org.atlasapi.media.entity.simple.SameAs;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.time.Clock;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -33,11 +37,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.time.Clock;
 
-import javax.annotation.Nullable;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Strings.isNullOrEmpty;
 
 public abstract class ContentModelTransformer<F extends Description,T extends Content> extends DescribedModelTransformer<F, T> {
     private final TopicStore topicStore;
@@ -99,6 +101,7 @@ public abstract class ContentModelTransformer<F extends Description,T extends Co
         result.setGenres(inputContent.getGenres());
         result.setClips(transformClips(inputContent));
         result.setEventRefs(eventRefs(inputContent.getEventRefs()));
+        result.setYear(inputContent.getYear());
         return result;
     }
 

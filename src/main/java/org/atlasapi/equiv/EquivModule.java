@@ -28,7 +28,6 @@ import org.atlasapi.equiv.generators.ScalingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.SongTitleTransform;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.ColumbusTelescopeReportHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeMatchingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
@@ -196,7 +195,6 @@ public class EquivModule {
         handlers.add(MessageQueueingResultHandler.create(
                 equivAssertDestination(), acceptablePublishers, lookupEntryStore
         ));
-        handlers.add(new ColumbusTelescopeReportHandler<Item>());
         return new BroadcastingEquivalenceResultHandler<Item>(handlers.build());
     }
 
@@ -263,8 +261,7 @@ public class EquivModule {
                 new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
                 MessageQueueingResultHandler.create(
                         equivAssertDestination(), acceptablePublishers, lookupEntryStore
-                ),
-                new ColumbusTelescopeReportHandler<Item>()
+                )
             )));
     }
     
@@ -557,8 +554,7 @@ public class EquivModule {
                                 equivSummaryStore
                             ),
                             new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                            new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                            new ColumbusTelescopeReportHandler<Item>()
+                            new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
                         ))).build())
             .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
             .withTopLevelContainerUpdater(topLevelContainerUpdater(roviMatchPublishers))
@@ -654,8 +650,7 @@ public class EquivModule {
                     equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                new ColumbusTelescopeReportHandler<Item>()
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
             )));
     }
     
@@ -686,8 +681,7 @@ public class EquivModule {
                     equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                new ColumbusTelescopeReportHandler<Item>()
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
             )));
     }
 
@@ -754,8 +748,7 @@ public class EquivModule {
                         equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                new ColumbusTelescopeReportHandler<Item>()
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
             )))
             .build();
     }

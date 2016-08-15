@@ -194,7 +194,6 @@ public class ContentWriteExecutor {
                            merge(existing.getAwards(), update.getAwards()) :
                            update.getAwards());
         existing.setPresentationChannel(update.getPresentationChannel());
-        existing.setYear(update.getYear());
 
         if (existing instanceof Episode && update instanceof Episode) {
             mergeEpisodes((Episode) existing, (Episode) update);

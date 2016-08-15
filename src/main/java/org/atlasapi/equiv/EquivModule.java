@@ -51,6 +51,7 @@ import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
+import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.equiv.results.scores.Score;
@@ -225,7 +226,8 @@ public class EquivModule {
             new PublisherFilter<T>(),
             new ExclusionListFilter<T>(excludedUrisFromProperties()),
             new FilmFilter<T>(),
-            new DummyContainerFilter<T>()
+            new DummyContainerFilter<T>(),
+            new UnpublishedContentFilter<T>()
         ), additional));
     }
     
@@ -572,7 +574,8 @@ public class EquivModule {
             .withCombiner(NullScoreAwareAveragingCombiner.get())
             .withFilter(ConjunctiveFilter.valueOf(ImmutableList.of(
                 new MinimumScoreFilter<Container>(0.2),
-                new SpecializationFilter<Container>()
+                new SpecializationFilter<Container>(),
+                new UnpublishedContentFilter<>()
             )))
             .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
             .withHandler(containerResultHandlers(facebookAcceptablePublishers))

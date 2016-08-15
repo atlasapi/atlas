@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.scorers.proposed;
+package org.atlasapi.equiv.scorers.proposedbroadcast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -12,8 +12,6 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
-
-import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;

@@ -5,7 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.scorers.proposed.LDistanceTitleSubsetBroadcastItemScorer;
+import org.atlasapi.equiv.scorers.proposedbroadcast.LDistanceTitleSubsetBroadcastItemScorer;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;

@@ -1,10 +1,13 @@
-package org.atlasapi.equiv.scorers.proposed;
+package org.atlasapi.equiv.scorers.proposedbroadcast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
 import java.util.Collection;
-import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
 import org.atlasapi.equiv.results.scores.Score;
@@ -34,7 +37,7 @@ import com.google.common.collect.Sets;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class DescriptionTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -70,7 +73,7 @@ public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcas
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public PLStemmingTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public DescriptionTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
@@ -106,12 +109,8 @@ public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcas
         String sanitizedCandidateTitle = sanitize(candidate.getTitle());
         Set<String> subjectWords = filterCommon(titleWords(sanitizedSubjectTitle));
         Set<String> candidateWords = filterCommon(titleWords(sanitizedCandidateTitle));
-
-        Set<String> stemmedSubjectWords = stem(subjectWords);
-        Set<String> stemmedCandidateWords = stem(candidateWords);
-
-        Set<String> shorter = collectionSize.min(stemmedSubjectWords, stemmedCandidateWords);
-        Set<String> longer = collectionSize.max(stemmedCandidateWords, stemmedSubjectWords);
+        Set<String> shorter = collectionSize.min(subjectWords, candidateWords);
+        Set<String> longer = collectionSize.max(candidateWords, subjectWords);
         return percentOfShorterInLonger(shorter, longer) >= threshold;
     }
 
@@ -133,21 +132,30 @@ public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcas
         return (contained * 1.0) / shorter.size();
     }
 
+    protected boolean descriptionMatch(Item subject, Item candidate) {
+        if (subject.getLongDescription() == null || candidate.getLongDescription() == null || subject.getLongDescription().isEmpty() || candidate.getLongDescription().isEmpty()) {
+            return false;
+        }
+
+        Pattern pattern = Pattern.compile("\\b([A-Z]\\w*)\\b");
+        Matcher subjectMatcher = pattern.matcher(subject.getLongDescription());
+        Matcher candidateMatcher = pattern.matcher(candidate.getLongDescription());
+        List<String> subjectList = new LinkedList<>();
+        List<String> candidateList = new LinkedList<>();
+        while (subjectMatcher.find()) {
+            subjectList.add(subjectMatcher.group(1));
+        }
+        while (candidateMatcher.find()) {
+            candidateList.add(candidateMatcher.group(1));
+        }
+        // check if the average size of capitalised words is less than
+        // the words found in both descriptions
+        double averageSize = (subjectList.size() + candidateList.size()) / 2;
+        subjectList.retainAll(candidateList);
+        return (subjectList.size() * 1.4) > averageSize;
+    }
+
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
     }
-
-    private Set<String> stem(Set<String> words) {
-        Stemmer stemmer = new Stemmer();
-        Set<String> stemmedWords = new HashSet<String>();
-        for (String word: words) {
-            stemmer.add(word);
-            stemmedWords.add(stemmer.stem());
-            stemmer.clear();
-        }
-        return stemmedWords;
-    }
-
-    protected boolean descriptionMatch(Item subject, Item candidate){ return false; }
-
 }

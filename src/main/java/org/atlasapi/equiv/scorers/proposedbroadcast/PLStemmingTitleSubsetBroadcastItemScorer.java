@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.scorers.proposed;
+package org.atlasapi.equiv.scorers.proposedbroadcast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -14,8 +14,6 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
 
-import com.metabroadcast.common.stream.MoreCollectors;
-
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
@@ -24,7 +22,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.Range;
 import com.google.common.collect.Sets;
-import org.atteo.evo.inflector.English;
 
 /**
  * <p>
@@ -37,7 +34,7 @@ import org.atteo.evo.inflector.English;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class PLMatcherTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -73,7 +70,7 @@ public final class PLMatcherTitleSubsetBroadcastItemScorer extends BaseBroadcast
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public PLMatcherTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public PLStemmingTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
@@ -110,21 +107,12 @@ public final class PLMatcherTitleSubsetBroadcastItemScorer extends BaseBroadcast
         Set<String> subjectWords = filterCommon(titleWords(sanitizedSubjectTitle));
         Set<String> candidateWords = filterCommon(titleWords(sanitizedCandidateTitle));
 
-        Set<String> pluralisedSubjectWords = pluralise(subjectWords);
-        Set<String> pluralisedCandidateWords = pluralise(candidateWords);
+        Set<String> stemmedSubjectWords = stem(subjectWords);
+        Set<String> stemmedCandidateWords = stem(candidateWords);
 
-
-        Set<String> shorter = collectionSize.min(pluralisedSubjectWords, pluralisedCandidateWords);
-        Set<String> longer = collectionSize.max(pluralisedCandidateWords, pluralisedSubjectWords);
+        Set<String> shorter = collectionSize.min(stemmedSubjectWords, stemmedCandidateWords);
+        Set<String> longer = collectionSize.max(stemmedCandidateWords, stemmedSubjectWords);
         return percentOfShorterInLonger(shorter, longer) >= threshold;
-    }
-
-    private Set<String> pluralise(Set<String> words) {
-        Set<String> pluralised = new HashSet<String>();
-        for (String word: words) {
-            pluralised.add(English.plural(word));
-        }
-        return pluralised;
     }
 
     private String sanitize(String title) {
@@ -147,6 +135,17 @@ public final class PLMatcherTitleSubsetBroadcastItemScorer extends BaseBroadcast
 
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
+    }
+
+    private Set<String> stem(Set<String> words) {
+        Stemmer stemmer = new Stemmer();
+        Set<String> stemmedWords = new HashSet<String>();
+        for (String word: words) {
+            stemmer.add(word);
+            stemmedWords.add(stemmer.stem());
+            stemmer.clear();
+        }
+        return stemmedWords;
     }
 
     protected boolean descriptionMatch(Item subject, Item candidate){ return false; }

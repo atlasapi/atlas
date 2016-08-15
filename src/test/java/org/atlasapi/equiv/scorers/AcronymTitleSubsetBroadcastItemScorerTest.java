@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.scorers;
 
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.proposed.AcronymTitleSubsetBroadcastItemScorer;
+import org.atlasapi.equiv.scorers.proposedbroadcast.AcronymTitleSubsetBroadcastItemScorer;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.testing.StubContentResolver;
 

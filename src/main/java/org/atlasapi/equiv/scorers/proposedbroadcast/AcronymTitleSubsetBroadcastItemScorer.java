@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.scorers.proposed;
+package org.atlasapi.equiv.scorers.proposedbroadcast;
 
 import static com.google.common.base.Preconditions.checkArgument;
 
@@ -12,8 +12,6 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
-
-import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Function;
@@ -35,7 +33,7 @@ import com.google.common.collect.Sets;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class PunctuationTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class AcronymTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "Broadcast-Title-Subset";
 
@@ -56,6 +54,9 @@ public final class PunctuationTitleSubsetBroadcastItemScorer extends BaseBroadca
     private final Set<String> commonWords = ImmutableSet.of(
             "the", "in", "a", "and", "&", "of", "to", "show"
     );
+    private final Set<String> acronyms = ImmutableSet.of(
+            "us", "usa", "america"
+    );
 
     private final double threshold;
 
@@ -71,7 +72,7 @@ public final class PunctuationTitleSubsetBroadcastItemScorer extends BaseBroadca
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public PunctuationTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public AcronymTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
@@ -105,8 +106,8 @@ public final class PunctuationTitleSubsetBroadcastItemScorer extends BaseBroadca
         }
         String sanitizedSubjectTitle = sanitize(subject.getTitle());
         String sanitizedCandidateTitle = sanitize(candidate.getTitle());
-        Set<String> subjectWords = filterCommon(titleWords(sanitizedSubjectTitle));
-        Set<String> candidateWords = filterCommon(titleWords(sanitizedCandidateTitle));
+        Set<String> subjectWords = filterCommonAndAcronyms(titleWords(sanitizedSubjectTitle));
+        Set<String> candidateWords = filterCommonAndAcronyms(titleWords(sanitizedCandidateTitle));
         Set<String> shorter = collectionSize.min(subjectWords, candidateWords);
         Set<String> longer = collectionSize.max(candidateWords, subjectWords);
         return percentOfShorterInLonger(shorter, longer) >= threshold;
@@ -114,11 +115,12 @@ public final class PunctuationTitleSubsetBroadcastItemScorer extends BaseBroadca
 
     private String sanitize(String title) {
         return titleTransformer.expand(title)
-                .replaceAll("[^a-zA-Z ]", "").toLowerCase();
+                .replaceAll("[^\\d\\w\\s]", "").toLowerCase();
     }
 
-    private Set<String> filterCommon(Set<String> words) {
-        return Sets.difference(words, commonWords);
+    private Set<String> filterCommonAndAcronyms(Set<String> words) {
+
+        return Sets.difference(Sets.difference(words, commonWords), acronyms);
     }
 
     private ImmutableSet<String> titleWords(String title) {
@@ -130,9 +132,9 @@ public final class PunctuationTitleSubsetBroadcastItemScorer extends BaseBroadca
         return (contained * 1.0) / shorter.size();
     }
 
+    protected boolean descriptionMatch(Item subject, Item candidate){ return false; }
+
     private boolean titleMissing(Content subject) {
         return Strings.isNullOrEmpty(subject.getTitle());
     }
-
-    protected boolean descriptionMatch(Item subject, Item candidate){ return false; }
 }

@@ -1,11 +1,13 @@
 package org.atlasapi.equiv.analytics;
 
 import java.io.FileWriter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.persistence.CombinedEquivalenceScore;
 import org.atlasapi.equiv.results.persistence.StoredEquivalenceResult;
 
@@ -108,6 +110,22 @@ public class EquivResultsReader {
             printer.printRecord(record);
         }
         printer.printRecord("---------------");
+        printer.printRecord("Description matching results");
+        printer.printRecord("---------------");
+
+        // I had to use object here because I'm dealing with messy code
+        Object o = (result.description().get(3));
+
+        for (Object object: (List)o) {
+            if (object instanceof String) {
+                printer.printRecord(object);
+            } else if (object instanceof LinkedList) {
+                for (String string: (LinkedList<String>)object) {
+                    printer.printRecord(string);
+                }
+            }
+        }
+
 
         writer.flush();
         writer.close();

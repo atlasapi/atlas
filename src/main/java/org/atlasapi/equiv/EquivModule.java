@@ -221,7 +221,7 @@ public class EquivModule {
 
     private <T extends Content> EquivalenceFilter<T> standardFilter(Iterable<EquivalenceFilter<T>> additional) {
         return ConjunctiveFilter.valueOf(Iterables.concat(ImmutableList.of(
-            new MinimumScoreFilter<T>(0.2),
+            new MinimumScoreFilter<T>(0.25),
             new MediaTypeFilter<T>(),
             new SpecializationFilter<T>(),
             new PublisherFilter<T>(),
@@ -574,7 +574,7 @@ public class EquivModule {
             .withScorers(ImmutableSet.of())
             .withCombiner(NullScoreAwareAveragingCombiner.get())
             .withFilter(ConjunctiveFilter.valueOf(ImmutableList.of(
-                new MinimumScoreFilter<Container>(0.2),
+                new MinimumScoreFilter<Container>(0.25),
                 new SpecializationFilter<Container>(),
                 new UnpublishedContentFilter<>()
             )))

@@ -28,6 +28,7 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
+import static com.google.gdata.util.common.base.Preconditions.checkArgument;
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 public class ChannelModelTransformer implements ModelTransformer<Channel, org.atlasapi.media.channel.Channel> {
@@ -54,6 +55,8 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
 
     @Override
     public org.atlasapi.media.channel.Channel transform(Channel simple) {
+        checkArgument(simple.getUri() != null, "Channel uri should be provided");
+
         org.atlasapi.media.channel.Channel.Builder complex = org.atlasapi.media.channel.Channel.builder();
 
         if (simple.getUri() == null) {

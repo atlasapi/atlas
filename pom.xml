@@ -438,7 +438,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>16.0.1</version>
+            <version>17.0</version>
         </dependency>
         <dependency>
             <groupId>it.unimi.dsi</groupId>
@@ -718,6 +718,7 @@
     <properties>
         <atlas.version>${project.version}</atlas.version>
         <common.version>1.0-SNAPSHOT</common.version>
+        <telescope.version>1.0-SNAPSHOT</telescope.version>
         <telescope-client.version>1.0-SNAPSHOT</telescope-client.version>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <jetty.version>9.1.0.M0</jetty.version>

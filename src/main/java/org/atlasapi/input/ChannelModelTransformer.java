@@ -24,6 +24,7 @@ import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
 
+import static com.google.gdata.util.common.base.Preconditions.checkArgument;
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 public class ChannelModelTransformer implements ModelTransformer<Channel, org.atlasapi.media.channel.Channel> {
@@ -48,9 +49,12 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
 
     @Override
     public org.atlasapi.media.channel.Channel transform(Channel simple) {
+        checkArgument(simple.getUri() != null, "Channel uri should be provided");
+
         org.atlasapi.media.channel.Channel.Builder complex = org.atlasapi.media.channel.Channel.builder();
 
         complex.withUri(simple.getUri());
+        complex.withKey(simple.getUri());
         complex.withHighDefinition(simple.getHighDefinition());
         complex.withRegional(simple.getRegional());
         complex.withRegion(simple.getRegion());

@@ -280,7 +280,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
     private Ingester createIngester(String publisher) {
         return Ingester.create(
-                String.format("atlas-owl-equiv-%s", publisher.toLowerCase().replace(" ", "-")),
+                String.format("atlas-owl-equiv-%s", publisher.toLowerCase().replace(" ", "-").replace("\n", "")),
                 String.format("Atlas Owl Equiv %s", publisher),
                 Environment.valueOf(reportingEnvironment)
         );

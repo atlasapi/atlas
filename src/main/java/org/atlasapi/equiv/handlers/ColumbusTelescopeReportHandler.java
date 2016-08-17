@@ -109,12 +109,4 @@ public class ColumbusTelescopeReportHandler <T extends Item>
         ));
         return aliases;
     }
-
-    private Ingester createIngester() {
-        return Ingester.create(
-                "atlas-owl-equiv",
-                "Atlas Owl Equiv",
-                Environment.valueOf(reportingEnvironment)
-        );
-    }
 }

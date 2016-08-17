@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.update;
 
+import java.util.Optional;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -9,6 +11,8 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Content> {
 
@@ -76,6 +80,12 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
         } else {
             throw new IllegalStateException(String.format("No updater for %s for %s", source, content));
         }
+    }
+
+    @Override
+    public boolean updateEquivalencesWithReporting(Content subject, Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient) {
+        return false;
     }
 
     private boolean topLevelSeries(Content content) {

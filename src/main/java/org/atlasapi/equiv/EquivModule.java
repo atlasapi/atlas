@@ -69,6 +69,7 @@ import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
+import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdaters;
@@ -326,7 +327,7 @@ public class EquivModule {
         ));
         
         EquivalenceUpdater<Item> standardItemUpdater = standardItemUpdater(MoreSets.add(acceptablePublishers, LOVEFILM), 
-                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer(Score.ONE))).build();
+                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer(Score.ONE), new DescriptionTitleMatchingScorer())).build();
         EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
@@ -737,7 +738,8 @@ public class EquivModule {
             new TitleMatchingItemScorer(), 
             new SequenceItemScorer(Score.ONE),
             new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
-            new BroadcastAliasScorer(Score.nullScore())
+            new BroadcastAliasScorer(Score.nullScore()),
+            new DescriptionTitleMatchingScorer()
         ), filter).build();
     }
 

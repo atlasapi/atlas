@@ -83,9 +83,19 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public boolean updateEquivalencesWithReporting(Content subject, Optional<String> taskId,
+    public boolean updateEquivalencesWithReporting(Content content, Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient) {
-        return false;
+        if (content instanceof Item) {
+            return update(itemUpdater, (Item) content);
+        } else if (content instanceof Brand) {
+            return updateWithReporting(topLevelContainerUpdater, (Container) content, taskId, telescopeClient);
+        } else if (topLevelSeries(content)) {
+            return updateWithReporting(topLevelContainerUpdater, (Container) content, taskId, telescopeClient);
+        } else if (!topLevelSeries(content)) {
+            return updateWithReporting(nonTopLevelContainerUpdater, (Container) content, taskId, telescopeClient);
+        } else {
+            throw new IllegalStateException(String.format("No updater for %s for %s", source, content));
+        }
     }
 
     private boolean topLevelSeries(Content content) {
@@ -97,5 +107,19 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
             T content) {
         checkNotNull(updater, "No updater for %s %s", source, content);
         return updater.updateEquivalences(content);
+    }
+
+    private <T> boolean updateWithReporting(
+            EquivalenceUpdater<T> updater,
+            T content,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        checkNotNull(updater, "No updater for %s %s", source, content);
+        return updater.updateEquivalencesWithReporting(
+                content,
+                taskId,
+                telescopeClient
+        );
     }
 }

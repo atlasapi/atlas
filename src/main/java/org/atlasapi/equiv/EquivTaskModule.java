@@ -1,6 +1,5 @@
 package org.atlasapi.equiv;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,15 +40,16 @@ import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+import com.metabroadcast.columbus.telescope.client.TelescopeClient;
+import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.kafka.KafkaConsumer;
 import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.time.DayOfWeek;
 
-import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -164,7 +164,7 @@ public class EquivTaskModule {
     private @Value("${messaging.destination.content.changes}") String contentChanges;
     private @Value("${reporting.columbus-telescope.environment}") String reportingEnvironment;
     private @Value("${reporting.columbus-telescope.host}") String columbusTelescopeHost;
-    
+
     private @Autowired ContentLister contentLister;
     private @Autowired SimpleScheduler taskScheduler;
     private @Autowired ContentResolver contentResolver;
@@ -364,8 +364,8 @@ public class EquivTaskModule {
                 .withScheduleResolver(scheduleResolver)
                 .withBack(back)
                 .withForward(forward)
-                .withReportingEnvironment(reportingEnvironment)
-                .withColumbusTelescopeHost(columbusTelescopeHost);
+                .withTelescopeClient(getTelescopeClient())
+                .withReportingEnvironment(reportingEnvironment);
     }
 
     public @Bean MongoScheduleTaskProgressStore progressStore() {
@@ -519,5 +519,10 @@ public class EquivTaskModule {
             return youviewChannelResolver.getAllChannels();
         }
     }
-    
+
+    private IngestTelescopeClientImpl getTelescopeClient() {
+        TelescopeClient client = TelescopeClientImpl.create(columbusTelescopeHost);
+        return IngestTelescopeClientImpl.create(client);
+    }
+
 }

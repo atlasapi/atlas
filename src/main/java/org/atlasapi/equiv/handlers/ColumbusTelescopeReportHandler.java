@@ -13,7 +13,6 @@ import com.metabroadcast.columbus.telescope.api.EntityState;
 import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.api.Ingester;
-import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
@@ -48,32 +47,35 @@ public class ColumbusTelescopeReportHandler <T extends Item>
 
     @Override
     public void handle(EquivalenceResult<Item> result) {
-//        log.info("Reporting to Columbus Telescope.", result);
-//        Ingester ingester = createIngester();
-//        Task task = telescopeClient.startIngest(ingester);
-//
-//        Optional<String> ingestId = task.getId();
-//        if (!ingestId.isPresent()) {
-//            throw new IllegalArgumentException("No Task Id received. ");
-//        }
-//
-//        List<Alias> aliases = createAliases();
-//
-//        EntityState entityState = null;
-//        try {
-//            entityState = createEventState(
-//                    result.subject().getId(),
-//                    aliases,
-//                    mapper.writeValueAsString(result.description())
-//            );
-//        } catch (JsonProcessingException e) {
-//            log.error("Couldn't convert equiv result description to a JSON string.", e);
-//        }
-//
-//        Event event = createEvent(ingestId, entityState);
-//
-//        telescopeClient.createEvents(ImmutableList.of(event));
-//        telescopeClient.endIngest(ingestId.get());
+        // Do nothing, as this handler is used only for reporting purposes.
+    }
+
+    @Override
+    public void handleWithReporting(
+            EquivalenceResult<Item> result,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        if (!taskId.isPresent()) {
+            throw new IllegalArgumentException("No Task ID received from Columbus Telescope.");
+        }
+
+        List<Alias> aliases = createAliases();
+
+        EntityState entityState = null;
+        try {
+            entityState = createEventState(
+                    result.subject().getId(),
+                    aliases,
+                    mapper.writeValueAsString(result.description())
+            );
+        } catch (JsonProcessingException e) {
+            log.error("Couldn't convert equiv result description to a JSON string.", e);
+        }
+
+        Event event = createEvent(taskId, entityState);
+
+        telescopeClient.createEvents(ImmutableList.of(event));
     }
 
     private EntityState createEventState(

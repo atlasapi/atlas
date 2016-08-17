@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
@@ -18,6 +19,8 @@ import org.atlasapi.equiv.results.scores.ScoredEquivalentsMerger;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.scorers.EquivalenceScorers;
 import org.atlasapi.media.entity.Content;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -145,7 +148,31 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
 
         return hasCandidates;
     }
-    
+
+    @Override
+    public boolean updateEquivalencesWithReporting(
+            T content,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        ReadableDescription desc = new DefaultDescription();
+
+        List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
+
+        Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
+
+        List<ScoredCandidates<T>> scoredScores = scorers.score(content, candidates, desc);
+
+        List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
+
+        EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
+        handler.handleWithReporting(result, taskId, telescopeClient);
+
+        boolean hasCandidates = !result.combinedEquivalences().candidates().isEmpty();
+
+        return hasCandidates;
+    }
+
     private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
         return Iterables.concat(Iterables.transform(generatedScores, extractCandidates));
     }

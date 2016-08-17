@@ -162,6 +162,8 @@ public class EquivTaskModule {
     private @Value("${equiv.stream-updater.consumers.default}") Integer defaultStreamedEquivUpdateConsumers;
     private @Value("${equiv.stream-updater.consumers.max}") Integer maxStreamedEquivUpdateConsumers;
     private @Value("${messaging.destination.content.changes}") String contentChanges;
+    private @Value("${reporting.columbus-telescope.environment}") String reportingEnvironment;
+    private @Value("${reporting.columbus-telescope.host}") String columbusTelescopeHost;
     
     private @Autowired ContentLister contentLister;
     private @Autowired SimpleScheduler taskScheduler;
@@ -357,11 +359,13 @@ public class EquivTaskModule {
 
     private Builder taskBuilder(int back, int forward) {
         return ScheduleEquivalenceUpdateTask.builder()
-            .withContentResolver(contentResolver)
-            .withUpdater(equivUpdater)
-            .withScheduleResolver(scheduleResolver)
-            .withBack(back)
-            .withForward(forward);
+                .withContentResolver(contentResolver)
+                .withUpdater(equivUpdater)
+                .withScheduleResolver(scheduleResolver)
+                .withBack(back)
+                .withForward(forward)
+                .withReportingEnvironment(reportingEnvironment)
+                .withColumbusTelescopeHost(columbusTelescopeHost);
     }
 
     public @Bean MongoScheduleTaskProgressStore progressStore() {

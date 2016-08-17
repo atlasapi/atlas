@@ -35,6 +35,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.collect.OptionalMap;
 
 public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandler<Container> {
@@ -67,6 +69,15 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
         stitch(subjectsChildren, summaryMap, equivalentsChildren, result.description());
         
         result.description().finishStage();
+    }
+
+    @Override
+    public void handleWithReporting(
+            EquivalenceResult<Container> result,
+            java.util.Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        // No reporting is supported for this handler.
     }
 
     private void stitch(Iterable<Episode> subjectsChildren, Map<String, EquivalenceSummary> summaryMap, Multimap<Container, Episode> equivalentsChildren, ReadableDescription desc) {

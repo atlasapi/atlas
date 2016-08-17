@@ -62,12 +62,14 @@ public class ColumbusTelescopeReportHandlerTest {
 
     @Test
     public void parsingOfEquivResultForRawElement() {
+        Optional<String> taskId = Optional.of("dfafa");
+
         when(telescopeClient.startIngest(any(Ingester.class))).thenReturn(task);
-        when(task.getId()).thenReturn(Optional.of("dfafa"));
+        when(task.getId()).thenReturn(taskId);
 
         EquivalenceResult<Item> result = createEquivResult();
 
-        telescopeReportHandler.handle(result);
+        telescopeReportHandler.handleWithReporting(result, taskId, telescopeClient);
 
         verify(telescopeClient).createEvents(eventCaptor.capture());
 

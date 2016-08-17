@@ -22,14 +22,7 @@ import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.*;
-import org.atlasapi.equiv.scorers.proposedbroadcast.LDistanceTitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.scorers.proposedbroadcast.PL1TitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.scorers.proposedbroadcast.PLMatcherTitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.scorers.proposedbroadcast.PLStemmingTitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.scorers.proposedbroadcast.DescriptionTitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.scorers.proposedtitlematching.DescriptionMatching;
-import org.atlasapi.equiv.scorers.proposedtitlematching.DescriptionTitleMatching;
-import org.atlasapi.equiv.scorers.proposedtitlematching.LDistanceTitleMatching;
+import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -233,65 +226,65 @@ public class EquivModuleTest {
         }
     };
 
-    @Test
-    public void testPL1() throws Exception {
-        runTest(new PL1TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PL1", false);
-    }
-
-    @Test
-    public void testPLMatcher() throws Exception {
-        runTest(new PLMatcherTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLMatcher", false);
-    }
-
-    @Test
-    public void testPLStemming() throws Exception {
-        runTest(new PLStemmingTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLStemming", false);
-    }
-
-    @Test
-    public void testLDistance() throws Exception {
-        runTest(new LDistanceTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLLDistance", false);
-    }
+//    @Test
+//    public void testPL1() throws Exception {
+//        runTest(new PL1TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PL1", false);
+//    }
+//
+//    @Test
+//    public void testPLMatcher() throws Exception {
+//        runTest(new PLMatcherTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLMatcher", false);
+//    }
+//
+//    @Test
+//    public void testPLStemming() throws Exception {
+//        runTest(new PLStemmingTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLStemming", false);
+//    }
+//
+//    @Test
+//    public void testLDistance() throws Exception {
+//        runTest(new LDistanceTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLLDistance", false);
+//    }
 
     @Test
     public void testOriginal() throws Exception {
         runTest(new TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "Original", false);
     }
 
-    @Test
-    public void testPL1PlusDescription() throws Exception {
-        runTest(new PL1TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPL1", true);
-    }
-
-    @Test
-    public void testPLMatcherPlusDescription() throws Exception {
-        runTest(new PLMatcherTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPLMatcher", true);
-    }
-
-    @Test
-    public void testPLStemmingPlusDescription() throws Exception {
-        runTest(new PLStemmingTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPLStemming", true);
-    }
-
-    @Test
-    public void testLDistancePlusDescription() throws Exception {
-        runTest(new LDistanceTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPLLDistance", true);
-    }
+//    @Test
+//    public void testPL1PlusDescription() throws Exception {
+//        runTest(new PL1TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPL1", true);
+//    }
+//
+//    @Test
+//    public void testPLMatcherPlusDescription() throws Exception {
+//        runTest(new PLMatcherTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPLMatcher", true);
+//    }
+//
+//    @Test
+//    public void testPLStemmingPlusDescription() throws Exception {
+//        runTest(new PLStemmingTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPLStemming", true);
+//    }
+//
+//    @Test
+//    public void testLDistancePlusDescription() throws Exception {
+//        runTest(new LDistanceTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPLLDistance", true);
+//    }
 
     @Test
     public void testOriginalPlusDescription() throws Exception {
         runTest(new TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusOriginal", true);
     }
-
-    @Test
-    public void testTitleMLDistance() throws Exception {
-        runTest(new LDistanceTitleMatching(), "TitleMLDistance", false);
-    }
-
-    @Test
-    public void testTitleMLDistancePlusDescription() throws Exception {
-        runTest(new LDistanceTitleMatching(), "DescriptionPlusTitleMLDistance", true);
-    }
+//
+//    @Test
+//    public void testTitleMLDistance() throws Exception {
+//        runTest(new LDistanceTitleMatching(), "TitleMLDistance", false);
+//    }
+//
+//    @Test
+//    public void testTitleMLDistancePlusDescription() throws Exception {
+//        runTest(new LDistanceTitleMatching(), "DescriptionPlusTitleMLDistance", true);
+//    }
 
 
     public void runTest(EquivalenceScorer<Item> baseScorer, String titleAddOn, boolean descriptionScorer) throws Exception {
@@ -321,7 +314,7 @@ public class EquivModuleTest {
             return standardItemUpdater(sources, ImmutableSet.of(
 //                    new TitleMatchingItemScorer(),
                     new SequenceItemScorer(Score.ONE),
-                    new DescriptionTitleMatching(),
+                    new DescriptionTitleMatchingScorer(),
 //                    new DescriptionMatching(),
                     baseScorer,
                     new BroadcastAliasScorer(Score.negativeOne())
@@ -340,7 +333,9 @@ public class EquivModuleTest {
     private ContentEquivalenceUpdater.Builder<Item> standardTitleSearchItemUpdater(Set<Publisher> acceptablePublishers,
             Set<? extends EquivalenceScorer<Item>> scorers, Predicate<? super Broadcast> filter, String titleAddOn) {
         return ContentEquivalenceUpdater.<Item>builder()
-                .withGenerators(ImmutableSet.of(TitleSearchGenerator.create(searchResolver, Item.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)))
+                .withGenerators(ImmutableSet.of(TitleSearchGenerator.create(searchResolver, Item.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
+                        new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver,
+                                channelResolver, acceptablePublishers, Duration.standardMinutes(5), filter)))
                 .withExcludedUris(ImmutableSet.of())
                 .withScorers(scorers)
                 .withCombiner(new NullScoreAwareAveragingCombiner<>())
@@ -356,6 +351,7 @@ public class EquivModuleTest {
             Set<? extends EquivalenceScorer<Item>> scorers, Predicate<? super Broadcast> filter, String titleAddOn) {
         return ContentEquivalenceUpdater.<Item>builder()
                 .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
+                        TitleSearchGenerator.create(searchResolver, Item.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
                         new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver,
                                 channelResolver, acceptablePublishers, Duration.standardMinutes(5), filter)
                 ))
@@ -382,65 +378,69 @@ public class EquivModuleTest {
 
     private List<String> getContentList() {
         List<String> contentList = new LinkedList<String>();
-//        contentList.add("http://youview.com/programmecrid/20160729/movies4men.co.uk/E2713312"); //no title but same description
-//        contentList.add("http://youview.com/programmecrid/20160729/movies4men.co.uk/E2707926"); //no title but same description
-//        contentList.add("http://youview.com/programmecrid/20160716/movies4men.co.uk/E1913523"); //no title but same description
-//        //Similar spelling/ american spelling
-//        contentList.add("http://radiotimes.com/films/53183");
-//        contentList.add("http://youview.com/scheduleevent/33031768");
-//        //mismatches in search
-//        //further language changes
-//        contentList.add("http://itv.com/1046766");
-//        contentList.add("http://youview.com/programmecrid/20151215/fp.bbc.co.uk/A7ETND");
-//        contentList.add("http://youview.com/scheduleevent/32911802");
-//        contentList.add("https://pdb.five.tv/internal/watchables/C5155250122");
-//        contentList.add("http://youview.com/programmecrid/20150716/fp.bbc.co.uk/AX01S1");
-//        contentList.add("http://youview.com/scheduleevent/33114169");
-//        contentList.add("http://youview.com/scheduleevent/33729396");
-//        contentList.add("http://youview.com/scheduleevent/17319225");
-//
-//
-//        contentList.add("http://youview.com/scheduleevent/17813416");
-//        contentList.add("http://youview.com/programmecrid/20151113/fp.bbc.co.uk/DBYGGX");
-//        //contentList.add("http://bt.youview.com/programmecrid/20160725/bds.tv/138153538"); // motives and murder - wrong type
-//
-//        contentList.add("http://youview.com/programmecrid/20160606/www.channel4.com/52096/019");
-//        contentList.add("http://youview.com/programmecrid/20160720/www.channel4.com/48467/023");
-//        contentList.add("http://youview.com/programmecrid/20160708/www.channel4.com/48467/008");
-//        contentList.add("http://g.bbcredux.com/programme/6062016485369359592");
-//        contentList.add("http://youview.com/programmecrid/20160708/www.channel4.com/48467/009");
-//        contentList.add("http://g.bbcredux.com/programme/6088332608985424265");
-//        contentList.add("http://youview.com/programmecrid/20160306/www.channel4.com/39876/043"); // come die with me? misspelling worth checking equiv accuracy
-////
-////
-////        // No Broadcasts
-//        contentList.add("http://priorities.metabroadcast.com/d877js");
-//        contentList.add("http://unbox.amazon.co.uk/B00HV8XEUW");
-//        contentList.add("http://itunes.apple.com/video/id473589343");
-//        contentList.add("http://itunes.apple.com/video/id943873419");
-//        contentList.add("http://vod.bt.com/items/BBJ819052A");
-//        contentList.add("http://p06.pmlsc.channel4.com/pmlsd/39876/025");
-//
-//
-//        //count = 28
-//
-//
-//        contentList.add("http://youview.com/scheduleevent/33858911");
-//        contentList.add("http://youview.com/scheduleevent/33786584");
-//        contentList.add("http://youview.com/scheduleevent/33902443");
-//        contentList.add("http://youview.com/scheduleevent/33786579");
-//        contentList.add("http://youview.com/scheduleevent/33786583");
-//        contentList.add("http://youview.com/scheduleevent/33884514");
-//        contentList.add("http://youview.com/scheduleevent/33902507");
-//        contentList.add("http://youview.com/scheduleevent/33902504");
-//        contentList.add("http://youview.com/scheduleevent/33786396");
-//        contentList.add("http://youview.com/scheduleevent/33902333");
-//        contentList.add("http://youview.com/scheduleevent/33902331");
+        contentList.add("http://youview.com/programmecrid/20160729/movies4men.co.uk/E2713312"); //no title but same description
+        contentList.add("http://youview.com/programmecrid/20160729/movies4men.co.uk/E2707926"); //no title but same description
+        contentList.add("http://youview.com/programmecrid/20160716/movies4men.co.uk/E1913523"); //no title but same description
+        //Similar spelling/ american spelling
+        contentList.add("http://radiotimes.com/films/53183");
+        contentList.add("http://youview.com/scheduleevent/33031768");
+        //mismatches in search
+        //further language changes
+        contentList.add("http://itv.com/1046766");
+        contentList.add("http://youview.com/programmecrid/20151215/fp.bbc.co.uk/A7ETND");
+        contentList.add("http://youview.com/scheduleevent/32911802");
+        contentList.add("https://pdb.five.tv/internal/watchables/C5155250122");
+        contentList.add("http://youview.com/programmecrid/20150716/fp.bbc.co.uk/AX01S1");
+        contentList.add("http://youview.com/scheduleevent/33114169");
+        contentList.add("http://youview.com/scheduleevent/33729396");
+        contentList.add("http://youview.com/scheduleevent/17319225");
 
 
-//        contentList.add("https://pdb.five.tv/internal/watchables/C5180710038"); // sport with mismatched titles but matching description
+        contentList.add("http://youview.com/scheduleevent/17813416");
+        contentList.add("http://youview.com/programmecrid/20151113/fp.bbc.co.uk/DBYGGX");
+        //contentList.add("http://bt.youview.com/programmecrid/20160725/bds.tv/138153538"); // motives and murder - wrong type
 
-        contentList.add("http://youview.com/scheduleevent/33813181");
+        contentList.add("http://youview.com/programmecrid/20160606/www.channel4.com/52096/019");
+        contentList.add("http://youview.com/programmecrid/20160720/www.channel4.com/48467/023");
+        contentList.add("http://youview.com/programmecrid/20160708/www.channel4.com/48467/008");
+        contentList.add("http://g.bbcredux.com/programme/6062016485369359592");
+        contentList.add("http://youview.com/programmecrid/20160708/www.channel4.com/48467/009");
+        contentList.add("http://g.bbcredux.com/programme/6088332608985424265");
+        contentList.add("http://youview.com/programmecrid/20160306/www.channel4.com/39876/043"); // come die with me? misspelling worth checking equiv accuracy
+//
+//
+//        // No Broadcasts
+        contentList.add("http://priorities.metabroadcast.com/d877js");
+        contentList.add("http://unbox.amazon.co.uk/B00HV8XEUW");
+        contentList.add("http://itunes.apple.com/video/id473589343");
+        contentList.add("http://itunes.apple.com/video/id943873419");
+        contentList.add("http://vod.bt.com/items/BBJ819052A");
+        contentList.add("http://p06.pmlsc.channel4.com/pmlsd/39876/025");
+
+        contentList.add("http://youview.com/scheduleevent/33858911"); // descVtitle works
+        contentList.add("http://youview.com/scheduleevent/33786584"); // descVtitle works
+        contentList.add("http://youview.com/scheduleevent/33902443");
+        contentList.add("http://youview.com/scheduleevent/33786579"); // descVtitle works
+        contentList.add("http://youview.com/scheduleevent/33786583"); // descVtitle works
+        contentList.add("http://youview.com/scheduleevent/33884514");
+        contentList.add("http://youview.com/scheduleevent/33902507");
+        contentList.add("http://youview.com/scheduleevent/33902504");
+        contentList.add("http://youview.com/scheduleevent/33786396");
+        contentList.add("http://youview.com/scheduleevent/33902333");
+        contentList.add("http://youview.com/scheduleevent/33902331");
+
+
+        contentList.add("https://pdb.five.tv/internal/watchables/C5180710038"); // sport with mismatched titles but matching description
+
+        contentList.add("http://youview.com/scheduleevent/33813181"); // descVtitle works
+        contentList.add("http://youview.com/scheduleevent/33813177"); // descVtitle works
+        contentList.add("http://youview.com/scheduleevent/33786579");
+        contentList.add("http://youview.com/scheduleevent/33786584");
+        contentList.add("http://youview.com/scheduleevent/33786583");
+        contentList.add("http://youview.com/scheduleevent/33858911");
+        contentList.add("http://youview.com/scheduleevent/33902428");
+
+
 
         return contentList;
     }

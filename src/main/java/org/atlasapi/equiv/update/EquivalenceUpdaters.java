@@ -29,8 +29,13 @@ public class EquivalenceUpdaters implements EquivalenceUpdater<Content> {
     }
 
     @Override
-    public boolean updateEquivalencesWithReporting(Content subject, Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient) {
-        return false;
+    public boolean updateEquivalencesWithReporting(
+            Content subject,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        return updaters.get(subject.getPublisher()).updateEquivalencesWithReporting(
+                subject, taskId, telescopeClient
+        );
     }
 }

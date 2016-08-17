@@ -15,6 +15,8 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -89,6 +91,15 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
             result.rawScores(), result.combinedEquivalences(), 
             strongEquivalences, (ReadableDescription) desc));
 
+    }
+
+    @Override
+    public void handleWithReporting(
+            EquivalenceResult<Item> result,
+            java.util.Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        // No reporting is supported for this handler.
     }
 
     private Multimap<Publisher, ScoredCandidate<Item>> filter(

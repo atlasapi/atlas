@@ -1,9 +1,5 @@
 package org.atlasapi.equiv.update.tasks;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
@@ -19,24 +15,26 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
-import com.google.common.base.Supplier;
+import com.metabroadcast.columbus.telescope.api.Ingester;
+import com.metabroadcast.columbus.telescope.api.Task;
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
+import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
 import org.junit.Test;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScheduleEquivalenceUpdateTaskTest {
@@ -44,6 +42,8 @@ public class ScheduleEquivalenceUpdateTaskTest {
     @SuppressWarnings("unchecked")
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
+    private final IngestTelescopeClientImpl telescopeClient = mock(IngestTelescopeClientImpl.class);
+    private final Task task = mock(Task.class);
 
     // TODO make this take multiple schedules
     private final ScheduleResolver scheduleResolver(final Schedule schedule) {
@@ -98,18 +98,25 @@ public class ScheduleEquivalenceUpdateTaskTest {
         ResolvedContent yv2 = ResolvedContent.builder().put("yv2", yvItemTwo).build();
         when(contentResolver.findByCanonicalUris(ImmutableSet.of("yv1"))).thenReturn(yv1);
         when(contentResolver.findByCanonicalUris(ImmutableSet.of("yv2"))).thenReturn(yv2);
+
+        java.util.Optional<String> taskId = java.util.Optional.of("fasf");
+        when(telescopeClient.startIngest(any(Ingester.class))).thenReturn(task);
+        when(task.getId()).thenReturn(taskId);
+
         ScheduleEquivalenceUpdateTask.builder()
-            .withBack(0)
-            .withForward(0)
-            .withContentResolver(contentResolver)
-            .withPublishers(ImmutableList.of(Publisher.YOUVIEW))
-            .withChannelsSupplier(Suppliers.ofInstance((Iterable<Channel>)ImmutableList.of(bbcOne)))
-            .withScheduleResolver(resolver)
-            .withUpdater(updater)
+                .withBack(0)
+                .withForward(0)
+                .withContentResolver(contentResolver)
+                .withPublishers(ImmutableList.of(Publisher.YOUVIEW))
+                .withChannelsSupplier(Suppliers.ofInstance((Iterable<Channel>)ImmutableList.of(bbcOne)))
+                .withScheduleResolver(resolver)
+                .withUpdater(updater)
+                .withTelescopeClient(telescopeClient)
+                .withReportingEnvironment("STAGE")
             .build().run();
 
-        verify(updater).updateEquivalences(yvItemOne);
-        verify(updater).updateEquivalences(yvItemTwo);
+        verify(updater).updateEquivalencesWithReporting(yvItemOne, taskId, telescopeClient);
+        verify(updater).updateEquivalencesWithReporting(yvItemTwo,  taskId, telescopeClient);
     }
 
 }

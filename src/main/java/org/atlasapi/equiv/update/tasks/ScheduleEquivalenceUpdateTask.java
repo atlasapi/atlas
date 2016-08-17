@@ -1,47 +1,41 @@
 package org.atlasapi.equiv.update.tasks;
 
-import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
-import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
-
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
+import java.util.Optional;
 
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
-import com.google.common.base.Supplier;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import org.apache.commons.collections.bag.SynchronizedBag;
-import org.joda.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.collect.ImmutableList;
-
+import com.metabroadcast.columbus.telescope.api.Environment;
+import com.metabroadcast.columbus.telescope.api.Ingester;
+import com.metabroadcast.columbus.telescope.api.Task;
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.metabroadcast.common.time.DayRange;
 import com.metabroadcast.common.time.DayRangeGenerator;
+
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
+import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
+import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
 
 public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
@@ -52,6 +46,8 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     private final ContentResolver contentResolver;
     private final int back;
     private final int forward;
+    private final IngestTelescopeClientImpl telescopeClient;
+    private final String reportingEnvironment;
 
     private final Logger log = LoggerFactory.getLogger(ScheduleEquivalenceUpdateTask.class);
 
@@ -59,10 +55,17 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         return new Builder();
     }
 
-    private ScheduleEquivalenceUpdateTask(ContentResolver contentResolver, EquivalenceUpdater<Content> updater,
-            ScheduleResolver scheduleResolver, List<Publisher> publishers,
+    private ScheduleEquivalenceUpdateTask(
+            ContentResolver contentResolver,
+            EquivalenceUpdater<Content> updater,
+            ScheduleResolver scheduleResolver,
+            List<Publisher> publishers,
             Supplier<Iterable<Channel>> channelsSupplier,
-            int back, int forward) {
+            int back,
+            int forward,
+            IngestTelescopeClientImpl telescopeClient,
+            String reportingEnvironment
+    ) {
         this.contentResolver = contentResolver;
         this.updater = updater;
         this.scheduleResolver = scheduleResolver;
@@ -70,6 +73,8 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         this.channelsSupplier = channelsSupplier;
         this.back = back;
         this.forward = forward;
+        this.telescopeClient = telescopeClient;
+        this.reportingEnvironment = reportingEnvironment;
     }
 
     @Override
@@ -104,7 +109,10 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
     public UpdateProgress equivalateSchedule(LocalDate start, LocalDate end) {
         UpdateProgress progress = UpdateProgress.START;
+
         for (Publisher publisher : publishers) {
+            Optional<String> taskId = startReporting(telescopeClient, publisher);
+
             for (Channel channel : channelsSupplier.get()) {
 
                 if (!shouldContinue()) {
@@ -137,13 +145,20 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     Maybe<Identified> identified = resolvedContent.get(scheduleItem.getCanonicalUri());
                     if (identified.hasValue()) {
                         Item value = (Item) identified.requireValue();
-                        progress = progress.reduce(process(value));
+                        progress = progress.reduce(processWithReporting(value, taskId, telescopeClient));
                         reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                     }
                 }
-            }   
+            }
+            telescopeClient.endIngest(taskId.get());
         }
         return progress;
+    }
+
+    private Optional<String> startReporting(IngestTelescopeClientImpl telescopeClient, Publisher publisher) {
+        Ingester ingester = createIngester(publisher.title());
+        Task task = telescopeClient.startIngest(ingester);
+        return task.getId();
     }
 
     private String generateStatus(LocalDate start, LocalDate end, UpdateProgress progress, Publisher publisher, Item item, Channel channel) {
@@ -170,6 +185,21 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         }
     }
 
+    private UpdateProgress processWithReporting(
+            Item item,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        try {
+            updater.updateEquivalencesWithReporting(item, taskId, telescopeClient);
+            log.info("successfully updated equivalences on " + item.getCanonicalUri());
+            return SUCCESS;
+        } catch (Exception e) {
+            log.error("Error updating equivalences on " + item.getCanonicalUri(), e);
+            return FAILURE;
+        }
+    }
+
     public static class Builder {
 
         private EquivalenceUpdater<Content> updater;
@@ -179,6 +209,8 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         private Supplier<Iterable<Channel>> channelsSupplier;
         private int back;
         private int forward;
+        private IngestTelescopeClientImpl telescopeClient;
+        private String reportingEnvironment;
 
         public ScheduleEquivalenceUpdateTask build() {
             return new ScheduleEquivalenceUpdateTask(
@@ -188,7 +220,10 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     publishers,
                     channelsSupplier,
                     back,
-                    forward);
+                    forward,
+                    telescopeClient,
+                    reportingEnvironment
+            );
         }
 
         private Builder() {
@@ -232,5 +267,23 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
             this.forward = forward;
             return this;
         }
+
+        public Builder withTelescopeClient(IngestTelescopeClientImpl telescopeClient) {
+            this.telescopeClient = telescopeClient;
+            return this;
+        }
+
+        public Builder withReportingEnvironment(String reportingEnvironment) {
+            this.reportingEnvironment = reportingEnvironment;
+            return this;
+        }
+    }
+
+    private Ingester createIngester(String publisher) {
+        return Ingester.create(
+                String.format("atlas-owl-equiv-%s", publisher.toLowerCase()),
+                String.format("Atlas Owl Equiv %s", publisher),
+                Environment.valueOf(reportingEnvironment)
+        );
     }
 }

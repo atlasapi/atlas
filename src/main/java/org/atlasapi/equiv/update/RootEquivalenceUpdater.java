@@ -3,6 +3,7 @@ package org.atlasapi.equiv.update;
 import static org.atlasapi.media.entity.ChildRef.TO_URI;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -12,6 +13,9 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,6 +42,12 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
         } else if (content instanceof Item){
             return updateContentEquivalence(content);
         }
+        return false;
+    }
+
+    @Override
+    public boolean updateEquivalencesWithReporting(Content subject, Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient) {
         return false;
     }
 

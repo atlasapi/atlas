@@ -15,6 +15,7 @@ import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage.AdjacentRef;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.queue.MessageSender;
@@ -98,6 +99,15 @@ public class MessageQueueingResultHandler<T extends Content>
         } catch (Exception e) {
             log.error("Failed to send equiv update message: " + result.subject(), e);
         }
+    }
+
+    @Override
+    public void handleWithReporting(
+            EquivalenceResult<T> result,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        // No reporting is supported for this handler.
     }
 
     private ContentEquivalenceAssertionMessage messageFrom(EquivalenceResult<T> result) {

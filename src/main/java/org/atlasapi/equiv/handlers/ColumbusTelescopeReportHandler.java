@@ -48,32 +48,32 @@ public class ColumbusTelescopeReportHandler <T extends Item>
 
     @Override
     public void handle(EquivalenceResult<Item> result) {
-        log.info("Reporting to Columbus Telescope.", result);
-        Ingester ingester = createIngester();
-        Task task = telescopeClient.startIngest(ingester);
-
-        Optional<String> ingestId = task.getId();
-        if (!ingestId.isPresent()) {
-            throw new IllegalArgumentException("No Task Id received. ");
-        }
-
-        List<Alias> aliases = createAliases();
-
-        EntityState entityState = null;
-        try {
-            entityState = createEventState(
-                    result.subject().getId(),
-                    aliases,
-                    mapper.writeValueAsString(result.description())
-            );
-        } catch (JsonProcessingException e) {
-            log.error("Couldn't convert equiv result description to a JSON string.", e);
-        }
-
-        Event event = createEvent(ingestId, entityState);
-
-        telescopeClient.createEvents(ImmutableList.of(event));
-        telescopeClient.endIngest(ingestId.get());
+//        log.info("Reporting to Columbus Telescope.", result);
+//        Ingester ingester = createIngester();
+//        Task task = telescopeClient.startIngest(ingester);
+//
+//        Optional<String> ingestId = task.getId();
+//        if (!ingestId.isPresent()) {
+//            throw new IllegalArgumentException("No Task Id received. ");
+//        }
+//
+//        List<Alias> aliases = createAliases();
+//
+//        EntityState entityState = null;
+//        try {
+//            entityState = createEventState(
+//                    result.subject().getId(),
+//                    aliases,
+//                    mapper.writeValueAsString(result.description())
+//            );
+//        } catch (JsonProcessingException e) {
+//            log.error("Couldn't convert equiv result description to a JSON string.", e);
+//        }
+//
+//        Event event = createEvent(ingestId, entityState);
+//
+//        telescopeClient.createEvents(ImmutableList.of(event));
+//        telescopeClient.endIngest(ingestId.get());
     }
 
     private EntityState createEventState(

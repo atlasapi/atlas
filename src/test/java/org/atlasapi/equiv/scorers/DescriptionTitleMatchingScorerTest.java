@@ -91,6 +91,7 @@ public class DescriptionTitleMatchingScorerTest {
         subject.setTitle("Word");
         candidate.setDescription("Word and Some Other Words That Are Different");
         assertEquals(Score.ONE, score(subject, candidate));
+        assertEquals(Score.ONE, score(candidate, subject));
     }
 
     @Test
@@ -100,6 +101,34 @@ public class DescriptionTitleMatchingScorerTest {
         subject.setTitle("Three small words");
         candidate.setDescription("Three is the only Word Repeated");
         assertEquals(Score.nullScore(), score(subject, candidate));
+        assertEquals(Score.nullScore(), score(candidate, subject));
+    }
+
+    @Test
+    public void testPunctuation() {
+        Item subject = new Item();
+        Item candidate = new Item();
+        subject.setTitle("Dr. Punctuation, and the Test");
+        candidate.setDescription("Dr Punctuation and the test");
+        assertEquals(Score.ONE, score(subject, candidate));
+        assertEquals(Score.ONE, score(candidate, subject));
+
+        Item subjectTwo = new Item();
+        Item candidateTwo = new Item();
+        subjectTwo.setDescription("Dr. Punctuation, and the Test");
+        candidateTwo.setTitle("Dr Punctuation and the test");
+        assertEquals(Score.ONE, score(subjectTwo, candidateTwo));
+        assertEquals(Score.ONE, score(candidateTwo, subjectTwo));
+    }
+
+    @Test
+    public void testNumbers() {
+        Item subject = new Item();
+        Item candidate = new Item();
+        subject.setTitle("Dr. Punctuation, Test 2");
+        candidate.setDescription("Dr Punctuation and the Test 2");
+        assertEquals(Score.ONE, score(subject, candidate));
+        assertEquals(Score.ONE, score(candidate, subject));
     }
 
     private Score score(Item subject, Item candidate) {

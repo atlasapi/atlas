@@ -37,9 +37,6 @@ public class NitroChannelHydrator {
     private static final String MASTER_BRAND_PATH = "/data/youview/mb.json";
 
     public static final String NAME = "name";
-    public static final String IMAGE = "image";
-    public static final String WIDTH = "width";
-    public static final String HEIGHT = "height";
     private static final String SHORT_NAME = "shortName";
     private static final String IMAGE_IDENT = "imageIdent";
     private static final String WIDTH_IDENT = "widthIdent";

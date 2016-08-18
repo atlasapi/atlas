@@ -86,7 +86,7 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     public boolean updateEquivalencesWithReporting(Content content, Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient) {
         if (content instanceof Item) {
-            return updateWithReporting(itemUpdater, (Item) content, taskId, telescopeClient);
+            return update(itemUpdater, (Item) content);
         } else if (content instanceof Brand) {
             return updateWithReporting(topLevelContainerUpdater, (Container) content, taskId, telescopeClient);
         } else if (topLevelSeries(content)) {

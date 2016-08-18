@@ -50,7 +50,6 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
             IngestTelescopeClientImpl telescopeClient
     ) {
         // No reporting is supported for this handler.
-        handle(result);
     }
 
     private EquivalenceSummary summaryOf(EquivalenceResult<T> result) {

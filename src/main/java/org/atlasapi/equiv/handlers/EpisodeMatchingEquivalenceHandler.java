@@ -78,7 +78,6 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
             IngestTelescopeClientImpl telescopeClient
     ) {
         // No reporting is supported for this handler.
-        handle(result);
     }
 
     private void stitch(Iterable<Episode> subjectsChildren, Map<String, EquivalenceSummary> summaryMap, Multimap<Container, Episode> equivalentsChildren, ReadableDescription desc) {

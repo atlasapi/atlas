@@ -28,6 +28,5 @@ public class ResultWritingEquivalenceHandler<T extends Content> implements Equiv
             IngestTelescopeClientImpl telescopeClient
     ) {
         // No reporting is supported for this handler.
-        handle(result);
     }
 }

@@ -46,28 +46,14 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     }
 
     @Override
-    public boolean updateEquivalencesWithReporting(
-            Content subject,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
-    ) {
-        return updateContentEquivalence(subject, taskId, telescopeClient);
+    public boolean updateEquivalencesWithReporting(Content subject, Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient) {
+        return false;
     }
 
-    private boolean updateContentEquivalence(
-            Content content
-    ) {
+    private boolean updateContentEquivalence(Content content) {
         log.trace("equiv update {}", content);
         return updater.updateEquivalences(content);
-    }
-
-    private boolean updateContentEquivalence(
-            Content content,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
-    ) {
-        log.trace("equiv update {}", content);
-        return updater.updateEquivalencesWithReporting(content, taskId, telescopeClient);
     }
 
     private boolean updateContainer(Container container) {

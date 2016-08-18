@@ -202,6 +202,10 @@ public class EquivModule {
         handlers.add(MessageQueueingResultHandler.create(
                 equivAssertDestination(), acceptablePublishers, lookupEntryStore
         ));
+        handlers.add(new ColumbusTelescopeReportHandler<Item>(
+            getTelescopeClient(),
+            reportingEnvironment
+        ));
         return new BroadcastingEquivalenceResultHandler<Item>(handlers.build());
     }
 
@@ -271,8 +275,8 @@ public class EquivModule {
                         equivAssertDestination(), acceptablePublishers, lookupEntryStore
                 ),
                 new ColumbusTelescopeReportHandler<Item>(
-                        getTelescopeClient(),
-                        reportingEnvironment
+                    getTelescopeClient(),
+                    reportingEnvironment
                 )
             )));
     }
@@ -568,11 +572,10 @@ public class EquivModule {
                             new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
                             new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
                             new ColumbusTelescopeReportHandler<Item>(
-                                    getTelescopeClient(),
-                                    reportingEnvironment
+                                getTelescopeClient(),
+                                reportingEnvironment
                             )
-                        )))
-                        .build())
+                        ))).build())
             .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
             .withTopLevelContainerUpdater(topLevelContainerUpdater(roviMatchPublishers))
             .build();
@@ -668,7 +671,11 @@ public class EquivModule {
                     equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                new ColumbusTelescopeReportHandler<Item>(
+                    getTelescopeClient(),
+                    reportingEnvironment
+                )
             )));
     }
     
@@ -699,7 +706,11 @@ public class EquivModule {
                     equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                new ColumbusTelescopeReportHandler<Item>(
+                    getTelescopeClient(),
+                    reportingEnvironment
+                )
             )));
     }
 
@@ -717,6 +728,7 @@ public class EquivModule {
             .withFilter(this.standardFilter())
             .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
             .withHandler(containerResultHandlers(sources))
+            
             .build();
     }
 
@@ -768,12 +780,13 @@ public class EquivModule {
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
                 new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
                 new ColumbusTelescopeReportHandler<Item>(
-                        getTelescopeClient(),
-                        reportingEnvironment
+                    getTelescopeClient(),
+                    reportingEnvironment
                 )
             )))
             .build();
     }
+
 
     private IngestTelescopeClientImpl getTelescopeClient() {
         TelescopeClient client = TelescopeClientImpl.create(columbusTelescopeHost);

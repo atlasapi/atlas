@@ -26,7 +26,8 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class ColumbusTelescopeReportHandler <T extends Item> implements EquivalenceResultHandler<Item>  {
+public class ColumbusTelescopeReportHandler <T extends Item>
+        implements EquivalenceResultHandler<Item>  {
 
     private final Logger log = LoggerFactory.getLogger(ColumbusTelescopeReportHandler.class);
     private final IngestTelescopeClientImpl telescopeClient;

@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerators;
-import org.atlasapi.equiv.handlers.ColumbusTelescopeReportHandler;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
 import org.atlasapi.equiv.results.EquivalenceResult;
@@ -41,7 +40,6 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         private EquivalenceFilter<T> filter;
         private EquivalenceExtractor<T> extractor;
         private EquivalenceResultHandler<T> handler;
-        private ColumbusTelescopeReportHandler reportHandler;
         private Set<String> excludedUris;
         
         public Builder<T> withGenerator(EquivalenceGenerator<T> generator) {
@@ -88,22 +86,16 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             this.excludedUris = excludedUris;
             return this;
         }
-
-        public Builder<T> withReporting(ColumbusTelescopeReportHandler reportHandler) {
-            this.reportHandler = reportHandler;
-            return this;
-        }
-
+        
         public ContentEquivalenceUpdater<T> build() {
             return new ContentEquivalenceUpdater<T>(
-                    generators.build(),
-                    scorers.build(),
-                    combiner,
-                    filter,
-                    extractor,
-                    handler,
-                    excludedUris,
-                    reportHandler
+                generators.build(),
+                scorers.build(),
+                combiner,
+                filter,
+                extractor,
+                handler,
+                excludedUris
             );
         }
     }
@@ -120,23 +112,20 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     private final EquivalenceScorers<T> scorers;
     private final DefaultEquivalenceResultBuilder<T> resultBuilder;
     private final EquivalenceResultHandler<T> handler;
-    private final ColumbusTelescopeReportHandler reportHandler;
     
     private ContentEquivalenceUpdater(
-            Iterable<EquivalenceGenerator<T>> generators,
-            Iterable<EquivalenceScorer<T>> scorers,
-            ScoreCombiner<T> combiner,
-            EquivalenceFilter<T> filter,
-            EquivalenceExtractor<T> extractor,
-            EquivalenceResultHandler<T> handler,
-            Set<String> excludedUris,
-            ColumbusTelescopeReportHandler reportHandler
+        Iterable<EquivalenceGenerator<T>> generators,
+        Iterable<EquivalenceScorer<T>> scorers,
+        ScoreCombiner<T> combiner,
+        EquivalenceFilter<T> filter,
+        EquivalenceExtractor<T> extractor,
+        EquivalenceResultHandler<T> handler,
+        Set<String> excludedUris
     ) {
         this.generators = EquivalenceGenerators.from(generators, excludedUris);
         this.scorers = EquivalenceScorers.from(scorers);
         this.resultBuilder = new DefaultEquivalenceResultBuilder<T>(combiner, filter, extractor);
         this.handler = handler;
-        this.reportHandler = reportHandler;
     }
 
     @Override

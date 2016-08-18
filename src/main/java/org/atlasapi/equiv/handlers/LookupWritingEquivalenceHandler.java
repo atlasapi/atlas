@@ -44,7 +44,11 @@ public class LookupWritingEquivalenceHandler<T extends Content> implements Equiv
     }
     
     @Override
-    public void handle(EquivalenceResult<T> result) {
+    public void handle(
+            EquivalenceResult<T> result,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
         
         Iterable<T> equivs = Iterables.transform(result.strongEquivalences().values(),ScoredCandidate.<T>toCandidate());
         
@@ -59,14 +63,5 @@ public class LookupWritingEquivalenceHandler<T extends Content> implements Equiv
         
         writer.writeLookup(ContentRef.valueOf(result.subject()), Iterables.transform(equivs, ContentRef.FROM_CONTENT), publishers);
         
-    }
-
-    @Override
-    public void handleWithReporting(
-            EquivalenceResult<T> result,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
-    ) {
-        // No reporting is supported for this handler.
     }
 }

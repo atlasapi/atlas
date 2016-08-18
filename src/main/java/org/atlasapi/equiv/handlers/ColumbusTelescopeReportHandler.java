@@ -30,28 +30,16 @@ public class ColumbusTelescopeReportHandler <T extends Item>
         implements EquivalenceResultHandler<Item>  {
 
     private final Logger log = LoggerFactory.getLogger(ColumbusTelescopeReportHandler.class);
-    private final IngestTelescopeClientImpl telescopeClient;
     private final SubstitutionTableNumberCodec codec;
     private final ObjectMapper mapper;
-    private final String reportingEnvironment;
 
-    public ColumbusTelescopeReportHandler(
-            IngestTelescopeClientImpl telescopeClient,
-            String reportingEnvironment
-    ) {
-        this.telescopeClient = checkNotNull(telescopeClient);
-        this.reportingEnvironment = checkNotNull(reportingEnvironment);
+    public ColumbusTelescopeReportHandler() {
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
         this.mapper = new ObjectMapper();
     }
 
     @Override
-    public void handle(EquivalenceResult<Item> result) {
-        // Do nothing, as this handler is used only for reporting purposes.
-    }
-
-    @Override
-    public void handleWithReporting(
+    public void handle(
             EquivalenceResult<Item> result,
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient

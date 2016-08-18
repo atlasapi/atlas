@@ -6,12 +6,9 @@ import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 public interface EquivalenceUpdater<T> {
 
-    boolean updateEquivalences(T subject);
-
-    boolean updateEquivalencesWithReporting(
+    boolean updateEquivalences(
             T subject,
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     );
-    
 }

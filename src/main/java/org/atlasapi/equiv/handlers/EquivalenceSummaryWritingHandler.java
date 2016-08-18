@@ -39,17 +39,12 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
     }
 
     @Override
-    public void handle(EquivalenceResult<T> result) {
-        equivSummaryStore.store(summaryOf(result));
-    }
-
-    @Override
-    public void handleWithReporting(
+    public void handle(
             EquivalenceResult<T> result,
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     ) {
-        // No reporting is supported for this handler.
+        equivSummaryStore.store(summaryOf(result));
     }
 
     private EquivalenceSummary summaryOf(EquivalenceResult<T> result) {

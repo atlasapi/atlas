@@ -116,9 +116,9 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
 
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(delegate, summaryStore);
         
-        handler.handle(result);
+        handler.handle(result, null, null);
         
-        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()));
+        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), null, null);
     }
     
     
@@ -143,9 +143,9 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(delegate, summaryStore);
         
-        handler.handle(result);
+        handler.handle(result, null, null);
 
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.BBC, "gequiv")));
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.BBC, "gequiv")), null, null);
     }
     
     @Test
@@ -167,9 +167,9 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
 
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(delegate, summaryStore);
         
-        handler.handle(result);
+        handler.handle(result, null, null);
 
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.C4, "ignoredequiv")));
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.C4, "ignoredequiv")), null, null);
     }
     
     @Test
@@ -190,9 +190,9 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
 
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(delegate, summaryStore);
         
-        handler.handle(result);
+        handler.handle(result, null, null);
         
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.FIVE, "nobrand")));
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.FIVE, "nobrand")), null, null);
     }
     
     @Test
@@ -222,9 +222,9 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
 
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.strict(delegate, summaryStore);
         
-        handler.handle(result);
+        handler.handle(result, null, null);
 
-        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()));
+        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), null, null);
     }
     
 

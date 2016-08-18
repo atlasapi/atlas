@@ -55,29 +55,24 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
         this.lookupWriter = lookupWriter;
         this.publishers = ImmutableSet.copyOf(acceptablePublishers);
     }
-    
+
     @Override
-    public void handle(EquivalenceResult<Container> result) {
+    public void handle(
+            EquivalenceResult<Container> result,
+            java.util.Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
         result.description().startStage("Episode sequence stitching");
-        
+
         Collection<Container> equivalentContainers = Collections2.transform(result.strongEquivalences().values(), TO_CONTAINER);
         Iterable<Episode> subjectsChildren = childrenOf(result.subject());
         Multimap<Container, Episode> equivalentsChildren = childrenOf(equivalentContainers);
         OptionalMap<String,EquivalenceSummary> childSummaries = summaryStore.summariesForUris(Iterables.transform(result.subject().getChildRefs(), ChildRef.TO_URI));
         Map<String, EquivalenceSummary> summaryMap = summaryMap(childSummaries);
-        
-        stitch(subjectsChildren, summaryMap, equivalentsChildren, result.description());
-        
-        result.description().finishStage();
-    }
 
-    @Override
-    public void handleWithReporting(
-            EquivalenceResult<Container> result,
-            java.util.Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
-    ) {
-        // No reporting is supported for this handler.
+        stitch(subjectsChildren, summaryMap, equivalentsChildren, result.description());
+
+        result.description().finishStage();
     }
 
     private void stitch(Iterable<Episode> subjectsChildren, Map<String, EquivalenceSummary> summaryMap, Multimap<Container, Episode> equivalentsChildren, ReadableDescription desc) {

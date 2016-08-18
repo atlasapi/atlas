@@ -85,7 +85,11 @@ public class MessageQueueingResultHandler<T extends Content>
     }
 
     @Override
-    public void handle(EquivalenceResult<T> result) {
+    public void handle(
+            EquivalenceResult<T> result,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
         try {
             ContentEquivalenceAssertionMessage message = messageFrom(result);
             for (AdjacentRef adjacentRef : message.getAdjacent()) {
@@ -99,15 +103,6 @@ public class MessageQueueingResultHandler<T extends Content>
         } catch (Exception e) {
             log.error("Failed to send equiv update message: " + result.subject(), e);
         }
-    }
-
-    @Override
-    public void handleWithReporting(
-            EquivalenceResult<T> result,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
-    ) {
-        // No reporting is supported for this handler.
     }
 
     private ContentEquivalenceAssertionMessage messageFrom(EquivalenceResult<T> result) {

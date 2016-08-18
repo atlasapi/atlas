@@ -9,13 +9,11 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     private enum NullUpdater implements EquivalenceUpdater<Object> {
         INSTANCE {
             @Override
-            public boolean updateEquivalences(Object content) {
-                return false;
-            }
-
-            @Override
-            public boolean updateEquivalencesWithReporting(Object subject, Optional<String> taskId,
-                    IngestTelescopeClientImpl telescopeClient) {
+            public boolean updateEquivalences(
+                    Object subject,
+                    Optional<String> taskId,
+                    IngestTelescopeClientImpl telescopeClient
+            ) {
                 return false;
             }
         };
@@ -34,13 +32,11 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     }
 
     @Override
-    public boolean updateEquivalences(T content) {
-        return false;
-    }
-
-    @Override
-    public boolean updateEquivalencesWithReporting(T subject, Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient) {
+    public boolean updateEquivalences(
+            T subject,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
         return false;
     }
 }

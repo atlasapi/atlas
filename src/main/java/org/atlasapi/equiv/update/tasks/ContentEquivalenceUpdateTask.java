@@ -85,7 +85,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
         if (!ignored.contains(content.getCanonicalUri())) {
             reportStatus(String.format("%s. Processing %s.", progress, content));
             try {
-                updater.updateEquivalences(content);
+                updater.updateEquivalences(content, null, null);
                 progress = progress.reduce(SUCCESS);
             } catch (Exception e) {
                 log.error(content.toString(), e);

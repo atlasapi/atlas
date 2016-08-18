@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerators;
+import org.atlasapi.equiv.handlers.ColumbusTelescopeReportHandler;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
 import org.atlasapi.equiv.results.EquivalenceResult;
@@ -129,44 +130,24 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     @Override
-    public boolean updateEquivalences(T content) {
-
-        ReadableDescription desc = new DefaultDescription();
-
-        List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
-        
-        Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
-        
-        List<ScoredCandidates<T>> scoredScores = scorers.score(content, candidates, desc);
-        
-        List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
-        
-        EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
-        handler.handle(result);
-
-        boolean hasCandidates = !result.combinedEquivalences().candidates().isEmpty();
-
-        return hasCandidates;
-    }
-
-    @Override
-    public boolean updateEquivalencesWithReporting(
+    public boolean updateEquivalences(
             T content,
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     ) {
+
         ReadableDescription desc = new DefaultDescription();
 
         List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
-
+        
         Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
-
+        
         List<ScoredCandidates<T>> scoredScores = scorers.score(content, candidates, desc);
-
+        
         List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
-
+        
         EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
-        handler.handleWithReporting(result, taskId, telescopeClient);
+        handler.handle(result, taskId, telescopeClient);
 
         boolean hasCandidates = !result.combinedEquivalences().candidates().isEmpty();
 

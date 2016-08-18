@@ -14,22 +14,15 @@ public class BroadcastingEquivalenceResultHandler<T extends Content> implements 
     public BroadcastingEquivalenceResultHandler(Iterable<EquivalenceResultHandler<T>> delegates) {
         this.delegates = delegates;
     }
-    
-    @Override
-    public void handle(EquivalenceResult<T> result) {
-        
-        for ( EquivalenceResultHandler<T> delegate  : delegates) {
-            delegate.handle(result);
-        }
-        
-    }
 
     @Override
-    public void handleWithReporting(
+    public void handle(
             EquivalenceResult<T> result,
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     ) {
-        // No reporting is supported for this handler.
+        for (EquivalenceResultHandler<T> delegate  : delegates) {
+            delegate.handle(result, taskId, telescopeClient);
+        }
     }
 }

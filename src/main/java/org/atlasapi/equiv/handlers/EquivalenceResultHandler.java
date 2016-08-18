@@ -8,12 +8,9 @@ import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 public interface EquivalenceResultHandler<T> {
 
-    void handle(EquivalenceResult<T> result);
-
-    void handleWithReporting(
+    void handle(
             EquivalenceResult<T> result,
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     );
-    
 }

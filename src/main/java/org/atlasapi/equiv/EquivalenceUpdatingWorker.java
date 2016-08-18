@@ -60,7 +60,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
             log.debug("{} updating equivalence: {} {} {}", 
                 new Object[]{message.getMessageId(), 
                     message.getEntitySource(), message.getEntityType(), eid});
-            equivUpdater.updateEquivalences(content);
+            equivUpdater.updateEquivalences(content, null, null);
         } else {
             log.trace("{} skipping equiv update: {} {} {}", 
                 new Object[]{message.getMessageId(), 

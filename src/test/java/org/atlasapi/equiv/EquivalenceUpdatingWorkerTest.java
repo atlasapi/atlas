@@ -64,7 +64,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater).updateEquivalences(item);
+        verify(updater).updateEquivalences(item, null, null);
     }
 
     @Test
@@ -81,7 +81,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(brand);
+        verify(updater, never()).updateEquivalences(brand, null, null);
     }
     
     @Test
@@ -98,7 +98,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(null);
+        verify(updater, never()).updateEquivalences(null, null, null);
     }
 
     @Test
@@ -115,7 +115,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(any(Content.class));
+        verify(updater, never()).updateEquivalences(any(Content.class), null, null);
     }
     
     @Test
@@ -132,7 +132,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater).updateEquivalences(item);
+        verify(updater).updateEquivalences(item, null, null);
         
     }
     
@@ -158,7 +158,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(any(Content.class));
+        verify(updater, never()).updateEquivalences(any(Content.class), null, null);
         
     }
     

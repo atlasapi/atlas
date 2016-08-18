@@ -1,7 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableMap;
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.Alias;
@@ -21,7 +21,9 @@ import com.metabroadcast.atlas.glycerin.model.Service;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.sun.org.apache.xerces.internal.jaxp.datatype.XMLGregorianCalendarImpl;
@@ -31,13 +33,11 @@ import org.junit.runner.RunWith;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import javax.annotation.Nullable;
-
 import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -112,7 +112,7 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getTitle(), is("name"));
         assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
-        assertThat(channel.getMediaType(), is(MediaType.VIDEO));
+        assertThat(channel.getMediaType(), nullValue());
     }
 
     @Test

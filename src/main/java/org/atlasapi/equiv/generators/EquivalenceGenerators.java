@@ -35,6 +35,10 @@ public class EquivalenceGenerators<T extends Content> {
             return generatedScores.build();
         }
 
+        if (!content.isActivelyPublished()) {
+            return generatedScores.build();
+        }
+
         for (EquivalenceGenerator<T> generator : generators) {
             try {
                 desc.startStage(generator.toString());

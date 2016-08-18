@@ -1,8 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
+import java.util.Optional;
 
-import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
@@ -15,6 +16,7 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
+import com.metabroadcast.atlas.glycerin.model.DateRange;
 import com.metabroadcast.atlas.glycerin.model.Id;
 import com.metabroadcast.atlas.glycerin.model.Ids;
 import com.metabroadcast.atlas.glycerin.model.MasterBrand;
@@ -25,11 +27,8 @@ import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -224,11 +223,9 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
         Channel channel = builder.build();
 
-        for (Id id : result.getIds().getId()) {
-            if (id.getType().equals(PID)) {
-                channel.addAlias(new Alias(BBC_SERVICE_PID, id.getValue()));
-            }
-        }
+        result.getIds().getId().stream()
+                .filter(id -> id.getType().equals(PID))
+                .forEach(id -> channel.addAlias(new Alias(BBC_SERVICE_PID, id.getValue())));
 
         return channel;
     }
@@ -260,14 +257,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     }
 
     private Iterable<Image> addMasterbrandAlias(Iterable<Image> images) {
-        return Iterables.transform(images, new Function<Image, Image>() {
-                    @Override public Image apply(@Nullable Image input) {
-                        input.addAlias(
-                                new Alias(BBC_IMAGE_TYPE,  MASTERBRAND)
-                        );
-                        return input;
-                    }
-                });
+        images.forEach(img -> img.addAlias(new Alias(BBC_IMAGE_TYPE, MASTERBRAND)));
+        return images;
     }
 
     private Channel getChannelWithLocatorAlias(
@@ -295,46 +286,58 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     }
 
     private Optional<LocalDate> getStartDate(Service result) {
-        try {
-            return Optional.of(LocalDate.fromDateFields(result.getDateRange()
-                    .getStart()
-                    .toGregorianCalendar()
-                    .getTime()));
-        } catch (NullPointerException e) {
-            return Optional.absent();
+        DateRange dateRange = result.getDateRange();
+        if (dateRange == null) {
+            return Optional.empty();
         }
+
+        XMLGregorianCalendar start = dateRange.getStart();
+        if (start == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(LocalDate.fromDateFields(start.toGregorianCalendar().getTime()));
     }
 
     private Optional<LocalDate> getEndDate(Service result) {
-        try {
-            return Optional.of(LocalDate.fromDateFields(result.getDateRange()
-                    .getEnd()
-                    .toGregorianCalendar()
-                    .getTime()));
-        } catch (NullPointerException e) {
-            return Optional.absent();
+        DateRange dateRange = result.getDateRange();
+        if (dateRange == null) {
+            return Optional.empty();
         }
+
+        XMLGregorianCalendar end = dateRange.getEnd();
+        if (end == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(LocalDate.fromDateFields(end.toGregorianCalendar().getTime()));
     }
 
     private Optional<LocalDate> getStartDate(MasterBrand result) {
-        try {
-            return Optional.of(LocalDate.fromDateFields(result.getMasterBrandDateRange()
-                    .getStart()
-                    .toGregorianCalendar()
-                    .getTime()));
-        } catch (NullPointerException e) {
-            return Optional.absent();
+        MasterBrand.MasterBrandDateRange dateRange = result.getMasterBrandDateRange();
+        if (dateRange == null) {
+            return Optional.empty();
         }
+
+        XMLGregorianCalendar start = dateRange.getStart();
+        if (start == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(LocalDate.fromDateFields(start.toGregorianCalendar().getTime()));
     }
 
     private Optional<LocalDate> getEndDate(MasterBrand result) {
-        try {
-            return Optional.of(LocalDate.fromDateFields(result.getMasterBrandDateRange()
-                    .getEnd()
-                    .toGregorianCalendar()
-                    .getTime()));
-        } catch (NullPointerException e) {
-            return Optional.absent();
+        MasterBrand.MasterBrandDateRange dateRange = result.getMasterBrandDateRange();
+        if (dateRange == null) {
+            return Optional.empty();
         }
+
+        XMLGregorianCalendar end = dateRange.getEnd();
+        if (end == null) {
+            return Optional.empty();
+        }
+
+        return Optional.of(LocalDate.fromDateFields(end.toGregorianCalendar().getTime()));
     }
 }

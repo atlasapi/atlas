@@ -108,6 +108,7 @@ public class MessageQueueingResultHandler<T extends Content>
             IngestTelescopeClientImpl telescopeClient
     ) {
         // No reporting is supported for this handler.
+        handle(result);
     }
 
     private ContentEquivalenceAssertionMessage messageFrom(EquivalenceResult<T> result) {

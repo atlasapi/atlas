@@ -67,7 +67,7 @@ public class ColumbusTelescopeReportHandlerTest {
         when(telescopeClient.startIngest(any(Ingester.class))).thenReturn(task);
         when(task.getId()).thenReturn(taskId);
 
-        EquivalenceResult<Item> result = createEquivResult();
+        EquivalenceResult result = createEquivResult();
 
         telescopeReportHandler.handleWithReporting(result, taskId, telescopeClient);
 

@@ -60,7 +60,6 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
 
     @Override
     public void handle(EquivalenceResult<Item> result) {
-
         ResultDescription desc = result.description()
             .startStage("Episode parent filter");
         
@@ -90,7 +89,6 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
         delegate.handle(new EquivalenceResult<Item>(result.subject(), 
             result.rawScores(), result.combinedEquivalences(), 
             strongEquivalences, (ReadableDescription) desc));
-
     }
 
     @Override
@@ -100,6 +98,7 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
             IngestTelescopeClientImpl telescopeClient
     ) {
         // No reporting is supported for this handler.
+        handle(result);
     }
 
     private Multimap<Publisher, ScoredCandidate<Item>> filter(

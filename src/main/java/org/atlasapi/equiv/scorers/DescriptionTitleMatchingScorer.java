@@ -82,6 +82,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
         Set<String> titleList = new HashSet<>();
         if (!Strings.isNullOrEmpty(title)) {
             titleList = Arrays.stream(title.replaceAll("[^a-zA-Z0-9 ]", "").toLowerCase().split(" "))
+                    .filter( o -> !o.equals(""))
                     .filter(o -> !commonWords.contains(o))
                     .collect(Collectors.toSet());
         }
@@ -92,6 +93,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
         Set<String> descriptionList = new HashSet<>();
         if (!Strings.isNullOrEmpty(description)) {
             descriptionList = Arrays.stream(description.replaceAll("[^a-zA-Z0-9 ]", "").split(" "))
+                    .filter( o -> !o.equals(""))
                     .filter( o -> Character.isUpperCase(o.charAt(0)))
                     .filter( o -> !commonWords.contains(o))
                     .map(String::toLowerCase)

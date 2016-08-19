@@ -60,7 +60,7 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
             rowIterator = csvTranslator.translate(file);
         } catch (IOException e) {
             log.info("Unable to parse input file");
-            resultBuilder.error("input file", "Unable to parse input file: " + e.getMessage());
+            resultBuilder.error(String.format("Unable to parse input file: %s", e.getMessage()));
             return resultBuilder.build();
         }
 
@@ -73,7 +73,7 @@ public class KnowledgeMotionFileProcessor implements FileProcessor {
             rowIterator = csvTranslator.translate(file);
         } catch (IOException e) {
             log.info("Unable to parse input file");
-            resultBuilder.error("input file", "Unable to parse input file: " + e.getMessage());
+            resultBuilder.error(String.format("Unable to parse input file: %s", e.getMessage()));
             return resultBuilder.build();
         }
 

@@ -15,6 +15,8 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Sets;
+
+import com.metabroadcast.common.ingest.monitorclient.model.Entity;
 import com.metabroadcast.common.ingest.s3.process.ProcessingResult;
 
 public class KnowledgeMotionUpdater {
@@ -41,7 +43,7 @@ public class KnowledgeMotionUpdater {
             ProcessingResult.Builder resultBuilder) {
         if (!rows.hasNext()) {
             log.info("Knowledgemotion Common Ingest received an empty file");
-            resultBuilder.error("input file", "Empty file");
+            resultBuilder.error("Empty file");
         }
 
         KnowledgeMotionDataRow firstRow = rows.next();
@@ -61,7 +63,7 @@ public class KnowledgeMotionUpdater {
                 errorText.append(config.rowHeader()).append("\n");
             }
 
-            resultBuilder.error("input file", errorText.toString());
+            resultBuilder.error(String.format("input file %s",  errorText.toString()));
         }
 
         boolean allRowsSuccess = true;
@@ -102,11 +104,18 @@ public class KnowledgeMotionUpdater {
                 seenUris.add(written.get().getCanonicalUri());
             }
             log.debug("Successfully updated row {}", row.getId());
-            resultBuilder.success();
+            resultBuilder.addEntity(Entity.success().withId(row.getId()).build());
             return true;
         } catch (RuntimeException e) {
             log.debug("Failed to update row {}", row.getId(), e);
-            resultBuilder.error(row.getId(), "While merging content: " + e.getMessage());
+            resultBuilder.addEntity(Entity.failure()
+                    .withId(row.getId())
+                    .withError(String.format(
+                            "While merging content: %s \n%s",
+                            row.getId(),
+                            e.getMessage()
+                    ))
+                    .build());
             return false;
         }
     }

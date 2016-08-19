@@ -39,8 +39,6 @@ import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 
 import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ingest.monitorclient.IngestMonitorClient;
-import com.metabroadcast.common.ingest.monitorclient.config.IngesterConfiguration;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.persistence.MongoTestHelper;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;

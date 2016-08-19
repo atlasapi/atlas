@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -40,6 +41,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.collect.ImmutableOptionalMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -118,7 +121,11 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null, null);
         
-        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), null, null);
+        verify(delegate).handle(argThat(
+                resultWithNoStrongEquivalents()),
+                any(),
+                any(IngestTelescopeClientImpl.class)
+        );
     }
     
     
@@ -145,7 +152,11 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null, null);
 
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.BBC, "gequiv")), null, null);
+        verify(delegate).handle(argThat(
+                resultWithStrongEquiv(Publisher.BBC, "gequiv")),
+                any(),
+                any(IngestTelescopeClientImpl.class)
+        );
     }
     
     @Test
@@ -169,7 +180,11 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null, null);
 
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.C4, "ignoredequiv")), null, null);
+        verify(delegate).handle(argThat(
+                resultWithStrongEquiv(Publisher.C4, "ignoredequiv")),
+                any(),
+                any(IngestTelescopeClientImpl.class)
+        );
     }
     
     @Test
@@ -192,7 +207,11 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null, null);
         
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.FIVE, "nobrand")), null, null);
+        verify(delegate).handle(argThat(
+                resultWithStrongEquiv(Publisher.FIVE, "nobrand")),
+                any(),
+                any(IngestTelescopeClientImpl.class)
+        );
     }
     
     @Test
@@ -224,7 +243,11 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null, null);
 
-        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), null, null);
+        verify(delegate).handle(
+                argThat(resultWithNoStrongEquivalents()),
+                any(),
+                any(IngestTelescopeClientImpl.class)
+        );
     }
     
 

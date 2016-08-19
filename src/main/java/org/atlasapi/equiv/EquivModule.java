@@ -91,9 +91,6 @@ import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-import com.metabroadcast.columbus.telescope.client.TelescopeClient;
-import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.collect.MoreSets;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.DateTimeZones;
@@ -178,13 +175,14 @@ public class EquivModule {
 
     private EquivalenceResultHandler<Container> containerResultHandlers(Iterable<Publisher> publishers) {
         return new BroadcastingEquivalenceResultHandler<Container>(ImmutableList.of(
-            new LookupWritingEquivalenceHandler<Container>(lookupWriter, publishers),
-            new EpisodeMatchingEquivalenceHandler(contentResolver, equivSummaryStore, lookupWriter, publishers),
-            new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
-            new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
-                MessageQueueingResultHandler.create(
-                    equivAssertDestination(), publishers, lookupEntryStore
-            )
+                new LookupWritingEquivalenceHandler<Container>(lookupWriter, publishers),
+                new EpisodeMatchingEquivalenceHandler(contentResolver, equivSummaryStore, lookupWriter, publishers),
+                new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
+                new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
+                    MessageQueueingResultHandler.create(
+                        equivAssertDestination(), publishers, lookupEntryStore
+                ),
+                new ColumbusTelescopeReportHandler<Container>()
         ));
     }
 
@@ -487,7 +485,8 @@ public class EquivModule {
                     equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                new ColumbusTelescopeReportHandler<Item>()
             )))
             .build();
         
@@ -534,7 +533,8 @@ public class EquivModule {
             .withHandler(new BroadcastingEquivalenceResultHandler<Container>(ImmutableList.of(
                 new LookupWritingEquivalenceHandler<Container>(lookupWriter, acceptablePublishers),
                 new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore)
+                new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
+                new ColumbusTelescopeReportHandler<Container>()
             )))
             .build();
     }

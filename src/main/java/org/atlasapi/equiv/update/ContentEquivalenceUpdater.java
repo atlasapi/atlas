@@ -6,7 +6,6 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerators;
-import org.atlasapi.equiv.handlers.ColumbusTelescopeReportHandler;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
 import org.atlasapi.equiv.results.EquivalenceResult;

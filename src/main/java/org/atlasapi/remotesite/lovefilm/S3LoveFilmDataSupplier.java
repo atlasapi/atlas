@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.charset.Charset;
 
-import com.google.common.io.ByteSource;
 import org.apache.commons.compress.compressors.bzip2.BZip2CompressorInputStream;
 import org.atlasapi.remotesite.FetchException;
 import org.jets3t.service.S3Service;
@@ -40,11 +39,9 @@ public class S3LoveFilmDataSupplier implements LoveFilmDataSupplier {
             if (file == null) {
                 throw new FetchException(String.format("No data file in %s/%s", bucketName, folder));
             }
-
-            ByteSource in = inputStreamFor(service, file);
+            InputSupplier<InputStream> in = inputStreamFor(service, file);
             Charset charset = Charset.forName("windows-1252");
-
-            return new LoveFilmData(in.asCharSource(charset));
+            return new LoveFilmData(CharStreams.newReaderSupplier(in, charset));
         } catch (ServiceException e) {
             throw new FetchException(e.getMessage(), e);
         } 
@@ -60,12 +57,11 @@ public class S3LoveFilmDataSupplier implements LoveFilmDataSupplier {
         return null;
     }
 
-    private ByteSource inputStreamFor(final S3Service service, S3Object object) {
+    private InputSupplier<InputStream> inputStreamFor(final S3Service service, S3Object object) {
         final String key = object.getKey();
-        return new ByteSource() {
-
+        return new InputSupplier<InputStream>() {
             @Override
-            public InputStream openStream() throws IOException {
+            public InputStream getInput() throws IOException {
                 try {
                     S3Object fullObject = service.getObject(bucketName, key);
                     return new BZip2CompressorInputStream(fullObject.getDataInputStream());

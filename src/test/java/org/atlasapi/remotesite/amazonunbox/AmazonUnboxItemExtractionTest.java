@@ -74,7 +74,7 @@ public class AmazonUnboxItemExtractionTest {
     
     private InputStream getFileAsInputStream(String fileName) throws IOException {
         URL testFile = Resources.getResource(getClass(), fileName);
-        return Resources.newInputStreamSupplier(testFile).getInput();
+        return Resources.asByteSource(testFile).openStream();
     }
     
     private class TestAmazonUnboxProcessor implements AmazonUnboxProcessor<UpdateProgress> {

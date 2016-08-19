@@ -12,6 +12,7 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.io.CharSource;
 import com.google.common.io.CharStreams;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.LineProcessor;
@@ -20,26 +21,46 @@ public class EpfTable<ROW extends EpfTableRow> {
 
     private static final Joiner EMPTY_JOINER = Joiner.on("");
     private final Splitter splitter;
-    private final InputSupplier<? extends Reader> inputSupplier;
+    private final CharSource inputSupplier;
     private final Function<List<String>, ROW> splitLineExtractor;
     private final String rowSeparator;
     
-    public EpfTable(InputSupplier<? extends Reader> inputSupplier, Function<List<String>, ROW> splitLineExtractor) {
-        this(inputSupplier, splitLineExtractor, String.valueOf((char) 1), String.valueOf((char)2));
+    public EpfTable(
+            CharSource inputSupplier,
+            Function<List<String>, ROW> splitLineExtractor
+    ) {
+        this(
+                inputSupplier,
+                splitLineExtractor,
+                String.valueOf((char) 1),
+                String.valueOf((char)2)
+        );
     }
     
-    public EpfTable(InputSupplier<? extends Reader> inputSupplier, Function<List<String>, ROW> splitLineExtractor, String fieldSeparator, String rowSeparator) {
+    public EpfTable(
+            CharSource inputSupplier,
+            Function<List<String>, ROW> splitLineExtractor,
+            String fieldSeparator,
+            String rowSeparator
+    ) {
         this.inputSupplier = inputSupplier;
         this.splitLineExtractor = splitLineExtractor;
         this.rowSeparator = rowSeparator;
         this.splitter = Splitter.on(fieldSeparator);
     }
     
-    public <RESULT> RESULT processRows(final EpfTableRowProcessor<ROW,RESULT> processor) throws IOException {
-        return CharStreams.readLines(inputSupplier, lineProcessorForwardingTo(processor));
+    public <RESULT> RESULT processRows(
+            final EpfTableRowProcessor<ROW,RESULT> processor
+    ) throws IOException {
+        return CharStreams.readLines(
+                inputSupplier.openStream(),
+                lineProcessorForwardingTo(processor)
+        );
     }
     
-    private <RESULT> LineProcessor<RESULT> lineProcessorForwardingTo(final EpfTableRowProcessor<ROW, RESULT> processor) {
+    private <RESULT> LineProcessor<RESULT> lineProcessorForwardingTo(
+            final EpfTableRowProcessor<ROW, RESULT> processor
+    ) {
         return new LineProcessor<RESULT>() {
 
             private List<String> buffer = Lists.newArrayList();
@@ -52,7 +73,9 @@ public class EpfTable<ROW extends EpfTableRow> {
                     return processor.process(splitLineExtractor.apply(split(line)));
                 }
                 if(line.endsWith(rowSeparator)) {
-                    ROW extracted = splitLineExtractor.apply(split(EMPTY_JOINER.join(Iterables.concat(buffer, ImmutableList.of(removeRowSeparator(line))))));
+                    ROW extracted = splitLineExtractor.apply(split(EMPTY_JOINER.join(
+                            Iterables.concat(buffer, ImmutableList.of(removeRowSeparator(line)))
+                    )));
                     boolean continu = processor.process(extracted);
                     buffer.clear();
                     return continu;
@@ -77,12 +100,9 @@ public class EpfTable<ROW extends EpfTableRow> {
     }
     
     public List<String> split(String line) {
-        return ImmutableList.copyOf(Iterables.transform(splitter.split(line), new Function<String, String>() {
-            @Override
-            public String apply(String input) {
-                return input.trim();
-            }
-        }));
+        return ImmutableList.copyOf(
+                Iterables.transform(splitter.split(line), input -> input.trim())
+        );
     }
     
     private boolean isComment(String line) {

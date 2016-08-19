@@ -94,7 +94,7 @@ public class AdultFlagIngestTest {
     
     private InputStream readFile(String fileName) throws IOException {
         URL testFile = Resources.getResource(getClass(), fileName);
-        return Resources.newInputStreamSupplier(testFile).getInput();
+        return Resources.asByteSource(testFile).openStream();
     }
     
     private static class SingleStationListener extends Listener {

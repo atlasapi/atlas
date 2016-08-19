@@ -8,6 +8,8 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.atlasapi.remotesite.lovefilm.LoveFilmData.LoveFilmDataRow;
+
+import com.google.common.io.CharSource;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -25,14 +27,14 @@ public class LoveFilmCsvUpdateTaskTest {
     
     @Test
     public void test() {
-        
-        LoveFilmData data = new LoveFilmData(CharStreams.newReaderSupplier("\"header\",\"row\"\n\"value\",\"row\""));
+        LoveFilmData data = new LoveFilmData(CharSource.wrap(
+                "\"header\",\"row\"\n\"value\",\"row\""
+        ));
         when(dataSupplier.getLatestData()).thenReturn(data);
         
         task.run();
         
         ArgumentCaptor<LoveFilmDataRow> rowCaptor = ArgumentCaptor.forClass(LoveFilmDataRow.class);
-        
         verify(dataHandler).prepare();
         verify(dataHandler, times(1)).handle(rowCaptor.capture());
         

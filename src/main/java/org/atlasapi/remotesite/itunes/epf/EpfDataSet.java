@@ -16,6 +16,7 @@ import org.atlasapi.remotesite.itunes.epf.model.EpfStorefront;
 import org.atlasapi.remotesite.itunes.epf.model.EpfVideo;
 
 import com.google.common.base.Charsets;
+import com.google.common.io.CharSource;
 import com.google.common.io.Files;
 import com.google.common.io.InputSupplier;
 import com.metabroadcast.common.intl.Country;
@@ -59,7 +60,7 @@ public class EpfDataSet {
         return new EpfTable<EpfStorefront>(readerSupplierFor("storefront"), EpfStorefront.FROM_ROW_PARTS);
     }
 
-    private InputSupplier<? extends Reader> readerSupplierFor(String fileName) {
-        return Files.newReaderSupplier(new File(datasetDirectory, fileName), Charsets.UTF_8);
+    private CharSource readerSupplierFor(String fileName) {
+        return Files.asCharSource(new File(datasetDirectory, fileName), Charsets.UTF_8);
     }
 }

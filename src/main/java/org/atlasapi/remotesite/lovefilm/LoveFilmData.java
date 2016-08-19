@@ -7,6 +7,7 @@ import java.util.List;
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
+import com.google.common.io.CharSource;
 import com.google.common.io.CharStreams;
 import com.google.common.io.InputSupplier;
 import com.google.common.io.LineProcessor;
@@ -45,14 +46,17 @@ public class LoveFilmData {
         
     }
 
-    private InputSupplier<? extends Reader> dataSupplier;
+    private CharSource dataSupplier;
     
-    public LoveFilmData(InputSupplier<? extends Reader> dataSupplier) {
+    public LoveFilmData(CharSource dataSupplier) {
         this.dataSupplier = dataSupplier;
     }
     
     public <T> T processData(LoveFilmDataProcessor<T> processor) throws IOException {
-        return CharStreams.readLines(dataSupplier, lineProcessorWrap(processor));
+        return CharStreams.readLines(
+                dataSupplier.openStream(),
+                lineProcessorWrap(processor)
+        );
     }
     
     private <T> LineProcessor<T> lineProcessorWrap(final LoveFilmDataProcessor<T> processor) {

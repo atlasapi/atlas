@@ -231,7 +231,7 @@ public class LoveFilmDataRowContentExtractorTest {
     
     private LoveFilmDataRow rowFromFile(String filename) throws IOException {
         URL testFile = Resources.getResource(getClass(), filename);
-        LoveFilmData data = new LoveFilmData(Resources.newReaderSupplier(testFile, Charsets.UTF_8));
+        LoveFilmData data = new LoveFilmData(Resources.asCharSource(testFile, Charsets.UTF_8));
         return data.processData(new LoveFilmDataProcessor<LoveFilmDataRow>() {
 
             private LoveFilmDataRow row;

@@ -55,23 +55,22 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
         this.lookupWriter = lookupWriter;
         this.publishers = ImmutableSet.copyOf(acceptablePublishers);
     }
-
+    
     @Override
     public void handle(
             EquivalenceResult<Container> result,
-            java.util.Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            java.util.Optional<String> taskId
     ) {
         result.description().startStage("Episode sequence stitching");
-
+        
         Collection<Container> equivalentContainers = Collections2.transform(result.strongEquivalences().values(), TO_CONTAINER);
         Iterable<Episode> subjectsChildren = childrenOf(result.subject());
         Multimap<Container, Episode> equivalentsChildren = childrenOf(equivalentContainers);
         OptionalMap<String,EquivalenceSummary> childSummaries = summaryStore.summariesForUris(Iterables.transform(result.subject().getChildRefs(), ChildRef.TO_URI));
         Map<String, EquivalenceSummary> summaryMap = summaryMap(childSummaries);
-
+        
         stitch(subjectsChildren, summaryMap, equivalentsChildren, result.description());
-
+        
         result.description().finishStage();
     }
 

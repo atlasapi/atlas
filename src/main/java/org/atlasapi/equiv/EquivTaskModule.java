@@ -1,5 +1,6 @@
 package org.atlasapi.equiv;
 
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -49,7 +50,9 @@ import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.time.DayOfWeek;
 
+import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -373,7 +376,15 @@ public class EquivTaskModule {
     }
     
     private ContentEquivalenceUpdateTask publisherUpdateTask(final Publisher... publishers) {
-        return new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore(), equivUpdater, ignored).forPublishers(publishers);
+        return new ContentEquivalenceUpdateTask(
+                contentLister,
+                contentResolver,
+                progressStore(),
+                equivUpdater,
+                ignored,
+                reportingEnvironment,
+                getTelescopeClient()
+        ).forPublishers(publishers);
     }
     
     //Controllers...
@@ -524,5 +535,4 @@ public class EquivTaskModule {
         TelescopeClient client = TelescopeClientImpl.create(columbusTelescopeHost);
         return IngestTelescopeClientImpl.create(client);
     }
-
 }

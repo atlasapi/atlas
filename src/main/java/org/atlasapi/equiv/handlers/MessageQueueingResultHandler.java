@@ -87,8 +87,7 @@ public class MessageQueueingResultHandler<T extends Content>
     @Override
     public void handle(
             EquivalenceResult<T> result,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            Optional<String> taskId
     ) {
         try {
             ContentEquivalenceAssertionMessage message = messageFrom(result);

@@ -61,16 +61,16 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
     @Override
     public void handle(
             EquivalenceResult<Item> result,
-            java.util.Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            java.util.Optional<String> taskId
     ) {
+
         ResultDescription desc = result.description()
             .startStage("Episode parent filter");
         
         ParentRef container = result.subject().getContainer();
         if (container == null) {
             desc.appendText("Item has no Container").finishStage();
-            delegate.handle(result, taskId, telescopeClient);
+            delegate.handle(result, taskId);
             return;
         }
         
@@ -90,16 +90,12 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
                 = filter(result.strongEquivalences(), equivalents, desc);
         
         desc.finishStage();
-        delegate.handle(
-                new EquivalenceResult<Item>(
-                        result.subject(),
-                        result.rawScores(),
-                        result.combinedEquivalences(),
-                        strongEquivalences,
-                        (ReadableDescription) desc),
-                taskId,
-                telescopeClient
+        delegate.handle(new EquivalenceResult<Item>(result.subject(),
+                        result.rawScores(), result.combinedEquivalences(),
+                        strongEquivalences, (ReadableDescription) desc),
+                taskId
         );
+
     }
 
     private Multimap<Publisher, ScoredCandidate<Item>> filter(

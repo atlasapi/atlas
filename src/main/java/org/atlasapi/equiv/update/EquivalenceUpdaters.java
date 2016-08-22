@@ -29,10 +29,8 @@ public class EquivalenceUpdaters implements EquivalenceUpdater<Content> {
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     ) {
-        return updaters.get(subject.getPublisher()).updateEquivalences(
-                subject,
-                taskId,
-                telescopeClient
-        );
+        return updaters.get(subject.getPublisher())
+                .updateEquivalences(subject, taskId, telescopeClient);
     }
+
 }

@@ -11,4 +11,5 @@ public interface EquivalenceUpdater<T> {
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     );
+    
 }

@@ -52,7 +52,7 @@ public class ColumbusTelescopeReportHandlerTest {
 
     @Before
     public void setUp() throws Exception {
-        this.telescopeReportHandler = new ColumbusTelescopeReportHandler();
+        this.telescopeReportHandler = new ColumbusTelescopeReportHandler(telescopeClient);
         this.readableDescription = new DefaultDescription();
         readableDescription.appendText("Publisher: pressassociation.com");
         readableDescription.appendText("Percent Above Next Best Match Extractor");
@@ -69,7 +69,7 @@ public class ColumbusTelescopeReportHandlerTest {
 
         EquivalenceResult<Item> result = createEquivResult();
 
-        telescopeReportHandler.handle(result, taskId, telescopeClient);
+        telescopeReportHandler.handle(result, taskId);
 
         verify(telescopeClient).createEvents(eventCaptor.capture());
 

@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.update;
 
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -41,8 +40,6 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
-
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.collect.ImmutableOptionalMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -119,13 +116,9 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
 
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(delegate, summaryStore);
         
-        handler.handle(result, null, null);
+        handler.handle(result, null);
         
-        verify(delegate).handle(argThat(
-                resultWithNoStrongEquivalents()),
-                any(),
-                any(IngestTelescopeClientImpl.class)
-        );
+        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), null);
     }
     
     
@@ -150,41 +143,33 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(delegate, summaryStore);
         
-        handler.handle(result, null, null);
+        handler.handle(result, null);
 
-        verify(delegate).handle(argThat(
-                resultWithStrongEquiv(Publisher.BBC, "gequiv")),
-                any(),
-                any(IngestTelescopeClientImpl.class)
-        );
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.BBC, "gequiv")), null);
     }
     
     @Test
     public void testDoesntFilterItemFromSourceWithNoStrongBrandsWhenRelaxed() {
 
         EquivalenceSummary equivSummary = new EquivalenceSummary(subject.getContainer().getUri(), ImmutableList.<String>of(), ImmutableMultimap.<Publisher,ContentRef>of());
-        
+
         when(summaryStore.summariesForUris(argThat(hasItem(subject.getContainer().getUri()))))
             .thenReturn(ImmutableOptionalMap.fromMap(ImmutableMap.of(subject.getContainer().getUri(), equivSummary)));
-        
+
         Episode ignoredEquiv = new Episode("ignoredequiv", "ignoredequiv", Publisher.C4);
         ignoredEquiv.setParentRef(new ParentRef("weakbutignoredbrand"));
 
         Multimap<Publisher, ScoredCandidate<Item>> strong = ImmutableMultimap.of(
             Publisher.C4, ScoredCandidate.<Item>valueOf(ignoredEquiv, Score.ONE)
         );
-        
+
         EquivalenceResult<Item> result = new EquivalenceResult<Item>(subject, noScores, emptyCombined , strong, new DefaultDescription());
 
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(delegate, summaryStore);
-        
-        handler.handle(result, null, null);
 
-        verify(delegate).handle(argThat(
-                resultWithStrongEquiv(Publisher.C4, "ignoredequiv")),
-                any(),
-                any(IngestTelescopeClientImpl.class)
-        );
+        handler.handle(result, null);
+
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.C4, "ignoredequiv")), null);
     }
     
     @Test
@@ -205,13 +190,9 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
 
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(delegate, summaryStore);
         
-        handler.handle(result, null, null);
+        handler.handle(result, null);
         
-        verify(delegate).handle(argThat(
-                resultWithStrongEquiv(Publisher.FIVE, "nobrand")),
-                any(),
-                any(IngestTelescopeClientImpl.class)
-        );
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.FIVE, "nobrand")), null);
     }
     
     @Test
@@ -241,13 +222,9 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
 
         EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.strict(delegate, summaryStore);
         
-        handler.handle(result, null, null);
+        handler.handle(result, null);
 
-        verify(delegate).handle(
-                argThat(resultWithNoStrongEquivalents()),
-                any(),
-                any(IngestTelescopeClientImpl.class)
-        );
+        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), null);
     }
     
 

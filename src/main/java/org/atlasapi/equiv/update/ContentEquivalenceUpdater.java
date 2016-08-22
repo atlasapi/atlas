@@ -146,13 +146,13 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
         
         EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
-        handler.handle(result, taskId, telescopeClient);
+        handler.handle(result, taskId);
 
         boolean hasCandidates = !result.combinedEquivalences().candidates().isEmpty();
 
         return hasCandidates;
     }
-
+    
     private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
         return Iterables.concat(Iterables.transform(generatedScores, extractCandidates));
     }

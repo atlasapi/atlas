@@ -15,13 +15,13 @@ public class ResultWritingEquivalenceHandler<T extends Content> implements Equiv
     public ResultWritingEquivalenceHandler(EquivalenceResultStore store) {
         this.store = store;
     }
-
+    
     @Override
     public void handle(
             EquivalenceResult<T> result,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            Optional<String> taskId
     ) {
         store.store(result);
     }
+
 }

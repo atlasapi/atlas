@@ -1,7 +1,11 @@
 package org.atlasapi.equiv.handlers;
 
+import java.util.Optional;
+
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.media.entity.Content;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 public class BroadcastingEquivalenceResultHandler<T extends Content> implements EquivalenceResultHandler<T> {
 
@@ -12,10 +16,13 @@ public class BroadcastingEquivalenceResultHandler<T extends Content> implements 
     }
     
     @Override
-    public void handle(EquivalenceResult<T> result) {
+    public void handle(
+            EquivalenceResult<T> result,
+            Optional<String> taskId
+    ) {
         
         for ( EquivalenceResultHandler<T> delegate  : delegates) {
-            delegate.handle(result);
+            delegate.handle(result, taskId);
         }
         
     }

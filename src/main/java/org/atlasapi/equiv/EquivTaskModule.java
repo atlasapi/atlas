@@ -41,6 +41,9 @@ import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+import com.metabroadcast.columbus.telescope.client.TelescopeClient;
+import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.kafka.KafkaConsumer;
 import com.metabroadcast.common.scheduling.RepetitionRule;
@@ -162,6 +165,8 @@ public class EquivTaskModule {
     private @Value("${equiv.stream-updater.consumers.default}") Integer defaultStreamedEquivUpdateConsumers;
     private @Value("${equiv.stream-updater.consumers.max}") Integer maxStreamedEquivUpdateConsumers;
     private @Value("${messaging.destination.content.changes}") String contentChanges;
+    private @Value("${reporting.columbus-telescope.environment}") String reportingEnvironment;
+    private @Value("${reporting.columbus-telescope.host}") String columbusTelescopeHost;
     
     private @Autowired ContentLister contentLister;
     private @Autowired SimpleScheduler taskScheduler;
@@ -357,11 +362,13 @@ public class EquivTaskModule {
 
     private Builder taskBuilder(int back, int forward) {
         return ScheduleEquivalenceUpdateTask.builder()
-            .withContentResolver(contentResolver)
-            .withUpdater(equivUpdater)
-            .withScheduleResolver(scheduleResolver)
-            .withBack(back)
-            .withForward(forward);
+                .withContentResolver(contentResolver)
+                .withUpdater(equivUpdater)
+                .withScheduleResolver(scheduleResolver)
+                .withBack(back)
+                .withForward(forward)
+                .withTelescopeClient(getTelescopeClient())
+                .withReportingEnvironment(reportingEnvironment);
     }
 
     public @Bean MongoScheduleTaskProgressStore progressStore() {
@@ -369,7 +376,15 @@ public class EquivTaskModule {
     }
     
     private ContentEquivalenceUpdateTask publisherUpdateTask(final Publisher... publishers) {
-        return new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore(), equivUpdater, ignored).forPublishers(publishers);
+        return new ContentEquivalenceUpdateTask(
+                contentLister,
+                contentResolver,
+                progressStore(),
+                equivUpdater,
+                ignored,
+                reportingEnvironment,
+                getTelescopeClient()
+        ).forPublishers(publishers);
     }
     
     //Controllers...
@@ -515,5 +530,9 @@ public class EquivTaskModule {
             return youviewChannelResolver.getAllChannels();
         }
     }
-    
+
+    private IngestTelescopeClientImpl getTelescopeClient() {
+        TelescopeClient client = TelescopeClientImpl.create(columbusTelescopeHost);
+        return IngestTelescopeClientImpl.create(client);
+    }
 }

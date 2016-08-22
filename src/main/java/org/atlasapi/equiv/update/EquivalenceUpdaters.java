@@ -1,9 +1,12 @@
 package org.atlasapi.equiv.update;
 
 import java.util.Map;
+import java.util.Optional;
 
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 import com.google.common.collect.Maps;
 
@@ -21,8 +24,13 @@ public class EquivalenceUpdaters implements EquivalenceUpdater<Content> {
     }
 
     @Override
-    public boolean updateEquivalences(Content subject) {
-        return updaters.get(subject.getPublisher()).updateEquivalences(subject);
+    public boolean updateEquivalences(
+            Content subject,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        return updaters.get(subject.getPublisher())
+                .updateEquivalences(subject, taskId, telescopeClient);
     }
 
 }

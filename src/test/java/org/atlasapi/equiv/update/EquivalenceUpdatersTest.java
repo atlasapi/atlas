@@ -30,8 +30,8 @@ public class EquivalenceUpdatersTest {
                 .withTopLevelContainerUpdater(containerUpdater)
                 .build());
         
-        updaters.updateEquivalences(ep);
-        verify(itemUpdater).updateEquivalences(ep);
+        updaters.updateEquivalences(ep, null, null);
+        verify(itemUpdater).updateEquivalences(ep, null, null);
         
     }
 

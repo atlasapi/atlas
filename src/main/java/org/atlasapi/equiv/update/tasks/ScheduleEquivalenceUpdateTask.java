@@ -289,7 +289,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
             return this;
         }
 
-        public Builder withTelescopeClient(IngestTelescopeClientImpl columbusTelescopeHost) {
+        public Builder withTelescopeClient(IngestTelescopeClientImpl telescopeClient) {
             this.telescopeClient = telescopeClient;
             return this;
         }

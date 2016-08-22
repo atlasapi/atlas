@@ -136,7 +136,7 @@ public class ScheduleEquivalenceUpdateTaskTest {
                 .withReportingEnvironment("STAGE")
                 .build().run();
 
-        verify(updater).updateEquivalences(yvItemOne, null, null);
-        verify(updater).updateEquivalences(yvItemTwo, null, null);
+        verify(updater).updateEquivalences(yvItemOne, taskId, telescopeClient);
+        verify(updater).updateEquivalences(yvItemTwo, taskId, telescopeClient);
     }
 }

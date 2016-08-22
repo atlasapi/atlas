@@ -49,7 +49,12 @@ public class LookupWritingEquivalenceHandler<T extends Content> implements Equiv
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     ) {
-        
+    public void handle(
+            EquivalenceResult<T> result,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+
         Iterable<T> equivs = Iterables.transform(result.strongEquivalences().values(),ScoredCandidate.<T>toCandidate());
         
         //abort writing if seens as equiv and not equiv to anything

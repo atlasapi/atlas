@@ -159,7 +159,7 @@ public class EquivModule {
 	private @Value("${equiv.excludedUris}") String excludedUris;
     private @Value("${reporting.columbus-telescope.environment}") String reportingEnvironment;
     private @Value("${reporting.columbus-telescope.host}") String columbusTelescopeHost;
-    
+
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired SearchResolver searchResolver;
     private @Autowired ContentResolver contentResolver;
@@ -167,6 +167,7 @@ public class EquivModule {
     private @Autowired EquivalenceSummaryStore equivSummaryStore;
     private @Autowired LookupWriter lookupWriter;
     private @Autowired LookupEntryStore lookupEntryStore;
+    
     private @Autowired KafkaMessagingModule messaging;
 
     public @Bean RecentEquivalenceResultStore equivalenceResultStore() {

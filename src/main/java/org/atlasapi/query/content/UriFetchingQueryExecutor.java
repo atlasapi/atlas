@@ -30,6 +30,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.system.Fetcher;
 
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -37,6 +39,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+
+import static org.hamcrest.Matchers.any;
 
 /**
  * Finds any uris from a given {@link ContentQuery}, fetches them using a local/remote

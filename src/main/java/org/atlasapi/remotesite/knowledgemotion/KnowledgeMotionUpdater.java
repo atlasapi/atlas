@@ -10,6 +10,9 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentCategory;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -26,6 +29,7 @@ public class KnowledgeMotionUpdater {
     private final KnowledgeMotionDataRowHandler dataHandler;
     private final Iterable<KnowledgeMotionSourceConfig> allKmPublishers;
     private final ContentLister contentLister;
+    private final ObjectMapper mapper;
 
     private Set<String> seenUris;
 
@@ -37,13 +41,15 @@ public class KnowledgeMotionUpdater {
         this.contentLister = checkNotNull(contentLister);
 
         seenUris = Sets.newHashSet();
+
+        this.mapper = new ObjectMapper();
     }
 
     protected ProcessingResult.Builder process(Iterator<KnowledgeMotionDataRow> rows,
             ProcessingResult.Builder resultBuilder) {
         if (!rows.hasNext()) {
             log.info("Knowledgemotion Common Ingest received an empty file");
-            resultBuilder.error("Empty file");
+            resultBuilder.error(String.format("Empty input file %s"));
         }
 
         KnowledgeMotionDataRow firstRow = rows.next();
@@ -56,7 +62,9 @@ public class KnowledgeMotionUpdater {
         }
         if (publisher == null) {
             StringBuilder errorText = new StringBuilder();
-            errorText.append("First row did not contain a recognised publisher in the 'Source' column.").append("\n");
+            errorText.append(
+                    "First row did not contain a recognised publisher in the 'Source' column."
+            ).append("\n");
             errorText.append("Found: " + publisherRowHeader).append("\n");
             errorText.append("Valid publishers are: ").append("\n");
             for (KnowledgeMotionSourceConfig config : allKmPublishers) {
@@ -81,7 +89,11 @@ public class KnowledgeMotionUpdater {
          * unpublish everything else by this publisher
          */
         if (allRowsSuccess) {
-            Iterator<Content> allStoredKmContent = contentLister.listContent(ContentListingCriteria.defaultCriteria().forContent(ContentCategory.TOP_LEVEL_ITEM).forPublisher(publisher).build());
+            Iterator<Content> allStoredKmContent = contentLister.listContent(
+                    ContentListingCriteria.defaultCriteria()
+                            .forContent(ContentCategory.TOP_LEVEL_ITEM)
+                            .forPublisher(publisher).build()
+            );
             while (allStoredKmContent.hasNext()) {
                 Content item = allStoredKmContent.next();
                 if (!seenUris.contains(item.getCanonicalUri())) {
@@ -104,7 +116,11 @@ public class KnowledgeMotionUpdater {
                 seenUris.add(written.get().getCanonicalUri());
             }
             log.debug("Successfully updated row {}", row.getId());
-            resultBuilder.addEntity(Entity.success().withId(row.getId()).build());
+            resultBuilder.addEntity(Entity.success()
+                    .withId(row.getId())
+                    .withRaw(mapper.writeValueAsString(row))
+                    .build()
+            );
             return true;
         } catch (RuntimeException e) {
             log.debug("Failed to update row {}", row.getId(), e);
@@ -112,6 +128,17 @@ public class KnowledgeMotionUpdater {
                     .withId(row.getId())
                     .withError(String.format(
                             "While merging content: %s \n%s",
+                            row.getId(),
+                            e.getMessage()
+                    ))
+                    .build());
+            return false;
+        } catch (JsonProcessingException e) {
+            log.debug("Failed to convert Knowledge Motion row to a JSON. ", row.getId(), e);
+            resultBuilder.addEntity(Entity.failure()
+                    .withId(row.getId())
+                    .withError(String.format(
+                            "While converting Knowledge Motion row to a JSON object: %s \n%s",
                             row.getId(),
                             e.getMessage()
                     ))

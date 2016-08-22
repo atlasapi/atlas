@@ -1,11 +1,19 @@
 package org.atlasapi.equiv.update;
 
+import java.util.Optional;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
 public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
 
     private enum NullUpdater implements EquivalenceUpdater<Object> {
         INSTANCE {
             @Override
-            public boolean updateEquivalences(Object content) {
+            public boolean updateEquivalences(
+                    Object content,
+                    Optional<String> taskId,
+                    IngestTelescopeClientImpl telescopeClient
+            ) {
                 return false;
             }
         };
@@ -24,7 +32,11 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     }
 
     @Override
-    public boolean updateEquivalences(T content) {
+    public boolean updateEquivalences(
+            T content,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
         return false;
     }
 

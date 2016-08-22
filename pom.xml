@@ -422,7 +422,7 @@
         <dependency>
             <groupId>com.google.guava</groupId>
             <artifactId>guava</artifactId>
-            <version>16.0.1</version>
+            <version>17.0</version>
         </dependency>
         <dependency>
             <groupId>it.unimi.dsi</groupId>
@@ -559,6 +559,21 @@
             <groupId>com.metabroadcast.common.ingest</groupId>
             <artifactId>common-ingest</artifactId>
             <version>${common.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>com.metabroadcast.columbus.telescope</groupId>
+            <artifactId>telescope-client</artifactId>
+            <version>${telescope-client.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.dropwizard</groupId>
+                    <artifactId>dropwizard-logging</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>io.dropwizard</groupId>
+                    <artifactId>dropwizard-testing</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
@@ -702,6 +717,7 @@
         <jetty.version>9.1.0.M0</jetty.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <telescope-client.version>1.0-SNAPSHOT</telescope-client.version>
 
         <sonar.jacoco.itReportPath>${project.basedir}/target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>

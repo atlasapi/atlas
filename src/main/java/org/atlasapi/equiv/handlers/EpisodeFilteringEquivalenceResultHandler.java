@@ -15,6 +15,8 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -57,7 +59,11 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
     }
 
     @Override
-    public void handle(EquivalenceResult<Item> result) {
+    public void handle(
+            EquivalenceResult<Item> result,
+            java.util.Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
 
         ResultDescription desc = result.description()
             .startStage("Episode parent filter");
@@ -65,7 +71,7 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
         ParentRef container = result.subject().getContainer();
         if (container == null) {
             desc.appendText("Item has no Container").finishStage();
-            delegate.handle(result);
+            delegate.handle(result, taskId, telescopeClient);
             return;
         }
         
@@ -85,9 +91,12 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
                 = filter(result.strongEquivalences(), equivalents, desc);
         
         desc.finishStage();
-        delegate.handle(new EquivalenceResult<Item>(result.subject(), 
-            result.rawScores(), result.combinedEquivalences(), 
-            strongEquivalences, (ReadableDescription) desc));
+        delegate.handle(new EquivalenceResult<Item>(result.subject(),
+                        result.rawScores(), result.combinedEquivalences(),
+                        strongEquivalences, (ReadableDescription) desc),
+                taskId,
+                telescopeClient
+        );
 
     }
 

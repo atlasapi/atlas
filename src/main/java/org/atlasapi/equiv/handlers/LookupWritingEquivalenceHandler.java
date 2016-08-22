@@ -2,6 +2,7 @@ package org.atlasapi.equiv.handlers;
 
 import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.equiv.ContentRef;
@@ -10,6 +11,9 @@ import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.LookupWriter;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
 import org.joda.time.Duration;
 
 import com.google.common.cache.CacheBuilder;
@@ -40,8 +44,11 @@ public class LookupWritingEquivalenceHandler<T extends Content> implements Equiv
     }
     
     @Override
-    public void handle(EquivalenceResult<T> result) {
-        
+    public void handle(
+            EquivalenceResult<T> result,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
         Iterable<T> equivs = Iterables.transform(result.strongEquivalences().values(),ScoredCandidate.<T>toCandidate());
         
         //abort writing if seens as equiv and not equiv to anything

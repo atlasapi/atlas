@@ -179,7 +179,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     Maybe<Identified> identified = resolvedContent.get(scheduleItem.getCanonicalUri());
                     if (identified.hasValue()) {
                         Item value = (Item) identified.requireValue();
-                        progress = progress.reduce(process(value));
+                        progress = progress.reduce(process(value, taskId, telescopeClient));
                         reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                     }
                 }
@@ -201,7 +201,11 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         );
     }
 
-    private UpdateProgress process(Item item) {
+    private UpdateProgress process(
+            Item item,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
         try {
             updater.updateEquivalences(item, taskId, telescopeClient);
             log.info("successfully updated equivalences on " + item.getCanonicalUri());

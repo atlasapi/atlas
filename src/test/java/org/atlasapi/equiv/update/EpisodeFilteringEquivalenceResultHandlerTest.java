@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update;
 
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -118,7 +119,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null);
         
-        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), null);
+        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), any());
     }
     
     
@@ -145,7 +146,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null);
 
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.BBC, "gequiv")), null);
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.BBC, "gequiv")), any());
     }
     
     @Test
@@ -169,7 +170,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
 
         handler.handle(result, null);
 
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.C4, "ignoredequiv")), null);
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.C4, "ignoredequiv")), any());
     }
     
     @Test
@@ -192,7 +193,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null);
         
-        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.FIVE, "nobrand")), null);
+        verify(delegate).handle(argThat(resultWithStrongEquiv(Publisher.FIVE, "nobrand")), any());
     }
     
     @Test
@@ -224,7 +225,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
         
         handler.handle(result, null);
 
-        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), null);
+        verify(delegate).handle(argThat(resultWithNoStrongEquivalents()), any());
     }
     
 

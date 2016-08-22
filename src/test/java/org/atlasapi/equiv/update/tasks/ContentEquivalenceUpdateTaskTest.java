@@ -25,6 +25,9 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -43,6 +46,8 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ScheduleTaskProgressStore progressStore = mock(ScheduleTaskProgressStore.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
+    private final IngestTelescopeClientImpl client = mock(IngestTelescopeClientImpl.class);
+    private final String environment = "prod";
 
     private final ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
         return new ContentLister() {
@@ -86,15 +91,15 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         when(contentResolver.findByCanonicalUris(argThat(hasItem("episode"))))
             .thenReturn(ResolvedContent.builder().put(paEp.getCanonicalUri(), paEp).build());
         
-        new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore, updater, ImmutableSet.<String>of()).forPublishers(PA, BBC, C4).run();
+        new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore, updater, ImmutableSet.<String>of(), environment, client).forPublishers(PA, BBC, C4).run();
         
-        verify(updater).updateEquivalences(paItemOne);
-        verify(updater, times(2)).updateEquivalences(paBrand);
-        verify(updater).updateEquivalences(paEp);
-        verify(updater).updateEquivalences(bbcItemOne);
-        verify(updater).updateEquivalences(bbcItemTwo);
-        verify(updater).updateEquivalences(bbcItemThree);
-        verify(updater).updateEquivalences(c4ItemOne);
+        verify(updater).updateEquivalences(paItemOne, null, null);
+        verify(updater, times(2)).updateEquivalences(paBrand, null, null);
+        verify(updater).updateEquivalences(paEp, null, null);
+        verify(updater).updateEquivalences(bbcItemOne, null, null);
+        verify(updater).updateEquivalences(bbcItemTwo, null, null);
+        verify(updater).updateEquivalences(bbcItemThree, null, null);
+        verify(updater).updateEquivalences(c4ItemOne, null, null);
         verify(progressStore).storeProgress(taskName, ContentListingProgress.START);
     }
 }

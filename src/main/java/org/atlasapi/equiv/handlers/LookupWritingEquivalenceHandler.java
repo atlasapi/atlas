@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.handlers;
 
-import static java.util.concurrent.TimeUnit.MILLISECONDS;
-
+import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.equiv.ContentRef;
@@ -10,13 +9,15 @@ import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.LookupWriter;
-import org.joda.time.Duration;
 
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.joda.time.Duration;
+
+import static java.util.concurrent.TimeUnit.MILLISECONDS;
 
 public class LookupWritingEquivalenceHandler<T extends Content> implements EquivalenceResultHandler<T> {
  
@@ -40,8 +41,10 @@ public class LookupWritingEquivalenceHandler<T extends Content> implements Equiv
     }
     
     @Override
-    public void handle(EquivalenceResult<T> result) {
-        
+    public void handle(
+            EquivalenceResult<T> result,
+            Optional<String> taskId
+    ) {
         Iterable<T> equivs = Iterables.transform(result.strongEquivalences().values(),ScoredCandidate.<T>toCandidate());
         
         //abort writing if seens as equiv and not equiv to anything
@@ -54,7 +57,6 @@ public class LookupWritingEquivalenceHandler<T extends Content> implements Equiv
         }
         
         writer.writeLookup(ContentRef.valueOf(result.subject()), Iterables.transform(equivs, ContentRef.FROM_CONTENT), publishers);
-        
     }
 
 }

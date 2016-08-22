@@ -35,6 +35,8 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.collect.OptionalMap;
 
 public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandler<Container> {
@@ -55,7 +57,10 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
     }
     
     @Override
-    public void handle(EquivalenceResult<Container> result) {
+    public void handle(
+            EquivalenceResult<Container> result,
+            java.util.Optional<String> taskId
+    ) {
         result.description().startStage("Episode sequence stitching");
         
         Collection<Container> equivalentContainers = Collections2.transform(result.strongEquivalences().values(), TO_CONTAINER);

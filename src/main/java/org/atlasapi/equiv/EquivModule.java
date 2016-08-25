@@ -59,7 +59,9 @@ import org.atlasapi.equiv.results.scores.ScoreThreshold;
 import org.atlasapi.equiv.scorers.BroadcastAliasScorer;
 import org.atlasapi.equiv.scorers.ContainerHierarchyMatchingScorer;
 import org.atlasapi.equiv.scorers.CrewMemberScorer;
+import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
+import org.atlasapi.equiv.scorers.LDistanceTitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.SeriesSequenceItemScorer;
@@ -314,7 +316,7 @@ public class EquivModule {
         ));
         
         EquivalenceUpdater<Item> standardItemUpdater = standardItemUpdater(MoreSets.add(acceptablePublishers, LOVEFILM), 
-                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer(Score.ONE), new DescriptionTitleMatchingScorer())).build();
+                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer(Score.ONE), new DescriptionTitleMatchingScorer(), DescriptionMatchingScorer.makeScorer())).build();
         EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
@@ -712,9 +714,10 @@ public class EquivModule {
         return standardItemUpdater(sources, ImmutableSet.of(
             new TitleMatchingItemScorer(), 
             new SequenceItemScorer(Score.ONE),
-            new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
+            new LDistanceTitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
             new BroadcastAliasScorer(Score.nullScore()),
-            new DescriptionTitleMatchingScorer()
+            new DescriptionTitleMatchingScorer(),
+                DescriptionMatchingScorer.makeScorer()
         ), filter).build();
     }
 

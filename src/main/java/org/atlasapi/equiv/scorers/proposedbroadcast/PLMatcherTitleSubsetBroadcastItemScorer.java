@@ -37,7 +37,7 @@ import org.atteo.evo.inflector.English;
  */
 public final class PLMatcherTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
-    public static final String NAME = "Broadcast-Title-Subset";
+    public static final String NAME = "PL-Matcher-Broadcast-Title-Subset";
 
     private final ExpandingTitleTransformer titleTransformer = new ExpandingTitleTransformer();
 

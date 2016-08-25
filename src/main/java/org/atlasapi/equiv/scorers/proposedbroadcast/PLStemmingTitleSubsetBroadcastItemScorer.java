@@ -36,7 +36,7 @@ import com.google.common.collect.Sets;
  */
 public final class PLStemmingTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
-    public static final String NAME = "Broadcast-Title-Subset";
+    public static final String NAME = "Stemming-Broadcast-Title-Subset";
 
     private final ExpandingTitleTransformer titleTransformer = new ExpandingTitleTransformer();
 

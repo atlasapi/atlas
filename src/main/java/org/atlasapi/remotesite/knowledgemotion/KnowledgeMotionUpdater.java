@@ -41,7 +41,7 @@ public class KnowledgeMotionUpdater {
             ProcessingResult.Builder resultBuilder) {
         if (!rows.hasNext()) {
             log.info("Knowledgemotion Common Ingest received an empty file");
-            resultBuilder.error("input file", "Empty file");
+            resultBuilder.error("input file" + "Empty file");
         }
 
         KnowledgeMotionDataRow firstRow = rows.next();
@@ -61,7 +61,7 @@ public class KnowledgeMotionUpdater {
                 errorText.append(config.rowHeader()).append("\n");
             }
 
-            resultBuilder.error("input file", errorText.toString());
+            resultBuilder.error("input file" + errorText.toString());
         }
 
         boolean allRowsSuccess = true;
@@ -102,11 +102,11 @@ public class KnowledgeMotionUpdater {
                 seenUris.add(written.get().getCanonicalUri());
             }
             log.debug("Successfully updated row {}", row.getId());
-            resultBuilder.success();
+            //resultBuilder.success();
             return true;
         } catch (RuntimeException e) {
             log.debug("Failed to update row {}", row.getId(), e);
-            resultBuilder.error(row.getId(), "While merging content: " + e.getMessage());
+            resultBuilder.error(row.getId() + "While merging content: " + e.getMessage());
             return false;
         }
     }

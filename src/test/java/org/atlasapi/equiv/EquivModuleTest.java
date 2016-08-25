@@ -23,6 +23,10 @@ import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.scorers.*;
 import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
+import org.atlasapi.equiv.scorers.proposedbroadcast.LDistanceTitleSubsetBroadcastItemScorer;
+import org.atlasapi.equiv.scorers.proposedbroadcast.PL1TitleSubsetBroadcastItemScorer;
+import org.atlasapi.equiv.scorers.proposedbroadcast.PLMatcherTitleSubsetBroadcastItemScorer;
+import org.atlasapi.equiv.scorers.proposedbroadcast.PLStemmingTitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -226,20 +230,20 @@ public class EquivModuleTest {
         }
     };
 
-//    @Test
-//    public void testPL1() throws Exception {
-//        runTest(new PL1TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PL1", false);
-//    }
-//
-//    @Test
-//    public void testPLMatcher() throws Exception {
-//        runTest(new PLMatcherTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLMatcher", false);
-//    }
-//
-//    @Test
-//    public void testPLStemming() throws Exception {
-//        runTest(new PLStemmingTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLStemming", false);
-//    }
+    @Test
+    public void testPL1() throws Exception {
+        runTest(new PL1TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PL1", false);
+    }
+
+    @Test
+    public void testPLMatcher() throws Exception {
+        runTest(new PLMatcherTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLMatcher", false);
+    }
+
+    @Test
+    public void testPLStemming() throws Exception {
+        runTest(new PLStemmingTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "PLStemming", false);
+    }
 //
 //    @Test
 //    public void testLDistance() throws Exception {
@@ -270,11 +274,11 @@ public class EquivModuleTest {
 //    public void testLDistancePlusDescription() throws Exception {
 //        runTest(new LDistanceTitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusPLLDistance", true);
 //    }
-
-    @Test
-    public void testOriginalPlusDescription() throws Exception {
-        runTest(new TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusOriginal", true);
-    }
+//
+//    @Test
+//    public void testOriginalPlusDescription() throws Exception {
+//        runTest(new TitleSubsetBroadcastItemScorer(contentResolver, Score.nullScore(), 80/*percent*/), "DescriptionPlusOriginal", true);
+//    }
 //
 //    @Test
 //    public void testTitleMLDistance() throws Exception {
@@ -284,6 +288,11 @@ public class EquivModuleTest {
 //    @Test
 //    public void testTitleMLDistancePlusDescription() throws Exception {
 //        runTest(new LDistanceTitleMatching(), "DescriptionPlusTitleMLDistance", true);
+//    }
+
+//    @Test
+//    public void testDescriptionVsDescription() throws Exception {
+//        runTest(DescriptionMatchingScorer.makeScorer(), "DescriptionVsDescription", false);
 //    }
 
 
@@ -440,6 +449,7 @@ public class EquivModuleTest {
         contentList.add("http://youview.com/scheduleevent/33858911");
         contentList.add("http://youview.com/scheduleevent/33902428");
 
+        contentList.add("http://talktalk.net/episodes/437141"); //Frank that we had support issues with
 
 
         return contentList;

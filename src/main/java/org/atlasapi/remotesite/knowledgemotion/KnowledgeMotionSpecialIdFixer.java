@@ -23,7 +23,7 @@ public class KnowledgeMotionSpecialIdFixer {
             ProcessingResult.Builder resultBuilder) {
         if (!rows.hasNext()) {
             log.info("Knowledgemotion Common Ingest received an empty file");
-            resultBuilder.error("input file", "Empty file");
+            resultBuilder.error("input file" + "Empty file");
         }
 
         while (rows.hasNext()) {

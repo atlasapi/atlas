@@ -36,7 +36,7 @@ import org.apache.commons.lang.StringUtils;
  */
 public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
-    public static final String NAME = "Broadcast-Title-Subset";
+    public static final String NAME = "LD-Broadcast-Title-Subset";
 
     private final ExpandingTitleTransformer titleTransformer = new ExpandingTitleTransformer();
 
@@ -109,17 +109,15 @@ public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcast
         double lDistance = (double) StringUtils.getLevenshteinDistance(
                 subjectWords.toString(),
                 candidateWords.toString());
-        double maxTitleSize = (double) returnLargestStringSize(sanitizedSubjectTitle, sanitizedCandidateTitle);
-        return (lDistance / maxTitleSize) * 100 >= threshold;
+        double stringsTotalLength = (double) (
+                subjectWords.toString().length() + candidateWords.toString().length()
+        );
+        return 1 - (lDistance / stringsTotalLength) >= threshold;
     }
 
     private String sanitize(String title) {
         return titleTransformer.expand(title)
                 .replaceAll("[^\\d\\w\\s]", "").toLowerCase();
-    }
-
-    private int returnLargestStringSize(String stringOne, String stringTwo) {
-        return stringOne.length() > stringTwo.length() ? stringOne.length() : stringTwo.length();
     }
 
     private Set<String> filterCommon(Set<String> words) {
@@ -128,11 +126,6 @@ public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcast
 
     private ImmutableSet<String> titleWords(String title) {
         return ImmutableSet.copyOf(splitter.split(title));
-    }
-
-    private double percentOfShorterInLonger(Set<String> shorter, Set<String> longer) {
-        int contained = Sets.intersection(shorter, longer).size();
-        return (contained * 1.0) / shorter.size();
     }
 
     protected boolean descriptionMatch(Item subject, Item candidate){ return false; }

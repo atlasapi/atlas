@@ -17,11 +17,11 @@ import org.junit.Test;
 
 import com.google.common.collect.ImmutableSet;
 
-public class LDistanceTitleSubsetBroadcastItemScorerTest {
+public class LevenshteinDistanceTitleSubsetBroadcastItemScorerTest {
 
     private final ContentResolver resolver = new StubContentResolver();
-    private final LDistanceTitleSubsetBroadcastItemScorer scorer
-            = new LDistanceTitleSubsetBroadcastItemScorer(resolver, Score.nullScore(), 80);
+    private final LevenshteinDistanceTitleSubsetBroadcastItemScorer scorer
+            = new LevenshteinDistanceTitleSubsetBroadcastItemScorer(resolver, Score.nullScore(), 80);
 
     @Test
     public void testMatches() {
@@ -60,7 +60,9 @@ public class LDistanceTitleSubsetBroadcastItemScorerTest {
         Item item1 = itemWithTitle("Title That Contains Single Utterance In Subject");
         Item item2 = itemWithTitle("Title That Contains Single Utterance In Subject");
         Version version = new Version();
-        Broadcast broadcast = new Broadcast("http://ref.atlasapi.org/channels/pressassociation.com/2021", DateTime.now(), DateTime.now());
+        Broadcast broadcast = new Broadcast(
+                "http://ref.atlasapi.org/channels/pressassociation.com/2021", DateTime.now(), DateTime.now()
+        );
         version.addBroadcast(broadcast);
         item1.addVersion(version);
         assertEquals(Score.nullScore(), score(
@@ -71,7 +73,9 @@ public class LDistanceTitleSubsetBroadcastItemScorerTest {
 
     @Test
     public void testSymbols() {
-        assertEquals(Score.ONE, score(itemWithTitle("Sponge Bob Square Pants"), itemWithTitle("Sponge Bob Square Pants: Episode 1")));
+        assertEquals(Score.ONE,
+                score(itemWithTitle("Sponge Bob Square Pants"),
+                itemWithTitle("Sponge Bob Square Pants: Episode 1")));
     }
 
     @Test

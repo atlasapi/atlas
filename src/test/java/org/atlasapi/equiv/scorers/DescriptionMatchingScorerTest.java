@@ -8,7 +8,7 @@ import org.atlasapi.media.entity.Item;
 import com.google.common.collect.ImmutableSet;
 import org.junit.Test;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
 
 public class DescriptionMatchingScorerTest {
 
@@ -25,7 +25,7 @@ public class DescriptionMatchingScorerTest {
     }
 
     @Test
-    public void testMatch() {
+    public void testDescriptionsMatchWhenTheyShould() {
         Item subject = new Item();
         Item candidate = new Item();
         subject.setDescription("Football related content and Manchester United talk");
@@ -35,7 +35,7 @@ public class DescriptionMatchingScorerTest {
     }
 
     @Test
-    public void testMismatch() {
+    public void testDescriptionsMismatchWhenTheyShould() {
         Item subject = new Item();
         Item candidate = new Item();
         subject.setDescription("Football related content and Manchester United talk");
@@ -45,7 +45,7 @@ public class DescriptionMatchingScorerTest {
     }
 
     @Test
-    public void testCapitals() {
+    public void testCapitalsAreNecessaryForMatching() {
         Item subject = new Item();
         Item candidate = new Item();
         subject.setDescription("Football related content and Manchester United talk");

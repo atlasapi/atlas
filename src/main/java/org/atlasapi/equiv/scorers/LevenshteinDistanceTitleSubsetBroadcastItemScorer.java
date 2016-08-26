@@ -34,7 +34,7 @@ import org.apache.commons.lang.StringUtils;
  * {@link CharMatcher#JAVA_LETTER} characters.
  * </p>
  */
-public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
+public final class LevenshteinDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcastItemScorer {
 
     public static final String NAME = "LD-Broadcast-Title-Subset";
 
@@ -70,7 +70,7 @@ public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcast
      *            - the percent of words in the shorter title required to be in
      *            the longer title for a match to succeed.
      */
-    public LDistanceTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
+    public LevenshteinDistanceTitleSubsetBroadcastItemScorer(ContentResolver resolver, Score misMatchScore, int percentThreshold) {
         super(resolver, misMatchScore);
         Range<Integer> percentRange = Range.closed(0, 100);
         checkArgument(percentRange.contains(percentThreshold),
@@ -117,6 +117,7 @@ public final class LDistanceTitleSubsetBroadcastItemScorer extends BaseBroadcast
 
     private String sanitize(String title) {
         return titleTransformer.expand(title)
+                //strip punctuation
                 .replaceAll("[^\\d\\w\\s]", "").toLowerCase();
     }
 

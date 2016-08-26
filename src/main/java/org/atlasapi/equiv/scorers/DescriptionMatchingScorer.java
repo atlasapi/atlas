@@ -7,6 +7,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
@@ -21,9 +22,11 @@ import com.google.common.collect.Sets;
 public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
 
     public static final String NAME = "Description Matching";
-    private final Set<String> commonWords = ImmutableSet.of(
+    private static final Set<String> commonWords = ImmutableSet.of(
             "the", "in", "a", "and", "&", "of", "to", "show"
     );
+    //proportion crossover between key words in two descriptions threshold
+    public static final double PROPORTION_CROSSOVER = 0.2;
 
     private DescriptionMatchingScorer() {
     }
@@ -54,29 +57,25 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
     }
 
     private Score score(Item subject, Item candidate) {
-        return descriptionMatch(subject, candidate)? Score.ONE: Score.nullScore();
+        return descriptionMatch(subject, candidate) ? Score.ONE : Score.nullScore();
     }
 
     private boolean descriptionMatch(Item subject, Item candidate) {
-        List<String> candidateList = descriptionToProcessedList(candidate.getDescription());
-        List<String> subjectList = descriptionToProcessedList(subject.getDescription());
+        Set<String> candidateList = descriptionToProcessedList(candidate.getDescription());
+        Set<String> subjectList = descriptionToProcessedList(subject.getDescription());
 
         candidateList.retainAll(subjectList);
 
         //calibrate here
-        return new Double(candidateList.size())/new Double(subjectList.size()) > 0.2;
+        return new Double(candidateList.size())/new Double(subjectList.size()) > PROPORTION_CROSSOVER;
     }
 
-    private List<String> descriptionToProcessedList(String description) {
-        List<String> descriptionList = new LinkedList<>();
-        if (!Strings.isNullOrEmpty(description)) {
-            descriptionList = filterCommon(new HashSet<>(tokenize(description)));
-        }
-        return descriptionList;
-    }
-
-    private List<String> filterCommon(Set<String> words) {
-        return new ArrayList(Sets.difference(words, commonWords));
+    private Set<String> descriptionToProcessedList(String description) {
+        return !Strings.isNullOrEmpty(description) ?
+               tokenize(description).stream()
+                .filter(s -> !commonWords.contains(s))
+                .collect(Collectors.toSet()) :
+                Sets.newHashSet();
     }
 
     private List<String> tokenize(String target) {

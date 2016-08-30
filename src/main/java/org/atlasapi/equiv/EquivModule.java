@@ -62,7 +62,6 @@ import org.atlasapi.equiv.scorers.ContainerHierarchyMatchingScorer;
 import org.atlasapi.equiv.scorers.CrewMemberScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
-import org.atlasapi.equiv.scorers.LevenshteinDistanceTitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.SeriesSequenceItemScorer;
@@ -71,6 +70,7 @@ import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
+import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdaters;
@@ -737,7 +737,7 @@ public class EquivModule {
         return standardItemUpdater(sources, ImmutableSet.of(
                 new TitleMatchingItemScorer(),
                 new SequenceItemScorer(Score.ONE),
-                new LevenshteinDistanceTitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
+                new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
                 new BroadcastAliasScorer(Score.nullScore()),
                 new DescriptionTitleMatchingScorer(),
                 DescriptionMatchingScorer.makeScorer()

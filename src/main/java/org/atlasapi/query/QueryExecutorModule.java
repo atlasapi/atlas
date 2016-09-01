@@ -8,7 +8,6 @@ import javax.annotation.PreDestroy;
 
 import org.atlasapi.input.BrandModelTransformer;
 import org.atlasapi.input.ClipModelTransformer;
-import org.atlasapi.input.DefaultGsonModelReader;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.DelegatingModelTransformer;
 import org.atlasapi.input.ItemModelTransformer;
@@ -30,6 +29,7 @@ import org.atlasapi.query.worker.ContentWriteWorker;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.MessageConsumerFactory;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.queue.MessageSenderFactory;
@@ -62,6 +62,7 @@ public class QueryExecutorModule {
     private @Autowired SegmentWriter segmentWriter;
     private @Autowired MessageConsumerFactory<KafkaConsumer> consumerFactory;
     private @Autowired MessageSenderFactory senderFactory;
+    private @Autowired DatabasedMongo db;
 
     private @Value("${messaging.system}") String messagingSystem;
     private @Value("${messaging.destination.write.content}") String contentWriteTopic;
@@ -115,6 +116,7 @@ public class QueryExecutorModule {
                 .withConsumerSystem(messagingSystem)
                 .withDefaultConsumers(numOfConsumers)
                 .withMaxConsumers(numOfConsumers)
+                .withPersistentRetryPolicy(db)
                 .build();
     }
 

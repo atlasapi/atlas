@@ -108,6 +108,7 @@ public class BbcIonServices {
         .put("shakespeare_birthplace_trust", "http://www.bbc.co.uk/services/shakespeare_birthplace_trust")
         .put("ex_cathedra", "http://www.bbc.co.uk/services/ex_cathedra")
         .put("europeanbroadcastingunion", "http://www.bbc.co.uk/services/europeanbroadcastingunion")
+        .put("bbc_arts", "http://www.bbc.co.uk/services/bbc_arts")
 //       I don't think the following are required, but leaving here so the full list can be
 //       checked
 //        .put("bbc_radio_swindon", "")

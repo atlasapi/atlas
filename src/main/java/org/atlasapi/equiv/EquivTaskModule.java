@@ -1,6 +1,5 @@
 package org.atlasapi.equiv;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -50,12 +49,9 @@ import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.time.DayOfWeek;
 
-import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
@@ -484,25 +480,26 @@ public class EquivTaskModule {
     }
 
     @Bean
-    @Lazy(true)
-    public Optional<KafkaConsumer> equivalenceUpdatingMessageListener() {
-        if (streamedChangesUpdateEquiv) {
-            return Optional.of(messaging.messageConsumerFactory().createConsumer(
-                    equivUpdatingWorker(), JacksonMessageSerializer.forType(EntityUpdatedMessage.class), 
-                    contentChanges, "EquivUpdater")
-                .withDefaultConsumers(defaultStreamedEquivUpdateConsumers)
-                .withMaxConsumers(maxStreamedEquivUpdateConsumers)
-                .build());
-        } else {
-            return Optional.absent();
-        }
+    @Lazy()
+    public KafkaConsumer equivalenceUpdatingMessageListener() {
+            return messaging.messageConsumerFactory()
+                    .createConsumer(
+                            equivUpdatingWorker(),
+                            JacksonMessageSerializer.forType(EntityUpdatedMessage.class),
+                            contentChanges,
+                            "EquivUpdater"
+                    )
+                    .withDefaultConsumers(defaultStreamedEquivUpdateConsumers)
+                    .withMaxConsumers(maxStreamedEquivUpdateConsumers)
+                    .withPersistentRetryPolicy(db)
+                    .build();
     }
     
     @PostConstruct
     public void startConsumer() {
-        Optional<KafkaConsumer> consumer = equivalenceUpdatingMessageListener();
-        if (consumer.isPresent()) {
-            consumer.get().addListener(new Listener() {
+        if (streamedChangesUpdateEquiv) {
+            KafkaConsumer consumer = equivalenceUpdatingMessageListener();
+            consumer.addListener(new Listener() {
                 @Override
                 public void failed(State from, Throwable failure) {
                     log.warn("equiv update listener failed to transition from " + from, failure);
@@ -513,7 +510,7 @@ public class EquivTaskModule {
                 }
                 
             }, MoreExecutors.sameThreadExecutor());
-            consumer.get().startAsync();
+            consumer.startAsync();
         }
     }
 

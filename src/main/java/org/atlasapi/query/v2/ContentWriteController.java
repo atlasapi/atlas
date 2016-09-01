@@ -4,9 +4,12 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
+import java.util.Iterator;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.UUID;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
@@ -17,7 +20,10 @@ import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.output.AtlasErrorSummary;
@@ -25,7 +31,12 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
 import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.output.exceptions.UnauthorizedException;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.worker.ContentWriteMessage;
 
@@ -35,12 +46,15 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.social.exceptions.BadRequestException;
 import com.metabroadcast.common.time.Timestamp;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
 import com.google.api.client.util.Maps;
+import com.google.common.base.Optional;
+import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -57,6 +71,9 @@ public class ContentWriteController {
     public static final String ASYNC_PARAMETER = "async";
     private static final String STRICT = "strict";
 
+    private static final String ID = "id";
+    private static final String URI = "uri";
+
 
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;
@@ -70,18 +87,29 @@ public class ContentWriteController {
     private final MessageSender<ContentWriteMessage> messageSender;
     private final AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter;
 
+    private final LookupEntryStore lookupEntryStore;
+    private final ContentResolver contentResolver;
+    private final ContentWriter contentWriter;
+
     public ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
             ContentWriteExecutor contentWriteExecutor,
             LookupBackedContentIdGenerator lookupBackedContentIdGenerator,
             MessageSender<ContentWriteMessage> messageSender,
-            AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter
+            AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter,
+            LookupEntryStore lookupEntryStore,
+            ContentResolver contentResolver,
+            ContentWriter contentWriter
     ) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
         this.writeExecutor = checkNotNull(contentWriteExecutor);
         this.lookupBackedContentIdGenerator = checkNotNull(lookupBackedContentIdGenerator);
         this.messageSender = checkNotNull(messageSender);
         this.outputWriter = outputWriter;
+
+        this.lookupEntryStore = checkNotNull(lookupEntryStore);
+        this.contentResolver = checkNotNull(contentResolver);
+        this.contentWriter = checkNotNull(contentWriter);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
@@ -92,6 +120,115 @@ public class ContentWriteController {
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
     public WriteResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
+    }
+
+    @Nullable
+    @RequestMapping(value = "/3.0/content.json", method = RequestMethod.DELETE)
+    public WriteResponse unpublishContent(HttpServletRequest req, HttpServletResponse resp) {
+        return setPublishStatus(req, resp, false);
+    }
+
+    @Nullable
+    private WriteResponse setPublishStatus(HttpServletRequest req, HttpServletResponse resp,
+            boolean publishStatus)
+    {
+        // check API key has permissions to do this
+
+        @SuppressWarnings("deprecation")
+        Maybe<ApplicationConfiguration> possibleConfig;
+        try {
+            possibleConfig = appConfigFetcher.configurationFor(req);
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+            return error(req, resp, AtlasErrorSummary.forException(ex));
+        }
+
+        if (possibleConfig.isNothing()) {
+
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
+            );
+        }
+
+        // get ID / URI, if ID, lookup URI from it
+        String contentUri;
+        if(req.getParameter(ID) != null) {
+            Long contentId = SubstitutionTableNumberCodec
+                    .lowerCaseOnly()
+                    .decode(req.getParameter(ID))
+                    .longValue();
+            Iterator<LookupEntry> entryStoreIterator = lookupEntryStore
+                    .entriesForIds(Lists.newArrayList(contentId))
+                    .iterator();
+
+            if (entryStoreIterator.hasNext()) {
+                contentUri = entryStoreIterator.next().uri();
+            } else {
+                return error(req, resp, AtlasErrorSummary.forException(
+                        new NoSuchElementException("Content not found for id"))
+                );
+            }
+        } else if(req.getParameter(URI) != null) {
+            contentUri = req.getParameter(URI);
+        } else {
+            return error(req, resp, AtlasErrorSummary.forException(
+                    new BadRequestException("id / uri parameter not specified"))
+            );
+        }
+
+        // find some content from URI
+        @SuppressWarnings("deprecation")
+        Maybe<Identified> identified;
+
+        ResolvedContent resolvedContent =
+                contentResolver.findByCanonicalUris(Lists.newArrayList(contentUri));
+
+        if(!resolvedContent.isEmpty()) {
+            identified = resolvedContent.getFirstValue();
+        } else {
+            return error(req, resp, AtlasErrorSummary.forException(
+                    new NoSuchElementException("could not resolve content for URI")
+            ));
+        }
+
+        // If we didn't find one, return an error
+        if(!identified.hasValue()) {
+            return error(req, resp, AtlasErrorSummary.forException(
+                    new NoSuchElementException("Unable to resolve content")));
+        }
+
+        Described described = (Described) identified.requireValue();
+
+        // Check if the api key has write permissions for this publisher
+        if (!possibleConfig.requireValue().canWrite(described.getPublisher())) {
+
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new ForbiddenException(
+                            "API key does not have write permission"
+                    ))
+            );
+        }
+
+        // set publisher status
+        described.setActivelyPublished(publishStatus);
+
+        // write back to DB
+        if(described instanceof Item) {
+            contentWriter.createOrUpdate((Item) described);
+        }
+        if(described instanceof Container) {
+            contentWriter.createOrUpdate((Container) described);
+        }
+
+        // return all good
+        resp.setStatus(HttpServletResponse.SC_OK);
+        return null;
+
     }
 
     private WriteResponse deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,

@@ -377,7 +377,10 @@ public class QueryWebModule {
                 contentWriteExecutor,
                 lookupBackedContentIdGenerator,
                 contentWriteMessageSender,
-                contentModelOutputter()
+                contentModelOutputter(),
+                lookupStore,
+                contentResolver,
+                contentWriter
         );
     }
 

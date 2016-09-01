@@ -1,4 +1,4 @@
-    package org.atlasapi.query.v2;
+package org.atlasapi.query.v2;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -65,8 +65,7 @@ public class TopicWriteController {
         this.outputter = outputter;
     }
 
-
-    @RequestMapping(value="/3.0/topics.json", method = RequestMethod.POST)
+    @RequestMapping(value = "/3.0/topics.json", method = RequestMethod.POST)
     public WriteResponse writeContent(HttpServletRequest req, HttpServletResponse resp) {
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
 
@@ -177,8 +176,6 @@ public class TopicWriteController {
             throws IOException, ReadException {
         return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Topic.class, strict);
     }
-
-
     private WriteResponse error(HttpServletRequest request, HttpServletResponse response,
             AtlasErrorSummary summary) {
         try {

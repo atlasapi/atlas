@@ -3,6 +3,7 @@ package org.atlasapi.input;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.simple.Playlist;
@@ -45,6 +46,9 @@ public class SeriesModelTransformer extends ContentModelTransformer<Playlist, Se
         super.setFields(result, simple);
         result.setTotalEpisodes(simple.getTotalEpisodes());
         result.withSeriesNumber(simple.getSeriesNumber());
+        if (simple.getBrandSummary() != null) {
+            result.setParentRef(new ParentRef(simple.getBrandSummary().getUri()));
+        }
         return result;
     }
 }

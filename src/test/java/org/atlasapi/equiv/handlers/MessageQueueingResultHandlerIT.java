@@ -155,7 +155,7 @@ public class MessageQueueingResultHandlerIT {
                 .build();
         consumer.startAsync().awaitRunning(10, TimeUnit.SECONDS);
 
-        handler.handle(new EquivalenceResult<>(subject, scores, combined, strong, desc));
+        handler.handle(new EquivalenceResult<>(subject, scores, combined, strong, desc), null);
         assertTrue("message not received", latch.await(5, TimeUnit.SECONDS));
         
         ContentEquivalenceAssertionMessage assertionMessage = message.get();

@@ -1,11 +1,14 @@
 package org.atlasapi.remotesite.pa;
 
+import java.io.File;
 import java.util.HashSet;
 import java.util.Set;
 
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
@@ -14,12 +17,13 @@ import org.atlasapi.remotesite.pa.listings.bindings.ProgData;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 
 import com.google.common.base.Optional;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 public class PaChannelProcessor {
 
@@ -43,7 +47,7 @@ public class PaChannelProcessor {
 
     public int process(PaChannelData channelData, Set<String> currentlyProcessing) {
         int processed = 0;
-        Set<ItemRefAndBroadcast> broadcasts = new HashSet<ItemRefAndBroadcast>();
+        Set<ItemRefAndBroadcast> broadcasts = new HashSet<>();
         Channel channel = channelData.channel();
         Set<ContentHierarchyAndSummaries> hierarchiesAndSummaries = Sets.newHashSet();
         Builder<String, String> acceptableBroadcastIds = ImmutableMap.builder();
@@ -51,33 +55,19 @@ public class PaChannelProcessor {
             for (ProgData programme : channelData.programmes()) {
                 String programmeLock = lockIdentifier(programme);
                 lock(currentlyProcessing, programmeLock);
-
                 try {
-                    Optional<ContentHierarchyAndSummaries> possibleHierarchy = processor.process(
-                            programme,
-                            channel,
-                            channelData.zone(),
-                            channelData.lastUpdated()
-                    );
+                    Optional<ContentHierarchyAndSummaries> possibleHierarchy = processor.process(programme, channel,
+                            channelData.zone(), channelData.lastUpdated());
                     if (possibleHierarchy.isPresent()) {
                         ContentHierarchyAndSummaries hierarchy = possibleHierarchy.get();
                         contentBuffer.add(hierarchy);
-
                         hierarchiesAndSummaries.add(hierarchy);
-
-                        broadcasts.add(new ItemRefAndBroadcast(
-                                hierarchy.getItem(),
-                                hierarchy.getBroadcast()
-                        ));
-                        acceptableBroadcastIds.put(
-                                hierarchy.getBroadcast().getSourceId(),
-                                hierarchy.getItem().getCanonicalUri()
-                        );
+                        broadcasts.add(new ItemRefAndBroadcast(hierarchy.getItem(), hierarchy.getBroadcast()));
+                        acceptableBroadcastIds.put(hierarchy.getBroadcast().getSourceId(), hierarchy.getItem().getCanonicalUri());
                     }
-                    processed++;
+                    processed ++;
                 } catch (Exception e) {
-                    log.error(String.format("Error processing channel %s, prog id %s",
-                            channel.getKey(), programme.getProgId()));
+                    log.error(String.format("Error processing channel %s, prog id %s", channel.getKey(), programme.getProgId()));
                 } finally {
                     unlock(currentlyProcessing, programmeLock);
                 }
@@ -105,9 +95,12 @@ public class PaChannelProcessor {
 
             scheduleVersionStore.store(channel, channelData.scheduleDay(), channelData.version());
         } catch (Exception e) {
-            log.error(String.format("Error trimming and writing schedule for channel %s", channel.getKey()), e);
+            String message = String.format(
+                    "Error trimming and writing schedule for channel %s",
+                    channel.getKey()
+            );
+            log.error(message, e);
         }
-        
         return processed;
     }
 
@@ -115,18 +108,21 @@ public class PaChannelProcessor {
         try {
             contentBuffer.flush();
             for (ContentHierarchyAndSummaries hierarchy : hierarchies) {
-                if (hierarchy.getBrandSummary().isPresent()) {
-                    contentWriter.createOrUpdate(hierarchy.getBrandSummary().get());
+                Optional<Brand> brandSummary = hierarchy.getBrandSummary();
+                if (brandSummary.isPresent()) {
+                    contentWriter.createOrUpdate(brandSummary.get());
                 }
-                if (hierarchy.getSeriesSummary().isPresent()) {
-                    contentWriter.createOrUpdate(hierarchy.getSeriesSummary().get());
+                Optional<Series> seriesSummary = hierarchy.getSeriesSummary();
+                if (seriesSummary.isPresent()) {
+                    contentWriter.createOrUpdate(seriesSummary.get());
                 }
             }
         } catch (Exception e) {
-            log.error(String.format("Error writing content for channel %s", channel.getKey()), e);
+            String message = String.format("Error writing content for channel %s", channel.getKey());
+            log.error(message, e);
         }
     }
-    
+
     private void unlock(Set<String> currentlyProcessing, String programmeLock) {
         synchronized (currentlyProcessing) {
             currentlyProcessing.remove(programmeLock);
@@ -146,4 +142,5 @@ public class PaChannelProcessor {
     private String lockIdentifier(ProgData programme) {
         return Strings.isNullOrEmpty(programme.getSeriesId()) ? programme.getProgId() : programme.getSeriesId();
     }
+
 }

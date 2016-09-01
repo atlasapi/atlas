@@ -16,6 +16,7 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
+
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 

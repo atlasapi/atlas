@@ -124,7 +124,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 episode.setSeriesNumber(source.getSeasonNumber());
             }
             episode.setParentRef(new ParentRef(createBrandUri(source.getSeriesAsin())));
-            
+
             item = episode;
         } else {
             item = new Item();

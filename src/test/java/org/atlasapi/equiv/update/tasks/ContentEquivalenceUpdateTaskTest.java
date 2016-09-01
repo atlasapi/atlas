@@ -4,6 +4,7 @@ import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.C4;
 import static org.atlasapi.media.entity.Publisher.PA;
 import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -11,6 +12,7 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import java.util.Iterator;
+import java.util.Optional;
 
 import junit.framework.TestCase;
 
@@ -25,6 +27,11 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
+
+import com.metabroadcast.columbus.telescope.api.Ingester;
+import com.metabroadcast.columbus.telescope.api.Task;
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
@@ -43,6 +50,11 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ScheduleTaskProgressStore progressStore = mock(ScheduleTaskProgressStore.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
+    private final IngestTelescopeClientImpl client = mock(IngestTelescopeClientImpl.class);
+    private final ContentListingProgress progress = mock(ContentListingProgress.class);
+    private final Task task = mock(Task.class);
+    private final String environment = "PRODUCTION";
+    private final Optional<String> taskId = Optional.of("test");
 
     private final ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
         return new ContentLister() {
@@ -80,21 +92,28 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         .build());
         
         String taskName = "pressassociation.com-bbc.co.uk-channel4.com-equivalence";
+
         when(progressStore.progressForTask(taskName))
-            .thenReturn(ContentListingProgress.START);
+            .thenReturn(progress);
+
+        when(progress.getPublisher()).thenReturn(Publisher.PA);
         
         when(contentResolver.findByCanonicalUris(argThat(hasItem("episode"))))
             .thenReturn(ResolvedContent.builder().put(paEp.getCanonicalUri(), paEp).build());
-        
-        new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore, updater, ImmutableSet.<String>of()).forPublishers(PA, BBC, C4).run();
-        
-        verify(updater).updateEquivalences(paItemOne);
-        verify(updater, times(2)).updateEquivalences(paBrand);
-        verify(updater).updateEquivalences(paEp);
-        verify(updater).updateEquivalences(bbcItemOne);
-        verify(updater).updateEquivalences(bbcItemTwo);
-        verify(updater).updateEquivalences(bbcItemThree);
-        verify(updater).updateEquivalences(c4ItemOne);
+
+        when(client.startIngest(any(Ingester.class))).thenReturn(task);
+
+        when(task.getId()).thenReturn(taskId);
+
+        new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore, updater, ImmutableSet.<String>of(), environment, client).forPublishers(PA, BBC, C4).run();
+
+        verify(updater).updateEquivalences(paItemOne, taskId, client);
+        verify(updater, times(2)).updateEquivalences(paBrand, taskId, client);
+        verify(updater).updateEquivalences(paEp, taskId, client);
+        verify(updater).updateEquivalences(bbcItemOne, taskId, client);
+        verify(updater).updateEquivalences(bbcItemTwo, taskId, client);
+        verify(updater).updateEquivalences(bbcItemThree, taskId, client);
+        verify(updater).updateEquivalences(c4ItemOne,taskId, client);
         verify(progressStore).storeProgress(taskName, ContentListingProgress.START);
     }
 }

@@ -88,7 +88,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 	private final ServiceResolver serviceResolver = mock(ServiceResolver.class);
     private final PlayerResolver playerResolver = mock(PlayerResolver.class);
     private final PersistenceAuditLog persistenceAuditLog = new NoLoggingPersistenceAuditLog();
-    
+
 	private ChannelResolver channelResolver;
 	private ContentBuffer contentBuffer;
 	private MessageSender<ScheduleUpdateMessage> ms = new MessageSender<ScheduleUpdateMessage>(){
@@ -261,13 +261,11 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
     }
 
     static class TestPaProgrammeUpdater extends PaBaseProgrammeUpdater {
-
         private List<File> files;
 
         public TestPaProgrammeUpdater(PaProgDataProcessor processor, ChannelResolver channelResolver, AdapterLog log,
                 MongoScheduleStore scheduleWriter, List<File> files, BroadcastTrimmer trimmer,
                 PaScheduleVersionStore scheduleVersionStore, ContentBuffer contentBuffer, ContentWriter contentWriter) {
-
             super(MoreExecutors.sameThreadExecutor(), new PaChannelProcessor(processor, trimmer, scheduleWriter, scheduleVersionStore, contentBuffer, contentWriter),
                     new DefaultPaProgrammeDataStore(TMP_TEST_DIRECTORY, null), channelResolver, Optional.fromNullable(scheduleVersionStore));
             this.files = files;

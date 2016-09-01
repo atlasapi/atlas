@@ -86,7 +86,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             return input instanceof Brand;
         }
     };
-    
+
     private static final Predicate<Content> IS_SERIES = new Predicate<Content>() {
         @Override
         public boolean apply(Content input) {
@@ -236,6 +236,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         processStandAloneEpisodes();
         
         if (cached.values().size() > 0) {
+            System.out.println(cached.values().size());
             log.warn("{} extracted but unwritten", cached.values().size());
             for (Entry<String, Collection<Content>> mapping : cached.asMap().entrySet()) {
                 log.warn(mapping.toString());

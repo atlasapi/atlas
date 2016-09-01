@@ -20,6 +20,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+
+import com.google.common.base.Optional;
 import org.joda.time.DateTime;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -32,6 +34,8 @@ import com.google.common.collect.HashBasedTable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.metabroadcast.common.time.Timestamp;
 
@@ -64,7 +68,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater).updateEquivalences(item);
+        verify(updater).updateEquivalences(item, null, null);
     }
 
     @Test
@@ -81,7 +85,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(brand);
+        verify(updater, never()).updateEquivalences(brand, null, null);
     }
     
     @Test
@@ -98,7 +102,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(null);
+        verify(updater, never()).updateEquivalences(null, null, null);
     }
 
     @Test
@@ -115,7 +119,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(any(Content.class));
+        verify(updater, never()).updateEquivalences(any(Content.class), any(), any(IngestTelescopeClientImpl.class));
     }
     
     @Test
@@ -132,7 +136,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater).updateEquivalences(item);
+        verify(updater).updateEquivalences(item, null, null);
         
     }
     
@@ -158,7 +162,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(any(Content.class));
+        verify(updater, never()).updateEquivalences(any(Content.class), null, null);
         
     }
     

@@ -6,7 +6,6 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.atlasapi.media.channel.ChannelNumbering;
-import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.MediaType;
@@ -20,14 +19,21 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 
 import com.google.api.client.util.Lists;
 import com.google.common.base.Optional;
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 import static com.google.gdata.util.common.base.Preconditions.checkArgument;
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;
 
 public class ChannelModelTransformer implements ModelTransformer<Channel, org.atlasapi.media.channel.Channel> {
+
+    private final Logger LOG = LoggerFactory.getLogger(ChannelModelTransformer.class);
 
     private final NumberToShortStringCodec v4Codec;
     private final ImageModelTranslator imageTranslator;
@@ -53,6 +59,9 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
 
         org.atlasapi.media.channel.Channel.Builder complex = org.atlasapi.media.channel.Channel.builder();
 
+        if (simple.getUri() == null) {
+            throw new IllegalArgumentException("Channel uri should be provided");
+        }
         complex.withUri(simple.getUri());
         complex.withKey(simple.getUri());
         complex.withHighDefinition(simple.getHighDefinition());
@@ -60,7 +69,12 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         complex.withRegion(simple.getRegion());
         complex.withAdult(simple.getAdult());
         complex.withTitle(simple.getTitle());
-        complex.withChannelType(ChannelType.valueOf(simple.getChannelType().toUpperCase()));
+
+        Set<Alias> aliases = simple.getV4Aliases().stream().map(simpleAlias -> new Alias(
+                simpleAlias.getNamespace(),
+                simpleAlias.getValue()
+        )).collect(Collectors.toSet());
+        complex.withAliases(aliases);
 
         if (simple.getMediaType() != null) {
             Optional<MediaType> mediaType = MediaType.fromKey(simple.getMediaType());
@@ -120,6 +134,27 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
 
         if (simple.getGenres() != null && !simple.getGenres().isEmpty()) {
             complex.withGenres(simple.getGenres());
+        }
+
+        if (simple.getPublisherDetails() != null) {
+            Maybe<Publisher> publisher = Publisher.fromKey(simple.getPublisherDetails().getKey());
+            if (!publisher.isNothing()) {
+                complex.withSource(publisher.requireValue());
+            }
+        }
+
+        if (simple.getBroadcaster() != null) {
+            Maybe<Publisher> publisher = Publisher.fromKey(simple.getBroadcaster().getKey());
+            if (!publisher.isNothing()) {
+                complex.withBroadcaster(publisher.requireValue());
+            }
+        }
+
+        if (simple.getImages() != null && !simple.getImages().isEmpty()) {
+            complex.withImages(Iterables.transform(
+                    simple.getImages(),
+                    input -> imageTranslator.transform(input)
+            ));
         }
 
         if (simple.getAvailableFrom() != null && !simple.getAvailableFrom().isEmpty()) {

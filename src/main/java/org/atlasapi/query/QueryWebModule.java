@@ -505,7 +505,8 @@ public class QueryWebModule {
                 tvaModelOutputter(),
                 feedGenerator,
                 contentResolver,
-                hierarchyExpander
+                hierarchyExpander,
+                channelResolver
         );
     }
 
@@ -794,7 +795,6 @@ public class QueryWebModule {
     ContentGroupModelSimplifier contentGroupSimplifier() {
         return new ContentGroupModelSimplifier(imageSimplifier());
     }
-
     @Bean
     TopicModelSimplifier topicSimplifier() {
         return new TopicModelSimplifier(localHostName);

@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -27,6 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -54,7 +56,7 @@ public class LocalOrRemoteNitroFetcher {
     public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, final Clock clock) {
         this(resolver, contentAdapter,
                 new ContentMerger(
-                        MergeStrategy.MERGE,
+                        MergeStrategy.NITRO_VERSIONS_REVOKE,
                         MergeStrategy.KEEP,
                         MergeStrategy.REPLACE
                 ),
@@ -122,7 +124,7 @@ public class LocalOrRemoteNitroFetcher {
                 resolver,
                 contentAdapter,
                 new ContentMerger(
-                        MergeStrategy.MERGE,
+                        MergeStrategy.NITRO_VERSIONS_REVOKE,
                         MergeStrategy.KEEP,
                         MergeStrategy.REPLACE
                 ),
@@ -159,6 +161,7 @@ public class LocalOrRemoteNitroFetcher {
         Iterable<PidReference> episodeRefs = toEpisodeRefs(broadcasts);
         ImmutableSet<String> itemUris = toItemUris(episodeRefs);
         ResolvedContent resolvedItems = resolve(itemUris);
+        ImmutableListMultimap<String, Broadcast> broadcastIndex = buildBroadcastIndex(broadcasts);
         
         Set<PidReference> toFetch = Sets.newHashSet();
         for (PidReference pidReference : episodeRefs) {
@@ -171,18 +174,47 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
-        return mergeItemsWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
+        Iterable<List<Item>> fetchedItems = contentAdapter.fetchEpisodes(toFetch, broadcastIndex);
+
+        ImmutableSet<Item> fetchedItemSet = ImmutableSet.copyOf(
+                Iterables.concat(
+                        fetchedItems
+                )
+        );
+
+        return mergeItemsWithExisting(
+                fetchedItemSet,
+                ImmutableSet.copyOf(
+                        Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)
+                )
+        );
     }
-    
+
+    private ImmutableListMultimap<String, Broadcast> buildBroadcastIndex(
+            Iterable<Broadcast> broadcasts
+    ) {
+        return Multimaps.index(
+                broadcasts,
+                new Function<Broadcast, String>() {
+                    @Override
+                    public String apply(Broadcast input) {
+                        return NitroUtil.programmePid(input).getPid();
+                    }
+                }
+        );
+    }
+
     private ResolveOrFetchResult<Item> mergeItemsWithExisting(ImmutableSet<Item> fetchedItems,
             Set<Item> existingItems) {
-        Map<String, Item> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedItems, Identified.TO_URI));
+        Map<String, Item> fetchedIndex = Maps.newHashMap(
+                Maps.uniqueIndex(fetchedItems, Identified.TO_URI)
+        );
+
         ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
         for (Item existing : existingItems) {
             Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
-                resolved.add(contentMerger.merge((Item) existing, (Item) fetched));
+                resolved.add(contentMerger.merge(existing, fetched));
             } else {
                 resolved.add(existing);
             }

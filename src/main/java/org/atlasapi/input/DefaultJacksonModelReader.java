@@ -180,5 +180,4 @@ public class DefaultJacksonModelReader extends JacksonModelReader {
 
         }
     }
-
 }

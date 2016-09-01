@@ -238,7 +238,6 @@ public class BtVodDescribedFieldsExtractor {
                     )
             ));
         }
-
         
         ImmutableList.Builder<String> genres = ImmutableList.builder();
         for (String btGenre : btGenreStringsFrom(row)) {

@@ -101,7 +101,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         
         TitleType subjectType = TitleType.titleTypeOf(subject.getTitle());
         TitleType suggestionType = TitleType.titleTypeOf(suggestion.getTitle());
-        
+
         
         Score score = Score.NULL_SCORE;
 

@@ -45,9 +45,7 @@ public class GsonDescriptionReaderTest {
         String respBody = response.getResponseAsString();
 
         DefaultGsonModelReader descReader = DefaultGsonModelReader.create();
-
         Description desc = descReader.read(new StringReader(respBody), Description.class, Boolean.TRUE);
-
         assertThat(desc, is(instanceOf(Item.class)));
         assertThat(desc.getUri(), is(testItem.getUri()));
         assertThat(desc.getTitle(), is(testItem.getTitle()));

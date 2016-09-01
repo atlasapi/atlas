@@ -169,7 +169,7 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
             "http://ref.atlasapi.org/channels/pressassociation.com/stations/1104",
             "http://ref.atlasapi.org/channels/pressassociation.com/2020",
             "http://ref.atlasapi.org/channels/pressassociation.com/2021"));
-    
+
     public BaseBroadcastItemScorer(ContentResolver resolver, Score misMatchScore) {
         this.resolver = checkNotNull(resolver);
         this.misMatchScore = checkNotNull(misMatchScore);

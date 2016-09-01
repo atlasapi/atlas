@@ -8,6 +8,9 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.scorers.SequenceContainerScorer;
+import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
+import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Test;
@@ -114,5 +117,33 @@ public class NullScoreAwareAveragingCombinerTest extends TestCase {
         assertEquals(Score.valueOf(5.0), combined.candidates().get(equivalent4));
         assertEquals(Score.valueOf(2.0), combined.candidates().get(equivalent5));
         
+    }
+
+    @Test
+    public void testIgnoresTitleSubsetIfThereIsTitleMatcherScore() {
+        List<ScoredCandidates<Item>> scores = ImmutableList.of(
+                DefaultScoredCandidates.<Item>fromSource(TitleMatchingItemScorer.NAME)
+                        .addEquivalent(equivalent4, Score.valueOf(10.0))
+                        .addEquivalent(equivalent5, Score.NULL_SCORE)
+                        .addEquivalent(equivalent6, Score.valueOf(10.0))
+                        .build(),
+                DefaultScoredCandidates.<Item>fromSource(TitleSubsetBroadcastItemScorer.NAME)
+                        .addEquivalent(equivalent4, Score.valueOf(100.0))
+                        .addEquivalent(equivalent5, Score.valueOf(100.0))
+                        .addEquivalent(equivalent6, Score.valueOf(100.0))
+                        .build(),
+                DefaultScoredCandidates.<Item>fromSource("Broadcast-Alias")
+                        .addEquivalent(equivalent4, Score.valueOf(2.0))
+                        .addEquivalent(equivalent5, Score.valueOf(2.0))
+                        .addEquivalent(equivalent6, Score.valueOf(2.0))
+                        .build()
+        );
+
+        ScoredCandidates<Item> combined = combiner.combine(scores, new DefaultDescription());
+
+        assertEquals(Score.valueOf(6.0), combined.candidates().get(equivalent6));
+        assertEquals(Score.valueOf(6.0), combined.candidates().get(equivalent4));
+        assertEquals(Score.valueOf(1.0), combined.candidates().get(equivalent5));
+
     }
 }

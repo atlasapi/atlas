@@ -32,7 +32,8 @@ public class ContentWriteWorker implements Worker<ContentWriteMessage> {
             log.debug("Processing message on {}", message.getContentId());
 
             ContentWriteExecutor.InputContent inputContent = writeExecutor.parseInputStream(
-                    new ByteArrayInputStream(message.getContentBytes()), strict
+                    new ByteArrayInputStream(message.getContentBytes()),
+                    strict
             );
             Content content = inputContent.getContent();
             content.setId(message.getContentId());

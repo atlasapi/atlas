@@ -28,6 +28,7 @@ import org.atlasapi.equiv.generators.ScalingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.SongTitleTransform;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
+import org.atlasapi.equiv.handlers.ColumbusTelescopeReportHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeMatchingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
@@ -59,6 +60,7 @@ import org.atlasapi.equiv.results.scores.ScoreThreshold;
 import org.atlasapi.equiv.scorers.BroadcastAliasScorer;
 import org.atlasapi.equiv.scorers.ContainerHierarchyMatchingScorer;
 import org.atlasapi.equiv.scorers.CrewMemberScorer;
+import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
@@ -67,8 +69,8 @@ import org.atlasapi.equiv.scorers.SongCrewMemberExtractor;
 import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
-import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
+import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdaters;
@@ -90,6 +92,9 @@ import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+import com.metabroadcast.columbus.telescope.client.TelescopeClient;
+import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.collect.MoreSets;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.DateTimeZones;
@@ -156,7 +161,9 @@ public class EquivModule {
 	private @Value("${equiv.results.directory}") String equivResultsDirectory;
 	private @Value("${messaging.destination.equiv.assert}") String equivAssertDest;
 	private @Value("${equiv.excludedUris}") String excludedUris;
-    
+    private @Value("${reporting.columbus-telescope.environment}") String reportingEnvironment;
+    private @Value("${reporting.columbus-telescope.host}") String columbusTelescopeHost;
+
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired SearchResolver searchResolver;
     private @Autowired ContentResolver contentResolver;
@@ -173,13 +180,19 @@ public class EquivModule {
 
     private EquivalenceResultHandler<Container> containerResultHandlers(Iterable<Publisher> publishers) {
         return new BroadcastingEquivalenceResultHandler<Container>(ImmutableList.of(
-            new LookupWritingEquivalenceHandler<Container>(lookupWriter, publishers),
-            new EpisodeMatchingEquivalenceHandler(contentResolver, equivSummaryStore, lookupWriter, publishers),
-            new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
-            new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
-                MessageQueueingResultHandler.create(
-                    equivAssertDestination(), publishers, lookupEntryStore
-            )
+                new LookupWritingEquivalenceHandler<Container>(lookupWriter, publishers),
+                new EpisodeMatchingEquivalenceHandler(
+                        contentResolver,
+                        equivSummaryStore,
+                        lookupWriter,
+                        publishers
+                ),
+                new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
+                new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
+                    MessageQueueingResultHandler.create(
+                        equivAssertDestination(), publishers, lookupEntryStore
+                ),
+                new ColumbusTelescopeReportHandler<Container>(getTelescopeClient())
         ));
     }
 
@@ -197,6 +210,7 @@ public class EquivModule {
         handlers.add(MessageQueueingResultHandler.create(
                 equivAssertDestination(), acceptablePublishers, lookupEntryStore
         ));
+        handlers.add(new ColumbusTelescopeReportHandler<Item>(getTelescopeClient()));
         return new BroadcastingEquivalenceResultHandler<Item>(handlers.build());
     }
 
@@ -264,7 +278,8 @@ public class EquivModule {
                 new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
                 MessageQueueingResultHandler.create(
                         equivAssertDestination(), acceptablePublishers, lookupEntryStore
-                )
+                ),
+                new ColumbusTelescopeReportHandler<Item>(getTelescopeClient())
             )));
     }
     
@@ -314,7 +329,12 @@ public class EquivModule {
         ));
         
         EquivalenceUpdater<Item> standardItemUpdater = standardItemUpdater(MoreSets.add(acceptablePublishers, LOVEFILM), 
-                ImmutableSet.of(new TitleMatchingItemScorer(), new SequenceItemScorer(Score.ONE), new DescriptionTitleMatchingScorer())).build();
+                ImmutableSet.of(
+                        new TitleMatchingItemScorer(),
+                        new SequenceItemScorer(Score.ONE),
+                        new DescriptionTitleMatchingScorer(),
+                        DescriptionMatchingScorer.makeScorer()
+                )).build();
         EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
@@ -480,7 +500,8 @@ public class EquivModule {
                     equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                new ColumbusTelescopeReportHandler<Item>(getTelescopeClient())
             )))
             .build();
         
@@ -527,7 +548,8 @@ public class EquivModule {
             .withHandler(new BroadcastingEquivalenceResultHandler<Container>(ImmutableList.of(
                 new LookupWritingEquivalenceHandler<Container>(lookupWriter, acceptablePublishers),
                 new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore)
+                new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
+                new ColumbusTelescopeReportHandler<Container>(getTelescopeClient())
             )))
             .build();
     }
@@ -557,7 +579,8 @@ public class EquivModule {
                                 equivSummaryStore
                             ),
                             new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                            new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+                            new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                            new ColumbusTelescopeReportHandler<Item>(getTelescopeClient())
                         ))).build())
             .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
             .withTopLevelContainerUpdater(topLevelContainerUpdater(roviMatchPublishers))
@@ -654,7 +677,8 @@ public class EquivModule {
                     equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                new ColumbusTelescopeReportHandler<Item>(getTelescopeClient())
             )));
     }
     
@@ -680,12 +704,13 @@ public class EquivModule {
             .withFilter(this.standardFilter())
             .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
             .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                EpisodeFilteringEquivalenceResultHandler.strict(
-                    new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
-                    equivSummaryStore
-                ),
-                new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+                    EpisodeFilteringEquivalenceResultHandler.strict(
+                        new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
+                        equivSummaryStore
+                    ),
+                    new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
+                    new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                    new ColumbusTelescopeReportHandler<Item>(getTelescopeClient())
             )));
     }
 
@@ -710,11 +735,12 @@ public class EquivModule {
     private EquivalenceUpdater<Item> broadcastItemEquivalenceUpdater(Set<Publisher> sources, Score titleMismatch,
             Predicate<? super Broadcast> filter) {
         return standardItemUpdater(sources, ImmutableSet.of(
-            new TitleMatchingItemScorer(), 
-            new SequenceItemScorer(Score.ONE),
-            new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
-            new BroadcastAliasScorer(Score.nullScore()),
-            new DescriptionTitleMatchingScorer()
+                new TitleMatchingItemScorer(),
+                new SequenceItemScorer(Score.ONE),
+                new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
+                new BroadcastAliasScorer(Score.nullScore()),
+                new DescriptionTitleMatchingScorer(),
+                DescriptionMatchingScorer.makeScorer()
         ), filter).build();
     }
 
@@ -753,9 +779,14 @@ public class EquivModule {
                         equivSummaryStore
                 ),
                 new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
+                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                new ColumbusTelescopeReportHandler<Item>(getTelescopeClient())
             )))
             .build();
     }
 
+    private IngestTelescopeClientImpl getTelescopeClient() {
+        TelescopeClient client = TelescopeClientImpl.create(columbusTelescopeHost);
+        return IngestTelescopeClientImpl.create(client);
+    }
 }

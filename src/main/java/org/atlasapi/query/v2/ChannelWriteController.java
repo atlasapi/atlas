@@ -45,9 +45,7 @@ public class ChannelWriteController {
     private final ModelReader reader;
     private final ChannelModelTransformer channelTransformer;
     private final AtlasModelWriter<Iterable<Channel>> outputter;
-
     private static final String STRICT = "strict";
-
 
     private ChannelWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
@@ -86,7 +84,6 @@ public class ChannelWriteController {
 
     private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
-
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
             possibleConfig = appConfigFetcher.configurationFor(req);

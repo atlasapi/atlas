@@ -1,7 +1,7 @@
 package org.atlasapi.equiv.handlers;
 
 import java.util.List;
-import java.util.Map;
+import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -20,10 +20,8 @@ import org.atlasapi.media.entity.Series;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
@@ -36,7 +34,10 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
     }
 
     @Override
-    public void handle(EquivalenceResult<T> result) {
+    public void handle(
+            EquivalenceResult<T> result,
+            Optional<String> taskId
+    ) {
         equivSummaryStore.store(summaryOf(result));
     }
 

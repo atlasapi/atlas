@@ -53,7 +53,6 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
 import com.google.api.client.util.Maps;
-import com.google.common.base.Optional;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
@@ -73,7 +72,6 @@ public class ContentWriteController {
 
     private static final String ID = "id";
     private static final String URI = "uri";
-
 
     private static final boolean MERGE = true;
     private static final boolean OVERWRITE = false;

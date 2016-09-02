@@ -6,6 +6,7 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Item;
 
 import com.google.common.collect.ImmutableSet;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
@@ -14,7 +15,8 @@ public class DescriptionMatchingScorerTest {
 
     private DescriptionMatchingScorer scorer;
 
-    public DescriptionMatchingScorerTest() {
+    @Before
+    public void setUp() {
         this.scorer = DescriptionMatchingScorer.makeScorer();
     }
 
@@ -25,7 +27,7 @@ public class DescriptionMatchingScorerTest {
     }
 
     @Test
-    public void testDescriptionsMatchWhenTheyShould() {
+    public void descriptionsMatchWhenSimilarEnough() {
         Item subject = new Item();
         Item candidate = new Item();
         subject.setDescription("Football related content and Manchester United talk");
@@ -35,7 +37,7 @@ public class DescriptionMatchingScorerTest {
     }
 
     @Test
-    public void testDescriptionsMismatchWhenTheyShould() {
+    public void descriptionsMismatchWhenNotSimilar() {
         Item subject = new Item();
         Item candidate = new Item();
         subject.setDescription("Football related content and Manchester United talk");
@@ -45,7 +47,7 @@ public class DescriptionMatchingScorerTest {
     }
 
     @Test
-    public void testCapitalsAreNecessaryForMatching() {
+    public void capitalsAreNecessaryForMatching() {
         Item subject = new Item();
         Item candidate = new Item();
         subject.setDescription("Football related content and Manchester United talk");

@@ -25,8 +25,13 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
     private static final Set<String> commonWords = ImmutableSet.of(
             "the", "in", "a", "and", "&", "of", "to", "show"
     );
-    //proportion crossover between key words in two descriptions threshold
+
+    // Proportion threshold of key words that need to match between the two descriptions
+    // to conclude there is a match
     public static final double PROPORTION_CROSSOVER = 0.2;
+
+    // Capitalised word finding regex
+    public static final String REGEX = "\\b([A-Z]\\w*)\\b";
 
     private DescriptionMatchingScorer() {
     }
@@ -66,20 +71,21 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
 
         candidateList.retainAll(subjectList);
 
-        //calibrate here
         return new Double(candidateList.size())/new Double(subjectList.size()) > PROPORTION_CROSSOVER;
     }
 
     private Set<String> descriptionToProcessedList(String description) {
-        return !Strings.isNullOrEmpty(description) ?
-               tokenize(description).stream()
-                .filter(s -> !commonWords.contains(s))
-                .collect(Collectors.toSet()) :
-                Sets.newHashSet();
+        if (!Strings.isNullOrEmpty(description)) {
+            return tokenize(description).stream()
+            .filter(s -> !commonWords.contains(s))
+            .collect(Collectors.toSet());
+        } else {
+            return Sets.newHashSet();
+        }
     }
 
     private List<String> tokenize(String target) {
-        Pattern pattern = Pattern.compile("\\b([A-Z]\\w*)\\b");
+        Pattern pattern = Pattern.compile(REGEX);
         Matcher subjectMatcher = pattern.matcher(target);
         List<String> targetList = new LinkedList<>();
         while (subjectMatcher.find()) {

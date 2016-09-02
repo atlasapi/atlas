@@ -141,7 +141,7 @@ public class ContentWriteController {
     }
 
     @Nullable
-    @RequestMapping(value = "3.0/content.json", method = RequestMethod.DELETE)
+    @RequestMapping(value = "/3.0/content.json", method = RequestMethod.DELETE)
     public WriteResponse unpublishContent(HttpServletRequest req, HttpServletResponse resp) {
         return setPublishStatus(req, resp, false);
     }

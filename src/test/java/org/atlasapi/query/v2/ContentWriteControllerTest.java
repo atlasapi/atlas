@@ -4,6 +4,7 @@ import java.io.ByteArrayInputStream;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.math.BigInteger;
+import java.util.Iterator;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
@@ -14,10 +15,17 @@ import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
+import org.atlasapi.persistence.content.ResolvedContent;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.worker.ContentWriteMessage;
 
@@ -28,6 +36,7 @@ import com.metabroadcast.common.queue.MessageSender;
 
 import com.amazonaws.util.IOUtils;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Lists;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -44,6 +53,7 @@ import static org.hamcrest.core.IsNot.not;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
+import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.never;
@@ -64,17 +74,31 @@ public class ContentWriteControllerTest {
     private @Mock ContentWriteExecutor writeExecutor;
     private @Mock LookupBackedContentIdGenerator idGenerator;
     private @Mock MessageSender<ContentWriteMessage> messageSender;
+    private @Mock LookupEntryStore lookupEntryStore;
+    private @Mock ContentResolver contentResolver;
+    private @Mock ContentWriter contentWriter;
 
     private @Mock HttpServletRequest request;
     private @Mock HttpServletResponse response;
     private @Mock AtlasModelWriter modelWriter;
     private @Mock ServletOutputStream outputStream;
 
+    private @Mock Iterator<LookupEntry> entryStoreIterator;
+    private @Mock LookupEntry lookupEntry;
+    private @Mock ResolvedContent resolvedContent;
+    private @Mock Maybe<Identified> identifiedMaybe;
+    private @Mock Identified identified;
+    private @Mock Described described;
+    private @Mock SubstitutionTableNumberCodec substitutionTableNumberCodec;
+
     private NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private byte[] inputBytes;
     private ContentWriteExecutor.InputContent inputContent;
     private long contentId;
+
+    private String id = "id";
+    private String uri = "uri";
 
     @Before
     public void setUp() throws Exception {
@@ -97,9 +121,51 @@ public class ContentWriteControllerTest {
         when(writeExecutor.parseInputStream(any(InputStream.class), anyBoolean())).thenReturn(inputContent);
         when(idGenerator.getId(any(Content.class))).thenReturn(contentId);
         when(response.getOutputStream()).thenReturn(outputStream);
-        controller = new ContentWriteController(
-                configurationFetcher, writeExecutor, idGenerator, messageSender, modelWriter
+
+        when(lookupEntry.uri()).thenReturn(uri);
+        ImmutableList<LookupEntry> entryList = ImmutableList.of(lookupEntry);
+        when(lookupEntryStore.entriesForIds(anyList()))
+                .thenReturn(entryList);
+
+        when(contentResolver.findByCanonicalUris(Lists.newArrayList(uri)))
+                .thenReturn(resolvedContent);
+
+        controller = ContentWriteController.create(
+                configurationFetcher, writeExecutor, idGenerator, messageSender, modelWriter,
+                lookupEntryStore, contentResolver, contentWriter
         );
+    }
+
+    @Test
+    public void unpublishContentById() throws Exception {
+        when(request.getParameter(id)).thenReturn("h");
+        when(substitutionTableNumberCodec.decode(anyString())).thenReturn(BigInteger.ZERO);
+        when(entryStoreIterator.hasNext()).thenReturn(true);
+        when(entryStoreIterator.next()).thenReturn(lookupEntry);
+
+        unpublishContent();
+    }
+
+    @Test
+    public void unpublishContentByUri() throws Exception {
+        when(request.getParameter(id)).thenReturn(null);
+        when(request.getParameter(uri)).thenReturn(uri);
+
+        unpublishContent();
+    }
+
+    public void unpublishContent() {
+        described.setActivelyPublished(true);
+        when(resolvedContent.isEmpty()).thenReturn(false);
+        when(resolvedContent.getFirstValue()).thenReturn(identifiedMaybe);
+        when(identifiedMaybe.hasValue()).thenReturn(true);
+        when(identifiedMaybe.requireValue()).thenReturn(described);
+        when(described.getPublisher()).thenReturn(Publisher.METABROADCAST);
+
+        controller.unpublishContent(request, response);
+
+        verify(response).setStatus(HttpServletResponse.SC_OK);
+        assertThat(described.isActivelyPublished(), is(false));
     }
 
     @Test

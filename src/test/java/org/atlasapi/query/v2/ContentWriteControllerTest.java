@@ -123,15 +123,14 @@ public class ContentWriteControllerTest {
         when(response.getOutputStream()).thenReturn(outputStream);
 
         when(lookupEntry.uri()).thenReturn(uri);
-        ArrayList<LookupEntry> entryList = new ArrayList<>();
-        entryList.add(lookupEntry);
+        ImmutableList<LookupEntry> entryList = ImmutableList.of(lookupEntry);
         when(lookupEntryStore.entriesForIds(anyList()))
                 .thenReturn(entryList);
 
         when(contentResolver.findByCanonicalUris(Lists.newArrayList(uri)))
                 .thenReturn(resolvedContent);
 
-        controller = new ContentWriteController(
+        controller = ContentWriteController.create(
                 configurationFetcher, writeExecutor, idGenerator, messageSender, modelWriter,
                 lookupEntryStore, contentResolver, contentWriter
         );

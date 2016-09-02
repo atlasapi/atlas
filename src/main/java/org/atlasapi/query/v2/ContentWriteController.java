@@ -89,7 +89,7 @@ public class ContentWriteController {
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
 
-    public ContentWriteController(
+    private ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
             ContentWriteExecutor contentWriteExecutor,
             LookupBackedContentIdGenerator lookupBackedContentIdGenerator,
@@ -104,10 +104,29 @@ public class ContentWriteController {
         this.lookupBackedContentIdGenerator = checkNotNull(lookupBackedContentIdGenerator);
         this.messageSender = checkNotNull(messageSender);
         this.outputWriter = outputWriter;
-
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
         this.contentResolver = checkNotNull(contentResolver);
         this.contentWriter = checkNotNull(contentWriter);
+    }
+
+    public static ContentWriteController create(
+            ApplicationConfigurationFetcher appConfigFetcher,
+            ContentWriteExecutor contentWriteExecutor,
+            LookupBackedContentIdGenerator lookupBackedContentIdGenerator,
+            MessageSender<ContentWriteMessage> messageSender,
+            AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter,
+            LookupEntryStore lookupEntryStore,
+            ContentResolver contentResolver,
+            ContentWriter contentWriter
+    ) {
+        return new ContentWriteController(appConfigFetcher,
+                contentWriteExecutor,
+                lookupBackedContentIdGenerator,
+                messageSender,
+                outputWriter,
+                lookupEntryStore,
+                contentResolver,
+                contentWriter);
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
@@ -127,9 +146,11 @@ public class ContentWriteController {
     }
 
     @Nullable
-    private WriteResponse setPublishStatus(HttpServletRequest req, HttpServletResponse resp,
-            boolean publishStatus)
-    {
+    private WriteResponse setPublishStatus(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            boolean publishStatus
+    ) {
         // check API key has permissions to do this
 
         @SuppressWarnings("deprecation")
@@ -184,7 +205,7 @@ public class ContentWriteController {
         ResolvedContent resolvedContent =
                 contentResolver.findByCanonicalUris(Lists.newArrayList(contentUri));
 
-        if(!resolvedContent.isEmpty()) {
+        if (!resolvedContent.isEmpty()) {
             identified = resolvedContent.getFirstValue();
         } else {
             return error(req, resp, AtlasErrorSummary.forException(
@@ -193,7 +214,7 @@ public class ContentWriteController {
         }
 
         // If we didn't find one, return an error
-        if(!identified.hasValue()) {
+        if (!identified.hasValue()) {
             return error(req, resp, AtlasErrorSummary.forException(
                     new NoSuchElementException("Unable to resolve content")));
         }
@@ -216,10 +237,10 @@ public class ContentWriteController {
         described.setActivelyPublished(publishStatus);
 
         // write back to DB
-        if(described instanceof Item) {
+        if (described instanceof Item) {
             contentWriter.createOrUpdate((Item) described);
         }
-        if(described instanceof Container) {
+        if (described instanceof Container) {
             contentWriter.createOrUpdate((Container) described);
         }
 

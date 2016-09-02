@@ -16,7 +16,7 @@ public class LocalLoveFilmDataSupplier implements LoveFilmDataSupplier {
     @Override
     public LoveFilmData getLatestData() {
         Charset charset = Charset.forName("windows-1252");
-        return new LoveFilmData(Files.asCharSource(data, charset));
+        return new LoveFilmData(Files.newReaderSupplier(data, charset));
     }
 
 }

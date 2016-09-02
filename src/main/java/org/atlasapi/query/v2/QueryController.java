@@ -18,6 +18,7 @@ import java.io.IOException;
 import java.util.Iterator;
 import java.util.List;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
@@ -210,5 +211,11 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
     @RequestMapping(value="/3.0/content.json", method = RequestMethod.PUT)
     public WriteResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
         return contentWriteController.putContent(req, resp);
+    }
+
+    @Nullable
+    @RequestMapping(value="/3.0/content.json", method = RequestMethod.DELETE)
+    public WriteResponse deleteContent(HttpServletRequest req, HttpServletResponse resp) {
+        return contentWriteController.unpublishContent(req, resp);
     }
 }

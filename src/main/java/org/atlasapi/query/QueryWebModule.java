@@ -372,12 +372,15 @@ public class QueryWebModule {
     }
 
     private ContentWriteController contentWriteController() {
-        return new ContentWriteController(
+        return ContentWriteController.create(
                 configFetcher,
                 contentWriteExecutor,
                 lookupBackedContentIdGenerator,
                 contentWriteMessageSender,
-                contentModelOutputter()
+                contentModelOutputter(),
+                lookupStore,
+                contentResolver,
+                contentWriter
         );
     }
 

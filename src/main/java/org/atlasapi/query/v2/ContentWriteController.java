@@ -84,7 +84,6 @@ public class ContentWriteController {
     private final LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     private final MessageSender<ContentWriteMessage> messageSender;
     private final AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter;
-
     private final LookupEntryStore lookupEntryStore;
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
@@ -104,9 +103,9 @@ public class ContentWriteController {
         this.lookupBackedContentIdGenerator = checkNotNull(lookupBackedContentIdGenerator);
         this.messageSender = checkNotNull(messageSender);
         this.outputWriter = outputWriter;
-        this.lookupEntryStore = checkNotNull(lookupEntryStore);
-        this.contentResolver = checkNotNull(contentResolver);
-        this.contentWriter = checkNotNull(contentWriter);
+        this.lookupEntryStore = lookupEntryStore;
+        this.contentResolver = contentResolver;
+        this.contentWriter = contentWriter;
     }
 
     public static ContentWriteController create(
@@ -119,14 +118,16 @@ public class ContentWriteController {
             ContentResolver contentResolver,
             ContentWriter contentWriter
     ) {
-        return new ContentWriteController(appConfigFetcher,
+        return new ContentWriteController(
+                appConfigFetcher,
                 contentWriteExecutor,
                 lookupBackedContentIdGenerator,
                 messageSender,
                 outputWriter,
                 lookupEntryStore,
                 contentResolver,
-                contentWriter);
+                contentWriter
+        );
     }
 
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
@@ -152,7 +153,6 @@ public class ContentWriteController {
             boolean publishStatus
     ) {
         // check API key has permissions to do this
-
         @SuppressWarnings("deprecation")
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
@@ -174,7 +174,7 @@ public class ContentWriteController {
 
         // get ID / URI, if ID, lookup URI from it
         String contentUri;
-        if(req.getParameter(ID) != null) {
+        if (req.getParameter(ID) != null) {
             Long contentId = SubstitutionTableNumberCodec
                     .lowerCaseOnly()
                     .decode(req.getParameter(ID))
@@ -190,7 +190,7 @@ public class ContentWriteController {
                         new NoSuchElementException("Content not found for id"))
                 );
             }
-        } else if(req.getParameter(URI) != null) {
+        } else if (req.getParameter(URI) != null) {
             contentUri = req.getParameter(URI);
         } else {
             return error(req, resp, AtlasErrorSummary.forException(
@@ -249,6 +249,7 @@ public class ContentWriteController {
         return null;
 
     }
+
 
     private WriteResponse deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
             boolean merge) {

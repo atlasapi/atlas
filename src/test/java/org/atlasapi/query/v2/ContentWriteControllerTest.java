@@ -2,8 +2,8 @@ package org.atlasapi.query.v2;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Iterator;
 
 import javax.servlet.ServletOutputStream;
@@ -98,7 +98,7 @@ public class ContentWriteControllerTest {
     private long contentId;
 
     private String id = "id";
-    private String uri = "uri:";
+    private String uri = "uri";
 
     @Before
     public void setUp() throws Exception {

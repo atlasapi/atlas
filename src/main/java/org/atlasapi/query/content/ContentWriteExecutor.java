@@ -158,6 +158,8 @@ public class ContentWriteExecutor {
     }
 
     private Content merge(Content existing, Content update, boolean merge) {
+        existing.setActivelyPublished(update.isActivelyPublished());
+
         existing.setEquivalentTo(merge ?
                                  merge(existing.getEquivalentTo(), update.getEquivalentTo()) :
                                  update.getEquivalentTo());

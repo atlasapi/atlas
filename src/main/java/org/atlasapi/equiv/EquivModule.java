@@ -123,6 +123,7 @@ import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
+import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
@@ -386,7 +387,17 @@ public class EquivModule {
                 .withTopLevelContainerUpdater(broadcastItemContainerEquivalenceUpdater(reduxPublishers))
                 .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
-        
+
+        updaters.register(C4_PRESS, SourceSpecificEquivalenceUpdater.builder(C4_PRESS)
+                .withItemUpdater(broadcastItemEquivalenceUpdater(
+                        ImmutableSet.of(PA),
+                        Score.nullScore(),
+                        Predicates.alwaysTrue()
+                ))
+                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                .build());
+
         updaters.register(BETTY, SourceSpecificEquivalenceUpdater.builder(BETTY)
                 .withItemUpdater(aliasIdentifiedBroadcastItemEquivalenceUpdater(ImmutableSet.of(
                         BETTY,

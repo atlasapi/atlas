@@ -120,7 +120,7 @@ public class ScheduleEquivalenceUpdateTaskTest {
         when(contentResolver.findByCanonicalUris(ImmutableSet.of("yv2"))).thenReturn(yv2);
 
         java.util.Optional<String> taskId = java.util.Optional.of("fasf");
-        when(telescopeClient.startIngest(any(Ingester.class))).thenReturn(task);
+        when(telescopeClient.startIngest(any())).thenReturn(task);
         when(task.getId()).thenReturn(taskId);
 
         ScheduleEquivalenceUpdateTask.builder()

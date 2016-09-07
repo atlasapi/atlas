@@ -27,6 +27,7 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Multimap;
@@ -41,6 +42,8 @@ import org.mockito.runners.MockitoJUnitRunner;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+
+import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.common.collect.ImmutableOptionalMap;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -204,7 +207,7 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
             ImmutableList.<String>of(), 
             ImmutableMultimap.<Publisher,ContentRef>of()
         );
-        
+
         when(summaryStore.summariesForUris(argThat(hasItem(subject.getContainer().getUri()))))
             .thenReturn(ImmutableOptionalMap.fromMap(ImmutableMap.of(
                 subject.getContainer().getUri(), equivSummary

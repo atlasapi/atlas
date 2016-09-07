@@ -92,12 +92,11 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         .build());
         
         String taskName = "pressassociation.com-bbc.co.uk-channel4.com-equivalence";
-
         when(progressStore.progressForTask(taskName))
             .thenReturn(progress);
 
         when(progress.getPublisher()).thenReturn(Publisher.PA);
-        
+
         when(contentResolver.findByCanonicalUris(argThat(hasItem("episode"))))
             .thenReturn(ResolvedContent.builder().put(paEp.getCanonicalUri(), paEp).build());
 

@@ -14,7 +14,7 @@ import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
 import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.api.Ingester;
+import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -116,7 +116,7 @@ public class ColumbusTelescopeReporter<T extends Content> {
             Publisher publisher,
             String environment
     ) {
-        Ingester ingester = createIngester(publisher.title(), environment);
+        Process ingester = createIngester(publisher.title(), environment);
         Task task = telescopeClient.startIngest(ingester);
         return task.getId();
     }
@@ -125,8 +125,8 @@ public class ColumbusTelescopeReporter<T extends Content> {
         telescopeClient.endIngest(taskId.get());
     }
 
-    private Ingester createIngester(String publisher, String environment) {
-        return Ingester.create(
+    private Process createIngester(String publisher, String environment) {
+        return Process.create(
                 String.format("atlas-owl-equiv-%s", publisher.toLowerCase()
                         .replace(" ", "-")
                         .replace("\n", "")),

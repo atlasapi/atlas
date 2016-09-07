@@ -10,12 +10,11 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
 import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.api.Ingester;
+import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
@@ -44,7 +43,6 @@ public class ColumbusTelescopeReportHandlerTest {
     @Mock private IngestTelescopeClientImpl telescopeClient;
     @Mock private Task task;
     @Captor private ArgumentCaptor<Iterable<Event>> eventCaptor;
-    private final TitleMatchingItemScorer scorer = new TitleMatchingItemScorer();
 
     private ReadableDescription readableDescription = mock(ReadableDescription.class);
 
@@ -64,7 +62,7 @@ public class ColumbusTelescopeReportHandlerTest {
     public void parsingOfEquivResultForRawElement() {
         Optional<String> taskId = Optional.of("dfafa");
 
-        when(telescopeClient.startIngest(any(Ingester.class))).thenReturn(task);
+        when(telescopeClient.startIngest(any(Process.class))).thenReturn(task);
         when(task.getId()).thenReturn(taskId);
 
         EquivalenceResult<Item> result = createEquivResult();

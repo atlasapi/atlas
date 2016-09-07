@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.Set;
 
 import javax.annotation.Nullable;
-import javax.ws.rs.HEAD;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -30,7 +29,7 @@ import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
 import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.api.Ingester;
+import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClient;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -118,7 +117,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
         reportStatus("Doing the discovery call");
 
         Task ingest = telescopeClient.startIngest(
-                Ingester.create(
+                Process.create(
                         "nitro-off-schedule",
                         "Nitro Off Schedule",
                         System.getProperty("MBST_PLATFORM", "stage").equals("stage")

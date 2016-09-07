@@ -1,10 +1,5 @@
 package org.atlasapi.equiv.update.tasks;
 
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
@@ -20,28 +15,25 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
-import com.metabroadcast.columbus.telescope.api.Ingester;
 import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
-import com.google.common.base.Supplier;
+import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
-import org.joda.time.LocalDateTime;
 import org.junit.Test;
-import static org.junit.Assert.assertThat;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.when;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ScheduleEquivalenceUpdateTaskTest {

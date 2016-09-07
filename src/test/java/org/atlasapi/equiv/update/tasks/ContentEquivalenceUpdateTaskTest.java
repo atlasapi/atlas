@@ -1,20 +1,7 @@
 package org.atlasapi.equiv.update.tasks;
 
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.atlasapi.media.entity.Publisher.C4;
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.util.Iterator;
 import java.util.Optional;
-
-import junit.framework.TestCase;
 
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Brand;
@@ -28,13 +15,9 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
-import com.metabroadcast.columbus.telescope.api.Ingester;
+import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
@@ -42,6 +25,21 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterators;
 import com.google.common.collect.Multimap;
+import junit.framework.TestCase;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.atlasapi.media.entity.Publisher.BBC;
+import static org.atlasapi.media.entity.Publisher.C4;
+import static org.atlasapi.media.entity.Publisher.PA;
+import static org.hamcrest.Matchers.hasItem;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentEquivalenceUpdateTaskTest extends TestCase {
@@ -100,7 +98,7 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         when(contentResolver.findByCanonicalUris(argThat(hasItem("episode"))))
             .thenReturn(ResolvedContent.builder().put(paEp.getCanonicalUri(), paEp).build());
 
-        when(client.startIngest(any(Ingester.class))).thenReturn(task);
+        when(client.startIngest(any(Process.class))).thenReturn(task);
 
         when(task.getId()).thenReturn(taskId);
 

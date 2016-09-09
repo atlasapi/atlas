@@ -116,7 +116,13 @@ public class ColumbusTelescopeReporter<T extends Content> {
             Publisher publisher,
             String environment
     ) {
-        Process ingester = createIngester(publisher.title(), environment);
+        String title;
+        if (publisher == null) {
+            title = "unknown";
+        } else {
+            title = publisher.title();
+        }
+        Process ingester = createIngester(title, environment);
         Task task = telescopeClient.startIngest(ingester);
         return task.getId();
     }

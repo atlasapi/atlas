@@ -152,7 +152,7 @@ public class EquivTaskModule {
     private static final RepetitionRule REDBEE_MEDIA_EQUIVALENCE_REPETITION = RepetitionRules.NEVER;
     private static final RepetitionRule AMC_EBS_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(04, 00));
     private static final RepetitionRule EBS_SPORTS_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(04, 00));
-    private static final RepetitionRule C4_PESS_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(04, 00));
+    private static final RepetitionRule C4_PRESS_EQUIVALENCE_REPETITION = RepetitionRules.daily(new LocalTime(04, 00));
 
 
     private @Value("${equiv.updater.enabled}") String updaterEnabled;
@@ -236,7 +236,7 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(publisherUpdateTask(AMC_EBS).withName("AMC EBS Equivalence Updater"), AMC_EBS_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(publisherUpdateTask(C4_PRESS).withName(
                 "C4 Press Equivalence Updater"),
-                C4_PESS_EQUIVALENCE_REPETITION,
+                C4_PRESS_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
 

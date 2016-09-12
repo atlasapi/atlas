@@ -23,7 +23,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
     public static final String NAME = "Description Title Matching Item Scorer";
 
     private final Set<String> commonWords = ImmutableSet.of(
-            "the", "in", "a", "and", "&", "of", "to", "show"
+            "the", "in", "a", "and", "&", "of", "to", "show", "peppa", "pig"
     );
 
     private final Score scoreOnMismatch;
@@ -95,8 +95,8 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
             descriptionList = Arrays.stream(description.replaceAll("[^a-zA-Z0-9 ]", "").split(" "))
                     .filter( o -> !o.equals(""))
                     .filter( o -> Character.isUpperCase(o.charAt(0)))
-                    .filter( o -> !commonWords.contains(o))
                     .map(String::toLowerCase)
+                    .filter( o -> !commonWords.contains(o))
                     .collect(Collectors.toSet());
         }
         return descriptionList;

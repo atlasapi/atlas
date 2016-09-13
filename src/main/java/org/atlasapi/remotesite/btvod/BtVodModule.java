@@ -155,6 +155,9 @@ public class BtVodModule {
     private String btPortalContentGroupsBaseUri;
 
     // Prod config
+    @Value("${bt.vod.mpx.prod.enabled}")
+    private boolean btVodMpxProdEnabled;
+
     @Value("${bt.vod.mpx.prod.feed.baseUrl}")
     private String btVodMpxProdFeedBaseUrl;
     @Value("${bt.vod.mpx.prod.feed.name}")
@@ -174,6 +177,9 @@ public class BtVodModule {
     private String btVodMpxProdFeedNewSuffix;
 
     // Vol-D config
+    @Value("${bt.vod.mpx.vold.enabled}")
+    private boolean btVodMpxVoldEnabled;
+
     @Value("${bt.vod.mpx.vold.feed.baseUrl}")
     private String btVodMpxVoldFeedBaseUrl;
     @Value("${bt.vod.mpx.vold.feed.name}")
@@ -193,6 +199,9 @@ public class BtVodModule {
     private String btVodMpxVoldFeedNewSuffix;
 
     // Vol-E config
+    @Value("${bt.vod.mpx.vole.enabled}")
+    private boolean btVodMpxVoleEnabled;
+
     @Value("${bt.vod.mpx.vole.feed.baseUrl}")
     private String btVodMpxVoleFeedBaseUrl;
     @Value("${bt.vod.mpx.vole.feed.name}")
@@ -212,6 +221,9 @@ public class BtVodModule {
     private String btVodMpxVoleFeedNewBaseUrl;
 
     // Systest2 config
+    @Value("${bt.vod.mpx.systest2.enabled}")
+    private boolean btVodMpxSystest2Enabled;
+
     @Value("${bt.vod.mpx.systest2.feed.baseUrl}")
     private String btVodMpxSystest2FeedBaseUrl;
     @Value("${bt.vod.mpx.systest2.feed.name}")
@@ -552,13 +564,29 @@ public class BtVodModule {
     
     @PostConstruct
     public void scheduleTask() {
-        scheduler.schedule(btVodUpdater(btVodMpxProdFeedNewSuffix, salesContentGroupsAndCriteria(btVodMpxProdFeedGuidLookupBaseUrl, btVodMpxProdFeedName, btVodMpxProdFeedQParam)).withName("BT VoD Updater"), MPX_REPETITION_RULE);
+        if (btVodMpxProdEnabled) {
+            scheduler.schedule(btVodUpdater(
+                    btVodMpxProdFeedNewSuffix,
+                    salesContentGroupsAndCriteria(btVodMpxProdFeedGuidLookupBaseUrl,
+                            btVodMpxProdFeedName,
+                            btVodMpxProdFeedQParam
+                    )
+            ).withName("BT VoD Updater"), MPX_REPETITION_RULE);
 
-        scheduleBtTveVodProdConfig1Updater();
+            scheduleBtTveVodProdConfig1Updater();
+        }
 
-        scheduler.schedule(btTveVodSystest2Config1Updater(), TVE_MPX_REPETITION_RULE);
-        scheduler.schedule(btTveVodVoldConfig1Updater(), TVE_MPX_REPETITION_RULE);
-        scheduler.schedule(btTveVodVoleConfig1Updater(), TVE_MPX_REPETITION_RULE);
+        if (btVodMpxSystest2Enabled) {
+            scheduler.schedule(btTveVodSystest2Config1Updater(), TVE_MPX_REPETITION_RULE);
+        }
+
+        if (btVodMpxVoldEnabled) {
+            scheduler.schedule(btTveVodVoldConfig1Updater(), TVE_MPX_REPETITION_RULE);
+        }
+
+        if (btVodMpxVoleEnabled) {
+            scheduler.schedule(btTveVodVoleConfig1Updater(), TVE_MPX_REPETITION_RULE);
+        }
     }
 
     private void scheduleBtTveVodProdConfig1Updater() {

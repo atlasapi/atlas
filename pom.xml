@@ -479,6 +479,12 @@
 	        <groupId>org.apache.httpcomponents</groupId>
 	        <artifactId>httpcore</artifactId>
 	        <version>4.2.2</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>commons-logging</groupId>
+                    <artifactId>commons-logging</artifactId>
+                </exclusion>
+            </exclusions>
 	    </dependency>
         <dependency>
             <groupId>org.slf4j</groupId>
@@ -687,7 +693,6 @@
             <artifactId>hibernate-validator</artifactId>
             <version>5.2.4.Final</version>
         </dependency>
-
         <dependency>
             <groupId>javax.el</groupId>
             <artifactId>javax.el-api</artifactId>

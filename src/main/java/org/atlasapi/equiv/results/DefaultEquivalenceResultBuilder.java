@@ -108,17 +108,14 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
     }
 
     private boolean isSeriesOrBrand(T target) {
-        if (target instanceof Brand || target instanceof Series) {
-            return true;
-        }
-        return false;
+        return (target instanceof Brand || target instanceof Series);
     }
 
     private boolean canBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
         ScoredCandidate<T> previous = null;
 
         // copy of candidates necessary to iterate through twice to compare all with all
-        Set<ScoredCandidate<T>> candidatesTwo = ImmutableSet.copyOf(candidates);
+        Set<ScoredCandidate<T>> candidatesCopy = ImmutableSet.copyOf(candidates);
 
         for (ScoredCandidate<T> candidate : candidates) {
             if(previous!= null) {
@@ -129,7 +126,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
                 }
             }
             previous = candidate;
-            for (ScoredCandidate<T> candidateTwo : candidatesTwo) {
+            for (ScoredCandidate<T> candidateTwo : candidatesCopy) {
                 if (broadcastsMatchCheck(candidate, candidateTwo)) {
                     return true;
                 }
@@ -138,59 +135,28 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return false;
     }
 
-    private boolean broadcastsMatchCheck(ScoredCandidate<T> candidate, ScoredCandidate<T> candidateTwo) {
-        for (Version version : candidate.candidate().getVersions()) {
-            for (Broadcast broadcast : version.getBroadcasts()) {
-                if (broadcastsMatchCheck(candidateTwo, broadcast)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+    private boolean broadcastsMatchCheck(ScoredCandidate<T> candidateOne, ScoredCandidate<T> candidateTwo) {
+        return candidateOne.candidate().getVersions().stream()
+                .flatMap(v -> v.getBroadcasts().stream())
+                .anyMatch(b -> broadcastsMatchCheck(candidateTwo, b));
     }
 
     private boolean broadcastsMatchCheck(ScoredCandidate<T> candidate, Broadcast broadcast) {
-        for (Version version : candidate.candidate().getVersions()) {
-            for (Broadcast broadcastTwo : version.getBroadcasts()) {
-                if (broadcastsMatchCheckInclusive(broadcast, broadcastTwo)) {
-                    return true;
-                }
-            }
-        }
-        return false;
+        return candidate.candidate().getVersions().stream()
+                .flatMap(v -> v.getBroadcasts().stream())
+                .anyMatch(b -> broadcastsMatchCheckInclusive(b, broadcast));
     }
 
-    private boolean broadcastsMatchCheckCrossover(Broadcast broadcast, Broadcast broadcastTwo) {
-        DateTime broadcastTransmissionStart = broadcast.getTransmissionTime();
-        DateTime broadcastTransmissionEnd = broadcast.getTransmissionEndTime();
+    private boolean broadcastsMatchCheckInclusive(Broadcast broadcastOne, Broadcast broadcastTwo) {
+        DateTime broadcastTransmissionStart = broadcastOne.getTransmissionTime();
+        DateTime broadcastTransmissionEnd = broadcastOne.getTransmissionEndTime();
         DateTime broadcastTwoTransmissionStart = broadcastTwo.getTransmissionTime();
         DateTime broadcastTwoTransmissionEnd = broadcastTwo.getTransmissionEndTime();
 
-        if (broadcastTransmissionStart.isAfter(broadcastTwoTransmissionEnd) &&
-                broadcastTransmissionStart.isBefore(broadcastTwoTransmissionEnd)) {
-            return true;
-        } else if (broadcastTransmissionEnd.isBefore(broadcastTwoTransmissionEnd) &&
-                broadcastTransmissionEnd.isAfter(broadcastTwoTransmissionStart)) {
-            return true;
-        } else {
-            return false;
-        }
-    }
-
-    private boolean broadcastsMatchCheckInclusive(Broadcast broadcast, Broadcast broadcastTwo) {
-        DateTime broadcastTransmissionStart = broadcast.getTransmissionTime();
-        DateTime broadcastTransmissionEnd = broadcast.getTransmissionEndTime();
-        DateTime broadcastTwoTransmissionStart = broadcastTwo.getTransmissionTime();
-        DateTime broadcastTwoTransmissionEnd = broadcastTwo.getTransmissionEndTime();
-
-        if (broadcastTransmissionStart.isAfter(broadcastTwoTransmissionStart) &&
+        return (broadcastTransmissionStart.isAfter(broadcastTwoTransmissionStart) &&
                 broadcastTransmissionStart.isBefore(broadcastTwoTransmissionEnd) &&
                 broadcastTransmissionEnd.isAfter(broadcastTwoTransmissionStart) &&
-                broadcastTransmissionEnd.isBefore(broadcastTwoTransmissionEnd)) {
-            return true;
-        } else {
-            return false;
-        }
+                broadcastTransmissionEnd.isBefore(broadcastTwoTransmissionEnd));
     }
 
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {

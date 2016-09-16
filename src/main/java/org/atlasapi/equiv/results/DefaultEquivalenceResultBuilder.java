@@ -13,20 +13,26 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSortedSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
+import org.joda.time.DateTime;
 
 public class DefaultEquivalenceResultBuilder<T extends Content> implements EquivalenceResultBuilder<T> {
 
@@ -83,7 +89,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
             desc.startStage(String.format("Publisher: %s", publisher));
             
             ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted = ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
-            if(canBeEquivalatedToSamePublisher(copyOfSorted)) {
+            if(canBeEquivalatedToSamePublisher(copyOfSorted) && !isSeriesOrBrand(target)) {
                 for (ScoredCandidate<T> scoredCandidate : copyOfSorted) {
                     builder.put(publisher, scoredCandidate);
                 }
@@ -101,8 +107,19 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return builder.build();
     }
 
+    private boolean isSeriesOrBrand(T target) {
+        if (target instanceof Brand || target instanceof Series) {
+            return true;
+        }
+        return false;
+    }
+
     private boolean canBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
         ScoredCandidate<T> previous = null;
+
+        // copy of candidates necessary to iterate through twice to compare all with all
+        Set<ScoredCandidate<T>> candidatesTwo = ImmutableSet.copyOf(candidates);
+
         for (ScoredCandidate<T> candidate : candidates) {
             if(previous!= null) {
                 Score score = candidate.score();
@@ -112,8 +129,68 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
                 }
             }
             previous = candidate;
+            for (ScoredCandidate<T> candidateTwo : candidatesTwo) {
+                if (broadcastsMatchCheck(candidate, candidateTwo)) {
+                    return true;
+                }
+            }
         }
-        return true;
+        return false;
+    }
+
+    private boolean broadcastsMatchCheck(ScoredCandidate<T> candidate, ScoredCandidate<T> candidateTwo) {
+        for (Version version : candidate.candidate().getVersions()) {
+            for (Broadcast broadcast : version.getBroadcasts()) {
+                if (broadcastsMatchCheck(candidateTwo, broadcast)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean broadcastsMatchCheck(ScoredCandidate<T> candidate, Broadcast broadcast) {
+        for (Version version : candidate.candidate().getVersions()) {
+            for (Broadcast broadcastTwo : version.getBroadcasts()) {
+                if (broadcastsMatchCheckInclusive(broadcast, broadcastTwo)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    private boolean broadcastsMatchCheckCrossover(Broadcast broadcast, Broadcast broadcastTwo) {
+        DateTime broadcastTransmissionStart = broadcast.getTransmissionTime();
+        DateTime broadcastTransmissionEnd = broadcast.getTransmissionEndTime();
+        DateTime broadcastTwoTransmissionStart = broadcastTwo.getTransmissionTime();
+        DateTime broadcastTwoTransmissionEnd = broadcastTwo.getTransmissionEndTime();
+
+        if (broadcastTransmissionStart.isAfter(broadcastTwoTransmissionEnd) &&
+                broadcastTransmissionStart.isBefore(broadcastTwoTransmissionEnd)) {
+            return true;
+        } else if (broadcastTransmissionEnd.isBefore(broadcastTwoTransmissionEnd) &&
+                broadcastTransmissionEnd.isAfter(broadcastTwoTransmissionStart)) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+
+    private boolean broadcastsMatchCheckInclusive(Broadcast broadcast, Broadcast broadcastTwo) {
+        DateTime broadcastTransmissionStart = broadcast.getTransmissionTime();
+        DateTime broadcastTransmissionEnd = broadcast.getTransmissionEndTime();
+        DateTime broadcastTwoTransmissionStart = broadcastTwo.getTransmissionTime();
+        DateTime broadcastTwoTransmissionEnd = broadcastTwo.getTransmissionEndTime();
+
+        if (broadcastTransmissionStart.isAfter(broadcastTwoTransmissionStart) &&
+                broadcastTransmissionStart.isBefore(broadcastTwoTransmissionEnd) &&
+                broadcastTransmissionEnd.isAfter(broadcastTwoTransmissionStart) &&
+                broadcastTransmissionEnd.isBefore(broadcastTwoTransmissionEnd)) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {

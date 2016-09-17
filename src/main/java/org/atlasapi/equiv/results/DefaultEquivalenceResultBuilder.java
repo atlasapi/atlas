@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.results;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -16,6 +17,7 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
@@ -89,8 +91,9 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
             desc.startStage(String.format("Publisher: %s", publisher));
             
             ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted = ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
-            if(canBeEquivalatedToSamePublisher(copyOfSorted) && !isSeriesOrBrand(target)) {
-                for (ScoredCandidate<T> scoredCandidate : copyOfSorted) {
+            Set<ScoredCandidate<T>> allowedCandidates = candidatesThatCanBeEquivalatedToSamePublisher(copyOfSorted);
+            if(allowedCandidates.size() > 0 && !isSeriesOrBrand(target)) {
+                for (ScoredCandidate<T> scoredCandidate : allowedCandidates) {
                     builder.put(publisher, scoredCandidate);
                 }
             } else {
@@ -111,28 +114,32 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return (target instanceof Brand || target instanceof Series);
     }
 
-    private boolean canBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
-        ScoredCandidate<T> previous = null;
+    private boolean isSeriesOrBrand(ScoredCandidate<T> target) {
+        return (target.candidate() instanceof Brand || target.candidate() instanceof Series);
+    }
 
+    private Set<ScoredCandidate<T>> candidatesThatCanBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
         // copy of candidates necessary to iterate through twice to compare all with all
         Set<ScoredCandidate<T>> candidatesCopy = ImmutableSet.copyOf(candidates);
 
+        Set<ScoredCandidate<T>> allowedCandidates = new HashSet<>();
+
         for (ScoredCandidate<T> candidate : candidates) {
-            if(previous!= null) {
-                Score score = candidate.score();
-                Score previousScore = previous.score();
-                if (!(Math.abs(score.asDouble()-previousScore.asDouble()) < 0.3)) {
-                    return false;
-                }
-            }
-            previous = candidate;
             for (ScoredCandidate<T> candidateTwo : candidatesCopy) {
-                if (broadcastsMatchCheck(candidate, candidateTwo)) {
-                    return true;
+                if (!(candidateTwo == candidate) &&
+                        broadcastsMatchCheck(candidate, candidateTwo) &&
+                        Math.abs(candidate.score().asDouble()-candidateTwo.score().asDouble())
+                                < 0.3) {
+                    if (!allowedCandidates.contains(candidate) && !isSeriesOrBrand(candidate)) {
+                        allowedCandidates.add(candidate);
+                    }
+                    if (!allowedCandidates.contains(candidateTwo) && !isSeriesOrBrand(candidateTwo)) {
+                        allowedCandidates.add(candidateTwo);
+                    }
                 }
             }
         }
-        return false;
+        return allowedCandidates;
     }
 
     private boolean broadcastsMatchCheck(ScoredCandidate<T> candidateOne, ScoredCandidate<T> candidateTwo) {

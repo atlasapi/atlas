@@ -13,9 +13,12 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 
 import com.google.common.base.Equivalence;
@@ -73,6 +76,125 @@ public class DefaultEquivalenceResultBuilderTest {
                 4.8
         );
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+    }
+
+    @Test
+    public void checkWontEquivalateToBrands() {
+        Item item = new Item();
+        item.setPublisher(Publisher.ARQIVA);
+        item.setCanonicalUri("target");
+
+        Brand candidate1 = brandWithBroadcast("2500", "6500");
+        candidate1.setPublisher(Publisher.PA);
+        candidate1.setCanonicalUri("candidate1");
+
+        Item candidate2 = itemWithBroadcast("4500", "5500");
+        candidate2.setPublisher(Publisher.PA);
+        candidate2.setCanonicalUri("candidate2");
+
+        List<ScoredCandidates<Identified>> equivalents = ImmutableList.of(
+                DefaultScoredCandidates.<Identified>fromSource("A Source")
+                        .addEquivalent(candidate1, Score.valueOf(5.0))
+                        .addEquivalent(candidate2, Score.valueOf(4.8))
+                        .build()
+        );
+
+        EquivalenceResult equivalenceResult = resultBuilder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription()
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+    }
+
+    @Test
+    public void checkWontEquivalateToSeries() {
+        Item item = new Item();
+        item.setPublisher(Publisher.ARQIVA);
+        item.setCanonicalUri("target");
+
+        Series candidate1 = seriesWithBroadcast("2500", "6500");
+        candidate1.setPublisher(Publisher.PA);
+        candidate1.setCanonicalUri("candidate1");
+
+
+        Item candidate2 = itemWithBroadcast("4500", "5500");
+        candidate2.setPublisher(Publisher.PA);
+        candidate2.setCanonicalUri("candidate2");
+
+        List<ScoredCandidates<Identified>> equivalents = ImmutableList.of(
+                DefaultScoredCandidates.<Identified>fromSource("A Source")
+                        .addEquivalent(candidate1, Score.valueOf(5.0))
+                        .addEquivalent(candidate2, Score.valueOf(4.8))
+                        .build()
+        );
+
+        EquivalenceResult equivalenceResult = resultBuilder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription()
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+    }
+
+    @Test
+    public void checkWillOnlyTakeBroadcastMatchingCandidatesNotAll() {
+        EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                "4500",
+                "2500",
+                "9500",
+                "4400",
+                "6500",
+                "9600",
+                5.0,
+                4.8,
+                4.9
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+    }
+
+    private EquivalenceResult itemsWithBroadcastAndScores(
+            String startTime1,
+            String startTime2,
+            String startTime3,
+            String endTime1,
+            String endTime2,
+            String endTime3,
+            Double score1,
+            Double score2,
+            Double score3
+    ) {
+        Item item = new Item();
+        item.setPublisher(Publisher.ARQIVA);
+        item.setCanonicalUri("target");
+
+        Item candidate1 = itemWithBroadcast(startTime1, endTime1);
+        candidate1.setPublisher(Publisher.PA);
+        candidate1.setCanonicalUri("candidate1");
+
+
+        Item candidate2 = itemWithBroadcast(startTime2, endTime2);
+        candidate2.setPublisher(Publisher.PA);
+        candidate2.setCanonicalUri("candidate2");
+
+        Item candidate3 = itemWithBroadcast(startTime3, endTime3);
+        candidate3.setPublisher(Publisher.PA);
+        candidate3.setCanonicalUri("candidate3");
+
+        List<ScoredCandidates<Item>> equivalents = ImmutableList.of(
+                DefaultScoredCandidates.<Item>fromSource("A Source")
+                        .addEquivalent(candidate1, Score.valueOf(score1))
+                        .addEquivalent(candidate2, Score.valueOf(score2))
+                        .addEquivalent(candidate3, Score.valueOf(score3))
+                        .build()
+        );
+
+        EquivalenceResult equivalenceResult = resultBuilder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription()
+        );
+        return equivalenceResult;
     }
 
     private EquivalenceResult itemsWithBroadcastAndScores(
@@ -133,6 +255,54 @@ public class DefaultEquivalenceResultBuilderTest {
         version.setBroadcasts(ImmutableSet.of(broadcast1));
         item.setVersions(ImmutableSet.of(version));
         return item;
+    }
+
+    private Brand brandWithBroadcast(String startTime, String endTime) {
+        Brand brand = new Brand();
+        Version version = new Version();
+
+        DateTime dateTime1 = new DateTime().withDayOfYear(1).withYear(1).withTime(
+                Integer.parseInt(startTime.substring(0, 1)),
+                Integer.parseInt(startTime.substring(1, 2)),
+                Integer.parseInt(startTime.substring(2, 3)),
+                Integer.parseInt(startTime.substring(3, 4))
+        );
+
+        DateTime dateTime2 = new DateTime().withDayOfYear(1).withDayOfYear(1).withTime(
+                Integer.parseInt(endTime.substring(0, 1)),
+                Integer.parseInt(endTime.substring(1, 2)),
+                Integer.parseInt(endTime.substring(2, 3)),
+                Integer.parseInt(endTime.substring(3, 4))
+        );
+
+        Broadcast broadcast1 = new Broadcast("", dateTime1, dateTime2);
+        version.setBroadcasts(ImmutableSet.of(broadcast1));
+        brand.setVersions(ImmutableSet.of(version));
+        return brand;
+    }
+
+    private Series seriesWithBroadcast(String startTime, String endTime) {
+        Series series = new Series();
+        Version version = new Version();
+
+        DateTime dateTime1 = new DateTime().withDayOfYear(1).withYear(1).withTime(
+                Integer.parseInt(startTime.substring(0, 1)),
+                Integer.parseInt(startTime.substring(1, 2)),
+                Integer.parseInt(startTime.substring(2, 3)),
+                Integer.parseInt(startTime.substring(3, 4))
+        );
+
+        DateTime dateTime2 = new DateTime().withDayOfYear(1).withDayOfYear(1).withTime(
+                Integer.parseInt(endTime.substring(0, 1)),
+                Integer.parseInt(endTime.substring(1, 2)),
+                Integer.parseInt(endTime.substring(2, 3)),
+                Integer.parseInt(endTime.substring(3, 4))
+        );
+
+        Broadcast broadcast1 = new Broadcast("", dateTime1, dateTime2);
+        version.setBroadcasts(ImmutableSet.of(broadcast1));
+        series.setVersions(ImmutableSet.of(version));
+        return series;
     }
 
     @Test

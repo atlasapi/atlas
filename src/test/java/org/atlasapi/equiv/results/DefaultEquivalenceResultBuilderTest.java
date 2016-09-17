@@ -66,6 +66,20 @@ public class DefaultEquivalenceResultBuilderTest {
     }
 
     @Test
+    public void checkDoesEquivalateToSeveralPaWithBoundaryBroadcasts() {
+
+        EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                "4500",
+                "4500",
+                "5500",
+                "5500",
+                5.0,
+                4.8
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+    }
+
+    @Test
     public void checkWontEquivalateToBothWithOverlappingScores() {
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
                 "2500",

@@ -35,6 +35,7 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 public class DefaultEquivalenceResultBuilder<T extends Content> implements EquivalenceResultBuilder<T> {
 
@@ -45,6 +46,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
     private final ScoreCombiner<T> combiner;
     private final EquivalenceExtractor<T> extractor;
     private final EquivalenceFilter<T> filter;
+    private static final Duration BROADCAST_TIME_FLEXIBILITY = Duration.standardMinutes(5);
 
     public DefaultEquivalenceResultBuilder(ScoreCombiner<T> combiner, EquivalenceFilter<T> filter, EquivalenceExtractor<T> extractor) {
         this.combiner = combiner;
@@ -160,10 +162,14 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         DateTime broadcastTwoTransmissionStart = broadcastTwo.getTransmissionTime();
         DateTime broadcastTwoTransmissionEnd = broadcastTwo.getTransmissionEndTime();
 
-        return (broadcastTransmissionStart.isAfter(broadcastTwoTransmissionStart) &&
-                broadcastTransmissionStart.isBefore(broadcastTwoTransmissionEnd) &&
-                broadcastTransmissionEnd.isAfter(broadcastTwoTransmissionStart) &&
-                broadcastTransmissionEnd.isBefore(broadcastTwoTransmissionEnd));
+        return (broadcastTransmissionStart.isAfter(
+                broadcastTwoTransmissionStart.minus(BROADCAST_TIME_FLEXIBILITY)) &&
+                broadcastTransmissionStart.isBefore(
+                        broadcastTwoTransmissionEnd.plus(BROADCAST_TIME_FLEXIBILITY)) &&
+                broadcastTransmissionEnd.isAfter(
+                        broadcastTwoTransmissionStart.minus(BROADCAST_TIME_FLEXIBILITY)) &&
+                broadcastTransmissionEnd.isBefore(
+                        broadcastTwoTransmissionEnd.plus(BROADCAST_TIME_FLEXIBILITY)));
     }
 
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {

@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.results;
 
+import java.util.Date;
 import java.util.List;
 
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
@@ -11,11 +12,20 @@ import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 
+import com.google.common.base.Equivalence;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import org.joda.time.DateTime;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
@@ -28,7 +38,7 @@ public class DefaultEquivalenceResultBuilderTest {
     private final DefaultEquivalenceResultBuilder resultBuilder = new DefaultEquivalenceResultBuilder(combiner, filter, extractor);
 
     @Test
-    public void checkEquivalatesToSeveralPa() {
+    public void checkDoesNotEquivalateToSeveralPa() {
         Item item = new Item();
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
@@ -39,7 +49,242 @@ public class DefaultEquivalenceResultBuilderTest {
                 new DefaultDescription()
         );
 
-        assertTrue(equivalenceResult.strongEquivalences().values().size() == 4);
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+    }
+
+    @Test
+    public void checkDoesEquivalateToSeveralPaWithInclusiveBroadcasts() {
+
+        EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(6),
+                5.0,
+                4.8
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+    }
+
+    @Test
+    public void checkDoesEquivalateToSeveralPaWithBoundaryBroadcasts() {
+
+        EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(5),
+                5.0,
+                4.8
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+    }
+
+    @Test
+    public void checkWontEquivalateToBothWithOverlappingScores() {
+        EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(6),
+                5.0,
+                4.8
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+    }
+
+    @Test
+    public void checkWontEquivalateToBrands() {
+        Item item = new Item();
+        item.setPublisher(Publisher.ARQIVA);
+        item.setCanonicalUri("target");
+
+        Brand candidate1 = brandWithBroadcast(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(6)
+        );
+        candidate1.setPublisher(Publisher.PA);
+        candidate1.setCanonicalUri("candidate1");
+
+        Item candidate2 = itemWithBroadcast(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5)
+        );
+        candidate2.setPublisher(Publisher.PA);
+        candidate2.setCanonicalUri("candidate2");
+
+        List<ScoredCandidates<Identified>> equivalents = ImmutableList.of(
+                DefaultScoredCandidates.<Identified>fromSource("A Source")
+                        .addEquivalent(candidate1, Score.valueOf(5.0))
+                        .addEquivalent(candidate2, Score.valueOf(4.8))
+                        .build()
+        );
+
+        EquivalenceResult equivalenceResult = resultBuilder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription()
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+    }
+
+    @Test
+    public void checkWontEquivalateToSeries() {
+        Item item = new Item();
+        item.setPublisher(Publisher.ARQIVA);
+        item.setCanonicalUri("target");
+
+        Series candidate1 = seriesWithBroadcast(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(6)
+        );
+        candidate1.setPublisher(Publisher.PA);
+        candidate1.setCanonicalUri("candidate1");
+
+
+        Item candidate2 = itemWithBroadcast(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5)
+        );
+        candidate2.setPublisher(Publisher.PA);
+        candidate2.setCanonicalUri("candidate2");
+
+        List<ScoredCandidates<Identified>> equivalents = ImmutableList.of(
+                DefaultScoredCandidates.<Identified>fromSource("A Source")
+                        .addEquivalent(candidate1, Score.valueOf(5.0))
+                        .addEquivalent(candidate2, Score.valueOf(4.8))
+                        .build()
+        );
+
+        EquivalenceResult equivalenceResult = resultBuilder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription()
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+    }
+
+    @Test
+    public void checkWillOnlyTakeBroadcastMatchingCandidatesNotAll() {
+        EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(9),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(6),
+                new DateTime().withHourOfDay(9).withMinuteOfHour(15),
+                5.0,
+                4.8,
+                4.9
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+    }
+
+    private EquivalenceResult itemsWithBroadcastAndScores(
+            DateTime startTime1,
+            DateTime startTime2,
+            DateTime startTime3,
+            DateTime endTime1,
+            DateTime endTime2,
+            DateTime endTime3,
+            Double score1,
+            Double score2,
+            Double score3
+    ) {
+        Item item = new Item();
+        item.setPublisher(Publisher.ARQIVA);
+        item.setCanonicalUri("target");
+
+        Item candidate1 = itemWithBroadcast(startTime1, endTime1);
+        candidate1.setPublisher(Publisher.PA);
+        candidate1.setCanonicalUri("candidate1");
+
+
+        Item candidate2 = itemWithBroadcast(startTime2, endTime2);
+        candidate2.setPublisher(Publisher.PA);
+        candidate2.setCanonicalUri("candidate2");
+
+        Item candidate3 = itemWithBroadcast(startTime3, endTime3);
+        candidate3.setPublisher(Publisher.PA);
+        candidate3.setCanonicalUri("candidate3");
+
+        List<ScoredCandidates<Item>> equivalents = ImmutableList.of(
+                DefaultScoredCandidates.<Item>fromSource("A Source")
+                        .addEquivalent(candidate1, Score.valueOf(score1))
+                        .addEquivalent(candidate2, Score.valueOf(score2))
+                        .addEquivalent(candidate3, Score.valueOf(score3))
+                        .build()
+        );
+
+        EquivalenceResult equivalenceResult = resultBuilder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription()
+        );
+        return equivalenceResult;
+    }
+
+    private EquivalenceResult itemsWithBroadcastAndScores(
+            DateTime startTime1,
+            DateTime startTime2,
+            DateTime endTime1,
+            DateTime endTime2,
+            Double score1,
+            Double score2
+    ) {
+        Item item = new Item();
+        item.setPublisher(Publisher.ARQIVA);
+        item.setCanonicalUri("target");
+
+        Item candidate1 = itemWithBroadcast(startTime1, endTime1);
+        candidate1.setPublisher(Publisher.PA);
+        candidate1.setCanonicalUri("candidate1");
+
+
+        Item candidate2 = itemWithBroadcast(startTime2, endTime2);
+        candidate2.setPublisher(Publisher.PA);
+        candidate2.setCanonicalUri("candidate2");
+
+        List<ScoredCandidates<Item>> equivalents = ImmutableList.of(
+                DefaultScoredCandidates.<Item>fromSource("A Source")
+                        .addEquivalent(candidate1, Score.valueOf(score1))
+                        .addEquivalent(candidate2, Score.valueOf(score2))
+                        .build()
+        );
+
+        EquivalenceResult equivalenceResult = resultBuilder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription()
+        );
+        return equivalenceResult;
+    }
+
+    private Item itemWithBroadcast(DateTime startTime, DateTime endTime) {
+        Item item = new Item();
+        Version version = new Version();
+        Broadcast broadcast1 = new Broadcast("", startTime, endTime);
+        version.setBroadcasts(ImmutableSet.of(broadcast1));
+        item.setVersions(ImmutableSet.of(version));
+        return item;
+    }
+
+    private Brand brandWithBroadcast(DateTime startTime, DateTime endTime) {
+        Brand brand = new Brand();
+        Version version = new Version();
+        Broadcast broadcast1 = new Broadcast("", startTime, endTime);
+        version.setBroadcasts(ImmutableSet.of(broadcast1));
+        brand.setVersions(ImmutableSet.of(version));
+        return brand;
+    }
+
+    private Series seriesWithBroadcast(DateTime startTime, DateTime endTime) {
+        Series series = new Series();
+        Version version = new Version();
+        Broadcast broadcast1 = new Broadcast("", startTime, endTime);
+        version.setBroadcasts(ImmutableSet.of(broadcast1));
+        series.setVersions(ImmutableSet.of(version));
+        return series;
     }
 
     @Test
@@ -93,7 +338,7 @@ public class DefaultEquivalenceResultBuilderTest {
     }
 
     @Test
-    public void checkEquivalatesTwoItemsWithSameScore() {
+    public void checkDoesNotEquivalateTwoItemsWithSameScore() {
         Item item = new Item();
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
@@ -113,10 +358,10 @@ public class DefaultEquivalenceResultBuilderTest {
                 new DefaultDescription()
         );
 
-        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
     }
     @Test
-    public void checkDoesntEquivalatesTwoItemsWithDifferentScore() {
+    public void checkDoesntEquivalateTwoItemsWithDifferentScore() {
         Item item = new Item();
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
@@ -136,7 +381,7 @@ public class DefaultEquivalenceResultBuilderTest {
                 new DefaultDescription()
         );
 
-        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
     }
 
 

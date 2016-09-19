@@ -31,6 +31,7 @@ import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -104,6 +105,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return channels.addAll(
                 results.stream()
                         .filter(service -> service.getIds() != null)
+                        .filter(this::endsBeforeNow)
                         .flatMap(service -> generateAndAddChannelsFromLocators(
                                 channels,
                                 service,
@@ -112,6 +114,18 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                         ).stream())
                         .collect(MoreCollectors.toImmutableList())
         );
+    }
+
+    private boolean endsBeforeNow(Service service) {
+        DateRange range = service.getDateRange();
+        XMLGregorianCalendar end = range.getEnd();
+        if (end == null) {
+            return true;
+        }
+
+        DateTime endJoda = new DateTime(end.toGregorianCalendar().getTime());
+
+        return endJoda.isAfter(DateTime.now());
     }
 
     private ImmutableList<Channel> generateAndAddChannelsFromLocators(

@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.results;
 
+import java.util.Date;
 import java.util.List;
 
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
@@ -55,10 +56,10 @@ public class DefaultEquivalenceResultBuilderTest {
     public void checkDoesEquivalateToSeveralPaWithInclusiveBroadcasts() {
 
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
-                "4500",
-                "2500",
-                "5500",
-                "6500",
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(6),
                 5.0,
                 4.8
         );
@@ -69,10 +70,10 @@ public class DefaultEquivalenceResultBuilderTest {
     public void checkDoesEquivalateToSeveralPaWithBoundaryBroadcasts() {
 
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
-                "4500",
-                "4500",
-                "5500",
-                "5500",
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(5),
                 5.0,
                 4.8
         );
@@ -82,10 +83,10 @@ public class DefaultEquivalenceResultBuilderTest {
     @Test
     public void checkWontEquivalateToBothWithOverlappingScores() {
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
-                "2500",
-                "5500",
-                "4500",
-                "6500",
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(6),
                 5.0,
                 4.8
         );
@@ -98,11 +99,17 @@ public class DefaultEquivalenceResultBuilderTest {
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
 
-        Brand candidate1 = brandWithBroadcast("2500", "6500");
+        Brand candidate1 = brandWithBroadcast(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(6)
+        );
         candidate1.setPublisher(Publisher.PA);
         candidate1.setCanonicalUri("candidate1");
 
-        Item candidate2 = itemWithBroadcast("4500", "5500");
+        Item candidate2 = itemWithBroadcast(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5)
+        );
         candidate2.setPublisher(Publisher.PA);
         candidate2.setCanonicalUri("candidate2");
 
@@ -127,12 +134,18 @@ public class DefaultEquivalenceResultBuilderTest {
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
 
-        Series candidate1 = seriesWithBroadcast("2500", "6500");
+        Series candidate1 = seriesWithBroadcast(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(6)
+        );
         candidate1.setPublisher(Publisher.PA);
         candidate1.setCanonicalUri("candidate1");
 
 
-        Item candidate2 = itemWithBroadcast("4500", "5500");
+        Item candidate2 = itemWithBroadcast(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5)
+        );
         candidate2.setPublisher(Publisher.PA);
         candidate2.setCanonicalUri("candidate2");
 
@@ -154,12 +167,12 @@ public class DefaultEquivalenceResultBuilderTest {
     @Test
     public void checkWillOnlyTakeBroadcastMatchingCandidatesNotAll() {
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
-                "4500",
-                "2500",
-                "9500",
-                "4400",
-                "6500",
-                "9600",
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(9),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(6),
+                new DateTime().withHourOfDay(9).withMinuteOfHour(15),
                 5.0,
                 4.8,
                 4.9
@@ -168,12 +181,12 @@ public class DefaultEquivalenceResultBuilderTest {
     }
 
     private EquivalenceResult itemsWithBroadcastAndScores(
-            String startTime1,
-            String startTime2,
-            String startTime3,
-            String endTime1,
-            String endTime2,
-            String endTime3,
+            DateTime startTime1,
+            DateTime startTime2,
+            DateTime startTime3,
+            DateTime endTime1,
+            DateTime endTime2,
+            DateTime endTime3,
             Double score1,
             Double score2,
             Double score3
@@ -212,10 +225,10 @@ public class DefaultEquivalenceResultBuilderTest {
     }
 
     private EquivalenceResult itemsWithBroadcastAndScores(
-            String startTime1,
-            String startTime2,
-            String endTime1,
-            String endTime2,
+            DateTime startTime1,
+            DateTime startTime2,
+            DateTime endTime1,
+            DateTime endTime2,
             Double score1,
             Double score2
     ) {
@@ -247,73 +260,28 @@ public class DefaultEquivalenceResultBuilderTest {
         return equivalenceResult;
     }
 
-    private Item itemWithBroadcast(String startTime, String endTime) {
+    private Item itemWithBroadcast(DateTime startTime, DateTime endTime) {
         Item item = new Item();
         Version version = new Version();
-
-        DateTime dateTime1 = new DateTime().withDayOfYear(1).withYear(1).withTime(
-                Integer.parseInt(startTime.substring(0, 1)),
-                Integer.parseInt(startTime.substring(1, 2)),
-                Integer.parseInt(startTime.substring(2, 3)),
-                Integer.parseInt(startTime.substring(3, 4))
-        );
-
-        DateTime dateTime2 = new DateTime().withDayOfYear(1).withDayOfYear(1).withTime(
-                Integer.parseInt(endTime.substring(0, 1)),
-                Integer.parseInt(endTime.substring(1, 2)),
-                Integer.parseInt(endTime.substring(2, 3)),
-                Integer.parseInt(endTime.substring(3, 4))
-        );
-
-        Broadcast broadcast1 = new Broadcast("", dateTime1, dateTime2);
+        Broadcast broadcast1 = new Broadcast("", startTime, endTime);
         version.setBroadcasts(ImmutableSet.of(broadcast1));
         item.setVersions(ImmutableSet.of(version));
         return item;
     }
 
-    private Brand brandWithBroadcast(String startTime, String endTime) {
+    private Brand brandWithBroadcast(DateTime startTime, DateTime endTime) {
         Brand brand = new Brand();
         Version version = new Version();
-
-        DateTime dateTime1 = new DateTime().withDayOfYear(1).withYear(1).withTime(
-                Integer.parseInt(startTime.substring(0, 1)),
-                Integer.parseInt(startTime.substring(1, 2)),
-                Integer.parseInt(startTime.substring(2, 3)),
-                Integer.parseInt(startTime.substring(3, 4))
-        );
-
-        DateTime dateTime2 = new DateTime().withDayOfYear(1).withDayOfYear(1).withTime(
-                Integer.parseInt(endTime.substring(0, 1)),
-                Integer.parseInt(endTime.substring(1, 2)),
-                Integer.parseInt(endTime.substring(2, 3)),
-                Integer.parseInt(endTime.substring(3, 4))
-        );
-
-        Broadcast broadcast1 = new Broadcast("", dateTime1, dateTime2);
+        Broadcast broadcast1 = new Broadcast("", startTime, endTime);
         version.setBroadcasts(ImmutableSet.of(broadcast1));
         brand.setVersions(ImmutableSet.of(version));
         return brand;
     }
 
-    private Series seriesWithBroadcast(String startTime, String endTime) {
+    private Series seriesWithBroadcast(DateTime startTime, DateTime endTime) {
         Series series = new Series();
         Version version = new Version();
-
-        DateTime dateTime1 = new DateTime().withDayOfYear(1).withYear(1).withTime(
-                Integer.parseInt(startTime.substring(0, 1)),
-                Integer.parseInt(startTime.substring(1, 2)),
-                Integer.parseInt(startTime.substring(2, 3)),
-                Integer.parseInt(startTime.substring(3, 4))
-        );
-
-        DateTime dateTime2 = new DateTime().withDayOfYear(1).withDayOfYear(1).withTime(
-                Integer.parseInt(endTime.substring(0, 1)),
-                Integer.parseInt(endTime.substring(1, 2)),
-                Integer.parseInt(endTime.substring(2, 3)),
-                Integer.parseInt(endTime.substring(3, 4))
-        );
-
-        Broadcast broadcast1 = new Broadcast("", dateTime1, dateTime2);
+        Broadcast broadcast1 = new Broadcast("", startTime, endTime);
         version.setBroadcasts(ImmutableSet.of(broadcast1));
         series.setVersions(ImmutableSet.of(version));
         return series;

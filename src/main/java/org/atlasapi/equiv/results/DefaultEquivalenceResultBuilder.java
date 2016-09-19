@@ -22,6 +22,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 
+import com.metabroadcast.common.stream.MoreCollectors;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -36,6 +38,7 @@ import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.joda.time.Interval;
 
 public class DefaultEquivalenceResultBuilder<T extends Content> implements EquivalenceResultBuilder<T> {
 
@@ -47,6 +50,7 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
     private final EquivalenceExtractor<T> extractor;
     private final EquivalenceFilter<T> filter;
     private static final Duration BROADCAST_TIME_FLEXIBILITY = Duration.standardMinutes(5);
+    private static double PUBLISHER_MATCHING_EQUIV_THRESHOLD = 0.3;
 
     public DefaultEquivalenceResultBuilder(ScoreCombiner<T> combiner, EquivalenceFilter<T> filter, EquivalenceExtractor<T> extractor) {
         this.combiner = combiner;
@@ -116,35 +120,40 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return (target instanceof Brand || target instanceof Series);
     }
 
-    private boolean isSeriesOrBrand(ScoredCandidate<T> target) {
-        return (target.candidate() instanceof Brand || target.candidate() instanceof Series);
-    }
-
-    private Set<ScoredCandidate<T>> candidatesThatCanBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
-        // copy of candidates necessary to iterate through twice to compare all with all
-        Set<ScoredCandidate<T>> candidatesCopy = ImmutableSet.copyOf(candidates);
-
+    private Set<ScoredCandidate<T>> candidatesThatCanBeEquivalatedToSamePublisher(
+            Set<ScoredCandidate<T>> candidates
+    ) {
         Set<ScoredCandidate<T>> allowedCandidates = new HashSet<>();
 
-        for (ScoredCandidate<T> candidate : candidates) {
-            for (ScoredCandidate<T> candidateTwo : candidatesCopy) {
-                if (!(candidateTwo == candidate) &&
-                        broadcastsMatchCheck(candidate, candidateTwo) &&
-                        Math.abs(candidate.score().asDouble()-candidateTwo.score().asDouble())
-                                < 0.3) {
-                    if (!allowedCandidates.contains(candidate) && !isSeriesOrBrand(candidate)) {
-                        allowedCandidates.add(candidate);
-                    }
-                    if (!allowedCandidates.contains(candidateTwo) && !isSeriesOrBrand(candidateTwo)) {
-                        allowedCandidates.add(candidateTwo);
-                    }
-                }
+        ImmutableSet<ScoredCandidate<T>> filteredCandidates = candidates.stream()
+                .filter(candidate -> !isSeriesOrBrand(candidate.candidate()))
+                .collect(MoreCollectors.toImmutableSet());
+
+        for (ScoredCandidate<T> firstCandidate : filteredCandidates) {
+            ImmutableSet<ScoredCandidate<T>> matchedCandidates = filteredCandidates
+                    .stream()
+                    .filter(secondCandidate -> secondCandidate != firstCandidate)
+                    .filter(secondCandidate -> broadcastsMatchCheck(
+                            firstCandidate, secondCandidate
+                    ))
+                    .filter(secondCandidate -> Math.abs(
+                            firstCandidate.score().asDouble() - secondCandidate.score().asDouble()
+                    ) < PUBLISHER_MATCHING_EQUIV_THRESHOLD)
+                    .collect(MoreCollectors.toImmutableSet());
+
+            if (matchedCandidates.size() > 0) {
+                allowedCandidates.add(firstCandidate);
+                allowedCandidates.addAll(matchedCandidates);
             }
         }
+
         return allowedCandidates;
     }
 
-    private boolean broadcastsMatchCheck(ScoredCandidate<T> candidateOne, ScoredCandidate<T> candidateTwo) {
+    private boolean broadcastsMatchCheck(
+            ScoredCandidate<T> candidateOne,
+            ScoredCandidate<T> candidateTwo
+    ) {
         return candidateOne.candidate().getVersions().stream()
                 .flatMap(v -> v.getBroadcasts().stream())
                 .anyMatch(b -> broadcastsMatchCheck(candidateTwo, b));
@@ -162,14 +171,11 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         DateTime broadcastTwoTransmissionStart = broadcastTwo.getTransmissionTime();
         DateTime broadcastTwoTransmissionEnd = broadcastTwo.getTransmissionEndTime();
 
-        return (broadcastTransmissionStart.isAfter(
+        // Check if first broadcast is contained within the second with some flexibility
+        return broadcastTransmissionStart.isAfter(
                 broadcastTwoTransmissionStart.minus(BROADCAST_TIME_FLEXIBILITY)) &&
-                broadcastTransmissionStart.isBefore(
-                        broadcastTwoTransmissionEnd.plus(BROADCAST_TIME_FLEXIBILITY)) &&
-                broadcastTransmissionEnd.isAfter(
-                        broadcastTwoTransmissionStart.minus(BROADCAST_TIME_FLEXIBILITY)) &&
                 broadcastTransmissionEnd.isBefore(
-                        broadcastTwoTransmissionEnd.plus(BROADCAST_TIME_FLEXIBILITY)));
+                        broadcastTwoTransmissionEnd.plus(BROADCAST_TIME_FLEXIBILITY));
     }
 
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {

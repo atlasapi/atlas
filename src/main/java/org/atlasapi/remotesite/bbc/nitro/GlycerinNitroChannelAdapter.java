@@ -23,10 +23,12 @@ import com.metabroadcast.atlas.glycerin.queries.MasterBrandsMixin;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServiceTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -74,36 +76,57 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     public ImmutableSet<Channel> fetchServices(ImmutableMap<String, Channel> uriToParentChannels) throws GlycerinException {
         ImmutableSet.Builder<Channel> channels = ImmutableSet.builder();
 
-        boolean exhausted = false;
-        int startingPoint = 1;
-        while (!exhausted) {
-            List<Service> results = paginateServices(startingPoint);
-            for (Service result : results) {
-                Ids ids = result.getIds();
-                if (ids != null) {
-                    generateAndAddChannelsFromLocators(channels, result, ids, uriToParentChannels);
-                }
-            }
-            startingPoint ++;
-            exhausted = results.size() != MAXIMUM_PAGE_SIZE;
+        ServicesQuery servicesQuery = ServicesQuery.builder()
+                .withPageSize(MAXIMUM_PAGE_SIZE)
+                .withPage(1)
+                .withServiceType(
+                        ServiceTypeOption.LOCAL_RADIO, ServiceTypeOption.NATIONAL_RADIO,
+                        ServiceTypeOption.REGIONAL_RADIO, ServiceTypeOption.TV)
+                .build();
+        GlycerinResponse<Service> response = glycerin.execute(servicesQuery);
+
+        List<Service> results = response.getResults();
+
+        addChannelsToBuilder(uriToParentChannels, channels, results);
+
+        while (response.hasNext()) {
+            response = response.getNext();
+            results = response.getResults();
+
+            addChannelsToBuilder(uriToParentChannels, channels, results);
         }
 
         return channels.build();
     }
 
-    private void generateAndAddChannelsFromLocators(
+    private ImmutableSet.Builder<Channel> addChannelsToBuilder(
+            ImmutableMap<String, Channel> uriToParentChannels,
+            ImmutableSet.Builder<Channel> channels, List<Service> results) {
+        return channels.addAll(
+                results.stream()
+                        .filter(service -> service.getIds() != null)
+                        .flatMap(service -> generateAndAddChannelsFromLocators(
+                                channels,
+                                service,
+                                service.getIds(),
+                                uriToParentChannels
+                        ).stream())
+                        .collect(MoreCollectors.toImmutableList())
+        );
+    }
+
+    private ImmutableList<Channel> generateAndAddChannelsFromLocators(
             ImmutableSet.Builder<Channel> channels,
             Service result,
             Ids ids,
             ImmutableMap<String, Channel> uriToParentChannels
-    ) throws GlycerinException {
-        Channel channel;
-        for (Id id : ids.getId()) {
-            if (id.getType().equals(TERRESTRIAL_SERVICE_LOCATOR)) {
-                channel = getChannelWithLocatorAlias(result, id, uriToParentChannels);
-                channels.add(channel);
-            }
-        }
+    ) {
+        return ids.getId()
+                .stream()
+                .filter(id -> TERRESTRIAL_SERVICE_LOCATOR.equals(id.getType()))
+                .map(id -> getChannelWithLocatorAlias(result, id, uriToParentChannels))
+                .collect(MoreCollectors.toImmutableList());
+
     }
 
     @Override
@@ -124,19 +147,6 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         }
 
         return masterBrands.build();
-    }
-
-    private List<Service> paginateServices(int page) throws GlycerinException {
-        checkArgument(page > 0, "page count starts with 1");
-        ServicesQuery servicesQuery = ServicesQuery.builder()
-                .withPageSize(MAXIMUM_PAGE_SIZE)
-                .withPage(page)
-                .withServiceType(
-                        ServiceTypeOption.LOCAL_RADIO, ServiceTypeOption.NATIONAL_RADIO,
-                        ServiceTypeOption.REGIONAL_RADIO, ServiceTypeOption.TV)
-                .build();
-        GlycerinResponse<Service> response = glycerin.execute(servicesQuery);
-        return response.getResults();
     }
 
     private List<MasterBrand> paginateMasterBrands(int page) throws GlycerinException {
@@ -193,7 +203,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return builder.build();
     }
 
-    private Channel getChannel(Service result, ImmutableMap<String, Channel> parentUriToId) throws GlycerinException {
+    private Channel getChannel(Service result, ImmutableMap<String, Channel> parentUriToId) {
         Channel.Builder builder = Channel.builder()
                 .withBroadcaster(Publisher.BBC)
                 .withMediaType(MediaType.valueOf(result.getMediaType().toUpperCase()))
@@ -238,7 +248,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             Service child,
             Channel.Builder builder,
             ImmutableMap<String, Channel> parentUriToId
-    ) throws GlycerinException {
+    ) {
         if (!parentUriToId.containsKey(NITRO_MASTERBRAND_URI_PREFIX + parentMid)) {
             log.warn(
                     "Failed to resolve masterbrand parent mid: {} for channel sid: {}",
@@ -274,7 +284,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             Service result,
             Id locator,
             ImmutableMap<String, Channel> uriToParentChannels
-    ) throws GlycerinException {
+    ) {
         Channel channel = getChannel(result, uriToParentChannels);
         String locatorValue = locator.getValue();
 
@@ -291,6 +301,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 new Alias(BBC_SERVICE_SID, result.getSid())
         ));
         channel.setAliasUrls(ImmutableSet.of(locatorValue));
+
         return channel;
     }
 

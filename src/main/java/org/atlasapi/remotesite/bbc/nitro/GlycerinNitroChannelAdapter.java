@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.bbc.nitro;
 import java.util.List;
 
 import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
@@ -15,6 +16,7 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
+import com.metabroadcast.atlas.glycerin.model.DateRange;
 import com.metabroadcast.atlas.glycerin.model.Id;
 import com.metabroadcast.atlas.glycerin.model.Ids;
 import com.metabroadcast.atlas.glycerin.model.MasterBrand;
@@ -32,6 +34,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -105,6 +108,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return channels.addAll(
                 results.stream()
                         .filter(service -> service.getIds() != null)
+                        .filter(this::endsBeforeNow)
                         .flatMap(service -> generateAndAddChannelsFromLocators(
                                 channels,
                                 service,
@@ -113,6 +117,18 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                         ).stream())
                         .collect(MoreCollectors.toImmutableList())
         );
+    }
+
+    private boolean endsBeforeNow(Service service) {
+        DateRange range = service.getDateRange();
+        XMLGregorianCalendar end = range.getEnd();
+        if (end == null) {
+            return true;
+        }
+
+        DateTime endJoda = new DateTime(end.toGregorianCalendar().getTime());
+
+        return endJoda.isAfter(DateTime.now());
     }
 
     private ImmutableList<Channel> generateAndAddChannelsFromLocators(

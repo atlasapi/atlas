@@ -97,13 +97,19 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
             desc.startStage(String.format("Publisher: %s", publisher));
             
             ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted = ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
-            Set<ScoredCandidate<T>> allowedCandidates = candidatesThatCanBeEquivalatedToSamePublisher(copyOfSorted);
-            if(allowedCandidates.size() > 0 && !isSeriesOrBrand(target)) {
+            Optional<ScoredCandidate<T>> extracted = extractor.extract(copyOfSorted.asList().reverse(), target, desc);
+            Set<ScoredCandidate<T>> allowedCandidates = candidatesThatCanBeEquivalatedToSamePublisher(copyOfSorted, extracted, target);
+
+            if(!extracted.isPresent()) {
+                // no candidates - do nothing
+            }
+            else if (isSeriesOrBrand(extracted.get().candidate())) {
+                builder.put(publisher, extracted.get());
+            } else if(allowedCandidates.size() > 0 && !isSeriesOrBrand(target)) {
                 for (ScoredCandidate<T> scoredCandidate : allowedCandidates) {
                     builder.put(publisher, scoredCandidate);
                 }
             } else {
-                Optional<ScoredCandidate<T>> extracted = extractor.extract(copyOfSorted.asList().reverse(), target, desc);
                 if(extracted.isPresent()) {
                     builder.put(publisher, extracted.get());
                 }
@@ -121,42 +127,44 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
     }
 
     private Set<ScoredCandidate<T>> candidatesThatCanBeEquivalatedToSamePublisher(
-            Set<ScoredCandidate<T>> candidates
+            Set<ScoredCandidate<T>> candidates,
+            Optional<ScoredCandidate<T>> optionalHighestScoringCandidate,
+            T target
     ) {
+        final ScoredCandidate<T> highestScoringCandidate;
         Set<ScoredCandidate<T>> allowedCandidates = new HashSet<>();
+        if (!optionalHighestScoringCandidate.isPresent()) {
+            return allowedCandidates;
+        } else {
+            highestScoringCandidate = optionalHighestScoringCandidate.get();
+        }
 
         ImmutableSet<ScoredCandidate<T>> filteredCandidates = candidates.stream()
                 .filter(candidate -> !isSeriesOrBrand(candidate.candidate()))
                 .collect(MoreCollectors.toImmutableSet());
 
-        for (ScoredCandidate<T> firstCandidate : filteredCandidates) {
-            ImmutableSet<ScoredCandidate<T>> matchedCandidates = filteredCandidates
-                    .stream()
-                    .filter(secondCandidate -> secondCandidate != firstCandidate)
-                    .filter(secondCandidate -> broadcastsMatchCheck(
-                            firstCandidate, secondCandidate
-                    ))
-                    .filter(secondCandidate -> Math.abs(
-                            firstCandidate.score().asDouble() - secondCandidate.score().asDouble()
-                    ) < PUBLISHER_MATCHING_EQUIV_THRESHOLD)
-                    .collect(MoreCollectors.toImmutableSet());
+        ImmutableSet<ScoredCandidate<T>> matchedCandidates = filteredCandidates
+                .stream()
+                .filter(candidate -> Math.abs(
+                        candidate.score().asDouble() - highestScoringCandidate.score().asDouble()
+                ) < PUBLISHER_MATCHING_EQUIV_THRESHOLD)
+                .filter(candidate -> broadcastsMatchCheck(target, candidate))
+                .collect(MoreCollectors.toImmutableSet());
 
-            if (matchedCandidates.size() > 0) {
-                allowedCandidates.add(firstCandidate);
-                allowedCandidates.addAll(matchedCandidates);
-            }
+        if (matchedCandidates.size() > 0) {
+            allowedCandidates.addAll(matchedCandidates);
         }
 
         return allowedCandidates;
     }
 
     private boolean broadcastsMatchCheck(
-            ScoredCandidate<T> candidateOne,
-            ScoredCandidate<T> candidateTwo
+            T target,
+            ScoredCandidate<T> candidate
     ) {
-        return candidateOne.candidate().getVersions().stream()
+        return target.getVersions().stream()
                 .flatMap(v -> v.getBroadcasts().stream())
-                .anyMatch(b -> broadcastsMatchCheck(candidateTwo, b));
+                .anyMatch(b -> broadcastsMatchCheck(candidate, b));
     }
 
     private boolean broadcastsMatchCheck(ScoredCandidate<T> candidate, Broadcast broadcast) {

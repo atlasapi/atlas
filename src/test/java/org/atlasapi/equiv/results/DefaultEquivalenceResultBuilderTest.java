@@ -39,7 +39,7 @@ public class DefaultEquivalenceResultBuilderTest {
     private final DefaultEquivalenceResultBuilder resultBuilder = new DefaultEquivalenceResultBuilder(combiner, filter, extractor);
 
     @Test
-    public void checkDoesNotEquivalateToSeveralPa() {
+    public void checkDoesNotEquivalateToSeveralPaWithoutBroadcasts() {
         Item item = new Item();
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");

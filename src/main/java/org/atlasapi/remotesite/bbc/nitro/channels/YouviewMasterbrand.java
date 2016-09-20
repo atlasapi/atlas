@@ -4,26 +4,14 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class YouviewMasterbrand {
 
-    @JsonProperty
-    private String name;
-    @JsonProperty
-    private String shortName;
-    @JsonProperty
-    private String imageIdent;
-    @JsonProperty
-    private Integer widthIdent;
-    @JsonProperty
-    private Integer heightIdent;
-    @JsonProperty
-    private String imageDog;
-    @JsonProperty
-    private Integer widthDog;
-    @JsonProperty
-    private Integer heightDog;
-
-    public YouviewMasterbrand() {
-
-    }
+    @JsonProperty private String name;
+    @JsonProperty private String shortName;
+    @JsonProperty private String imageIdent;
+    @JsonProperty private Integer widthIdent;
+    @JsonProperty private Integer heightIdent;
+    @JsonProperty private String imageDog;
+    @JsonProperty private Integer widthDog;
+    @JsonProperty private Integer heightDog;
 
     public String getName() {
         return name;

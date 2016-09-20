@@ -48,11 +48,11 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
     public static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
     public static final String BBC_SERVICE_LOCATOR = "bbc:service:locator";
+    public static final String BBC_SERVICE_SID = "bbc:service:sid";
 
     private static final int MAXIMUM_PAGE_SIZE = 300;
     private static final String TERRESTRIAL_SERVICE_LOCATOR = "terrestrial_service_locator";
     private static final String BBC_SERVICE_PID = "bbc:service:pid";
-    private static final String BBC_SERVICE_SID = "bbc:service:sid";
     private static final String BBC_MASTERBRAND_MID = "bbc:masterbrand:mid";
     private static final String PID = "pid";
     private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrands/";
@@ -107,8 +107,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             ImmutableSet.Builder<Channel> channels, List<Service> results) {
         return channels.addAll(
                 results.stream()
-                        .filter(service -> service.getIds() != null)
-                        .filter(this::endsBeforeNow)
+                        .filter(this::isLive)
                         .flatMap(service -> generateAndAddChannelsFromLocators(
                                 channels,
                                 service,
@@ -119,8 +118,13 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         );
     }
 
-    private boolean endsBeforeNow(Service service) {
+    private boolean isLive(Service service) {
         DateRange range = service.getDateRange();
+
+        if (range == null) {
+            return true;
+        }
+
         XMLGregorianCalendar end = range.getEnd();
         if (end == null) {
             return true;
@@ -302,21 +306,23 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             ImmutableMap<String, Channel> uriToParentChannels
     ) {
         Channel channel = getChannel(result, uriToParentChannels);
-        String locatorValue = locator.getValue();
 
-        String canonicalUri = String.format(
-                "http://nitro.bbc.co.uk/%s/%s_%s",
-                channel.getChannelType() == ChannelType.MASTERBRAND ? "masterbrands" : "services",
-                result.getSid(),
-                locatorValue.replace("dvb://", "").replace("..", "_")
-        );
-        channel.setCanonicalUri(canonicalUri);
+        if (locator != null) {
+            String locatorValue = locator.getValue();
+            String canonicalUri = String.format(
+                    "http://nitro.bbc.co.uk/%s/%s_%s",
+                    channel.getChannelType() == ChannelType.MASTERBRAND ? "masterbrands" : "services",
+                    result.getSid(),
+                    locatorValue.replace("dvb://", "").replace("..", "_")
+            );
+            channel.setCanonicalUri(canonicalUri);
 
-        channel.addAliases(ImmutableSet.of(
-                new Alias(BBC_SERVICE_LOCATOR, locatorValue),
-                new Alias(BBC_SERVICE_SID, result.getSid())
-        ));
-        channel.setAliasUrls(ImmutableSet.of(locatorValue));
+            channel.addAlias(new Alias(BBC_SERVICE_LOCATOR, locatorValue));
+
+            channel.setAliasUrls(ImmutableSet.of(locatorValue));
+        }
+
+        channel.addAlias(new Alias(BBC_SERVICE_SID, result.getSid()));
 
         return channel;
     }

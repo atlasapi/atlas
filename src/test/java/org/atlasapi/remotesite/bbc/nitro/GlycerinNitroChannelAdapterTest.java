@@ -1,7 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import javax.annotation.Nullable;
-
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.entity.Alias;
@@ -21,7 +19,6 @@ import com.metabroadcast.atlas.glycerin.model.Service;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ServicesQuery;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -43,10 +40,8 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class GlycerinNitroChannelAdapterTest {
 
-    @Mock
-    private Glycerin glycerin;
-    @Mock
-    private GlycerinResponse response;
+    @Mock private Glycerin glycerin;
+    @Mock private GlycerinResponse response;
     private GlycerinNitroChannelAdapter channelAdapter;
 
     @Before
@@ -63,8 +58,10 @@ public class GlycerinNitroChannelAdapterTest {
         setDateRange(service);
 
         when(response.getResults()).thenReturn(ImmutableList.of(service));
+
         Image image = new Image("uri");
         image.setAliases(ImmutableList.of(new Alias("bbc:service:name:short", "name")));
+
         ImmutableSet<Channel> services = channelAdapter.fetchServices(
                 ImmutableMap.of(
                         "http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw",
@@ -75,7 +72,9 @@ public class GlycerinNitroChannelAdapterTest {
                         .build()
                 )
         );
+
         Channel channel = Iterables.getOnlyElement(services);
+
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
         assertThat(
@@ -92,13 +91,10 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getImages().isEmpty(), is(false));
         assertThat(channel.getImages().iterator().next().getAliases().isEmpty(), is(false));
         assertThat(channel.getAliases().isEmpty(), is(false));
-        assertThat(Iterables.isEmpty(Iterables.filter(channel.getAliases(), new Predicate<Alias>() {
-            @Override
-            public boolean apply(@Nullable Alias alias) {
-                return alias.getNamespace().equals("bbc:service:name:short") &&
-                        alias.getValue().equals("parent");
-            }
-        })), is(false));
+        assertThat(Iterables.isEmpty(Iterables.filter(channel.getAliases(),
+                alias -> "bbc:service:name:short".equals(alias.getNamespace())
+                        && "parent".equals(alias.getValue())
+        )), is(false));
     }
 
     @Test
@@ -139,9 +135,12 @@ public class GlycerinNitroChannelAdapterTest {
     public void doesntFailOnNonCompulsoryFields() throws GlycerinException {
         Service service = getBasicService();
         setIds(service);
+
         when(response.getResults()).thenReturn(ImmutableList.of(service));
+
         ImmutableSet<Channel> services = channelAdapter.fetchServices();
         Channel channel = Iterables.getOnlyElement(services);
+
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
         assertThat(
@@ -157,8 +156,10 @@ public class GlycerinNitroChannelAdapterTest {
 
     private void setDateRange(Service service) {
         DateRange dateRange = new DateRange();
-        dateRange.setEnd(XMLGregorianCalendarImpl.createDate(2000,1,1,1));
+
+        dateRange.setEnd(XMLGregorianCalendarImpl.createDate(2020,1,1,1));
         dateRange.setStart(XMLGregorianCalendarImpl.createDate(2000,1,1,1));
+
         service.setDateRange(dateRange);
     }
 

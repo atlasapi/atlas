@@ -66,7 +66,21 @@ public class ChannelIngestTask extends ScheduledTask {
 
             ImmutableSet<Channel> services = channelAdapter.fetchServices(uriToId.build());
             Iterable<Channel> filteredServices = hydrator.hydrateServices(services);
-            writeAndMergeChannels(filteredServices);
+
+            ImmutableList.Builder<Channel> withUris = ImmutableList.builder();
+            for (Channel channel : filteredServices) {
+                if (channel.getCanonicalUri() != null) {
+                    withUris.add(channel);
+                } else {
+                    log.warn(
+                            "Got channel without URI; this generally means it has no DVB locator "
+                                    + "in Nitro and no hard-coded override. Find Romain. {}",
+                            channel.getAliases()
+                    );
+                }
+            }
+
+            writeAndMergeChannels(withUris.build());
 
             reportStatus(progress.toString());
         } catch (GlycerinException e) {

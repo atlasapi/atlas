@@ -2,31 +2,19 @@ package org.atlasapi.remotesite.bbc.nitro.channels;
 
 import java.util.Set;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class YouviewService {
 
-    @JsonProperty
-    private String name;
-    @JsonProperty
-    private String locator;
-    @JsonProperty
-    private String shortName;
-    @JsonProperty
-    private String image;
-    @JsonProperty
-    private Integer width;
-    @JsonProperty
-    private Integer height;
-    @JsonProperty
-    private Set<String> targets;
-    @JsonProperty
-    private Boolean interactive;
-
-    public YouviewService() {
-
-    }
+    @JsonProperty private String name;
+    @JsonProperty private String locator;
+    @JsonProperty private String sid;
+    @JsonProperty private String shortName;
+    @JsonProperty private String image;
+    @JsonProperty private Integer width;
+    @JsonProperty private Integer height;
+    @JsonProperty private Set<String> targets;
+    @JsonProperty private Boolean interactive;
 
     public String getName() {
         return name;
@@ -90,5 +78,13 @@ public class YouviewService {
 
     public void setInteractive(Boolean interactive) {
         this.interactive = interactive;
+    }
+
+    public String getSid() {
+        return sid;
+    }
+
+    public void setSid(String sid) {
+        this.sid = sid;
     }
 }

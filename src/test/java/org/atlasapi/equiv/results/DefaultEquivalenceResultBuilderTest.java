@@ -1,6 +1,5 @@
 package org.atlasapi.equiv.results;
 
-import java.util.Date;
 import java.util.List;
 
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
@@ -12,7 +11,6 @@ import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
@@ -22,14 +20,12 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 
-import com.google.common.base.Equivalence;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.junit.Test;
 
 import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 
 public class DefaultEquivalenceResultBuilderTest {
 
@@ -105,6 +101,25 @@ public class DefaultEquivalenceResultBuilderTest {
                 4.8
         );
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+    }
+
+    @Test
+    public void checkDoesEquivalateToSeveralPaWithCandidatesLargerBroadcastThanTarget() {
+
+        EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(3),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(6),
+                new DateTime().withHourOfDay(5),
+                5.0,
+                4.8,
+                4.9
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 3);
     }
 
     @Test

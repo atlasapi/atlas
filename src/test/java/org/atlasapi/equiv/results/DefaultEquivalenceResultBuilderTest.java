@@ -1,6 +1,5 @@
 package org.atlasapi.equiv.results;
 
-import java.util.Date;
 import java.util.List;
 
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
@@ -12,7 +11,6 @@ import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
@@ -22,7 +20,6 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 
-import com.google.common.base.Equivalence;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
@@ -38,7 +35,7 @@ public class DefaultEquivalenceResultBuilderTest {
     private final DefaultEquivalenceResultBuilder resultBuilder = new DefaultEquivalenceResultBuilder(combiner, filter, extractor);
 
     @Test
-    public void checkDoesNotEquivalateToSeveralPa() {
+    public void checkDoesNotEquivalateToSeveralPaWithoutBroadcasts() {
         Item item = new Item();
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
@@ -53,9 +50,49 @@ public class DefaultEquivalenceResultBuilderTest {
     }
 
     @Test
+    public void checkTopCandidateTakenAloneIfSeriesOrBrand() {
+        Item item = itemWithBroadcast(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(4)
+        );
+        item.setPublisher(Publisher.ARQIVA);
+        item.setCanonicalUri("target");
+
+        Brand candidate1 = brandWithBroadcast(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(6)
+        );
+        candidate1.setPublisher(Publisher.PA);
+        candidate1.setCanonicalUri("candidate1");
+
+        Item candidate2 = itemWithBroadcast(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(4)
+        );
+        candidate2.setPublisher(Publisher.PA);
+        candidate2.setCanonicalUri("candidate2");
+
+        List<ScoredCandidates<Identified>> equivalents = ImmutableList.of(
+                DefaultScoredCandidates.<Identified>fromSource("A Source")
+                        .addEquivalent(candidate1, Score.valueOf(5.0))
+                        .addEquivalent(candidate2, Score.valueOf(4.8))
+                        .build()
+        );
+
+        EquivalenceResult equivalenceResult = resultBuilder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription()
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
+    }
+
+    @Test
     public void checkDoesEquivalateToSeveralPaWithInclusiveBroadcasts() {
 
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(1),
+                new DateTime().withHourOfDay(6),
                 new DateTime().withHourOfDay(4),
                 new DateTime().withHourOfDay(2),
                 new DateTime().withHourOfDay(5),
@@ -67,9 +104,30 @@ public class DefaultEquivalenceResultBuilderTest {
     }
 
     @Test
+    public void checkDoesEquivalateToSeveralPaWithCandidatesLargerBroadcastThanTarget() {
+
+        EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(3),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5),
+                new DateTime().withHourOfDay(6),
+                new DateTime().withHourOfDay(5),
+                5.0,
+                4.8,
+                4.9
+        );
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 3);
+    }
+
+    @Test
     public void checkDoesEquivalateToSeveralPaWithBoundaryBroadcasts() {
 
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(5),
                 new DateTime().withHourOfDay(4),
                 new DateTime().withHourOfDay(4),
                 new DateTime().withHourOfDay(5),
@@ -83,6 +141,8 @@ public class DefaultEquivalenceResultBuilderTest {
     @Test
     public void checkWontEquivalateToBothWithOverlappingScores() {
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(4),
                 new DateTime().withHourOfDay(2),
                 new DateTime().withHourOfDay(5),
                 new DateTime().withHourOfDay(4),
@@ -167,8 +227,10 @@ public class DefaultEquivalenceResultBuilderTest {
     @Test
     public void checkWillOnlyTakeBroadcastMatchingCandidatesNotAll() {
         EquivalenceResult equivalenceResult = itemsWithBroadcastAndScores(
-                new DateTime().withHourOfDay(5),
                 new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(4),
+                new DateTime().withHourOfDay(2),
+                new DateTime().withHourOfDay(3),
                 new DateTime().withHourOfDay(9),
                 new DateTime().withHourOfDay(4),
                 new DateTime().withHourOfDay(6),
@@ -177,10 +239,12 @@ public class DefaultEquivalenceResultBuilderTest {
                 4.8,
                 4.9
         );
-        assertTrue(equivalenceResult.strongEquivalences().values().size() == 2);
+        assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
     }
 
     private EquivalenceResult itemsWithBroadcastAndScores(
+            DateTime targetStart,
+            DateTime targetEnd,
             DateTime startTime1,
             DateTime startTime2,
             DateTime startTime3,
@@ -191,7 +255,7 @@ public class DefaultEquivalenceResultBuilderTest {
             Double score2,
             Double score3
     ) {
-        Item item = new Item();
+        Item item = itemWithBroadcast(targetStart, targetEnd);
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
 
@@ -225,6 +289,8 @@ public class DefaultEquivalenceResultBuilderTest {
     }
 
     private EquivalenceResult itemsWithBroadcastAndScores(
+            DateTime targetStart,
+            DateTime targetEnd,
             DateTime startTime1,
             DateTime startTime2,
             DateTime endTime1,
@@ -232,7 +298,7 @@ public class DefaultEquivalenceResultBuilderTest {
             Double score1,
             Double score2
     ) {
-        Item item = new Item();
+        Item item = itemWithBroadcast(targetStart, targetEnd);
         item.setPublisher(Publisher.ARQIVA);
         item.setCanonicalUri("target");
 

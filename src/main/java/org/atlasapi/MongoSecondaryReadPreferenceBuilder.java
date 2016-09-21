@@ -1,14 +1,19 @@
 package org.atlasapi;
 
 import java.util.Iterator;
+import java.util.List;
+import java.util.stream.StreamSupport;
+
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.mongodb.BasicDBObjectBuilder;
 import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
-
+import com.mongodb.Tag;
+import com.mongodb.TagSet;
 
 public class MongoSecondaryReadPreferenceBuilder {
 
@@ -24,36 +29,33 @@ public class MongoSecondaryReadPreferenceBuilder {
      * @return              A {@link ReadPreference} reflecting tag preferences
      */
     public ReadPreference fromProperties(Iterable<String> properties) {
- 
-        Iterable<DBObject> tagPreferences = Iterables.transform(properties, PROPERTY_TO_TAG_DBO);
-        
+        List<Tag> tagPreferences = StreamSupport.stream(properties.spliterator(), false)
+                .flatMap(props -> PROPERTY_TO_TAG_DBO.apply(props).stream())
+                .collect(MoreCollectors.toImmutableList());
+
         if (Iterables.isEmpty(tagPreferences)) {
             return ReadPreference.secondaryPreferred();
         }
-        
-        DBObject firstTagPreference = Iterables.get(tagPreferences, 0);
-        
-        if (Iterables.size(tagPreferences) >= 1) {
-            tagPreferences = Iterables.skip(tagPreferences, 1);
-        }
-        
-        return ReadPreference.secondaryPreferred(firstTagPreference, Iterables.toArray(tagPreferences, DBObject.class));
+
+        return ReadPreference.secondaryPreferred(new TagSet(tagPreferences));
     }
-    
-    private static Function<String, DBObject> PROPERTY_TO_TAG_DBO = new Function<String, DBObject>() {
 
-        @Override
-        public DBObject apply(String input) {
-            BasicDBObjectBuilder builder = BasicDBObjectBuilder.start();
-            for (String tag : TAG_SPLITTER.split(input)) {
-                Iterator<String> split = KEY_VALUE_SPLITTER.split(tag).iterator();
+    private static Function<String, List<Tag>> PROPERTY_TO_TAG_DBO = input -> {
+        ImmutableList.Builder<Tag> tags = ImmutableList.builder();
 
-                builder.add(split.next(), split.next());
-                if (split.hasNext()) {
-                    throw new IllegalArgumentException("Invalid format for tag preference; should be key:value");
-                }
+        for (String tag : TAG_SPLITTER.split(input)) {
+            Iterator<String> split = KEY_VALUE_SPLITTER.split(tag).iterator();
+
+            String key = split.next();
+            String value = split.next();
+
+            if (split.hasNext()) {
+                throw new IllegalArgumentException("Invalid format for tag preference; should be key:value");
             }
-            return builder.get();
+
+            tags.add(new Tag(key, value));
         }
+
+        return tags.build();
     };
 }

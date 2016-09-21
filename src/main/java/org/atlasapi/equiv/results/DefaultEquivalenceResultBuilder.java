@@ -1,16 +1,15 @@
 package org.atlasapi.equiv.results;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.equiv.results.combining.ScoreCombiner;
 import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
-import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
@@ -18,11 +17,8 @@ import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSortedSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SortedSetMultimap;
@@ -30,18 +26,30 @@ import com.google.common.collect.TreeMultimap;
 
 public class DefaultEquivalenceResultBuilder<T extends Content> implements EquivalenceResultBuilder<T> {
 
-    public static <T extends Content> EquivalenceResultBuilder<T> create(ScoreCombiner<T> combiner, EquivalenceFilter<T> filter, EquivalenceExtractor<T> marker) {
-        return new DefaultEquivalenceResultBuilder<T>(combiner, filter, marker);
-    }
-
     private final ScoreCombiner<T> combiner;
     private final EquivalenceExtractor<T> extractor;
     private final EquivalenceFilter<T> filter;
 
-    public DefaultEquivalenceResultBuilder(ScoreCombiner<T> combiner, EquivalenceFilter<T> filter, EquivalenceExtractor<T> extractor) {
+    private final MultipleCandidateExtractor<T> multipleCandidateExtractor;
+
+    public DefaultEquivalenceResultBuilder(
+            ScoreCombiner<T> combiner,
+            EquivalenceFilter<T> filter,
+            EquivalenceExtractor<T> extractor
+    ) {
         this.combiner = combiner;
         this.filter = filter;
         this.extractor = extractor;
+
+        this.multipleCandidateExtractor = MultipleCandidateExtractor.create();
+    }
+
+    public static <T extends Content> EquivalenceResultBuilder<T> create(
+            ScoreCombiner<T> combiner,
+            EquivalenceFilter<T> filter,
+            EquivalenceExtractor<T> marker
+    ) {
+        return new DefaultEquivalenceResultBuilder<T>(combiner, filter, marker);
     }
 
     @Override
@@ -73,23 +81,39 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return filteredCandidates;
     }
 
-    private Multimap<Publisher, ScoredCandidate<T>> extract(T target, List<ScoredCandidate<T>> filteredCandidates, ResultDescription desc) {
+    private Multimap<Publisher, ScoredCandidate<T>> extract(
+            T target,
+            List<ScoredCandidate<T>> filteredCandidates,
+            ResultDescription desc
+    ) {
         desc.startStage("Extracting strong equivalents");
-        SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins = publisherBin(filteredCandidates);
+        SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins =
+                publisherBin(filteredCandidates);
         
-        ImmutableMultimap.Builder<Publisher, ScoredCandidate<T>> builder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<Publisher, ScoredCandidate<T>> builder =
+                ImmutableMultimap.builder();
         
         for (Publisher publisher : publisherBins.keySet()) {
             desc.startStage(String.format("Publisher: %s", publisher));
             
-            ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted = ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
-            if(canBeEquivalatedToSamePublisher(copyOfSorted)) {
-                for (ScoredCandidate<T> scoredCandidate : copyOfSorted) {
-                    builder.put(publisher, scoredCandidate);
-                }
+            ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted =
+                    ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
+
+            Optional<Set<ScoredCandidate<T>>> multipleExtractedCandidates =
+                    multipleCandidateExtractor.extract(
+                            copyOfSorted.asList().reverse(), target
+                    );
+
+            if (multipleExtractedCandidates.isPresent()) {
+                builder.putAll(
+                        publisher,
+                        multipleExtractedCandidates.get()
+                );
             } else {
-                Optional<ScoredCandidate<T>> extracted = extractor.extract(copyOfSorted.asList().reverse(), target, desc);
-                if(extracted.isPresent()) {
+                Optional<ScoredCandidate<T>> extracted = extractor.extract(
+                        copyOfSorted.asList().reverse(), target, desc
+                );
+                if (extracted.isPresent()) {
                     builder.put(publisher, extracted.get());
                 }
             }
@@ -99,21 +123,6 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         
         desc.finishStage();
         return builder.build();
-    }
-
-    private boolean canBeEquivalatedToSamePublisher(Set<ScoredCandidate<T>> candidates) {
-        ScoredCandidate<T> previous = null;
-        for (ScoredCandidate<T> candidate : candidates) {
-            if(previous!= null) {
-                Score score = candidate.score();
-                Score previousScore = previous.score();
-                if (!(Math.abs(score.asDouble()-previousScore.asDouble()) < 0.3)) {
-                    return false;
-                }
-            }
-            previous = candidate;
-        }
-        return true;
     }
 
     private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {

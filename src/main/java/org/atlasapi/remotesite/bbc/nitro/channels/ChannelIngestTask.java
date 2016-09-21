@@ -74,7 +74,8 @@ public class ChannelIngestTask extends ScheduledTask {
                 } else {
                     log.warn(
                             "Got channel without URI; this generally means it has no DVB locator "
-                                    + "in Nitro and no hard-coded override. Find Romain. {}",
+                                    + "in Nitro and no hard-coded override. Ask the BBC for the "
+                                    + "corresponding DVB locator. {}",
                             channel.getAliases()
                     );
                 }

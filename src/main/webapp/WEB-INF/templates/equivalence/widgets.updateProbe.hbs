@@ -1,0 +1,7 @@
+<form action="./update" method="POST">
+    <!--Need to implement custom handler!-->
+    <p><label>{if not $hideId}Target URI:{/if}<input style="width:440px" type="{{if hideId}}hidden{{else}}text{{/if}}" name="uri" value="{{target}}"/></p>
+    <p><label>Must be equivalent to:<textarea name="expect">{{expectedEquivalent}}</textarea></p>
+    <p><label>Must NOT be equivalent to:<textarea name="notExpect">{{expectedNotEquivalent}}</textarea></p>
+    <p><input class="probeUpdate" type="submit" value="Update" /></p>
+</form>

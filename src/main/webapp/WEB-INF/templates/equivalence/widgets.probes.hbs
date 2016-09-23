@@ -1,0 +1,9 @@
+<ul>
+    {{#each probes}}
+    <li>
+        {call atlas.templates.equivalence.widgets.probe}
+        {param probe: $probe /}
+        {/call}
+    </li>
+    {{/each}}
+</ul>

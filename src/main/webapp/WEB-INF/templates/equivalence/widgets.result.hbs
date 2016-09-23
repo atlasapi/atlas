@@ -1,0 +1,89 @@
+<h2>{{result.title}} - <span class="target-uri">{$result.id}</span> <a style="margin-left:5px;vertical-align:middle" href="http://atlasapi.org/3.0/content.json?uri={$result.encodedId}"><img src="/static/images/external.png"></a></h2>
+{{#if result.equivalences}}
+<table>
+    <tr>
+        <td></td>
+        <th>Suggested</th>
+        <th></th>
+        <th>Combined</th>
+        {foreach $source in $result.sources}
+        <th>{$source}</th>
+        {/foreach}
+        <th>Expected</th>
+        <th>Not Expected</th>
+        <th>Neither</th>
+        <td></td>
+    </tr>
+    {{#each result.equivalences}}
+    <tr id="{{id}}"{{#if strong}} class="strong"{{/if}}>
+    <td>{{#if strong}}✔{{else}}✘{{/if}}</td>
+    <td><a href="?uri={{encodedId}}">{{title}} ({{publisher}})</a></td>
+    <td><a href="http://atlasapi.org/3.0/content.json?uri={{encodedId}}"><img src="/static/images/external.png"></a></td>
+    {{#if scores.combined}}
+    <td>N/A</td>
+    {{else}}
+    <!--Need to implement custom handler!-->
+    <!--<td {if scores.combined}} title="{print round($equivalence.scores['combined']/$result.totals['combined']*100) }%"{/if}}>-->
+    <!--{round($equivalence.scores['combined'], 5)}-->
+    <!--</td>-->
+    {{/if}}
+    {{#each sources}}
+    {{#if scores.source}}
+    <td>N/A</td>
+    {{else}}
+    <!--Need to implement custom handler!-->
+    <!--<td {if $equivalence.scores[$source] > 0} title="{print round($equivalence.scores[$source]/$result.totals[$source]*100) }%"{/if}>-->
+        <!--{round($equivalence.scores[$source], 5)}-->
+    <!--</td>-->
+    {{/if}}
+    {{/each}}
+        <!--We are trying to use basic handler, however at the moment not 100% sure if it works - expected '=' 'expected' -->
+    <td><input type="radio" name="{$equivalence.encodedId}" value="expect" {{#if expected '=' 'expected'}}checked{{/if}}></td>
+    <td><input type="radio" name="{$equivalence.encodedId}" value="notExpect" {{#if expected '=' 'notexpected'}}checked{{/if}}></td>
+    <td><input type="radio" name="{$equivalence.encodedId}" value="unknown" {{#if expected '=' 'unknown'}}checked{{/if}}></td>
+    <!--Need to implement custom handler!-->
+    <!--{if isFirst($equivalence)}-->
+    <!--<td rowspan="{print length($result.equivalences)}"><input id={{encodedId}} class="resultProbeUpdate" type="submit" value="Update Probe" style="font-size:12px"/></td>-->
+    <!--{/if}-->
+    </tr>
+    {{/each}}
+    <tr>
+        <td></td><td>Totals</td><td></td>
+        {if not $result.totals['combined']}
+        <td>N/A</t>
+            {else}
+        <td>{print round($result.totals['combined'], 5)}</td>
+        {/if}
+        {foreach $source in $result.sources}
+        {if not $result.totals[$source]}
+        <td>N/A</t>
+            {else}
+        <td>{print round($result.totals[$source], 5)}</td>
+        {/if}
+        {/foreach}
+        <td colspan="4"></td>
+    </tr>
+</table>
+{{else}}
+<p>No suggested equivalences</p>
+{{/if}}
+<p class="time">{$result.time}</p>
+{{if desc}}
+<div id="desc">
+    <ul>
+        {{#each descList}}
+        <!--Need to implement custom handler!-->
+        <!--{switch $part.type}-->
+        <!--{case 'list'}-->
+        <!--{if length($part.value) > 0}-->
+        <!--{call atlas.templates.equivalence.widgets.description}-->
+        <!--{param descList: $part.value /}-->
+        <!--{/call}-->
+        <!--{/if}-->
+        <!--{case 'string'}-->
+        <!--<li>{$part.value}</li>-->
+        <!--{/switch}-->
+        {{/each}}
+    </ul>
+</div>
+{{/if}}

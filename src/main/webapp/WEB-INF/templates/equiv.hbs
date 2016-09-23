@@ -1,0 +1,63 @@
+{namespace atlas.templates.system.equivalence}
+
+/**
+ * @param result
+ */
+{template .result}
+<html>
+<head>
+<title>Equivalence for {$result.subject}</title>
+
+<style>
+{literal}
+
+* {
+    font-family: "Helvetica Neue","Helvetica",sans-serif;
+    text-align: left;
+}
+
+.strong {
+    font-weight:900;
+}
+.alt {
+    background-color: #ccc;
+}
+th {
+text-align:center;
+background-color:#ccc;
+}
+{/literal}
+</style>
+
+</head>
+<body>
+<h1>{$result.subject}</h1>
+<p>Equivalents:</p>
+<ul>
+{foreach $suggested in $result.suggested}
+    <li {if $suggested.strong}class="strong"{/if}>{$suggested.target} - {$suggested.count}</li>
+{ifempty}
+    <li>None</li>
+{/foreach}
+</ul>
+{if $result.sub}
+<table><thead>
+    <tr><th colspan="2">Items ({$result.fullMatch})</th><th colspan="2">Equivalences</th></tr>
+    <tr><td>Title/URI</td><td>Broadcasts</td><td>Matches</td><td>Title/URI</td></tr></thead>
+{foreach $sub in $result.sub}
+    <tr {if (index($sub) % 2) == 0}class="alt"{/if}>
+        <td rowspan="{print max(length($sub.suggested),1)}">{$sub.subject}</td><td rowspan="{print max(length($sub.suggested),1)}">{$sub.fullMatch}</td>
+        {foreach $sug in $sub.suggested}
+        {if not isFirst($sug)}<tr {if (index($sub) % 2) == 0}class="alt"{/if}>{/if}<td>{$sug.count}</td><td {if $sug.strong}class="strong"{/if}>{$sug.target}</td></tr>
+        {ifempty}
+        <td>0</td><td>None</td></tr>
+        {/foreach}
+{ifempty}
+    <tr><td>None</td></tr>
+{/foreach}
+</table>
+{/if}
+
+</body>
+</html>
+{/template}

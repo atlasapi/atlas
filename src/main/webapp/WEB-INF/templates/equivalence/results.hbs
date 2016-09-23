@@ -1,0 +1,10 @@
+{{> head}}
+<body>
+{{> header}}
+{{#each results}}
+    {call atlas.templates.equivalence.widgets.result}
+    {param result: $result /}
+    {/call}
+{{/each}}
+</body>
+</html>

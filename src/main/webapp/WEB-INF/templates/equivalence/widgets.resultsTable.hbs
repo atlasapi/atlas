@@ -1,0 +1,17 @@
+<!--Need to implement custom handler!-->
+{if length($results) > 0}
+<table>
+    <tr><th>Time</th><th>Content</th><th></th><th></th></tr>
+    {foreach $result in $results}
+    {call atlas.templates.equivalence.widgets.tableResult}
+    {param result: $result /}
+    {/call}
+    {/foreach}
+</table>
+{else}
+<p style="margin-left:10px">No results</p>
+{/if}
+
+
+
+

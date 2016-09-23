@@ -1,0 +1,153 @@
+{namespace atlas.templates.equivalence}
+
+/**
+ * @param containerResults
+ * @param itemResults
+ */
+{template .recent}
+{call atlas.templates.equivalence.head /}
+<body>
+{call atlas.templates.equivalence.header /}
+<h2>Recently Processed Containers</h2>
+{call atlas.templates.equivalence.widgets.resultsTable}
+    {param results: $containerResults /}
+{/call}
+<h2>Recently Processed Items</h2>
+{call atlas.templates.equivalence.widgets.resultsTable}
+    {param results: $itemResults /}
+{/call}
+</body>
+</html>
+{/template}
+
+/**
+ * @param containerResults
+ */
+{template .recentContainers}
+{call atlas.templates.equivalence.head /}
+<body>
+{call atlas.templates.equivalence.header /}
+<h2>Recently Processed Containers</h2>
+{call atlas.templates.equivalence.widgets.resultsTable}
+    {param results: $containerResults /}
+{/call}
+</body>
+</html>
+{/template}
+
+/**
+ * @param itemResults
+ */
+{template .recentItems}
+{call atlas.templates.equivalence.head /}
+<body>
+{call atlas.templates.equivalence.header /}
+<h2>Recently Processed Items</h2>
+{call atlas.templates.equivalence.widgets.resultsTable}
+    {param results: $itemResults /}
+{/call}
+</body>
+</html>
+{/template}
+
+/**
+ * @param probes
+ */
+{template .probes}
+{call atlas.templates.equivalence.head /}
+<body>
+{call atlas.templates.equivalence.header /}
+<h2>Probes</h2>
+{call atlas.templates.equivalence.widgets.probes}
+    {param probes: $probes /}
+{/call}
+</body>
+{/template}
+
+/**
+ * @param probe
+ */
+{template .probeUpdate}
+{call atlas.templates.equivalence.head /}
+<body>
+{call atlas.templates.equivalence.header /}
+<h2>Probe Update</h2>
+<table class="probe"><tr><td>
+{call atlas.templates.equivalence.widgets.updateProbe}
+    {param probe: $probe /}
+    {param hideId: false /}
+{/call}
+</td></tr></table>
+</body>
+{/template}
+
+/**
+ * @param uri
+ * @param min_edges
+ */
+{template .graph}
+<!DOCTYPE HTML>
+<html id="equiv">
+<head>
+  <title>{$uri}</title>
+  <link rel="stylesheet" type="text/css" href="/static/css/equivalence.css" />
+  <style>{literal}
+    html, body {
+      margin: 0px; 
+      padding: 0px;
+      width: 100%; 
+      height: 100%;    
+    }
+
+    .fullscreen {
+      width: 100%; 
+      height: 100%;
+      display: block;
+    }
+    
+    .node {
+      color: black;
+      font-family: Menlo;
+      font-size: 10px;
+      text-anchor: start;
+    }
+    
+    .node rect {
+      fill: #fff;
+    }
+    
+    .direct {
+      stroke-opacity: .6;
+      stroke: #333;
+    }
+
+    .explicit {
+      stroke-opacity: .6;
+      stroke: #333;
+      stroke-dasharray: 5,5,2,5
+    }
+
+    .indirect {
+      stroke-opacity: 0;
+      stroke: #00f;
+    }
+    
+    .link {
+      fill: none;
+      stroke: #ccc;
+      stroke-width: 1.5px;
+    }
+    
+    {/literal}
+  </style>
+  <script src="http://d3js.org/d3.v3.js"></script>
+  <script type="text/javascript">
+    var uri = "{$uri}";
+    var min_edges = "{$min_edges}";
+  </script>
+</head>
+<body>
+  <script src="/static/js/equiv-graph.js"></script>
+</body>
+</html>
+{/template}

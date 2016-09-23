@@ -1,0 +1,24 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+</head>
+<body>
+<h1>Add aliases!</h1>
+{{if info}}
+  {foreach $msg in $info}
+     <span style="color: blue;">{$msg}</span><br/>
+  {/foreach}
+{/if}
+{if $errors}
+  {foreach $error in $errors}
+    <span style="color: red;">{$error}</span><br/>
+  {/foreach}
+{/if}
+<form method="post">
+<p>(csv format, e.g. http://graph.facebook.com/12533191290,http://www.bbc.co.uk/programmes/b0070rj8)</p>
+<textarea name="csvAliases"cols="100" rows="50"></textarea>
+<input type="submit" value="upload"/>
+</form>
+
+</body>
+</html>

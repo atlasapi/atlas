@@ -1,0 +1,31 @@
+<table class="probe" id="{{target}}">
+    <tr><td colspan="3" style="font-weight:bold">{{#if title}}{{title}}{{else}}<a href="/system/equivalence/result?uri={{encodedId}}">{{target}}</a>{{/if}}</td><tr>
+    <tr><td colspan="3">
+    {{#if title}}
+        <a href="/system/equivalence/result?uri={{encodedId}}">{{target}}</a> - {{timestamp}}</td></tr>
+        {call atlas.templates.equivalence.widgets.probeExpectations}
+            {param expectations: $probe.expected /}
+            {param label}
+                Expected Equivalent
+            {/param}
+        {/call}
+	    {call atlas.templates.equivalence.widgets.probeExpectations}
+	        {param expectations: $probe.notExpected /}
+            {param label}
+                Expected NOT Equivalent
+            {/param}
+	    {/call}
+	    {{#each others}}
+        <tr>
+        <!--Need to implement custom handler!-->
+        {if isFirst($expected)}
+            <td rowspan="{print length($probe.others)}">Other Equivalent</td>
+        {/if}
+            <td>{{id}}</td>
+            <td>{{score}}</td>
+        </tr>
+    {/each}
+    {{else}}
+        No result yet</td></tr>
+    {{/if}}
+</table>

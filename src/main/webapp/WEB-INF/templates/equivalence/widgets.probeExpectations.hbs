@@ -1,0 +1,11 @@
+{{#each expectations}}
+<tr>
+    <!--Need to implement custom handler!-->
+    {{if isFirst($expected)}}
+    <td rowspan="{print length($expectations)}">{{label}}</td>
+    {{/if}}
+
+    <td class="{{if correctExpectation}}correct{{else}}incorrect{{/if}}"><a href="/system/equivalence/result?uri={{encodedId}}">{{id}}</a></td>
+    <td>{{if score}}{{score}}{{else}}None{{/if}}</td>
+</tr>
+{{/each}}

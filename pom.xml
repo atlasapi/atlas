@@ -240,46 +240,46 @@
                 <artifactId>jetty-maven-plugin</artifactId>
                 <version>7.0.2.v20100331</version>
             </plugin>
-            <plugin>
-                <groupId>org.codehaus.mojo</groupId>
-                <artifactId>exec-maven-plugin</artifactId>
-                <version>1.1.1</version>
-                <executions>
-                    <execution>
-                        <id>remove-generated</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>exec</goal>
-                        </goals>
-                        <configuration>
-                            <executable>rm</executable>
-                            <arguments>
-                                <argument>-rf</argument>
-                                <arguement>src/main/webapp/static/js/generated/*</arguement>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                    <execution>
-                        <id>compile-templates</id>
-                        <phase>process-resources</phase>
-                        <goals>
-                            <goal>java</goal>
-                        </goals>
-                        <configuration>
-                            <includeProjectDependencies>true</includeProjectDependencies>
-                            <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>com.metabroadcast.common.webapp.soy.SoyTemplateCompiler</mainClass>
-                            <arguments>
-                                <argument>--shouldProvideRequireSoyNamespaces</argument>
-                                <argument>--shouldGenerateJsdoc</argument>
-                                <argument>--outputPathFormat</argument>
-                                <argument>src/main/webapp/static/js/generated/{INPUT_FILE_NAME_NO_EXT}_templates.js</argument>
-                                <argument>src/main/webapp/WEB-INF/templates/*</argument>
-                            </arguments>
-                        </configuration>
-                    </execution>
-                </executions>
-            </plugin>
+            <!--<plugin>-->
+                <!--<groupId>org.codehaus.mojo</groupId>-->
+                <!--<artifactId>exec-maven-plugin</artifactId>-->
+                <!--<version>1.1.1</version>-->
+                <!--<executions>-->
+                    <!--<execution>-->
+                        <!--<id>remove-generated</id>-->
+                        <!--<phase>process-resources</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>exec</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<executable>rm</executable>-->
+                            <!--<arguments>-->
+                                <!--<argument>-rf</argument>-->
+                                <!--<arguement>src/main/webapp/static/js/generated/*</arguement>-->
+                            <!--</arguments>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                    <!--<execution>-->
+                        <!--<id>compile-templates</id>-->
+                        <!--<phase>process-resources</phase>-->
+                        <!--<goals>-->
+                            <!--<goal>java</goal>-->
+                        <!--</goals>-->
+                        <!--<configuration>-->
+                            <!--<includeProjectDependencies>true</includeProjectDependencies>-->
+                            <!--<includePluginDependencies>true</includePluginDependencies>-->
+                            <!--<mainClass>com.metabroadcast.common.webapp.soy.SoyTemplateCompiler</mainClass>-->
+                            <!--<arguments>-->
+                                <!--<argument>&#45;&#45;shouldProvideRequireSoyNamespaces</argument>-->
+                                <!--<argument>&#45;&#45;shouldGenerateJsdoc</argument>-->
+                                <!--<argument>&#45;&#45;outputPathFormat</argument>-->
+                                <!--<argument>src/main/webapp/static/js/generated/{INPUT_FILE_NAME_NO_EXT}_templates.js</argument>-->
+                                <!--<argument>src/main/webapp/WEB-INF/templates/*</argument>-->
+                            <!--</arguments>-->
+                        <!--</configuration>-->
+                    <!--</execution>-->
+                <!--</executions>-->
+            <!--</plugin>-->
         </plugins>
         <extensions>
             <extension>
@@ -553,7 +553,7 @@
         <dependency>
             <groupId>com.metabroadcast.common.webapp</groupId>
             <artifactId>common-webapp</artifactId>
-            <version>${common.version}</version>
+            <version>${common.webapp.version}</version>
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.common.ingest</groupId>
@@ -694,10 +694,16 @@
             <version>2.2.4</version>
         </dependency>
 
+        <dependency>
+            <groupId>com.github.jknack</groupId>
+            <artifactId>handlebars</artifactId>
+            <version>4.0.6</version>
+        </dependency>
     </dependencies>
     <properties>
         <atlas.version>${project.version}</atlas.version>
         <common.version>1.0-SNAPSHOT</common.version>
+        <common.webapp.version>1.0-SNAPSHOT</common.webapp.version>
         <netbeans.hint.deploy.server>Tomcat60</netbeans.hint.deploy.server>
         <jetty.version>9.1.0.M0</jetty.version>
         <jacoco.version>0.7.5.201505241946</jacoco.version>

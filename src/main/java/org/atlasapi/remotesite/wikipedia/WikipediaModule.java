@@ -2,10 +2,7 @@ package org.atlasapi.remotesite.wikipedia;
 
 import javax.annotation.PostConstruct;
 
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.persistence.content.mongo.MongoPersonStore;
 import org.atlasapi.persistence.content.organisation.OrganisationWriter;
 import org.atlasapi.persistence.content.people.PersonWriter;
 import org.atlasapi.remotesite.wikipedia.film.FilmArticleTitleSource;
@@ -14,14 +11,18 @@ import org.atlasapi.remotesite.wikipedia.football.FootballTeamsExtractor;
 import org.atlasapi.remotesite.wikipedia.football.TeamsNamesSource;
 import org.atlasapi.remotesite.wikipedia.people.PeopleExtractor;
 import org.atlasapi.remotesite.wikipedia.people.PeopleNamesSource;
-import org.atlasapi.remotesite.wikipedia.updaters.PeopleUpdater;
-import org.atlasapi.remotesite.wikipedia.wikiparsers.ArticleFetcher;
-import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandArticleTitleSource;
 import org.atlasapi.remotesite.wikipedia.television.TvBrandHierarchyExtractor;
 import org.atlasapi.remotesite.wikipedia.updaters.FilmsUpdater;
 import org.atlasapi.remotesite.wikipedia.updaters.FootballTeamsUpdater;
+import org.atlasapi.remotesite.wikipedia.updaters.PeopleUpdater;
 import org.atlasapi.remotesite.wikipedia.updaters.TvBrandHierarchyUpdater;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.ArticleFetcher;
+import org.atlasapi.remotesite.wikipedia.wikiparsers.FetchMeister;
+
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,13 +32,9 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-
 @Configuration
 public class WikipediaModule {
     private static final Logger log = LoggerFactory.getLogger(WikipediaModule.class);
-    static final Publisher SOURCE = Publisher.WIKIPEDIA;
 
     private @Autowired SimpleScheduler scheduler;
     private @Value("${updaters.wikipedia.films.enabled}") Boolean filmTaskEnabled;
@@ -54,8 +51,7 @@ public class WikipediaModule {
     private @Value("${updaters.wikipedia.people.simultaneousness}") int peopleSimultaneousness;
     private @Value("${updaters.wikipedia.people.threads}") int peopleThreads;
 
-	private @Autowired @Qualifier("contentResolver") ContentResolver contentResolver;
-	private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
+    private @Autowired @Qualifier("contentWriter") ContentWriter contentWriter;
     private @Autowired @Qualifier("organisationStore") OrganisationWriter organisationWriter;
     private @Autowired @Qualifier("personStore") PersonWriter personStore;
 
@@ -77,20 +73,32 @@ public class WikipediaModule {
     
     @PostConstruct
     public void setUp() {
-        if(filmTaskEnabled) {
-            scheduler.schedule(allFilmsUpdater().withName("Wikipedia films updater"), RepetitionRules.daily(new LocalTime(4,0,0)));
+        if (filmTaskEnabled) {
+            scheduler.schedule(
+                    allFilmsUpdater().withName("Wikipedia films updater"),
+                    RepetitionRules.daily(new LocalTime(21, 0, 0))
+            );
             log.info("Wikipedia film update scheduled task installed");
         }
-        if(tvTaskEnabled) {
-            scheduler.schedule(allTvBrandsUpdater().withName("Wikipedia TV updater"), RepetitionRules.daily(new LocalTime(4,0,0)));
+        if (tvTaskEnabled) {
+            scheduler.schedule(
+                    allTvBrandsUpdater().withName("Wikipedia TV updater"),
+                    RepetitionRules.daily(new LocalTime(21, 0, 0))
+            );
             log.info("Wikipedia TV update scheduled task installed");
         }
-        if(footballTaskEnabled) {
-            scheduler.schedule(allTeamsUpdater().withName("Wikipedia football updater"), RepetitionRules.daily(new LocalTime(4,0,0)));
+        if (footballTaskEnabled) {
+            scheduler.schedule(
+                    allTeamsUpdater().withName("Wikipedia football updater"),
+                    RepetitionRules.daily(new LocalTime(21, 0, 0))
+            );
             log.info("Wikipedia football update scheduled task installed");
         }
-        if(peopleTaskEnabled) {
-            scheduler.schedule(allPeopleUpdater().withName("Wikipedia people updater"), RepetitionRules.daily(new LocalTime(4,0,0)));
+        if (peopleTaskEnabled) {
+            scheduler.schedule(
+                    allPeopleUpdater().withName("Wikipedia people updater"),
+                    RepetitionRules.daily(new LocalTime(21, 0, 0))
+            );
             log.info("Wikipedia people update scheduled task installed");
         }
     }

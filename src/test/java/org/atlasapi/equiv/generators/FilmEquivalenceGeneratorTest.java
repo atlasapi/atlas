@@ -51,7 +51,7 @@ public class FilmEquivalenceGeneratorTest extends TestCase {
 
     @Test
     public void extractCall() {
-        // this was a bad idea
+
         EquivModule equivModule = new EquivModule();
 
         Field f = null;
@@ -71,7 +71,7 @@ public class FilmEquivalenceGeneratorTest extends TestCase {
         FilmEquivalenceGenerator filmEquivalenceGenerator = new FilmEquivalenceGenerator(
                 searchResolver,
                 Publisher.all(),
-                false
+                true
         );
 
         SearchQuery query = filmEquivalenceGenerator.searchQueryFor("Zootropolis");

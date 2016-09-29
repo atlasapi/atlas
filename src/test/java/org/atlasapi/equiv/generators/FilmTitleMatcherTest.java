@@ -37,6 +37,11 @@ public class FilmTitleMatcherTest extends TestCase {
         assertThat(matcher.match("ds", "d"), is(closeTo(0.1, 0.0000001)));
     }
 
+    @Test
+    public void testZootropolisMatch() {
+        assertThat(matcher.match("Zootropolis", "Zootropolis"), is(1.0));
+    }
+
     public void testSymmetry() {
         assertEquals(matcher.match("downweighthiss", "downweighthis"),matcher.match("downweighthis", "downweighthiss"));
     }

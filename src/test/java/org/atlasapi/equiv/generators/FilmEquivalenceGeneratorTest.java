@@ -4,11 +4,13 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 
+import java.lang.reflect.Field;
 import java.util.Map;
 
 import junit.framework.TestCase;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
@@ -18,6 +20,9 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
+
+import com.metabroadcast.common.url.Urls;
+
 import org.hamcrest.Description;
 import org.hamcrest.Matcher;
 import org.hamcrest.TypeSafeMatcher;
@@ -42,6 +47,59 @@ public class FilmEquivalenceGeneratorTest extends TestCase {
     @Test
     public void testFilmWithSameTitleAndYearWithScores1() {
         checkScore(aFilm(Publisher.PREVIEW_NETWORKS, "Test Film Title", 2000), Score.valueOf(1.0));
+    }
+
+    @Test
+    public void extractCall() {
+        // this was a bad idea
+        EquivModule equivModule = new EquivModule();
+
+        Field f = null;
+        try {
+            f = equivModule.getClass().getDeclaredField("searchResolver");
+        } catch (NoSuchFieldException e) {
+            e.printStackTrace();
+        }
+        f.setAccessible(true);
+        SearchResolver searchResolver = null; //IllegalAccessException
+        try {
+            searchResolver = (SearchResolver) f.get(equivModule);
+        } catch (IllegalAccessException e) {
+            e.printStackTrace();
+        }
+
+        FilmEquivalenceGenerator filmEquivalenceGenerator = new FilmEquivalenceGenerator(
+                searchResolver,
+                Publisher.all(),
+                false
+        );
+
+        SearchQuery query = filmEquivalenceGenerator.searchQueryFor("Zootropolis");
+        String queryString = Urls.appendParameters("http://localhost:8181" + "/titles", query.toQueryStringParameters());
+        System.out.println(queryString);
+    }
+
+    @Test
+    public void testZootropolisMatches() {
+        String title = "Zootropolis";
+        Publisher publisher = Publisher.RADIO_TIMES;
+        Publisher publisher2 = Publisher.YOUVIEW;
+        String title2 = "Zootropolis";
+        Film anotherFilm = new Film(title+" Uri", title+" Curie", publisher);
+        anotherFilm.setYear(2016);
+        anotherFilm.setTitle("Zootropolis");
+        Score score = Score.valueOf(1.0);
+        Film film = new Film(title2+" Uri", title2+" Curie", publisher2);
+        film.setYear(2016);
+        film.setTitle("Zootropolis");
+        context.checking(new Expectations(){{
+            oneOf(resolver).search(with(searchQueryFor(film.getTitle())), with(any(ApplicationConfiguration.class)));
+            will(returnValue(ImmutableList.<Identified> of(anotherFilm)));
+        }});
+
+        ScoredCandidates<Item> scoredEquivalents = generator.generate(film , new DefaultDescription());
+        Map<Item, Score> equivalentsScores = scoredEquivalents.candidates();
+        assertThat(equivalentsScores.get(anotherFilm), is(equalTo(score)));
     }
     
     @Test

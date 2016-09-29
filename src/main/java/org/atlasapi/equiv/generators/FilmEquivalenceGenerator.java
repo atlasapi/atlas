@@ -142,7 +142,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         return Maybe.nothing();
     }
 
-    private SearchQuery searchQueryFor(String title) {
+    public SearchQuery searchQueryFor(String title) {
         return  new SearchQuery(title, Selection.ALL, publishers, TITLE_WEIGHTING,
                 BROADCAST_WEIGHTING, CATCHUP_WEIGHTING);
     }

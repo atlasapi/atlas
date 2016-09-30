@@ -292,12 +292,12 @@ public class NitroChannelHydrator {
             }
 
             if (!Strings.isNullOrEmpty(service.getLocator())) {
-                sidsToLocators.put(sid, service.getLocator());
+                sidsToLocatorsBuilder.put(sid, service.getLocator());
             }
 
             List<String> locators = service.getLocators();
             if (locators != null && ! locators.isEmpty()) {
-                sidsToLocators.putAll(sid, locators);
+                sidsToLocatorsBuilder.putAll(sid, locators);
             }
 
             if (service.getTargets() != null) {

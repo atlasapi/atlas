@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
+import java.util.List;
 import java.util.Set;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -8,6 +9,7 @@ public class YouviewService {
 
     @JsonProperty private String name;
     @JsonProperty private String locator;
+    @JsonProperty private List<String> locators;
     @JsonProperty private String sid;
     @JsonProperty private String shortName;
     @JsonProperty private String image;
@@ -22,6 +24,14 @@ public class YouviewService {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public List<String> getLocators() {
+        return locators;
+    }
+
+    public void setLocators(List<String> locators) {
+        this.locators = locators;
     }
 
     public String getLocator() {

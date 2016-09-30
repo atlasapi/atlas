@@ -1,6 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
 import java.io.File;
+import java.util.Collection;
+import java.util.List;
 import java.util.Optional;
 
 import javax.annotation.Nullable;
@@ -17,6 +19,7 @@ import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
@@ -42,7 +45,6 @@ public class NitroChannelHydrator {
     private static final String MASTER_BRAND_PATH = "/data/youview/mb.json";
 
     private static final String SHORT_NAME = "shortName";
-    private static final String DVB_LOCATOR = "dvbLocator";
     private static final String IMAGE_IDENT = "imageIdent";
     private static final String WIDTH_IDENT = "widthIdent";
     private static final String HEIGHT_IDENT = "heightIdent";
@@ -56,7 +58,8 @@ public class NitroChannelHydrator {
     private static final String IPLAYER_LOGO = "http://images.atlas.metabroadcast.com/youview.com/201606131640_bbc_iplayer_mono.png";
     private static final String OVERRIDE = "override";
 
-    private static Multimap<String, String> locatorsToTargetRegionInfo;
+    private static Multimap<String, String> sidsToTargetRegionInfo;
+    private static Multimap<String, String> sidsToLocators;
     private static Table<String, String, String> sidsToValues;
     private static Table<String, String, String> masterbrandNamesToValues;
 
@@ -65,9 +68,11 @@ public class NitroChannelHydrator {
     }
 
     public Iterable<Channel> hydrateServices(Iterable<Channel> services) {
+        ImmutableList.Builder<Channel> channels = ImmutableList.builder();
+
         for (Channel channel : services) {
             try {
-                hydrateService(channel);
+                channels.addAll(hydrateService(channel));
             } catch (Exception e) {
                 log.error(
                         "Failed to hydrate service {} - {}",
@@ -76,10 +81,11 @@ public class NitroChannelHydrator {
                 );
             }
         }
-        return services;
+
+        return channels.build();
     }
 
-    private void hydrateService(Channel channel) {
+    private Iterable<Channel> hydrateService(Channel channel) {
         String sid = getSid(channel).get();
 
         if (sidsToValues.contains(sid, SHORT_NAME)) {
@@ -91,29 +97,13 @@ public class NitroChannelHydrator {
             );
         }
 
-        if (sidsToValues.contains(sid, DVB_LOCATOR)
-                && channel.getCanonicalUri() == null) {
-            String dvb = sidsToValues.get(sid, DVB_LOCATOR);
-
-            String canonicalUri = String.format(
-                    "http://nitro.bbc.co.uk/services/%s_%s",
-                    sid,
-                    dvb.replace("dvb://", "").replace("..", "_")
-            );
-            channel.setCanonicalUri(canonicalUri);
-
-            channel.addAlias(new Alias(GlycerinNitroChannelAdapter.BBC_SERVICE_LOCATOR, dvb));
-
-            channel.setAliasUrls(ImmutableSet.of(dvb));
-        }
-
         if (!Strings.isNullOrEmpty(sidsToValues.get(sid, IMAGE_IDENT))) {
             overrideIdent(channel, sid, sidsToValues);
         }
 
-        if (locatorsToTargetRegionInfo.containsKey(sid)) {
+        if (sidsToTargetRegionInfo.containsKey(sid)) {
             channel.setTargetRegions(
-                    ImmutableSet.copyOf(locatorsToTargetRegionInfo.get(sid))
+                    ImmutableSet.copyOf(sidsToTargetRegionInfo.get(sid))
             );
         }
         if (sidsToValues.contains(sid, INTERACTIVE)) {
@@ -121,6 +111,32 @@ public class NitroChannelHydrator {
                     Boolean.parseBoolean(sidsToValues.get(sid, INTERACTIVE))
             );
         }
+
+        ImmutableList.Builder<Channel> result = ImmutableList.builder();
+
+        if (sidsToLocators.containsKey(sid) && channel.getCanonicalUri() == null) {
+            Collection<String> dvbs = sidsToLocators.get(sid);
+            for (String dvb : dvbs) {
+                Channel copy = Channel.builder(channel).build();
+
+                String canonicalUri = String.format(
+                        "http://nitro.bbc.co.uk/services/%s_%s",
+                        sid,
+                        dvb.replace("dvb://", "").replace("..", "_")
+                );
+                copy.setCanonicalUri(canonicalUri);
+
+                copy.addAlias(new Alias(GlycerinNitroChannelAdapter.BBC_SERVICE_LOCATOR, dvb));
+
+                copy.setAliasUrls(ImmutableSet.of(dvb));
+
+                result.add(copy);
+            }
+        } else {
+            result.add(channel);
+        }
+
+        return result.build();
     }
 
     public Iterable<Channel> hydrateMasterbrands(Iterable<Channel> masterbrands) {
@@ -264,8 +280,9 @@ public class NitroChannelHydrator {
     private static void populateServiceTables() throws java.io.IOException {
         YouviewService[] services = MAPPER.readValue(new File(SERVICES_PATH), YouviewService[].class);
 
-        ImmutableMultimap.Builder<String, String> locatorsToTargetInfoBuilder = ImmutableMultimap.builder();
-        ImmutableTable.Builder<String, String, String> locatorsToValuesBuilder = ImmutableTable.builder();
+        ImmutableMultimap.Builder<String, String> sidsToLocatorsBuilder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<String, String> sidsToTargetInfoBuilder = ImmutableMultimap.builder();
+        ImmutableTable.Builder<String, String, String> sidsToValuesBuilder = ImmutableTable.builder();
 
         for (YouviewService service : services) {
             String sid = service.getSid();
@@ -275,37 +292,43 @@ public class NitroChannelHydrator {
             }
 
             if (!Strings.isNullOrEmpty(service.getLocator())) {
-                locatorsToValuesBuilder.put(sid, DVB_LOCATOR, service.getLocator());
+                sidsToLocators.put(sid, service.getLocator());
+            }
+
+            List<String> locators = service.getLocators();
+            if (locators != null && ! locators.isEmpty()) {
+                sidsToLocators.putAll(sid, locators);
             }
 
             if (service.getTargets() != null) {
                 for (String targetRegion : service.getTargets()) {
-                    locatorsToTargetInfoBuilder.put(sid, targetRegion);
+                    sidsToTargetInfoBuilder.put(sid, targetRegion);
                 }
             }
 
             if (!Strings.isNullOrEmpty(service.getName())) {
-                locatorsToValuesBuilder.put(sid, NAME, service.getName());
+                sidsToValuesBuilder.put(sid, NAME, service.getName());
             }
 
             if (!Strings.isNullOrEmpty(service.getShortName())) {
-                locatorsToValuesBuilder.put(sid, SHORT_NAME, service.getShortName());
+                sidsToValuesBuilder.put(sid, SHORT_NAME, service.getShortName());
             }
 
             if (!Strings.isNullOrEmpty(service.getImage()) && service.getWidth() != null && service.getHeight() != null) {
-                locatorsToValuesBuilder.put(sid, IMAGE_IDENT, service.getImage());
-                locatorsToValuesBuilder.put(sid, WIDTH_IDENT, service.getWidth().toString());
-                locatorsToValuesBuilder.put(sid, HEIGHT_IDENT, service.getHeight().toString());
+                sidsToValuesBuilder.put(sid, IMAGE_IDENT, service.getImage());
+                sidsToValuesBuilder.put(sid, WIDTH_IDENT, service.getWidth().toString());
+                sidsToValuesBuilder.put(sid, HEIGHT_IDENT, service.getHeight().toString());
             }
 
             if (service.getInteractive() != null) {
-                locatorsToValuesBuilder.put(sid, INTERACTIVE, service.getInteractive().toString());
+                sidsToValuesBuilder.put(sid, INTERACTIVE, service.getInteractive().toString());
             }
 
         }
 
-        locatorsToTargetRegionInfo = locatorsToTargetInfoBuilder.build();
-        sidsToValues = locatorsToValuesBuilder.build();
+        sidsToLocators = sidsToLocatorsBuilder.build();
+        sidsToTargetRegionInfo = sidsToTargetInfoBuilder.build();
+        sidsToValues = sidsToValuesBuilder.build();
     }
 
     private static void populateMasterbrandTables() throws java.io.IOException {

@@ -89,26 +89,42 @@ public class NitroChannelHydrator {
         String sid = getSid(channel).get();
 
         if (sidsToValues.contains(sid, SHORT_NAME)) {
+            String shortName = sidsToValues.get(sid, SHORT_NAME);
+
+            log.debug("Overriding short name for {} to {}", sid, shortName);
+
             channel.addAlias(
                     new Alias(
                             BBC_SERVICE_NAME_SHORT,
-                            sidsToValues.get(sid, SHORT_NAME)
+                            shortName
                     )
             );
         }
 
-        if (!Strings.isNullOrEmpty(sidsToValues.get(sid, IMAGE_IDENT))) {
+        String imageIdent = sidsToValues.get(sid, IMAGE_IDENT);
+        if (!Strings.isNullOrEmpty(imageIdent)) {
+            log.debug("Overriding images for {} to {}", sid, imageIdent);
+
             overrideIdent(channel, sid, sidsToValues);
         }
 
         if (sidsToTargetRegionInfo.containsKey(sid)) {
+            Collection<String> regions = sidsToTargetRegionInfo.get(sid);
+
+            log.debug("Overriding region info for {} to {}", sid, regions);
+
             channel.setTargetRegions(
-                    ImmutableSet.copyOf(sidsToTargetRegionInfo.get(sid))
+                    ImmutableSet.copyOf(regions)
             );
         }
+
         if (sidsToValues.contains(sid, INTERACTIVE)) {
+            String interactive = sidsToValues.get(sid, INTERACTIVE);
+
+            log.debug("Overriding interactive for {} to {}", sid, interactive);
+
             channel.setInteractive(
-                    Boolean.parseBoolean(sidsToValues.get(sid, INTERACTIVE))
+                    Boolean.parseBoolean(interactive)
             );
         }
 
@@ -118,6 +134,8 @@ public class NitroChannelHydrator {
             Collection<String> dvbs = sidsToLocators.get(sid);
             for (String dvb : dvbs) {
                 Channel copy = Channel.builder(channel).build();
+
+                log.debug("Overriding DVB for {} to {}", sid, dvb);
 
                 String canonicalUri = String.format(
                         "http://nitro.bbc.co.uk/services/%s_%s",
@@ -190,7 +208,9 @@ public class NitroChannelHydrator {
             String fieldsKey,
             Table<String, String, String> fields
     ) {
-        Image overrideImage = new Image(fields.get(fieldsKey, IMAGE_IDENT));
+        String imageIdent = fields.get(fieldsKey, IMAGE_IDENT);
+
+        Image overrideImage = new Image(imageIdent);
 
         overrideImage.setWidth(Integer.parseInt(fields.get(fieldsKey, WIDTH_IDENT)));
         overrideImage.setHeight(Integer.parseInt(fields.get(fieldsKey, HEIGHT_IDENT)));
@@ -215,12 +235,6 @@ public class NitroChannelHydrator {
         }
 
         images.add(new TemporalField<>(overrideImage, null, null));
-
-        log.info(
-                "Adding override ident {} for {}",
-                overrideImage.getCanonicalUri(),
-                channel.getUri()
-        );
 
         channel.setImages(images.build());
     }

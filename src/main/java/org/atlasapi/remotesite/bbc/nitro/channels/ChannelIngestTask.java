@@ -123,6 +123,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setLongDescription(channel.getLongDescription());
                     existingChannel.setChannelType(channel.getChannelType());
                     existingChannel.setRegion(channel.getRegion());
+                    existingChannel.setTargetRegions(channel.getTargetRegions());
                     existingChannel.setInteractive(channel.getInteractive());
                     existingChannel.addAliases(channel.getAliases());
 

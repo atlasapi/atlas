@@ -8,20 +8,21 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.HttpClients;
+
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-
 @Configuration
 public class AmazonUnboxModule {
 
-    private final static Daily DAILY = RepetitionRules.daily(new LocalTime(4, 30, 0));
+    private final static Daily DAILY = RepetitionRules.daily(new LocalTime(23, 0, 0));
     
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;

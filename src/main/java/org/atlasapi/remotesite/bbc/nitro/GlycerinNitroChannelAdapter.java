@@ -80,8 +80,11 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withPageSize(MAXIMUM_PAGE_SIZE)
                 .withPage(1)
                 .withServiceType(
-                        ServiceTypeOption.LOCAL_RADIO, ServiceTypeOption.NATIONAL_RADIO,
-                        ServiceTypeOption.REGIONAL_RADIO, ServiceTypeOption.TV)
+                        ServiceTypeOption.LOCAL_RADIO,
+                        ServiceTypeOption.NATIONAL_RADIO,
+                        ServiceTypeOption.REGIONAL_RADIO,
+                        ServiceTypeOption.TV
+                )
                 .build();
         GlycerinResponse<Service> response = glycerin.execute(servicesQuery);
 
@@ -101,7 +104,9 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
     private ImmutableSet.Builder<Channel> addChannelsToBuilder(
             ImmutableMap<String, Channel> uriToParentChannels,
-            ImmutableSet.Builder<Channel> channels, List<Service> results) {
+            ImmutableSet.Builder<Channel> channels,
+            List<Service> results
+    ) {
         return channels.addAll(
                 results.stream()
                         .filter(this::isLive)
@@ -140,10 +145,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     ) {
         return ids.getId()
                 .stream()
-                .filter(id -> TERRESTRIAL_SERVICE_LOCATOR.equals(id.getType()))
                 .map(id -> getChannelWithLocatorAlias(result, id, uriToParentChannels))
                 .collect(MoreCollectors.toImmutableList());
-
     }
 
     @Override

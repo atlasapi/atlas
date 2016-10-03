@@ -1,8 +1,5 @@
 package org.atlasapi.equiv.scorers;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 
@@ -12,24 +9,21 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Iterators;
-import com.google.common.collect.Lists;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.PeekingIterator;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Container> {
 
@@ -91,7 +85,7 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
 
     private Score score(List<Integer> subjSeriesSizes, Container cand, ResultDescription desc) {
         if (!(cand instanceof Brand)) {
-            desc.appendText("%s: not Brand -> %.2f", mismatchScore.asDouble());
+            desc.appendText("%s: not Brand -> %.2f", cand, mismatchScore.asDouble());
             return mismatchScore;
         }
         return score(subjSeriesSizes, (Brand)cand, desc);

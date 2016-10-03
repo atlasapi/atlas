@@ -61,7 +61,7 @@ public class GlycerinNitroChannelAdapterTest {
         Image image = new Image("uri");
         image.setAliases(ImmutableList.of(new Alias("bbc:service:name:short", "name")));
 
-        ImmutableSet<Channel> services = channelAdapter.fetchServices(
+        ImmutableList<Channel> services = channelAdapter.fetchServices(
                 ImmutableMap.of(
                         "http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw",
                         Channel.builder()
@@ -72,7 +72,10 @@ public class GlycerinNitroChannelAdapterTest {
                 )
         );
 
-        Channel channel = Iterables.getOnlyElement(services);
+        Channel channel = services.stream()
+                .filter(chan -> chan.getCanonicalUri() != null)
+                .findFirst()
+                .get();
 
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
@@ -136,8 +139,11 @@ public class GlycerinNitroChannelAdapterTest {
 
         when(response.getResults()).thenReturn(ImmutableList.of(service));
 
-        ImmutableSet<Channel> services = channelAdapter.fetchServices();
-        Channel channel = Iterables.getOnlyElement(services);
+        ImmutableList<Channel> services = channelAdapter.fetchServices();
+        Channel channel = services.stream()
+                .filter(chan -> chan.getCanonicalUri() != null)
+                .findFirst()
+                .get();
 
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));

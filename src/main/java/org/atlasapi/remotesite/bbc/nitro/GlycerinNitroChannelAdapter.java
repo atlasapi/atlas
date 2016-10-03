@@ -18,7 +18,6 @@ import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
 import com.metabroadcast.atlas.glycerin.model.DateRange;
 import com.metabroadcast.atlas.glycerin.model.Id;
-import com.metabroadcast.atlas.glycerin.model.Ids;
 import com.metabroadcast.atlas.glycerin.model.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Service;
 import com.metabroadcast.atlas.glycerin.queries.MasterBrandsMixin;
@@ -71,13 +70,13 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     }
 
     @Override
-    public ImmutableSet<Channel> fetchServices() throws GlycerinException {
+    public ImmutableList<Channel> fetchServices() throws GlycerinException {
         return fetchServices(ImmutableMap.of());
     }
 
     @Override
-    public ImmutableSet<Channel> fetchServices(ImmutableMap<String, Channel> uriToParentChannels) throws GlycerinException {
-        ImmutableSet.Builder<Channel> channels = ImmutableSet.builder();
+    public ImmutableList<Channel> fetchServices(ImmutableMap<String, Channel> uriToParentChannels) throws GlycerinException {
+        ImmutableList.Builder<Channel> channels = ImmutableList.builder();
 
         ServicesQuery servicesQuery = ServicesQuery.builder()
                 .withPageSize(MAXIMUM_PAGE_SIZE)
@@ -93,34 +92,30 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
         List<Service> results = response.getResults();
 
-        addChannelsToBuilder(uriToParentChannels, channels, results);
+        channels.addAll(extractChannels(uriToParentChannels, results));
 
         while (response.hasNext()) {
             response = response.getNext();
             results = response.getResults();
 
-            addChannelsToBuilder(uriToParentChannels, channels, results);
+            channels.addAll(extractChannels(uriToParentChannels, results));
         }
 
         return channels.build();
     }
 
-    private ImmutableSet.Builder<Channel> addChannelsToBuilder(
+    private ImmutableList<Channel> extractChannels(
             ImmutableMap<String, Channel> uriToParentChannels,
-            ImmutableSet.Builder<Channel> channels,
             List<Service> results
     ) {
-        return channels.addAll(
-                results.stream()
-                        .filter(this::isLive)
-                        .flatMap(service -> generateAndAddChannelsFromLocators(
-                                channels,
-                                service,
-                                service.getIds(),
-                                uriToParentChannels
-                        ).stream())
-                        .collect(MoreCollectors.toImmutableList())
-        );
+        return results.stream()
+                .filter(this::isLive)
+                .flatMap(service -> generateChannelsFromIds(
+                        service,
+                        uriToParentChannels
+                ).stream())
+                .collect(MoreCollectors.toImmutableList());
+
     }
 
     private boolean isLive(Service service) {
@@ -140,15 +135,13 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return endJoda.isAfter(DateTime.now());
     }
 
-    private ImmutableList<Channel> generateAndAddChannelsFromLocators(
-            ImmutableSet.Builder<Channel> channels,
+    private ImmutableList<Channel> generateChannelsFromIds(
             Service result,
-            Ids ids,
             ImmutableMap<String, Channel> uriToParentChannels
     ) {
-        return ids.getId()
+        return result.getIds().getId()
                 .stream()
-                .map(id -> getChannelWithLocatorAlias(result, id, uriToParentChannels))
+                .map(id -> makeChannelFromId(result, id, uriToParentChannels))
                 .collect(MoreCollectors.toImmutableList());
     }
 
@@ -303,15 +296,15 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 });
     }
 
-    private Channel getChannelWithLocatorAlias(
+    private Channel makeChannelFromId(
             Service result,
-            Id locator,
+            Id id,
             ImmutableMap<String, Channel> uriToParentChannels
     ) {
         Channel channel = getChannel(result, uriToParentChannels);
 
-        if (locator != null) {
-            String locatorValue = locator.getValue();
+        if (id != null && TERRESTRIAL_SERVICE_LOCATOR.equals(id.getType())) {
+            String locatorValue = id.getValue();
             String canonicalUri = String.format(
                     "http://nitro.bbc.co.uk/%s/%s_%s",
                     channel.getChannelType() == ChannelType.MASTERBRAND ? "masterbrands" : "services",

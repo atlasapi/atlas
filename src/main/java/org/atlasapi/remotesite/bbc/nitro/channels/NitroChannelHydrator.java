@@ -191,8 +191,8 @@ public class NitroChannelHydrator {
         } else {
             log.info("Adding iplayer image for {}", channel.getCanonicalUri());
             Image iplayerDog = new Image(IPLAYER_LOGO);
-            iplayerDog.setHeight(1024);
-            iplayerDog.setWidth(169);
+            iplayerDog.setHeight(169);
+            iplayerDog.setWidth(1024);
             iplayerDog.setAliases(
                     ImmutableSet.of(
                             new Alias(BBC_IMAGE_TYPE, DOG),

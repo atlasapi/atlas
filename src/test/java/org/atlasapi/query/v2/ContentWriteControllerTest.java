@@ -2,7 +2,6 @@ package org.atlasapi.query.v2;
 
 import java.io.ByteArrayInputStream;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.math.BigInteger;
 import java.util.Iterator;
 
@@ -27,6 +26,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
+import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 
 import com.metabroadcast.common.base.Maybe;
@@ -113,12 +113,13 @@ public class ContentWriteControllerTest {
         Item content = new Item();
         content.setCanonicalUri("uri");
         content.setPublisher(Publisher.METABROADCAST);
-        inputContent = new ContentWriteExecutor.InputContent(content, "item");
+        inputContent = ContentWriteExecutor.InputContent.create(content, "item");
         contentId = 0L;
 
         when(configurationFetcher.configurationFor(request)).thenReturn(Maybe.just(configuration));
         when(request.getInputStream()).thenReturn(inputStream);
-        when(writeExecutor.parseInputStream(any(InputStream.class), anyBoolean())).thenReturn(inputContent);
+        when(writeExecutor.parseInputStream(any(InputStream.class), anyBoolean()))
+                .thenReturn(inputContent);
         when(idGenerator.getId(any(Content.class))).thenReturn(contentId);
         when(response.getOutputStream()).thenReturn(outputStream);
 
@@ -173,17 +174,27 @@ public class ContentWriteControllerTest {
         when(request.getParameter(ContentWriteController.ASYNC_PARAMETER))
                 .thenReturn("false");
 
+        String assertionParameterValue =
+                "\"channelUri\"|\"2016-01-01T00:00:00Z\"|\"2016-01-02T00:00:00Z\"";
+        when(request.getParameter(ContentWriteController.BROADCAST_ASSERTIONS_PARAMETER))
+                .thenReturn(assertionParameterValue);
+
+        BroadcastMerger expectedMerger = BroadcastMerger.parse(assertionParameterValue);
+
         controller.postContent(request, response);
 
         verify(writeExecutor).parseInputStream(streamCaptor.capture(), anyBoolean());
         assertThat(IOUtils.toByteArray(streamCaptor.getValue()), is(inputBytes));
 
         verify(writeExecutor).writeContent(
-                contentCaptor.capture(), eq(inputContent.getType()), eq(true)
+                contentCaptor.capture(),
+                eq(inputContent.getType()),
+                eq(true),
+                eq(expectedMerger)
         );
 
         verify(messageSender, never()).sendMessage(
-                any(ContentWriteMessage.class), (byte[]) any()
+                any(ContentWriteMessage.class), any()
         );
 
         Content actualContent = contentCaptor.getValue();

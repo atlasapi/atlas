@@ -30,6 +30,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
+import org.atlasapi.query.content.merge.BroadcastMerger;
 
 import com.metabroadcast.common.base.Maybe;
 
@@ -51,7 +52,7 @@ public class ContentWriteExecutor {
     private final ChannelResolver channelResolver;
     private final EventResolver eventResolver;
 
-    public ContentWriteExecutor(
+    private ContentWriteExecutor(
             ModelReader reader,
             ModelTransformer<Description, Content> transformer,
             ContentResolver resolver,
@@ -69,15 +70,53 @@ public class ContentWriteExecutor {
         this.eventResolver = checkNotNull(eventResolver);
     }
 
+    public static ContentWriteExecutor create(
+            ModelReader reader,
+            ModelTransformer<Description, Content> transformer,
+            ContentResolver resolver,
+            ContentWriter writer,
+            ScheduleWriter scheduleWriter,
+            ChannelResolver channelResolver,
+            EventResolver eventResolver
+    ) {
+        return new ContentWriteExecutor(
+                reader,
+                transformer,
+                resolver,
+                writer,
+                scheduleWriter,
+                channelResolver,
+                eventResolver
+        );
+    }
+
     public InputContent parseInputStream(InputStream inputStream, Boolean strict) throws IOException,
             ReadException {
         Description description = deserialize(new InputStreamReader(inputStream), strict);
         Content content = complexify(description);
 
-        return new InputContent(content, description.getType());
+        return InputContent.create(content, description.getType());
     }
 
     public void writeContent(Content content, String type, boolean shouldMerge) {
+        writeContentInternal(content, type, shouldMerge, BroadcastMerger.defaultMerger());
+    }
+
+    public void writeContent(
+            Content content,
+            String type,
+            boolean shouldMerge,
+            BroadcastMerger broadcastMerger
+    ) {
+        writeContentInternal(content, type, shouldMerge, broadcastMerger);
+    }
+
+    private void writeContentInternal(
+            Content content,
+            String type,
+            boolean shouldMerge,
+            BroadcastMerger broadcastMerger
+    ) {
         checkArgument(content.getId() != null, "Cannot write content without an ID");
 
         Content updatedContent = updateEventPublisher(content);
@@ -85,9 +124,13 @@ public class ContentWriteExecutor {
         Maybe<Identified> identified = resolveExisting(updatedContent);
 
         if (type.equals("broadcast")) {
-            updatedContent = mergeBroadcasts(identified, updatedContent);
+            updatedContent = mergeBroadcasts(
+                    identified, updatedContent, shouldMerge, broadcastMerger
+            );
         } else {
-            updatedContent = merge(identified, updatedContent, shouldMerge);
+            updatedContent = merge(
+                    identified, updatedContent, shouldMerge, broadcastMerger
+            );
         }
         if (updatedContent instanceof Item) {
             Item item = (Item) updatedContent;
@@ -124,7 +167,12 @@ public class ContentWriteExecutor {
         return resolved.get(content.getCanonicalUri());
     }
 
-    private Content mergeBroadcasts(Maybe<Identified> possibleExisting, Content update) {
+    private Content mergeBroadcasts(
+            Maybe<Identified> possibleExisting,
+            Content update,
+            boolean merge,
+            BroadcastMerger broadcastMerger
+    ) {
         if (possibleExisting.isNothing()) {
             return update;
         }
@@ -141,23 +189,33 @@ public class ContentWriteExecutor {
             }
             Version existingVersion = item.getVersions().iterator().next();
             Version postedVersion = Iterables.getOnlyElement(update.getVersions());
-            mergeVersions(existingVersion, postedVersion);
+            mergeVersions(existingVersion, postedVersion, merge, broadcastMerger);
         }
         return (Content) existing;
     }
 
-    private Content merge(Maybe<Identified> possibleExisting, Content update, boolean merge) {
+    private Content merge(
+            Maybe<Identified> possibleExisting,
+            Content update,
+            boolean merge,
+            BroadcastMerger broadcastMerger
+    ) {
         if (possibleExisting.isNothing()) {
             return update;
         }
         Identified existing = possibleExisting.requireValue();
         if (existing instanceof Content) {
-            return merge((Content) existing, update, merge);
+            return merge((Content) existing, update, merge, broadcastMerger);
         }
         throw new IllegalStateException("Entity for " + update.getCanonicalUri() + " not Content");
     }
 
-    private Content merge(Content existing, Content update, boolean merge) {
+    private Content merge(
+            Content existing,
+            Content update,
+            boolean merge,
+            BroadcastMerger broadcastMerger
+    ) {
         existing.setActivelyPublished(update.isActivelyPublished());
 
         existing.setEquivalentTo(merge ?
@@ -204,7 +262,10 @@ public class ContentWriteExecutor {
         if (existing instanceof Item && update instanceof Item) {
             return mergeItems(
                     mergeReleaseDates((Item) existing, (Item) update, merge),
-                    (Item) update);
+                    (Item) update,
+                    merge,
+                    broadcastMerger
+            );
         }
         return existing;
     }
@@ -221,14 +282,19 @@ public class ContentWriteExecutor {
                                   update.getReleaseDates()));
         return existing;
     }
-    private Item mergeItems(Item existing, Item update) {
+    private Item mergeItems(
+            Item existing,
+            Item update,
+            boolean merge,
+            BroadcastMerger broadcastMerger
+    ) {
         if (!update.getVersions().isEmpty()) {
             if (Iterables.isEmpty(existing.getVersions())) {
                 existing.addVersion(new Version());
             }
             Version existingVersion = existing.getVersions().iterator().next();
             Version postedVersion = Iterables.getOnlyElement(update.getVersions());
-            mergeVersions(existingVersion, postedVersion);
+            mergeVersions(existingVersion, postedVersion, merge, broadcastMerger);
         }
         existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
         existing.setYear(update.getYear());
@@ -238,7 +304,12 @@ public class ContentWriteExecutor {
         return existing;
     }
 
-    private void mergeVersions(Version existing, Version update) {
+    private void mergeVersions(
+            Version existing,
+            Version update,
+            boolean merge,
+            BroadcastMerger broadcastMerger
+    ) {
         Integer updatedDuration = update.getDuration();
         if (updatedDuration != null) {
             existing.setDuration(Duration.standardSeconds(updatedDuration));
@@ -246,7 +317,13 @@ public class ContentWriteExecutor {
             existing.setDuration(null);
         }
         existing.setManifestedAs(update.getManifestedAs());
-        existing.setBroadcasts(update.getBroadcasts());
+
+        existing.setBroadcasts(broadcastMerger.merge(
+                update.getBroadcasts(),
+                existing.getBroadcasts(),
+                merge
+        ));
+
         existing.setSegmentEvents(update.getSegmentEvents());
         existing.setRestriction(update.getRestriction());
     }
@@ -283,9 +360,13 @@ public class ContentWriteExecutor {
         private final Content content;
         private final String type;
 
-        public InputContent(Content content, String type) {
+        private InputContent(Content content, String type) {
             this.content = content;
             this.type = type;
+        }
+
+        public static InputContent create(Content content, String type) {
+            return new InputContent(content, type);
         }
 
         public Content getContent() {

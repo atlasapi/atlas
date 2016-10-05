@@ -47,7 +47,7 @@ public class ContentWriteWorkerTest {
     @Before
     public void setUp() throws Exception {
         messageBytes = "{ content: {} }".getBytes();
-        inputContent = new ContentWriteExecutor.InputContent(
+        inputContent = ContentWriteExecutor.InputContent.create(
                 new Item("uri", "curie", Publisher.METABROADCAST), "item"
         );
         when(writeExecutor.parseInputStream(any(ByteArrayInputStream.class), anyBoolean()))

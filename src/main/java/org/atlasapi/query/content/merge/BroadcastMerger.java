@@ -134,7 +134,6 @@ public class BroadcastMerger {
     }
 
     private Boolean isValidUpdateBroadcast(Broadcast broadcast) {
-        //noinspection SimplifiableIfStatement
         if (!channelAssertions.isPresent()) {
             // If we have no assertions all update broadcasts are valid
             return true;

@@ -91,7 +91,7 @@ public class QueryExecutorModule {
 
     @Bean
     public ContentWriteExecutor contentWriteExecutor() {
-        return new ContentWriteExecutor(
+        return ContentWriteExecutor.create(
                 new DefaultJacksonModelReader(),
                 delegatingModelTransformer(),
                 contentResolver,

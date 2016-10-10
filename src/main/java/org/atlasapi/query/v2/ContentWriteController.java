@@ -23,9 +23,9 @@ import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
@@ -38,6 +38,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
+import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 
 import com.metabroadcast.common.base.Maybe;
@@ -52,6 +53,7 @@ import com.metabroadcast.common.time.Timestamp;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.api.client.util.Maps;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
@@ -68,7 +70,8 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ContentWriteController {
 
     public static final String ASYNC_PARAMETER = "async";
-    private static final String STRICT = "strict";
+    public static final String BROADCAST_ASSERTIONS_PARAMETER = "broadcastAssertions";
+    private static final String STRICT_PARAMETER = "strict";
 
     private static final String ID = "id";
     private static final String URI = "uri";
@@ -130,11 +133,13 @@ public class ContentWriteController {
         );
     }
 
+    @Nullable
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
     public WriteResponse postContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
+    @Nullable
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
     public WriteResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
@@ -251,10 +256,41 @@ public class ContentWriteController {
     }
 
 
-    private WriteResponse deserializeAndUpdateContent(HttpServletRequest req, HttpServletResponse resp,
-            boolean merge) {
+    @Nullable
+    private WriteResponse deserializeAndUpdateContent(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            boolean merge
+    ) {
         Boolean async = Boolean.valueOf(req.getParameter(ASYNC_PARAMETER));
-        Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
+        Boolean strict = Boolean.valueOf(req.getParameter(STRICT_PARAMETER));
+
+        String broadcastAssertionsParameter = req.getParameter(BROADCAST_ASSERTIONS_PARAMETER);
+        BroadcastMerger broadcastMerger = BroadcastMerger.parse(
+                broadcastAssertionsParameter
+        );
+
+        if (async && !Strings.isNullOrEmpty(broadcastAssertionsParameter)) {
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new IllegalArgumentException(
+                            "The '" + ASYNC_PARAMETER + "' and '" + BROADCAST_ASSERTIONS_PARAMETER
+                            + "' request parameters are mutually exclusive"
+                    ))
+            );
+        }
+
+        if (!merge && !Strings.isNullOrEmpty(broadcastAssertionsParameter)) {
+            return error(
+                    req,
+                    resp,
+                    AtlasErrorSummary.forException(new IllegalArgumentException(
+                            "'" + BROADCAST_ASSERTIONS_PARAMETER
+                                    + "' request parameters are not supported with PUT"
+                    ))
+            );
+        }
 
         Maybe<ApplicationConfiguration> possibleConfig;
         try {
@@ -322,7 +358,7 @@ public class ContentWriteController {
                 sendMessage(inputStreamBytes, contentId, merge);
             } else {
                 content.setId(contentId);
-                writeExecutor.writeContent(content, inputContent.getType(), merge);
+                writeExecutor.writeContent(content, inputContent.getType(), merge, broadcastMerger);
             }
         } catch (IllegalArgumentException | NullPointerException e) {
             logError("Error executing request", e, req);

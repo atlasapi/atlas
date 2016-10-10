@@ -643,10 +643,17 @@ public class EquivModule {
             .build();
     }
 
-    private EquivalenceUpdater<Container> rteVodContainerUpdater(Set<Publisher> acceptablePublishers) {
+    private EquivalenceUpdater<Container> rteVodContainerUpdater(
+            Set<Publisher> acceptablePublishers
+    ) {
         return ContentEquivalenceUpdater.<Container> builder()
                 .withExcludedUris(excludedUrisFromProperties())
-                .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
+                .withGenerator(TitleSearchGenerator.create(
+                        searchResolver,
+                        Container.class,
+                        acceptablePublishers,
+                        DEFAULT_EXACT_TITLE_MATCH_SCORE
+                        )
                 )
                 .withScorers(ImmutableSet.of(
                         new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE),
@@ -661,8 +668,11 @@ public class EquivModule {
                         TitleMatchingContainerScorer.NAME,
                         ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
                 )
-                .withFilter(this.filtersForRTE())
-                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
+                .withFilter(filtersForRTE())
+                .withExtractor(
+                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
+                                .atLeastNTimesGreater(1.5)
+                )
                 .withHandler(containerResultHandlers(acceptablePublishers))
                 .build();
     }

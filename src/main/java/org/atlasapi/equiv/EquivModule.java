@@ -15,7 +15,12 @@ permissions and limitations under the License. */
 package org.atlasapi.equiv;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
@@ -40,6 +45,7 @@ import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
+import org.atlasapi.equiv.results.filters.AbstractEquivalenceFilter;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
@@ -220,6 +226,18 @@ public class EquivModule {
     
     private <T extends Content> EquivalenceFilter<T> standardFilter() {
         return standardFilter(ImmutableList.<EquivalenceFilter<T>>of());
+    }
+
+    private <T extends Content> EquivalenceFilter<T> filtersForRTE() {
+        return ConjunctiveFilter.valueOf(ImmutableList.of(
+                new MinimumScoreFilter<T>(0.25),
+                new MediaTypeFilter<T>(),
+                new SpecializationFilter<T>(),
+                new PublisherFilter<T>(),
+                new ExclusionListFilter<T>(excludedUrisFromProperties()),
+                new FilmFilter<T>(),
+                new UnpublishedContentFilter<T>()
+        ));
     }
 
     private <T extends Content> EquivalenceFilter<T> standardFilter(Iterable<EquivalenceFilter<T>> additional) {
@@ -443,7 +461,7 @@ public class EquivModule {
 
         Set<Publisher> rtePublishers = ImmutableSet.of(PA);
         updaters.register(RTE, SourceSpecificEquivalenceUpdater.builder(RTE)
-                .withTopLevelContainerUpdater(vodContainerUpdater(rtePublishers))
+                .withTopLevelContainerUpdater(rteVodContainerUpdater(rtePublishers))
                 .withItemUpdater(NullEquivalenceUpdater.get())
                 .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
@@ -623,6 +641,30 @@ public class EquivModule {
             .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
             .withHandler(containerResultHandlers(acceptablePublishers))
             .build();
+    }
+
+    private EquivalenceUpdater<Container> rteVodContainerUpdater(Set<Publisher> acceptablePublishers) {
+        return ContentEquivalenceUpdater.<Container> builder()
+                .withExcludedUris(excludedUrisFromProperties())
+                .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
+                )
+                .withScorers(ImmutableSet.of(
+                        new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE),
+                        new ContainerHierarchyMatchingScorer(
+                                contentResolver,
+                                Score.negativeOne(),
+                                new SubscriptionCatchupBrandDetector(contentResolver)
+                        )
+                ))
+                .withCombiner(new RequiredScoreFilteringCombiner<Container>(
+                        new NullScoreAwareAveragingCombiner<Container>(),
+                        TitleMatchingContainerScorer.NAME,
+                        ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
+                )
+                .withFilter(this.filtersForRTE())
+                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
+                .withHandler(containerResultHandlers(acceptablePublishers))
+                .build();
     }
 
     private EquivalenceUpdater<Container> btTveVodContainerUpdater(Set<Publisher> acceptablePublishers) {

@@ -13,6 +13,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
@@ -51,7 +52,6 @@ public class NitroChannelHydrator {
     private static final String WIDTH_DOG = "widthDog";
     private static final String HEIGHT_DOG = "heightDog";
     private static final String INTERACTIVE = "interactive";
-    private static final String BBC_IMAGE_TYPE = "bbc:imageType";
     private static final String DOG = "dog";
     private static final String IDENT = "ident";
     private static final String IPLAYER_LOGO = "http://images.atlas.metabroadcast.com/youview.com/201606131640_bbc_iplayer_mono.png";
@@ -194,8 +194,8 @@ public class NitroChannelHydrator {
             iplayerDog.setWidth(1024);
             iplayerDog.setAliases(
                     ImmutableSet.of(
-                            new Alias(BBC_IMAGE_TYPE, DOG),
-                            new Alias(BBC_IMAGE_TYPE, OVERRIDE)
+                            new Alias(NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS, DOG),
+                            new Alias(NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS, OVERRIDE)
                     )
             );
             channel.addImage(iplayerDog);
@@ -216,8 +216,8 @@ public class NitroChannelHydrator {
         overrideImage.setTheme(ImageTheme.LIGHT_OPAQUE);
         overrideImage.setAliases(
                 ImmutableSet.of(
-                        new Alias(BBC_IMAGE_TYPE, IDENT),
-                        new Alias(BBC_IMAGE_TYPE, OVERRIDE)
+                        new Alias(NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS, IDENT),
+                        new Alias(NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS, OVERRIDE)
                 )
         );
 
@@ -239,7 +239,8 @@ public class NitroChannelHydrator {
     }
 
     private boolean isImageIdent(Alias input) {
-        return BBC_IMAGE_TYPE.equals(input.getNamespace()) && IDENT.equals(input.getValue());
+        return NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS.equals(input.getNamespace())
+                && IDENT.equals(input.getValue());
     }
 
     private void overrideDog(Channel channel, String name, Table<String, String, String> fields) {
@@ -249,8 +250,8 @@ public class NitroChannelHydrator {
         overrideImage.setTheme(ImageTheme.LIGHT_OPAQUE);
         overrideImage.setAliases(
                 ImmutableSet.of(
-                        new Alias(BBC_IMAGE_TYPE, DOG),
-                        new Alias(BBC_IMAGE_TYPE, OVERRIDE)
+                        new Alias(NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS, DOG),
+                        new Alias(NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS, OVERRIDE)
                 )
         );
         ImmutableSet.Builder<TemporalField<Image>> images = ImmutableSet.builder();
@@ -258,8 +259,8 @@ public class NitroChannelHydrator {
             boolean isDog = Iterables.any(oldImage.getAliases(), new Predicate<Alias>() {
                 @Override
                 public boolean apply(@Nullable Alias input) {
-                    return BBC_IMAGE_TYPE.equals(input.getNamespace()) &&
-                            DOG.equals(input.getValue());
+                    return NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS.equals(input.getNamespace())
+                            && DOG.equals(input.getValue());
                 }
             });
             if (!isDog) {

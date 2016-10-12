@@ -52,7 +52,6 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     private static final String BBC_MASTERBRAND_MID = "bbc:masterbrand:mid";
     private static final String PID = "pid";
     private static final String NITRO_MASTERBRAND_URI_PREFIX = "http://nitro.bbc.co.uk/masterbrands/";
-    private static final String BBC_IMAGE_TYPE = "bbc:imageType";
     private static final String MASTERBRAND = "masterbrand";
 
     private final NitroImageExtractor imageExtractor = new NitroImageExtractor(1024, 576);
@@ -281,7 +280,10 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     }
 
     private Iterable<Image> addMasterbrandAlias(Iterable<Image> images) {
-        images.forEach(img -> img.addAlias(new Alias(BBC_IMAGE_TYPE, MASTERBRAND)));
+        images.forEach(img -> img.addAlias(new Alias(
+                NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS,
+                MASTERBRAND
+        )));
         return images;
     }
 

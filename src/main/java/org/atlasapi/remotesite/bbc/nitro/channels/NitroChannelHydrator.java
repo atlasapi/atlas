@@ -39,7 +39,6 @@ public class NitroChannelHydrator {
     private static final ObjectMapper MAPPER = new ObjectMapper(YAML_FACTORY);
 
     private static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
-    private static final String BBC_NITRO_TYPE = "bbc:nitro:type";
 
     private static final String SERVICES_PATH = "/data/youview/sv.json";
     private static final String MASTER_BRAND_PATH = "/data/youview/mb.json";
@@ -240,7 +239,7 @@ public class NitroChannelHydrator {
     }
 
     private boolean isImageIdent(Alias input) {
-        return BBC_NITRO_TYPE.equals(input.getNamespace()) && IDENT.equals(input.getValue());
+        return BBC_IMAGE_TYPE.equals(input.getNamespace()) && IDENT.equals(input.getValue());
     }
 
     private void overrideDog(Channel channel, String name, Table<String, String, String> fields) {

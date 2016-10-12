@@ -70,8 +70,6 @@ public class BbcIonServices {
             .put("cbbc_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1849")
             .put("cbeebies", "http://www.bbc.co.uk/services/cbeebies")
             .put("cbeebies_hd", "http://ref.atlasapi.org/channels/pressassociation.com/1850")
-            .put("bbc_rb0", "http://ref.atlasapi.org/channels/pressassociation.com/1886")
-            .put("bbc_rb1", "http://ref.atlasapi.org/channels/bbcsportinteractivefreeview")
             .build();
 
     public static BiMap<String, String> radioServices = ImmutableBiMap.<String, String>builder()

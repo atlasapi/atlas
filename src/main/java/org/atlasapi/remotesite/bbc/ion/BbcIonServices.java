@@ -85,7 +85,6 @@ public class BbcIonServices {
                     )
             )
             .put("bbc_radio_fourlw", "http://www.bbc.co.uk/services/radio4/lw")
-            .put("bbc_radio_shropshire", "http://ref.atlasapi.org/channels/pressassociation.com/1886")
             .build();
 
     public static BiMap<String, String> services = ImmutableBiMap.<String, String>builder().putAll(

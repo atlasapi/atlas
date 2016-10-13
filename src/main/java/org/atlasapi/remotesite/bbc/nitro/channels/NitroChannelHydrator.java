@@ -17,7 +17,6 @@ import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewService;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -35,8 +34,7 @@ public class NitroChannelHydrator {
 
     public static final String NAME = "name";
 
-    private static final YAMLFactory YAML_FACTORY = new YAMLFactory();
-    private static final ObjectMapper MAPPER = new ObjectMapper(YAML_FACTORY);
+    private static final ObjectMapper MAPPER = new ObjectMapper();
 
     private static final String BBC_SERVICE_NAME_SHORT = "bbc:service:name:short";
 

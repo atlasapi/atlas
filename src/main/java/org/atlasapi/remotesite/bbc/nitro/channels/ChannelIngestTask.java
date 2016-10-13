@@ -106,7 +106,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setStartDate(channel.getStartDate());
                     existingChannel.setEndDate(channel.getEndDate());
                     existingChannel.setRelatedLinks(channel.getRelatedLinks());
-                    existingChannel.addAliasUrls(channel.getAliasUrls());
+                    existingChannel.setAliasUrls(channel.getAliasUrls());
                     existingChannel.setParent(channel.getParent());
                     existingChannel.setMediaType(channel.getMediaType());
                     existingChannel.setHighDefinition(channel.getHighDefinition());
@@ -125,7 +125,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setRegion(channel.getRegion());
                     existingChannel.setTargetRegions(channel.getTargetRegions());
                     existingChannel.setInteractive(channel.getInteractive());
-                    existingChannel.addAliases(channel.getAliases());
+                    existingChannel.setAliases(channel.getAliases());
 
                     written.add(channelWriter.createOrUpdate(existingChannel));
                 } else {

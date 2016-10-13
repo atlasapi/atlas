@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro.channels.hax;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 public class YouviewMasterbrand {
@@ -13,6 +14,7 @@ public class YouviewMasterbrand {
     private final Integer widthDog;
     private final Integer heightDog;
 
+    @JsonCreator
     static YouviewMasterbrand create(
             @JsonProperty("name") String name,
             @JsonProperty("shortName") String shortName,

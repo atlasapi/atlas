@@ -270,9 +270,13 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             builder.withParent(parentChannel);
             builder.withImages(addMasterbrandAlias(parentChannel.getImages()));
             if (!Strings.isNullOrEmpty(parentChannel.getTitle())) {
+                String shortName = parentChannel.getTitle();
+                if (child.getSid().contains("_hd")) {
+                    shortName += " HD";
+                }
                 builder.withAliases(
                         ImmutableSet.of(
-                                new Alias(BBC_SERVICE_NAME_SHORT, parentChannel.getTitle())
+                                new Alias(BBC_SERVICE_NAME_SHORT, shortName)
                         )
                 );
             }

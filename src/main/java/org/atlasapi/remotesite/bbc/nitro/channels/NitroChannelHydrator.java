@@ -5,26 +5,25 @@ import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 
-import javax.annotation.Nullable;
-
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
+import org.atlasapi.remotesite.bbc.nitro.channels.hax.LocatorWithRegions;
+import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewMasterbrand;
+import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewService;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.dataformat.yaml.YAMLFactory;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Predicate;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Table;
 import org.slf4j.Logger;
@@ -56,9 +55,10 @@ public class NitroChannelHydrator {
     private static final String IDENT = "ident";
     private static final String IPLAYER_LOGO = "http://images.atlas.metabroadcast.com/youview.com/201606131640_bbc_iplayer_mono.png";
     private static final String OVERRIDE = "override";
+    private static final String DVB_LOCATOR = "locator";
 
     private static Multimap<String, String> sidsToTargetRegionInfo;
-    private static Multimap<String, String> sidsToLocators;
+    private static Multimap<String, LocatorWithRegions> sidsToLocators;
     private static Table<String, String, String> sidsToValues;
     private static Table<String, String, String> masterbrandNamesToValues;
 
@@ -130,30 +130,41 @@ public class NitroChannelHydrator {
         ImmutableList.Builder<Channel> result = ImmutableList.builder();
 
         if (sidsToLocators.containsKey(sid) && channel.getCanonicalUri() == null) {
-            Collection<String> dvbs = sidsToLocators.get(sid);
-            for (String dvb : dvbs) {
+            Collection<LocatorWithRegions> dvbs = sidsToLocators.get(sid);
+            for (LocatorWithRegions locatorWithRegions : dvbs) {
                 Channel copy = Channel.builder(channel).build();
 
+                String dvb = locatorWithRegions.getLocator();
                 log.debug("Overriding DVB for {} to {}", sid, dvb);
 
-                String canonicalUri = String.format(
-                        "http://nitro.bbc.co.uk/services/%s_%s",
-                        sid,
-                        dvb.replace("dvb://", "").replace("..", "_")
-                );
-                copy.setCanonicalUri(canonicalUri);
+                setChannelDvbData(sid, copy, dvb);
 
-                copy.addAlias(new Alias(GlycerinNitroChannelAdapter.BBC_SERVICE_LOCATOR, dvb));
-
-                copy.setAliasUrls(ImmutableSet.of(dvb));
+                copy.setTargetRegions(ImmutableSet.copyOf(locatorWithRegions.getRegions()));
 
                 result.add(copy);
             }
         } else {
+            if (sidsToValues.contains(sid, DVB_LOCATOR)) {
+                String dvb = sidsToValues.get(sid, DVB_LOCATOR);
+                setChannelDvbData(sid, channel, dvb);
+            }
             result.add(channel);
         }
 
         return result.build();
+    }
+
+    private static void setChannelDvbData(String sid, Channel channel, String dvb) {
+        String canonicalUri = String.format(
+                "http://nitro.bbc.co.uk/services/%s_%s",
+                sid,
+                dvb.replace("dvb://", "").replace("..", "_")
+        );
+        channel.setCanonicalUri(canonicalUri);
+
+        channel.addAlias(new Alias(GlycerinNitroChannelAdapter.BBC_SERVICE_LOCATOR, dvb));
+
+        channel.setAliasUrls(ImmutableSet.of(dvb));
     }
 
     public Iterable<Channel> hydrateMasterbrands(Iterable<Channel> masterbrands) {
@@ -256,13 +267,10 @@ public class NitroChannelHydrator {
         );
         ImmutableSet.Builder<TemporalField<Image>> images = ImmutableSet.builder();
         for (Image oldImage : channel.getImages()) {
-            boolean isDog = Iterables.any(oldImage.getAliases(), new Predicate<Alias>() {
-                @Override
-                public boolean apply(@Nullable Alias input) {
-                    return NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS.equals(input.getNamespace())
-                            && DOG.equals(input.getValue());
-                }
-            });
+            boolean isDog = oldImage.getAliases()
+                    .stream()
+                    .anyMatch(NitroChannelHydrator::isDog);
+
             if (!isDog) {
                 images.add(new TemporalField<>(oldImage, null, null));
             }
@@ -270,6 +278,11 @@ public class NitroChannelHydrator {
         images.add(new TemporalField<>(overrideImage, null, null));
         log.info("Adding override dog {} for {}", overrideImage.getCanonicalUri(), channel.getUri());
         channel.setImages(images.build());
+    }
+
+    private static boolean isDog(Alias alias) {
+        return NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS.equals(alias.getNamespace())
+                && DOG.equals(alias.getValue());
     }
 
     private static Optional<String> getSid(Channel channel) {
@@ -294,7 +307,7 @@ public class NitroChannelHydrator {
     private static void populateServiceTables() throws java.io.IOException {
         YouviewService[] services = MAPPER.readValue(new File(SERVICES_PATH), YouviewService[].class);
 
-        ImmutableMultimap.Builder<String, String> sidsToLocatorsBuilder = ImmutableMultimap.builder();
+        ImmutableMultimap.Builder<String, LocatorWithRegions> sidsToLocatorsBuilder = ImmutableMultimap.builder();
         ImmutableMultimap.Builder<String, String> sidsToTargetInfoBuilder = ImmutableMultimap.builder();
         ImmutableTable.Builder<String, String, String> sidsToValuesBuilder = ImmutableTable.builder();
 
@@ -305,11 +318,12 @@ public class NitroChannelHydrator {
                 continue;
             }
 
-            if (!Strings.isNullOrEmpty(service.getLocator())) {
-                sidsToLocatorsBuilder.put(sid, service.getLocator());
+            String locator = service.getLocator();
+            if (!Strings.isNullOrEmpty(locator)) {
+                sidsToValuesBuilder.put(sid, DVB_LOCATOR, locator);
             }
 
-            List<String> locators = service.getLocators();
+            List<LocatorWithRegions> locators = service.getLocators();
             if (locators != null && ! locators.isEmpty()) {
                 sidsToLocatorsBuilder.putAll(sid, locators);
             }

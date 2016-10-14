@@ -83,6 +83,8 @@ public class NitroChannelHydrator {
     }
 
     private Iterable<Channel> hydrateService(Channel channel) {
+        ImmutableList.Builder<Channel> result = ImmutableList.builder();
+
         String sid = getSid(channel).get();
 
         if (sidsToValues.contains(sid, SHORT_NAME)) {
@@ -125,8 +127,6 @@ public class NitroChannelHydrator {
             );
         }
 
-        ImmutableList.Builder<Channel> result = ImmutableList.builder();
-
         if (sidsToLocators.containsKey(sid) && channel.getCanonicalUri() == null) {
             Collection<LocatorWithRegions> dvbs = sidsToLocators.get(sid);
             for (LocatorWithRegions locatorWithRegions : dvbs) {
@@ -135,6 +135,10 @@ public class NitroChannelHydrator {
                 String dvb = locatorWithRegions.getLocator();
                 List<String> regions = locatorWithRegions.getRegions();
 
+                setChannelDvbData(sid, copy, dvb);
+
+                copy.setTargetRegions(ImmutableSet.copyOf(regions));
+
                 log.debug(
                         "Overriding DVB and regions for {} to {} / {}",
                         sid,
@@ -142,21 +146,28 @@ public class NitroChannelHydrator {
                         regions
                 );
 
-                setChannelDvbData(sid, copy, dvb);
-
-                copy.setTargetRegions(ImmutableSet.copyOf(regions));
-
                 result.add(copy);
             }
         } else {
             if (sidsToValues.contains(sid, DVB_LOCATOR)) {
                 String dvb = sidsToValues.get(sid, DVB_LOCATOR);
                 setChannelDvbData(sid, channel, dvb);
+
+                log.debug(
+                        "Overriding DVB for {} to {}",
+                        sid,
+                        dvb
+                );
             }
+
             result.add(channel);
         }
 
-        return result.build();
+        ImmutableList<Channel> channels = result.build();
+
+        log.debug("Hydrated channels {}", channels);
+
+        return channels;
     }
 
     private static void setChannelDvbData(String sid, Channel channel, String dvb) {
@@ -166,6 +177,7 @@ public class NitroChannelHydrator {
                 dvb.replace("dvb://", "").replace("..", "_")
         );
         channel.setCanonicalUri(canonicalUri);
+        channel.setKey(canonicalUri);
 
         channel.addAlias(new Alias(GlycerinNitroChannelAdapter.BBC_SERVICE_LOCATOR, dvb));
 

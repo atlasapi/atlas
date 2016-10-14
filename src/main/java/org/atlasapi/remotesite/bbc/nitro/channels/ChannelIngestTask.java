@@ -128,6 +128,8 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setAliases(channel.getAliases());
 
                     written.add(channelWriter.createOrUpdate(existingChannel));
+
+                    log.debug("Writing merged channel {}", existingChannel);
                 } else {
                     written.add(channelWriter.createOrUpdate(channel));
                 }

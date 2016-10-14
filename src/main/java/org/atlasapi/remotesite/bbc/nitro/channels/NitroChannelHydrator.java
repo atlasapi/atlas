@@ -56,7 +56,7 @@ public class NitroChannelHydrator {
     private static final String DVB_LOCATOR = "locator";
 
     private static Multimap<String, String> sidsToTargetRegionInfo;
-    private static Multimap<String, LocatorWithRegions> sidsToLocators;
+    private static Multimap<String, LocatorWithRegions> sidsToLocatorsAndRegions;
     private static Table<String, String, String> sidsToValues;
     private static Table<String, String, String> masterbrandNamesToValues;
 
@@ -127,26 +127,50 @@ public class NitroChannelHydrator {
             );
         }
 
-        if (sidsToLocators.containsKey(sid) && channel.getCanonicalUri() == null) {
-            Collection<LocatorWithRegions> dvbs = sidsToLocators.get(sid);
-            for (LocatorWithRegions locatorWithRegions : dvbs) {
-                Channel copy = Channel.builder(channel).build();
+        if (sidsToLocatorsAndRegions.containsKey(sid)) {
+            Collection<LocatorWithRegions> locatorsWithRegions = sidsToLocatorsAndRegions.get(sid);
 
-                String dvb = locatorWithRegions.getLocator();
-                List<String> regions = locatorWithRegions.getRegions();
+            if (channel.getCanonicalUri() == null) {
+                for (LocatorWithRegions locatorWithRegions : locatorsWithRegions) {
+                    Channel copy = Channel.builder(channel).build();
 
-                setChannelDvbData(sid, copy, dvb);
+                    String dvb = locatorWithRegions.getLocator();
+                    List<String> regions = locatorWithRegions.getRegions();
 
-                copy.setTargetRegions(ImmutableSet.copyOf(regions));
+                    setChannelDvbData(sid, copy, dvb);
 
-                log.debug(
-                        "Overriding DVB and regions for {} to {} / {}",
-                        sid,
-                        dvb,
-                        regions
-                );
+                    copy.setTargetRegions(ImmutableSet.copyOf(regions));
 
-                result.add(copy);
+                    log.debug(
+                            "Overriding DVB and regions for {} to {} / {}",
+                            sid,
+                            dvb,
+                            regions
+                    );
+
+                    result.add(copy);
+                }
+            } else {
+                // they actually added the DVB, but we still need the regions
+                Optional<Alias> channelDvb = channel.getAliases()
+                        .stream()
+                        .filter(alias -> GlycerinNitroChannelAdapter.BBC_SERVICE_LOCATOR.equals(
+                                alias.getNamespace()))
+                        .findFirst();
+
+                if (!channelDvb.isPresent()) {
+                    log.warn("Channel with a canonical URI but no DVB? wat? {}", channel);
+                } else {
+                    Optional<LocatorWithRegions> override = locatorsWithRegions.stream()
+                            .filter(lwr -> lwr.getLocator().equals(channelDvb.get()))
+                            .findFirst();
+                    if (!override.isPresent()) {
+                        log.warn("Found no regions override for DVB {}", channelDvb.get());
+                    } else {
+                        channel.setTargetRegions(ImmutableSet.copyOf(override.get().getRegions()));
+                        result.add(channel);
+                    }
+                }
             }
         } else {
             if (sidsToValues.contains(sid, DVB_LOCATOR)) {
@@ -371,7 +395,7 @@ public class NitroChannelHydrator {
 
         }
 
-        sidsToLocators = sidsToLocatorsBuilder.build();
+        sidsToLocatorsAndRegions = sidsToLocatorsBuilder.build();
         sidsToTargetRegionInfo = sidsToTargetInfoBuilder.build();
         sidsToValues = sidsToValuesBuilder.build();
     }

@@ -64,6 +64,8 @@ public class ChannelIngestTask extends ScheduledTask {
                 uriToId.put(channel.getUri(), channel);
             }
 
+            log.info("Wrote masterbrands, moving onto channels");
+
             ImmutableList<Channel> services = channelAdapter.fetchServices(uriToId.build());
             Iterable<Channel> filteredServices = hydrator.hydrateServices(services);
 

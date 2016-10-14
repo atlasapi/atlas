@@ -50,7 +50,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     public static final String BBC_SERVICE_SID = "bbc:service:sid";
 
     private static final int MAXIMUM_PAGE_SIZE = 300;
-    private static final String TERRESTRIAL_SERVICE_LOCATOR = "terrestrial_service_locator";
+    private static final String DVB = "terrestrial_service_locator";
+    private static final String SID = "service_id";
     private static final String BBC_SERVICE_PID = "bbc:service:pid";
     private static final String BBC_MASTERBRAND_MID = "bbc:masterbrand:mid";
     private static final String PID = "pid";
@@ -138,10 +139,22 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             Service result,
             ImmutableMap<String, Channel> uriToParentChannels
     ) {
-        return result.getIds().getId()
-                .stream()
-                .map(id -> makeChannelFromId(result, id, uriToParentChannels))
-                .collect(MoreCollectors.toImmutableList());
+        boolean hasDvb = result.getIds().getId().stream().anyMatch(id -> DVB.equals(id.getType()));
+        if (hasDvb) {
+            return result.getIds().getId()
+                    .stream()
+                    .filter(id -> DVB.equals(id.getType()))
+                    .map(id -> makeChannelFromId(result, id, uriToParentChannels))
+                    .collect(MoreCollectors.toImmutableList());
+        } else {
+            return result.getIds().getId()
+                    .stream()
+                    .filter(id -> SID.equals(id.getType()))
+                    .findFirst()
+                    .map(id -> makeChannelFromId(result, id, uriToParentChannels))
+                    .map(ImmutableList::of)
+                    .orElse(ImmutableList.of());
+        }
     }
 
     @Override
@@ -299,7 +312,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     ) {
         Channel channel = getChannel(result, uriToParentChannels);
 
-        if (id != null && TERRESTRIAL_SERVICE_LOCATOR.equals(id.getType())) {
+        if (id != null && DVB.equals(id.getType())) {
             String locatorValue = id.getValue();
             String canonicalUri = String.format(
                     "http://nitro.bbc.co.uk/%s/%s_%s",

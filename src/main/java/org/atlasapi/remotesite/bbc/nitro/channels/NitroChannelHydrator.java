@@ -152,20 +152,20 @@ public class NitroChannelHydrator {
                 }
             } else {
                 // they actually added the DVB, but we still need the regions
-                Optional<Alias> channelDvb = channel.getAliases()
+                Optional<Alias> channelDvbAlias = channel.getAliases()
                         .stream()
                         .filter(alias -> GlycerinNitroChannelAdapter.BBC_SERVICE_LOCATOR.equals(
                                 alias.getNamespace()))
                         .findFirst();
 
-                if (!channelDvb.isPresent()) {
+                if (!channelDvbAlias.isPresent()) {
                     log.warn("Channel with a canonical URI but no DVB? wat? {}", channel);
                 } else {
                     Optional<LocatorWithRegions> override = locatorsWithRegions.stream()
-                            .filter(lwr -> lwr.getLocator().equals(channelDvb.get()))
+                            .filter(lwr -> lwr.getLocator().equals(channelDvbAlias.get().getValue()))
                             .findFirst();
                     if (!override.isPresent()) {
-                        log.warn("Found no regions override for DVB {}", channelDvb.get());
+                        log.warn("Found no regions override for DVB {}", channelDvbAlias.get());
                     } else {
                         channel.setTargetRegions(ImmutableSet.copyOf(override.get().getRegions()));
                         result.add(channel);

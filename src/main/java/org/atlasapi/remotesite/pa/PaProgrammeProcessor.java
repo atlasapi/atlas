@@ -721,11 +721,12 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
         Item item;
         if (possiblePrevious.hasValue()) {
-            item = (Item) possiblePrevious.requireValue();
-            if (!(item instanceof Episode) && isEpisode) {
+            Item previous = (Item) possiblePrevious.requireValue();
+
+            if (!(previous instanceof Episode) && isEpisode) {
                 String message = String.format(
                         "%s resolved as %s being ingested as Episode",
-                        episodeUri, item.getClass().getSimpleName()
+                        episodeUri, previous.getClass().getSimpleName()
                 );
 
                 adapterLog.record(warnEntry()
@@ -734,18 +735,23 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                 );
                 log.info(message);
 
-                item = convertItemToEpisode(item);
-            } else if(item instanceof Episode && !isEpisode) {
+                item = convertItemToEpisode(previous);
+            } else if(previous instanceof Episode && !isEpisode) {
                 String message = String.format(
-                        "%s resolved as %s being ingested as Item. Keeping it as Episode",
-                        episodeUri, item.getClass().getSimpleName()
+                        "%s resolved as %s being ingested as Item",
+                        episodeUri, previous.getClass().getSimpleName()
                 );
 
                 adapterLog.record(errorEntry()
                         .withSource(getClass())
                         .withDescription(message)
                 );
-                log.warn(message);
+                log.info(message);
+
+                item = new Item();
+                Item.copyTo(previous, item);
+            } else {
+                item = previous;
             }
         } else {
             item = getBasicEpisode(progData, isEpisode);

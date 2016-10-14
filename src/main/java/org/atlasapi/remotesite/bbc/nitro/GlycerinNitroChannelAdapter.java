@@ -225,10 +225,6 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                 .withRegion(result.getRegion())
                 .withChannelType(ChannelType.CHANNEL);
 
-        // Even though it's deprecated all channels must have a key or parts
-        // of the code will NPE
-        builder.withKey(NITRO_MASTERBRAND_URI_PREFIX + result.getSid());
-
         Optional<LocalDate> startDate = getStartDate(result);
         if (startDate.isPresent()) {
             builder.withStartDate(startDate.get());
@@ -306,7 +302,12 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
                     result.getSid(),
                     locatorValue.replace("dvb://", "").replace("..", "_")
             );
+
             channel.setCanonicalUri(canonicalUri);
+
+            // Even though it's deprecated all channels must have a key or parts
+            // of the code will NPE
+            channel.setKey(canonicalUri);
 
             channel.addAlias(new Alias(BBC_SERVICE_LOCATOR, locatorValue));
 
@@ -314,6 +315,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         }
 
         channel.addAlias(new Alias(BBC_SERVICE_SID, result.getSid()));
+
+        log.debug("Extracted and totally using Nitro SID {}", result.getSid());
 
         return channel;
     }

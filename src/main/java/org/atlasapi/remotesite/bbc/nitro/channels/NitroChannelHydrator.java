@@ -133,11 +133,18 @@ public class NitroChannelHydrator {
                 Channel copy = Channel.builder(channel).build();
 
                 String dvb = locatorWithRegions.getLocator();
-                log.debug("Overriding DVB for {} to {}", sid, dvb);
+                List<String> regions = locatorWithRegions.getRegions();
+
+                log.debug(
+                        "Overriding DVB and regions for {} to {} / {}",
+                        sid,
+                        dvb,
+                        regions
+                );
 
                 setChannelDvbData(sid, copy, dvb);
 
-                copy.setTargetRegions(ImmutableSet.copyOf(locatorWithRegions.getRegions()));
+                copy.setTargetRegions(ImmutableSet.copyOf(regions));
 
                 result.add(copy);
             }

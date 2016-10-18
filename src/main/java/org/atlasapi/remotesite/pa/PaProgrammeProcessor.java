@@ -203,10 +203,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                     progData, isEpisode
             );
 
-            if (!isEpisode) {
-                item.setParentRef(null);
-            }
-
             item.setGenericDescription(isGenericDescription(progData));
             item.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
             item.setLastUpdated(updatedAt.toDateTimeUTC());

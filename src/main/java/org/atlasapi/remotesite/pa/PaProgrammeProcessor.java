@@ -146,6 +146,11 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                     : getFilmOrEpisode(progData, channel, zone, isEpisode, updatedAt);
 
             Item item = itemAndBroadcast.getItem();
+
+            if (!isEpisode) {
+                item.setParentRef(null);
+            }
+
             item.setGenericDescription(isGenericDescription(progData));
             item.addAlias(PaHelper.getProgIdAlias(progData.getProgId()));
             item.setLastUpdated(updatedAt.toDateTimeUTC());

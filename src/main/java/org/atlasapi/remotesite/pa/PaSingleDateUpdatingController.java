@@ -7,13 +7,9 @@ import java.util.concurrent.ThreadFactory;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
 
-import com.metabroadcast.common.base.Maybe;
-
-import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -51,15 +47,18 @@ public class PaSingleDateUpdatingController {
             params = {}
     )
     public void runUpdate(@PathVariable String dateString, HttpServletResponse response) {
-        PaSingleDateUpdater updater = new PaSingleDateUpdater(
-                Executors.newSingleThreadExecutor(),
-                channelProcessor,
-                fileManager,
-                channelResolver,
-                dateString
-        );
-        executor.execute(updater);
-        response.setStatus(HttpServletResponse.SC_OK);
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+//         TODO The single day updater has data consistency bugs MBST-17181
+//        PaSingleDateUpdater updater = new PaSingleDateUpdater(
+//                Executors.newSingleThreadExecutor(),
+//                channelProcessor,
+//                fileManager,
+//                channelResolver,
+//                dateString
+//        );
+//        executor.execute(updater);
+//        response.setStatus(HttpServletResponse.SC_OK);
     }
     
     @RequestMapping(
@@ -69,21 +68,24 @@ public class PaSingleDateUpdatingController {
     )
     public void runUpdate(@PathVariable String dateString,
             @RequestParam("channel") String channelUri, HttpServletResponse response) {
-        Maybe<Channel> channel = channelResolver.fromUri(channelUri);
-        if (channel.hasValue()) {
-            PaSingleDateUpdater updater = new PaSingleDateUpdater(
-                    Executors.newSingleThreadExecutor(),
-                    channelProcessor,
-                    fileManager,
-                    channelResolver,
-                    dateString
-            );
-            updater.supportChannels(ImmutableList.of(channel.requireValue()));
+        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
-            executor.execute(updater);
-            response.setStatus(HttpServletResponse.SC_OK);
-        } else {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-        }
+//         TODO The single day updater has data consistency bugs MBST-17181
+//        Maybe<Channel> channel = channelResolver.fromUri(channelUri);
+//        if (channel.hasValue()) {
+//            PaSingleDateUpdater updater = new PaSingleDateUpdater(
+//                    Executors.newSingleThreadExecutor(),
+//                    channelProcessor,
+//                    fileManager,
+//                    channelResolver,
+//                    dateString
+//            );
+//            updater.supportChannels(ImmutableList.of(channel.requireValue()));
+//
+//            executor.execute(updater);
+//            response.setStatus(HttpServletResponse.SC_OK);
+//        } else {
+//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+//        }
     }
 }

@@ -147,6 +147,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
             Item item = itemAndBroadcast.getItem();
 
+            // TODO: there is an unknown bug preventing this from working (MBST-17174)
             if (!isEpisode) {
                 item.setParentRef(null);
             }
@@ -203,6 +204,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                     progData, isEpisode
             );
 
+            // TODO: There is an unknown bug preventing this from working (MBST-17174)
             if (!isEpisode) {
                 item.setParentRef(null);
             }

@@ -15,14 +15,15 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleEntryBuilder;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
-
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.joda.time.Duration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 
 @Controller
 public class ManualScheduleUpdateController {
@@ -35,7 +36,7 @@ public class ManualScheduleUpdateController {
     public ManualScheduleUpdateController(ScheduleWriter scheduleWriter, ContentResolver resolver, ChannelResolver channelResolver) {
         this.scheduleWriter = scheduleWriter;
         this.resolver = resolver;
-        this.scheduleEntryBuilder = new ScheduleEntryBuilder(channelResolver);
+        this.scheduleEntryBuilder = new ScheduleEntryBuilder(channelResolver, Duration.standardSeconds(Long.MAX_VALUE/1000));
         this.executor = Executors.newSingleThreadExecutor(new ThreadFactoryBuilder().setNameFormat("Manual Schedule Update Thread").build());
     }
     

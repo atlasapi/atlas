@@ -34,7 +34,7 @@ public class PaRecentUpdater extends PaBaseProgrammeUpdater implements Runnable 
     @Override
     public void runTask() {
         Predicate<File> filter = getFileSelectionPredicate();
-        this.processFiles(fileManager.localTvDataFiles(filter));
+        this.processFiles(fileManager.localTvDataFiles(filter), !ignoreProcessedFiles);
     }
 
     @Override
@@ -50,13 +50,8 @@ public class PaRecentUpdater extends PaBaseProgrammeUpdater implements Runnable 
                     new DateTime(DateTimeZones.UTC).minusDays(10).getMillis()
             );
         } else {
-            return new Predicate<File>() {
-                @Override
-                public boolean apply(File input) {
-                    return input.lastModified() >
-                            new DateTime(DateTimeZones.UTC).minusDays(3).getMillis();
-                }
-            };
+            return input -> input.lastModified() >
+                    new DateTime(DateTimeZones.UTC).minusDays(5).getMillis();
         }
     }
 }

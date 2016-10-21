@@ -103,7 +103,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         executor.shutdown();
     }
     
-    protected void processFiles(Iterable<File> files) {
+    protected void processFiles(Iterable<File> files, boolean isBootstrap) {
     	
         try {       	
         	Set<Queue<File>> groupedFiles = deltaFileHelper.groupAndOrderFilesByDay(files);
@@ -121,7 +121,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         		
         		if(!thisBatch.isEmpty()) {
         			reportStatus(String.format("%s/%s files processed. %s files in current batch", filesProcessed, Iterables.size(files), thisBatch.size()));
-        			processBatch(thisBatch);
+        			processBatch(thisBatch, isBootstrap);
         			filesProcessed += thisBatch.size();
         		}
         		else {
@@ -135,7 +135,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         }
     }
 
-	private void processBatch(Iterable<File> files) throws JAXBException,
+	private void processBatch(Iterable<File> files, boolean isBootstrap) throws JAXBException,
 			SAXException, ParserConfigurationException, InterruptedException {
 		final CompletionService<Integer> completion = new ExecutorCompletionService<Integer>(executor);
 		
@@ -166,7 +166,14 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
 
 		            AtomicInteger jobsRemaining = new AtomicInteger();
 
-		            unmarshaller.setListener(channelDataProcessingListener(jobsRemaining, completion, submitted, fileToProcess, scheduleDay));
+		            unmarshaller.setListener(channelDataProcessingListener(
+		                    jobsRemaining,
+                            completion,
+                            submitted,
+                            fileToProcess,
+                            scheduleDay,
+                            isBootstrap
+                    ));
 		            reader.parse(fileToProcess.toURI().toString());
                     jobsRemainingPerFile.put(file.getName(), jobsRemaining);
 		        }
@@ -229,7 +236,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
 
     private Listener channelDataProcessingListener(final AtomicInteger jobsCounter, 
             final CompletionService<Integer> completion, final List<Future<Integer>> submitted, 
-            final File fileToProcess, final String fileDate) {
+            final File fileToProcess, final String fileDate, boolean isBootstrap) {
         
         return new Unmarshaller.Listener() {
             public void beforeUnmarshal(Object target, Object parent) {
@@ -258,7 +265,8 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
                     if (channel.hasValue() 
                             && isSupported(channel.requireValue()) 
                             && shouldContinue()
-                            && shouldUpdateVersion(channel.requireValue(), version, scheduleDay)) {
+                            && shouldUpdateVersion(
+                                    channel.requireValue(), version, scheduleDay, isBootstrap)) {
                         
                         try {
                             
@@ -293,16 +301,24 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         };
     }
 
-    protected boolean shouldUpdateVersion(Channel channel,
-            long fileVersionNumber, LocalDate scheduleDay) {
+    private boolean shouldUpdateVersion(Channel channel,
+            long fileVersionNumber, LocalDate scheduleDay, boolean isBootstrap) {
         
         if(!paScheduleVersionStore.isPresent()) {
             return true;
         }
 
         Optional<Long> currentVersion = paScheduleVersionStore.get().get(channel, scheduleDay);
-        
-        return !currentVersion.isPresent() || currentVersion.get() < fileVersionNumber;
+
+        if (!currentVersion.isPresent()) {
+            return true;
+        }
+
+        if (isBootstrap) {
+            return currentVersion.get() <= fileVersionNumber;
+        }
+
+        return currentVersion.get() < fileVersionNumber;
     }
 
     public static class PaChannelData {

@@ -268,14 +268,27 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
                 MongoScheduleStore scheduleWriter, List<File> files, BroadcastTrimmer trimmer,
                 PaScheduleVersionStore scheduleVersionStore, ContentBuffer contentBuffer, ContentWriter contentWriter) {
 
-            super(MoreExecutors.sameThreadExecutor(), new PaChannelProcessor(processor, trimmer, scheduleWriter, scheduleVersionStore, contentBuffer, contentWriter),
-                    new DefaultPaProgrammeDataStore(TMP_TEST_DIRECTORY, null), channelResolver, Optional.fromNullable(scheduleVersionStore));
+            super(
+                    MoreExecutors.sameThreadExecutor(),
+                    new PaChannelProcessor(
+                            processor,
+                            trimmer,
+                            scheduleWriter,
+                            scheduleVersionStore,
+                            contentBuffer,
+                            contentWriter
+                    ),
+                    new DefaultPaProgrammeDataStore(TMP_TEST_DIRECTORY, null),
+                    channelResolver,
+                    Optional.fromNullable(scheduleVersionStore),
+                    Mode.NORMAL
+            );
             this.files = files;
         }
 
         @Override
         public void runTask() {
-            this.processFiles(files, false);
+            this.processFiles(files);
         }
     }
 

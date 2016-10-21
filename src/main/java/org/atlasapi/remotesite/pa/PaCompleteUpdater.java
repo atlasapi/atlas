@@ -15,13 +15,20 @@ public class PaCompleteUpdater extends PaBaseProgrammeUpdater implements Runnabl
     private final PaProgrammeDataStore fileManager;
 
     public PaCompleteUpdater(ExecutorService executor, PaChannelProcessor processor, PaProgrammeDataStore fileManager, ChannelResolver channelResolver) {
-        super(executor, processor, fileManager, channelResolver, Optional.<PaScheduleVersionStore>absent());
+        super(
+                executor,
+                processor,
+                fileManager,
+                channelResolver,
+                Optional.absent(),
+                Mode.BOOTSTRAP
+        );
         this.fileManager = fileManager;
     }
     
     @Override
     public void runTask() {
-        this.processFiles(fileManager.localTvDataFiles(Predicates.<File>alwaysTrue()), true);
+        this.processFiles(fileManager.localTvDataFiles(Predicates.alwaysTrue()));
     }
     
 }

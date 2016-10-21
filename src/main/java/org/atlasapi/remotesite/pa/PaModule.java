@@ -71,6 +71,7 @@ import com.metabroadcast.common.time.DayOfWeek;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mongodb.DBCollection;
+import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -235,7 +236,7 @@ public class PaModule {
                 channelResolver,
                 fileUploadResultStore(),
                 paScheduleVersionStore(),
-                true
+                PaBaseProgrammeUpdater.Mode.NORMAL
         );
     }
 
@@ -255,7 +256,7 @@ public class PaModule {
                 channelResolver,
                 fileUploadResultStore(),
                 paScheduleVersionStore(),
-                false
+                PaBaseProgrammeUpdater.Mode.BOOTSTRAP
         );
     }
 

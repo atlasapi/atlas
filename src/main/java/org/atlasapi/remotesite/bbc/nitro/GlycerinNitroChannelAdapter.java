@@ -198,11 +198,13 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         // of the code will NPE
         builder.withKey(uri);
 
-        String name = result.getName();
-        if (name != null) {
-            builder.withTitle(name);
+        String title = result.getTitle();
+        builder.withTitle(title);
+
+        if (title.toLowerCase().contains("radio")) {
+            builder.withMediaType(MediaType.AUDIO);
         } else {
-            builder.withTitle(result.getTitle());
+            builder.withMediaType(MediaType.VIDEO);
         }
 
         if (result.getSynopses() != null) {

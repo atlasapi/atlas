@@ -37,26 +37,14 @@ public class RteParserTest {
     }
 
     @Test
-    public void titleParsingWatchOnlineStrippingTest() {
+    public void titleParsingRemovesWatchPrefixAndOnlinePostfix() {
         Assert.assertEquals("Fair City Extras: Carol and Robbie",
                 RteParser.titleParser("Watch Fair City Extras: Carol and Robbie online"));
     }
 
     @Test
-    public void titleParsingWatchOnlineStrippingTest2() {
+    public void titleParsingRemovesSeasonAndEpisode() {
         Assert.assertEquals("iWitness",
-                RteParser.titleParser("Watch iWitness online"));
-    }
-
-    @Test
-    public void titleParsingSeasonAndEpisodeStrippingTest() {
-        Assert.assertEquals("iWitness ",
                 RteParser.titleParser("Watch iWitness Season 1, Episode 89 online"));
-    }
-
-    @Test
-    public void titleParsingSeasonAndEpisodeStrippingTest2() {
-        Assert.assertEquals("1916 Kidspeak ",
-                RteParser.titleParser("Watch 1916 Kidspeak Season 1, Episode 2 online"));
     }
 }

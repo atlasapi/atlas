@@ -22,7 +22,14 @@ public class PaSingleDateUpdater extends PaBaseProgrammeUpdater {
     private final PaProgrammeDataStore fileManager;
 
     public PaSingleDateUpdater(ExecutorService executor, PaChannelProcessor channelProcessor, PaProgrammeDataStore fileManager, ChannelResolver channelResolver, String dateString) {
-        super(executor, channelProcessor, fileManager, channelResolver, Optional.<PaScheduleVersionStore>absent());
+        super(
+                executor,
+                channelProcessor,
+                fileManager,
+                channelResolver,
+                Optional.absent(),
+                Mode.BOOTSTRAP
+        );
         this.fileManager = fileManager;
         this.dateString = dateString;
     }
@@ -33,13 +40,7 @@ public class PaSingleDateUpdater extends PaBaseProgrammeUpdater {
 
     	final String filenameContains = dateString + "_tvdata";
         processFiles(
-                fileManager.localTvDataFiles(new Predicate<File>() {
-                    @Override
-                    public boolean apply(File input) {
-                        return input.getName().contains(filenameContains);
-                    }
-                }),
-                true
+                fileManager.localTvDataFiles(input -> input.getName().contains(filenameContains))
         );
 
         LOG.info("Finished ingest of PA files for {}", dateString);

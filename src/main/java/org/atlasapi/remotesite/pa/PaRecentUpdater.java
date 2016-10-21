@@ -15,26 +15,33 @@ import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import org.joda.time.DateTime;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class PaRecentUpdater extends PaBaseProgrammeUpdater implements Runnable {
-       
+
     private final PaProgrammeDataStore fileManager;
     private final FileUploadResultStore fileUploadResultStore;
-    private final boolean ignoreProcessedFiles;
     
     public PaRecentUpdater(ExecutorService executor, PaChannelProcessor channelProcessor,
             PaProgrammeDataStore fileManager, ChannelResolver channelResolver,
             FileUploadResultStore fileUploadResultStore,
-            PaScheduleVersionStore paScheduleVersionStore, boolean ignoreProcessedFiles) {
-        super(executor, channelProcessor, fileManager, channelResolver, Optional.of(paScheduleVersionStore));
+            PaScheduleVersionStore paScheduleVersionStore, Mode mode) {
+        super(
+                executor,
+                channelProcessor,
+                fileManager,
+                channelResolver,
+                Optional.of(paScheduleVersionStore),
+                mode
+        );
         this.fileManager = fileManager;
         this.fileUploadResultStore = fileUploadResultStore;
-        this.ignoreProcessedFiles = ignoreProcessedFiles;
     }
     
     @Override
     public void runTask() {
         Predicate<File> filter = getFileSelectionPredicate();
-        this.processFiles(fileManager.localTvDataFiles(filter), !ignoreProcessedFiles);
+        this.processFiles(fileManager.localTvDataFiles(filter));
     }
 
     @Override
@@ -43,7 +50,7 @@ public class PaRecentUpdater extends PaBaseProgrammeUpdater implements Runnable 
     }
 
     private Predicate<File> getFileSelectionPredicate() {
-        if (ignoreProcessedFiles) {
+        if (mode == Mode.NORMAL) {
             return new UnprocessedFileFilter(
                     fileUploadResultStore,
                     SERVICE,

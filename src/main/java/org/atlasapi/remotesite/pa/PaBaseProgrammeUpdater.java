@@ -56,6 +56,8 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.metabroadcast.common.time.Timestamp;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
 
     private static final Logger log = LoggerFactory.getLogger(PaBaseProgrammeUpdater.class);
@@ -66,6 +68,8 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
     protected static final String SERVICE = "PA";
     
     private static final Pattern FILEDATE = Pattern.compile("^.*(\\d{8})_tvdata.xml$");
+
+    protected final Mode mode;
 
     private final PaChannelMap channelMap;
     private final Set<String> currentlyProcessing = Sets.newHashSet();
@@ -78,13 +82,21 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
     private final PaDeltaFileHelper deltaFileHelper;
     private final Optional<PaScheduleVersionStore> paScheduleVersionStore;
 
-    public PaBaseProgrammeUpdater(ExecutorService executor, PaChannelProcessor processor, PaProgrammeDataStore dataStore, ChannelResolver channelResolver, Optional<PaScheduleVersionStore> paScheduleVersionStore) {
+    protected PaBaseProgrammeUpdater(
+            ExecutorService executor,
+            PaChannelProcessor processor,
+            PaProgrammeDataStore dataStore,
+            ChannelResolver channelResolver,
+            Optional<PaScheduleVersionStore> paScheduleVersionStore,
+            Mode mode
+    ) {
         this.executor = executor;
         this.processor = processor;
         this.dataStore = dataStore;
         this.paScheduleVersionStore = paScheduleVersionStore;
         this.deltaFileHelper = new PaDeltaFileHelper();
         this.channelMap = new PaChannelMap(channelResolver);
+        this.mode = checkNotNull(mode);
     }
 
     public void supportChannels(Iterable<Channel> channels) {
@@ -102,8 +114,8 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
     public void shutdown() {
         executor.shutdown();
     }
-    
-    protected void processFiles(Iterable<File> files, boolean isBootstrap) {
+
+    protected void processFiles(Iterable<File> files) {
     	
         try {       	
         	Set<Queue<File>> groupedFiles = deltaFileHelper.groupAndOrderFilesByDay(files);
@@ -121,7 +133,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         		
         		if(!thisBatch.isEmpty()) {
         			reportStatus(String.format("%s/%s files processed. %s files in current batch", filesProcessed, Iterables.size(files), thisBatch.size()));
-        			processBatch(thisBatch, isBootstrap);
+        			processBatch(thisBatch);
         			filesProcessed += thisBatch.size();
         		}
         		else {
@@ -135,7 +147,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         }
     }
 
-	private void processBatch(Iterable<File> files, boolean isBootstrap) throws JAXBException,
+	private void processBatch(Iterable<File> files) throws JAXBException,
 			SAXException, ParserConfigurationException, InterruptedException {
 		final CompletionService<Integer> completion = new ExecutorCompletionService<Integer>(executor);
 		
@@ -171,9 +183,9 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
                             completion,
                             submitted,
                             fileToProcess,
-                            scheduleDay,
-                            isBootstrap
+                            scheduleDay
                     ));
+
 		            reader.parse(fileToProcess.toURI().toString());
                     jobsRemainingPerFile.put(file.getName(), jobsRemaining);
 		        }
@@ -236,7 +248,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
 
     private Listener channelDataProcessingListener(final AtomicInteger jobsCounter, 
             final CompletionService<Integer> completion, final List<Future<Integer>> submitted, 
-            final File fileToProcess, final String fileDate, boolean isBootstrap) {
+            final File fileToProcess, final String fileDate) {
         
         return new Unmarshaller.Listener() {
             public void beforeUnmarshal(Object target, Object parent) {
@@ -265,8 +277,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
                     if (channel.hasValue() 
                             && isSupported(channel.requireValue()) 
                             && shouldContinue()
-                            && shouldUpdateVersion(
-                                    channel.requireValue(), version, scheduleDay, isBootstrap)) {
+                            && shouldUpdateVersion(channel.requireValue(), version, scheduleDay)) {
                         
                         try {
                             
@@ -302,7 +313,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
     }
 
     private boolean shouldUpdateVersion(Channel channel,
-            long fileVersionNumber, LocalDate scheduleDay, boolean isBootstrap) {
+            long fileVersionNumber, LocalDate scheduleDay) {
         
         if(!paScheduleVersionStore.isPresent()) {
             return true;
@@ -314,7 +325,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
             return true;
         }
 
-        if (isBootstrap) {
+        if (mode == Mode.BOOTSTRAP) {
             return currentVersion.get() <= fileVersionNumber;
         }
 
@@ -389,5 +400,9 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         DateTime timezoneDateTime = FILEDATETIME_FORMAT.parseDateTime(timezoneDateString);
         DateTimeZone zone = timezoneDateTime.getZone();
         return DateTimeZone.forOffsetMillis(zone.getOffset(timezoneDateTime));
+    }
+
+    protected enum Mode {
+        BOOTSTRAP, NORMAL
     }
 }

@@ -10,6 +10,7 @@ import org.junit.Test;
 import org.junit.rules.ExpectedException;
 
 import static org.hamcrest.core.Is.is;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
 public class BroadcastMergerTest {
@@ -483,5 +484,35 @@ public class BroadcastMergerTest {
 
         assertThat(merge.contains(updateBroadcast), is(true));
         assertThat(merge.contains(existingBroadcast), is(false));
+    }
+
+    @Test
+    public void ifBroadcastsAreIdenticalButWithDifferentBroadcastOnShouldReplace() {
+        BroadcastMerger merger = BroadcastMerger.parse(
+                "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
+        );
+
+        Broadcast existingBroadcast = new Broadcast(
+                "differentChannelUri",
+                new DateTime(2016, 1, 5, 14, 0, 0, DateTimeZone.UTC),
+                new DateTime(2016, 1, 5, 15, 0, 0, DateTimeZone.UTC)
+        );
+        Broadcast updateBroadcast = new Broadcast(
+                "channelUri",
+                new DateTime(2016, 1, 5, 14, 0, 0, DateTimeZone.UTC),
+                new DateTime(2016, 1, 5, 15, 0, 0, DateTimeZone.UTC)
+        );
+
+        existingBroadcast.withId("id");
+        updateBroadcast.withId("id");
+
+        ImmutableSet<Broadcast> merge = merger.merge(
+                ImmutableSet.of(updateBroadcast),
+                ImmutableSet.of(existingBroadcast),
+                true
+        );
+
+        assertThat(merge.size(), is(1));
+        assertEquals("channelUri", merge.iterator().next().getBroadcastOn());
     }
 }

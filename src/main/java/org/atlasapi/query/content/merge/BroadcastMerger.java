@@ -106,8 +106,8 @@ public class BroadcastMerger {
                 .collect(MoreCollectors.toImmutableSet());
 
         return ImmutableSet.<Broadcast>builder()
-                .addAll(broadcastsToPreserve)
                 .addAll(update)
+                .addAll(broadcastsToPreserve)
                 .build();
     }
 

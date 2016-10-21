@@ -26,5 +26,24 @@ public class RteParser {
         }
         return CANONICAL_URI_PREFIX + matcher.group(1);
     }
+
+    public static String titleParser(String originalTitle) {
+        String title = originalTitle.substring(6, (originalTitle.length() - 7));
+        if (!title.contains("Season")) {
+            return title;
+        }
+
+        String[] titleArray = title.split(" ");
+        String newTitle = "";
+
+        for (int i = 0; i < titleArray.length; i++) {
+            if (titleArray[i].equals("Season")) {
+                return newTitle;
+            }
+            newTitle += titleArray[i] + " ";
+        }
+
+        return title;
+    }
     
 }

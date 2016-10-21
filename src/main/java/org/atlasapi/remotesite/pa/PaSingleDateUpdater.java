@@ -32,12 +32,15 @@ public class PaSingleDateUpdater extends PaBaseProgrammeUpdater {
         LOG.info("Beginning ingest of PA files for {}", dateString);
 
     	final String filenameContains = dateString + "_tvdata";
-        processFiles(fileManager.localTvDataFiles(new Predicate<File>() {
-            @Override
-            public boolean apply(File input) {
-                return input.getName().contains(filenameContains);
-            }
-        }));
+        processFiles(
+                fileManager.localTvDataFiles(new Predicate<File>() {
+                    @Override
+                    public boolean apply(File input) {
+                        return input.getName().contains(filenameContains);
+                    }
+                }),
+                true
+        );
 
         LOG.info("Finished ingest of PA files for {}", dateString);
     }

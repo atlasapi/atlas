@@ -273,7 +273,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
         @Override
         public void runTask() {
-            this.processFiles(files);
+            this.processFiles(files, false);
         }
     }
 

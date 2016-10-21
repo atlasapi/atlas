@@ -56,6 +56,8 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.metabroadcast.common.time.Timestamp;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
 
     private static final Logger log = LoggerFactory.getLogger(PaBaseProgrammeUpdater.class);
@@ -66,6 +68,8 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
     protected static final String SERVICE = "PA";
     
     private static final Pattern FILEDATE = Pattern.compile("^.*(\\d{8})_tvdata.xml$");
+
+    protected final Mode mode;
 
     private final PaChannelMap channelMap;
     private final Set<String> currentlyProcessing = Sets.newHashSet();
@@ -78,13 +82,21 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
     private final PaDeltaFileHelper deltaFileHelper;
     private final Optional<PaScheduleVersionStore> paScheduleVersionStore;
 
-    public PaBaseProgrammeUpdater(ExecutorService executor, PaChannelProcessor processor, PaProgrammeDataStore dataStore, ChannelResolver channelResolver, Optional<PaScheduleVersionStore> paScheduleVersionStore) {
+    protected PaBaseProgrammeUpdater(
+            ExecutorService executor,
+            PaChannelProcessor processor,
+            PaProgrammeDataStore dataStore,
+            ChannelResolver channelResolver,
+            Optional<PaScheduleVersionStore> paScheduleVersionStore,
+            Mode mode
+    ) {
         this.executor = executor;
         this.processor = processor;
         this.dataStore = dataStore;
         this.paScheduleVersionStore = paScheduleVersionStore;
         this.deltaFileHelper = new PaDeltaFileHelper();
         this.channelMap = new PaChannelMap(channelResolver);
+        this.mode = checkNotNull(mode);
     }
 
     public void supportChannels(Iterable<Channel> channels) {
@@ -102,7 +114,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
     public void shutdown() {
         executor.shutdown();
     }
-    
+
     protected void processFiles(Iterable<File> files) {
     	
         try {       	
@@ -166,7 +178,14 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
 
 		            AtomicInteger jobsRemaining = new AtomicInteger();
 
-		            unmarshaller.setListener(channelDataProcessingListener(jobsRemaining, completion, submitted, fileToProcess, scheduleDay));
+		            unmarshaller.setListener(channelDataProcessingListener(
+		                    jobsRemaining,
+                            completion,
+                            submitted,
+                            fileToProcess,
+                            scheduleDay
+                    ));
+
 		            reader.parse(fileToProcess.toURI().toString());
                     jobsRemainingPerFile.put(file.getName(), jobsRemaining);
 		        }
@@ -293,7 +312,7 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         };
     }
 
-    protected boolean shouldUpdateVersion(Channel channel,
+    private boolean shouldUpdateVersion(Channel channel,
             long fileVersionNumber, LocalDate scheduleDay) {
         
         if(!paScheduleVersionStore.isPresent()) {
@@ -301,8 +320,16 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         }
 
         Optional<Long> currentVersion = paScheduleVersionStore.get().get(channel, scheduleDay);
-        
-        return !currentVersion.isPresent() || currentVersion.get() < fileVersionNumber;
+
+        if (!currentVersion.isPresent()) {
+            return true;
+        }
+
+        if (mode == Mode.BOOTSTRAP) {
+            return currentVersion.get() <= fileVersionNumber;
+        }
+
+        return currentVersion.get() < fileVersionNumber;
     }
 
     public static class PaChannelData {
@@ -373,5 +400,9 @@ public abstract class PaBaseProgrammeUpdater extends ScheduledTask {
         DateTime timezoneDateTime = FILEDATETIME_FORMAT.parseDateTime(timezoneDateString);
         DateTimeZone zone = timezoneDateTime.getZone();
         return DateTimeZone.forOffsetMillis(zone.getOffset(timezoneDateTime));
+    }
+
+    protected enum Mode {
+        BOOTSTRAP, NORMAL
     }
 }

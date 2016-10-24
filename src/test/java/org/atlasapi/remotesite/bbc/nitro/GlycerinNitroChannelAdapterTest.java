@@ -199,6 +199,7 @@ public class GlycerinNitroChannelAdapterTest {
         MasterBrand masterBrand = new MasterBrand();
         masterBrand.setMid("bbc_radio_fourlw");
         masterBrand.setName("name");
+        masterBrand.setTitle("name");
         return masterBrand;
     }
 

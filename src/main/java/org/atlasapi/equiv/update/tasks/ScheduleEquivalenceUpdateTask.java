@@ -17,6 +17,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
+import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
@@ -45,10 +46,10 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     private final ContentResolver contentResolver;
     private final int back;
     private final int forward;
-    private final String reportingEnvironment;
+    private final Environment reportingEnvironment;
     private final IngestTelescopeClientImpl telescopeClient;
 
-    private final Logger log = LoggerFactory.getLogger(ScheduleEquivalenceUpdateTask.class);
+    private static final Logger log = LoggerFactory.getLogger(ScheduleEquivalenceUpdateTask.class);
 
     public static Builder builder() {
         return new Builder();
@@ -62,7 +63,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
             Supplier<Iterable<Channel>> channelsSupplier,
             int back,
             int forward,
-            String reportingEnvironment,
+            Environment reportingEnvironment,
             IngestTelescopeClientImpl telescopeClient
     ) {
         this.contentResolver = contentResolver;
@@ -204,7 +205,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         private Supplier<Iterable<Channel>> channelsSupplier;
         private int back;
         private int forward;
-        private String reportingEnvironment;
+        private Environment reportingEnvironment;
         private IngestTelescopeClientImpl telescopeClient;
 
         public ScheduleEquivalenceUpdateTask build() {
@@ -263,7 +264,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
             return this;
         }
 
-        public Builder withReportingEnvironment(String reportingEnvironment) {
+        public Builder withReportingEnvironment(Environment reportingEnvironment) {
             this.reportingEnvironment = reportingEnvironment;
             return this;
         }

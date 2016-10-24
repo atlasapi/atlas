@@ -199,15 +199,15 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         builder.withKey(uri);
 
         String title = result.getTitle();
-        if (title != null) {
-            builder.withTitle(title);
-        } else {
+        if (title == null) {
             log.warn(
                     "Found masterbrand {} without title, using name. Could contain non-ASCII characters",
                     result.getMid()
             );
-            builder.withTitle(result.getName());
+            title = result.getName();
         }
+
+        builder.withTitle(title);
 
         if (title.toLowerCase().contains("radio")) {
             builder.withMediaType(MediaType.AUDIO);

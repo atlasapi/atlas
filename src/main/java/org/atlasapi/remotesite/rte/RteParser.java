@@ -13,8 +13,6 @@ public class RteParser {
     private final static Pattern ID_PATTERN = Pattern.compile(".*:(\\d+)$");
     private static final String TITLE_PREFIX = "Watch ";
     private static final String TITLE_POSTFIX = " online";
-    private static final String TITLE_SEASON = " Season";
-    private static final String EPISODE = "Episode";
     public static final String REGEX = "\\s+Season\\s+\\d+\\s*,\\s*Episode\\s+\\d+\\s*";
 
     public static String canonicalUriFrom(String id) {

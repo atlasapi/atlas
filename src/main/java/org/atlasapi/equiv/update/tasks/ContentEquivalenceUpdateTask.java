@@ -1,12 +1,5 @@
 package org.atlasapi.equiv.update.tasks;
 
-import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
-import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
-import static org.atlasapi.persistence.content.ContentCategory.CONTAINER;
-import static org.atlasapi.persistence.content.ContentCategory.TOP_LEVEL_ITEM;
-import static org.atlasapi.persistence.content.listing.ContentListingCriteria.defaultCriteria;
-import static org.atlasapi.persistence.content.listing.ContentListingProgress.progressFrom;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
@@ -24,12 +17,20 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
+import com.metabroadcast.columbus.telescope.api.Environment;
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+import com.metabroadcast.common.scheduling.UpdateProgress;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
+import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
+import static org.atlasapi.persistence.content.ContentCategory.CONTAINER;
+import static org.atlasapi.persistence.content.ContentCategory.TOP_LEVEL_ITEM;
+import static org.atlasapi.persistence.content.listing.ContentListingCriteria.defaultCriteria;
+import static org.atlasapi.persistence.content.listing.ContentListingProgress.progressFrom;
 
 public final class ContentEquivalenceUpdateTask extends AbstractContentListingTask<Content> {
 
@@ -42,7 +43,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
     private int processed = 0;
     private UpdateProgress progress = UpdateProgress.START;
 
-    private final String reportingEnvironment;
+    private final Environment reportingEnvironment;
     private final IngestTelescopeClientImpl telescopeClient;
     private final ColumbusTelescopeReporter reporter;
     private Optional<String> taskId;
@@ -53,7 +54,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
             ScheduleTaskProgressStore progressStore,
             EquivalenceUpdater<Content> updater,
             Set<String> ignored,
-            String reportingEnvironment,
+            Environment reportingEnvironment,
             IngestTelescopeClientImpl telescopeClient
     ) {
         super(contentLister);

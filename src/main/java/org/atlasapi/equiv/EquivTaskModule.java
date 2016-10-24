@@ -1,6 +1,5 @@
 package org.atlasapi.equiv;
 
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -41,18 +40,18 @@ import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 
+import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeClient;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.queue.kafka.KafkaConsumer;
 import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.time.DayOfWeek;
 
-import com.google.api.client.util.Lists;
 import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -165,7 +164,6 @@ public class EquivTaskModule {
     private @Value("${equiv.stream-updater.consumers.default}") Integer defaultStreamedEquivUpdateConsumers;
     private @Value("${equiv.stream-updater.consumers.max}") Integer maxStreamedEquivUpdateConsumers;
     private @Value("${messaging.destination.content.changes}") String contentChanges;
-    private @Value("${reporting.columbus-telescope.environment}") String reportingEnvironment;
     private @Value("${reporting.columbus-telescope.host}") String columbusTelescopeHost;
     
     private @Autowired ContentLister contentLister;
@@ -183,7 +181,7 @@ public class EquivTaskModule {
     
     private @Autowired KafkaMessagingModule messaging;
 
-    private final int NUM_OF_THREADS_FOR_STARTUP_JOBS = 3;
+    private static final int NUM_OF_THREADS_FOR_STARTUP_JOBS = 3;
     
     @PostConstruct
     public void scheduleUpdater() {
@@ -368,7 +366,13 @@ public class EquivTaskModule {
                 .withBack(back)
                 .withForward(forward)
                 .withTelescopeClient(getTelescopeClient())
-                .withReportingEnvironment(reportingEnvironment);
+                .withReportingEnvironment(getReportingEnvironment());
+    }
+
+    private static Environment getReportingEnvironment() {
+        return "prod".equals(Configurer.getPlatform())
+                              ? Environment.PRODUCTION
+                              : Environment.STAGE;
     }
 
     public @Bean MongoScheduleTaskProgressStore progressStore() {
@@ -382,7 +386,7 @@ public class EquivTaskModule {
                 progressStore(),
                 equivUpdater,
                 ignored,
-                reportingEnvironment,
+                getReportingEnvironment(),
                 getTelescopeClient()
         ).forPublishers(publishers);
     }

@@ -91,6 +91,7 @@ import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClient;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeClient;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
@@ -160,7 +161,6 @@ public class EquivModule {
 	private @Value("${equiv.results.directory}") String equivResultsDirectory;
 	private @Value("${messaging.destination.equiv.assert}") String equivAssertDest;
 	private @Value("${equiv.excludedUris}") String excludedUris;
-    private @Value("${reporting.columbus-telescope.environment}") String reportingEnvironment;
     private @Value("${reporting.columbus-telescope.host}") String columbusTelescopeHost;
     
     private @Autowired ScheduleResolver scheduleResolver;
@@ -778,7 +778,7 @@ public class EquivModule {
             .build();
     }
 
-    private IngestTelescopeClientImpl getTelescopeClient() {
+    private IngestTelescopeClient getTelescopeClient() {
         TelescopeClient client = TelescopeClientImpl.create(columbusTelescopeHost);
         return IngestTelescopeClientImpl.create(client);
     }

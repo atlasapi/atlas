@@ -6,7 +6,7 @@ import org.atlasapi.equiv.ColumbusTelescopeReporter;
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.media.entity.Content;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClient;
 
 public class ColumbusTelescopeReportHandler<T extends Content>
         implements EquivalenceResultHandler<T> {
@@ -14,7 +14,7 @@ public class ColumbusTelescopeReportHandler<T extends Content>
     private final ColumbusTelescopeReporter columbusTelescopeReporter;
 
     public ColumbusTelescopeReportHandler(
-            IngestTelescopeClientImpl client
+            IngestTelescopeClient client
     ) {
         this.columbusTelescopeReporter = new ColumbusTelescopeReporter(client);
     }

@@ -1,6 +1,5 @@
 package org.atlasapi.equiv.update.tasks;
 
-import java.util.Iterator;
 import java.util.Optional;
 
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -12,14 +11,13 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
-import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
+import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -51,23 +49,15 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     private final IngestTelescopeClientImpl client = mock(IngestTelescopeClientImpl.class);
     private final ContentListingProgress progress = mock(ContentListingProgress.class);
     private final Task task = mock(Task.class);
-    private final String environment = "PRODUCTION";
+    private final Environment environment = Environment.PRODUCTION;
     private final Optional<String> taskId = Optional.of("test");
 
-    private final ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
-        return new ContentLister() {
-            @Override
-            public Iterator<Content> listContent(ContentListingCriteria criteria) {
-                return Iterators.concat(Iterators.transform(criteria.getPublishers().iterator(), 
-                    new Function<Publisher, Iterator<Content>>() {
-                        @Override
-                        public Iterator<Content> apply(Publisher input) {
-                            return contents.get(input).iterator();
-                        }
-                    }
+    private ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
+        return criteria -> Iterators.concat(
+                Iterators.transform(
+                        criteria.getPublishers().iterator(),
+                        input -> contents.get(input).iterator()
                 ));
-            }
-        };
     }
 
     @Test
@@ -102,7 +92,15 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
 
         when(task.getId()).thenReturn(taskId);
 
-        new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore, updater, ImmutableSet.<String>of(), environment, client).forPublishers(PA, BBC, C4).run();
+        new ContentEquivalenceUpdateTask(
+                contentLister,
+                contentResolver,
+                progressStore,
+                updater,
+                ImmutableSet.of(),
+                environment,
+                client
+        ).forPublishers(PA, BBC, C4).run();
 
         verify(updater).updateEquivalences(paItemOne, taskId, client);
         verify(updater, times(2)).updateEquivalences(paBrand, taskId, client);

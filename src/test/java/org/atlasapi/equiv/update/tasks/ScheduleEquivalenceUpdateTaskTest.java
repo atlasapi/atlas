@@ -15,6 +15,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
+import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
@@ -120,12 +121,11 @@ public class ScheduleEquivalenceUpdateTaskTest {
                 .withForward(0)
                 .withContentResolver(contentResolver)
                 .withPublishers(ImmutableList.of(Publisher.YOUVIEW))
-                .withChannelsSupplier(Suppliers.ofInstance((Iterable<Channel>) ImmutableList.of(
-                        bbcOne)))
+                .withChannelsSupplier(Suppliers.ofInstance(ImmutableList.of(bbcOne)))
                 .withScheduleResolver(resolver)
                 .withUpdater(updater)
                 .withTelescopeClient(telescopeClient)
-                .withReportingEnvironment("STAGE")
+                .withReportingEnvironment(Environment.STAGE)
                 .build().run();
 
         verify(updater).updateEquivalences(yvItemOne, taskId, telescopeClient);

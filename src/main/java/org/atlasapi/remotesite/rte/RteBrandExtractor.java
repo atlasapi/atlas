@@ -35,7 +35,7 @@ public class RteBrandExtractor implements ContentExtractor<Element, Brand>{
     private void populateModelFieldFromAttribute(String attrName, String value, Brand brand) {
         switch(attrName) {
         case "title":
-            brand.setTitle(value);
+            brand.setTitle(RteParser.titleParser(value));
             break;
         case "identifier": 
             brand.setCanonicalUri(RteParser.canonicalUriFrom(value));

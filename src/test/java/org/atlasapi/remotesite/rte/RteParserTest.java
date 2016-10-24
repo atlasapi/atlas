@@ -35,5 +35,28 @@ public class RteParserTest {
     public void canonicalUriGenerationShouldFailIfUriHasEmptyIdParam() {
         RteParser.canonicalUriFrom("http://feedurl.com/?id=");
     }
-    
+
+    @Test
+    public void titleParsingRemovesWatchPrefixAndOnlinePostfix() {
+        Assert.assertEquals("Fair City Extras: Carol and Robbie",
+                RteParser.titleParser("Watch Fair City Extras: Carol and Robbie online"));
+    }
+
+    @Test
+    public void titleParsingRemovesSeasonAndEpisode() {
+        Assert.assertEquals("iWitness",
+                RteParser.titleParser("Watch iWitness Season 1, Episode 89 online"));
+    }
+
+    @Test
+    public void checkSeasonInTitleDoesNotFail() {
+        Assert.assertEquals("The Word Season In The Middle Of A Title",
+                RteParser.titleParser("Watch The Word Season In The Middle Of A Title online"));
+    }
+
+    @Test
+    public void checkSeasonInTitleWithEpisodeDoesNotFail() {
+        Assert.assertEquals("The Word Season Season 54 Episode 24",
+                RteParser.titleParser("Watch The Word Season Season 54 Episode 24 online"));
+    }
 }

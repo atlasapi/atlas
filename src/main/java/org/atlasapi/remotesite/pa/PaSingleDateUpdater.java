@@ -1,6 +1,5 @@
 package org.atlasapi.remotesite.pa;
 
-import java.io.File;
 import java.util.concurrent.ExecutorService;
 
 import org.atlasapi.media.channel.ChannelResolver;
@@ -8,7 +7,6 @@ import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -21,13 +19,20 @@ public class PaSingleDateUpdater extends PaBaseProgrammeUpdater {
     private final String dateString;
     private final PaProgrammeDataStore fileManager;
 
-    public PaSingleDateUpdater(ExecutorService executor, PaChannelProcessor channelProcessor, PaProgrammeDataStore fileManager, ChannelResolver channelResolver, String dateString) {
+    public PaSingleDateUpdater(
+            ExecutorService executor,
+            PaChannelProcessor channelProcessor,
+            PaProgrammeDataStore fileManager,
+            ChannelResolver channelResolver,
+            String dateString,
+            Optional<PaScheduleVersionStore> paScheduleVersionStore
+    ) {
         super(
                 executor,
                 channelProcessor,
                 fileManager,
                 channelResolver,
-                Optional.absent(),
+                paScheduleVersionStore,
                 Mode.BOOTSTRAP
         );
         this.fileManager = fileManager;

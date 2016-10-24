@@ -7,9 +7,15 @@ import java.util.concurrent.ThreadFactory;
 import javax.annotation.PreDestroy;
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
+import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 
+import com.metabroadcast.common.base.Maybe;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -24,9 +30,15 @@ public class PaSingleDateUpdatingController {
     private final PaChannelProcessor channelProcessor;
     private final PaProgrammeDataStore fileManager;
 	private final ChannelResolver channelResolver;
+    private final PaScheduleVersionStore scheduleVersionStore;
 
-    public PaSingleDateUpdatingController(PaChannelProcessor channelProcessor,
-            ChannelResolver channelResolver, PaProgrammeDataStore fileManager) {
+
+    public PaSingleDateUpdatingController(
+            PaChannelProcessor channelProcessor,
+            ChannelResolver channelResolver,
+            PaProgrammeDataStore fileManager,
+            PaScheduleVersionStore paScheduleVersionStore
+    ) {
         this.channelProcessor = channelProcessor;
         this.fileManager = fileManager;
         this.channelResolver = channelResolver;
@@ -34,6 +46,7 @@ public class PaSingleDateUpdatingController {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("paSingleDateUpdater").build();
         this.executor = Executors.newSingleThreadExecutor(threadFactory);
+        this.scheduleVersionStore = paScheduleVersionStore;
     }
     
     @PreDestroy
@@ -49,16 +62,16 @@ public class PaSingleDateUpdatingController {
     public void runUpdate(@PathVariable String dateString, HttpServletResponse response) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
-//         TODO The single day updater has data consistency bugs MBST-17181
-//        PaSingleDateUpdater updater = new PaSingleDateUpdater(
-//                Executors.newSingleThreadExecutor(),
-//                channelProcessor,
-//                fileManager,
-//                channelResolver,
-//                dateString
-//        );
-//        executor.execute(updater);
-//        response.setStatus(HttpServletResponse.SC_OK);
+        PaSingleDateUpdater updater = new PaSingleDateUpdater(
+                Executors.newSingleThreadExecutor(),
+                channelProcessor,
+                fileManager,
+                channelResolver,
+                dateString,
+                (Optional<PaScheduleVersionStore>) scheduleVersionStore
+        );
+        executor.execute(updater);
+        response.setStatus(HttpServletResponse.SC_OK);
     }
     
     @RequestMapping(
@@ -70,22 +83,22 @@ public class PaSingleDateUpdatingController {
             @RequestParam("channel") String channelUri, HttpServletResponse response) {
         response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
-//         TODO The single day updater has data consistency bugs MBST-17181
-//        Maybe<Channel> channel = channelResolver.fromUri(channelUri);
-//        if (channel.hasValue()) {
-//            PaSingleDateUpdater updater = new PaSingleDateUpdater(
-//                    Executors.newSingleThreadExecutor(),
-//                    channelProcessor,
-//                    fileManager,
-//                    channelResolver,
-//                    dateString
-//            );
-//            updater.supportChannels(ImmutableList.of(channel.requireValue()));
-//
-//            executor.execute(updater);
-//            response.setStatus(HttpServletResponse.SC_OK);
-//        } else {
-//            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-//        }
+        Maybe<Channel> channel = channelResolver.fromUri(channelUri);
+        if (channel.hasValue()) {
+            PaSingleDateUpdater updater = new PaSingleDateUpdater(
+                    Executors.newSingleThreadExecutor(),
+                    channelProcessor,
+                    fileManager,
+                    channelResolver,
+                    dateString,
+                    (Optional<PaScheduleVersionStore>) scheduleVersionStore
+            );
+            updater.supportChannels(ImmutableList.of(channel.requireValue()));
+
+            executor.execute(updater);
+            response.setStatus(HttpServletResponse.SC_OK);
+        } else {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+        }
     }
 }

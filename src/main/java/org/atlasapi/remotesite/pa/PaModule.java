@@ -306,7 +306,10 @@ public class PaModule {
                 contentWriter
         );
         return new PaSingleDateUpdatingController(
-                channelProcessor, channelResolver, paProgrammeDataStore()
+                channelProcessor,
+                channelResolver,
+                paProgrammeDataStore(),
+                paScheduleVersionStore()
         );
     }
 

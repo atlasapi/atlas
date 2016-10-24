@@ -59,9 +59,10 @@ public class PaSingleDateUpdatingController {
             method = RequestMethod.POST,
             params = {}
     )
-    public void runUpdate(@PathVariable String dateString, HttpServletResponse response) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-
+    public void runUpdate(
+            @PathVariable String dateString,
+            HttpServletResponse response
+    ) {
         PaSingleDateUpdater updater = new PaSingleDateUpdater(
                 Executors.newSingleThreadExecutor(),
                 channelProcessor,
@@ -79,10 +80,11 @@ public class PaSingleDateUpdatingController {
             method = RequestMethod.POST,
             params = { "channel" }
     )
-    public void runUpdate(@PathVariable String dateString,
-            @RequestParam("channel") String channelUri, HttpServletResponse response) {
-        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-
+    public void runUpdate(
+            @PathVariable String dateString,
+            @RequestParam("channel") String channelUri,
+            HttpServletResponse response
+    ) {
         Maybe<Channel> channel = channelResolver.fromUri(channelUri);
         if (channel.hasValue()) {
             PaSingleDateUpdater updater = new PaSingleDateUpdater(

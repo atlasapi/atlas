@@ -71,7 +71,7 @@ public class BbcNitroModule {
     private @Value("${bbc.nitro.threadCount.aroundtoday}") Integer nitroAroundTodayThreadCount;
     private @Value("${bbc.nitro.requestPageSize}") Integer nitroRequestPageSize;
     private @Value("${bbc.nitro.jobFailureThresholdPercent}") Integer jobFailureThresholdPercent;
-    private @Value("${columbus.telescopeHost}") String telescopeHost;
+    private @Value("${reporting.columbus-telescope.host}") String telescopeHost;
     
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;

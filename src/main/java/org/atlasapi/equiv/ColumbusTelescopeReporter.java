@@ -16,7 +16,7 @@ import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.api.Task;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
+import com.metabroadcast.columbus.telescope.client.IngestTelescopeClient;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
 
@@ -29,13 +29,13 @@ import org.slf4j.LoggerFactory;
 
 public class ColumbusTelescopeReporter<T extends Content> {
 
-    private final Logger log = LoggerFactory.getLogger(ColumbusTelescopeReporter.class);
+    private static final Logger log = LoggerFactory.getLogger(ColumbusTelescopeReporter.class);
     private final SubstitutionTableNumberCodec codec;
     private final ObjectMapper mapper;
-    private final IngestTelescopeClientImpl telescopeClient;
+    private final IngestTelescopeClient telescopeClient;
 
     public ColumbusTelescopeReporter(
-            IngestTelescopeClientImpl telescopeClient
+            IngestTelescopeClient telescopeClient
     ) {
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
         this.mapper = new ObjectMapper();
@@ -114,7 +114,7 @@ public class ColumbusTelescopeReporter<T extends Content> {
 
     public Optional<String> startReporting(
             Publisher publisher,
-            String environment
+            Environment environment
     ) {
         String title;
         if (publisher == null) {
@@ -131,13 +131,13 @@ public class ColumbusTelescopeReporter<T extends Content> {
         telescopeClient.endIngest(taskId.get());
     }
 
-    private Process createIngester(String publisher, String environment) {
+    private Process createIngester(String publisher, Environment environment) {
         return Process.create(
                 String.format("atlas-owl-equiv-%s", publisher.toLowerCase()
                         .replace(" ", "-")
                         .replace("\n", "")),
                 String.format("Atlas Owl Equiv %s", publisher),
-                Environment.valueOf(environment)
+                environment
         );
     }
 }

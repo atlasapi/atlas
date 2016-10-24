@@ -14,6 +14,8 @@ public class RteParser {
     private static final String TITLE_PREFIX = "Watch ";
     private static final String TITLE_POSTFIX = " online";
     private static final String TITLE_SEASON = " Season";
+    private static final String EPISODE = "Episode";
+    public static final String REGEX = "\\s+Season\\s+\\d+\\s*,\\s*Episode\\s+\\d+\\s*";
 
     public static String canonicalUriFrom(String id) {
         checkArgument(!Strings.isNullOrEmpty(id), "Cannot build canonical uri from empty or null uri");
@@ -29,7 +31,8 @@ public class RteParser {
         return CANONICAL_URI_PREFIX + matcher.group(1);
     }
 
-    public static String titleParser(String title) {
+    public static String titleParser(String input) {
+        String title = input;
         if (title.contains(TITLE_PREFIX)) {
             title = title.substring(
                     TITLE_PREFIX.length(),
@@ -43,11 +46,6 @@ public class RteParser {
             );
         }
 
-        if (!title.contains(TITLE_SEASON)) {
-            return title;
-        } else {
-            return title.split(TITLE_SEASON)[0];
-        }
+        return title.replaceFirst(REGEX, "");
     }
-    
 }

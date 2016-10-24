@@ -47,4 +47,10 @@ public class RteParserTest {
         Assert.assertEquals("iWitness",
                 RteParser.titleParser("Watch iWitness Season 1, Episode 89 online"));
     }
+
+    @Test
+    public void checkSeasonInTitleDoesNotFail() {
+        Assert.assertEquals("A Season of Unfortunate Events",
+                RteParser.titleParser("Watch A Season of Unfortunate Events online"));
+    }
 }

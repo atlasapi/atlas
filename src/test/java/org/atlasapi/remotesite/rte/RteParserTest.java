@@ -50,7 +50,13 @@ public class RteParserTest {
 
     @Test
     public void checkSeasonInTitleDoesNotFail() {
-        Assert.assertEquals("A Season of Unfortunate Events",
-                RteParser.titleParser("Watch A Season of Unfortunate Events online"));
+        Assert.assertEquals("The Word Season In The Middle Of A Title",
+                RteParser.titleParser("Watch The Word Season In The Middle Of A Title online"));
+    }
+
+    @Test
+    public void checkSeasonInTitleWithEpisodeDoesNotFail() {
+        Assert.assertEquals("The Word Season Season 54 Episode 24",
+                RteParser.titleParser("Watch The Word Season Season 54 Episode 24 online"));
     }
 }

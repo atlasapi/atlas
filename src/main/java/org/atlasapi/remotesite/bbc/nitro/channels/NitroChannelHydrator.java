@@ -209,9 +209,11 @@ public class NitroChannelHydrator {
     }
 
     public Iterable<Channel> hydrateMasterbrands(Iterable<Channel> masterbrands) {
+        ImmutableList.Builder<Channel> result = ImmutableList.builder();
+
         for (Channel channel : masterbrands) {
             try {
-                hydrateMasterbrand(channel);
+                result.add(hydrateMasterbrand(channel));
             } catch (Exception e) {
                 log.error(
                         "Failed to hydrate masterbrand {} - {}",
@@ -220,10 +222,11 @@ public class NitroChannelHydrator {
                 );
             }
         }
-        return masterbrands;
+
+        return result.build();
     }
 
-    private void hydrateMasterbrand(Channel channel) {
+    private Channel hydrateMasterbrand(Channel channel) {
         String name = channel.getTitle();
         if (masterbrandNamesToValues.contains(name, SHORT_NAME)) {
             channel.addAlias(
@@ -233,11 +236,22 @@ public class NitroChannelHydrator {
                     )
             );
         }
-        if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_IDENT))) {
+
+        boolean identIsStock = channel.getImages()
+                .stream()
+                .filter(img -> img.getAliases()
+                        .contains(new Alias(NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS, IDENT))
+                ).findFirst()
+                .map(img -> img.getCanonicalUri().endsWith("p028s846.jpg"))
+                .orElse(false);
+
+        String identOverride = masterbrandNamesToValues.get(name, IMAGE_IDENT);
+        if (identIsStock && !Strings.isNullOrEmpty(identOverride)) {
             overrideIdent(channel, name, masterbrandNamesToValues);
         }
 
-        if (!Strings.isNullOrEmpty(masterbrandNamesToValues.get(name, IMAGE_DOG))) {
+        String dogOverride = masterbrandNamesToValues.get(name, IMAGE_DOG);
+        if (!Strings.isNullOrEmpty(dogOverride)) {
             overrideDog(channel, name, masterbrandNamesToValues);
         } else {
             log.info("Adding iplayer image for {}", channel.getCanonicalUri());
@@ -252,6 +266,8 @@ public class NitroChannelHydrator {
             );
             channel.addImage(iplayerDog);
         }
+
+        return channel;
     }
 
     private void overrideIdent(

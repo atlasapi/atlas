@@ -209,7 +209,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
         builder.withTitle(title);
 
-        if (title.toLowerCase().contains("radio")) {
+        if (title.toLowerCase().contains("radio") || result.getMid().contains("radio")) {
             builder.withMediaType(MediaType.AUDIO);
         } else {
             builder.withMediaType(MediaType.VIDEO);

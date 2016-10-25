@@ -101,7 +101,10 @@ public class GlycerinNitroChannelAdapterTest {
 
     @Test
     public void generatesAtlasModelFromNitroMasterbrands() throws GlycerinException {
-        MasterBrand masterBrand = getBasicMasterbrand();
+        MasterBrand masterBrand = new MasterBrand();
+        masterBrand.setMid("bbc_radio_fourlw");
+        masterBrand.setTitle("name");
+
         when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
         ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
         Channel channel = Iterables.getOnlyElement(services);
@@ -113,8 +116,73 @@ public class GlycerinNitroChannelAdapterTest {
     }
 
     @Test
+    public void prefersTitleOverNameForMasterbrands() throws GlycerinException {
+        MasterBrand masterBrand = new MasterBrand();
+        masterBrand.setMid("bbc_radio_fourlw");
+        masterBrand.setName("name");
+        masterBrand.setTitle("title");
+
+        when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
+        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
+        Channel channel = Iterables.getOnlyElement(services);
+        assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw"));
+        assertThat(channel.getTitle(), is("title"));
+        assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
+        assertThat(channel.getBroadcaster(), is(Publisher.BBC));
+    }
+
+    @Test
+    public void fallsBackToNameIfTitleNotPresentForMasterbrands() throws GlycerinException {
+        MasterBrand masterBrand = new MasterBrand();
+        masterBrand.setMid("bbc_radio_fourlw");
+        masterBrand.setName("name");
+
+        when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
+        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
+        Channel channel = Iterables.getOnlyElement(services);
+        assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
+        assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw"));
+        assertThat(channel.getTitle(), is("name"));
+        assertThat(channel.getSource(), is(Publisher.BBC_NITRO));
+        assertThat(channel.getBroadcaster(), is(Publisher.BBC));
+    }
+
+    @Test
+    public void masterbrandsWithRadioInTitle() throws GlycerinException {
+        MasterBrand masterBrand = new MasterBrand();
+        masterBrand.setMid("bbc_derp");
+        masterBrand.setTitle("BBC Radio Four");
+
+        when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
+        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
+        Channel channel = Iterables.getOnlyElement(services);
+
+        assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
+        assertThat(channel.getMediaType(), is(MediaType.AUDIO));
+    }
+
+    @Test
+    public void masterbrandsWithRadioInMid() throws GlycerinException {
+        MasterBrand masterBrand = new MasterBrand();
+        masterBrand.setMid("bbc_radio_fourlw");
+        masterBrand.setTitle("BBC Non Latin Name");
+
+        when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
+        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
+        Channel channel = Iterables.getOnlyElement(services);
+
+        assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
+        assertThat(channel.getMediaType(), is(MediaType.AUDIO));
+    }
+
+    @Test
     public void generatesAtlasModelFromAdditionalMasterbrandsFields() throws GlycerinException {
-        MasterBrand masterBrand = getBasicMasterbrand();
+        MasterBrand masterBrand = new MasterBrand();
+        masterBrand.setMid("bbc_radio_fourlw");
+        masterBrand.setName("name");
+        masterBrand.setTitle("name");
+
         setImages(masterBrand);
         setSynopses(masterBrand);
         when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
@@ -191,14 +259,6 @@ public class GlycerinNitroChannelAdapterTest {
         masterBrand.setMid("bbc_radio_fourlw");
         service.setMasterBrand(masterBrand);
         return service;
-    }
-
-    private MasterBrand getBasicMasterbrand() {
-        MasterBrand masterBrand = new MasterBrand();
-        masterBrand.setMid("bbc_radio_fourlw");
-        masterBrand.setName("name");
-        masterBrand.setTitle("name");
-        return masterBrand;
     }
 
     private MasterBrand setImages(MasterBrand masterBrand) {

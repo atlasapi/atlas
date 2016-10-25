@@ -51,7 +51,7 @@ public class NitroChannelHydrator {
     private static final String INTERACTIVE = "interactive";
     private static final String DOG = "dog";
     private static final String IDENT = "ident";
-    private static final String BBC_BLOCKS_IDENT = "https://s3-eu-west-1.amazonaws.com/images.atlas.metabroadcast.com/youview.com/201608121530_bbc_block_mono_cropped.png";
+    private static final String BBC_BLOCKS_IDENT = "http://images.atlas.metabroadcast.com/youview.com/201608121530_bbc_block_mono_cropped.png";
     private static final int BBC_BLOCKS_IDENT_WIDTH = 1024;
     private static final int BBC_BLOCKS_IDENT_HEIGHT = 321;
     private static final String IPLAYER_LOGO = "http://images.atlas.metabroadcast.com/youview.com/201606131640_bbc_iplayer_mono.png";

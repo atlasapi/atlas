@@ -51,6 +51,9 @@ public class NitroChannelHydrator {
     private static final String INTERACTIVE = "interactive";
     private static final String DOG = "dog";
     private static final String IDENT = "ident";
+    private static final String BBC_BLOCKS_IDENT = "https://s3-eu-west-1.amazonaws.com/images.atlas.metabroadcast.com/youview.com/201608121530_bbc_block_mono_cropped.png";
+    private static final int BBC_BLOCKS_IDENT_WIDTH = 1024;
+    private static final int BBC_BLOCKS_IDENT_HEIGHT = 321;
     private static final String IPLAYER_LOGO = "http://images.atlas.metabroadcast.com/youview.com/201606131640_bbc_iplayer_mono.png";
     private static final String OVERRIDE = "override";
     private static final String DVB_LOCATOR = "locator";
@@ -104,7 +107,12 @@ public class NitroChannelHydrator {
         if (!Strings.isNullOrEmpty(imageIdent)) {
             log.debug("Overriding images for {} to {}", sid, imageIdent);
 
-            overrideIdent(channel, sid, sidsToValues);
+            overrideIdent(
+                    channel,
+                    sidsToValues.get(sid, IMAGE_IDENT),
+                    Integer.parseInt(sidsToValues.get(sid, WIDTH_IDENT)),
+                    Integer.parseInt(sidsToValues.get(sid, HEIGHT_IDENT))
+            );
         }
 
         if (sidsToTargetRegionInfo.containsKey(sid)) {
@@ -246,8 +254,22 @@ public class NitroChannelHydrator {
                 .orElse(false);
 
         String identOverride = masterbrandNamesToValues.get(name, IMAGE_IDENT);
-        if (identIsStock && !Strings.isNullOrEmpty(identOverride)) {
-            overrideIdent(channel, name, masterbrandNamesToValues);
+        if (identIsStock || channel.getImages().isEmpty()) {
+            if (!Strings.isNullOrEmpty(identOverride)) {
+                overrideIdent(
+                        channel,
+                        masterbrandNamesToValues.get(name, IMAGE_IDENT),
+                        Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)),
+                        Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT))
+                );
+            } else {
+                overrideIdent(
+                        channel,
+                        BBC_BLOCKS_IDENT,
+                        BBC_BLOCKS_IDENT_WIDTH,
+                        BBC_BLOCKS_IDENT_HEIGHT
+                );
+            }
         }
 
         String dogOverride = masterbrandNamesToValues.get(name, IMAGE_DOG);
@@ -270,17 +292,11 @@ public class NitroChannelHydrator {
         return channel;
     }
 
-    private void overrideIdent(
-            Channel channel,
-            String fieldsKey,
-            Table<String, String, String> fields
-    ) {
-        String imageIdent = fields.get(fieldsKey, IMAGE_IDENT);
-
+    private void overrideIdent(Channel channel, String imageIdent, int width, int height) {
         Image overrideImage = new Image(imageIdent);
 
-        overrideImage.setWidth(Integer.parseInt(fields.get(fieldsKey, WIDTH_IDENT)));
-        overrideImage.setHeight(Integer.parseInt(fields.get(fieldsKey, HEIGHT_IDENT)));
+        overrideImage.setWidth(width);
+        overrideImage.setHeight(height);
         overrideImage.setTheme(ImageTheme.LIGHT_OPAQUE);
         overrideImage.setAliases(
                 ImmutableSet.of(

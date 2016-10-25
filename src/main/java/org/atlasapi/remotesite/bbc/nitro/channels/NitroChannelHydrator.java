@@ -250,7 +250,8 @@ public class NitroChannelHydrator {
                 .filter(img -> img.getAliases()
                         .contains(new Alias(NitroImageExtractor.BBC_NITRO_IMAGE_TYPE_NS, IDENT))
                 ).findFirst()
-                .map(img -> img.getCanonicalUri().endsWith("p028s846.jpg"))
+                .map(img -> img.getCanonicalUri().endsWith("p028s846.jpg")
+                        || img.getCanonicalUri().endsWith("p028s846.png"))
                 .orElse(false);
 
         String identOverride = masterbrandNamesToValues.get(name, IMAGE_IDENT);

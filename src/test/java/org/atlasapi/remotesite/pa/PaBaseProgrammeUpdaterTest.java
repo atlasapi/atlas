@@ -309,7 +309,10 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         
 		@Override
 		public Maybe<Channel> fromKey(String key) {
-			throw new UnsupportedOperationException();
+            if("bbcone".equals(key)) {
+                return Maybe.just(channel);
+            }
+            return Maybe.just(Channel.builder().build());
 		}
 
 		@Override

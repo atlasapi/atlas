@@ -220,6 +220,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     contentWriter.createOrUpdate(sery);
                 }
 
+                contentWriter.createOrUpdate(item);
                 telescopeClient.createEvents(ImmutableList.of(
                         Event.builder()
                                 .withType(Event.Type.INGEST)
@@ -236,7 +237,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                         .withRaw(payloads.get(canonicalUri))
                                         .build())
                                 .build()));
-                contentWriter.createOrUpdate(item);
                 written++;
             } catch (Exception e) {
                 log.error(canonicalUri, e);

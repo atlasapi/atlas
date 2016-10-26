@@ -83,15 +83,15 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
     private AdapterLog log = new SystemOutAdapterLog();
     private ContentResolver resolver;
     private ContentWriter contentWriter;
-	private MongoScheduleStore scheduleWriter;
-	
-	private final ServiceResolver serviceResolver = mock(ServiceResolver.class);
+    private MongoScheduleStore scheduleWriter;
+
+    private final ServiceResolver serviceResolver = mock(ServiceResolver.class);
     private final PlayerResolver playerResolver = mock(PlayerResolver.class);
     private final PersistenceAuditLog persistenceAuditLog = new NoLoggingPersistenceAuditLog();
-    
-	private ChannelResolver channelResolver;
-	private ContentBuffer contentBuffer;
-	private MessageSender<ScheduleUpdateMessage> ms = new MessageSender<ScheduleUpdateMessage>(){
+
+    private ChannelResolver channelResolver;
+    private ContentBuffer contentBuffer;
+    private MessageSender<ScheduleUpdateMessage> ms = new MessageSender<ScheduleUpdateMessage>(){
 
         @Override
         public void close() throws Exception { }
@@ -136,15 +136,15 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         final LocalDate scheduleDay = new LocalDate(2011, DateTimeConstants.JANUARY, 15);
         context.checking(new Expectations() {{
             oneOf(scheduleVersionStore).get(channel, scheduleDay);
-                will(returnValue(Optional.<Long>absent()));
+            will(returnValue(Optional.<Long>absent()));
             oneOf(scheduleVersionStore).store(channel, scheduleDay, 1);
             oneOf(scheduleVersionStore).get(channel, scheduleDay);
-                will(returnValue(Optional.of(1L)));
+            will(returnValue(Optional.of(1L)));
             oneOf(scheduleVersionStore).store(channel, scheduleDay, 201202251115L);
             oneOf(scheduleVersionStore).get(channel, scheduleDay);
-                will(returnValue(Optional.of(201202251115L)));
+            will(returnValue(Optional.of(201202251115L)));
             oneOf(scheduleVersionStore).get(channel, scheduleDay);
-                will(returnValue(Optional.of(201202251115L)));
+            will(returnValue(Optional.of(201202251115L)));
         }});
 
         TestPaProgrammeUpdater updater = new TestPaProgrammeUpdater(programmeProcessor, channelResolver, log, scheduleWriter, ImmutableList.of(
@@ -295,49 +295,49 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
     static class DummyChannelResolver implements ChannelResolver {
 
         private final Channel channel = Channel.builder()
-                        .withSource(Publisher.METABROADCAST)
-                        .withTitle("BBC One")
-                        .withKey("bbcone")
-                        .withHighDefinition(false)
-                        .withMediaType(MediaType.VIDEO)
-                        .withUri("http://www.bbc.co.uk/bbcone")
-                        .build();
+                .withSource(Publisher.METABROADCAST)
+                .withTitle("BBC One")
+                .withKey("bbcone")
+                .withHighDefinition(false)
+                .withMediaType(MediaType.VIDEO)
+                .withUri("http://www.bbc.co.uk/bbcone")
+                .build();
 
         public DummyChannelResolver() {
             channel.setId(1L);
         }
-        
-		@Override
-		public Maybe<Channel> fromKey(String key) {
+
+        @Override
+        public Maybe<Channel> fromKey(String key) {
             if("bbcone".equals(key)) {
                 return Maybe.just(channel);
             }
             return Maybe.just(Channel.builder().build());
-		}
+        }
 
-		@Override
-		public Maybe<Channel> fromId(long id) {
-			throw new UnsupportedOperationException();
-		}
+        @Override
+        public Maybe<Channel> fromId(long id) {
+            throw new UnsupportedOperationException();
+        }
 
-		@Override
-		public Maybe<Channel> fromUri(String uri) {
-			if("http://www.bbc.co.uk/bbcone".equals(uri)) {
-				return Maybe.just(channel);
-			}
-			return Maybe.just(Channel.builder().build());
-		}
+        @Override
+        public Maybe<Channel> fromUri(String uri) {
+            if("http://www.bbc.co.uk/bbcone".equals(uri)) {
+                return Maybe.just(channel);
+            }
+            return Maybe.just(Channel.builder().build());
+        }
 
-		@Override
-		public Iterable<Channel> all() {
-			throw new UnsupportedOperationException();
-		}
+        @Override
+        public Iterable<Channel> all() {
+            throw new UnsupportedOperationException();
+        }
 
-		@Override
-		public Map<String, Channel> forAliases(String aliasPrefix) {
-			return ImmutableMap.of(
-					"http://pressassociation.com/channels/4", channel);
-		}
+        @Override
+        public Map<String, Channel> forAliases(String aliasPrefix) {
+            return ImmutableMap.of(
+                    "http://pressassociation.com/channels/4", channel);
+        }
 
         @Override
         public Iterable<Channel> forIds(Iterable<Long> ids) {

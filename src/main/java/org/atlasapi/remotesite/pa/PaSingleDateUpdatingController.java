@@ -23,6 +23,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @Controller
 public class PaSingleDateUpdatingController {
     
@@ -46,7 +48,7 @@ public class PaSingleDateUpdatingController {
         ThreadFactory threadFactory = new ThreadFactoryBuilder()
                 .setNameFormat("paSingleDateUpdater").build();
         this.executor = Executors.newSingleThreadExecutor(threadFactory);
-        this.scheduleVersionStore = paScheduleVersionStore;
+        this.scheduleVersionStore = checkNotNull(paScheduleVersionStore);
     }
     
     @PreDestroy
@@ -69,7 +71,7 @@ public class PaSingleDateUpdatingController {
                 fileManager,
                 channelResolver,
                 dateString,
-                (Optional<PaScheduleVersionStore>) scheduleVersionStore
+                Optional.of(scheduleVersionStore)
         );
         executor.execute(updater);
         response.setStatus(HttpServletResponse.SC_OK);
@@ -93,7 +95,7 @@ public class PaSingleDateUpdatingController {
                     fileManager,
                     channelResolver,
                     dateString,
-                    (Optional<PaScheduleVersionStore>) scheduleVersionStore
+                    Optional.of(scheduleVersionStore)
             );
             updater.supportChannels(ImmutableList.of(channel.requireValue()));
 

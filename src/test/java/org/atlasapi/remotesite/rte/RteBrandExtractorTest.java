@@ -1,17 +1,18 @@
 package org.atlasapi.remotesite.rte;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.equalTo;
-import static org.hamcrest.Matchers.hasItem;
-import nu.xom.Attribute;
-import nu.xom.Element;
-
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.RelatedLink.LinkType;
+
+import nu.xom.Attribute;
+import nu.xom.Element;
 import org.junit.Test;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.hasItem;
 
 
 public class RteBrandExtractorTest {
@@ -20,7 +21,7 @@ public class RteBrandExtractorTest {
 
     private static final String PLAYER_URI = "http://www.rte.ie/player/ie/show/10417462/";
     
-    private final RteBrandExtractor extractor = new RteBrandExtractor();
+    private final RteBrandExtractor extractor = RteBrandExtractor.create();
     
     @Test
     public void testBrandExtraction() {

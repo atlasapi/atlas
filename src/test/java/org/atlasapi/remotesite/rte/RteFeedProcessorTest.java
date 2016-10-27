@@ -1,27 +1,11 @@
 package org.atlasapi.remotesite.rte;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertTrue;
-import static org.mockito.Matchers.anyString;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.List;
 
-import nu.xom.Builder;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.Elements;
-import nu.xom.ParsingException;
-
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.RelatedLink.LinkType;
@@ -32,6 +16,18 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
+
+import com.metabroadcast.common.scheduling.StatusReporter;
+
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.io.Resources;
+import nu.xom.Builder;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.Elements;
+import nu.xom.ParsingException;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -39,12 +35,13 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.io.Resources;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.scheduling.StatusReporter;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class RteFeedProcessorTest {
@@ -53,24 +50,22 @@ public class RteFeedProcessorTest {
     private final static String FEED_PATH = "org/atlasapi/remotesite/rte/search_feed.xml";
     
     private RteFeedProcessor processor;
+    private RteParser rteParser;
     
-    @Mock
-    private ContentWriter contentWriter;
-    
-    @Mock
-    private StatusReporter statusReporter;
-    
-    @Mock
-    private ContentLister contentLister;
+    @Mock private ContentWriter contentWriter;
+    @Mock private StatusReporter statusReporter;
+    @Mock private ContentLister contentLister;
     
     @Before
     public void setup() {
+        rteParser = RteParser.create();
         processor = new RteFeedProcessor(
                 contentWriter,
                 new DummyContentResolver(),
                 new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.REPLACE),
-                contentLister, 
-                new RteBrandExtractor());
+                contentLister,
+                RteBrandExtractor.create()
+        );
     }
     
     @Test
@@ -110,7 +105,7 @@ public class RteFeedProcessorTest {
         
         for (int i = 0; i < docs.size(); i++) {
             
-            String canonicalUri = RteParser.canonicalUriFrom(identifierElementFrom(docs.get(i)));
+            String canonicalUri = rteParser.canonicalUriFrom(identifierElementFrom(docs.get(i)));
             assertTrue(uriToContentMap.containsKey(canonicalUri));
         }
         
@@ -149,7 +144,7 @@ public class RteFeedProcessorTest {
         
         @Override
         public ResolvedContent findByCanonicalUris(Iterable<String> canonicalUris) {
-            return new ResolvedContent(Maps.<String, Maybe<Identified>>newHashMap());
+            return new ResolvedContent(Maps.newHashMap());
         }
 
         @Override

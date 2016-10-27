@@ -33,10 +33,10 @@ public class RteParser {
 
     public String canonicalUriFrom(String id) {
         checkArgument(!Strings.isNullOrEmpty(id), "Cannot build canonical uri from empty or null uri");
-        
+
         return buildCanonicalUriFromId(id);
     }
-    
+
     private String buildCanonicalUriFromId(String id) {
         Matcher matcher = ID_PATTERN.matcher(id);
         if (!matcher.matches()) {
@@ -53,24 +53,24 @@ public class RteParser {
             return title;
         }
 
-       if (title.endsWith(FILM_TITLE_POSTFIX)) {
-           return parseFilmTitle(title);
-       } else if (title.endsWith(EPISODE_TITLE_POSTFIX)) {
-           return parseEpisodeTitle(title);
-       } else {
-           log.warn("Found title with unknown postfix. Title: {}", title);
-           return title;
-       }
+        title = stripPrefix(title, TITLE_PREFIX);
+
+        if (title.endsWith(FILM_TITLE_POSTFIX)) {
+            return parseFilmTitle(title);
+        } else if (title.endsWith(EPISODE_TITLE_POSTFIX)) {
+            return parseEpisodeTitle(title);
+        } else {
+            log.warn("Found title with unknown postfix. Title: {}", title);
+            return title;
+        }
     }
 
     private String parseFilmTitle(String input) {
-        String title = stripPrefix(input, TITLE_PREFIX);
-        return stripPostfix(title, FILM_TITLE_POSTFIX);
+        return stripPostfix(input, FILM_TITLE_POSTFIX);
     }
 
     private String parseEpisodeTitle(String input) {
-        String title = stripPrefix(input, TITLE_PREFIX);
-        title = stripPostfix(title, EPISODE_TITLE_POSTFIX);
+        String title = stripPostfix(input, EPISODE_TITLE_POSTFIX);
 
         return title.replaceFirst(EPISODE_HIERARCHY_REGEX, "");
     }

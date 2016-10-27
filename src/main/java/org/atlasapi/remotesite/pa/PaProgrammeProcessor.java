@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.pa;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.genres.GenreMap;
@@ -29,6 +30,7 @@ import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.util.ItemAndBroadcast;
 import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
@@ -562,32 +564,56 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private Item getBasicFilmWithoutBroadcast(ProgData progData) {
-        String filmAlias = PaHelper.getAlias(progData.getProgId());
-        String filmUri = PaHelper.getFilmUri(identifierFor(progData));
-        Maybe<Identified> possiblePreviousData = contentResolver.findByUris(ImmutableList.of(
-                filmAlias,
-                filmUri
-        )).getFirstValue();
+        ImmutableList.Builder<String> uris = ImmutableList.builder();
 
-        Film film;
-        if (possiblePreviousData.hasValue()) {
-            Identified previous = possiblePreviousData.requireValue();
-            if (previous instanceof Film) {
-                film = (Film) previous;
-            } else {
-                film = new Film();
-                Content.copyTo((Content) previous, film);
-            }
-        } else {
-            film = getBasicFilm(progData);
-        }
+        Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
+        rtFilmIdentifier.transform(rt -> uris.add(PaHelper.getFilmRtAlias(rt)));
+
+        uris.add(PaHelper.getAlias(progData.getProgId()));
+        uris.add(PaHelper.getFilmUri(identifierFor(progData)));
+        Map<String, Identified> resolvedContent = contentResolver.findByUris(
+                uris.build()
+        ).asResolvedMap();
+
+        Film film = getFilm(progData, rtFilmIdentifier, resolvedContent);
 
         if (progData.getFilmYear() != null && MoreStrings.containsOnlyAsciiDigits(progData.getFilmYear())) {
             film.setYear(Integer.parseInt(progData.getFilmYear()));
         }
         return film;
     }
-    
+
+    private Film getFilm(
+            ProgData progData,
+            Optional<String> rtFilmIdentifier,
+            Map<String, Identified> resolvedContent
+    ) {
+        if (resolvedContent.isEmpty()) {
+            return getBasicFilm(progData);
+        }
+
+        Identified previous;
+        if (rtFilmIdentifier.isPresent()) {
+            String legacyFilmUri = PaHelper.getFilmRtAlias(rtFilmIdentifier.get());
+            if (resolvedContent.containsKey(legacyFilmUri)) {
+                previous = resolvedContent.get(legacyFilmUri);
+            } else {
+                previous = Iterables.getFirst(resolvedContent.values(), null);
+            }
+        } else {
+            previous = Iterables.getFirst(resolvedContent.values(), null);
+        }
+
+        Film film;
+        if (previous instanceof Film) {
+            film = (Film) previous;
+        } else {
+            film = new Film();
+            Content.copyTo((Content) previous, film);
+        }
+        return film;
+    }
+
     private void setCommonDetails(ProgData progData, Item episode, Optional<Channel> channel) {
         // Currently Welsh channels have Welsh titles/descriptions which flip the English ones,
         // resulting in many writes. We'll only take the Welsh title if we don't

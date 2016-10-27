@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.rte;
 
-import nu.xom.Element;
-import nu.xom.Elements;
-
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
@@ -11,10 +8,22 @@ import org.atlasapi.media.entity.RelatedLink.LinkType;
 import org.atlasapi.remotesite.ContentExtractor;
 
 import com.google.common.collect.ImmutableSet;
+import nu.xom.Element;
+import nu.xom.Elements;
 
 
-public class RteBrandExtractor implements ContentExtractor<Element, Brand>{
-    
+public class RteBrandExtractor implements ContentExtractor<Element, Brand> {
+
+    private final RteParser rteParser;
+
+    private RteBrandExtractor() {
+        this.rteParser = RteParser.create();
+    }
+
+    public static RteBrandExtractor create() {
+        return new RteBrandExtractor();
+    }
+
     @Override
     public Brand extract(Element element) {
         Elements childElements = element.getChildElements();
@@ -35,16 +44,16 @@ public class RteBrandExtractor implements ContentExtractor<Element, Brand>{
     private void populateModelFieldFromAttribute(String attrName, String value, Brand brand) {
         switch(attrName) {
         case "title":
-            brand.setTitle(RteParser.titleParser(value));
+            brand.setTitle(rteParser.titleParser(value));
             break;
         case "identifier": 
-            brand.setCanonicalUri(RteParser.canonicalUriFrom(value));
+            brand.setCanonicalUri(rteParser.canonicalUriFrom(value));
             break;
         case "url":
-            brand.setRelatedLinks(ImmutableSet.of(new RelatedLink.Builder(LinkType.VOD, value).build()));
+            brand.setRelatedLinks(ImmutableSet.of(
+                    new RelatedLink.Builder(LinkType.VOD, value).build()
+            ));
             break;
         }
-        
     }
-
 }

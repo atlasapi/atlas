@@ -80,4 +80,10 @@ public class RteParserTest {
         Assert.assertEquals("Something that doesn't match anything",
                 rteParser.titleParser("Something that doesn't match anything"));
     }
+
+    @Test
+    public void checkDoesNotFailIfPostfixMissing() {
+        Assert.assertEquals("something that doesn't have a matching end",
+                rteParser.titleParser("Watch something that doesn't have a matching end"));
+    }
 }

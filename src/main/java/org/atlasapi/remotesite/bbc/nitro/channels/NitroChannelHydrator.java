@@ -255,23 +255,22 @@ public class NitroChannelHydrator {
                 .orElse(false);
 
         String identOverride = masterbrandNamesToValues.get(name, IMAGE_IDENT);
-        if (identIsStock || channel.getImages().isEmpty()) {
-            if (!Strings.isNullOrEmpty(identOverride)) {
-                overrideIdent(
-                        channel,
-                        masterbrandNamesToValues.get(name, IMAGE_IDENT),
-                        Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)),
-                        Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT))
-                );
-            } else {
-                overrideIdent(
-                        channel,
-                        BBC_BLOCKS_IDENT,
-                        BBC_BLOCKS_IDENT_WIDTH,
-                        BBC_BLOCKS_IDENT_HEIGHT
-                );
-            }
+        if (!Strings.isNullOrEmpty(identOverride)) {
+            overrideIdent(
+                    channel,
+                    masterbrandNamesToValues.get(name, IMAGE_IDENT),
+                    Integer.parseInt(masterbrandNamesToValues.get(name, WIDTH_IDENT)),
+                    Integer.parseInt(masterbrandNamesToValues.get(name, HEIGHT_IDENT))
+            );
+        } else if (identIsStock || channel.getImages().isEmpty()) {
+            overrideIdent(
+                    channel,
+                    BBC_BLOCKS_IDENT,
+                    BBC_BLOCKS_IDENT_WIDTH,
+                    BBC_BLOCKS_IDENT_HEIGHT
+            );
         }
+
 
         String dogOverride = masterbrandNamesToValues.get(name, IMAGE_DOG);
         if (!Strings.isNullOrEmpty(dogOverride)) {

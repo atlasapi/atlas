@@ -575,7 +575,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                 uris.build()
         ).asResolvedMap();
 
-        Film film = getFilm(progData, rtFilmIdentifier, resolvedContent);
+        Film film = getFilmFromResolvedContent(progData, rtFilmIdentifier, resolvedContent);
 
         if (progData.getFilmYear() != null && MoreStrings.containsOnlyAsciiDigits(progData.getFilmYear())) {
             film.setYear(Integer.parseInt(progData.getFilmYear()));
@@ -583,7 +583,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         return film;
     }
 
-    private Film getFilm(
+    private Film getFilmFromResolvedContent(
             ProgData progData,
             Optional<String> rtFilmIdentifier,
             Map<String, Identified> resolvedContent

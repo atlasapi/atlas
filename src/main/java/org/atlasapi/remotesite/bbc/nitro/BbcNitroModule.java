@@ -3,7 +3,6 @@ package org.atlasapi.remotesite.bbc.nitro;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
-import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -49,6 +48,8 @@ import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
 import org.joda.time.LocalTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -56,6 +57,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BbcNitroModule {
+
+    private static final Logger log = LoggerFactory.getLogger(BbcNitroModule.class);
 
     private @Value("${updaters.bbcnitro.enabled}") Boolean tasksEnabled;
     private @Value("${updaters.bbcnitro.offschedule.enabled}") Boolean offScheduleIngestEnabled;
@@ -220,10 +223,18 @@ public class BbcNitroModule {
     }
 
     private Supplier<ImmutableSet<Channel>> bbcChannelSupplier() {
-        return () -> ImmutableSet.copyOf(BbcIonServices.services.values()
-                .stream()
-                .map(channelResolver::fromUri)
-                .map(Maybe::requireValue)
-                .collect(Collectors.toList()));
+
+        ImmutableSet.Builder<Channel> resolvedChannelBuilder = ImmutableSet.builder();
+
+        for(String uri : BbcIonServices.services.values()) {
+            Maybe<Channel> channelMaybe = channelResolver.fromUri(uri);
+            if(channelMaybe.hasValue()) {
+                resolvedChannelBuilder.add(channelMaybe.requireValue());
+            } else {
+                log.error("Did not resolve channel for uri: {}", uri);
+            }
+        }
+
+        return () -> ImmutableSet.copyOf(resolvedChannelBuilder.build());
     }
 }

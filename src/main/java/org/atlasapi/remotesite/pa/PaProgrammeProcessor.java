@@ -656,18 +656,13 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         // and only set the film alias when a rt_filmnumber value exists, we make that
         // check here.
 
-        if (!Strings.isNullOrEmpty(progData.getRtFilmnumber())) {
-            episode.addAlias(PaHelper.getFilmAlias(identifierFor(progData)));
-        }
-
-        episode.setAliasUrls(ImmutableSet.of(PaHelper.getAlias(progData.getProgId())));
-
         Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
         if (rtFilmIdentifier.isPresent()) {
-            episode.addAlias(PaHelper.getRtFilmAlias(rtFilmIdentifier.get()));
             episode.addAliasUrl(PaHelper.getFilmRtAlias(rtFilmIdentifier.get()));
+            episode.addAlias(PaHelper.getLegacyFilmAlias(rtFilmIdentifier.get()));
         }
-
+        episode.addAliasUrl(PaHelper.getAlias(progData.getProgId()));
+        episode.addAlias(PaHelper.getNewFilmAlias(identifierFor(progData)));
     }
 
     private Broadcast addBroadcast(ProgData progData, Item item, Channel channel,

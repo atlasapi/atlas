@@ -48,6 +48,8 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -56,6 +58,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BbcNitroModule {
+
+    private static final Logger log = LoggerFactory.getLogger(BbcNitroModule.class);
 
     private @Value("${updaters.bbcnitro.enabled}") Boolean tasksEnabled;
     private @Value("${updaters.bbcnitro.offschedule.enabled}") Boolean offScheduleIngestEnabled;
@@ -222,7 +226,14 @@ public class BbcNitroModule {
     private Supplier<ImmutableSet<Channel>> bbcChannelSupplier() {
         return () -> ImmutableSet.copyOf(BbcIonServices.services.values()
                 .stream()
-                .map(channelResolver::fromUri)
+                .map(uri -> {
+                    Maybe<Channel> channelMaybe = channelResolver.fromUri(uri);
+                    if (!channelMaybe.hasValue()) {
+                        log.error("Did not resolve channel for uri: {}", uri);
+                    }
+                    return channelMaybe;
+                })
+                .filter(Maybe::hasValue)
                 .map(Maybe::requireValue)
                 .collect(Collectors.toList()));
     }

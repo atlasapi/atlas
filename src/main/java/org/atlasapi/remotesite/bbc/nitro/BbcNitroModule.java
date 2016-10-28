@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.bbc.nitro;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ThreadFactory;
+import java.util.stream.Collectors;
 
 import javax.annotation.PostConstruct;
 
@@ -23,24 +24,25 @@ import org.atlasapi.util.GroupLock;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.metabroadcast.common.time.SystemClock;
 
-import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Range;
 import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -48,6 +50,8 @@ import org.springframework.context.annotation.Configuration;
 
 @Configuration
 public class BbcNitroModule {
+
+    private static final Logger log = LoggerFactory.getLogger(BbcNitroModule.class);
 
     private @Value("${updaters.bbcnitro.enabled}") Boolean tasksEnabled;
     private @Value("${updaters.bbcnitro.offschedule.enabled}") Boolean offScheduleIngestEnabled;
@@ -194,20 +198,19 @@ public class BbcNitroModule {
     }
 
     private Supplier<ImmutableSet<Channel>> bbcChannelSupplier() {
-        return new Supplier<ImmutableSet<Channel>>() {
-            //TODO: really need that alias for bbc services...
-            @Override
-            public ImmutableSet<Channel> get() {
-                return ImmutableSet.copyOf(Iterables.transform(BbcIonServices.services.values(),
-                    new Function<String, Channel>() {
-                        @Override
-                        public Channel apply(String input) {
-                            return channelResolver.fromUri(input).requireValue();
-                        }
+
+        return () -> ImmutableSet.copyOf(BbcIonServices.services.values()
+                .stream()
+                .map(uri -> {
+                    Maybe<Channel> channelMaybe = channelResolver.fromUri(uri);
+                    if (!channelMaybe.hasValue()) {
+                        log.error("Did not resolve channel for uri: {}", uri);
                     }
-                ));
-            }
-        };
+                    return channelMaybe;
+                })
+                .filter(Maybe::hasValue)
+                .map(Maybe::requireValue)
+                .collect(Collectors.toList()));
     }
     
     

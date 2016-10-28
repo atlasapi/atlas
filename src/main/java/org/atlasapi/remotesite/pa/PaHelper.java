@@ -3,11 +3,12 @@ package org.atlasapi.remotesite.pa;
 import org.atlasapi.media.entity.Alias;
 
 public class PaHelper {
-    
+
     private static final String PA_BASE_URL = "http://pressassociation.com/";
     private static final String PA_BASE_ALIAS = "pa:";
     private static final String RT_FILM_ALIAS = "rt:filmid";
-    
+    private static final String NEW_PA_BASE_ALIAS = "gb:pa:";
+
     public static String getFilmUri(String id) {
         //previously film ids were generated from rtfilmnumber, now we will be using progId
         //since they have different numberspace, we will save films under /episode/progId
@@ -23,11 +24,7 @@ public class PaHelper {
     public static Alias getFilmAlias(String id) {
         return new Alias(PA_BASE_ALIAS + "film", id);
     }
-    
-    public static Alias getRtFilmAlias(String id) {
-        return new Alias(RT_FILM_ALIAS, id);
-    }
-    
+
     public static String getEpisodeUri(String id) {
         return PA_BASE_URL + "episodes/" + id;
     }
@@ -68,8 +65,14 @@ public class PaHelper {
         return "pa:e-" + id;
     }
 
-    
     public static String getBroadcastId(String slotId) {
         return "pa:" + slotId;
+    }
+
+    public static Alias getLegacyFilmAlias(String id) {
+        return new Alias(NEW_PA_BASE_ALIAS + "rt_filmnumber", id);
+    }
+    public static Alias getNewFilmAlias(String id) {
+        return new Alias(NEW_PA_BASE_ALIAS + "prog_id", id);
     }
 }

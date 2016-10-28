@@ -108,7 +108,7 @@ public class PaArchivesProgExtractorTest {
         assertThat(hierarchy.getBrandSummary(), is(Optional.<Brand>absent()));
         assertThat(hierarchy.getSeriesSummary(), is(Optional.<Series>absent()));
         Item item = hierarchy.getItem();
-        Set<Alias> aliases = ImmutableSet.of(new Alias("pa:film", "263544"), new Alias("rt:filmid", "5217"), new Alias("gb:pressassociation:prod:prog_id", "263544"));
+        Set<Alias> aliases = ImmutableSet.of(new Alias("gb:pa:rt_filmnumber", "5217"), new Alias("gb:pa:prog_id", "263544"), new Alias("gb:pressassociation:prod:prog_id", "263544"));
         assertThat(item.getAliases(), is(aliases));
         Set<String> aliasUrls = ImmutableSet.of("http://pressassociation.com/263544", "http://pressassociation.com/films/5217");
         assertThat(item.getAliasUrls(), is(aliasUrls));

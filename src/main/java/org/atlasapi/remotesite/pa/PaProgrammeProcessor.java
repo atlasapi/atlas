@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.pa;
 
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.genres.GenreMap;
@@ -562,32 +563,58 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private Item getBasicFilmWithoutBroadcast(ProgData progData) {
-        String filmAlias = PaHelper.getAlias(progData.getProgId());
-        String filmUri = PaHelper.getFilmUri(identifierFor(progData));
-        Maybe<Identified> possiblePreviousData = contentResolver.findByUris(ImmutableList.of(
-                filmAlias,
-                filmUri
-        )).getFirstValue();
+        ImmutableList.Builder<String> uris = ImmutableList.builder();
 
-        Film film;
-        if (possiblePreviousData.hasValue()) {
-            Identified previous = possiblePreviousData.requireValue();
-            if (previous instanceof Film) {
-                film = (Film) previous;
-            } else {
-                film = new Film();
-                Content.copyTo((Content) previous, film);
-            }
-        } else {
-            film = getBasicFilm(progData);
-        }
+        Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
+        Optional<String> legacyFilmUri = rtFilmIdentifier.transform(PaHelper::getLegacyFilmUri);
+        legacyFilmUri.transform(uris::add);
+
+        uris.add(PaHelper.getAlias(progData.getProgId()));
+        uris.add(PaHelper.getFilmUri(identifierFor(progData)));
+        Map<String, Identified> resolvedContent = contentResolver.findByUris(
+                uris.build()
+        ).asResolvedMap();
+
+        Film film = getFilmFromResolvedContent(progData, resolvedContent, legacyFilmUri);
 
         if (progData.getFilmYear() != null && MoreStrings.containsOnlyAsciiDigits(progData.getFilmYear())) {
             film.setYear(Integer.parseInt(progData.getFilmYear()));
         }
         return film;
     }
-    
+
+    private Film getFilmFromResolvedContent(
+            ProgData progData,
+            Map<String, Identified> resolvedContent,
+            Optional<String> legacyFilmUri
+    ) {
+        // After updating our version 3 alias URI's we started introducing duplicates
+        // by only resolving and updating content with the new URI's
+        // This method gives precedence to films found with the old version 3 alias URI's
+        // and updates them in the namespace they already exist in
+
+        if (resolvedContent.isEmpty()) {
+            return getBasicFilm(progData);
+        }
+
+        Identified previous;
+        if (legacyFilmUri.isPresent() && resolvedContent.containsKey(legacyFilmUri)) {
+            previous = resolvedContent.get(legacyFilmUri);
+
+        } else {
+            previous = Iterables.getFirst(resolvedContent.values(), null);
+        }
+
+        Film film;
+        if (previous instanceof Film) {
+            film = (Film) previous;
+        } else {
+            film = new Film();
+            Content.copyTo((Content) previous, film);
+        }
+        return film;
+    }
+
     private void setCommonDetails(ProgData progData, Item episode, Optional<Channel> channel) {
         // Currently Welsh channels have Welsh titles/descriptions which flip the English ones,
         // resulting in many writes. We'll only take the Welsh title if we don't
@@ -630,18 +657,13 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         // and only set the film alias when a rt_filmnumber value exists, we make that
         // check here.
 
-        if (!Strings.isNullOrEmpty(progData.getRtFilmnumber())) {
-            episode.addAlias(PaHelper.getFilmAlias(identifierFor(progData)));
-        }
-
-        episode.setAliasUrls(ImmutableSet.of(PaHelper.getAlias(progData.getProgId())));
-
         Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
         if (rtFilmIdentifier.isPresent()) {
-            episode.addAlias(PaHelper.getRtFilmAlias(rtFilmIdentifier.get()));
-            episode.addAliasUrl(PaHelper.getFilmRtAlias(rtFilmIdentifier.get()));
+            episode.addAliasUrl(PaHelper.getLegacyFilmUri(rtFilmIdentifier.get()));
+            episode.addAlias(PaHelper.getLegacyFilmAlias(rtFilmIdentifier.get()));
         }
-
+        episode.addAliasUrl(PaHelper.getAlias(progData.getProgId()));
+        episode.addAlias(PaHelper.getNewFilmAlias(identifierFor(progData)));
     }
 
     private Broadcast addBroadcast(ProgData progData, Item item, Channel channel,

@@ -6,8 +6,7 @@ public class PaHelper {
 
     private static final String PA_BASE_URL = "http://pressassociation.com/";
     private static final String PA_BASE_ALIAS = "pa:";
-    private static final String RT_FILM_ALIAS = "rt:filmid";
-    private static final String NEW_PA_BASE_ALIAS = "gb:pa:";
+    private static final String PA_BASE_ALIAS_V2 = "gb:pa:";
 
     public static String getFilmUri(String id) {
         //previously film ids were generated from rtfilmnumber, now we will be using progId
@@ -70,9 +69,9 @@ public class PaHelper {
     }
 
     public static Alias getLegacyFilmAlias(String id) {
-        return new Alias(NEW_PA_BASE_ALIAS + "rt_filmnumber", id);
+        return new Alias(PA_BASE_ALIAS_V2 + "rt_filmnumber", id);
     }
     public static Alias getNewFilmAlias(String id) {
-        return new Alias(NEW_PA_BASE_ALIAS + "prog_id", id);
+        return new Alias(PA_BASE_ALIAS_V2 + "prog_id", id);
     }
 }

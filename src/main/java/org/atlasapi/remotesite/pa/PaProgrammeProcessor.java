@@ -588,6 +588,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             Optional<String> rtFilmIdentifier,
             Map<String, Identified> resolvedContent
     ) {
+        // This method gives precedence to films found with the old version 3 alias URI's
+        // We were previously creating duplicates by creating content with the new version 3
+        // alias URI without resolving the old URI first.
+
         if (resolvedContent.isEmpty()) {
             return getBasicFilm(progData);
         }

@@ -28,7 +28,7 @@ public class PaHelper {
         return PA_BASE_URL + "episodes/" + id;
     }
 
-    public static String getFilmRtAlias(String rtFilmNumber) {
+    public static String getLegacyFilmUri(String rtFilmNumber) {
         return PA_BASE_URL + "films/" + rtFilmNumber;
     }
 

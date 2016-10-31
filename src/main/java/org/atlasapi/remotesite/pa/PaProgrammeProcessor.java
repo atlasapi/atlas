@@ -30,7 +30,6 @@ import org.atlasapi.media.entity.TopicRef;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.media.util.ItemAndBroadcast;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
@@ -567,7 +566,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         ImmutableList.Builder<String> uris = ImmutableList.builder();
 
         Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
-        rtFilmIdentifier.transform(rt -> uris.add(PaHelper.getFilmRtAlias(rt)));
+        Optional<String> legacyFilmUri = rtFilmIdentifier.transform(PaHelper::getLegacyFilmUri);
+        legacyFilmUri.transform(uris::add);
 
         uris.add(PaHelper.getAlias(progData.getProgId()));
         uris.add(PaHelper.getFilmUri(identifierFor(progData)));
@@ -575,7 +575,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                 uris.build()
         ).asResolvedMap();
 
-        Film film = getFilmFromResolvedContent(progData, rtFilmIdentifier, resolvedContent);
+        Film film = getFilmFromResolvedContent(progData, resolvedContent, legacyFilmUri);
 
         if (progData.getFilmYear() != null && MoreStrings.containsOnlyAsciiDigits(progData.getFilmYear())) {
             film.setYear(Integer.parseInt(progData.getFilmYear()));
@@ -585,9 +585,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
     private Film getFilmFromResolvedContent(
             ProgData progData,
-            Optional<String> rtFilmIdentifier,
-            Map<String, Identified> resolvedContent
-    ) {
+            Map<String, Identified> resolvedContent,
+            Optional<String> legacyFilmUri) {
         // This method gives precedence to films found with the old version 3 alias URI's
         // We were previously creating duplicates by creating content with the new version 3
         // alias URI without resolving the old URI first.
@@ -597,13 +596,9 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         }
 
         Identified previous;
-        if (rtFilmIdentifier.isPresent()) {
-            String legacyFilmUri = PaHelper.getFilmRtAlias(rtFilmIdentifier.get());
-            if (resolvedContent.containsKey(legacyFilmUri)) {
-                previous = resolvedContent.get(legacyFilmUri);
-            } else {
-                previous = Iterables.getFirst(resolvedContent.values(), null);
-            }
+        if (legacyFilmUri.isPresent() && resolvedContent.containsKey(legacyFilmUri)) {
+            previous = resolvedContent.get(legacyFilmUri);
+
         } else {
             previous = Iterables.getFirst(resolvedContent.values(), null);
         }
@@ -662,7 +657,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
         Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
         if (rtFilmIdentifier.isPresent()) {
-            episode.addAliasUrl(PaHelper.getFilmRtAlias(rtFilmIdentifier.get()));
+            episode.addAliasUrl(PaHelper.getLegacyFilmUri(rtFilmIdentifier.get()));
             episode.addAlias(PaHelper.getLegacyFilmAlias(rtFilmIdentifier.get()));
         }
         episode.addAliasUrl(PaHelper.getAlias(progData.getProgId()));

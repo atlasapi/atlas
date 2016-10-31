@@ -586,10 +586,12 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     private Film getFilmFromResolvedContent(
             ProgData progData,
             Map<String, Identified> resolvedContent,
-            Optional<String> legacyFilmUri) {
+            Optional<String> legacyFilmUri
+    ) {
+        // After updating our version 3 alias URI's we started introducing duplicates
+        // by only resolving and updating content with the new URI's
         // This method gives precedence to films found with the old version 3 alias URI's
-        // We were previously creating duplicates by creating content with the new version 3
-        // alias URI without resolving the old URI first.
+        // and updates them in the namespace they already exist in
 
         if (resolvedContent.isEmpty()) {
             return getBasicFilm(progData);

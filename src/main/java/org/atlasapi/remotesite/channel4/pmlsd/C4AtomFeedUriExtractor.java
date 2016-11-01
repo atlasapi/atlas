@@ -1,18 +1,20 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.Publisher;
-import org.jdom.Element;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+import org.jdom.Element;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry> {
@@ -53,16 +55,25 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
         return Optional.of(String.format("http://%s/pmlsd/%s", publisherHost(publisher), progId));
     }
 
+    @SuppressWarnings("Guava")
+    @Nullable
     @Override
     public Optional<String> uriForClip(Publisher publisher, Entry entry) {
+        if (!entry.getAlternateLinks().isEmpty()) {
+            Link link = (Link) entry.getAlternateLinks().get(0);
+            return Optional.of(link.getHref());
+        }
+
         Element mediaGroup = C4AtomApi.mediaGroup(entry);
         if (mediaGroup == null) {
             return null;
         }
+
         Element player = mediaGroup.getChild("player", C4AtomApi.NS_MEDIA_RSS);
         if (player == null) {
             return null;
         }
+
         return Optional.of(player.getAttributeValue("url"));
     }
     

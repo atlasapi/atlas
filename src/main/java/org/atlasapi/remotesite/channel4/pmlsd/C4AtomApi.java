@@ -57,8 +57,9 @@ public class C4AtomApi {
 	private static final Pattern BIPS_IMAGE_PATTERN = Pattern.compile("https?://.+\\.channel4.com\\/bips/(\\d+x\\d+)/videos/.*");
 	private static final String IMAGE_SIZE = "625x352";
 	private static final String THUMBNAIL_SIZE = "200x113";
-	private static final String IOS_URI_PREFIX = "c4-4od://ios.channel4.com/pmlsd/";
-	private static final Pattern WEB_4OD_BRAND_ID_EXTRACTOR = Pattern.compile(String.format("^%s(.+?)/4od\\#\\d+", WEB_BASE));
+    private static final String IOS_URI_PREFIX = "all4://views/brands?brand=";
+    private static final String IOS_URI_PROGRAMME_ATTRIBUTE = "&programme=";
+	private static final Pattern WEB_4OD_BRAND_ID_EXTRACTOR = Pattern.compile(String.format("^%s(.+?)/on-demand/[\\d-]+$", WEB_BASE));
 
 	private final BiMap<String, Channel> channelMap;
 	
@@ -196,11 +197,12 @@ public class C4AtomApi {
         return null;
     }
 
-    public static String iOsUriFromPcUri(String uri) {
+    public static String iOsUriFromPcUri(String uri, Map<String, String> lookup) {
         Matcher matcher = WEB_4OD_BRAND_ID_EXTRACTOR.matcher(uri);
                 
         if (matcher.matches()) {
-            return IOS_URI_PREFIX + matcher.group(1) + "/4od.atom";
+            return IOS_URI_PREFIX + matcher.group(1) + IOS_URI_PROGRAMME_ATTRIBUTE
+                    + lookup.get(DC_PROGRAMME_ID).replace("/", "-");
          }
         return null;
     }

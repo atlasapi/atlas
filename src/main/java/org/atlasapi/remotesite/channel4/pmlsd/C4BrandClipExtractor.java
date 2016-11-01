@@ -1,20 +1,21 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
-import org.joda.time.DateTime;
+
+import com.metabroadcast.common.time.Clock;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
-import com.metabroadcast.common.time.Clock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
+import org.joda.time.DateTime;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class C4BrandClipExtractor extends C4MediaItemExtractor<Clip> {
 
@@ -52,7 +53,7 @@ public class C4BrandClipExtractor extends C4MediaItemExtractor<Clip> {
     }
 
     private C4VersionData data(Entry entry, String fourOdUri, Map<String, String> lookup, DateTime lastUpdated) {
-        String uri = fourOdUri != null ? fourOdUri : uriExtractor.uriForClip(publisher, entry).get();
+        String uri = uriExtractor.uriForClip(publisher, entry).get();
         checkNotNull(uri, "No version URI extracted for %s", entry.getId());
         return new C4VersionData(entry.getId(), uri, getMedia(entry), lookup, lastUpdated);
     }

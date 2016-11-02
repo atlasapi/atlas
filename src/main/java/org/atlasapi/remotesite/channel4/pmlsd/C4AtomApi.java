@@ -8,9 +8,6 @@ import java.util.regex.Pattern;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Content;
-import org.jdom.Element;
-import org.jdom.Namespace;
-import org.joda.time.Duration;
 
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
@@ -20,6 +17,9 @@ import com.google.common.collect.Maps;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+import org.jdom.Element;
+import org.jdom.Namespace;
+import org.joda.time.Duration;
 
 public class C4AtomApi {
 	
@@ -197,12 +197,12 @@ public class C4AtomApi {
         return null;
     }
 
-    public static String iOsUriFromPcUri(String uri, Map<String, String> lookup) {
+    public static String iOsUriFromPcUri(String uri, Map<String, String> programmeIdLookup) {
         Matcher matcher = WEB_4OD_BRAND_ID_EXTRACTOR.matcher(uri);
                 
         if (matcher.matches()) {
             return IOS_URI_PREFIX + matcher.group(1) + IOS_URI_PROGRAMME_ATTRIBUTE
-                    + lookup.get(DC_PROGRAMME_ID).replace("/", "-");
+                    + programmeIdLookup.get(DC_PROGRAMME_ID).replace("/", "-");
          }
         return null;
     }

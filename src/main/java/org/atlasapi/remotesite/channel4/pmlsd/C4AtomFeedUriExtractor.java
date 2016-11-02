@@ -3,6 +3,8 @@ package org.atlasapi.remotesite.channel4.pmlsd;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.annotation.Nullable;
 
@@ -60,10 +62,15 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
     @Nullable
     @Override
     public Optional<String> uriForClip(Publisher publisher, Entry entry) {
-        List alternateLinks = entry.getAlternateLinks();
-        if (!alternateLinks.isEmpty()) {
-            java.util.Optional<Link> odLink = ((List<Link>) alternateLinks).stream()
-                    .filter(link -> link.getTitle()!= null)
+
+        List links = (List<Link>) Stream.concat(
+                entry.getOtherLinks().stream(),
+                entry.getAlternateLinks().stream())
+                .collect(Collectors.toList());
+
+        if (!links.isEmpty()) {
+            java.util.Optional<Link> odLink = ((List<Link>) links).stream()
+                    .filter(link -> link.getTitle() != null)
                     .filter(link -> link.getTitle().contains("4oD"))
                     .findFirst();
             if (odLink.isPresent()) {

@@ -173,7 +173,7 @@
     <link href="http://www.channel4.com/programmes/jamie-does/on-demand/3073178-002" rel="alternate" type="text/html" />
     <link href="http://pmlsc.channel4.com/pmlsd/jamie-does/episode-guide/series-1/episode-6.atom" rel="related" type="application/atom+xml" />
     <media:group>
-      <media:player url="http://www.channel4.com/programmes/jamie-does/4od#3073178" />
+      <media:player url="http://www.channel4.com/programmes/jamie-does/on-demand/3073178-006" />
       <media:thumbnail url="http://cache.channel4.com/assets/programmes/images/jamie-does/series-1/episode-6/a641176f-686f-4fcb-81c7-a40bf01aa98f_200x113.jpg" height="113" width="200" imageSource="own" altText="Jamies Does... Athens" />
       <media:rating>nonadult</media:rating>
       <media:copyright url="http://cache.channel4.com/terms_and_conditions.html">Terms and Conditions</media:copyright>

@@ -63,7 +63,7 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
         List alternateLinks = entry.getAlternateLinks();
         if (!alternateLinks.isEmpty()) {
             java.util.Optional<Link> odLink = ((List<Link>) alternateLinks).stream()
-                    .filter(link -> "4oD".equals(link.getTitle()))
+                    .filter(link -> link.getTitle().contains("4oD"))
                     .findFirst();
             if (odLink.isPresent()) {
                 return Optional.of(odLink.get().getHref());

@@ -106,7 +106,7 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
             return false;
         }
 
-        Lists.reverse(parts);
+        parts = Lists.reverse(parts);
 
         if (!"on-demand".equals(parts.get(1))) {
             return false;

@@ -59,7 +59,7 @@ public class C4AtomApi {
     private static final String THUMBNAIL_SIZE = "200x113";
     private static final String IOS_URI_PREFIX = "all4://views/brands?brand=";
     private static final String IOS_URI_PROGRAMME_ATTRIBUTE = "&programme=";
-    private static final Pattern WEB_4OD_BRAND_ID_EXTRACTOR = Pattern.compile(String.format("^%s(.+?)/on-demand/^\\d+-\\d+$", WEB_BASE));
+    private static final Pattern WEB_4OD_BRAND_ID_EXTRACTOR = Pattern.compile(String.format("^%s(.+?)/on-demand/\\d+-\\d+$", WEB_BASE));
 
     private final BiMap<String, Channel> channelMap;
 

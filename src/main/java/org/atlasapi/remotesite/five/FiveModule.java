@@ -5,6 +5,12 @@ import javax.annotation.PostConstruct;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+
+import com.metabroadcast.common.properties.Configurer;
+import com.metabroadcast.common.scheduling.RepetitionRules;
+import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,11 +19,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.metabroadcast.common.properties.Configurer;
-import com.metabroadcast.common.scheduling.RepetitionRules;
-import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-
+@SuppressWarnings("PublicConstructor")
 @Configuration
 public class FiveModule {
     
@@ -41,9 +43,13 @@ public class FiveModule {
     
     @Bean
     public FiveUpdater fiveUpdater() {
-        Integer soTimeout = Configurer.get("five.timeout.socket", "180").toInt();
-        return new FiveUpdater(contentWriter, channelResolver, contentResolver, 
-                fiveLocationPolicyIds(), soTimeout);
+        return FiveUpdater.create(
+                contentWriter,
+                channelResolver,
+                contentResolver,
+                fiveLocationPolicyIds(),
+                Configurer.get("five.timeout.socket", "180").toInt()
+        );
     }
     
     @Bean
@@ -58,6 +64,5 @@ public class FiveModule {
                     .withIosServiceId(iOsServiceId)
                     .withWebServiceId(webServiceId)
                     .build();
-                    
     }
 }

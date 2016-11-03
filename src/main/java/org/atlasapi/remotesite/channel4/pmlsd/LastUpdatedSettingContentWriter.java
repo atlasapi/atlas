@@ -13,6 +13,8 @@ import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+
+import com.sun.istack.Nullable;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 
@@ -69,25 +71,36 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     private void setUpdatedVersions(Set<Version> prevVersions, Set<Version> versions, DateTime now) {
         
         Map<String, Broadcast> prevBroadcasts = previousBroadcasts(prevVersions);
-        Map<String, Location> prevLocations = previousLocations(prevVersions);
-        
+
         for (Version version : versions) {
             for (Broadcast broadcast : version.getBroadcasts()) {
                 Broadcast prevBroadcast = prevBroadcasts.get(broadcast.getSourceId());
-                if(prevBroadcast == null || !equal(prevBroadcast, broadcast)) {
+                if (prevBroadcast == null || !equal(prevBroadcast, broadcast)) {
                     broadcast.setLastUpdated(now);
                 }
             }
+
             for (Encoding encoding : version.getManifestedAs()) {
                 for (Location location : encoding.getAvailableAt()) {
-                    Location prevLocation = prevLocations.get(location.getUri());
-                    if(prevLocation == null || !equal(prevLocation, location)) {
+                    Location prevLocation = findPreviousLocation(prevVersions, location);
+
+                    if (prevLocation != null) {
                         location.setLastUpdated(now);
                     }
                 }
             }
         }
 
+    }
+
+    @Nullable
+    private Location findPreviousLocation(Set<Version> prevVersions, Location location) {
+        return prevVersions.stream()
+                .flatMap(v -> v.getManifestedAs().stream())
+                .flatMap(e -> e.getAvailableAt().stream())
+                .filter(prevLocation -> equal(prevLocation, location))
+                .findFirst()
+                .orElse(null);
     }
 
     private boolean equal(Location prevLocation, Location location) {
@@ -98,25 +111,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
         return Objects.equal(prevPolicy.getAvailabilityStart().toDateTime(DateTimeZone.UTC), policy.getAvailabilityStart().toDateTime(DateTimeZone.UTC))
             && Objects.equal(prevPolicy.getAvailabilityEnd().toDateTime(DateTimeZone.UTC), policy.getAvailabilityEnd().toDateTime(DateTimeZone.UTC))
             && Objects.equal(prevPolicy.getAvailableCountries(), policy.getAvailableCountries());
-    }
-
-    private Map<String, Location> previousLocations(Set<Version> prevVersions) {
-        return Maps.uniqueIndex(Iterables.concat(Iterables.transform(Iterables.concat(Iterables.transform(prevVersions, new Function<Version, Iterable<Encoding>>() {
-            @Override
-            public Iterable<Encoding> apply(Version input) {
-                return input.getManifestedAs();
-            }
-        })), new Function<Encoding, Iterable<Location>>() {
-            @Override
-            public Iterable<Location> apply(Encoding input) {
-                return input.getAvailableAt();
-            }
-        })), new Function<Location, String>() {
-            @Override
-            public String apply(Location input) {
-                return input.getUri();
-            }
-        });
     }
 
     private boolean equal(Broadcast prevBroadcast, Broadcast broadcast) {

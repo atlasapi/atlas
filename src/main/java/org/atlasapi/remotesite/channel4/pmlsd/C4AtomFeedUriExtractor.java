@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -11,7 +12,9 @@ import javax.annotation.Nullable;
 import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
@@ -24,12 +27,17 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
 
     private static final String DC_PROGRAMME_ID = "dc:relation.programmeId";
     private static final String FEED_ID_PREFIX_PATTERN = "tag:[a-z0-9.]+\\.channel4\\.com,\\d{4}:/programmes/";
-    private static final Pattern SERIES_PAGE_ID_PATTERN 
-        = Pattern.compile(String.format("%s(%s/episode-guide/series-\\d+)", FEED_ID_PREFIX_PATTERN, 
-                C4AtomApi.WEB_SAFE_NAME_PATTERN));
-    
+    private static final Pattern SERIES_PAGE_ID_PATTERN = Pattern.compile(
+            String.format(
+                    "%s(%s/episode-guide/series-\\d+)",
+                    FEED_ID_PREFIX_PATTERN,
+                    C4AtomApi.WEB_SAFE_NAME_PATTERN
+            ));
     private final C4LinkBrandNameExtractor linkExtractor = new C4LinkBrandNameExtractor();
-    
+
+    private static final Splitter URL_SPLITTER = Splitter.on('/');
+    private static final Pattern OD_PATTERN = Pattern.compile("^\\d+-\\d+$");
+
     @Override
     @SuppressWarnings("unchecked")
     public Optional<String> uriForBrand(Publisher publisher, Feed feed) {
@@ -68,14 +76,14 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
                 entry.getAlternateLinks().stream())
                 .collect(Collectors.toList());
 
-        if (!links.isEmpty()) {
-            java.util.Optional<Link> odLink = ((List<Link>) links).stream()
-                    .filter(link -> link.getTitle() != null)
-                    .filter(link -> link.getTitle().contains("4oD"))
-                    .findFirst();
-            if (odLink.isPresent()) {
-                return Optional.of(odLink.get().getHref());
-            }
+        java.util.Optional<String> odLink = ((List<Link>) links).stream()
+                .map(Link::getHref)
+                .filter(Objects::nonNull)
+                .filter(this::is4OdLink)
+                .findFirst();
+
+        if (odLink.isPresent()) {
+            return Optional.of(odLink.get());
         }
 
         Element mediaGroup = C4AtomApi.mediaGroup(entry);
@@ -90,7 +98,24 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
 
         return Optional.of(player.getAttributeValue("url"));
     }
-    
+
+    private boolean is4OdLink(String href) {
+        List<String> parts = URL_SPLITTER.splitToList(href);
+
+        if (parts.size() < 2) {
+            return false;
+        }
+
+        parts = Lists.reverse(parts);
+
+        if (!"on-demand".equals(parts.get(1))) {
+            return false;
+        }
+
+        String seriesAndEpisodeNumber = parts.get(0);
+        return OD_PATTERN.matcher(seriesAndEpisodeNumber).matches();
+    }
+
     private String publisherHost(Publisher publisher) {
         String host = C4PmlsdModule.PUBLISHER_TO_CANONICAL_URI_HOST_MAP.get(publisher);
         if (host == null) {

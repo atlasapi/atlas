@@ -153,14 +153,16 @@ public class FiveEpisodeProcessor {
         Location webLocation = getLocation(
                 element,
                 webUriFor(element),
-                locationPolicyIds.getWebServiceId()
+                locationPolicyIds.getWebServiceId(),
+                locationPolicyIds.getDemand5PlayerId()
         );
         encoding.addAvailableAt(webLocation);
-        
+
         Location iosVersion = getLocation(
                 element,
                 iOsUriFor(element),
-                locationPolicyIds.getIosServiceId()
+                locationPolicyIds.getIosServiceId(),
+                locationPolicyIds.getDemand5PlayerId()
         );
         encoding.addAvailableAt(iosVersion);
         
@@ -184,8 +186,9 @@ public class FiveEpisodeProcessor {
         return broadcasts;
     }
 
-    private Location getLocation(Element element, String uri, Long serviceId) throws Exception {
+    private Location getLocation(Element element, String uri, Long serviceId, Long playerId) {
         Location location = new Location();
+
         location.setUri(uri);
         location.setTransportType(TransportType.LINK);
         location.setTransportSubType(TransportSubType.HTTP);
@@ -195,39 +198,31 @@ public class FiveEpisodeProcessor {
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
 
         String availabilityStart = childValue(element, "vod_start");
-        if (Strings.isNullOrEmpty(availabilityStart)) {
-            location.setAvailable(false);
-        } else {
-            location.setAvailable(true);
-            policy.setAvailabilityStart(dateParser.parseDateTime(availabilityStart));
-
-            String availabilityEnd = childValue(element, "vod_end");
-            if (!Strings.isNullOrEmpty(availabilityEnd)) {
-                policy.setAvailabilityEnd(dateParser.parseDateTime(availabilityEnd));
-            }
-        }
-        
         String scheduledAvailabilityStart = childValue(element, "scheduled_vod_start");
-        String scheduledAvailabilityEnd = childValue(element, "scheduled_vod_end");
-        
-        if (!Strings.isNullOrEmpty(scheduledAvailabilityStart)
-                && policy.getAvailabilityStart() == null) {
+
+        if (!Strings.isNullOrEmpty(availabilityStart)) {
+            policy.setAvailabilityStart(dateParser.parseDateTime(availabilityStart));
+        } else if (!Strings.isNullOrEmpty(scheduledAvailabilityStart)) {
             policy.setAvailabilityStart(dateParser.parseDateTime(scheduledAvailabilityStart));
         }
-        
-        if (!Strings.isNullOrEmpty(scheduledAvailabilityEnd)
-                && policy.getAvailabilityEnd() == null) {
+
+        String availabilityEnd = childValue(element, "vod_end");
+        String scheduledAvailabilityEnd = childValue(element, "scheduled_vod_end");
+
+        if (!Strings.isNullOrEmpty(availabilityEnd)) {
+            policy.setAvailabilityEnd(dateParser.parseDateTime(availabilityEnd));
+        } else if (!Strings.isNullOrEmpty(scheduledAvailabilityEnd)) {
             policy.setAvailabilityEnd(dateParser.parseDateTime(scheduledAvailabilityEnd));
         }
-        
+
         policy.setService(serviceId);
-        policy.setPlayer(locationPolicyIds.getDemand5PlayerId());
-        
+        policy.setPlayer(playerId);
+
         location.setPolicy(policy);
 
         return location;
     }
-    
+
     private String webUriFor(Element element) throws Exception {
         String originalVodUri = childValue(element, "vod_url").trim();
         return getLocationUri(originalVodUri);

@@ -1,19 +1,19 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
-import org.joda.time.DateTime;
+
+import com.metabroadcast.common.time.Clock;
 
 import com.google.common.base.Optional;
-import com.metabroadcast.common.time.Clock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 final class C4OnDemandEpisodeExtractor extends BaseC4EpisodeExtractor {
 
@@ -45,15 +45,20 @@ final class C4OnDemandEpisodeExtractor extends BaseC4EpisodeExtractor {
         if(seriesEpisodeUri != null) {
             episode.addAliasUrl(seriesEpisodeUri);
         }
-        
-        episode.addVersion(versionExtractor.extract(data(entry, fourOdUri, lookup, episode.getLastUpdated())));
+
+        String uri = uriExtractor.uriForClip(publisher, entry).get();
+        checkNotNull(uri, "No version URI extracted for %s", entry.getId());
+
+        episode.addVersion(versionExtractor.extract(
+                new C4VersionData(
+                        entry.getId(),
+                        uri,
+                        getMedia(entry),
+                        lookup,
+                        episode.getLastUpdated()
+                )
+        ));
+
         return episode;
     }
-    
-    private C4VersionData data(Entry entry, String fourOdUri, Map<String, String> lookup, DateTime lastUpdated) {
-        String uri = fourOdUri != null ? fourOdUri : uriExtractor.uriForClip(publisher, entry).get();
-        checkNotNull(uri, "No version URI extracted for %s", entry.getId());
-        return new C4VersionData(entry.getId(), uri, getMedia(entry), lookup, lastUpdated);
-    }
-
 }

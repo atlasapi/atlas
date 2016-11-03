@@ -1,18 +1,23 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.annotation.Nullable;
 
 import org.atlasapi.media.entity.Publisher;
-import org.jdom.Element;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+import org.jdom.Element;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry> {
@@ -53,16 +58,36 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
         return Optional.of(String.format("http://%s/pmlsd/%s", publisherHost(publisher), progId));
     }
 
+    @SuppressWarnings("Guava")
+    @Nullable
     @Override
     public Optional<String> uriForClip(Publisher publisher, Entry entry) {
+
+        List links = (List<Link>) Stream.concat(
+                entry.getOtherLinks().stream(),
+                entry.getAlternateLinks().stream())
+                .collect(Collectors.toList());
+
+        if (!links.isEmpty()) {
+            java.util.Optional<Link> odLink = ((List<Link>) links).stream()
+                    .filter(link -> link.getTitle() != null)
+                    .filter(link -> link.getTitle().contains("4oD"))
+                    .findFirst();
+            if (odLink.isPresent()) {
+                return Optional.of(odLink.get().getHref());
+            }
+        }
+
         Element mediaGroup = C4AtomApi.mediaGroup(entry);
         if (mediaGroup == null) {
             return null;
         }
+
         Element player = mediaGroup.getChild("player", C4AtomApi.NS_MEDIA_RSS);
         if (player == null) {
             return null;
         }
+
         return Optional.of(player.getAttributeValue("url"));
     }
     

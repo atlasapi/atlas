@@ -1,8 +1,5 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
@@ -18,16 +15,20 @@ import org.atlasapi.media.entity.Policy.RevenueContract;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
-import org.jdom.Element;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
+
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.intl.Country;
 
 import com.google.api.client.repackaged.com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.primitives.Ints;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.intl.Country;
+import org.jdom.Element;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
+
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class C4AtomEntryVersionExtractor implements ContentExtractor<C4VersionData, Version> {
     
@@ -84,8 +85,12 @@ public class C4AtomEntryVersionExtractor implements ContentExtractor<C4VersionDa
         }
         
         if (createIosBrandLocations) {
-            Location iOsLocation = extractLocation(C4AtomApi.iOsUriFromPcUri(data.getUri()), 
-                    data, locationPolicyIds.getPlayerId(), locationPolicyIds.getIOsServiceId());
+            Location iOsLocation = extractLocation(
+                    C4AtomApi.iOsUriFromPcUri(data.getUri(), data.getLookup()),
+                    data,
+                    locationPolicyIds.getPlayerId(),
+                    locationPolicyIds.getIOsServiceId()
+            );
             if (iOsLocation.getPolicy() != null) {
                 encoding.addAvailableAt(iOsLocation);
             }

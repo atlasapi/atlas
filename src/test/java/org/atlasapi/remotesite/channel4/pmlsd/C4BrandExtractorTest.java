@@ -1,21 +1,9 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItem;
-import static org.hamcrest.Matchers.is;
-import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
-import static org.mockito.Mockito.atLeast;
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
-
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-
-import junit.framework.TestCase;
 
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Alias;
@@ -28,8 +16,8 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Policy.Platform;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -37,13 +25,9 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.testing.StubContentResolver;
 import org.atlasapi.remotesite.channel4.RecordingContentWriter;
-import org.joda.time.DateTime;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+
+import com.metabroadcast.common.http.FixedResponseHttpClient;
+import com.metabroadcast.common.http.SimpleHttpClient;
 
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
@@ -53,10 +37,25 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.io.Resources;
-import com.metabroadcast.common.http.FixedResponseHttpClient;
-import com.metabroadcast.common.http.SimpleHttpClient;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
+import junit.framework.TestCase;
+import org.joda.time.DateTime;
+import org.junit.Before;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.ArgumentCaptor;
+import org.mockito.Mock;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.is;
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.argThat;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class C4BrandExtractorTest extends TestCase {
@@ -353,11 +352,24 @@ public class C4BrandExtractorTest extends TestCase {
         C4AtomApiClient apiClient = new C4AtomApiClient(client, "https://pmlsc.channel4.com/pmlsd/", Optional.<String>absent());
 
         RecordingContentWriter recordingWriter = new RecordingContentWriter();
-        C4BrandExtractor extractor = new C4BrandExtractor(xboxApiClient, Optional.of(Platform.XBOX), 
-                Publisher.C4_PMLSD, channelResolver, contentFactory, locationPolicyIds, false);
+        C4BrandExtractor extractor = new C4BrandExtractor(
+                xboxApiClient,
+                Optional.of(Platform.XBOX),
+                Publisher.C4_PMLSD,
+                channelResolver,
+                contentFactory,
+                locationPolicyIds,
+                false
+        );
+
         StubContentResolver stubResolver = new StubContentResolver();
-        new C4AtomBackedBrandUpdater(xboxApiClient, Optional.of(Platform.XBOX), stubResolver, recordingWriter, extractor)
-            .createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/jamie-does");
+        new C4AtomBackedBrandUpdater(
+                xboxApiClient,
+                Optional.of(Platform.XBOX),
+                stubResolver,
+                recordingWriter,
+                extractor
+        ).createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/jamie-does");
         
         stubResolver.respondTo(findLast("http://pmlsc.channel4.com/pmlsd/48367/006", recordingWriter.updatedItems));
         
@@ -365,7 +377,6 @@ public class C4BrandExtractorTest extends TestCase {
                 channelResolver, contentFactory, locationPolicyIds, true);
         new C4AtomBackedBrandUpdater(apiClient, Optional.<Platform>absent(), stubResolver, recordingWriter, extractor)
             .createOrUpdateBrand("http://pmlsc.channel4.com/pmlsd/jamie-does");
-        
         
         Item item = findLast("http://pmlsc.channel4.com/pmlsd/48367/006", recordingWriter.updatedItems);
         Episode episode = (Episode) item;
@@ -379,19 +390,18 @@ public class C4BrandExtractorTest extends TestCase {
         boolean foundPCLocation = false;
         boolean foundXboxLocation = false;
         boolean foundIosLocation = false;
-        
-        for(Location location: locations) {
-            if(location.getUri().equals("https://ais.channel4.com/asset/3262609")) {
+
+        for (Location location : locations) {
+            if ("https://ais.channel4.com/asset/3262609".equals(location.getUri())) {
                 foundXboxLocation = true;
                 assertThat(location.getPolicy().getPlatform(), is(Platform.XBOX));
-            } else if(location.getUri().equals("http://www.channel4.com/programmes/jamie-does/4od#3073178")) {
+            } else if ("http://www.channel4.com/programmes/jamie-does/on-demand/3073178-006".equals(location.getUri())) {
                 foundPCLocation = true;
                 assertNull(location.getPolicy().getPlatform());
-            } else if(location.getUri().equals("c4-4od://ios.channel4.com/pmlsd/jamie-does/4od.atom")) {
+            } else if ("all4://views/brands?brand=jamie-does&programme=48367-006".equals(location.getUri())) {
                 foundIosLocation = true;
-            }
-            else {
-                throw new IllegalStateException("Unexpected location");
+            } else {
+                throw new IllegalStateException(String.format("Unexpected location %s", location.getUri()));
             }
         }
         assertTrue(foundPCLocation);

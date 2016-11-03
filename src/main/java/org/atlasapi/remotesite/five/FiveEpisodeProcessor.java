@@ -1,15 +1,9 @@
 package org.atlasapi.remotesite.five;
 
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpResponse;
-import com.metabroadcast.common.intl.Countries;
-import nu.xom.Element;
-import nu.xom.Elements;
+import java.util.Collection;
+import java.util.Map;
+import java.util.Set;
+
 import org.atlasapi.genres.GenreMap;
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
@@ -31,15 +25,23 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.system.RemoteSiteClient;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.http.HttpResponse;
+import com.metabroadcast.common.intl.Countries;
+
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Sets;
+import nu.xom.Element;
+import nu.xom.Elements;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.util.Collection;
-import java.util.Map;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -189,7 +191,7 @@ public class FiveEpisodeProcessor {
     }
     
     private String iOsUriFor(Element element) throws Exception {
-        return String.format("demand5://five.tv/%s", childValue(element, "id"));
+        return String.format("demand5://watch/%s", childValue(element, "id"));
     }
 
     private void processSeries(Episode episode, Element element, Brand brand) {

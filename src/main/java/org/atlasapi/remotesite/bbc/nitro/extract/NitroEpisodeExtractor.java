@@ -6,12 +6,17 @@ import java.util.Set;
 
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.atlasapi.feeds.youview.nitro.NitroIdGenerator;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.CrewMember;
+import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.ReleaseDate;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
@@ -31,6 +36,7 @@ import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 
@@ -53,6 +59,8 @@ import static com.metabroadcast.atlas.glycerin.model.Brand.Contributions;
 public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode, Item> {
 
     private static final String FILM_FORMAT_ID = "PT007";
+    private static final String PID_ALIAS_NAMESPACE = "gb:bbc:nitro:prod:version:pid";
+    private static final String CRID_ALIAS_NAMESPACE = "gb:yv:prod:version:crid";
     private static final Predicate<Format> IS_FILM_FORMAT = new Predicate<Format>() {
 
         @Override
@@ -66,6 +74,7 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
 
     private final NitroCrewMemberExtractor crewMemberExtractor = new NitroCrewMemberExtractor();
     private final NitroPersonExtractor personExtractor = new NitroPersonExtractor();
+    private final NitroIdGenerator nitroIdGenerator = new NitroIdGenerator(Hashing.md5());
     private final QueuingPersonWriter personWriter;
 
     public NitroEpisodeExtractor(Clock clock, QueuingPersonWriter personWriter) {
@@ -157,7 +166,26 @@ public final class NitroEpisodeExtractor extends BaseNitroItemExtractor<Episode,
             setReleaseDate(item, source);
         }
         writeAndSetPeople(item, source);
+        for (Version version : item.getVersions()) {
+            addLocationAliasesToItemVersion(item, version);
+        }
     }
+
+        private void addLocationAliasesToItemVersion(Item item, Version version) {
+            for (Encoding encoding : version.getManifestedAs()) {
+                for (Location location : encoding.getAvailableAt()) {
+                    location.addAlias(new Alias(
+                            PID_ALIAS_NAMESPACE,
+                            version.getCanonicalUri()
+                                    .replace("http://nitro.bbc.co.uk/programmes/", "")
+                    ));
+                    location.addAlias(new Alias(
+                            CRID_ALIAS_NAMESPACE,
+                            nitroIdGenerator.generateVersionCrid(item, version)
+                    ));
+                }
+            }
+        }
 
     private void writeAndSetPeople(Item item, NitroItemSource<Episode> source) {
         Contributions contributions = source.getProgramme().getContributions();

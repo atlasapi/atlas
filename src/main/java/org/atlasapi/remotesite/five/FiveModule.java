@@ -24,7 +24,10 @@ import org.springframework.context.annotation.Configuration;
 public class FiveModule {
     
     private static final Logger log = LoggerFactory.getLogger(FiveUpdater.class);
-    private final static Daily DAILY = RepetitionRules.daily(new LocalTime(4, 30, 0));
+
+    // This ingester is known to take 17hrs to finish so we starting it in the evening to
+    // take advantage of the night and have the data ready by mid-next day
+    private final static Daily DAILY = RepetitionRules.daily(new LocalTime(20, 0, 0));
     
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;

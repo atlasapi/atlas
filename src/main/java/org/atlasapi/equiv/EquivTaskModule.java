@@ -417,9 +417,13 @@ public class EquivTaskModule {
     }
     
     public @Bean RemoveEquivalenceController removeEquivalenceController() {
-        return new RemoveEquivalenceController(new EquivalenceBreaker(contentResolver, lookupStore, lookupWriter));
+        return new RemoveEquivalenceController(equivalenceBreaker());
     }
-    
+
+    public  @Bean EquivalenceBreaker equivalenceBreaker() {
+        return new EquivalenceBreaker(contentResolver, lookupStore, lookupWriter);
+    }
+
     //Probes...
     public @Bean EquivalenceProbeStore equivProbeStore() { 
         return new MongoEquivalenceProbeStore(db);

@@ -1,5 +1,7 @@
 package org.atlasapi.system;
 
+import org.atlasapi.equiv.EquivTaskModule;
+import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.persistence.MongoContentPersistenceModule;
 import org.atlasapi.persistence.content.ContentPurger;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -14,7 +16,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import( { MongoContentPersistenceModule.class })
+@Import( { MongoContentPersistenceModule.class, EquivTaskModule.class })
 /**
  * Module for constructing controllers that allow deletion of content
  * using a {@link ContentPurger}. Only specific-publisher controllers
@@ -38,6 +40,9 @@ public class ContentPurgeWebModule {
     @Autowired
     private ContentWriter contentWriter;
 
+    @Autowired
+    private EquivalenceBreaker equivalenceBreaker;
+
     @Bean
     public LyrebirdYoutubeContentPurgeController lyrebirdYoutubeContentPurgeController() {
         return new LyrebirdYoutubeContentPurgeController(contentPurger);
@@ -59,6 +64,8 @@ public class ContentPurgeWebModule {
                 SubstitutionTableNumberCodec.lowerCaseOnly(),
                 contentResolver,
                 lookupEntryStore,
-                contentWriter);
+                contentWriter,
+                equivalenceBreaker
+        );
     }
 }

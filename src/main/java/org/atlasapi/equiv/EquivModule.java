@@ -316,7 +316,7 @@ public class EquivModule {
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
             ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX,
                     RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK,
-                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS),
+                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS),
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();
@@ -327,6 +327,12 @@ public class EquivModule {
                 .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         }
+
+        updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
+                .withItemUpdater(standardItemUpdater)
+                .withTopLevelContainerUpdater(topLevelContainerUpdater)
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
+                .build());
 
         updaters.register(AMC_EBS, SourceSpecificEquivalenceUpdater.builder(AMC_EBS)
                 .withItemUpdater(standardItemUpdater)

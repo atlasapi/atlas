@@ -20,11 +20,13 @@ import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.query.InvalidIpForApiKeyException;
 import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
@@ -90,6 +92,7 @@ public class ContentWriteController {
     private final LookupEntryStore lookupEntryStore;
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
+    private final EquivalenceBreaker equivalenceBreaker;
 
     private ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
@@ -99,16 +102,18 @@ public class ContentWriteController {
             AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter,
             LookupEntryStore lookupEntryStore,
             ContentResolver contentResolver,
-            ContentWriter contentWriter
+            ContentWriter contentWriter,
+            EquivalenceBreaker equivalenceBreaker
     ) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
         this.writeExecutor = checkNotNull(contentWriteExecutor);
         this.lookupBackedContentIdGenerator = checkNotNull(lookupBackedContentIdGenerator);
         this.messageSender = checkNotNull(messageSender);
-        this.outputWriter = outputWriter;
-        this.lookupEntryStore = lookupEntryStore;
-        this.contentResolver = contentResolver;
-        this.contentWriter = contentWriter;
+        this.outputWriter = checkNotNull(outputWriter);
+        this.lookupEntryStore = checkNotNull(lookupEntryStore);
+        this.contentResolver = checkNotNull(contentResolver);
+        this.contentWriter = checkNotNull(contentWriter);
+        this.equivalenceBreaker = checkNotNull(equivalenceBreaker);
     }
 
     public static ContentWriteController create(
@@ -119,7 +124,8 @@ public class ContentWriteController {
             AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputWriter,
             LookupEntryStore lookupEntryStore,
             ContentResolver contentResolver,
-            ContentWriter contentWriter
+            ContentWriter contentWriter,
+            EquivalenceBreaker equivalenceBreaker
     ) {
         return new ContentWriteController(
                 appConfigFetcher,
@@ -129,7 +135,8 @@ public class ContentWriteController {
                 outputWriter,
                 lookupEntryStore,
                 contentResolver,
-                contentWriter
+                contentWriter,
+                equivalenceBreaker
         );
     }
 
@@ -178,7 +185,7 @@ public class ContentWriteController {
         }
 
         // get ID / URI, if ID, lookup URI from it
-        String contentUri;
+        LookupEntry lookupEntry;
         if (req.getParameter(ID) != null) {
             Long contentId = SubstitutionTableNumberCodec
                     .lowerCaseOnly()
@@ -187,16 +194,24 @@ public class ContentWriteController {
             Iterator<LookupEntry> entryStoreIterator = lookupEntryStore
                     .entriesForIds(Lists.newArrayList(contentId))
                     .iterator();
-
             if (entryStoreIterator.hasNext()) {
-                contentUri = entryStoreIterator.next().uri();
+                lookupEntry = entryStoreIterator.next();
             } else {
                 return error(req, resp, AtlasErrorSummary.forException(
                         new NoSuchElementException("Content not found for id"))
                 );
             }
         } else if (req.getParameter(URI) != null) {
-            contentUri = req.getParameter(URI);
+            Iterator<LookupEntry> entryStoreIterator = lookupEntryStore
+                    .entriesForCanonicalUris(Lists.newArrayList(req.getParameter(URI)))
+                    .iterator();
+            if (entryStoreIterator.hasNext()) {
+                lookupEntry = entryStoreIterator.next();
+            } else {
+                return error(req, resp, AtlasErrorSummary.forException(
+                        new NoSuchElementException("Content not found for uri"))
+                );
+            }
         } else {
             return error(req, resp, AtlasErrorSummary.forException(
                     new BadRequestException("id / uri parameter not specified"))
@@ -208,7 +223,7 @@ public class ContentWriteController {
         Maybe<Identified> identified;
 
         ResolvedContent resolvedContent =
-                contentResolver.findByCanonicalUris(Lists.newArrayList(contentUri));
+                contentResolver.findByCanonicalUris(Lists.newArrayList(lookupEntry.uri()));
 
         if (!resolvedContent.isEmpty()) {
             identified = resolvedContent.getFirstValue();
@@ -238,6 +253,11 @@ public class ContentWriteController {
             );
         }
 
+        // remove from equivset if un-publishing
+        if(!publishStatus){
+            removeItemFromEquivSet(lookupEntry);
+        }
+
         // set publisher status
         described.setActivelyPublished(publishStatus);
 
@@ -252,7 +272,18 @@ public class ContentWriteController {
         // return all good
         resp.setStatus(HttpServletResponse.SC_OK);
         return null;
+    }
 
+    private void removeItemFromEquivSet(LookupEntry lookupEntry){
+        String lookupEntryUri = lookupEntry.uri();
+        lookupEntry.directEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))
+                .forEach(lookupRefUri -> equivalenceBreaker.removeFromSet(
+                        lookupEntryUri,
+                        lookupRefUri
+                ));
     }
 
 

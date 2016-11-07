@@ -100,8 +100,10 @@ public class UnpublishContentController {
             }
         });
 
-        // remove from equivset
-        removeItemFromEquivSet(lookupEntry);
+        // remove from equivset if un-publishing
+        if(!status){
+            removeItemFromEquivSet(lookupEntry);
+        }
 
         // change publish status
         described.setActivelyPublished(status);

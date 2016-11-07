@@ -13,6 +13,7 @@ import javax.ws.rs.core.HttpHeaders;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
+import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
@@ -77,6 +78,7 @@ public class ContentWriteControllerTest {
     private @Mock LookupEntryStore lookupEntryStore;
     private @Mock ContentResolver contentResolver;
     private @Mock ContentWriter contentWriter;
+    private @Mock EquivalenceBreaker equivalenceBreaker;
 
     private @Mock HttpServletRequest request;
     private @Mock HttpServletResponse response;
@@ -84,6 +86,7 @@ public class ContentWriteControllerTest {
     private @Mock ServletOutputStream outputStream;
 
     private @Mock Iterator<LookupEntry> entryStoreIterator;
+    private @Mock Iterable<LookupEntry> lookupEntries;
     private @Mock LookupEntry lookupEntry;
     private @Mock ResolvedContent resolvedContent;
     private @Mock Maybe<Identified> identifiedMaybe;
@@ -111,7 +114,7 @@ public class ContentWriteControllerTest {
                 new ByteArrayInputStream(inputBytes)
         );
         Item content = new Item();
-        content.setCanonicalUri("uri");
+        content.setCanonicalUri(uri);
         content.setPublisher(Publisher.METABROADCAST);
         inputContent = ContentWriteExecutor.InputContent.create(content, "item");
         contentId = 0L;
@@ -133,7 +136,8 @@ public class ContentWriteControllerTest {
 
         controller = ContentWriteController.create(
                 configurationFetcher, writeExecutor, idGenerator, messageSender, modelWriter,
-                lookupEntryStore, contentResolver, contentWriter
+                lookupEntryStore, contentResolver, contentWriter,
+                equivalenceBreaker
         );
     }
 
@@ -151,6 +155,12 @@ public class ContentWriteControllerTest {
     public void unpublishContentByUri() throws Exception {
         when(request.getParameter(id)).thenReturn(null);
         when(request.getParameter(uri)).thenReturn(uri);
+        when(entryStoreIterator.hasNext()).thenReturn(true);
+        when(entryStoreIterator.next()).thenReturn(lookupEntry);
+
+        when(lookupEntryStore
+                .entriesForCanonicalUris(Lists.newArrayList(uri))).thenReturn(lookupEntries);
+        when(lookupEntries.iterator()).thenReturn(entryStoreIterator);
 
         unpublishContent();
     }

@@ -1,11 +1,11 @@
 package org.atlasapi.system;
 
-
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletResponse;
 
+import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
@@ -34,17 +34,20 @@ public class UnpublishContentController {
     private final LookupEntryStore lookupEntryStore;
     private final NumberToShortStringCodec idCodec;
     private final ContentWriter contentWriter;
+    private final EquivalenceBreaker equivalenceBreaker;
 
     public UnpublishContentController(
             NumberToShortStringCodec idCodec,
             ContentResolver contentResolver,
             LookupEntryStore lookupEntryStore,
-            ContentWriter contentWriter){
-
+            ContentWriter contentWriter,
+            EquivalenceBreaker equivalenceBreaker
+    ) {
         this.idCodec = checkNotNull(idCodec);
         this.contentResolver = checkNotNull(contentResolver);
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
         this.contentWriter = checkNotNull(contentWriter);
+        this.equivalenceBreaker = checkNotNull(equivalenceBreaker);
     }
 
     @RequestMapping(value = "/system/content/publish/{id}", method = RequestMethod.POST)
@@ -68,7 +71,7 @@ public class UnpublishContentController {
     private void setPublishStatusOfItem(String id, Optional<String> publisher, boolean status) {
         // if we cannot resolve the ID we want a notfound exception
         Long contentId = idCodec.decode(id).longValue();
-        LookupEntry contentUri = lookupEntryStore
+        LookupEntry lookupEntry = lookupEntryStore
                 .entriesForIds(Lists.newArrayList(contentId))
                 .iterator()
                 .next();
@@ -77,14 +80,14 @@ public class UnpublishContentController {
         Optional<Identified> identified =
                 Optional.ofNullable(
                         contentResolver
-                                .findByCanonicalUris(Lists.newArrayList(contentUri.uri()))
+                                .findByCanonicalUris(Lists.newArrayList(lookupEntry.uri()))
                                 .getFirstValue()
                                 .valueOrNull());
 
         // we throw lots of exceptions defensively
         if(! identified.isPresent()) {
             throw new NoSuchElementException(String.format(
-                    "Unable to resolve Item from ID %d, URI %s", contentId, contentUri.uri()));
+                    "Unable to resolve Item from ID %d, URI %s", contentId, lookupEntry.uri()));
         }
 
         // check publisher constraint is met
@@ -95,6 +98,9 @@ public class UnpublishContentController {
                         "Described %d is not published by '%s'", contentId, publisher)));
             }
         });
+
+        // remove from equivset
+        removeItemFromEquivSet(lookupEntry);
 
         // change publish status
         described.setActivelyPublished(status);
@@ -112,5 +118,14 @@ public class UnpublishContentController {
 
         throw new IllegalStateException((String.format(
                 "Described %d is not Item/Container", contentId)));
+    }
+
+    private void removeItemFromEquivSet(LookupEntry lookupEntry){
+        String lookupEntryUri = lookupEntry.uri();
+        lookupEntry.directEquivalents().forEach(lookupRef -> {
+                    String lookupRefUri = lookupRef.uri();
+                    equivalenceBreaker.removeFromSet(lookupEntryUri, lookupRefUri);
+                    equivalenceBreaker.removeFromSet(lookupRefUri, lookupEntryUri);
+        });
     }
 }

@@ -3,6 +3,7 @@ package org.atlasapi.query;
 import javax.xml.bind.JAXBElement;
 
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.feeds.tasks.Task;
 import org.atlasapi.feeds.tasks.persistence.TaskStore;
 import org.atlasapi.feeds.tasks.simple.TaskQueryResult;
@@ -14,8 +15,8 @@ import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
 import org.atlasapi.input.ChannelModelTransformer;
-import org.atlasapi.input.ImageModelTranslator;
 import org.atlasapi.input.DefaultJacksonModelReader;
+import org.atlasapi.input.ImageModelTranslator;
 import org.atlasapi.input.PersonModelTransformer;
 import org.atlasapi.input.TopicModelTransformer;
 import org.atlasapi.media.channel.CachingChannelGroupStore;
@@ -194,6 +195,7 @@ public class QueryWebModule {
     private @Autowired TaskStore taskStore;
     private @Autowired ContentHierarchyExpander hierarchyExpander;
     private @Autowired ChannelStore channelStore;
+    private @Autowired EquivalenceBreaker equivalenceBreaker;
 
     private @Autowired KnownTypeQueryExecutor queryExecutor;
     private @Autowired ApplicationConfigurationFetcher configFetcher;
@@ -380,7 +382,8 @@ public class QueryWebModule {
                 contentModelOutputter(),
                 lookupStore,
                 contentResolver,
-                contentWriter
+                contentWriter,
+                equivalenceBreaker
         );
     }
 

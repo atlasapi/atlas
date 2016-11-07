@@ -120,41 +120,7 @@ import org.springframework.context.annotation.Import;
 import static com.google.common.base.Predicates.in;
 import static com.google.common.base.Predicates.not;
 import static org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator.aliasResolvingGenerator;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-import static org.atlasapi.media.entity.Publisher.AMC_EBS;
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
-import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
-import static org.atlasapi.media.entity.Publisher.BETTY;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
-import static org.atlasapi.media.entity.Publisher.BT_VOD;
-import static org.atlasapi.media.entity.Publisher.C4_PRESS;
-import static org.atlasapi.media.entity.Publisher.FACEBOOK;
-import static org.atlasapi.media.entity.Publisher.ITUNES;
-import static org.atlasapi.media.entity.Publisher.LOVEFILM;
-import static org.atlasapi.media.entity.Publisher.NETFLIX;
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.RDIO;
-import static org.atlasapi.media.entity.Publisher.RTE;
-import static org.atlasapi.media.entity.Publisher.SOUNDCLOUD;
-import static org.atlasapi.media.entity.Publisher.SPOTIFY;
-import static org.atlasapi.media.entity.Publisher.TALK_TALK;
-import static org.atlasapi.media.entity.Publisher.VF_AE;
-import static org.atlasapi.media.entity.Publisher.VF_BBC;
-import static org.atlasapi.media.entity.Publisher.VF_C5;
-import static org.atlasapi.media.entity.Publisher.VF_ITV;
-import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
-import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
-import static org.atlasapi.media.entity.Publisher.YOUTUBE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
+import static org.atlasapi.media.entity.Publisher.*;
 
 @Configuration
 @Import({KafkaMessagingModule.class})
@@ -328,23 +294,29 @@ public class EquivModule {
         ImmutableSet<Publisher> acceptablePublishers = ImmutableSet.copyOf(Sets.difference(
             Publisher.all(), 
             Sets.union(
-                ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE), 
+                ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW,
+                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS),
                 Sets.union(musicPublishers, roviPublishers)
             )
         ));
         
-        EquivalenceUpdater<Item> standardItemUpdater = standardItemUpdater(MoreSets.add(acceptablePublishers, LOVEFILM), 
-                ImmutableSet.of(
-                        new TitleMatchingItemScorer(),
-                        new SequenceItemScorer(Score.ONE),
-                        new DescriptionTitleMatchingScorer(),
-                        DescriptionMatchingScorer.makeScorer()
-                )).build();
-        EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
+        EquivalenceUpdater<Item> standardItemUpdater =
+                standardItemUpdater(
+                        MoreSets.add(acceptablePublishers, LOVEFILM),
+                        ImmutableSet.of(
+                                new TitleMatchingItemScorer(),
+                                new SequenceItemScorer(Score.ONE),
+                                new DescriptionTitleMatchingScorer(),
+                                DescriptionMatchingScorer.makeScorer()
+                        )
+                ).build();
+        EquivalenceUpdater<Container> topLevelContainerUpdater =
+                topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
-            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX, RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK, PA, BT_VOD, BT_TVE_VOD, BETTY,
-                    AMC_EBS),
+            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX,
+                    RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK,
+                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS),
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();

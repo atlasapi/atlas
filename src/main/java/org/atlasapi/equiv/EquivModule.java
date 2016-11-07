@@ -15,12 +15,7 @@ permissions and limitations under the License. */
 package org.atlasapi.equiv;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Objects;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
@@ -45,7 +40,6 @@ import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
-import org.atlasapi.equiv.results.filters.AbstractEquivalenceFilter;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
@@ -66,6 +60,7 @@ import org.atlasapi.equiv.scorers.BroadcastAliasScorer;
 import org.atlasapi.equiv.scorers.ContainerHierarchyMatchingScorer;
 import org.atlasapi.equiv.scorers.CrewMemberScorer;
 import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
+import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
@@ -74,7 +69,6 @@ import org.atlasapi.equiv.scorers.SongCrewMemberExtractor;
 import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -127,6 +121,7 @@ import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
+import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
@@ -328,23 +323,29 @@ public class EquivModule {
         ImmutableSet<Publisher> acceptablePublishers = ImmutableSet.copyOf(Sets.difference(
             Publisher.all(), 
             Sets.union(
-                ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE), 
+                ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW,
+                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS),
                 Sets.union(musicPublishers, roviPublishers)
             )
         ));
         
-        EquivalenceUpdater<Item> standardItemUpdater = standardItemUpdater(MoreSets.add(acceptablePublishers, LOVEFILM), 
-                ImmutableSet.of(
-                        new TitleMatchingItemScorer(),
-                        new SequenceItemScorer(Score.ONE),
-                        new DescriptionTitleMatchingScorer(),
-                        DescriptionMatchingScorer.makeScorer()
-                )).build();
-        EquivalenceUpdater<Container> topLevelContainerUpdater = topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
+        EquivalenceUpdater<Item> standardItemUpdater =
+                standardItemUpdater(
+                        MoreSets.add(acceptablePublishers, LOVEFILM),
+                        ImmutableSet.of(
+                                new TitleMatchingItemScorer(),
+                                new SequenceItemScorer(Score.ONE),
+                                new DescriptionTitleMatchingScorer(),
+                                DescriptionMatchingScorer.makeScorer()
+                        )
+                ).build();
+        EquivalenceUpdater<Container> topLevelContainerUpdater =
+                topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
-            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX, RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK, PA, BT_VOD, BT_TVE_VOD, BETTY,
-                    AMC_EBS),
+            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX,
+                    RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK,
+                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS),
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();
@@ -355,6 +356,12 @@ public class EquivModule {
                 .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         }
+
+        updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
+                .withItemUpdater(standardItemUpdater)
+                .withTopLevelContainerUpdater(topLevelContainerUpdater)
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
+                .build());
 
         updaters.register(AMC_EBS, SourceSpecificEquivalenceUpdater.builder(AMC_EBS)
                 .withItemUpdater(standardItemUpdater)

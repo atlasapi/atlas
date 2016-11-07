@@ -10,6 +10,7 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
@@ -122,10 +123,13 @@ public class UnpublishContentController {
 
     private void removeItemFromEquivSet(LookupEntry lookupEntry){
         String lookupEntryUri = lookupEntry.uri();
-        lookupEntry.directEquivalents().forEach(lookupRef -> {
-                    String lookupRefUri = lookupRef.uri();
+        lookupEntry.directEquivalents()
+                .stream()
+                .map(LookupRef::uri)
+                .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))
+                .forEach(lookupRefUri -> {
                     equivalenceBreaker.removeFromSet(lookupEntryUri, lookupRefUri);
                     equivalenceBreaker.removeFromSet(lookupRefUri, lookupEntryUri);
-        });
+                });
     }
 }

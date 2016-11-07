@@ -127,9 +127,9 @@ public class UnpublishContentController {
                 .stream()
                 .map(LookupRef::uri)
                 .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))
-                .forEach(lookupRefUri -> {
-                    equivalenceBreaker.removeFromSet(lookupEntryUri, lookupRefUri);
-                    equivalenceBreaker.removeFromSet(lookupRefUri, lookupEntryUri);
-                });
+                .forEach(lookupRefUri -> equivalenceBreaker.removeFromSet(
+                        lookupEntryUri,
+                        lookupRefUri
+                ));
     }
 }

@@ -77,19 +77,11 @@ public class UnpublishContentController {
                 .iterator()
                 .next();
 
-        // let's get the content item now
         Optional<Identified> identified = resolveContent(contentId, lookupEntry);
-
-        // check publisher constraint is met
         Described described = validatePublisher(publisher, contentId, identified);
 
-        // remove from equivset if un-publishing
         removeItemFromEquivSet(status, lookupEntry);
-
-        // change publish status
         described.setActivelyPublished(status);
-
-        // now write in the appropriate manner
         writeUpdate(contentId, described);
     }
 

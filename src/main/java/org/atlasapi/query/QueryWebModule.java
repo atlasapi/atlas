@@ -3,6 +3,7 @@ package org.atlasapi.query;
 import javax.xml.bind.JAXBElement;
 
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.equiv.EquivTaskModule;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.feeds.tasks.Task;
 import org.atlasapi.feeds.tasks.persistence.TaskStore;
@@ -157,7 +158,7 @@ import tva.metadata._2010.TVAMainType;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @Configuration
-@Import({ WatermarkModule.class, QueryExecutorModule.class })
+@Import({ WatermarkModule.class, QueryExecutorModule.class, EquivTaskModule.class })
 public class QueryWebModule {
 
     private @Value("${local.host.name}") String localHostName;

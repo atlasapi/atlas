@@ -397,7 +397,8 @@ public class EquivTaskModule {
         return new RemoveEquivalenceController(equivalenceBreaker());
     }
 
-    public  @Bean EquivalenceBreaker equivalenceBreaker() {
+    @Bean
+    public EquivalenceBreaker equivalenceBreaker() {
         return new EquivalenceBreaker(contentResolver, lookupStore, lookupWriter);
     }
 

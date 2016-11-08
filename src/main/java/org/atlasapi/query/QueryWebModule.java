@@ -196,7 +196,7 @@ public class QueryWebModule {
     private @Autowired TaskStore taskStore;
     private @Autowired ContentHierarchyExpander hierarchyExpander;
     private @Autowired ChannelStore channelStore;
-    private @Autowired EquivalenceBreaker equivalenceBreaker;
+    @Autowired private EquivalenceBreaker equivalenceBreaker;
 
     private @Autowired KnownTypeQueryExecutor queryExecutor;
     private @Autowired ApplicationConfigurationFetcher configFetcher;

@@ -120,19 +120,12 @@ public class EquivTaskModule {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
-    private static final Set<String> ignored = ImmutableSet.of(
-            "http://www.bbc.co.uk/programmes/b006mgyl");
-//    private static final RepetitionRule EQUIVALENCE_REPETITION = RepetitionRules.daily(
-//            new LocalTime(9, 0)
-//    );
+    private static final Set<String> ignored =
+            ImmutableSet.of("http://www.bbc.co.uk/programmes/b006mgyl");
     private static final RepetitionRule RT_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(7, 0));
     private static final RepetitionRule TALKTALK_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(11, 15));
-    private static final RepetitionRule YOUVIEW_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(15, 0));
-    private static final RepetitionRule YOUVIEW_STAGE_EQUIVALENCE_REPETITION =
-            RepetitionRules.daily(new LocalTime(8, 0));
     private static final RepetitionRule YOUVIEW_SCHEDULE_EQUIVALENCE_REPETITION =
             RepetitionRules.every(Duration.standardHours(4));
     private static final RepetitionRule YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION =
@@ -230,8 +223,12 @@ public class EquivTaskModule {
                 ITUNES_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-        scheduleEquivalenceJob(publisherUpdateTask(ITV_INTERLINKING).withName(
-                "ITV Interlinking Equivalence Updater"), ITV_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(
+                publisherUpdateTask(ITV_INTERLINKING)
+                        .withName("ITV Interlinking Equivalence Updater"),
+                ITV_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
         scheduleEquivalenceJob(
                 publisherUpdateTask(FIVE).withName("Five Equivalence Updater"),
                 FIVE_SCHEDULE_EQUIVALENCE_REPETITION,
@@ -247,8 +244,11 @@ public class EquivTaskModule {
                 RT_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-        scheduleEquivalenceJob(publisherUpdateTask(TALK_TALK).withName(
-                "TalkTalk Equivalence Updater"), TALKTALK_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(
+                publisherUpdateTask(TALK_TALK).withName("TalkTalk Equivalence Updater"),
+                TALKTALK_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
         scheduleEquivalenceJob(
                 publisherUpdateTask(ROVI_EN).withName("Rovi EN Equivalence Updater"),
                 ROVI_EN_EQUIVALENCE_REPETITION,
@@ -265,38 +265,44 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD).withName(
-                        "BT TVE VOD (prod, conf1) Equivalence Updater"),
+                publisherUpdateTask(BT_TVE_VOD)
+                        .withName("BT TVE VOD (prod, conf1) Equivalence Updater"),
                 BT_VOD_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_VOLD_CONFIG_1).withName(
-                        "BT TVE VOD (vold, conf1) Equivalence Updater"),
+                publisherUpdateTask(BT_TVE_VOD_VOLD_CONFIG_1)
+                        .withName("BT TVE VOD (vold, conf1) Equivalence Updater"),
                 BT_VOD_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_VOLE_CONFIG_1).withName(
-                        "BT TVE VOD (vole, conf1) Equivalence Updater"),
+                publisherUpdateTask(BT_TVE_VOD_VOLE_CONFIG_1)
+                        .withName("BT TVE VOD (vole, conf1) Equivalence Updater"),
                 BT_VOD_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1).withName(
-                        "BT TVE VOD (systest2, conf1) Equivalence Updater"),
+                publisherUpdateTask(BT_TVE_VOD_SYSTEST2_CONFIG_1)
+                        .withName("BT TVE VOD (systest2, conf1) Equivalence Updater"),
                 BT_VOD_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-        scheduleEquivalenceJob(publisherUpdateTask(AMAZON_UNBOX).withName(
-                "Amazon Unbox Equivalence Updater"), AMAZON_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(
+                publisherUpdateTask(AMAZON_UNBOX).withName("Amazon Unbox Equivalence Updater"),
+                AMAZON_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
         scheduleEquivalenceJob(
                 publisherUpdateTask(UKTV).withName("UKTV Equivalence Updater"),
                 UKTV_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-        scheduleEquivalenceJob(publisherUpdateTask(WIKIPEDIA).withName(
-                "Wikipedia Equivalence Updater"), WIKIPEDIA_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(
+                publisherUpdateTask(WIKIPEDIA).withName("Wikipedia Equivalence Updater"),
+                WIKIPEDIA_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BBC_MUSIC).withName("Music Equivalence Updater"),
                 BBC_MUSIC_EQUIVALENCE_REPETITION,
@@ -322,13 +328,6 @@ public class EquivTaskModule {
                 RepetitionRules.NEVER,
                 jobsAtStartup
         );
-//        scheduleEquivalenceJob(
-//                publisherUpdateTask(LOVEFILM).withName("Lovefilm Equivalence Updater"),
-//                RepetitionRules.every(
-//                        Duration.standardHours(12)).withOffset(Duration.standardHours(10)
-//                ),
-//                jobsAtStartup
-//        );
         scheduleEquivalenceJob(
                 publisherUpdateTask(NETFLIX).withName("Netflix Equivalence Updater"),
                 RepetitionRules.NEVER,
@@ -339,8 +338,11 @@ public class EquivTaskModule {
                 RepetitionRules.NEVER,
                 jobsAtStartup
         );
-        scheduleEquivalenceJob(publisherUpdateTask(YOUVIEW_STAGE).withName(
-                "YouView Stage Equivalence Updater"), RepetitionRules.NEVER, jobsAtStartup);
+        scheduleEquivalenceJob(
+                publisherUpdateTask(YOUVIEW_STAGE).withName("YouView Stage Equivalence Updater"),
+                RepetitionRules.NEVER,
+                jobsAtStartup
+        );
         scheduleEquivalenceJob(
                 publisherUpdateTask(VF_AE).withName("VF AE Equivalence Updater"),
                 VF_AE_EQUIVALENCE_REPETITION,
@@ -361,18 +363,24 @@ public class EquivTaskModule {
                 VF_ITV_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-        scheduleEquivalenceJob(publisherUpdateTask(VF_VIACOM).withName(
-                "VF VIACOM Equivalence Updater"), VF_VIACOM_EQUIVALENCE_REPETITION, jobsAtStartup);
+        scheduleEquivalenceJob(
+                publisherUpdateTask(VF_VIACOM).withName("VF VIACOM Equivalence Updater"),
+                VF_VIACOM_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
         scheduleEquivalenceJob(
                 publisherUpdateTask(VF_VUBIQUITY).withName("VF VUBIQUITY Equivalence Updater"),
                 VF_VUBIQUITY_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-        scheduleEquivalenceJob(publisherUpdateTask(EBMS_VF_UK).withName(
-                "EBMS VF Equivalence Updater"), EBMS_VF_EQUIVALENCE_REPETITION, jobsAtStartup);
         scheduleEquivalenceJob(
-                publisherUpdateTask(REDBEE_MEDIA).withName(
-                        "Redbee Statutory Listings Equivalence Updater"),
+                publisherUpdateTask(EBMS_VF_UK).withName("EBMS VF Equivalence Updater"),
+                EBMS_VF_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(REDBEE_MEDIA)
+                        .withName("Redbee Statutory Listings Equivalence Updater"),
                 REDBEE_MEDIA_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
@@ -382,12 +390,10 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(C4_PRESS).withName(
-                        "C4 Press Equivalence Updater"),
+                publisherUpdateTask(C4_PRESS).withName("C4 Press Equivalence Updater"),
                 C4_PRESS_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(BT_SPORT_EBS)
@@ -396,7 +402,6 @@ public class EquivTaskModule {
                 EBS_SPORTS_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
-
         scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(BBC)
@@ -449,7 +454,6 @@ public class EquivTaskModule {
     }
 
     private void addYouViewScheduleEquivalenceJobs(Set<ScheduledTask> jobsAtStartup) {
-
         // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
         // coverage from the next day onwards
         scheduleEquivalenceJob(
@@ -466,7 +470,6 @@ public class EquivTaskModule {
                         .build().withName("YouView Stage Schedule Equivalence (8 day) Updater"),
                 YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION
         );
-
         // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
         // coverage from the next day onwards
         scheduleEquivalenceJob(
@@ -484,7 +487,6 @@ public class EquivTaskModule {
                         .withName("YouView Stage BT Schedule Equivalence (8 day) Updater"),
                 YOUVIEW_STAGE_SCHEDULE_EQUIVALENCE_REPETITION
         );
-
         // This job is scheduled for late in the day so run it for +8 days to ensure we get +7 day
         // coverage from the next day onwards
         scheduleEquivalenceJob(

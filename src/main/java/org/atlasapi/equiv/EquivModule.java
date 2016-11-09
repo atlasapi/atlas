@@ -235,6 +235,19 @@ public class EquivModule {
         ));
     }
 
+    private <T extends Content> EquivalenceFilter<T> filtersForEbs() {
+        return ConjunctiveFilter.valueOf(ImmutableList.of(
+                new MinimumScoreFilter<T>(1.01),
+                new MediaTypeFilter<T>(),
+                new SpecializationFilter<T>(),
+                new PublisherFilter<T>(),
+                new ExclusionListFilter<T>(excludedUrisFromProperties()),
+                new FilmFilter<T>(),
+                new DummyContainerFilter<T>(),
+                new UnpublishedContentFilter<T>()
+        ));
+    }
+
     private <T extends Content> EquivalenceFilter<T> standardFilter(Iterable<EquivalenceFilter<T>> additional) {
         return ConjunctiveFilter.valueOf(Iterables.concat(ImmutableList.of(
             new MinimumScoreFilter<T>(0.25),
@@ -281,6 +294,30 @@ public class EquivModule {
                         equivAssertDestination(), acceptablePublishers, lookupEntryStore
                 )
             )));
+    }
+
+    private ContentEquivalenceUpdater.Builder<Item> ebsItemUpdater(Set<Publisher> acceptablePublishers, Set<? extends EquivalenceScorer<Item>> scorers, Predicate<? super Broadcast> filter) {
+        return ContentEquivalenceUpdater.<Item> builder()
+                .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
+                        new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver,
+                                channelResolver, acceptablePublishers, Duration.standardMinutes(5), filter)
+                ))
+                .withExcludedUris(excludedUrisFromProperties())
+                .withScorers(scorers)
+                .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
+                .withFilter(this.standardFilter())
+                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
+                .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
+                        EpisodeFilteringEquivalenceResultHandler.relaxed(
+                                new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
+                                equivSummaryStore
+                        ),
+                        new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
+                        new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                        MessageQueueingResultHandler.create(
+                                equivAssertDestination(), acceptablePublishers, lookupEntryStore
+                        )
+                )));
     }
     
     private EquivalenceUpdater<Container> topLevelContainerUpdater(Set<Publisher> publishers) {
@@ -339,6 +376,18 @@ public class EquivModule {
                                 DescriptionMatchingScorer.makeScorer()
                         )
                 ).build();
+
+        EquivalenceUpdater<Item> ebsItemUpdater =
+                ebsItemUpdater(
+                        MoreSets.add(acceptablePublishers, LOVEFILM),
+                        ImmutableSet.of(
+                                new TitleMatchingItemScorer(),
+                                new SequenceItemScorer(Score.ONE),
+                                new DescriptionTitleMatchingScorer(),
+                                DescriptionMatchingScorer.makeScorer()
+                        ), Predicates.alwaysTrue()
+                ).build();
+
         EquivalenceUpdater<Container> topLevelContainerUpdater =
                 topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 

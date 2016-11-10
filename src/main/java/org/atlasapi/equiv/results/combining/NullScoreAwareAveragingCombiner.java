@@ -22,11 +22,19 @@ import com.google.common.collect.Maps.EntryTransformer;
 
 public class NullScoreAwareAveragingCombiner<T extends Described> implements ScoreCombiner<T> {
     
+    private boolean ignoreNullScoringContent;
+
     public static final <T extends Described> NullScoreAwareAveragingCombiner<T> get() {
         return new NullScoreAwareAveragingCombiner<T>();
     }
     
-    public NullScoreAwareAveragingCombiner() {}
+    public NullScoreAwareAveragingCombiner() {
+        ignoreNullScoringContent = false;
+    }
+
+    public void setIgnoreNullScoringContent(boolean choice) {
+        ignoreNullScoringContent = choice;
+    }
     
     @Override
     public ScoredCandidates<T> combine(List<ScoredCandidates<T>> scoredEquivalents, ResultDescription desc) {
@@ -78,6 +86,11 @@ public class NullScoreAwareAveragingCombiner<T extends Described> implements Sco
             public Score transformEntry(T key, Score value) {
                 if (value.isRealScore()) {
                     Integer count = publisherCounts.get(key.getPublisher());
+
+                    if (ignoreNullScoringContent && count == 1) {
+                        return Score.ZERO;
+                    }
+
                     return Score.valueOf(value.asDouble() / (count != null ? count : 1));
                 } else {
                     return value;

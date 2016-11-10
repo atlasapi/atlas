@@ -115,4 +115,36 @@ public class NullScoreAwareAveragingCombinerTest extends TestCase {
         assertEquals(Score.valueOf(2.0), combined.candidates().get(equivalent5));
         
     }
+
+    @Test
+    public void testCombineWithIgnoreNullFlagOn() {
+
+        combiner.setIgnoreNullScoringContent(true);
+
+        List<ScoredCandidates<Item>> scores = ImmutableList.of(
+                DefaultScoredCandidates.<Item>fromSource("source2")
+                        .addEquivalent(equivalent1, Score.valueOf(5.0))
+                        .addEquivalent(equivalent2, Score.NULL_SCORE)
+                        .addEquivalent(equivalent3, Score.valueOf(5.0))
+                        .build(),
+                DefaultScoredCandidates.<Item>fromSource("source1")
+                        .addEquivalent(equivalent1, Score.valueOf(5.0))
+                        .addEquivalent(equivalent2, Score.valueOf(5.0))
+                        .addEquivalent(equivalent3, Score.valueOf(5.0))
+                        .addEquivalent(equivalent1, Score.valueOf(5.0))
+                        .build(),
+                DefaultScoredCandidates.<Item>fromSource("source3")
+                        .addEquivalent(equivalent3, Score.valueOf(5.0))
+                        .addEquivalent(equivalent1, Score.NULL_SCORE)
+                        .build()
+        );
+
+        ScoredCandidates<Item> combined = combiner.combine(scores, new DefaultDescription());
+
+        assertEquals(Score.valueOf(5.0), combined.candidates().get(equivalent3));
+        assertEquals(Score.valueOf(7.5), combined.candidates().get(equivalent1));
+        assertEquals(Score.valueOf(0.0), combined.candidates().get(equivalent2));
+
+        combiner.setIgnoreNullScoringContent(false);
+    }
 }

@@ -25,76 +25,8 @@ import com.google.common.collect.Iterables;
 
 public class ContentEquivalenceUpdater<T extends Content> implements EquivalenceUpdater<T> {
 
-    public static final <T extends Content> Builder<T> builder() {
+    public static <T extends Content> Builder<T> builder() {
         return new Builder<T>();
-    }
-    
-    public static final class Builder<T extends Content> {
-        
-        private ImmutableSet.Builder<EquivalenceGenerator<T>> generators = ImmutableSet.builder();
-        private ImmutableSet.Builder<EquivalenceScorer<T>> scorers = ImmutableSet.builder();
-        private ScoreCombiner<T> combiner;
-        private EquivalenceFilter<T> filter;
-        private EquivalenceExtractor<T> extractor;
-        private EquivalenceResultHandler<T> handler;
-        private Set<String> excludedUris;
-        
-        public Builder<T> withGenerator(EquivalenceGenerator<T> generator) {
-            generators.add(generator);
-            return this;
-        }
-        
-        public Builder<T> withGenerators(Iterable<? extends EquivalenceGenerator<T>> generators) {
-            this.generators.addAll(generators);
-            return this;
-        }
-        
-        public Builder<T> withScorer(EquivalenceScorer<T> scorer) {
-            this.scorers.add(scorer);
-            return this;
-        }
-
-        public Builder<T> withScorers(Iterable<? extends EquivalenceScorer<T>> scorers) {
-            this.scorers.addAll(scorers);
-            return this;
-        }
-        
-        public Builder<T> withCombiner(ScoreCombiner<T> combiner) {
-            this.combiner = combiner;
-            return this;
-        }
-        
-        public Builder<T> withFilter(EquivalenceFilter<T> filter) {
-            this.filter = filter;
-            return this;
-        }
-        
-        public Builder<T> withExtractor(EquivalenceExtractor<T> extractor) {
-            this.extractor = extractor;
-            return this;
-        }
-
-        public Builder<T> withHandler(EquivalenceResultHandler<T> handler) {
-            this.handler = handler;
-            return this;
-        }
-
-        public Builder<T> withExcludedUris(Set<String> excludedUris) {
-            this.excludedUris = excludedUris;
-            return this;
-        }
-        
-        public ContentEquivalenceUpdater<T> build() {
-            return new ContentEquivalenceUpdater<T>(
-                generators.build(),
-                scorers.build(),
-                combiner,
-                filter,
-                extractor,
-                handler,
-                excludedUris
-            );
-        }
     }
     
     private final ScoredEquivalentsMerger merger = new ScoredEquivalentsMerger();
@@ -109,15 +41,15 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     private final EquivalenceScorers<T> scorers;
     private final DefaultEquivalenceResultBuilder<T> resultBuilder;
     private final EquivalenceResultHandler<T> handler;
-    
+
     private ContentEquivalenceUpdater(
-        Iterable<EquivalenceGenerator<T>> generators,
-        Iterable<EquivalenceScorer<T>> scorers,
-        ScoreCombiner<T> combiner,
-        EquivalenceFilter<T> filter,
-        EquivalenceExtractor<T> extractor,
-        EquivalenceResultHandler<T> handler,
-        Set<String> excludedUris
+            Iterable<EquivalenceGenerator<T>> generators,
+            Iterable<EquivalenceScorer<T>> scorers,
+            ScoreCombiner<T> combiner,
+            EquivalenceFilter<T> filter,
+            EquivalenceExtractor<T> extractor,
+            EquivalenceResultHandler<T> handler,
+            Set<String> excludedUris
     ) {
         this.generators = EquivalenceGenerators.from(generators, excludedUris);
         this.scorers = EquivalenceScorers.from(scorers);
@@ -148,5 +80,73 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     
     private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
         return Iterables.concat(Iterables.transform(generatedScores, extractCandidates));
+    }
+
+    public static final class Builder<T extends Content> {
+
+        private ImmutableSet.Builder<EquivalenceGenerator<T>> generators = ImmutableSet.builder();
+        private ImmutableSet.Builder<EquivalenceScorer<T>> scorers = ImmutableSet.builder();
+        private ScoreCombiner<T> combiner;
+        private EquivalenceFilter<T> filter;
+        private EquivalenceExtractor<T> extractor;
+        private EquivalenceResultHandler<T> handler;
+        private Set<String> excludedUris;
+
+        public Builder<T> withGenerator(EquivalenceGenerator<T> generator) {
+            generators.add(generator);
+            return this;
+        }
+
+        public Builder<T> withGenerators(Iterable<? extends EquivalenceGenerator<T>> generators) {
+            this.generators.addAll(generators);
+            return this;
+        }
+
+        public Builder<T> withScorer(EquivalenceScorer<T> scorer) {
+            this.scorers.add(scorer);
+            return this;
+        }
+
+        public Builder<T> withScorers(Iterable<? extends EquivalenceScorer<T>> scorers) {
+            this.scorers.addAll(scorers);
+            return this;
+        }
+
+        public Builder<T> withCombiner(ScoreCombiner<T> combiner) {
+            this.combiner = combiner;
+            return this;
+        }
+
+        public Builder<T> withFilter(EquivalenceFilter<T> filter) {
+            this.filter = filter;
+            return this;
+        }
+
+        public Builder<T> withExtractor(EquivalenceExtractor<T> extractor) {
+            this.extractor = extractor;
+            return this;
+        }
+
+        public Builder<T> withHandler(EquivalenceResultHandler<T> handler) {
+            this.handler = handler;
+            return this;
+        }
+
+        public Builder<T> withExcludedUris(Set<String> excludedUris) {
+            this.excludedUris = excludedUris;
+            return this;
+        }
+
+        public ContentEquivalenceUpdater<T> build() {
+            return new ContentEquivalenceUpdater<T>(
+                    generators.build(),
+                    scorers.build(),
+                    combiner,
+                    filter,
+                    extractor,
+                    handler,
+                    excludedUris
+            );
+        }
     }
 }

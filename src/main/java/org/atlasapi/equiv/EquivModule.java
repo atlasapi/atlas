@@ -284,24 +284,36 @@ public class EquivModule {
             )));
     }
 
-    private ContentEquivalenceUpdater.Builder<Item> ebsItemUpdater(Set<Publisher> acceptablePublishers, Set<? extends EquivalenceScorer<Item>> scorers) {
+    private ContentEquivalenceUpdater.Builder<Item> ebsItemUpdater(
+            Set<Publisher> acceptablePublishers,
+            Set<? extends EquivalenceScorer<Item>> scorers
+    ) {
 
-        NullScoreAwareAveragingCombiner<Item> combiner = new NullScoreAwareAveragingCombiner<>();
-        combiner.setIgnoreNullScoringContent(true);
+        NullScoreAwareAveragingCombiner<Item> combiner =
+                new NullScoreAwareAveragingCombiner<>(true);
 
         return ContentEquivalenceUpdater.<Item> builder()
                 .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
-                        new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver,
-                                channelResolver, acceptablePublishers, Duration.standardMinutes(5), Predicates.alwaysTrue())
+                        new BroadcastMatchingItemEquivalenceGenerator(
+                                scheduleResolver,
+                                channelResolver,
+                                acceptablePublishers,
+                                Duration.standardMinutes(5),
+                                Predicates.alwaysTrue())
                 ))
                 .withExcludedUris(excludedUrisFromProperties())
                 .withScorers(scorers)
                 .withCombiner(combiner)
                 .withFilter(this.standardFilter())
-                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
+                .withExtractor(
+                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
+                                .atLeastNTimesGreater(1.5)
+                )
                 .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
                         EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
+                                new LookupWritingEquivalenceHandler<Item>(
+                                        lookupWriter,
+                                        acceptablePublishers),
                                 equivSummaryStore
                         ),
                         new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),

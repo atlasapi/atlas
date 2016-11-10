@@ -30,7 +30,8 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
     
     private final ScoredEquivalentsMerger merger = new ScoredEquivalentsMerger();
-    private final Function<ScoredCandidates<T>, Iterable<T>> extractCandidates = new Function<ScoredCandidates<T>, Iterable<T>>() {
+    private final Function<ScoredCandidates<T>, Iterable<T>> extractCandidates =
+            new Function<ScoredCandidates<T>, Iterable<T>>() {
         @Override
         public Iterable<T> apply(ScoredCandidates<T> input) {
             return input.candidates().keySet();

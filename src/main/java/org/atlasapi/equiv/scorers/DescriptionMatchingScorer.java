@@ -28,7 +28,7 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
 
     // Proportion threshold of key words that need to match between the two descriptions
     // to conclude there is a match
-    public static final double PROPORTION_CROSSOVER = 0.2;
+    public static final double PROPORTION_CROSSOVER = 0.4;
 
     // Capitalised word finding regex
     public static final String REGEX = "\\b([A-Z]\\w*)\\b";
@@ -43,7 +43,8 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
     @Override
     public ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates,
             ResultDescription desc) {
-        DefaultScoredCandidates.Builder<Item> equivalents = DefaultScoredCandidates.fromSource(NAME);
+        DefaultScoredCandidates.Builder<Item> equivalents =
+                DefaultScoredCandidates.fromSource(NAME);
 
         for (Item candidate : candidates) {
             equivalents.addEquivalent(candidate, score(subject, candidate, desc));
@@ -56,7 +57,11 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
         Score score = Score.nullScore();
 
         score = score(subject, candidate);
-        desc.appendText("%s (%s) scored: %s", candidate.getTitle(), candidate.getCanonicalUri(), score);
+        desc.appendText(
+                "%s (%s) scored: %s",
+                candidate.getTitle(),
+                candidate.getCanonicalUri(),
+                score);
 
         return score;
     }
@@ -71,7 +76,8 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
 
         candidateList.retainAll(subjectList);
 
-        return new Double(candidateList.size())/new Double(subjectList.size()) > PROPORTION_CROSSOVER;
+        return new Double(candidateList.size())/new Double(subjectList.size()) >
+                PROPORTION_CROSSOVER;
     }
 
     private Set<String> descriptionToProcessedList(String description) {

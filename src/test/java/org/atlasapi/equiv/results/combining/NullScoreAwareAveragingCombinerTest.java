@@ -16,7 +16,8 @@ import com.google.common.collect.ImmutableList;
 
 public class NullScoreAwareAveragingCombinerTest extends TestCase {
     
-    private final NullScoreAwareAveragingCombiner<Item> combiner = NullScoreAwareAveragingCombiner.get();
+    private final NullScoreAwareAveragingCombiner<Item> combiner =
+            NullScoreAwareAveragingCombiner.get();
 
     private final Item equivalent1 = target("equivalent1", "Equivalent1", Publisher.BBC);
     private final Item equivalent2 = target("equivalent2", "Equivalent2", Publisher.C4);
@@ -29,7 +30,7 @@ public class NullScoreAwareAveragingCombinerTest extends TestCase {
     }
 
     @Test
-    public void testCombine() {
+    public void testCombineSingleNonNullScoreWithIgnoreNullScoringCandidatesFlagOffReturnsScore() {
         
         List<ScoredCandidates<Item>> scores = ImmutableList.of(
                 DefaultScoredCandidates.<Item>fromSource("source2")
@@ -114,5 +115,37 @@ public class NullScoreAwareAveragingCombinerTest extends TestCase {
         assertEquals(Score.valueOf(5.0), combined.candidates().get(equivalent4));
         assertEquals(Score.valueOf(2.0), combined.candidates().get(equivalent5));
         
+    }
+
+    @Test
+    public void testCombineSingleNonNullScoreWithIgnoreNullScoringCandidatesFlagOffReturnsZero() {
+
+        NullScoreAwareAveragingCombiner ignoreSetCombiner =
+                new NullScoreAwareAveragingCombiner(true);
+
+        List<ScoredCandidates<Item>> scores = ImmutableList.of(
+                DefaultScoredCandidates.<Item>fromSource("source2")
+                        .addEquivalent(equivalent1, Score.valueOf(5.0))
+                        .addEquivalent(equivalent2, Score.nullScore())
+                        .addEquivalent(equivalent3, Score.valueOf(5.0))
+                        .build(),
+                DefaultScoredCandidates.<Item>fromSource("source1")
+                        .addEquivalent(equivalent1, Score.nullScore())
+                        .addEquivalent(equivalent2, Score.valueOf(5.0))
+                        .addEquivalent(equivalent3, Score.nullScore())
+                        .addEquivalent(equivalent1, Score.nullScore())
+                        .build(),
+                DefaultScoredCandidates.<Item>fromSource("source3")
+                        .addEquivalent(equivalent3, Score.nullScore())
+                        .addEquivalent(equivalent1, Score.nullScore())
+                        .build()
+        );
+
+        ScoredCandidates<Item> combined =
+                ignoreSetCombiner.combine(scores, new DefaultDescription());
+
+        assertEquals(Score.valueOf(0.0), combined.candidates().get(equivalent3));
+        assertEquals(Score.valueOf(0.0), combined.candidates().get(equivalent1));
+        assertEquals(Score.valueOf(0.0), combined.candidates().get(equivalent2));
     }
 }

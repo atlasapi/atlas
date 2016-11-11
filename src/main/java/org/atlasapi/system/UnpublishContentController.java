@@ -77,7 +77,15 @@ public class UnpublishContentController {
                 .iterator()
                 .next();
 
-        // let's get the content item now
+        Optional<Identified> identified = resolveContent(contentId, lookupEntry);
+        Described described = validatePublisher(publisher, contentId, identified);
+
+        removeItemFromEquivSet(status, lookupEntry);
+        described.setActivelyPublished(status);
+        writeUpdate(contentId, described);
+    }
+
+    private Optional<Identified> resolveContent(Long contentId, LookupEntry lookupEntry) {
         Optional<Identified> identified =
                 Optional.ofNullable(
                         contentResolver
@@ -90,8 +98,11 @@ public class UnpublishContentController {
             throw new NoSuchElementException(String.format(
                     "Unable to resolve Item from ID %d, URI %s", contentId, lookupEntry.uri()));
         }
+        return identified;
+    }
 
-        // check publisher constraint is met
+    private Described validatePublisher(Optional<String> publisher, Long contentId,
+            Optional<Identified> identified) {
         Described described = (Described) identified.get();
         publisher.ifPresent(key -> {
             if (!key.equals(described.getPublisher().key())) {
@@ -99,16 +110,24 @@ public class UnpublishContentController {
                         "Described %d is not published by '%s'", contentId, publisher)));
             }
         });
+        return described;
+    }
 
-        // remove from equivset if un-publishing
-        if(!status){
-            removeItemFromEquivSet(lookupEntry);
+    private void removeItemFromEquivSet(boolean status, LookupEntry lookupEntry){
+        if(!status) {
+            String lookupEntryUri = lookupEntry.uri();
+            lookupEntry.directEquivalents()
+                    .stream()
+                    .map(LookupRef::uri)
+                    .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))
+                    .forEach(lookupRefUri -> equivalenceBreaker.removeFromSet(
+                            lookupEntryUri,
+                            lookupRefUri
+                    ));
         }
+    }
 
-        // change publish status
-        described.setActivelyPublished(status);
-
-        // now write in the appropriate manner
+    private void writeUpdate(Long contentId, Described described) {
         if(described instanceof Item) {
             contentWriter.createOrUpdate((Item) described);
             return;
@@ -121,17 +140,5 @@ public class UnpublishContentController {
 
         throw new IllegalStateException((String.format(
                 "Described %d is not Item/Container", contentId)));
-    }
-
-    private void removeItemFromEquivSet(LookupEntry lookupEntry){
-        String lookupEntryUri = lookupEntry.uri();
-        lookupEntry.directEquivalents()
-                .stream()
-                .map(LookupRef::uri)
-                .filter(lookupRefUri -> !lookupRefUri.equals(lookupEntryUri))
-                .forEach(lookupRefUri -> equivalenceBreaker.removeFromSet(
-                        lookupEntryUri,
-                        lookupRefUri
-                ));
     }
 }

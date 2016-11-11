@@ -3,7 +3,6 @@ package org.atlasapi.query;
 import javax.xml.bind.JAXBElement;
 
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.equiv.EquivTaskModule;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.feeds.tasks.Task;
 import org.atlasapi.feeds.tasks.persistence.TaskStore;
@@ -105,6 +104,7 @@ import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventContentLister;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.logging.AdapterLog;
+import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.output.ContainerSummaryResolver;
 import org.atlasapi.persistence.output.MongoAvailableItemsResolver;
@@ -158,53 +158,54 @@ import tva.metadata._2010.TVAMainType;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @Configuration
-@Import({ WatermarkModule.class, QueryExecutorModule.class, EquivTaskModule.class })
+@Import({ WatermarkModule.class, QueryExecutorModule.class })
 public class QueryWebModule {
 
-    private @Value("${local.host.name}") String localHostName;
-    private @Value("${ids.expose}") String exposeIds;
-    private @Value("${events.whitelist.ids}") String eventsWhitelist;
+    @Value("${local.host.name}") private String localHostName;
+    @Value("${ids.expose}") private String exposeIds;
+    @Value("${events.whitelist.ids}") private String eventsWhitelist;
 
-    private @Autowired DatabasedMongo mongo;
-    private @Autowired ContentGroupWriter contentGroupWriter;
-    private @Autowired ContentGroupResolver contentGroupResolver;
-    private @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) ContentWriter contentWriter;
-    private @Autowired LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
-    private @Autowired ScheduleWriter scheduleWriter;
-    private @Autowired ContentResolver contentResolver;
-    private @Autowired ChannelResolver channelResolver;
-    private @Autowired ChannelGroupStore channelGroupStore;
-    private @Autowired ScheduleResolver scheduleResolver;
-    private @Autowired SearchResolver searchResolver;
-    private @Autowired PeopleResolver peopleResolver;
-    private @Autowired TopicQueryResolver topicResolver;
-    private @Autowired @Qualifier("topicStore") TopicStore topicStore;
-    private @Autowired TopicContentLister topicContentLister;
-    private @Autowired SegmentResolver segmentResolver;
-    private @Autowired ProductResolver productResolver;
-    private @Autowired PeopleQueryResolver peopleQueryResolver;
-    private @Autowired PersonStore personStore;
-    private @Autowired ServiceResolver serviceResolver;
-    private @Autowired PlayerResolver playerResolver;
-    private @Autowired LookupEntryStore lookupStore;
-    private @Autowired DescriptionWatermarker descriptionWatermarker;
-    private @Autowired EventResolver eventResolver;
-    private @Autowired FeedStatisticsResolver feedStatsResolver;
-    private @Autowired TvAnytimeGenerator feedGenerator;
-    private @Autowired LastUpdatedContentFinder contentFinder;
-    private @Autowired SegmentWriter segmentWriter;
-    private @Autowired TaskStore taskStore;
-    private @Autowired ContentHierarchyExpander hierarchyExpander;
-    private @Autowired ChannelStore channelStore;
-    private @Autowired EquivalenceBreaker equivalenceBreaker;
+    @Autowired private DatabasedMongo mongo;
+    @Autowired private ContentGroupWriter contentGroupWriter;
+    @Autowired private ContentGroupResolver contentGroupResolver;
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired private LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
+    @Autowired private ScheduleWriter scheduleWriter;
+    @Autowired private ContentResolver contentResolver;
+    @Autowired private ChannelResolver channelResolver;
+    @Autowired private ChannelGroupStore channelGroupStore;
+    @Autowired private ScheduleResolver scheduleResolver;
+    @Autowired private SearchResolver searchResolver;
+    @Autowired private PeopleResolver peopleResolver;
+    @Autowired private TopicQueryResolver topicResolver;
+    @Autowired @Qualifier("topicStore")  private TopicStore topicStore;
+    @Autowired private TopicContentLister topicContentLister;
+    @Autowired private SegmentResolver segmentResolver;
+    @Autowired private ProductResolver productResolver;
+    @Autowired private PeopleQueryResolver peopleQueryResolver;
+    @Autowired private PersonStore personStore;
+    @Autowired private ServiceResolver serviceResolver;
+    @Autowired private PlayerResolver playerResolver;
+    @Autowired private LookupEntryStore lookupStore;
+    @Autowired private DescriptionWatermarker descriptionWatermarker;
+    @Autowired private EventResolver eventResolver;
+    @Autowired private FeedStatisticsResolver feedStatsResolver;
+    @Autowired private TvAnytimeGenerator feedGenerator;
+    @Autowired private LastUpdatedContentFinder contentFinder;
+    @Autowired private SegmentWriter segmentWriter;
+    @Autowired private TaskStore taskStore;
+    @Autowired private ContentHierarchyExpander hierarchyExpander;
+    @Autowired private ChannelStore channelStore;
+    @Autowired private LookupEntryStore entryStore;
+    @Autowired private LookupWriter lookupWriter;
 
-    private @Autowired KnownTypeQueryExecutor queryExecutor;
-    private @Autowired ApplicationConfigurationFetcher configFetcher;
-    private @Autowired AdapterLog log;
-    private @Autowired EventContentLister eventContentLister;
+    @Autowired private KnownTypeQueryExecutor queryExecutor;
+    @Autowired private ApplicationConfigurationFetcher configFetcher;
+    @Autowired private AdapterLog log;
+    @Autowired private EventContentLister eventContentLister;
 
-    private @Autowired ContentWriteExecutor contentWriteExecutor;
-    private @Autowired MessageSender<ContentWriteMessage> contentWriteMessageSender;
+    @Autowired private ContentWriteExecutor contentWriteExecutor;
+    @Autowired private MessageSender<ContentWriteMessage> contentWriteMessageSender;
 
     @Bean
     ChannelController channelController() {
@@ -384,7 +385,11 @@ public class QueryWebModule {
                 lookupStore,
                 contentResolver,
                 contentWriter,
-                equivalenceBreaker
+                new EquivalenceBreaker(
+                        contentResolver,
+                        entryStore,
+                        lookupWriter
+                )
         );
     }
 
@@ -799,6 +804,7 @@ public class QueryWebModule {
     ContentGroupModelSimplifier contentGroupSimplifier() {
         return new ContentGroupModelSimplifier(imageSimplifier());
     }
+
     @Bean
     TopicModelSimplifier topicSimplifier() {
         return new TopicModelSimplifier(localHostName);

@@ -38,6 +38,7 @@ import org.atlasapi.equiv.handlers.MessageQueueingResultHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
+import org.atlasapi.equiv.results.combining.ScoreCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
@@ -296,6 +297,46 @@ public class EquivModule {
                 new ColumbusTelescopeReportHandler<Item>(getTelescopeClient())
             )));
     }
+
+    private ContentEquivalenceUpdater.Builder<Item> ebsItemUpdater(
+            Set<Publisher> acceptablePublishers,
+            Set<? extends EquivalenceScorer<Item>> scorers
+    ) {
+
+        NullScoreAwareAveragingCombiner<Item> combiner =
+                new NullScoreAwareAveragingCombiner<>(true);
+
+        return ContentEquivalenceUpdater.<Item> builder()
+                .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
+                        new BroadcastMatchingItemEquivalenceGenerator(
+                                scheduleResolver,
+                                channelResolver,
+                                acceptablePublishers,
+                                Duration.standardMinutes(5),
+                                Predicates.alwaysTrue())
+                ))
+                .withExcludedUris(excludedUrisFromProperties())
+                .withScorers(scorers)
+                .withCombiner(combiner)
+                .withFilter(this.standardFilter())
+                .withExtractor(
+                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
+                                .atLeastNTimesGreater(1.5)
+                )
+                .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
+                        EpisodeFilteringEquivalenceResultHandler.relaxed(
+                                new LookupWritingEquivalenceHandler<Item>(
+                                        lookupWriter,
+                                        acceptablePublishers),
+                                equivSummaryStore
+                        ),
+                        new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
+                        new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                        MessageQueueingResultHandler.create(
+                                equivAssertDestination(), acceptablePublishers, lookupEntryStore
+                        )
+                )));
+    }
     
     private EquivalenceUpdater<Container> topLevelContainerUpdater(Set<Publisher> publishers) {
         return ContentEquivalenceUpdater.<Container> builder()
@@ -353,6 +394,18 @@ public class EquivModule {
                                 DescriptionMatchingScorer.makeScorer()
                         )
                 ).build();
+
+        EquivalenceUpdater<Item> ebsItemUpdater =
+                ebsItemUpdater(
+                        MoreSets.add(acceptablePublishers, LOVEFILM),
+                        ImmutableSet.of(
+                                new TitleMatchingItemScorer(),
+                                new SequenceItemScorer(Score.ONE),
+                                new DescriptionTitleMatchingScorer(),
+                                DescriptionMatchingScorer.makeScorer()
+                        )
+                ).build();
+
         EquivalenceUpdater<Container> topLevelContainerUpdater =
                 topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
 
@@ -372,7 +425,7 @@ public class EquivModule {
         }
 
         updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
-                .withItemUpdater(standardItemUpdater)
+                .withItemUpdater(ebsItemUpdater)
                 .withTopLevelContainerUpdater(topLevelContainerUpdater)
                 .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());

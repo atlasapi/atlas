@@ -28,12 +28,69 @@ import com.google.common.collect.Iterables;
 
 public class ContentEquivalenceUpdater<T extends Content> implements EquivalenceUpdater<T> {
 
-    public static final <T extends Content> Builder<T> builder() {
+    public static <T extends Content> Builder<T> builder() {
         return new Builder<T>();
     }
     
+    private final ScoredEquivalentsMerger merger = new ScoredEquivalentsMerger();
+    private final Function<ScoredCandidates<T>, Iterable<T>> extractCandidates =
+            new Function<ScoredCandidates<T>, Iterable<T>>() {
+        @Override
+        public Iterable<T> apply(ScoredCandidates<T> input) {
+            return input.candidates().keySet();
+        }
+    };
+
+    private final EquivalenceGenerators<T> generators;
+    private final EquivalenceScorers<T> scorers;
+    private final DefaultEquivalenceResultBuilder<T> resultBuilder;
+    private final EquivalenceResultHandler<T> handler;
+
+    private ContentEquivalenceUpdater(
+            Iterable<EquivalenceGenerator<T>> generators,
+            Iterable<EquivalenceScorer<T>> scorers,
+            ScoreCombiner<T> combiner,
+            EquivalenceFilter<T> filter,
+            EquivalenceExtractor<T> extractor,
+            EquivalenceResultHandler<T> handler,
+            Set<String> excludedUris
+    ) {
+        this.generators = EquivalenceGenerators.from(generators, excludedUris);
+        this.scorers = EquivalenceScorers.from(scorers);
+        this.resultBuilder = new DefaultEquivalenceResultBuilder<T>(combiner, filter, extractor);
+        this.handler = handler;
+    }
+
+    @Override
+    public boolean updateEquivalences(
+            T content,
+            Optional<String> taskId,
+            IngestTelescopeClientImpl telescopeClient
+    ) {
+        ReadableDescription desc = new DefaultDescription();
+
+        List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
+
+        Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
+
+        List<ScoredCandidates<T>> scoredScores = scorers.score(content, candidates, desc);
+
+        List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
+
+        EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
+        handler.handle(result, taskId);
+
+        boolean hasCandidates = !result.combinedEquivalences().candidates().isEmpty();
+
+        return hasCandidates;
+    }
+
+    private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
+        return Iterables.concat(Iterables.transform(generatedScores, extractCandidates));
+    }
+
     public static final class Builder<T extends Content> {
-        
+
         private ImmutableSet.Builder<EquivalenceGenerator<T>> generators = ImmutableSet.builder();
         private ImmutableSet.Builder<EquivalenceScorer<T>> scorers = ImmutableSet.builder();
         private ScoreCombiner<T> combiner;
@@ -41,17 +98,17 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         private EquivalenceExtractor<T> extractor;
         private EquivalenceResultHandler<T> handler;
         private Set<String> excludedUris;
-        
+
         public Builder<T> withGenerator(EquivalenceGenerator<T> generator) {
             generators.add(generator);
             return this;
         }
-        
+
         public Builder<T> withGenerators(Iterable<? extends EquivalenceGenerator<T>> generators) {
             this.generators.addAll(generators);
             return this;
         }
-        
+
         public Builder<T> withScorer(EquivalenceScorer<T> scorer) {
             this.scorers.add(scorer);
             return this;
@@ -61,17 +118,17 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             this.scorers.addAll(scorers);
             return this;
         }
-        
+
         public Builder<T> withCombiner(ScoreCombiner<T> combiner) {
             this.combiner = combiner;
             return this;
         }
-        
+
         public Builder<T> withFilter(EquivalenceFilter<T> filter) {
             this.filter = filter;
             return this;
         }
-        
+
         public Builder<T> withExtractor(EquivalenceExtractor<T> extractor) {
             this.extractor = extractor;
             return this;
@@ -86,74 +143,17 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             this.excludedUris = excludedUris;
             return this;
         }
-        
+
         public ContentEquivalenceUpdater<T> build() {
             return new ContentEquivalenceUpdater<T>(
-                generators.build(),
-                scorers.build(),
-                combiner,
-                filter,
-                extractor,
-                handler,
-                excludedUris
+                    generators.build(),
+                    scorers.build(),
+                    combiner,
+                    filter,
+                    extractor,
+                    handler,
+                    excludedUris
             );
         }
-    }
-    
-    private final ScoredEquivalentsMerger merger = new ScoredEquivalentsMerger();
-    private final Function<ScoredCandidates<T>, Iterable<T>> extractCandidates = new Function<ScoredCandidates<T>, Iterable<T>>() {
-        @Override
-        public Iterable<T> apply(ScoredCandidates<T> input) {
-            return input.candidates().keySet();
-        }
-    };
-    
-    private final EquivalenceGenerators<T> generators;
-    private final EquivalenceScorers<T> scorers;
-    private final DefaultEquivalenceResultBuilder<T> resultBuilder;
-    private final EquivalenceResultHandler<T> handler;
-    
-    private ContentEquivalenceUpdater(
-        Iterable<EquivalenceGenerator<T>> generators,
-        Iterable<EquivalenceScorer<T>> scorers,
-        ScoreCombiner<T> combiner,
-        EquivalenceFilter<T> filter,
-        EquivalenceExtractor<T> extractor,
-        EquivalenceResultHandler<T> handler,
-        Set<String> excludedUris
-    ) {
-        this.generators = EquivalenceGenerators.from(generators, excludedUris);
-        this.scorers = EquivalenceScorers.from(scorers);
-        this.resultBuilder = new DefaultEquivalenceResultBuilder<T>(combiner, filter, extractor);
-        this.handler = handler;
-    }
-
-    @Override
-    public boolean updateEquivalences(
-            T content,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
-    ) {
-
-        ReadableDescription desc = new DefaultDescription();
-
-        List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
-        
-        Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
-        
-        List<ScoredCandidates<T>> scoredScores = scorers.score(content, candidates, desc);
-        
-        List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
-        
-        EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
-        handler.handle(result, taskId);
-
-        boolean hasCandidates = !result.combinedEquivalences().candidates().isEmpty();
-
-        return hasCandidates;
-    }
-    
-    private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
-        return Iterables.concat(Iterables.transform(generatedScores, extractCandidates));
     }
 }

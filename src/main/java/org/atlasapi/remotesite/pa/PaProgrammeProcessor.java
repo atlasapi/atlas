@@ -566,9 +566,17 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         ImmutableList.Builder<String> uris = ImmutableList.builder();
 
         Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
-        Optional<String> legacyFilmUri = rtFilmIdentifier.transform(PaHelper::getLegacyFilmUri);
-        legacyFilmUri.transform(uris::add);
 
+        // Previously when constructing the uri we would failover to ProgId if the rtFilmIdentifier
+        // was missing but still write to the same namespace. To avoid creating duplicates we have
+        // to replicate this old behavior and use the rtFilmIdentifier for resolution when its
+        // available
+
+        String legacyFilmUri = rtFilmIdentifier.isPresent()
+                 ? PaHelper.getLegacyFilmUri(rtFilmIdentifier.get())
+                 : PaHelper.getLegacyFilmUri(progData.getProgId());
+
+        uris.add(legacyFilmUri);
         uris.add(PaHelper.getAlias(progData.getProgId()));
         uris.add(PaHelper.getFilmUri(identifierFor(progData)));
         Map<String, Identified> resolvedContent = contentResolver.findByUris(
@@ -586,7 +594,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     private Film getFilmFromResolvedContent(
             ProgData progData,
             Map<String, Identified> resolvedContent,
-            Optional<String> legacyFilmUri
+            String legacyFilmUri
     ) {
         // After updating our version 3 alias URI's we started introducing duplicates
         // by only resolving and updating content with the new URI's
@@ -598,7 +606,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         }
 
         Identified previous;
-        if (legacyFilmUri.isPresent() && resolvedContent.containsKey(legacyFilmUri)) {
+        if (resolvedContent.containsKey(legacyFilmUri)) {
             previous = resolvedContent.get(legacyFilmUri);
 
         } else {

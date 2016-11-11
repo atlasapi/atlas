@@ -3,7 +3,6 @@ package org.atlasapi.query;
 import javax.xml.bind.JAXBElement;
 
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.equiv.EquivTaskModule;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.feeds.tasks.Task;
 import org.atlasapi.feeds.tasks.persistence.TaskStore;
@@ -105,6 +104,7 @@ import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventContentLister;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.logging.AdapterLog;
+import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.output.ContainerSummaryResolver;
 import org.atlasapi.persistence.output.MongoAvailableItemsResolver;
@@ -158,7 +158,7 @@ import tva.metadata._2010.TVAMainType;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @Configuration
-@Import({ WatermarkModule.class, QueryExecutorModule.class, EquivTaskModule.class })
+@Import({ WatermarkModule.class, QueryExecutorModule.class })
 public class QueryWebModule {
 
     @Value("${local.host.name}") private String localHostName;
@@ -196,7 +196,8 @@ public class QueryWebModule {
     @Autowired private TaskStore taskStore;
     @Autowired private ContentHierarchyExpander hierarchyExpander;
     @Autowired private ChannelStore channelStore;
-    @Autowired private EquivalenceBreaker equivalenceBreaker;
+    @Autowired private LookupEntryStore entryStore;
+    @Autowired private LookupWriter lookupWriter;
 
     @Autowired private KnownTypeQueryExecutor queryExecutor;
     @Autowired private ApplicationConfigurationFetcher configFetcher;
@@ -384,7 +385,11 @@ public class QueryWebModule {
                 lookupStore,
                 contentResolver,
                 contentWriter,
-                equivalenceBreaker
+                new EquivalenceBreaker(
+                        contentResolver,
+                        entryStore,
+                        lookupWriter
+                )
         );
     }
 

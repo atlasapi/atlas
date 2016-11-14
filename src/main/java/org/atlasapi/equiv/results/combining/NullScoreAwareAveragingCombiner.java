@@ -38,7 +38,10 @@ public class NullScoreAwareAveragingCombiner<T extends Described> implements Sco
             ResultDescription desc
     ) {
         
-        desc.startStage("Null-score-aware combining");
+        desc.startStage(String.format(
+                "Null-score-aware combining with ignoreNullScoringCandidate set to %s",
+                ignoreNullScoringCandidate
+        ));
         
         Map<T,Score> tempResults = Maps.newHashMap();
         final Map<T, Integer> counts = Maps.newHashMap();
@@ -60,9 +63,9 @@ public class NullScoreAwareAveragingCombiner<T extends Described> implements Sco
         // For each publisher, find the maximum number of non-null scores for
         // Content from that Publisher
         final Map<Publisher, Integer> publisherCounts = transformToPublisherCounts(counts);
-        
+
         // Average the scores by the publisher counts.
-        Map<T, Score> scaledScores = scaleResultsByCounts(tempResults, publisherCounts);
+        Map<T, Score> scaledScores = scaleResultsByCounts(tempResults, publisherCounts, desc);
         
         desc.finishStage();
         return DefaultScoredCandidates.fromMappedEquivs(Joiner.on("/").join(source), scaledScores);
@@ -84,7 +87,8 @@ public class NullScoreAwareAveragingCombiner<T extends Described> implements Sco
 
     private Map<T, Score> scaleResultsByCounts(
             Map<T, Score> tempResults,
-            final Map<Publisher, Integer> publisherCounts
+            final Map<Publisher, Integer> publisherCounts,
+            ResultDescription desc
     ) {
         return Maps.transformEntries(tempResults, new EntryTransformer<T, Score, Score>() {
             @Override
@@ -95,8 +99,13 @@ public class NullScoreAwareAveragingCombiner<T extends Described> implements Sco
                     // if count == 1 then the only score came from the generator
                     // which we sometimes want to not equivalate just because of
                     if (ignoreNullScoringCandidate && count == 1) {
+                        desc.appendText(
+                                "candidate %s was set to score 0 as it got nullscore from all scorers",
+                                key.getCanonicalUri()
+                        );
                         return Score.ZERO;
                     }
+
 
                     return Score.valueOf(value.asDouble() / (count != null ? count : 1));
                 } else {

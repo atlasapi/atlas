@@ -37,7 +37,6 @@ import org.atlasapi.equiv.handlers.MessageQueueingResultHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
-import org.atlasapi.equiv.results.combining.ScoreCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
@@ -365,7 +364,7 @@ public class EquivModule {
             Publisher.all(), 
             Sets.union(
                 ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW,
-                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS),
+                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS, C4_PRESS),
                 Sets.union(musicPublishers, roviPublishers)
             )
         ));
@@ -398,7 +397,7 @@ public class EquivModule {
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
             ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX,
                     RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK,
-                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS),
+                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS, C4_PRESS),
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();

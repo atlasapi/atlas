@@ -409,12 +409,6 @@ public class EquivModule {
                 .build());
         }
 
-        updaters.register(C4_PRESS, SourceSpecificEquivalenceUpdater.builder(C4_PRESS)
-                .withItemUpdater(ebsItemUpdater)
-                .withTopLevelContainerUpdater(topLevelContainerUpdater)
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
-                .build());
-
         updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
                 .withItemUpdater(ebsItemUpdater)
                 .withTopLevelContainerUpdater(topLevelContainerUpdater)

@@ -121,41 +121,7 @@ import org.springframework.context.annotation.Import;
 import static com.google.common.base.Predicates.in;
 import static com.google.common.base.Predicates.not;
 import static org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator.aliasResolvingGenerator;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-import static org.atlasapi.media.entity.Publisher.AMC_EBS;
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
-import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
-import static org.atlasapi.media.entity.Publisher.BETTY;
-import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
-import static org.atlasapi.media.entity.Publisher.BT_VOD;
-import static org.atlasapi.media.entity.Publisher.FACEBOOK;
-import static org.atlasapi.media.entity.Publisher.ITUNES;
-import static org.atlasapi.media.entity.Publisher.LOVEFILM;
-import static org.atlasapi.media.entity.Publisher.NETFLIX;
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.RDIO;
-import static org.atlasapi.media.entity.Publisher.RTE;
-import static org.atlasapi.media.entity.Publisher.SOUNDCLOUD;
-import static org.atlasapi.media.entity.Publisher.SPOTIFY;
-import static org.atlasapi.media.entity.Publisher.TALK_TALK;
-import static org.atlasapi.media.entity.Publisher.VF_AE;
-import static org.atlasapi.media.entity.Publisher.VF_BBC;
-import static org.atlasapi.media.entity.Publisher.VF_C5;
-import static org.atlasapi.media.entity.Publisher.VF_ITV;
-import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
-import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
-import static org.atlasapi.media.entity.Publisher.YOUTUBE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
+import static org.atlasapi.media.entity.Publisher.*;
 
 @Configuration
 @Import({KafkaMessagingModule.class})
@@ -379,7 +345,7 @@ public class EquivModule {
             Publisher.all(), 
             Sets.union(
                 ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW,
-                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS),
+                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS, C4_PRESS),
                 Sets.union(musicPublishers, roviPublishers)
             )
         ));
@@ -412,7 +378,7 @@ public class EquivModule {
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
             ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX,
                     RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK,
-                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS),
+                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS, C4_PRESS),
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();
@@ -477,6 +443,16 @@ public class EquivModule {
         updaters.register(BBC_REDUX, SourceSpecificEquivalenceUpdater.builder(BBC_REDUX)
                 .withItemUpdater(broadcastItemEquivalenceUpdater(reduxPublishers, Score.nullScore(), Predicates.alwaysTrue()))
                 .withTopLevelContainerUpdater(broadcastItemContainerEquivalenceUpdater(reduxPublishers))
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                .build());
+
+        updaters.register(C4_PRESS, SourceSpecificEquivalenceUpdater.builder(C4_PRESS)
+                .withItemUpdater(broadcastItemEquivalenceUpdater(
+                        ImmutableSet.of(PA),
+                        Score.nullScore(),
+                        Predicates.alwaysTrue()
+                ))
+                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
                 .build());
 

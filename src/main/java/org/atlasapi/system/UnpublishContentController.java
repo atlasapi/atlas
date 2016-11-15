@@ -89,7 +89,7 @@ public class UnpublishContentController {
         // if we cannot resolve the ID we want a notfound exception
         LookupEntry lookupEntry = getLookupEntry(id, uri);
 
-        Optional<Identified> identified = resolveContent(id, uri, lookupEntry);
+        Optional<Identified> identified = resolveContent(lookupEntry);
         Described described = validatePublisher(publisher, identified);
 
         removeItemFromEquivSet(status, lookupEntry);

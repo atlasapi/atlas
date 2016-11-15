@@ -105,15 +105,13 @@ public class UnpublishContentController {
                     .entriesForIds(Lists.newArrayList(contentId))
                     .iterator()
                     .next();
-        }
-        else if (uri.isPresent()){
+        } else if (uri.isPresent()){
             lookupEntry = lookupEntryStore
                     .entriesForCanonicalUris(Lists.newArrayList(uri.get()))
                     .iterator()
                     .next();
-        }
-        else {
-            throw new RuntimeException("id / uri parameter not specified");
+        } else {
+            throw new IllegalArgumentException("id / uri parameter not specified");
         }
         return lookupEntry;
     }

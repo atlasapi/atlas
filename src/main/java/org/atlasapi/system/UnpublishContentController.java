@@ -118,31 +118,13 @@ public class UnpublishContentController {
         return lookupEntry;
     }
 
-    private Optional<Identified> resolveContent(
-            Optional<String> id,
-            Optional<String> uri,
-            LookupEntry lookupEntry
-    ) {
-        Optional<Identified> identified;
-        if(id.isPresent()){
-            identified = Optional.ofNullable(
-                    contentResolver
-                            .findByCanonicalUris(Lists.newArrayList(lookupEntry.uri()))
-                            .getFirstValue()
-                            .valueOrNull()
-            );
-        }
-        else if (uri.isPresent()){
-            identified = Optional.ofNullable(
-                    contentResolver
-                            .findByCanonicalUris(Lists.newArrayList(uri.get()))
-                            .getFirstValue()
-                            .valueOrNull()
-            );
-        }
-        else {
-            throw new RuntimeException("id / uri parameter not specified");
-        }
+    private Optional<Identified> resolveContent(LookupEntry lookupEntry) {
+        Optional<Identified> identified = Optional.ofNullable(
+                contentResolver
+                        .findByCanonicalUris(Lists.newArrayList(lookupEntry.uri()))
+                        .getFirstValue()
+                        .valueOrNull()
+        );
 
         // we throw lots of exceptions defensively
         if(! identified.isPresent()) {

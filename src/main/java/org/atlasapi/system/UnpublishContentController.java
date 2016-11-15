@@ -20,7 +20,6 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 
 import com.google.common.collect.Lists;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -51,63 +50,97 @@ public class UnpublishContentController {
         this.equivalenceBreaker = checkNotNull(equivalenceBreaker);
     }
 
-    @RequestMapping(value = "/system/content/publish/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "/system/content/publish", method = RequestMethod.POST)
     public void publish(HttpServletResponse response,
-            @PathVariable("id") String id,
-            @RequestParam(value = "publisher", required = false) String publisher) {
-
-        setPublishStatusOfItem(id, Optional.ofNullable(publisher), true);
+            @RequestParam(value = "id", required = false) String id,
+            @RequestParam(value = "uri", required = false) String uri,
+            @RequestParam(value = "publisher", required = false) String publisher
+    ) {
+        setPublishStatusOfItem(
+                Optional.ofNullable(id),
+                Optional.ofNullable(uri),
+                Optional.ofNullable(publisher),
+                true
+        );
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    @RequestMapping(value = "/system/content/unpublish/{id}", method = RequestMethod.POST)
+    @RequestMapping(value = "/system/content/unpublish", method = RequestMethod.POST)
     public void unpublish(HttpServletResponse response,
-            @PathVariable("id") String id,
-            @RequestParam(value = "publisher") String publisher) {
-
-        setPublishStatusOfItem(id, Optional.ofNullable(publisher), false);
+            @RequestParam(value = "id", required = false) String id,
+            @RequestParam(value = "uri", required = false) String uri,
+            @RequestParam(value = "publisher") String publisher
+    ) {
+        setPublishStatusOfItem(
+                Optional.ofNullable(id),
+                Optional.ofNullable(uri),
+                Optional.ofNullable(publisher),
+                false
+        );
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private void setPublishStatusOfItem(String id, Optional<String> publisher, boolean status) {
+    private void setPublishStatusOfItem(
+            Optional<String> id,
+            Optional<String> uri,
+            Optional<String> publisher,
+            boolean status
+    ) {
         // if we cannot resolve the ID we want a notfound exception
-        Long contentId = idCodec.decode(id).longValue();
-        LookupEntry lookupEntry = lookupEntryStore
-                .entriesForIds(Lists.newArrayList(contentId))
-                .iterator()
-                .next();
+        LookupEntry lookupEntry = getLookupEntry(id, uri);
 
-        Optional<Identified> identified = resolveContent(contentId, lookupEntry);
-        Described described = validatePublisher(publisher, contentId, identified);
+        Optional<Identified> identified = resolveContent(lookupEntry);
+        Described described = validatePublisher(publisher, identified);
 
         removeItemFromEquivSet(status, lookupEntry);
         described.setActivelyPublished(status);
-        writeUpdate(contentId, described);
+        writeUpdate(described);
     }
 
-    private Optional<Identified> resolveContent(Long contentId, LookupEntry lookupEntry) {
-        Optional<Identified> identified =
-                Optional.ofNullable(
-                        contentResolver
-                                .findByCanonicalUris(Lists.newArrayList(lookupEntry.uri()))
-                                .getFirstValue()
-                                .valueOrNull());
+    private LookupEntry getLookupEntry(Optional<String> id, Optional<String> uri) {
+        LookupEntry lookupEntry;
+        if(id.isPresent()){
+            Long contentId = idCodec.decode(id.get()).longValue();
+            lookupEntry = lookupEntryStore
+                    .entriesForIds(Lists.newArrayList(contentId))
+                    .iterator()
+                    .next();
+        } else if (uri.isPresent()){
+            lookupEntry = lookupEntryStore
+                    .entriesForCanonicalUris(Lists.newArrayList(uri.get()))
+                    .iterator()
+                    .next();
+        } else {
+            throw new IllegalArgumentException("id / uri parameter not specified");
+        }
+        return lookupEntry;
+    }
+
+    private Optional<Identified> resolveContent(LookupEntry lookupEntry) {
+        Optional<Identified> identified = Optional.ofNullable(
+                contentResolver
+                        .findByCanonicalUris(Lists.newArrayList(lookupEntry.uri()))
+                        .getFirstValue()
+                        .valueOrNull()
+        );
 
         // we throw lots of exceptions defensively
         if(! identified.isPresent()) {
             throw new NoSuchElementException(String.format(
-                    "Unable to resolve Item from ID %d, URI %s", contentId, lookupEntry.uri()));
+                    "Unable to resolve Item from ID %d, URI %s", lookupEntry.id(), lookupEntry.uri()));
         }
         return identified;
     }
 
-    private Described validatePublisher(Optional<String> publisher, Long contentId,
-            Optional<Identified> identified) {
+    private Described validatePublisher(
+            Optional<String> publisher,
+            Optional<Identified> identified
+    ) {
         Described described = (Described) identified.get();
         publisher.ifPresent(key -> {
             if (!key.equals(described.getPublisher().key())) {
                 throw new RuntimeException((String.format(
-                        "Described %d is not published by '%s'", contentId, publisher)));
+                        "Described %d is not published by '%s'", described.getId(), publisher)));
             }
         });
         return described;
@@ -127,7 +160,7 @@ public class UnpublishContentController {
         }
     }
 
-    private void writeUpdate(Long contentId, Described described) {
+    private void writeUpdate(Described described) {
         if(described instanceof Item) {
             contentWriter.createOrUpdate((Item) described);
             return;
@@ -139,6 +172,6 @@ public class UnpublishContentController {
         }
 
         throw new IllegalStateException((String.format(
-                "Described %d is not Item/Container", contentId)));
+                "Described %d is not Item/Container", described.getId())));
     }
 }

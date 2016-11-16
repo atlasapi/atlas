@@ -54,9 +54,7 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
     }
 
     private Score score(Item subject, Item candidate, ResultDescription desc) {
-        Score score = Score.nullScore();
-
-        score = score(subject, candidate);
+        Score score = score(subject, candidate);
         desc.appendText(
                 "%s (%s) scored: %s",
                 candidate.getTitle(),
@@ -74,9 +72,19 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
         Set<String> candidateList = descriptionToProcessedList(candidate.getDescription());
         Set<String> subjectList = descriptionToProcessedList(subject.getDescription());
 
-        candidateList.retainAll(subjectList);
+        Set<String> allCapitalisedWordsList = Sets.newHashSet(candidateList);
 
-        return new Double(candidateList.size())/new Double(subjectList.size()) >
+        allCapitalisedWordsList.addAll(
+                subjectList.stream()
+                .filter(word -> !candidateList.contains(word))
+                .collect(Collectors.toSet())
+        );
+
+        Set<String> capitalisedWordsFoundInBoth = Sets.newHashSet(subjectList);
+        capitalisedWordsFoundInBoth.retainAll(candidateList);
+
+        return (new Double(capitalisedWordsFoundInBoth.size()) /
+                new Double(allCapitalisedWordsList.size())) >
                 PROPORTION_CROSSOVER;
     }
 

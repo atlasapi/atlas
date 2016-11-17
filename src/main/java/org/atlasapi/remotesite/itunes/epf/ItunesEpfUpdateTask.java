@@ -99,7 +99,6 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             //episode id -> trackNumber/series
             Multimap<Series, Episode> extractedEpisodes = linkEpisodesAndSeries(
                     dataSet.getCollectionVideoTable(),
-                    dataSet.getVideoTable(),
                     extractedSeries,
                     extractVideos(dataSet.getVideoTable(), extractedSeries, extractedLocations)
             );
@@ -262,9 +261,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
         });
     }
 
-    private Multimap<Series, Episode> linkEpisodesAndSeries(
-            EpfTable<EpfCollectionVideo> cvTable,
-            EpfTable<EpfVideo> vTable,
+    private Multimap<Series, Episode> linkEpisodesAndSeries(EpfTable<EpfCollectionVideo> cvTable,
             final Map<Integer, Series> extractedSeries,
             final Map<Integer, Episode> extractedEpisodes) throws IOException {
         reportStatus("Linking videos to series...");
@@ -276,8 +273,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
             public boolean process(EpfCollectionVideo row) {
                 Series series = extractedSeries.get(row.get(EpfCollectionVideo.COLLECTION_ID));
                 if (series != null) {
-//                    series.withSeriesNumber(row.get(EpfCollectionVideo.VOLUME_NUMBER));
-                    series.withSeriesNumber(parseSeriesNumber(row.get(EpfVideo.COLLECTION_DISPLAY_NAME)))
+                    series.withSeriesNumber(row.get(EpfCollectionVideo.VOLUME_NUMBER));
                     Episode ep = extractedEpisodes.get(row.get(EpfCollectionVideo.VIDEO_ID));
                     if (ep != null) {
                         ep.setEpisodeNumber(row.get(EpfCollectionVideo.TRACK_NUMBER));
@@ -292,10 +288,6 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
                 ep.setSeriesNumber(series.getSeriesNumber());
                 ep.setParentRef(series.getParent());
                 return ep;
-            }
-
-            private int parseSeriesNumber(String collectionDisplayName) {
-                return 0;
             }
 
             @Override

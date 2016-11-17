@@ -1,12 +1,5 @@
 package org.atlasapi.equiv.update.tasks;
 
-import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
-import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
-import static org.atlasapi.persistence.content.ContentCategory.CONTAINER;
-import static org.atlasapi.persistence.content.ContentCategory.TOP_LEVEL_ITEM;
-import static org.atlasapi.persistence.content.listing.ContentListingCriteria.defaultCriteria;
-import static org.atlasapi.persistence.content.listing.ContentListingProgress.progressFrom;
-
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
@@ -22,10 +15,18 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
+import com.metabroadcast.common.scheduling.UpdateProgress;
+
 import com.google.common.base.Joiner;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+
+import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
+import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
+import static org.atlasapi.persistence.content.ContentCategory.CONTAINER;
+import static org.atlasapi.persistence.content.ContentCategory.TOP_LEVEL_ITEM;
+import static org.atlasapi.persistence.content.listing.ContentListingCriteria.defaultCriteria;
+import static org.atlasapi.persistence.content.listing.ContentListingProgress.progressFrom;
 
 public final class ContentEquivalenceUpdateTask extends AbstractContentListingTask<Content> {
 
@@ -41,7 +42,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
     public ContentEquivalenceUpdateTask(ContentLister contentLister, ContentResolver contentResolver, ScheduleTaskProgressStore progressStore, EquivalenceUpdater<Content> updater, Set<String> ignored) {
         super(contentLister);
         this.progressStore = progressStore;
-        this.updater = new RootEquivalenceUpdater(contentResolver, updater);
+        this.updater = RootEquivalenceUpdater.create(contentResolver, updater);
         this.ignored = ignored;
     }
 

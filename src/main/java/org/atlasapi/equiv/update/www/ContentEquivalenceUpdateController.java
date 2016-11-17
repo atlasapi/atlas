@@ -1,27 +1,28 @@
 package org.atlasapi.equiv.update.www;
 
-import static com.metabroadcast.common.http.HttpStatusCode.NOT_FOUND;
-import static com.metabroadcast.common.http.HttpStatusCode.OK;
-
 import java.io.IOException;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
-import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Function;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.RootEquivalenceUpdater;
+import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Function;
+import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -29,13 +30,15 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.common.base.Splitter;
-import com.google.common.collect.Iterables;
+import static com.metabroadcast.common.http.HttpStatusCode.NOT_FOUND;
+import static com.metabroadcast.common.http.HttpStatusCode.OK;
 
 @Controller
 public class ContentEquivalenceUpdateController {
     
-    private static final Logger log = LoggerFactory.getLogger(ContentEquivalenceUpdateController.class);
+    private static final Logger log = LoggerFactory.getLogger(
+            ContentEquivalenceUpdateController.class
+    );
     
     private final Splitter commaSplitter = Splitter.on(',').trimResults().omitEmptyStrings();
 
@@ -44,14 +47,31 @@ public class ContentEquivalenceUpdateController {
     private final ExecutorService executor;
     private final SubstitutionTableNumberCodec codec;
     private final LookupEntryStore lookupEntryStore;
+    private final ObjectMapper mapper;
 
-    public ContentEquivalenceUpdateController(EquivalenceUpdater<Content> contentUpdater,
-            ContentResolver contentResolver, LookupEntryStore lookupEntryStore) {
-        this.contentUpdater = new RootEquivalenceUpdater(contentResolver, contentUpdater);
+    private ContentEquivalenceUpdateController(
+            EquivalenceUpdater<Content> contentUpdater,
+            ContentResolver contentResolver,
+            LookupEntryStore lookupEntryStore
+    ) {
+        this.contentUpdater = RootEquivalenceUpdater.create(contentResolver, contentUpdater);
         this.contentResolver = contentResolver;
         this.executor = Executors.newFixedThreadPool(5);
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
         this.lookupEntryStore = lookupEntryStore;
+        this.mapper = new ObjectMapper();
+    }
+
+    public static ContentEquivalenceUpdateController create(
+            EquivalenceUpdater<Content> contentUpdater,
+            ContentResolver contentResolver,
+            LookupEntryStore lookupEntryStore
+    ) {
+        return new ContentEquivalenceUpdateController(
+                contentUpdater,
+                contentResolver,
+                lookupEntryStore
+        );
     }
 
     @RequestMapping(value = "/system/equivalence/update", method = RequestMethod.POST)
@@ -77,6 +97,17 @@ public class ContentEquivalenceUpdateController {
         }
         response.setStatus(OK.code());
 
+    }
+
+    @RequestMapping(value = "/system/equivalence/configuration", method = RequestMethod.GET)
+    public void getEquivalenceConfiguration(HttpServletResponse response) throws IOException {
+        EquivalenceUpdaterMetadata metadata = contentUpdater.getMetadata();
+
+        mapper.writeValue(
+                response.getWriter(),
+                metadata
+        );
+        response.setStatus(OK.code());
     }
 
     private Iterable<String> urisFor(String csvIds) {

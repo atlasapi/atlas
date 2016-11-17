@@ -550,7 +550,7 @@ public class EquivTaskModule {
     //Controllers...
     @Bean
     public ContentEquivalenceUpdateController contentEquivalenceUpdateController() {
-        return new ContentEquivalenceUpdateController(equivUpdater, contentResolver, lookupStore);
+        return ContentEquivalenceUpdateController.create(equivUpdater, contentResolver, lookupStore);
     }
 
     @Bean

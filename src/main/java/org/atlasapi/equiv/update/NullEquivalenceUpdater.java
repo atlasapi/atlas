@@ -1,5 +1,8 @@
 package org.atlasapi.equiv.update;
 
+import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
+import org.atlasapi.equiv.update.metadata.NopEquivalenceUpdaterMetadata;
+
 public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
 
     private enum NullUpdater implements EquivalenceUpdater<Object> {
@@ -7,6 +10,11 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
             @Override
             public boolean updateEquivalences(Object content) {
                 return false;
+            }
+
+            @Override
+            public EquivalenceUpdaterMetadata getMetadata() {
+                return NopEquivalenceUpdaterMetadata.create();
             }
         };
 
@@ -16,11 +24,11 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
         }
     }
 
-    public static final <T> EquivalenceUpdater<T> get() {
-        return NullUpdater.INSTANCE.withNarrowedType();
+    private NullEquivalenceUpdater() {
     }
 
-    private NullEquivalenceUpdater() {
+    public static <T> EquivalenceUpdater<T> get() {
+        return NullUpdater.INSTANCE.withNarrowedType();
     }
 
     @Override
@@ -28,4 +36,8 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
         return false;
     }
 
+    @Override
+    public EquivalenceUpdaterMetadata getMetadata() {
+        return NopEquivalenceUpdaterMetadata.create();
+    }
 }

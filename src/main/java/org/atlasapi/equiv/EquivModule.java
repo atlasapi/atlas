@@ -73,7 +73,7 @@ import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
-import org.atlasapi.equiv.update.EquivalenceUpdaters;
+import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
 import org.atlasapi.equiv.update.NullEquivalenceUpdater;
 import org.atlasapi.equiv.update.SourceSpecificEquivalenceUpdater;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -409,7 +409,9 @@ public class EquivModule {
                     PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS, C4_PRESS, RADIO_TIMES_UPCOMING),
             Sets.union(musicPublishers, roviPublishers)
         ));
-        final EquivalenceUpdaters updaters = new EquivalenceUpdaters();
+
+        MultipleSourceEquivalenceUpdater updaters = MultipleSourceEquivalenceUpdater.create();
+
         for (Publisher publisher : Iterables.filter(Publisher.all(), not(in(nonStandardPublishers)))) {
             updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
                 .withItemUpdater(standardItemUpdater)
@@ -613,7 +615,7 @@ public class EquivModule {
         return updaters; 
     }
 
-    private void registerYouViewUpdaterForPublisher(Publisher publisher, Set<Publisher> matchTo, EquivalenceUpdaters updaters) {
+    private void registerYouViewUpdaterForPublisher(Publisher publisher, Set<Publisher> matchTo, MultipleSourceEquivalenceUpdater updaters) {
         updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
                 .withItemUpdater(broadcastItemEquivalenceUpdater(matchTo, Score.negativeOne(), YOUVIEW_BROADCAST_FILTER))
                 .withTopLevelContainerUpdater(broadcastItemContainerEquivalenceUpdater(matchTo))

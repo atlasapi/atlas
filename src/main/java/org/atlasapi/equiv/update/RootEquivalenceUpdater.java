@@ -1,9 +1,9 @@
 package org.atlasapi.equiv.update;
 
-import static org.atlasapi.media.entity.ChildRef.TO_URI;
-
 import java.util.List;
 
+import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
+import org.atlasapi.equiv.update.metadata.RootEquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
@@ -12,12 +12,14 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static org.atlasapi.media.entity.ChildRef.TO_URI;
 
 public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     
@@ -26,9 +28,19 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     private ContentResolver contentResolver;
     private EquivalenceUpdater<Content> updater;
 
-    public RootEquivalenceUpdater(ContentResolver contentResolver, EquivalenceUpdater<Content> updater) {
+    private RootEquivalenceUpdater(
+            ContentResolver contentResolver,
+            EquivalenceUpdater<Content> updater
+    ) {
         this.contentResolver = contentResolver;
         this.updater = updater;
+    }
+
+    public static RootEquivalenceUpdater create(
+            ContentResolver contentResolver,
+            EquivalenceUpdater<Content> updater
+    ) {
+        return new RootEquivalenceUpdater(contentResolver, updater);
     }
 
     @Override
@@ -39,6 +51,13 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
             return updateContentEquivalence(content);
         }
         return false;
+    }
+
+    @Override
+    public EquivalenceUpdaterMetadata getMetadata() {
+        return RootEquivalenceUpdaterMetadata.create(
+                updater.getMetadata()
+        );
     }
 
     private boolean updateContentEquivalence(Content content) {
@@ -74,5 +93,4 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
         ResolvedContent children = contentResolver.findByCanonicalUris(childUris);
         return Iterables.filter(children.getAllResolvedResults(), Item.class);
     }
-    
 }

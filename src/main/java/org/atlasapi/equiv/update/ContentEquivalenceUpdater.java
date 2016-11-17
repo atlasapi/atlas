@@ -17,6 +17,8 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredEquivalentsMerger;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.scorers.EquivalenceScorers;
+import org.atlasapi.equiv.update.metadata.ContentEquivalenceUpdaterMetadata;
+import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 
 import com.google.common.base.Function;
@@ -25,23 +27,14 @@ import com.google.common.collect.Iterables;
 
 public class ContentEquivalenceUpdater<T extends Content> implements EquivalenceUpdater<T> {
 
-    public static <T extends Content> Builder<T> builder() {
-        return new Builder<T>();
-    }
-    
-    private final ScoredEquivalentsMerger merger = new ScoredEquivalentsMerger();
-    private final Function<ScoredCandidates<T>, Iterable<T>> extractCandidates =
-            new Function<ScoredCandidates<T>, Iterable<T>>() {
-        @Override
-        public Iterable<T> apply(ScoredCandidates<T> input) {
-            return input.candidates().keySet();
-        }
-    };
-    
+    private final ScoredEquivalentsMerger merger;
+
     private final EquivalenceGenerators<T> generators;
     private final EquivalenceScorers<T> scorers;
     private final DefaultEquivalenceResultBuilder<T> resultBuilder;
     private final EquivalenceResultHandler<T> handler;
+
+    private final EquivalenceUpdaterMetadata metadata;
 
     private ContentEquivalenceUpdater(
             Iterable<EquivalenceGenerator<T>> generators,
@@ -52,10 +45,26 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             EquivalenceResultHandler<T> handler,
             Set<String> excludedUris
     ) {
+        this.merger = new ScoredEquivalentsMerger();
         this.generators = EquivalenceGenerators.from(generators, excludedUris);
         this.scorers = EquivalenceScorers.from(scorers);
-        this.resultBuilder = new DefaultEquivalenceResultBuilder<T>(combiner, filter, extractor);
+        this.resultBuilder = new DefaultEquivalenceResultBuilder<>(combiner, filter, extractor);
         this.handler = handler;
+
+        this.metadata = ContentEquivalenceUpdaterMetadata.builder()
+                .withGenerators(generators)
+                .withScorers(scorers)
+                .withCombiner(combiner)
+                .withFilter(filter)
+                .withExtractor(extractor)
+                .withHandler(handler)
+                .withExcludedUris(excludedUris)
+                .build();
+
+    }
+
+    public static <T extends Content> Builder<T> builder() {
+        return new Builder<>();
     }
 
     @Override
@@ -74,13 +83,18 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
         handler.handle(result);
 
-        boolean hasCandidates = !result.combinedEquivalences().candidates().isEmpty();
-
-        return hasCandidates;
+        return !result.combinedEquivalences().candidates().isEmpty();
     }
-    
+
+    @Override
+    public EquivalenceUpdaterMetadata getMetadata() {
+        return metadata;
+    }
+
     private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
-        return Iterables.concat(Iterables.transform(generatedScores, extractCandidates));
+        return Iterables.concat(Iterables.transform(generatedScores,
+                (Function<ScoredCandidates<T>, Iterable<T>>) input -> input.candidates().keySet()
+        ));
     }
 
     public static final class Builder<T extends Content> {
@@ -92,6 +106,9 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         private EquivalenceExtractor<T> extractor;
         private EquivalenceResultHandler<T> handler;
         private Set<String> excludedUris;
+
+        private Builder() {
+        }
 
         public Builder<T> withGenerator(EquivalenceGenerator<T> generator) {
             generators.add(generator);

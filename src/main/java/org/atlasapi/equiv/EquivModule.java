@@ -234,7 +234,7 @@ public class EquivModule {
         return standardFilter(ImmutableList.<EquivalenceFilter<T>>of());
     }
 
-    private <T extends Content> EquivalenceFilter<T> filtersForRTE() {
+    private <T extends Content> EquivalenceFilter<T> standardFiltersMinusDummy() {
         return ConjunctiveFilter.valueOf(ImmutableList.of(
                 new MinimumScoreFilter<T>(0.25),
                 new MediaTypeFilter<T>(),
@@ -293,6 +293,44 @@ public class EquivModule {
                 ),
                 new ColumbusTelescopeReportHandler<Item>(getTelescopeClient())
             )));
+    }
+
+    private ContentEquivalenceUpdater.Builder<Item> standardItemUpdaterMinusDummyFilter(
+            Set<Publisher> acceptablePublishers,
+            Set<? extends EquivalenceScorer<Item>> scorers,
+            Predicate<? super Broadcast> filter
+    ) {
+        return ContentEquivalenceUpdater.<Item> builder()
+                .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
+                        new BroadcastMatchingItemEquivalenceGenerator(
+                                scheduleResolver,
+                                channelResolver,
+                                acceptablePublishers,
+                                Duration.standardMinutes(5),
+                                filter
+                        )
+                ))
+                .withExcludedUris(excludedUrisFromProperties())
+                .withScorers(scorers)
+                .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
+                .withFilter(standardFiltersMinusDummy())
+                .withExtractor(
+                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
+                                .atLeastNTimesGreater(1.5))
+                .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
+                        EpisodeFilteringEquivalenceResultHandler.relaxed(
+                                new LookupWritingEquivalenceHandler<Item>(
+                                        lookupWriter,
+                                        acceptablePublishers
+                                ),
+                                equivSummaryStore
+                        ),
+                        new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
+                        new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
+                        MessageQueueingResultHandler.create(
+                                equivAssertDestination(), acceptablePublishers, lookupEntryStore
+                        )
+                )));
     }
 
     private ContentEquivalenceUpdater.Builder<Item> ebsItemUpdater(
@@ -357,6 +395,30 @@ public class EquivModule {
             .build();
     }
 
+    private EquivalenceUpdater<Container> topLevelContainerUpdaterMinusDummyFilter(
+            Set<Publisher> publishers
+    ) {
+        return ContentEquivalenceUpdater.<Container> builder()
+                .withExcludedUris(excludedUrisFromProperties())
+                .withGenerators(ImmutableSet.of(
+                        TitleSearchGenerator.create(searchResolver, Container.class, publishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
+                        ScalingEquivalenceGenerator.scale(
+                                new ContainerChildEquivalenceGenerator(contentResolver, equivSummaryStore),
+                                20)
+                ))
+                .withScorers(ImmutableSet.<EquivalenceScorer<Container>> of(
+                        new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE)
+                ))
+                .withCombiner(new RequiredScoreFilteringCombiner<Container>(
+                        new NullScoreAwareAveragingCombiner<Container>(),
+                        TitleMatchingContainerScorer.NAME
+                ))
+                .withFilter(standardFiltersMinusDummy())
+                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
+                .withHandler(containerResultHandlers(publishers))
+                .build();
+    }
+
     @Bean 
     public EquivalenceUpdater<Content> contentUpdater() {
         
@@ -393,14 +455,15 @@ public class EquivModule {
                 ).build();
 
         EquivalenceUpdater<Item> rtUpcomingItemUpdater =
-                standardItemUpdater(
+                standardItemUpdaterMinusDummyFilter(
                         ImmutableSet.of(AMAZON_UNBOX),
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
                                 new SequenceItemScorer(Score.ONE),
                                 new DescriptionTitleMatchingScorer(),
                                 DescriptionMatchingScorer.makeScorer()
-                        )
+                        ),
+                        Predicates.alwaysTrue()
                 ).build();
 
         EquivalenceUpdater<Item> ebsItemUpdater =
@@ -434,11 +497,17 @@ public class EquivModule {
                 .build());
         }
 
-        updaters.register(RADIO_TIMES_UPCOMING, SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES_UPCOMING)
-                .withItemUpdater(rtUpcomingItemUpdater)
-                .withTopLevelContainerUpdater(topLevelContainerUpdater(ImmutableSet.of(AMAZON_UNBOX)))
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(ImmutableSet.of(AMAZON_UNBOX)))
-                .build());
+        updaters.register(
+                RADIO_TIMES_UPCOMING,
+                SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES_UPCOMING)
+                        .withItemUpdater(rtUpcomingItemUpdater)
+                        .withTopLevelContainerUpdater(topLevelContainerUpdaterMinusDummyFilter(
+                                ImmutableSet.of(AMAZON_UNBOX)
+                        ))
+                        .withNonTopLevelContainerUpdater(standardSeriesUpdater(
+                                ImmutableSet.of(AMAZON_UNBOX)
+                        ))
+                        .build());
 
         updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
                 .withItemUpdater(ebsItemUpdater)
@@ -761,7 +830,7 @@ public class EquivModule {
                         TitleMatchingContainerScorer.NAME,
                         ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
                 )
-                .withFilter(filtersForRTE())
+                .withFilter(standardFiltersMinusDummy())
                 .withExtractor(
                         PercentThresholdAboveNextBestMatchEquivalenceExtractor
                                 .atLeastNTimesGreater(1.5)

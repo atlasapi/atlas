@@ -132,6 +132,7 @@ import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
 import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
 import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
+import static org.atlasapi.media.entity.Publisher.RADIO_TIMES_UPCOMING;
 import static org.atlasapi.media.entity.Publisher.RDIO;
 import static org.atlasapi.media.entity.Publisher.RTE;
 import static org.atlasapi.media.entity.Publisher.SOUNDCLOUD;
@@ -364,7 +365,7 @@ public class EquivModule {
             Publisher.all(), 
             Sets.union(
                 ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW,
-                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS, C4_PRESS),
+                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS, C4_PRESS, RADIO_TIMES_UPCOMING),
                 Sets.union(musicPublishers, roviPublishers)
             )
         ));
@@ -397,7 +398,7 @@ public class EquivModule {
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
             ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX,
                     RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK,
-                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS, C4_PRESS),
+                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS, C4_PRESS, RADIO_TIMES_UPCOMING),
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();
@@ -408,6 +409,16 @@ public class EquivModule {
                 .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         }
+
+        updaters.register(RADIO_TIMES_UPCOMING, SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES_UPCOMING)
+                .withItemUpdater(broadcastItemEquivalenceUpdater(
+                        ImmutableSet.of(AMAZON_UNBOX),
+                        Score.nullScore(),
+                        Predicates.alwaysTrue()
+                ))
+                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                .build());
 
         updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
                 .withItemUpdater(ebsItemUpdater)

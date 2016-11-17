@@ -483,11 +483,17 @@ public class EquivModule {
                 .build());
         }
 
-        updaters.register(RADIO_TIMES_UPCOMING, SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES_UPCOMING)
-                .withItemUpdater(rtUpcomingItemUpdater)
-                .withTopLevelContainerUpdater(topLevelContainerUpdater(ImmutableSet.of(AMAZON_UNBOX)))
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(ImmutableSet.of(AMAZON_UNBOX)))
-                .build());
+        updaters.register(
+                RADIO_TIMES_UPCOMING,
+                SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES_UPCOMING)
+                        .withItemUpdater(rtUpcomingItemUpdater)
+                        .withTopLevelContainerUpdater(topLevelContainerUpdaterMinusDummyFilter(
+                                ImmutableSet.of(AMAZON_UNBOX)
+                        ))
+                        .withNonTopLevelContainerUpdater(standardSeriesUpdater(
+                                ImmutableSet.of(AMAZON_UNBOX)
+                        ))
+                        .build());
 
         updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
                 .withItemUpdater(ebsItemUpdater)

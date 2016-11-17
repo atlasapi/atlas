@@ -17,6 +17,7 @@ package org.atlasapi.equiv;
 import java.io.File;
 import java.util.Set;
 
+import com.google.common.base.*;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
@@ -95,10 +96,6 @@ import com.metabroadcast.common.collect.MoreSets;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.DateTimeZones;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -381,6 +378,17 @@ public class EquivModule {
                         )
                 ).build();
 
+        EquivalenceUpdater<Item> rtUpcomingItemUpdater =
+                standardItemUpdater(
+                        ImmutableSet.of(AMAZON_UNBOX),
+                        ImmutableSet.of(
+                                new TitleMatchingItemScorer(),
+                                new SequenceItemScorer(Score.ONE),
+                                new DescriptionTitleMatchingScorer(),
+                                DescriptionMatchingScorer.makeScorer()
+                        )
+                ).build();
+
         EquivalenceUpdater<Item> ebsItemUpdater =
                 ebsItemUpdater(
                         MoreSets.add(acceptablePublishers, LOVEFILM),
@@ -411,13 +419,9 @@ public class EquivModule {
         }
 
         updaters.register(RADIO_TIMES_UPCOMING, SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES_UPCOMING)
-                .withItemUpdater(broadcastItemEquivalenceUpdater(
-                        ImmutableSet.of(AMAZON_UNBOX),
-                        Score.nullScore(),
-                        Predicates.alwaysTrue()
-                ))
-                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
+                .withItemUpdater(rtUpcomingItemUpdater)
+                .withTopLevelContainerUpdater(topLevelContainerUpdater(ImmutableSet.of(AMAZON_UNBOX)))
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(ImmutableSet.of(AMAZON_UNBOX)))
                 .build());
 
         updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)

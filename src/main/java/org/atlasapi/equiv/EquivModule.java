@@ -17,6 +17,10 @@ package org.atlasapi.equiv;
 import java.io.File;
 import java.util.Set;
 
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
@@ -71,7 +75,6 @@ import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdaters;
@@ -101,10 +104,6 @@ import com.metabroadcast.common.collect.MoreSets;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.DateTimeZones;
 
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -120,7 +119,43 @@ import org.springframework.context.annotation.Import;
 import static com.google.common.base.Predicates.in;
 import static com.google.common.base.Predicates.not;
 import static org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator.aliasResolvingGenerator;
-import static org.atlasapi.media.entity.Publisher.*;
+import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
+import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
+import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BBC;
+import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
+import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
+import static org.atlasapi.media.entity.Publisher.BETTY;
+import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
+import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
+import static org.atlasapi.media.entity.Publisher.BT_VOD;
+import static org.atlasapi.media.entity.Publisher.C4_PRESS;
+import static org.atlasapi.media.entity.Publisher.FACEBOOK;
+import static org.atlasapi.media.entity.Publisher.ITUNES;
+import static org.atlasapi.media.entity.Publisher.LOVEFILM;
+import static org.atlasapi.media.entity.Publisher.NETFLIX;
+import static org.atlasapi.media.entity.Publisher.PA;
+import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
+import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
+import static org.atlasapi.media.entity.Publisher.RADIO_TIMES_UPCOMING;
+import static org.atlasapi.media.entity.Publisher.RDIO;
+import static org.atlasapi.media.entity.Publisher.RTE;
+import static org.atlasapi.media.entity.Publisher.SOUNDCLOUD;
+import static org.atlasapi.media.entity.Publisher.SPOTIFY;
+import static org.atlasapi.media.entity.Publisher.TALK_TALK;
+import static org.atlasapi.media.entity.Publisher.VF_AE;
+import static org.atlasapi.media.entity.Publisher.VF_BBC;
+import static org.atlasapi.media.entity.Publisher.VF_C5;
+import static org.atlasapi.media.entity.Publisher.VF_ITV;
+import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
+import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
+import static org.atlasapi.media.entity.Publisher.YOUTUBE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 
 @Configuration
 @Import({KafkaMessagingModule.class})
@@ -344,7 +379,7 @@ public class EquivModule {
             Publisher.all(), 
             Sets.union(
                 ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW,
-                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS, C4_PRESS),
+                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS, C4_PRESS, RADIO_TIMES_UPCOMING),
                 Sets.union(musicPublishers, roviPublishers)
             )
         ));
@@ -352,6 +387,17 @@ public class EquivModule {
         EquivalenceUpdater<Item> standardItemUpdater =
                 standardItemUpdater(
                         MoreSets.add(acceptablePublishers, LOVEFILM),
+                        ImmutableSet.of(
+                                new TitleMatchingItemScorer(),
+                                new SequenceItemScorer(Score.ONE),
+                                new DescriptionTitleMatchingScorer(),
+                                DescriptionMatchingScorer.makeScorer()
+                        )
+                ).build();
+
+        EquivalenceUpdater<Item> rtUpcomingItemUpdater =
+                standardItemUpdater(
+                        ImmutableSet.of(AMAZON_UNBOX),
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
                                 new SequenceItemScorer(Score.ONE),
@@ -377,7 +423,7 @@ public class EquivModule {
         Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
             ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX,
                     RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK,
-                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS, C4_PRESS),
+                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS, C4_PRESS, RADIO_TIMES_UPCOMING),
             Sets.union(musicPublishers, roviPublishers)
         ));
         final EquivalenceUpdaters updaters = new EquivalenceUpdaters();
@@ -388,6 +434,12 @@ public class EquivModule {
                 .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
                 .build());
         }
+
+        updaters.register(RADIO_TIMES_UPCOMING, SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES_UPCOMING)
+                .withItemUpdater(rtUpcomingItemUpdater)
+                .withTopLevelContainerUpdater(topLevelContainerUpdater(ImmutableSet.of(AMAZON_UNBOX)))
+                .withNonTopLevelContainerUpdater(standardSeriesUpdater(ImmutableSet.of(AMAZON_UNBOX)))
+                .build());
 
         updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
                 .withItemUpdater(ebsItemUpdater)

@@ -1,8 +1,8 @@
 package org.atlasapi.equiv.update;
 
-import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
-
 import java.util.Optional;
+
+import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
@@ -13,8 +13,6 @@ public interface EquivalenceUpdater<T> {
             Optional<String> taskId,
             IngestTelescopeClientImpl telescopeClient
     );
-    
-    boolean updateEquivalences(T subject);
 
     EquivalenceUpdaterMetadata getMetadata();
 }

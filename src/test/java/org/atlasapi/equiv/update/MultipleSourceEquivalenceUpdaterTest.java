@@ -1,18 +1,19 @@
 package org.atlasapi.equiv.update;
 
-import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.verify;
-
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
+
 @RunWith(MockitoJUnitRunner.class)
-public class EquivalenceUpdatersTest {
+public class MultipleSourceEquivalenceUpdaterTest {
 
     
     @Test
@@ -21,7 +22,7 @@ public class EquivalenceUpdatersTest {
         EquivalenceUpdater<Item> itemUpdater = mockedUpdater("item");
         EquivalenceUpdater<Container> containerUpdater = mockedUpdater("container"); 
         
-        EquivalenceUpdaters updaters = new EquivalenceUpdaters();
+        MultipleSourceEquivalenceUpdater updaters = MultipleSourceEquivalenceUpdater.create();
         
         Episode ep = new Episode("uri", "curie", Publisher.BBC);
         

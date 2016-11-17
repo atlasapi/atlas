@@ -17,6 +17,8 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
+import com.metabroadcast.common.scheduling.UpdateProgress;
+
 import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -59,7 +61,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
     ) {
         super(contentLister);
         this.progressStore = progressStore;
-        this.updater = new RootEquivalenceUpdater(contentResolver, updater);
+        this.updater = RootEquivalenceUpdater.create(contentResolver, updater);
         this.ignored = ignored;
         this.reportingEnvironment = reportingEnvironment;
         this.telescopeClient = telescopeClient;

@@ -1,5 +1,8 @@
 package org.atlasapi.equiv.update;
 
+import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
+import org.atlasapi.equiv.update.metadata.NopEquivalenceUpdaterMetadata;
+
 import java.util.Optional;
 
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
@@ -16,6 +19,11 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
             ) {
                 return false;
             }
+
+            @Override
+            public EquivalenceUpdaterMetadata getMetadata() {
+                return NopEquivalenceUpdaterMetadata.create();
+            }
         };
 
         @SuppressWarnings("unchecked")
@@ -24,11 +32,11 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
         }
     }
 
-    public static final <T> EquivalenceUpdater<T> get() {
-        return NullUpdater.INSTANCE.withNarrowedType();
+    private NullEquivalenceUpdater() {
     }
 
-    private NullEquivalenceUpdater() {
+    public static <T> EquivalenceUpdater<T> get() {
+        return NullUpdater.INSTANCE.withNarrowedType();
     }
 
     @Override
@@ -40,4 +48,8 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
         return false;
     }
 
+    @Override
+    public EquivalenceUpdaterMetadata getMetadata() {
+        return NopEquivalenceUpdaterMetadata.create();
+    }
 }

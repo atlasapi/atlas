@@ -2,6 +2,8 @@ package org.atlasapi.equiv.generators;
 
 import java.util.Set;
 
+import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
+import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -16,8 +18,9 @@ import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.time.DateTimeZones;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -25,8 +28,8 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Maps.EntryTransformer;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.DateTimeZones;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGenerator<Item>{
 
@@ -87,7 +90,19 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
         return scale(scores.build(), processedBroadcasts, desc);
     }
 
-    public void findMatchesForBroadcast(Builder<Item> scores, Broadcast broadcast, Set<Publisher> validPublishers) {
+    @Override
+    public EquivalenceGeneratorMetadata getMetadata() {
+        return SourceLimitedEquivalenceGeneratorMetadata.create(
+                this.getClass().getCanonicalName(),
+                supportedPublishers
+        );
+    }
+
+    private void findMatchesForBroadcast(
+            Builder<Item> scores,
+            Broadcast broadcast,
+            Set<Publisher> validPublishers
+    ) {
 
         Schedule schedule = scheduleAround(broadcast, validPublishers);
 

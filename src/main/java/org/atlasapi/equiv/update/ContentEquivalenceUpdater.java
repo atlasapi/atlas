@@ -20,6 +20,7 @@ import org.atlasapi.equiv.scorers.EquivalenceScorers;
 import org.atlasapi.equiv.update.metadata.ContentEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -87,7 +88,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     @Override
-    public EquivalenceUpdaterMetadata getMetadata() {
+    public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
         return metadata;
     }
 

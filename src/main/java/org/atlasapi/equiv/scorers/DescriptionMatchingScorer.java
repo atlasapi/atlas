@@ -72,13 +72,7 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
         Set<String> candidateList = descriptionToProcessedList(candidate.getDescription());
         Set<String> subjectList = descriptionToProcessedList(subject.getDescription());
 
-        Set<String> allCapitalisedWordsList = Sets.newHashSet(candidateList);
-
-        allCapitalisedWordsList.addAll(
-                subjectList.stream()
-                .filter(word -> !candidateList.contains(word))
-                .collect(Collectors.toSet())
-        );
+        Set<String> allCapitalisedWordsList = Sets.union(candidateList, subjectList);
 
         Set<String> capitalisedWordsFoundInBoth = Sets.newHashSet(subjectList);
         capitalisedWordsFoundInBoth.retainAll(candidateList);

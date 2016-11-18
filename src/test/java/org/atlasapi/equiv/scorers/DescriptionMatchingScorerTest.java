@@ -89,5 +89,4 @@ public class DescriptionMatchingScorerTest {
         assertEquals(Score.nullScore(), score(subjectToJustMismatch, candidateToJustMismatch));
         assertEquals(Score.nullScore(), score(candidateToJustMismatch, subjectToJustMismatch));
     }
-
 }

@@ -1,7 +1,5 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +26,7 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
 
     // Proportion threshold of key words that need to match between the two descriptions
     // to conclude there is a match
-    public static final double PROPORTION_CROSSOVER = 0.4;
+    public static final double COMMON_WORDS_PROPORTION_THRESHOLD = 0.4;
 
     // Capitalised word finding regex
     public static final String REGEX = "\\b([A-Z]\\w*)\\b";
@@ -72,14 +70,12 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
         Set<String> candidateList = descriptionToProcessedList(candidate.getDescription());
         Set<String> subjectList = descriptionToProcessedList(subject.getDescription());
 
-        Set<String> allCapitalisedWordsList = Sets.union(candidateList, subjectList);
+        Set<String> allWords = Sets.union(candidateList, subjectList);
+        Set<String> commonWords = Sets.intersection(subjectList, candidateList);
 
-        Set<String> capitalisedWordsFoundInBoth = Sets.newHashSet(subjectList);
-        capitalisedWordsFoundInBoth.retainAll(candidateList);
+        double proportionOfCommonWords = (commonWords.size() + 0.0) / allWords.size();
 
-        return (new Double(capitalisedWordsFoundInBoth.size()) /
-                new Double(allCapitalisedWordsList.size())) >
-                PROPORTION_CROSSOVER;
+        return proportionOfCommonWords > COMMON_WORDS_PROPORTION_THRESHOLD;
     }
 
     private Set<String> descriptionToProcessedList(String description) {

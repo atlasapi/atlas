@@ -56,4 +56,37 @@ public class DescriptionMatchingScorerTest {
         assertEquals(Score.nullScore(), score(subject, candidate));
     }
 
+    @Test
+    public void matchingDoesNotOccurJustBelowSpecifiedRange() {
+        Item subjectToJustMatch = new Item();
+        subjectToJustMatch.setDescription(
+                "Five Capitalised Words Match Out of Ten "
+                        + "Specific capitalised Words in Subject Provided"
+        );
+        Item candidateToJustMatch = new Item();
+        candidateToJustMatch.setDescription(
+                "Five Capitalised Words Match Out of ten "
+                        + "specific capitalised words in subject provided"
+        );
+
+        assertEquals(Score.ONE, score(subjectToJustMatch, candidateToJustMatch));
+        assertEquals(Score.ONE, score(candidateToJustMatch, subjectToJustMatch));
+    }
+
+    @Test
+    public void matchingOccursJustAboveSpecificThreshold() {
+        Item subjectToJustMismatch = new Item();
+        subjectToJustMismatch.setDescription(
+                "Four Capitalised Words Match Out of Ten "
+                        + "Specific Chosen words in Subject Provided"
+        );
+        Item candidateToJustMismatch = new Item();
+        candidateToJustMismatch.setDescription(
+                "Four Capitalised Words Match out of ten "
+                        + "specific capitalised words in subject provided"
+        );
+
+        assertEquals(Score.nullScore(), score(subjectToJustMismatch, candidateToJustMismatch));
+        assertEquals(Score.nullScore(), score(candidateToJustMismatch, subjectToJustMismatch));
+    }
 }

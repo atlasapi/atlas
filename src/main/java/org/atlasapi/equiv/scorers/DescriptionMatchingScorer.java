@@ -1,7 +1,5 @@
 package org.atlasapi.equiv.scorers;
 
-import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
@@ -28,7 +26,7 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
 
     // Proportion threshold of key words that need to match between the two descriptions
     // to conclude there is a match
-    public static final double PROPORTION_CROSSOVER = 0.2;
+    public static final double COMMON_WORDS_PROPORTION_THRESHOLD = 0.4;
 
     // Capitalised word finding regex
     public static final String REGEX = "\\b([A-Z]\\w*)\\b";
@@ -43,7 +41,8 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
     @Override
     public ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates,
             ResultDescription desc) {
-        DefaultScoredCandidates.Builder<Item> equivalents = DefaultScoredCandidates.fromSource(NAME);
+        DefaultScoredCandidates.Builder<Item> equivalents =
+                DefaultScoredCandidates.fromSource(NAME);
 
         for (Item candidate : candidates) {
             equivalents.addEquivalent(candidate, score(subject, candidate, desc));
@@ -53,10 +52,13 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
     }
 
     private Score score(Item subject, Item candidate, ResultDescription desc) {
-        Score score = Score.nullScore();
-
-        score = score(subject, candidate);
-        desc.appendText("%s (%s) scored: %s", candidate.getTitle(), candidate.getCanonicalUri(), score);
+        Score score = score(subject, candidate);
+        desc.appendText(
+                "%s (%s) scored: %s",
+                candidate.getTitle(),
+                candidate.getCanonicalUri(),
+                score
+        );
 
         return score;
     }
@@ -69,9 +71,12 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
         Set<String> candidateList = descriptionToProcessedList(candidate.getDescription());
         Set<String> subjectList = descriptionToProcessedList(subject.getDescription());
 
-        candidateList.retainAll(subjectList);
+        Set<String> allWords = Sets.union(candidateList, subjectList);
+        Set<String> commonWords = Sets.intersection(subjectList, candidateList);
 
-        return new Double(candidateList.size())/new Double(subjectList.size()) > PROPORTION_CROSSOVER;
+        double proportionOfCommonWords = (commonWords.size() + 0.0) / allWords.size();
+
+        return proportionOfCommonWords > COMMON_WORDS_PROPORTION_THRESHOLD;
     }
 
     private Set<String> descriptionToProcessedList(String description) {

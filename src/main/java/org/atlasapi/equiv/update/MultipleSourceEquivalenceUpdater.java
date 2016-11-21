@@ -2,6 +2,7 @@ package org.atlasapi.equiv.update;
 
 import java.util.Map;
 import java.util.Optional;
+import java.util.Set;
 
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.MultipleSourceEquivalenceUpdaterMetadata;
@@ -42,13 +43,15 @@ public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public EquivalenceUpdaterMetadata getMetadata() {
+    public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
         return MultipleSourceEquivalenceUpdaterMetadata.create(
                 updaters.entrySet()
                         .stream()
+                        .filter(entry -> sources.contains(entry.getKey()))
+                        .sorted((o1, o2) -> o1.getKey().compareTo(o2.getKey()))
                         .collect(MoreCollectors.toImmutableMap(
                                 entry -> entry.getKey().key(),
-                                entry -> entry.getValue().getMetadata()
+                                entry -> entry.getValue().getMetadata(sources)
                         ))
         );
     }

@@ -57,7 +57,8 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
                 "%s (%s) scored: %s",
                 candidate.getTitle(),
                 candidate.getCanonicalUri(),
-                score);
+                score
+        );
 
         return score;
     }

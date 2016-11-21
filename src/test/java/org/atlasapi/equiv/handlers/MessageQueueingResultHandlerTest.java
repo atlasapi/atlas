@@ -75,7 +75,7 @@ public class MessageQueueingResultHandlerTest {
                                 ))
                 ));
 
-        resultHandler.handle(result, null);
+        resultHandler.handle(result);
 
         verify(sender).sendMessage(
                 any(ContentEquivalenceAssertionMessage.class),
@@ -97,7 +97,7 @@ public class MessageQueueingResultHandlerTest {
         when(lookupEntryStore.entriesForIds(ImmutableSet.of(subject.getId())))
                 .thenReturn(ImmutableList.of());
 
-        resultHandler.handle(result, null);
+        resultHandler.handle(result);
 
         verify(sender).sendMessage(
                 any(ContentEquivalenceAssertionMessage.class),

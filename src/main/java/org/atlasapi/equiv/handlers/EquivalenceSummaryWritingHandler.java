@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.handlers;
 
 import java.util.List;
-import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -35,8 +34,7 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
 
     @Override
     public void handle(
-            EquivalenceResult<T> result,
-            Optional<String> taskId
+            EquivalenceResult<T> result
     ) {
         equivSummaryStore.store(summaryOf(result));
     }

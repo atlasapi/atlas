@@ -185,7 +185,6 @@ public class EquivTaskModule {
     private Integer defaultStreamedEquivUpdateConsumers;
     @Value("${equiv.stream-updater.consumers.max}") private Integer maxStreamedEquivUpdateConsumers;
     @Value("${messaging.destination.content.changes}") private String contentChanges;
-    @Value("${reporting.columbus-telescope.host}") private String columbusTelescopeHost;
 
     private @Autowired ContentLister contentLister;
     private @Autowired SimpleScheduler taskScheduler;
@@ -536,9 +535,7 @@ public class EquivTaskModule {
                 .withUpdater(equivUpdater)
                 .withScheduleResolver(scheduleResolver)
                 .withBack(back)
-                .withForward(forward)
-                .withTelescopeClient(getTelescopeClient())
-                .withReportingEnvironment(getReportingEnvironment());
+                .withForward(forward);
     }
 
     private static Environment getReportingEnvironment() {
@@ -558,9 +555,7 @@ public class EquivTaskModule {
                 contentResolver,
                 progressStore(),
                 equivUpdater,
-                ignored,
-                getReportingEnvironment(),
-                getTelescopeClient()
+                ignored
         ).forPublishers(publishers);
     }
 
@@ -744,10 +739,5 @@ public class EquivTaskModule {
         public Iterable<Channel> get() {
             return youviewChannelResolver.getAllChannels();
         }
-    }
-
-    private IngestTelescopeClientImpl getTelescopeClient() {
-        TelescopeClient client = TelescopeClientImpl.create(columbusTelescopeHost);
-        return IngestTelescopeClientImpl.create(client);
     }
 }

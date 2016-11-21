@@ -1,6 +1,5 @@
 package org.atlasapi.equiv.handlers;
 
-import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.equiv.ContentRef;
@@ -42,8 +41,7 @@ public class LookupWritingEquivalenceHandler<T extends Content> implements Equiv
     
     @Override
     public void handle(
-            EquivalenceResult<T> result,
-            Optional<String> taskId
+            EquivalenceResult<T> result
     ) {
         Iterable<T> equivs = Iterables.transform(result.strongEquivalences().values(),ScoredCandidate.<T>toCandidate());
         

@@ -36,12 +36,10 @@ public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Cont
 
     @Override
     public boolean updateEquivalences(
-            Content subject,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            Content subject
     ) {
         return updaters.get(subject.getPublisher())
-                .updateEquivalences(subject, taskId, telescopeClient);
+                .updateEquivalences(subject);
     }
 
     @Override

@@ -51,19 +51,4 @@ public class DefaultDescription implements ReadableDescription {
     public String toString() {
         return parts.toString();
     }
-
-    // Getters has been added so that we can serialise DefaultDescription into
-    // a JSON String with Jackson.
-
-    public List<Object> getParts() {
-        return parts;
-    }
-
-    public List<Object> getCurrentPart() {
-        return currentPart;
-    }
-
-    public Stack<List<Object>> getParentParts() {
-        return parentParts;
-    }
 }

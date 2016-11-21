@@ -16,11 +16,6 @@ import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
@@ -53,14 +48,12 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
 
     @Override
     public boolean updateEquivalences(
-            Content content,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            Content content
     ) {
         if (content instanceof Container) {
-            return updateContainer((Container) content, taskId, telescopeClient);
+            return updateContainer((Container) content);
         } else if (content instanceof Item){
-            return updateContentEquivalence(content, taskId, telescopeClient);
+            return updateContentEquivalence(content);
         }
         return false;
     }
@@ -73,29 +66,25 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     }
 
     private boolean updateContentEquivalence(
-            Content content,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            Content content
     ) {
         log.trace("equiv update {}", content);
-        return updater.updateEquivalences(content, taskId, telescopeClient);
+        return updater.updateEquivalences(content);
     }
 
     private boolean updateContainer(
-            Container container,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            Container container
     ) {
-        updateContentEquivalence(container, taskId, telescopeClient);
+        updateContentEquivalence(container);
         for (Item child : childrenOf(container)) {
-            updateContentEquivalence(child, taskId, telescopeClient);
+            updateContentEquivalence(child);
         }
         if (container instanceof Brand) {
             for (Series series : seriesOf((Brand) container)) {
-               updateContentEquivalence(series, taskId, telescopeClient);
+               updateContentEquivalence(series);
             }
         }
-        return updateContentEquivalence(container, taskId, telescopeClient);
+        return updateContentEquivalence(container);
     }
 
     private Iterable<Series> seriesOf(Brand brand) {

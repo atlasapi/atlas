@@ -4,7 +4,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Optional;
 
-import org.atlasapi.equiv.ColumbusTelescopeReporter;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Content;
@@ -79,7 +78,6 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
     @Override
     protected void runTask() {
-        ColumbusTelescopeReporter reporter = new ColumbusTelescopeReporter(telescopeClient);
 
         UpdateProgress progress = UpdateProgress.START;
 
@@ -100,18 +98,11 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 .iterator();
         LocalDate start, end;
 
-        Optional<String> taskId = reporter.startReporting(
-                Iterables.getOnlyElement(publishers),
-                reportingEnvironment
-        );
-
         while(dayIterator.hasNext()) {
             start = dayIterator.next();
             end = start.plusDays(1);
-            progress = progress.reduce(equivalateSchedule(start, end, taskId));
+            progress = progress.reduce(equivalateSchedule(start, end));
         }
-
-        reporter.endReporting(taskId);
 
         reportStatus(String.format(
                 "Finished. %d Items processed, %d failed",
@@ -122,8 +113,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
     public UpdateProgress equivalateSchedule(
             LocalDate start,
-            LocalDate end,
-            Optional<String> taskId
+            LocalDate end
     ) {
         UpdateProgress progress = UpdateProgress.START;
         for (Publisher publisher : publishers) {
@@ -159,7 +149,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     Maybe<Identified> identified = resolvedContent.get(scheduleItem.getCanonicalUri());
                     if (identified.hasValue()) {
                         Item value = (Item) identified.requireValue();
-                        progress = progress.reduce(process(value, taskId, telescopeClient));
+                        progress = progress.reduce(process(value));
                         reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                     }
                 }
@@ -182,12 +172,10 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     }
 
     private UpdateProgress process(
-            Item item,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            Item item
     ) {
         try {
-            updater.updateEquivalences(item, taskId, telescopeClient);
+            updater.updateEquivalences(item);
             log.info("successfully updated equivalences on " + item.getCanonicalUri());
             return SUCCESS;
         } catch (Exception e) {
@@ -261,16 +249,6 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
         public Builder withForward(int forward) {
             this.forward = forward;
-            return this;
-        }
-
-        public Builder withReportingEnvironment(Environment reportingEnvironment) {
-            this.reportingEnvironment = reportingEnvironment;
-            return this;
-        }
-
-        public Builder withTelescopeClient(IngestTelescopeClientImpl telescopeClient) {
-            this.telescopeClient = telescopeClient;
             return this;
         }
     }

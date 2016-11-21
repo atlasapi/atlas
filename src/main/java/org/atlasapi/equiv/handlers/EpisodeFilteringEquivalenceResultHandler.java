@@ -59,10 +59,7 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
     }
 
     @Override
-    public void handle(
-            EquivalenceResult<Item> result,
-            java.util.Optional<String> taskId
-    ) {
+    public void handle(EquivalenceResult<Item> result) {
 
         ResultDescription desc = result.description()
             .startStage("Episode parent filter");
@@ -70,7 +67,7 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
         ParentRef container = result.subject().getContainer();
         if (container == null) {
             desc.appendText("Item has no Container").finishStage();
-            delegate.handle(result, taskId);
+            delegate.handle(result);
             return;
         }
         
@@ -92,10 +89,7 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
         desc.finishStage();
         delegate.handle(new EquivalenceResult<Item>(result.subject(),
                         result.rawScores(), result.combinedEquivalences(),
-                        strongEquivalences, (ReadableDescription) desc),
-                taskId
-        );
-
+                        strongEquivalences, (ReadableDescription) desc));
     }
 
     private Multimap<Publisher, ScoredCandidate<Item>> filter(

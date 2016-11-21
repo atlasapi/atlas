@@ -58,8 +58,7 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
     
     @Override
     public void handle(
-            EquivalenceResult<Container> result,
-            java.util.Optional<String> taskId
+            EquivalenceResult<Container> result
     ) {
         result.description().startStage("Episode sequence stitching");
         

@@ -139,7 +139,7 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
 		    if (fetchedEntity instanceof Content) {
 		        Content fetchedContent = (Content) fetchedEntity;
                 if (equivalablePublishers.contains(fetchedContent.getPublisher())) {
-                    equivUpdater.updateEquivalences(fetchedContent, null, null);
+                    equivUpdater.updateEquivalences(fetchedContent);
                 }
             }
         }

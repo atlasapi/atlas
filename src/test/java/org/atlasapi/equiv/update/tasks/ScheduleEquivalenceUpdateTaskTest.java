@@ -124,11 +124,9 @@ public class ScheduleEquivalenceUpdateTaskTest {
                 .withChannelsSupplier(Suppliers.ofInstance(ImmutableList.of(bbcOne)))
                 .withScheduleResolver(resolver)
                 .withUpdater(updater)
-                .withTelescopeClient(telescopeClient)
-                .withReportingEnvironment(Environment.STAGE)
                 .build().run();
 
-        verify(updater).updateEquivalences(yvItemOne, taskId, telescopeClient);
-        verify(updater).updateEquivalences(yvItemTwo, taskId, telescopeClient);
+        verify(updater).updateEquivalences(yvItemOne);
+        verify(updater).updateEquivalences(yvItemTwo);
     }
 }

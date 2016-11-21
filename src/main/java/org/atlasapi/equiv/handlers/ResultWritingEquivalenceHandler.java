@@ -1,12 +1,8 @@
 package org.atlasapi.equiv.handlers;
 
-import java.util.Optional;
-
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
 import org.atlasapi.media.entity.Content;
-
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 public class ResultWritingEquivalenceHandler<T extends Content> implements EquivalenceResultHandler<T> {
 
@@ -18,8 +14,7 @@ public class ResultWritingEquivalenceHandler<T extends Content> implements Equiv
     
     @Override
     public void handle(
-            EquivalenceResult<T> result,
-            Optional<String> taskId
+            EquivalenceResult<T> result
     ) {
         store.store(result);
     }

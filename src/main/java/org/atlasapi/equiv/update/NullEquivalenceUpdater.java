@@ -1,7 +1,10 @@
 package org.atlasapi.equiv.update;
 
+import java.util.Set;
+
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.NopEquivalenceUpdaterMetadata;
+import org.atlasapi.media.entity.Publisher;
 
 import java.util.Optional;
 
@@ -21,7 +24,7 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
             }
 
             @Override
-            public EquivalenceUpdaterMetadata getMetadata() {
+            public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
                 return NopEquivalenceUpdaterMetadata.create();
             }
         };
@@ -49,7 +52,7 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     }
 
     @Override
-    public EquivalenceUpdaterMetadata getMetadata() {
+    public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
         return NopEquivalenceUpdaterMetadata.create();
     }
 }

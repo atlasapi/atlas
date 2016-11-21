@@ -2,10 +2,14 @@ package org.atlasapi.equiv.update.metadata;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
+import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
+
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.collect.ImmutableList;
 
@@ -13,7 +17,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadata {
 
-    private final ImmutableList<String> generators;
+    private final ImmutableList<EquivalenceGeneratorMetadata> generators;
     private final ImmutableList<String> scorers;
     private final String combiner;
     private final String filter;
@@ -22,7 +26,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
     private final ImmutableList<String> excludedUris;
 
     private ContentEquivalenceUpdaterMetadata(
-            Iterable<String> generators,
+            Iterable<EquivalenceGeneratorMetadata> generators,
             Iterable<String> scorers,
             String combiner,
             String filter,
@@ -43,7 +47,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         return new Builder();
     }
 
-    public ImmutableList<String> getGenerators() {
+    public ImmutableList<EquivalenceGeneratorMetadata> getGenerators() {
         return generators;
     }
 
@@ -114,7 +118,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
     public static class Builder implements GeneratorsStep, ScorersStep, CombinerStep, FilterStep,
             ExtractorStep, HandlerStep, ExcludedUrisStep, BuildStep {
 
-        private List<String> generators;
+        private List<EquivalenceGeneratorMetadata> generators;
         private List<String> scorers;
         private String combiner;
         private String filter;
@@ -127,7 +131,9 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
 
         @Override
         public <T> ScorersStep withGenerators(Iterable<EquivalenceGenerator<T>> generators) {
-            this.generators = getClassName(generators);
+            this.generators = StreamSupport.stream(generators.spliterator(), false)
+                    .map(EquivalenceGenerator::getMetadata)
+                    .collect(MoreCollectors.toImmutableList());
             return this;
         }
 

@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update;
 
 import java.util.List;
+import java.util.Set;
 import java.util.Optional;
 
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
@@ -9,6 +10,7 @@ import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -64,9 +66,9 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     }
 
     @Override
-    public EquivalenceUpdaterMetadata getMetadata() {
+    public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
         return RootEquivalenceUpdaterMetadata.create(
-                updater.getMetadata()
+                updater.getMetadata(sources)
         );
     }
 

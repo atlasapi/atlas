@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.update;
 
+import java.util.Set;
+
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.SourceSpecificEquivalenceUpdaterMetadata;
 import java.util.Optional;
@@ -73,17 +75,17 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public EquivalenceUpdaterMetadata getMetadata() {
+    public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
         return SourceSpecificEquivalenceUpdaterMetadata.builder()
                 .withSource(source)
                 .withTopLevelContainerUpdaterMetadata(
-                        topLevelContainerUpdater.getMetadata()
+                        topLevelContainerUpdater.getMetadata(sources)
                 )
                 .withNonTopLevelContainerUpdaterMetadata(
-                        nonTopLevelContainerUpdater.getMetadata()
+                        nonTopLevelContainerUpdater.getMetadata(sources)
                 )
                 .withItemUpdaterMetadata(
-                        itemUpdater.getMetadata()
+                        itemUpdater.getMetadata(sources)
                 )
                 .build();
     }

@@ -1,13 +1,13 @@
 package org.atlasapi.equiv.generators;
 
-import static com.google.common.collect.Iterables.filter;
-
 import java.util.List;
 import java.util.Set;
 import java.util.regex.Pattern;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
+import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
+import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
@@ -20,6 +20,9 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.query.Selection;
+
 import com.google.common.base.Functions;
 import com.google.common.base.Objects;
 import com.google.common.base.Strings;
@@ -27,8 +30,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.query.Selection;
+
+import static com.google.common.collect.Iterables.filter;
 
 public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     
@@ -130,6 +133,14 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         }
         
         return scores.build();
+    }
+
+    @Override
+    public EquivalenceGeneratorMetadata getMetadata() {
+        return SourceLimitedEquivalenceGeneratorMetadata.create(
+                this.getClass().getCanonicalName(),
+                publishers
+        );
     }
 
     private Maybe<String> getImdbRef(Film film) {

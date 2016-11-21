@@ -1,21 +1,26 @@
 package org.atlasapi.equiv.update.www;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
 
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.RootEquivalenceUpdater;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
@@ -100,8 +105,22 @@ public class ContentEquivalenceUpdateController {
     }
 
     @RequestMapping(value = "/system/equivalence/configuration", method = RequestMethod.GET)
-    public void getEquivalenceConfiguration(HttpServletResponse response) throws IOException {
-        EquivalenceUpdaterMetadata metadata = contentUpdater.getMetadata();
+    public void getEquivalenceConfiguration(
+            HttpServletResponse response,
+            @Nullable @RequestParam(value = "sources", required = false) List<String> sources
+    ) throws IOException {
+        ImmutableSet<Publisher> requestedSources;
+
+        if (sources != null) {
+            requestedSources = sources.stream()
+                    .map(Publisher::fromKey)
+                    .map(Maybe::requireValue)
+                    .collect(MoreCollectors.toImmutableSet());
+        } else {
+            requestedSources = Publisher.all();
+        }
+
+        EquivalenceUpdaterMetadata metadata = contentUpdater.getMetadata(requestedSources);
 
         mapper.writeValue(
                 response.getWriter(),

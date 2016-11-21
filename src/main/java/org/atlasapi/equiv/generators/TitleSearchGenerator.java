@@ -1,11 +1,12 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
+import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
+import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
@@ -68,6 +69,14 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         }
         Iterable<? extends T> candidates = searchForCandidates(content, desc);
         return titleScorer.scoreCandidates(content, candidates, desc);
+    }
+
+    @Override
+    public EquivalenceGeneratorMetadata getMetadata() {
+        return SourceLimitedEquivalenceGeneratorMetadata.create(
+                this.getClass().getCanonicalName(),
+                searchPublishers
+        );
     }
 
     private Iterable<? extends T> searchForCandidates(T content, ResultDescription desc) {

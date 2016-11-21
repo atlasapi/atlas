@@ -15,7 +15,6 @@ import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage.AdjacentRef;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.queue.MessageSender;
@@ -86,8 +85,7 @@ public class MessageQueueingResultHandler<T extends Content>
 
     @Override
     public void handle(
-            EquivalenceResult<T> result,
-            Optional<String> taskId
+            EquivalenceResult<T> result
     ) {
         try {
             ContentEquivalenceAssertionMessage message = messageFrom(result);

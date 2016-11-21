@@ -3,19 +3,13 @@ package org.atlasapi.equiv.update;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.NopEquivalenceUpdaterMetadata;
 
-import java.util.Optional;
-
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-
 public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
 
     private enum NullUpdater implements EquivalenceUpdater<Object> {
         INSTANCE {
             @Override
             public boolean updateEquivalences(
-                    Object content,
-                    Optional<String> taskId,
-                    IngestTelescopeClientImpl telescopeClient
+                    Object content
             ) {
                 return false;
             }
@@ -27,6 +21,7 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
         };
 
         @SuppressWarnings("unchecked")
+
         <T> EquivalenceUpdater<T> withNarrowedType() {
             return (EquivalenceUpdater<T>) this;
         }
@@ -40,11 +35,7 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     }
 
     @Override
-    public boolean updateEquivalences(
-            T content,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
-    ) {
+    public boolean updateEquivalences(T content) {
         return false;
     }
 

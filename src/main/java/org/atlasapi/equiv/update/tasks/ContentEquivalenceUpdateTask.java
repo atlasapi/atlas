@@ -2,12 +2,10 @@ package org.atlasapi.equiv.update.tasks;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.atlasapi.equiv.ColumbusTelescopeReporter;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.RootEquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
@@ -17,10 +15,6 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
-import com.metabroadcast.common.scheduling.UpdateProgress;
-
-import com.metabroadcast.columbus.telescope.api.Environment;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Joiner;
@@ -45,27 +39,17 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
     private int processed = 0;
     private UpdateProgress progress = UpdateProgress.START;
 
-    private final Environment reportingEnvironment;
-    private final IngestTelescopeClientImpl telescopeClient;
-    private final ColumbusTelescopeReporter reporter;
-    private Optional<String> taskId;
-
     public ContentEquivalenceUpdateTask(
             ContentLister contentLister,
             ContentResolver contentResolver,
             ScheduleTaskProgressStore progressStore,
             EquivalenceUpdater<Content> updater,
-            Set<String> ignored,
-            Environment reportingEnvironment,
-            IngestTelescopeClientImpl telescopeClient
+            Set<String> ignored
     ) {
         super(contentLister);
         this.progressStore = progressStore;
         this.updater = RootEquivalenceUpdater.create(contentResolver, updater);
         this.ignored = ignored;
-        this.reportingEnvironment = reportingEnvironment;
-        this.telescopeClient = telescopeClient;
-        this.reporter = new ColumbusTelescopeReporter(telescopeClient);
     }
 
     public ContentEquivalenceUpdateTask forPublishers(Publisher... publishers) {
@@ -93,11 +77,6 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
     protected void onStart(ContentListingProgress progress) {
         log.info("Started: {} from {}", schedulingKey, describe(progress));
 
-        this.taskId = reporter.startReporting(
-                progress.getPublisher(),
-                reportingEnvironment
-        );
-
         processed  = 0;
         this.progress = UpdateProgress.START;
     }
@@ -114,7 +93,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
         if (!ignored.contains(content.getCanonicalUri())) {
             reportStatus(String.format("%s. Processing %s.", progress, content));
             try {
-                updater.updateEquivalences(content, taskId, telescopeClient);
+                updater.updateEquivalences(content);
                 progress = progress.reduce(SUCCESS);
             } catch (Exception e) {
                 log.error(content.toString(), e);
@@ -129,7 +108,6 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
 
     @Override
     protected void onFinish(boolean finished, @Nullable Content lastProcessed) {
-        reporter.endReporting(taskId);
         persistProgress(finished, lastProcessed);
     }
 

@@ -128,7 +128,7 @@ public class ContentEquivalenceUpdateController {
             @Override
             public void run() {
                 try {
-                    contentUpdater.updateEquivalences(content, null, null);
+                    contentUpdater.updateEquivalences(content);
                     log.info("Finished updating {}",content);
                 } catch (Exception e) {
                     log.error(content.toString(), e);

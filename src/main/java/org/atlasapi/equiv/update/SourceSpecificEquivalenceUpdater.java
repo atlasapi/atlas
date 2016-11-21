@@ -2,11 +2,6 @@ package org.atlasapi.equiv.update;
 
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.SourceSpecificEquivalenceUpdaterMetadata;
-import java.util.Optional;
-
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
@@ -16,8 +11,6 @@ import org.atlasapi.media.entity.Series;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Content> {
 
@@ -45,9 +38,7 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
 
     @Override
     public boolean updateEquivalences(
-            Content content,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            Content content
     ) {
         checkArgument(
                 content.getPublisher().equals(source),
@@ -56,13 +47,13 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
         );
 
         if (content instanceof Item) {
-            return update(itemUpdater, (Item) content, taskId, telescopeClient);
+            return update(itemUpdater, (Item) content);
         } else if (content instanceof Brand) {
-            return update(topLevelContainerUpdater, (Container) content, taskId, telescopeClient);
+            return update(topLevelContainerUpdater, (Container) content);
         } else if (topLevelSeries(content)) {
-            return update(topLevelContainerUpdater, (Container) content, taskId, telescopeClient);
+            return update(topLevelContainerUpdater, (Container) content);
         } else if (!topLevelSeries(content)) {
-            return update(nonTopLevelContainerUpdater, (Container) content, taskId, telescopeClient);
+            return update(nonTopLevelContainerUpdater, (Container) content);
         } else {
             throw new IllegalStateException(String.format(
                     "No updater for %s for %s",
@@ -95,12 +86,10 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
 
     private <T> boolean update(
             EquivalenceUpdater<T> updater,
-            T content,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            T content
     ) {
         checkNotNull(updater, "No updater for %s %s", source, content);
-        return updater.updateEquivalences(content, taskId, telescopeClient);
+        return updater.updateEquivalences(content);
     }
 
     public static final class Builder {

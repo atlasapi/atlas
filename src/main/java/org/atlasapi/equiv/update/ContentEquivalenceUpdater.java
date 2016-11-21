@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.update;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
@@ -21,8 +20,6 @@ import org.atlasapi.equiv.scorers.EquivalenceScorers;
 import org.atlasapi.equiv.update.metadata.ContentEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
-
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -72,9 +69,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
 
     @Override
     public boolean updateEquivalences(
-            T content,
-            Optional<String> taskId,
-            IngestTelescopeClientImpl telescopeClient
+            T content
     ) {
         ReadableDescription desc = new DefaultDescription();
 
@@ -87,7 +82,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
 
         EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
-        handler.handle(result, taskId);
+        handler.handle(result);
 
         return !result.combinedEquivalences().candidates().isEmpty();
     }

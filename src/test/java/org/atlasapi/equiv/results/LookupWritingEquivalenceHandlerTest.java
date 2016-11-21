@@ -52,7 +52,7 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
     @Test
     public void testWritesLookups() {
         
-        updater.handle(equivResultFor(content, ImmutableList.of(equiv1,equiv2)), null);
+        updater.handle(equivResultFor(content, ImmutableList.of(equiv1,equiv2)));
         
         verify(lookupWriter).writeLookup(argThat(is(contentRef)), argThat(hasItems(equiv1Ref,equiv2Ref)), argThat(is(publishers)));
     }
@@ -64,8 +64,8 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
         final EquivalenceResult<Item> equivResult = equivResultFor(content, ImmutableList.of(equiv1,equiv2));
         final EquivalenceResult<Item> noEquivalences = equivResultFor(equiv1, ImmutableList.<Item>of());
         
-        updater.handle(equivResult, null);
-        updater.handle(noEquivalences, null);
+        updater.handle(equivResult);
+        updater.handle(noEquivalences);
         
         verify(lookupWriter).writeLookup(argThat(is(contentRef)), argThat(hasItems(equiv1Ref,equiv2Ref)), argThat(is(publishers)));
         verify(lookupWriter, never()).writeLookup(argThat(is(equiv1Ref)), argThat(any(Iterable.class)), argThat(is(publishers)));
@@ -80,9 +80,9 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
         final EquivalenceResult<Item> equivResult1 = equivResultFor(content, ImmutableList.of(equiv1,equiv2));
         final EquivalenceResult<Item> equivResult2 = equivResultFor(equiv1, ImmutableList.<Item>of(content));
         
-        updater.handle(equivResult1, null);
+        updater.handle(equivResult1);
         Thread.sleep(cacheDuration.getMillis()*2);
-        updater.handle(equivResult2, null);
+        updater.handle(equivResult2);
 
         verify(lookupWriter).writeLookup(argThat(is(contentRef)), argThat(hasItems(equiv1Ref,equiv2Ref)), argThat(is(publishers)));
         verify(lookupWriter).writeLookup(argThat(is(equiv1Ref)), argThat(hasItems(contentRef)), argThat(is(publishers)));

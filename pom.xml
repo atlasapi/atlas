@@ -386,22 +386,6 @@
     </build>
     <dependencies>
         <dependency>
-            <groupId>com.metabroadcast.columbus.telescope</groupId>
-            <artifactId>telescope-client</artifactId>
-            <version>${telescope-client.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>io.dropwizard</groupId>
-                    <artifactId>dropwizard-logging</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>io.dropwizard</groupId>
-                    <artifactId>dropwizard-testing</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
-
-        <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-model</artifactId>
             <version>${atlas.version}</version>

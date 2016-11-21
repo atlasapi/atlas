@@ -1,7 +1,5 @@
 package org.atlasapi.equiv.update.tasks;
 
-import java.util.Optional;
-
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
@@ -13,10 +11,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
-import com.metabroadcast.columbus.telescope.api.Environment;
-import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.api.Task;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
@@ -32,7 +27,6 @@ import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.C4;
 import static org.atlasapi.media.entity.Publisher.PA;
 import static org.hamcrest.Matchers.hasItem;
-import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -46,11 +40,7 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ScheduleTaskProgressStore progressStore = mock(ScheduleTaskProgressStore.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
-    private final IngestTelescopeClientImpl client = mock(IngestTelescopeClientImpl.class);
     private final ContentListingProgress progress = mock(ContentListingProgress.class);
-    private final Task task = mock(Task.class);
-    private final Environment environment = Environment.PRODUCTION;
-    private final Optional<String> taskId = Optional.of("test");
 
     private ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
         return criteria -> Iterators.concat(
@@ -88,27 +78,21 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         when(contentResolver.findByCanonicalUris(argThat(hasItem("episode"))))
             .thenReturn(ResolvedContent.builder().put(paEp.getCanonicalUri(), paEp).build());
 
-        when(client.startIngest(any(Process.class))).thenReturn(task);
-
-        when(task.getId()).thenReturn(taskId);
-
         new ContentEquivalenceUpdateTask(
                 contentLister,
                 contentResolver,
                 progressStore,
                 updater,
-                ImmutableSet.of(),
-                environment,
-                client
+                ImmutableSet.of()
         ).forPublishers(PA, BBC, C4).run();
 
-        verify(updater).updateEquivalences(paItemOne, taskId, client);
-        verify(updater, times(2)).updateEquivalences(paBrand, taskId, client);
-        verify(updater).updateEquivalences(paEp, taskId, client);
-        verify(updater).updateEquivalences(bbcItemOne, taskId, client);
-        verify(updater).updateEquivalences(bbcItemTwo, taskId, client);
-        verify(updater).updateEquivalences(bbcItemThree, taskId, client);
-        verify(updater).updateEquivalences(c4ItemOne,taskId, client);
+        verify(updater).updateEquivalences(paItemOne);
+        verify(updater, times(2)).updateEquivalences(paBrand);
+        verify(updater).updateEquivalences(paEp);
+        verify(updater).updateEquivalences(bbcItemOne);
+        verify(updater).updateEquivalences(bbcItemTwo);
+        verify(updater).updateEquivalences(bbcItemThree);
+        verify(updater).updateEquivalences(c4ItemOne);
         verify(progressStore).storeProgress(taskName, ContentListingProgress.START);
     }
 }

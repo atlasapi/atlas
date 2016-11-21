@@ -31,8 +31,8 @@ public class MultipleSourceEquivalenceUpdaterTest {
                 .withTopLevelContainerUpdater(containerUpdater)
                 .build());
         
-        updaters.updateEquivalences(ep, null, null);
-        verify(itemUpdater).updateEquivalences(ep, null, null);
+        updaters.updateEquivalences(ep);
+        verify(itemUpdater).updateEquivalences(ep);
         
     }
 

@@ -1,4 +1,27 @@
-package org.atlasapi.equiv.results;
+package org.atlasapi.equiv.handlers;
+
+import java.util.Set;
+
+import org.atlasapi.equiv.ContentRef;
+import org.atlasapi.equiv.results.EquivalenceResult;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.lookup.LookupWriter;
+
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import junit.framework.TestCase;
+import org.joda.time.Duration;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.Matchers.any;
 import static org.hamcrest.Matchers.hasItems;
@@ -7,32 +30,6 @@ import static org.mockito.Matchers.argThat;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
-
-import java.util.Map;
-import java.util.Set;
-
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import junit.framework.TestCase;
-
-import org.atlasapi.equiv.ContentRef;
-import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
-import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.lookup.LookupWriter;
-import org.joda.time.Duration;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 
 @RunWith(MockitoJUnitRunner.class)
 public class LookupWritingEquivalenceHandlerTest extends TestCase {

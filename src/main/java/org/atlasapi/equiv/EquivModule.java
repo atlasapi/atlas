@@ -15,74 +15,19 @@ permissions and limitations under the License. */
 package org.atlasapi.equiv;
 
 import java.io.File;
-import java.util.Set;
 
-import com.google.common.base.*;
-import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
-import org.atlasapi.equiv.generators.EquivalenceGenerator;
-import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
-import org.atlasapi.equiv.generators.RadioTimesFilmEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ScalingEquivalenceGenerator;
-import org.atlasapi.equiv.generators.SongTitleTransform;
-import org.atlasapi.equiv.generators.TitleSearchGenerator;
-import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EpisodeMatchingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
-import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.MessageQueueingResultHandler;
-import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
-import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
-import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
-import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
-import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
-import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
-import org.atlasapi.equiv.results.filters.DummyContainerFilter;
-import org.atlasapi.equiv.results.filters.EquivalenceFilter;
-import org.atlasapi.equiv.results.filters.ExclusionListFilter;
-import org.atlasapi.equiv.results.filters.FilmFilter;
-import org.atlasapi.equiv.results.filters.MediaTypeFilter;
-import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.PublisherFilter;
-import org.atlasapi.equiv.results.filters.SpecializationFilter;
-import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoreThreshold;
-import org.atlasapi.equiv.scorers.BroadcastAliasScorer;
-import org.atlasapi.equiv.scorers.ContainerHierarchyMatchingScorer;
-import org.atlasapi.equiv.scorers.CrewMemberScorer;
-import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
-import org.atlasapi.equiv.scorers.EquivalenceScorer;
-import org.atlasapi.equiv.scorers.SequenceContainerScorer;
-import org.atlasapi.equiv.scorers.SequenceItemScorer;
-import org.atlasapi.equiv.scorers.SeriesSequenceItemScorer;
-import org.atlasapi.equiv.scorers.SongCrewMemberExtractor;
-import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
-import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
-import org.atlasapi.equiv.scorers.TitleSubsetBroadcastItemScorer;
-import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
-import org.atlasapi.equiv.update.NullEquivalenceUpdater;
 import org.atlasapi.equiv.update.SourceSpecificEquivalenceUpdater;
+import org.atlasapi.equiv.update.updaters.configuration.UpdaterConfiguration;
+import org.atlasapi.equiv.update.updaters.configuration.UpdaterConfigurationRegistry;
+import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Song;
 import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
 import org.atlasapi.messaging.v3.JacksonMessageSerializer;
 import org.atlasapi.messaging.v3.KafkaMessagingModule;
@@ -92,75 +37,25 @@ import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClient;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-import com.metabroadcast.columbus.telescope.client.TelescopeClient;
-import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
-import com.metabroadcast.common.collect.MoreSets;
 import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.time.DateTimeZones;
 
-import com.google.common.collect.ImmutableList;
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import static com.google.common.base.Predicates.in;
-import static com.google.common.base.Predicates.not;
-import static org.atlasapi.equiv.generators.AliasResolvingEquivalenceGenerator.aliasResolvingGenerator;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
-import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
-import static org.atlasapi.media.entity.Publisher.AMC_EBS;
-import static org.atlasapi.media.entity.Publisher.BBC;
-import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
-import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
-import static org.atlasapi.media.entity.Publisher.BETTY;
-import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
-import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
-import static org.atlasapi.media.entity.Publisher.BT_VOD;
-import static org.atlasapi.media.entity.Publisher.C4_PRESS;
-import static org.atlasapi.media.entity.Publisher.FACEBOOK;
-import static org.atlasapi.media.entity.Publisher.ITUNES;
-import static org.atlasapi.media.entity.Publisher.LOVEFILM;
-import static org.atlasapi.media.entity.Publisher.NETFLIX;
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES_UPCOMING;
-import static org.atlasapi.media.entity.Publisher.RDIO;
-import static org.atlasapi.media.entity.Publisher.RTE;
-import static org.atlasapi.media.entity.Publisher.SOUNDCLOUD;
-import static org.atlasapi.media.entity.Publisher.SPOTIFY;
-import static org.atlasapi.media.entity.Publisher.TALK_TALK;
-import static org.atlasapi.media.entity.Publisher.VF_AE;
-import static org.atlasapi.media.entity.Publisher.VF_BBC;
-import static org.atlasapi.media.entity.Publisher.VF_C5;
-import static org.atlasapi.media.entity.Publisher.VF_ITV;
-import static org.atlasapi.media.entity.Publisher.VF_VIACOM;
-import static org.atlasapi.media.entity.Publisher.VF_VUBIQUITY;
-import static org.atlasapi.media.entity.Publisher.YOUTUBE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
-import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
-
+@SuppressWarnings("PublicConstructor")
 @Configuration
-@Import({KafkaMessagingModule.class})
+@Import({ KafkaMessagingModule.class })
 public class EquivModule {
 
-    private static double DEFAULT_EXACT_TITLE_MATCH_SCORE = 2;
-	private @Value("${equiv.results.directory}") String equivResultsDirectory;
-	private @Value("${messaging.destination.equiv.assert}") String equivAssertDest;
-	private @Value("${equiv.excludedUris}") String excludedUris;
+    private @Value("${equiv.results.directory}") String equivResultsDirectory;
+    private @Value("${messaging.destination.equiv.assert}") String equivAssertDest;
+    private @Value("${equiv.excludedUris}") String excludedUris;
 
     private @Autowired ScheduleResolver scheduleResolver;
     private @Autowired SearchResolver searchResolver;
@@ -169,815 +64,88 @@ public class EquivModule {
     private @Autowired EquivalenceSummaryStore equivSummaryStore;
     private @Autowired LookupWriter lookupWriter;
     private @Autowired LookupEntryStore lookupEntryStore;
-    
+
     private @Autowired KafkaMessagingModule messaging;
 
-    public @Bean RecentEquivalenceResultStore equivalenceResultStore() {
-        return new RecentEquivalenceResultStore(new FileEquivalenceResultStore(new File(equivResultsDirectory)));
-    }
-
-    private EquivalenceResultHandler<Container> containerResultHandlers(Iterable<Publisher> publishers) {
-        return new BroadcastingEquivalenceResultHandler<Container>(ImmutableList.of(
-                new LookupWritingEquivalenceHandler<Container>(lookupWriter, publishers),
-                new EpisodeMatchingEquivalenceHandler(
-                        contentResolver,
-                        equivSummaryStore,
-                        lookupWriter,
-                        publishers
-                ),
-                new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore),
-                    MessageQueueingResultHandler.create(
-                        equivAssertDestination(), publishers, lookupEntryStore
-                )
-        ));
-    }
-
-    private BroadcastingEquivalenceResultHandler<Item> itemResultHandlers(
-            Set<Publisher> acceptablePublishers) {
-        ImmutableList.Builder<EquivalenceResultHandler<Item>> handlers = ImmutableList.builder();
-        handlers
-                .add(EpisodeFilteringEquivalenceResultHandler.relaxed(
-                        new LookupWritingEquivalenceHandler<Item>(lookupWriter,
-                                acceptablePublishers),
-                        equivSummaryStore
-                ))
-                .add(new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()))
-                .add(new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore));
-        handlers.add(MessageQueueingResultHandler.create(
-                equivAssertDestination(), acceptablePublishers, lookupEntryStore
-        ));
-        return new BroadcastingEquivalenceResultHandler<Item>(handlers.build());
-    }
-
-    @Bean 
-    protected MessageSender<ContentEquivalenceAssertionMessage> equivAssertDestination() {
-        return messaging.messageSenderFactory()
-                .makeMessageSender(equivAssertDest, 
-                        JacksonMessageSerializer.forType(ContentEquivalenceAssertionMessage.class));
-    }
-    
-    private static Predicate<Broadcast> YOUVIEW_BROADCAST_FILTER = new Predicate<Broadcast>() {
-        
-        @Override
-        public boolean apply(Broadcast input) {
-            DateTime twoWeeksAgo = new DateTime(DateTimeZones.UTC).minusDays(15);
-            return input.getTransmissionTime().isAfter(twoWeeksAgo);
-        }
-    };
-    
-    private <T extends Content> EquivalenceFilter<T> standardFilter() {
-        return standardFilter(ImmutableList.<EquivalenceFilter<T>>of());
-    }
-
-    private <T extends Content> EquivalenceFilter<T> standardFiltersMinusDummy() {
-        return ConjunctiveFilter.valueOf(ImmutableList.of(
-                new MinimumScoreFilter<T>(0.25),
-                new MediaTypeFilter<T>(),
-                new SpecializationFilter<T>(),
-                new PublisherFilter<T>(),
-                new ExclusionListFilter<T>(excludedUrisFromProperties()),
-                new FilmFilter<T>(),
-                new UnpublishedContentFilter<T>()
-        ));
-    }
-
-    private <T extends Content> EquivalenceFilter<T> standardFilter(Iterable<EquivalenceFilter<T>> additional) {
-        return ConjunctiveFilter.valueOf(Iterables.concat(ImmutableList.of(
-            new MinimumScoreFilter<T>(0.25),
-            new MediaTypeFilter<T>(),
-            new SpecializationFilter<T>(),
-            new PublisherFilter<T>(),
-            new ExclusionListFilter<T>(excludedUrisFromProperties()),
-            new FilmFilter<T>(),
-            new DummyContainerFilter<T>(),
-            new UnpublishedContentFilter<T>()
-        ), additional));
-    }
-    
-    private ImmutableSet<String> excludedUrisFromProperties() {
-        if(Strings.isNullOrEmpty(excludedUris)) {
-            return ImmutableSet.of();
-        }
-        return ImmutableSet.copyOf(Splitter.on(',').split(excludedUris));
-    }
-
-    private ContentEquivalenceUpdater.Builder<Item> standardItemUpdater(Set<Publisher> acceptablePublishers, Set<? extends EquivalenceScorer<Item>> scorers) {
-        return standardItemUpdater(acceptablePublishers, scorers, Predicates.alwaysTrue());
-    }
-    
-    private ContentEquivalenceUpdater.Builder<Item> standardItemUpdater(Set<Publisher> acceptablePublishers, Set<? extends EquivalenceScorer<Item>> scorers, Predicate<? super Broadcast> filter) {
-        return ContentEquivalenceUpdater.<Item> builder()
-            .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
-                new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver, 
-                    channelResolver, acceptablePublishers, Duration.standardMinutes(5), filter)
-            ))
-            .withExcludedUris(excludedUrisFromProperties())
-            .withScorers(scorers)
-            .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-            .withFilter(this.standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
-            .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                EpisodeFilteringEquivalenceResultHandler.relaxed(
-                    new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
-                    equivSummaryStore
-                ),
-                new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                MessageQueueingResultHandler.create(
-                        equivAssertDestination(), acceptablePublishers, lookupEntryStore
-                )
-            )));
-    }
-
-    private ContentEquivalenceUpdater.Builder<Item> standardItemUpdaterMinusDummyFilter(
-            Set<Publisher> acceptablePublishers,
-            Set<? extends EquivalenceScorer<Item>> scorers,
-            Predicate<? super Broadcast> filter
-    ) {
-        return ContentEquivalenceUpdater.<Item> builder()
-                .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
-                        new BroadcastMatchingItemEquivalenceGenerator(
-                                scheduleResolver,
-                                channelResolver,
-                                acceptablePublishers,
-                                Duration.standardMinutes(5),
-                                filter
-                        )
-                ))
-                .withExcludedUris(excludedUrisFromProperties())
-                .withScorers(scorers)
-                .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-                .withFilter(standardFiltersMinusDummy())
-                .withExtractor(
-                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
-                                .atLeastNTimesGreater(1.5))
-                .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                        EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                new LookupWritingEquivalenceHandler<Item>(
-                                        lookupWriter,
-                                        acceptablePublishers
-                                ),
-                                equivSummaryStore
-                        ),
-                        new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                        new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                        MessageQueueingResultHandler.create(
-                                equivAssertDestination(), acceptablePublishers, lookupEntryStore
-                        )
-                )));
-    }
-
-    private ContentEquivalenceUpdater.Builder<Item> ebsItemUpdater(
-            Set<Publisher> acceptablePublishers,
-            Set<? extends EquivalenceScorer<Item>> scorers
-    ) {
-
-        NullScoreAwareAveragingCombiner<Item> combiner =
-                new NullScoreAwareAveragingCombiner<>(true);
-
-        return ContentEquivalenceUpdater.<Item> builder()
-                .withGenerators(ImmutableSet.<EquivalenceGenerator<Item>> of(
-                        new BroadcastMatchingItemEquivalenceGenerator(
-                                scheduleResolver,
-                                channelResolver,
-                                acceptablePublishers,
-                                Duration.standardMinutes(5),
-                                Predicates.alwaysTrue())
-                ))
-                .withExcludedUris(excludedUrisFromProperties())
-                .withScorers(scorers)
-                .withCombiner(combiner)
-                .withFilter(this.standardFilter())
-                .withExtractor(
-                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
-                                .atLeastNTimesGreater(1.5)
-                )
-                .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                        EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                new LookupWritingEquivalenceHandler<Item>(
-                                        lookupWriter,
-                                        acceptablePublishers),
-                                equivSummaryStore
-                        ),
-                        new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                        new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore),
-                        MessageQueueingResultHandler.create(
-                                equivAssertDestination(), acceptablePublishers, lookupEntryStore
-                        )
-                )));
-    }
-    
-    private EquivalenceUpdater<Container> topLevelContainerUpdater(Set<Publisher> publishers) {
-        return ContentEquivalenceUpdater.<Container> builder()
-            .withExcludedUris(excludedUrisFromProperties())
-            .withGenerators(ImmutableSet.of(
-                TitleSearchGenerator.create(searchResolver, Container.class, publishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
-                ScalingEquivalenceGenerator.scale(
-                    new ContainerChildEquivalenceGenerator(contentResolver, equivSummaryStore),
-                    20)
-                ))
-            .withScorers(ImmutableSet.<EquivalenceScorer<Container>> of(
-                new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE)
-            ))
-            .withCombiner(new RequiredScoreFilteringCombiner<Container>(
-                new NullScoreAwareAveragingCombiner<Container>(),
-                            TitleMatchingContainerScorer.NAME
-            ))
-            .withFilter(this.standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
-            .withHandler(containerResultHandlers(publishers))
-            .build();
-    }
-
-    private EquivalenceUpdater<Container> topLevelContainerUpdaterMinusDummyFilter(
-            Set<Publisher> publishers
-    ) {
-        return ContentEquivalenceUpdater.<Container> builder()
-                .withExcludedUris(excludedUrisFromProperties())
-                .withGenerators(ImmutableSet.of(
-                        TitleSearchGenerator.create(searchResolver, Container.class, publishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
-                        ScalingEquivalenceGenerator.scale(
-                                new ContainerChildEquivalenceGenerator(contentResolver, equivSummaryStore),
-                                20)
-                ))
-                .withScorers(ImmutableSet.<EquivalenceScorer<Container>> of(
-                        new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE)
-                ))
-                .withCombiner(new RequiredScoreFilteringCombiner<Container>(
-                        new NullScoreAwareAveragingCombiner<Container>(),
-                        TitleMatchingContainerScorer.NAME
-                ))
-                .withFilter(standardFiltersMinusDummy())
-                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
-                .withHandler(containerResultHandlers(publishers))
-                .build();
-    }
-
-    @Bean 
+    @Bean
     public EquivalenceUpdater<Content> contentUpdater() {
-        
-        Set<Publisher> musicPublishers = ImmutableSet.of(BBC_MUSIC, YOUTUBE, 
-            SPOTIFY, SOUNDCLOUD, RDIO, AMAZON_UK);
-        Set<Publisher> roviPublishers = ImmutableSet.copyOf(Sets.filter(Publisher.all(), 
-            new Predicate<Publisher>(){
-                @Override
-                public boolean apply(Publisher input) {
-                    return input.key().endsWith("rovicorp.com");
-                }
-            }
-        ));
-        
-        //Generally acceptable publishers.
-        ImmutableSet<Publisher> acceptablePublishers = ImmutableSet.copyOf(Sets.difference(
-            Publisher.all(), 
-            Sets.union(
-                ImmutableSet.of(PREVIEW_NETWORKS, BBC_REDUX, RADIO_TIMES, LOVEFILM, NETFLIX, YOUVIEW,
-                        YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, BT_SPORT_EBS, C4_PRESS, RADIO_TIMES_UPCOMING),
-                Sets.union(musicPublishers, roviPublishers)
-            )
-        ));
-        
-        EquivalenceUpdater<Item> standardItemUpdater =
-                standardItemUpdater(
-                        MoreSets.add(acceptablePublishers, LOVEFILM),
-                        ImmutableSet.of(
-                                new TitleMatchingItemScorer(),
-                                new SequenceItemScorer(Score.ONE),
-                                new DescriptionTitleMatchingScorer(),
-                                DescriptionMatchingScorer.makeScorer()
-                        )
-                ).build();
+        EquivalenceUpdaterProviderDependencies dependencies = EquivalenceUpdaterProviderDependencies
+                .builder()
+                .withScheduleResolver(scheduleResolver)
+                .withSearchResolver(searchResolver)
+                .withContentResolver(contentResolver)
+                .withChannelResolver(channelResolver)
+                .withEquivSummaryStore(equivSummaryStore)
+                .withLookupWriter(lookupWriter)
+                .withLookupEntryStore(lookupEntryStore)
+                .withEquivalenceResultStore(equivalenceResultStore())
+                .withMessageSender(equivAssertDestination())
+                .withExcludedUris(excludedUrisFromProperties())
+                .build();
 
-        EquivalenceUpdater<Item> rtUpcomingItemUpdater =
-                standardItemUpdaterMinusDummyFilter(
-                        ImmutableSet.of(AMAZON_UNBOX),
-                        ImmutableSet.of(
-                                new TitleMatchingItemScorer(),
-                                new SequenceItemScorer(Score.ONE),
-                                new DescriptionTitleMatchingScorer(),
-                                DescriptionMatchingScorer.makeScorer()
-                        ),
-                        Predicates.alwaysTrue()
-                ).build();
-
-        EquivalenceUpdater<Item> ebsItemUpdater =
-                ebsItemUpdater(
-                        MoreSets.add(acceptablePublishers, LOVEFILM),
-                        ImmutableSet.of(
-                                new TitleMatchingItemScorer(),
-                                new SequenceItemScorer(Score.ONE),
-                                new DescriptionTitleMatchingScorer(),
-                                DescriptionMatchingScorer.makeScorer()
-                        )
-                ).build();
-
-        EquivalenceUpdater<Container> topLevelContainerUpdater =
-                topLevelContainerUpdater(MoreSets.add(acceptablePublishers, LOVEFILM));
-
-        Set<Publisher> nonStandardPublishers = ImmutableSet.copyOf(Sets.union(
-            ImmutableSet.of(ITUNES, BBC_REDUX, RADIO_TIMES, FACEBOOK, LOVEFILM, NETFLIX,
-                    RTE, YOUVIEW, YOUVIEW_STAGE, YOUVIEW_BT, YOUVIEW_BT_STAGE, TALK_TALK,
-                    PA, BT_VOD, BT_TVE_VOD, BETTY, AMC_EBS, BT_SPORT_EBS, C4_PRESS, RADIO_TIMES_UPCOMING),
-            Sets.union(musicPublishers, roviPublishers)
-        ));
+        UpdaterConfigurationRegistry registry = UpdaterConfigurationRegistry.create();
 
         MultipleSourceEquivalenceUpdater updaters = MultipleSourceEquivalenceUpdater.create();
 
-        for (Publisher publisher : Iterables.filter(Publisher.all(), not(in(nonStandardPublishers)))) {
-            updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
-                .withItemUpdater(standardItemUpdater)
-                .withTopLevelContainerUpdater(topLevelContainerUpdater)
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
-                .build());
+        for (UpdaterConfiguration configuration : registry.getUpdaterConfigurations()) {
+            EquivalenceUpdater<Item> itemEquivalenceUpdater = configuration
+                    .getItemEquivalenceUpdaterType()
+                    .getProvider()
+                    .getUpdater(
+                            dependencies,
+                            configuration.getItemEquivalenceTargetSources()
+                    );
+
+            EquivalenceUpdater<Container> topLevelContainerEquivalenceUpdater = configuration
+                    .getTopLevelContainerEquivalenceUpdaterType()
+                    .getProvider()
+                    .getUpdater(
+                            dependencies,
+                            configuration.getTopLevelContainerTargetSources()
+                    );
+
+            EquivalenceUpdater<Container> nonTopLevelContainerEquivalenceUpdater = configuration
+                    .getNonTopLevelContainerEquivalenceUpdaterType()
+                    .getProvider()
+                    .getUpdater(
+                            dependencies,
+                            configuration.getNonTopLevelContainerTargetSources()
+                    );
+
+            updaters.register(
+                    configuration.getSource(),
+                    SourceSpecificEquivalenceUpdater
+                            .builder(configuration.getSource())
+                            .withItemUpdater(itemEquivalenceUpdater)
+                            .withTopLevelContainerUpdater(topLevelContainerEquivalenceUpdater)
+                            .withNonTopLevelContainerUpdater(nonTopLevelContainerEquivalenceUpdater)
+                            .build()
+            );
         }
 
-        updaters.register(
-                RADIO_TIMES_UPCOMING,
-                SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES_UPCOMING)
-                        .withItemUpdater(rtUpcomingItemUpdater)
-                        .withTopLevelContainerUpdater(topLevelContainerUpdaterMinusDummyFilter(
-                                ImmutableSet.of(AMAZON_UNBOX)
-                        ))
-                        .withNonTopLevelContainerUpdater(standardSeriesUpdater(
-                                ImmutableSet.of(AMAZON_UNBOX)
-                        ))
-                        .build());
+        return updaters;
+    }
 
-        updaters.register(BT_SPORT_EBS, SourceSpecificEquivalenceUpdater.builder(BT_SPORT_EBS)
-                .withItemUpdater(ebsItemUpdater)
-                .withTopLevelContainerUpdater(topLevelContainerUpdater)
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
-                .build());
-
-        updaters.register(AMC_EBS, SourceSpecificEquivalenceUpdater.builder(AMC_EBS)
-                .withItemUpdater(standardItemUpdater)
-                .withTopLevelContainerUpdater(topLevelContainerUpdater)
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(ImmutableSet.of(AMC_EBS, PA)))
-                .build());
-
-        updaters.register(RADIO_TIMES, SourceSpecificEquivalenceUpdater.builder(RADIO_TIMES)
-                .withItemUpdater(rtItemEquivalenceUpdater())
-                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-
-        registerYouViewUpdaterForPublisher(
-                YOUVIEW, 
-                Sets.union(Sets.difference(acceptablePublishers, ImmutableSet.of(YOUVIEW_STAGE)), ImmutableSet.of(YOUVIEW)), 
-                updaters);
-        
-        registerYouViewUpdaterForPublisher(
-                YOUVIEW_STAGE, 
-                Sets.union(Sets.difference(acceptablePublishers, ImmutableSet.of(YOUVIEW)), ImmutableSet.of(YOUVIEW_STAGE)), 
-                updaters);
-        
-        registerYouViewUpdaterForPublisher(
-                YOUVIEW_BT, 
-                Sets.union(Sets.difference(acceptablePublishers, ImmutableSet.of(YOUVIEW_BT_STAGE)), ImmutableSet.of(YOUVIEW_BT)), 
-                updaters);
-        
-        registerYouViewUpdaterForPublisher(
-                YOUVIEW_BT_STAGE, 
-                Sets.union(Sets.difference(acceptablePublishers, ImmutableSet.of(YOUVIEW_BT)), ImmutableSet.of(YOUVIEW_BT_STAGE)), 
-                updaters);
-        
-        registerYouViewUpdaterForPublisher(
-                YOUVIEW_SCOTLAND_RADIO, 
-                Sets.union(Sets.difference(acceptablePublishers, ImmutableSet.of(YOUVIEW_SCOTLAND_RADIO_STAGE)), ImmutableSet.of(YOUVIEW_SCOTLAND_RADIO)), 
-                updaters);
-        
-        registerYouViewUpdaterForPublisher(
-                YOUVIEW_SCOTLAND_RADIO_STAGE, 
-                Sets.union(Sets.difference(acceptablePublishers, ImmutableSet.of(YOUVIEW_SCOTLAND_RADIO)), ImmutableSet.of(YOUVIEW_SCOTLAND_RADIO_STAGE)), 
-                updaters);
-
-        Set<Publisher> reduxPublishers = Sets.union(acceptablePublishers, ImmutableSet.of(BBC_REDUX));
-
-        updaters.register(BBC_REDUX, SourceSpecificEquivalenceUpdater.builder(BBC_REDUX)
-                .withItemUpdater(broadcastItemEquivalenceUpdater(reduxPublishers, Score.nullScore(), Predicates.alwaysTrue()))
-                .withTopLevelContainerUpdater(broadcastItemContainerEquivalenceUpdater(reduxPublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-
-        updaters.register(C4_PRESS, SourceSpecificEquivalenceUpdater.builder(C4_PRESS)
-                .withItemUpdater(broadcastItemEquivalenceUpdater(
-                        ImmutableSet.of(PA),
-                        Score.nullScore(),
-                        Predicates.alwaysTrue()
-                ))
-                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-
-        updaters.register(BETTY, SourceSpecificEquivalenceUpdater.builder(BETTY)
-                .withItemUpdater(aliasIdentifiedBroadcastItemEquivalenceUpdater(ImmutableSet.of(
-                        BETTY,
-                        YOUVIEW)))
-                .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-        
-        Set<Publisher> facebookAcceptablePublishers = Sets.union(acceptablePublishers, ImmutableSet.of(FACEBOOK));
-        updaters.register(FACEBOOK, SourceSpecificEquivalenceUpdater.builder(FACEBOOK)
-                .withItemUpdater(NullEquivalenceUpdater.get())
-                .withTopLevelContainerUpdater( facebookContainerEquivalenceUpdater(facebookAcceptablePublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-
-        updaters.register(ITUNES, SourceSpecificEquivalenceUpdater.builder(ITUNES)
-                .withItemUpdater(vodItemUpdater(acceptablePublishers).build())
-                .withTopLevelContainerUpdater(vodContainerUpdater(acceptablePublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-
-        Set<Publisher> lfPublishers = Sets.union(acceptablePublishers, ImmutableSet.of(LOVEFILM));
-        updaters.register(LOVEFILM, SourceSpecificEquivalenceUpdater.builder(LOVEFILM)
-                .withItemUpdater(vodItemUpdater(lfPublishers)
-                        .withScorer(new SeriesSequenceItemScorer()).build())
-                .withTopLevelContainerUpdater(vodContainerUpdater(lfPublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-        
-        Set<Publisher> netflixPublishers = ImmutableSet.of(BBC, NETFLIX);
-        updaters.register(NETFLIX, SourceSpecificEquivalenceUpdater.builder(NETFLIX)
-                .withItemUpdater(vodItemUpdater(netflixPublishers).build())
-                .withTopLevelContainerUpdater(vodContainerUpdater(netflixPublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-        
-        Set<Publisher> amazonUnboxPublishers = ImmutableSet.of(AMAZON_UNBOX, PA);
-        updaters.register(AMAZON_UNBOX, SourceSpecificEquivalenceUpdater.builder(AMAZON_UNBOX)
-                .withItemUpdater(vodItemUpdater(amazonUnboxPublishers).build())
-                .withTopLevelContainerUpdater(vodContainerUpdater(amazonUnboxPublishers))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-
-        Set<Publisher> rtePublishers = ImmutableSet.of(PA);
-        updaters.register(RTE, SourceSpecificEquivalenceUpdater.builder(RTE)
-                .withTopLevelContainerUpdater(rteVodContainerUpdater(rtePublishers))
-                .withItemUpdater(NullEquivalenceUpdater.get())
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-        
-        updaters.register(TALK_TALK, SourceSpecificEquivalenceUpdater.builder(TALK_TALK)
-                .withItemUpdater(vodItemUpdater(acceptablePublishers).build())
-                .withTopLevelContainerUpdater(vodContainerUpdater(acceptablePublishers))
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(acceptablePublishers))
-                .build());
-        
-        Set<Publisher> btVodPublishers = ImmutableSet.of(PA);
-        updaters.register(BT_VOD, SourceSpecificEquivalenceUpdater.builder(BT_VOD)
-                .withItemUpdater(vodItemUpdater(btVodPublishers)
-                        .withScorer(new SeriesSequenceItemScorer()).build())
-                .withTopLevelContainerUpdater(vodContainerUpdater(btVodPublishers))
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(btVodPublishers))
-                .build());
-        
-        Set<Publisher> btTveVodPublishers = ImmutableSet.of(PA);
-        updaters.register(BT_TVE_VOD, SourceSpecificEquivalenceUpdater.builder(BT_TVE_VOD)
-                .withItemUpdater(btVodItemUpdater(btTveVodPublishers)
-                        .withScorer(new SeriesSequenceItemScorer()).build())
-                .withTopLevelContainerUpdater(btTveVodContainerUpdater(btTveVodPublishers))
-                .withNonTopLevelContainerUpdater(standardSeriesUpdater(btTveVodPublishers))
-                .build());
-
-        Set<Publisher> vfPublishers = ImmutableSet.of(VF_AE, VF_BBC, VF_C5, VF_ITV, VF_VIACOM, VF_VUBIQUITY);
-        Set<Publisher> vfVodPublishers = ImmutableSet.of(PA);
-
-        for (Publisher publisher : vfPublishers) {
-            updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
-                    .withItemUpdater(btVodItemUpdater(vfVodPublishers)
-                            .withScorer(new SeriesSequenceItemScorer()).build())
-                    .withTopLevelContainerUpdater(btTveVodContainerUpdater(btTveVodPublishers))
-                    .withNonTopLevelContainerUpdater(standardSeriesUpdater(btTveVodPublishers))
-                    .build());
-        }
-                
-        Set<Publisher> itunesAndMusicPublishers = Sets.union(musicPublishers, ImmutableSet.of(ITUNES));
-        ContentEquivalenceUpdater<Item> muiscPublisherUpdater = ContentEquivalenceUpdater.<Item>builder()
-            .withGenerator(
-                new TitleSearchGenerator<Item>(searchResolver, Song.class, itunesAndMusicPublishers, new SongTitleTransform(), 100, DEFAULT_EXACT_TITLE_MATCH_SCORE)
-            ).withScorer(new CrewMemberScorer(new SongCrewMemberExtractor()))
-                .withExcludedUris(excludedUrisFromProperties())
-            .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-            .withFilter(AlwaysTrueFilter.get())
-            .withExtractor(new MusicEquivalenceExtractor())
-            .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                EpisodeFilteringEquivalenceResultHandler.relaxed(
-                    new LookupWritingEquivalenceHandler<Item>(lookupWriter, itunesAndMusicPublishers),
-                    equivSummaryStore
-                ),
-                new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
-            )))
-            .build();
-        
-        for (Publisher publisher : musicPublishers) {
-            updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
-                    .withItemUpdater(muiscPublisherUpdater)
-                    .withTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                    .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                    .build());
-        }
-        
-        ImmutableSet<Publisher> roviMatchPublishers = ImmutableSet.of(
-            Publisher.BBC, Publisher.PA, Publisher.YOUVIEW, Publisher.BBC_NITRO, 
-            Publisher.BBC_REDUX, Publisher.ITV, Publisher.C4_PMLSD,
-            Publisher.C4_PMLSD_P06,Publisher.FIVE
+    @Bean
+    public RecentEquivalenceResultStore equivalenceResultStore() {
+        return new RecentEquivalenceResultStore(
+                new FileEquivalenceResultStore(new File(equivResultsDirectory))
         );
-        updaters.register(Publisher.ROVI_EN_GB, roviUpdater(Publisher.ROVI_EN_GB, roviMatchPublishers));
-        updaters.register(Publisher.ROVI_EN_US, roviUpdater(Publisher.ROVI_EN_US, roviMatchPublishers));
-        
-        
-        return updaters; 
     }
 
-    private void registerYouViewUpdaterForPublisher(Publisher publisher, Set<Publisher> matchTo, MultipleSourceEquivalenceUpdater updaters) {
-        updaters.register(publisher, SourceSpecificEquivalenceUpdater.builder(publisher)
-                .withItemUpdater(broadcastItemEquivalenceUpdater(matchTo, Score.negativeOne(), YOUVIEW_BROADCAST_FILTER))
-                .withTopLevelContainerUpdater(broadcastItemContainerEquivalenceUpdater(matchTo))
-                .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-                .build());
-        
+    @Bean
+    protected MessageSender<ContentEquivalenceAssertionMessage> equivAssertDestination() {
+        return messaging.messageSenderFactory()
+                .makeMessageSender(
+                        equivAssertDest,
+                        JacksonMessageSerializer.forType(ContentEquivalenceAssertionMessage.class)
+                );
     }
 
-    private ContentEquivalenceUpdater<Container> standardSeriesUpdater(
-            Set<Publisher> acceptablePublishers) {
-        return ContentEquivalenceUpdater.<Container>builder()
-            .withExcludedUris(excludedUrisFromProperties())
-            .withGenerator(new ContainerCandidatesContainerEquivalenceGenerator(contentResolver, equivSummaryStore))
-            .withScorer(new SequenceContainerScorer())
-            .withCombiner(new NullScoreAwareAveragingCombiner<Container>())
-            .withFilter(this.standardFilter(ImmutableList.of(
-                new ContainerHierarchyFilter()
-            )))
-            .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
-            .withHandler(new BroadcastingEquivalenceResultHandler<Container>(ImmutableList.of(
-                new LookupWritingEquivalenceHandler<Container>(lookupWriter, acceptablePublishers),
-                new ResultWritingEquivalenceHandler<Container>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Container>(equivSummaryStore)
-            )))
-            .build();
-    }
-
-    private SourceSpecificEquivalenceUpdater roviUpdater(Publisher roviSource, ImmutableSet<Publisher> roviMatchPublishers) {
-        SourceSpecificEquivalenceUpdater roviUpdater = SourceSpecificEquivalenceUpdater.builder(roviSource)
-            .withItemUpdater(ContentEquivalenceUpdater.<Item> builder()
-                    .withExcludedUris(excludedUrisFromProperties())
-                    .withGenerators(ImmutableSet.of(
-                            new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver, channelResolver, roviMatchPublishers, Duration.standardMinutes(10)),
-                            new ContainerCandidatesItemEquivalenceGenerator(contentResolver, equivSummaryStore),
-                            new FilmEquivalenceGenerator(searchResolver, roviMatchPublishers, true)
-                        ))
-                        .withScorers(ImmutableSet.of(
-                            new TitleMatchingItemScorer(),
-                            new SequenceItemScorer(Score.ONE)
-                        ))
-                        .withCombiner(new RequiredScoreFilteringCombiner<Item>(
-                            new NullScoreAwareAveragingCombiner<Item>(),
-                            TitleMatchingItemScorer.NAME
-                        ))
-                        .withFilter(this.standardFilter())
-                        .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
-                        .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                            EpisodeFilteringEquivalenceResultHandler.strict(
-                                new LookupWritingEquivalenceHandler<Item>(lookupWriter, roviMatchPublishers),
-                                equivSummaryStore
-                            ),
-                            new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                            new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
-                        ))).build())
-            .withNonTopLevelContainerUpdater(NullEquivalenceUpdater.get())
-            .withTopLevelContainerUpdater(topLevelContainerUpdater(roviMatchPublishers))
-            .build();
-        return roviUpdater;
-    }
-
-    private EquivalenceUpdater<Container> facebookContainerEquivalenceUpdater(Set<Publisher> facebookAcceptablePublishers) {
-        return ContentEquivalenceUpdater.<Container> builder()
-            .withExcludedUris(excludedUrisFromProperties())
-            .withGenerators(ImmutableSet.of(
-                    TitleSearchGenerator.create(searchResolver, Container.class, facebookAcceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE),
-                    aliasResolvingGenerator(contentResolver, Container.class)
-            ))
-            .withScorers(ImmutableSet.of())
-            .withCombiner(NullScoreAwareAveragingCombiner.get())
-            .withFilter(ConjunctiveFilter.valueOf(ImmutableList.of(
-                new MinimumScoreFilter<Container>(0.25),
-                new SpecializationFilter<Container>(),
-                new UnpublishedContentFilter<>()
-            )))
-            .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
-            .withHandler(containerResultHandlers(facebookAcceptablePublishers))
-            .build();
-    }
-
-    private EquivalenceUpdater<Container> vodContainerUpdater(Set<Publisher> acceptablePublishers) {
-        return ContentEquivalenceUpdater.<Container> builder()
-            .withExcludedUris(excludedUrisFromProperties())
-            .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
-            )
-            .withScorers(ImmutableSet.of(
-                new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE),
-                new ContainerHierarchyMatchingScorer(
-                        contentResolver, 
-                        Score.negativeOne(), 
-                        new SubscriptionCatchupBrandDetector(contentResolver)
-                    )
-            ))
-            .withCombiner(new RequiredScoreFilteringCombiner<Container>(
-                new NullScoreAwareAveragingCombiner<Container>(),
-                TitleMatchingContainerScorer.NAME,
-                ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
-            )
-            .withFilter(this.standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
-            .withHandler(containerResultHandlers(acceptablePublishers))
-            .build();
-    }
-
-    private EquivalenceUpdater<Container> rteVodContainerUpdater(
-            Set<Publisher> acceptablePublishers
-    ) {
-        return ContentEquivalenceUpdater.<Container> builder()
-                .withExcludedUris(excludedUrisFromProperties())
-                .withGenerator(TitleSearchGenerator.create(
-                        searchResolver,
-                        Container.class,
-                        acceptablePublishers,
-                        DEFAULT_EXACT_TITLE_MATCH_SCORE
-                        )
-                )
-                .withScorers(ImmutableSet.of(
-                        new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE),
-                        new ContainerHierarchyMatchingScorer(
-                                contentResolver,
-                                Score.negativeOne(),
-                                new SubscriptionCatchupBrandDetector(contentResolver)
-                        )
-                ))
-                .withCombiner(new RequiredScoreFilteringCombiner<Container>(
-                        new NullScoreAwareAveragingCombiner<Container>(),
-                        TitleMatchingContainerScorer.NAME,
-                        ScoreThreshold.greaterThanOrEqual(DEFAULT_EXACT_TITLE_MATCH_SCORE))
-                )
-                .withFilter(standardFiltersMinusDummy())
-                .withExtractor(
-                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
-                                .atLeastNTimesGreater(1.5)
-                )
-                .withHandler(containerResultHandlers(acceptablePublishers))
-                .build();
-    }
-
-    private EquivalenceUpdater<Container> btTveVodContainerUpdater(Set<Publisher> acceptablePublishers) {
-        return ContentEquivalenceUpdater.<Container> builder()
-                .withExcludedUris(excludedUrisFromProperties())
-                .withGenerator(TitleSearchGenerator.create(searchResolver, Container.class, acceptablePublishers, DEFAULT_EXACT_TITLE_MATCH_SCORE)
-                )
-                .withScorers(ImmutableSet.of(
-                        new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE),
-                        new ContainerHierarchyMatchingScorer(
-                                contentResolver,
-                                Score.valueOf(-0.49d),
-                                new SubscriptionCatchupBrandDetector(contentResolver)
-                        )
-                ))
-                .withCombiner(new RequiredScoreFilteringCombiner<Container>(
-                        new NullScoreAwareAveragingCombiner<Container>(),
-                        TitleMatchingContainerScorer.NAME)
-                )
-                .withFilter(this.standardFilter())
-                .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
-                .withHandler(containerResultHandlers(acceptablePublishers))
-                .build();
-    }
-
-    private ContentEquivalenceUpdater.Builder<Item> vodItemUpdater(Set<Publisher> acceptablePublishers) {
-        return ContentEquivalenceUpdater.<Item> builder()
-            .withExcludedUris(excludedUrisFromProperties())
-            .withGenerators(ImmutableSet.of(
-                new ContainerCandidatesItemEquivalenceGenerator(contentResolver, equivSummaryStore),
-                new FilmEquivalenceGenerator(searchResolver, acceptablePublishers, true)
-            ))
-            .withScorers(ImmutableSet.of(
-                new TitleMatchingItemScorer(),
-                new SequenceItemScorer(Score.ONE)
-            ))
-            .withCombiner(new RequiredScoreFilteringCombiner<Item>(
-                new NullScoreAwareAveragingCombiner<Item>(),
-                TitleMatchingItemScorer.NAME
-            ))
-            .withFilter(this.standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
-            .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                EpisodeFilteringEquivalenceResultHandler.strict(
-                    new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
-                    equivSummaryStore
-                ),
-                new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
-            )));
-    }
-    
-    // 
-    private ContentEquivalenceUpdater.Builder<Item> btVodItemUpdater(Set<Publisher> acceptablePublishers) {
-        return ContentEquivalenceUpdater.<Item> builder()
-            .withExcludedUris(excludedUrisFromProperties())
-            .withGenerators(ImmutableSet.of(
-                new ContainerCandidatesItemEquivalenceGenerator(contentResolver, equivSummaryStore),
-                new FilmEquivalenceGenerator(searchResolver, acceptablePublishers, true)
-            ))
-            .withScorers(ImmutableSet.of(
-                new TitleMatchingItemScorer(),
-                // Hierarchies are known to be inconsistent between the BT VoD
-                // catalogue and others, so we want to ascribe less weight 
-                // to sequence scoring
-                new SequenceItemScorer(Score.valueOf(0.5))
-            ))
-            .withCombiner(new RequiredScoreFilteringCombiner<Item>(
-                new NullScoreAwareAveragingCombiner<Item>(),
-                ImmutableSet.of(TitleMatchingItemScorer.NAME, SequenceItemScorer.SEQUENCE_SCORER)
-            ))
-            .withFilter(this.standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
-            .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                    EpisodeFilteringEquivalenceResultHandler.strict(
-                        new LookupWritingEquivalenceHandler<Item>(lookupWriter, acceptablePublishers),
-                        equivSummaryStore
-                    ),
-                    new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                    new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
-            )));
-    }
-
-    private EquivalenceUpdater<Container> broadcastItemContainerEquivalenceUpdater(Set<Publisher> sources) {
-        return ContentEquivalenceUpdater.<Container> builder()
-            .withExcludedUris(excludedUrisFromProperties())
-            .withGenerators(ImmutableSet.of(
-                TitleSearchGenerator.create(searchResolver, Container.class, sources, DEFAULT_EXACT_TITLE_MATCH_SCORE),
-                new ContainerChildEquivalenceGenerator(contentResolver, equivSummaryStore)
-            ))
-            .withScorers(ImmutableSet.of(new TitleMatchingContainerScorer(DEFAULT_EXACT_TITLE_MATCH_SCORE)))
-            .withCombiner(new RequiredScoreFilteringCombiner<Container>(
-                new NullScoreAwareAveragingCombiner<Container>(),
-                    TitleMatchingContainerScorer.NAME))
-            .withFilter(this.standardFilter())
-            .withExtractor(PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5))
-            .withHandler(containerResultHandlers(sources))
-            
-            .build();
-    }
-
-    private EquivalenceUpdater<Item> broadcastItemEquivalenceUpdater(Set<Publisher> sources, Score titleMismatch,
-            Predicate<? super Broadcast> filter) {
-        return standardItemUpdater(sources, ImmutableSet.of(
-            new TitleMatchingItemScorer(),
-            new SequenceItemScorer(Score.ONE),
-            new TitleSubsetBroadcastItemScorer(contentResolver, titleMismatch, 80/*percent*/),
-            new BroadcastAliasScorer(Score.nullScore()),
-            new DescriptionTitleMatchingScorer()
-        ), filter).build();
-    }
-
-    private EquivalenceUpdater<Item> aliasIdentifiedBroadcastItemEquivalenceUpdater(
-            Set<Publisher> sources) {
-        return ContentEquivalenceUpdater.<Item>builder()
-                .withExcludedUris(excludedUrisFromProperties())
-                .withGenerator(new BroadcastMatchingItemEquivalenceGenerator(scheduleResolver,
-                        channelResolver,
-                        sources,
-                        Duration.standardMinutes(5),
-                        Predicates.alwaysTrue()))
-                .withScorer(new BroadcastAliasScorer(Score.negativeOne()))
-                .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-                .withFilter(AlwaysTrueFilter.get())
-                .withExtractor(new PercentThresholdEquivalenceExtractor<Item>(0.95))
-                .withHandler(itemResultHandlers(sources))
-                .build();
-    }
-
-    private EquivalenceUpdater<Item> rtItemEquivalenceUpdater() {
-        return ContentEquivalenceUpdater.<Item> builder()
-            .withExcludedUris(excludedUrisFromProperties())
-            .withGenerators(ImmutableSet.of(
-                new RadioTimesFilmEquivalenceGenerator(contentResolver),
-                new FilmEquivalenceGenerator(searchResolver, ImmutableSet.of(Publisher.PREVIEW_NETWORKS), false)
-            ))
-            .withScorers(ImmutableSet.of())
-            .withCombiner(new NullScoreAwareAveragingCombiner<Item>())
-            .withFilter(this.standardFilter())
-            .withExtractor(PercentThresholdEquivalenceExtractor.moreThanPercent(90))
-            .withHandler(new BroadcastingEquivalenceResultHandler<Item>(ImmutableList.of(
-                EpisodeFilteringEquivalenceResultHandler.relaxed(
-                    new LookupWritingEquivalenceHandler<Item>(lookupWriter, 
-                        ImmutableSet.of(RADIO_TIMES, PA, PREVIEW_NETWORKS)),
-                        equivSummaryStore
-                ),
-                new ResultWritingEquivalenceHandler<Item>(equivalenceResultStore()),
-                new EquivalenceSummaryWritingHandler<Item>(equivSummaryStore)
-            )))
-            .build();
+    private ImmutableSet<String> excludedUrisFromProperties() {
+        if (Strings.isNullOrEmpty(excludedUris)) {
+            return ImmutableSet.of();
+        }
+        return ImmutableSet.copyOf(Splitter.on(',').split(excludedUris));
     }
 }

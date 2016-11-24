@@ -8,11 +8,15 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollection;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 
 
 public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfCollection, Series> {
+
+    private static final Logger log = LoggerFactory.getLogger(ItunesCollectionSeriesExtractor.class);
 
     // Different language series. Allows series + extra character to account for "series:" or "series,"
     private final String SERIES_REGEX = "(?i)series.?";
@@ -66,6 +70,7 @@ public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfColl
             }
         }
 
+        log.info("No series number extracted from: {}", name);
         return null;
     }
 

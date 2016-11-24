@@ -102,9 +102,8 @@ public class BroadcastItemUpdaterProvider implements EquivalenceUpdaterProvider<
                 .withHandler(
                         new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
                                 EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                        new LookupWritingEquivalenceHandler<>(
-                                                dependencies.getLookupWriter(),
-                                                targetPublishers
+                                        LookupWritingEquivalenceHandler.create(
+                                                dependencies.getLookupWriter()
                                         ),
                                         dependencies.getEquivSummaryStore()
                                 ),

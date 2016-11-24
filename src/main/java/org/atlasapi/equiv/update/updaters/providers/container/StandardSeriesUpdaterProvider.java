@@ -77,9 +77,8 @@ public class StandardSeriesUpdaterProvider implements EquivalenceUpdaterProvider
                 )
                 .withHandler(
                         new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
-                                new LookupWritingEquivalenceHandler<>(
-                                        dependencies.getLookupWriter(),
-                                        targetPublishers
+                                LookupWritingEquivalenceHandler.create(
+                                        dependencies.getLookupWriter()
                                 ),
                                 new ResultWritingEquivalenceHandler<>(
                                         dependencies.getEquivalenceResultStore()

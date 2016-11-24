@@ -97,9 +97,8 @@ public class RteContainerUpdaterProvider implements EquivalenceUpdaterProvider<C
                 )
                 .withHandler(
                         new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
-                                new LookupWritingEquivalenceHandler<>(
-                                        dependencies.getLookupWriter(),
-                                        targetPublishers
+                                LookupWritingEquivalenceHandler.create(
+                                        dependencies.getLookupWriter()
                                 ),
                                 new EpisodeMatchingEquivalenceHandler(
                                         dependencies.getContentResolver(),

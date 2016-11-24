@@ -103,9 +103,8 @@ public class RoviItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 .withHandler(
                         new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
                                 EpisodeFilteringEquivalenceResultHandler.strict(
-                                        new LookupWritingEquivalenceHandler<>(
-                                                dependencies.getLookupWriter(),
-                                                targetPublishers
+                                        LookupWritingEquivalenceHandler.create(
+                                                dependencies.getLookupWriter()
                                         ),
                                         dependencies.getEquivSummaryStore()
                                 ),

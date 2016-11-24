@@ -99,9 +99,8 @@ public class RtUpcomingTopLevelContainerUpdaterProvider
                 .withHandler(
                         new BroadcastingEquivalenceResultHandler<>(
                                 ImmutableList.of(
-                                        new LookupWritingEquivalenceHandler<>(
-                                                dependencies.getLookupWriter(),
-                                                targetPublishers
+                                        LookupWritingEquivalenceHandler.create(
+                                                dependencies.getLookupWriter()
                                         ),
                                         new EpisodeMatchingEquivalenceHandler(
                                                 dependencies.getContentResolver(),

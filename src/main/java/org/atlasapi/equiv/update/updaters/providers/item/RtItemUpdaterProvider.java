@@ -30,10 +30,6 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
-
 public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
     private RtItemUpdaterProvider() {
@@ -88,9 +84,8 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                 .withHandler(
                         new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
                                 EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                        new LookupWritingEquivalenceHandler<>(
-                                                dependencies.getLookupWriter(),
-                                                ImmutableSet.of(RADIO_TIMES, PA, PREVIEW_NETWORKS)
+                                        LookupWritingEquivalenceHandler.create(
+                                                dependencies.getLookupWriter()
                                         ),
                                         dependencies.getEquivSummaryStore()
                                 ),

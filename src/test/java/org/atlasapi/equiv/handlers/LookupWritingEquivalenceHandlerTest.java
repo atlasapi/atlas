@@ -36,7 +36,8 @@ public class LookupWritingEquivalenceHandlerTest extends TestCase {
     
     private final LookupWriter lookupWriter = mock(LookupWriter.class);
     private final Set<Publisher> publishers = ImmutableSet.of(Publisher.BBC,Publisher.PA, Publisher.ITV);
-    private final LookupWritingEquivalenceHandler<Item> updater = new LookupWritingEquivalenceHandler<Item>(lookupWriter, publishers);
+    private final LookupWritingEquivalenceHandler<Item> updater = LookupWritingEquivalenceHandler
+            .create(lookupWriter);
 
     private final Item content = new Item("item","c:item", Publisher.BBC);
     private final Item equiv1 = new Item("equiv1","c:equiv1",Publisher.PA);

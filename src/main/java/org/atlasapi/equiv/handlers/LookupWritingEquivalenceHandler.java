@@ -8,8 +8,10 @@ import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.lookup.LookupWriter;
+import org.atlasapi.persistence.lookup.entry.LookupEntry;
 
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.base.Optional;
 import com.google.common.cache.CacheBuilder;
 import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
@@ -62,7 +64,7 @@ public class LookupWritingEquivalenceHandler<T extends Content>
     }
 
     @Override
-    public void handle(EquivalenceResult<T> result) {
+    public boolean handle(EquivalenceResult<T> result) {
         Iterable<T> equivs = Iterables.transform(
                 result.strongEquivalences().values(),
                 ScoredCandidate.toCandidate()
@@ -71,17 +73,19 @@ public class LookupWritingEquivalenceHandler<T extends Content>
         // abort writing if seens as equiv and not equiv to anything
         if(seenAsEquiv.asMap().containsKey(result.subject().getCanonicalUri())
                 && Iterables.isEmpty(equivs)) {
-            return;
+            return false;
         }
         
         for (T equiv : equivs) {
             seenAsEquiv.getUnchecked(equiv.getCanonicalUri());
         }
-        
-        writer.writeLookup(
+
+        Optional<Set<LookupEntry>> writtenLookups = writer.writeLookup(
                 ContentRef.valueOf(result.subject()),
                 Iterables.transform(equivs, ContentRef.FROM_CONTENT),
                 publishers
         );
+
+        return writtenLookups.isPresent();
     }
 }

@@ -4,12 +4,12 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
-import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
+import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.MessageQueueingResultHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
+import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -109,7 +109,7 @@ public class YouviewItemUpdaterProvider implements EquivalenceUpdaterProvider<It
                                 .atLeastNTimesGreater(1.5)
                 )
                 .withHandler(
-                        new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
+                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
                                 EpisodeFilteringEquivalenceResultHandler.relaxed(
                                         LookupWritingEquivalenceHandler.create(
                                                 dependencies.getLookupWriter()
@@ -120,13 +120,14 @@ public class YouviewItemUpdaterProvider implements EquivalenceUpdaterProvider<It
                                         dependencies.getEquivalenceResultStore()),
                                 new EquivalenceSummaryWritingHandler<>(
                                         dependencies.getEquivSummaryStore()
-                                ),
-                                MessageQueueingResultHandler.create(
-                                        dependencies.getMessageSender(),
-                                        targetPublishers,
-                                        dependencies.getLookupEntryStore()
                                 )
                         ))
+                )
+                .withMessenger(
+                        QueueingEquivalenceResultMessenger.create(
+                                dependencies.getMessageSender(),
+                                dependencies.getLookupEntryStore()
+                        )
                 )
                 .build();
     }

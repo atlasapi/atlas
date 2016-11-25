@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.handlers;
+package org.atlasapi.equiv.messengers;
 
 import java.math.BigInteger;
 import java.util.List;
@@ -33,10 +33,11 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class MessageQueueingResultHandler<T extends Content>
-        implements EquivalenceResultHandler<T> {
+public class QueueingEquivalenceResultMessenger<T extends Content>
+        implements EquivalenceResultMessenger<T> {
 
-    private static final Logger log = LoggerFactory.getLogger(MessageQueueingResultHandler.class);
+    private static final Logger log = LoggerFactory
+            .getLogger(QueueingEquivalenceResultMessenger.class);
     
     private final MessageSender<ContentEquivalenceAssertionMessage> sender;
     private final Timestamper stamper;
@@ -45,7 +46,7 @@ public class MessageQueueingResultHandler<T extends Content>
 
     private final NumberToShortStringCodec entityIdCodec;
 
-    private MessageQueueingResultHandler(
+    private QueueingEquivalenceResultMessenger(
             MessageSender<ContentEquivalenceAssertionMessage> sender,
             Iterable<Publisher> sources,
             LookupEntryStore lookupEntryStore,
@@ -61,30 +62,39 @@ public class MessageQueueingResultHandler<T extends Content>
         this.entityIdCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
 
-    public static <T extends Content> MessageQueueingResultHandler<T> create(
+    /**
+     * Create a new {@link QueueingEquivalenceResultMessenger}.
+     * <p>
+     * This messenger asserts direct equivalence or lack thereof on all publishers. This means all
+     * outgoing equivalence edges need to be provided on every update and that the absence of an
+     * equivalence assertion to any publisher will break any existing connections to that publisher.
+     */
+    public static <T extends Content> QueueingEquivalenceResultMessenger<T> create(
             MessageSender<ContentEquivalenceAssertionMessage> sender,
-            Iterable<Publisher> sources,
             LookupEntryStore lookupEntryStore
     ) {
-        return new MessageQueueingResultHandler<>(
-                sender, sources, lookupEntryStore, new SystemClock()
+        return new QueueingEquivalenceResultMessenger<>(
+                sender,
+                Publisher.all(),
+                lookupEntryStore,
+                new SystemClock()
         );
     }
 
     @VisibleForTesting
-    static <T extends Content> MessageQueueingResultHandler<T> create(
+    static <T extends Content> QueueingEquivalenceResultMessenger<T> create(
             MessageSender<ContentEquivalenceAssertionMessage> sender,
             Iterable<Publisher> sources,
             LookupEntryStore lookupEntryStore,
             Timestamper timestamper
     ) {
-        return new MessageQueueingResultHandler<>(
+        return new QueueingEquivalenceResultMessenger<>(
                 sender, sources, lookupEntryStore, timestamper
         );
     }
 
     @Override
-    public void handle(EquivalenceResult<T> result) {
+    public void sendMessage(EquivalenceResult<T> result) {
         try {
             ContentEquivalenceAssertionMessage message = messageFrom(result);
             for (AdjacentRef adjacentRef : message.getAdjacent()) {

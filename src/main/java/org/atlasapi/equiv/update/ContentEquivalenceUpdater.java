@@ -6,6 +6,7 @@ import java.util.Set;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerators;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
+import org.atlasapi.equiv.messengers.EquivalenceResultMessenger;
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.combining.ScoreCombiner;
@@ -26,6 +27,8 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 public class ContentEquivalenceUpdater<T extends Content> implements EquivalenceUpdater<T> {
 
     private final ScoredEquivalentsMerger merger;
@@ -34,6 +37,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     private final EquivalenceScorers<T> scorers;
     private final DefaultEquivalenceResultBuilder<T> resultBuilder;
     private final EquivalenceResultHandler<T> handler;
+    private final EquivalenceResultMessenger<T> messenger;
 
     private final EquivalenceUpdaterMetadata metadata;
 
@@ -44,13 +48,15 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             EquivalenceFilter<T> filter,
             EquivalenceExtractor<T> extractor,
             EquivalenceResultHandler<T> handler,
+            EquivalenceResultMessenger<T> messenger,
             Set<String> excludedUris
     ) {
         this.merger = new ScoredEquivalentsMerger();
         this.generators = EquivalenceGenerators.from(generators, excludedUris);
         this.scorers = EquivalenceScorers.from(scorers);
         this.resultBuilder = new DefaultEquivalenceResultBuilder<>(combiner, filter, extractor);
-        this.handler = handler;
+        this.handler = checkNotNull(handler);
+        this.messenger = checkNotNull(messenger);
 
         this.metadata = ContentEquivalenceUpdaterMetadata.builder()
                 .withGenerators(generators)
@@ -61,7 +67,6 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 .withHandler(handler)
                 .withExcludedUris(excludedUris)
                 .build();
-
     }
 
     public static <T extends Content> Builder<T> builder() {
@@ -70,7 +75,6 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
 
     @Override
     public boolean updateEquivalences(T content) {
-
         ReadableDescription desc = new DefaultDescription();
 
         List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
@@ -82,7 +86,12 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
         
         EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
-        handler.handle(result);
+
+        boolean handledWithStateChange = handler.handle(result);
+
+        if (handledWithStateChange) {
+            messenger.sendMessage(result);
+        }
 
         return !result.combinedEquivalences().candidates().isEmpty();
     }
@@ -93,7 +102,8 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
-        return Iterables.concat(Iterables.transform(generatedScores,
+        return Iterables.concat(Iterables.transform(
+                generatedScores,
                 (Function<ScoredCandidates<T>, Iterable<T>>) input -> input.candidates().keySet()
         ));
     }
@@ -106,6 +116,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         private EquivalenceFilter<T> filter;
         private EquivalenceExtractor<T> extractor;
         private EquivalenceResultHandler<T> handler;
+        private EquivalenceResultMessenger<T> messenger;
         private Set<String> excludedUris;
 
         private Builder() {
@@ -151,19 +162,25 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             return this;
         }
 
+        public Builder<T> withMessenger(EquivalenceResultMessenger<T> messenger) {
+            this.messenger = messenger;
+            return this;
+        }
+
         public Builder<T> withExcludedUris(Set<String> excludedUris) {
             this.excludedUris = excludedUris;
             return this;
         }
 
         public ContentEquivalenceUpdater<T> build() {
-            return new ContentEquivalenceUpdater<T>(
+            return new ContentEquivalenceUpdater<>(
                     generators.build(),
                     scorers.build(),
                     combiner,
                     filter,
                     extractor,
                     handler,
+                    messenger,
                     excludedUris
             );
         }

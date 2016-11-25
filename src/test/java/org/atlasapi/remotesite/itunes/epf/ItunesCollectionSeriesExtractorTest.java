@@ -17,12 +17,16 @@ public class ItunesCollectionSeriesExtractorTest {
         String seriesSeperatedByColon = "The Cool staffel: 4";
         String allCaps = "THE COOL SERIES 10";
         String mixedCase = "ThE cOoL sEaSoN 1";
+        String seriesNumberWithComma = "test series 4, some stuff";
+        String seriesDoubleDigitWithColon = "test series 88: more stuff";
 
         assertThat(extractor.tryExtractSeriesNumber(standardCase), is(1));
         assertThat(extractor.tryExtractSeriesNumber(seriesNumberWithHash), is(3));
         assertThat(extractor.tryExtractSeriesNumber(seriesSeperatedByColon), is(4));
         assertThat(extractor.tryExtractSeriesNumber(allCaps), is(10));
         assertThat(extractor.tryExtractSeriesNumber(mixedCase), is(1));
+        assertThat(extractor.tryExtractSeriesNumber(seriesNumberWithComma), is(4));
+        assertThat(extractor.tryExtractSeriesNumber(seriesDoubleDigitWithColon), is(88));
 
     }
 
@@ -36,6 +40,8 @@ public class ItunesCollectionSeriesExtractorTest {
         String nameThatEndsWithSeries = "String with the word at the end. series";
         String nameWithYearFollowingSeries = "Complete Jazz Series 1944";
         String nameWithMultipleYearsFollowingSeries = "Complete Jazz Series 1945 - 1946";
+        String seriesWithNumberAndInvalidChar = "the mega series 100- shouldn't match";
+        String multipleSeasons = "Best of Seasons 4, 5, 6 & 7";
 
         assert(extractor.tryExtractSeriesNumber(seriesWithNoNumber) == null);
         assert(extractor.tryExtractSeriesNumber(seriesWithVolumeNumber) == null);
@@ -44,6 +50,8 @@ public class ItunesCollectionSeriesExtractorTest {
         assert(extractor.tryExtractSeriesNumber(nameThatEndsWithSeries) == null);
         assert(extractor.tryExtractSeriesNumber(nameWithYearFollowingSeries) == null);
         assert(extractor.tryExtractSeriesNumber(nameWithMultipleYearsFollowingSeries) == null);
+        assert(extractor.tryExtractSeriesNumber(seriesWithNumberAndInvalidChar) == null);
+        assert(extractor.tryExtractSeriesNumber(multipleSeasons) == null);
 
     }
 }

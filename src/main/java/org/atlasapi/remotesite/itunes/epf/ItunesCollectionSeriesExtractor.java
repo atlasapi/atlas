@@ -18,14 +18,15 @@ public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfColl
 
     private static final Logger log = LoggerFactory.getLogger(ItunesCollectionSeriesExtractor.class);
 
-    // Different language series. Allows series + extra character to account for "series:" or "series,"
-    private final String SERIES_REGEX = "(?i)series.?";
-    private final String SEASON_REGEX = "(?i)season.?";
-    private final String SAISON_REGEX = "(?i)saison.?";
-    private final String STAFFEL_REGEX = "(?i)staffel.?";
+    // Different language series. Allows series + extra character to account for "series:" or "series," but not
+    // plurals like "seasons 4, 5, 6"
+    private final String SERIES_REGEX = "(?i)series[\\W]?";
+    private final String SEASON_REGEX = "(?i)season[\\W]?";
+    private final String SAISON_REGEX = "(?i)saison[\\W]?";
+    private final String STAFFEL_REGEX = "(?i)staffel[\\W]?";
 
     // Allows a number to be preceded by one character ("#42")
-    private final String NUMBER = ".?\\d+";
+    private final String NUMBER = ".?\\d+[,|:]?";
 
     private final String SINGLE_DASH_OR_COLON = "[-|:]?";
 

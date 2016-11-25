@@ -1,13 +1,9 @@
 package org.atlasapi.equiv.handlers;
 
-import static org.atlasapi.media.entity.ChildRef.TO_URI;
-
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.annotation.Nullable;
 
 import org.atlasapi.equiv.ContentRef;
 import org.atlasapi.equiv.EquivalenceSummary;
@@ -23,6 +19,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.LookupWriter;
 
+import com.metabroadcast.common.collect.OptionalMap;
+
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicates;
@@ -36,20 +34,24 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-import com.metabroadcast.common.collect.OptionalMap;
+import static org.atlasapi.media.entity.ChildRef.TO_URI;
 
 public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandler<Container> {
 
-    private final static Function<ScoredCandidate<Container>, Container> TO_CONTAINER = ScoredCandidate.<Container>toCandidate();
+    private final static Function<ScoredCandidate<Container>, Container> TO_CONTAINER =
+            ScoredCandidate.<Container>toCandidate();
     
     private final EquivalenceSummaryStore summaryStore;
     private final ContentResolver contentResolver;
     private final LookupWriter lookupWriter;
     private final Set<Publisher> publishers;
 
-
-    public EpisodeMatchingEquivalenceHandler(ContentResolver contentResolver, EquivalenceSummaryStore summaryStore, LookupWriter lookupWriter, Iterable<Publisher> acceptablePublishers) {
+    public EpisodeMatchingEquivalenceHandler(
+            ContentResolver contentResolver,
+            EquivalenceSummaryStore summaryStore,
+            LookupWriter lookupWriter,
+            Iterable<Publisher> acceptablePublishers
+    ) {
         this.contentResolver = contentResolver;
         this.summaryStore = summaryStore;
         this.lookupWriter = lookupWriter;
@@ -57,45 +59,74 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
     }
     
     @Override
-    public void handle(
-            EquivalenceResult<Container> result
-    ) {
+    public boolean handle(EquivalenceResult<Container> result) {
         result.description().startStage("Episode sequence stitching");
         
-        Collection<Container> equivalentContainers = Collections2.transform(result.strongEquivalences().values(), TO_CONTAINER);
+        Collection<Container> equivalentContainers = Collections2.transform(
+                result.strongEquivalences().values(),
+                TO_CONTAINER
+        );
         Iterable<Episode> subjectsChildren = childrenOf(result.subject());
         Multimap<Container, Episode> equivalentsChildren = childrenOf(equivalentContainers);
-        OptionalMap<String,EquivalenceSummary> childSummaries = summaryStore.summariesForUris(Iterables.transform(result.subject().getChildRefs(), ChildRef.TO_URI));
+        OptionalMap<String,EquivalenceSummary> childSummaries = summaryStore.summariesForUris(
+                Iterables.transform(result.subject().getChildRefs(), ChildRef.TO_URI)
+        );
         Map<String, EquivalenceSummary> summaryMap = summaryMap(childSummaries);
         
-        stitch(subjectsChildren, summaryMap, equivalentsChildren, result.description());
+        boolean handledWithStateChange = stitch(
+                subjectsChildren,
+                summaryMap,
+                equivalentsChildren,
+                result.description()
+        );
         
         result.description().finishStage();
+
+        return handledWithStateChange;
     }
 
-    private void stitch(Iterable<Episode> subjectsChildren, Map<String, EquivalenceSummary> summaryMap, Multimap<Container, Episode> equivalentsChildren, ReadableDescription desc) {
+    private boolean stitch(
+            Iterable<Episode> subjectsChildren,
+            Map<String, EquivalenceSummary> summaryMap,
+            Multimap<Container, Episode> equivalentsChildren,
+            ReadableDescription desc
+    ) {
+        boolean handledWithStateChange = false;
+
         for (Episode episode : subjectsChildren) {
             EquivalenceSummary summary = summaryMap.get(episode.getCanonicalUri());
             if (summary != null) {
-                stitch(episode, summary, equivalentsChildren, desc);
+                handledWithStateChange |= stitch(episode, summary, equivalentsChildren, desc);
             }
         }
+
+        return handledWithStateChange;
     }
 
-    private void stitch(Episode subjectEpisode, EquivalenceSummary equivalenceSummary, Multimap<Container, Episode> equivalentsChildren, ReadableDescription desc) {
+    private boolean stitch(
+            Episode subjectEpisode,
+            EquivalenceSummary equivalenceSummary,
+            Multimap<Container, Episode> equivalentsChildren,
+            ReadableDescription desc
+    ) {
         String subjectUri = subjectEpisode.getCanonicalUri();
         desc.startStage(subjectUri);
         Multimap<Publisher, ContentRef> equivalents = equivalenceSummary.getEquivalents();
 
         Set<ContentRef> additionalEquivs = Sets.newHashSet();
-        for (Entry<Container, Collection<Episode>> contentHierarchy : equivalentsChildren.asMap().entrySet()) {
+        for (Entry<Container, Collection<Episode>> contentHierarchy
+                : equivalentsChildren.asMap().entrySet()) {
             Container container = contentHierarchy.getKey();
             for (Episode equivChild : contentHierarchy.getValue()) {
                 if(matchingSequenceNumbers(subjectEpisode, equivChild)) {
                     Publisher publisher = equivChild.getPublisher();
                     Collection<ContentRef> existingEquiv = equivalents.get(publisher);
                     if (!existingEquiv.isEmpty()) {
-                        desc.appendText("existing strong equiv %s not overwritten by %s",existingEquiv, equivChild);
+                        desc.appendText(
+                                "existing strong equiv %s not overwritten by %s",
+                                existingEquiv,
+                                equivChild
+                        );
                     } else {
                         desc.appendText("adding %s (%s)", equivChild, container);
                         additionalEquivs.add(ContentRef.valueOf(equivChild));
@@ -104,29 +135,38 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
                 }
             }
         }
-        
+
+        boolean handledWithStateChange = false;
+
         if (!additionalEquivs.isEmpty()) {
             additionalEquivs.addAll(equivalents.values());
-            lookupWriter.writeLookup(ContentRef.valueOf(subjectEpisode), additionalEquivs, publishers);
+            handledWithStateChange = lookupWriter.writeLookup(
+                    ContentRef.valueOf(subjectEpisode),
+                    additionalEquivs,
+                    publishers
+            )
+                    .isPresent();
         }
 
         desc.finishStage();
+
+        return handledWithStateChange;
     }
     
-    public boolean matchingSequenceNumbers(Episode target, Episode ep) {
+    private boolean matchingSequenceNumbers(Episode target, Episode ep) {
         return target.getEpisodeNumber() != null 
             && target.getEpisodeNumber().equals(ep.getEpisodeNumber())
             && target.getSeriesNumber() != null
             && target.getSeriesNumber().equals(ep.getSeriesNumber());
     }
 
-    private Map<String, EquivalenceSummary> summaryMap(OptionalMap<String, EquivalenceSummary> childSummaries) {
-        return Maps.filterValues(Maps.transformValues(childSummaries, new Function<Optional<EquivalenceSummary>, EquivalenceSummary>() {
-            @Override
-            public EquivalenceSummary apply(@Nullable Optional<EquivalenceSummary> input) {
-                return input.orNull();
-            }
-        }), Predicates.notNull());
+    private Map<String, EquivalenceSummary> summaryMap(
+            OptionalMap<String, EquivalenceSummary> childSummaries
+    ) {
+        return Maps.filterValues(
+                Maps.transformValues(childSummaries, Optional::orNull),
+                Predicates.notNull()
+        );
     }
 
     private Multimap<Container, Episode> childrenOf(Iterable<Container> equivalentContainers) {
@@ -143,5 +183,4 @@ public class EpisodeMatchingEquivalenceHandler implements EquivalenceResultHandl
         ResolvedContent children = contentResolver.findByCanonicalUris(childUris);
         return Iterables.filter(children.getAllResolvedResults(), Episode.class);
     }
-
 }

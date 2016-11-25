@@ -1,17 +1,13 @@
-package org.atlasapi.equiv.handlers;
+package org.atlasapi.messaging;
 
 import java.math.BigInteger;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.StreamSupport;
 
-import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.LookupRef;
-import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
-import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage.AdjacentRef;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
@@ -19,96 +15,82 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.time.SystemClock;
 import com.metabroadcast.common.time.Timestamp;
 import com.metabroadcast.common.time.Timestamper;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
 import com.google.common.primitives.Longs;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class MessageQueueingResultHandler<T extends Content>
-        implements EquivalenceResultHandler<T> {
+public class ContentEquivalenceAssertionMessenger {
 
-    private static final Logger log = LoggerFactory.getLogger(MessageQueueingResultHandler.class);
-    
+    private static final Logger log = LoggerFactory
+            .getLogger(ContentEquivalenceAssertionMessenger.class);
+
     private final MessageSender<ContentEquivalenceAssertionMessage> sender;
-    private final Timestamper stamper;
-    private final ImmutableSet<String> sourceKeys;
+    private final Timestamper timestamper;
     private final LookupEntryStore lookupEntryStore;
-
     private final NumberToShortStringCodec entityIdCodec;
 
-    private MessageQueueingResultHandler(
+    private ContentEquivalenceAssertionMessenger(
             MessageSender<ContentEquivalenceAssertionMessage> sender,
-            Iterable<Publisher> sources,
-            LookupEntryStore lookupEntryStore,
-            Timestamper stamper
+            Timestamper timestamper,
+            LookupEntryStore lookupEntryStore
     ) {
         this.sender = checkNotNull(sender);
-        this.stamper = checkNotNull(stamper);
-        this.sourceKeys = StreamSupport.stream(sources.spliterator(), false)
-                .map(Publisher::key)
-                .collect(MoreCollectors.toImmutableSet());
+        this.timestamper = checkNotNull(timestamper);
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
-
         this.entityIdCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
 
-    public static <T extends Content> MessageQueueingResultHandler<T> create(
+    public static ContentEquivalenceAssertionMessenger create(
             MessageSender<ContentEquivalenceAssertionMessage> sender,
-            Iterable<Publisher> sources,
+            Timestamper timestamper,
             LookupEntryStore lookupEntryStore
     ) {
-        return new MessageQueueingResultHandler<>(
-                sender, sources, lookupEntryStore, new SystemClock()
-        );
+        return new ContentEquivalenceAssertionMessenger(sender, timestamper, lookupEntryStore);
     }
 
-    @VisibleForTesting
-    static <T extends Content> MessageQueueingResultHandler<T> create(
-            MessageSender<ContentEquivalenceAssertionMessage> sender,
-            Iterable<Publisher> sources,
-            LookupEntryStore lookupEntryStore,
-            Timestamper timestamper
-    ) {
-        return new MessageQueueingResultHandler<>(
-                sender, sources, lookupEntryStore, timestamper
-        );
-    }
-
-    @Override
-    public void handle(
-            EquivalenceResult<T> result
+    public void sendMessage(
+            Content subject,
+            ImmutableList<Content> adjacents,
+            ImmutableSet<String> sources
     ) {
         try {
-            ContentEquivalenceAssertionMessage message = messageFrom(result);
-            for (AdjacentRef adjacentRef : message.getAdjacent()) {
-                log.trace(
-                        "Subject: {} Adjacent: {}",
-                        result.subject().getCanonicalUri(),
-                        adjacentRef.toString()
-                );
-            }
-            sender.sendMessage(message, getMessagePartitionKey(result.subject()));
+            ContentEquivalenceAssertionMessage message = messageFrom(
+                    subject,
+                    adjacents,
+                    sources
+            );
+
+            sender.sendMessage(
+                    message,
+                    getMessagePartitionKey(subject)
+            );
         } catch (Exception e) {
-            log.error("Failed to send equiv update message: " + result.subject(), e);
+            log.error("Failed to send equiv update message: " + subject, e);
         }
     }
 
-    private ContentEquivalenceAssertionMessage messageFrom(EquivalenceResult<T> result) {
+    private ContentEquivalenceAssertionMessage messageFrom(
+            Content subject,
+            ImmutableList<Content> adjacents,
+            ImmutableSet<String> sources
+    ) {
         String messageId = UUID.randomUUID().toString();
-        Timestamp timestamp = stamper.timestamp();
-        T subject = result.subject();
+        Timestamp timestamp = timestamper.timestamp();
+
         String subjectId = entityIdCodec.encode(BigInteger.valueOf(subject.getId()));
         String subjectType = subject.getClass().getSimpleName().toLowerCase();
         String subjectSource = subject.getPublisher().key();
+
+        ImmutableList<ContentEquivalenceAssertionMessage.AdjacentRef> adjacentRefs = adjacents(
+                adjacents
+        );
 
         return new ContentEquivalenceAssertionMessage(
                 messageId,
@@ -116,27 +98,24 @@ public class MessageQueueingResultHandler<T extends Content>
                 subjectId,
                 subjectType,
                 subjectSource,
-                adjacents(result),
-                sourceKeys
+                adjacentRefs,
+                sources
         );
     }
 
-    private List<AdjacentRef> adjacents(EquivalenceResult<T> result) {
-        return Lists.newArrayList(Collections2.transform(result.strongEquivalences().values(),
-                input -> {
-                    @SuppressWarnings("ConstantConditions")
-                    T candidate = input.candidate();
-
-                    return new AdjacentRef(
+    private ImmutableList<ContentEquivalenceAssertionMessage.AdjacentRef> adjacents(
+            ImmutableList<Content> adjacents
+    ) {
+        return adjacents.stream()
+                .map(candidate -> new ContentEquivalenceAssertionMessage.AdjacentRef(
                         entityIdCodec.encode(BigInteger.valueOf(candidate.getId())),
                         candidate.getClass().getSimpleName().toLowerCase(),
                         candidate.getPublisher().key()
-                    );
-                }
-        ));
+                ))
+                .collect(MoreCollectors.toImmutableList());
     }
 
-    private byte[] getMessagePartitionKey(T subject) {
+    private byte[] getMessagePartitionKey(Content subject) {
         Iterable<LookupEntry> lookupEntries = lookupEntryStore.entriesForIds(
                 ImmutableSet.of(subject.getId())
         );

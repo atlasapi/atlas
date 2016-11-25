@@ -4,7 +4,8 @@ import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
 import org.atlasapi.media.entity.Content;
 
-public class ResultWritingEquivalenceHandler<T extends Content> implements EquivalenceResultHandler<T> {
+public class ResultWritingEquivalenceHandler<T extends Content>
+        implements EquivalenceResultHandler<T> {
 
     private EquivalenceResultStore store;
 
@@ -13,10 +14,8 @@ public class ResultWritingEquivalenceHandler<T extends Content> implements Equiv
     }
     
     @Override
-    public void handle(
-            EquivalenceResult<T> result
-    ) {
+    public boolean handle(EquivalenceResult<T> result) {
         store.store(result);
+        return false;
     }
-
 }

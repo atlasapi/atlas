@@ -3,10 +3,11 @@ package org.atlasapi.equiv.update.updaters.providers.container;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
-import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
+import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
+import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -76,10 +77,9 @@ public class StandardSeriesUpdaterProvider implements EquivalenceUpdaterProvider
                         PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                 )
                 .withHandler(
-                        new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
-                                new LookupWritingEquivalenceHandler<>(
-                                        dependencies.getLookupWriter(),
-                                        targetPublishers
+                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
+                                LookupWritingEquivalenceHandler.create(
+                                        dependencies.getLookupWriter()
                                 ),
                                 new ResultWritingEquivalenceHandler<>(
                                         dependencies.getEquivalenceResultStore()
@@ -87,7 +87,14 @@ public class StandardSeriesUpdaterProvider implements EquivalenceUpdaterProvider
                                 new EquivalenceSummaryWritingHandler<>(
                                         dependencies.getEquivSummaryStore()
                                 )
-                )))
+                        ))
+                )
+                .withMessenger(
+                        QueueingEquivalenceResultMessenger.create(
+                                dependencies.getMessageSender(),
+                                dependencies.getLookupEntryStore()
+                        )
+                )
                 .build();
     }
 }

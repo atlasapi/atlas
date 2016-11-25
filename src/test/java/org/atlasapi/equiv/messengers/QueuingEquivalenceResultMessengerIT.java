@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.handlers;
+package org.atlasapi.equiv.messengers;
 
 import java.util.List;
 import java.util.Properties;
@@ -60,7 +60,7 @@ import static org.mockito.Matchers.anyCollectionOf;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MessageQueueingResultHandlerIT {
+public class QueuingEquivalenceResultMessengerIT {
 
     private static String topic = "EquivAssert";
     private static String system = "AtlasOwlTest";
@@ -70,7 +70,7 @@ public class MessageQueueingResultHandlerIT {
     private static ZkClient zkClient;
     private static List<KafkaServer> kafkaServers;
 
-    private MessageQueueingResultHandler<Item> handler;
+    private QueueingEquivalenceResultMessenger<Item> handler;
     private MessagingModule mm;
     private MessageSerializer<ContentEquivalenceAssertionMessage> serializer;
 
@@ -122,7 +122,7 @@ public class MessageQueueingResultHandlerIT {
         
         MessageSender<ContentEquivalenceAssertionMessage> sender
             = mm.messageSenderFactory().makeMessageSender(topic, serializer);
-        handler = MessageQueueingResultHandler.create(sender, Publisher.all(), lookupEntryStore);
+        handler = QueueingEquivalenceResultMessenger.create(sender, lookupEntryStore);
     }
 
     @Test
@@ -155,7 +155,7 @@ public class MessageQueueingResultHandlerIT {
                 .build();
         consumer.startAsync().awaitRunning(10, TimeUnit.SECONDS);
 
-        handler.handle(new EquivalenceResult<>(subject, scores, combined, strong, desc));
+        handler.sendMessage(new EquivalenceResult<>(subject, scores, combined, strong, desc));
         assertTrue("message not received", latch.await(5, TimeUnit.SECONDS));
         
         ContentEquivalenceAssertionMessage assertionMessage = message.get();

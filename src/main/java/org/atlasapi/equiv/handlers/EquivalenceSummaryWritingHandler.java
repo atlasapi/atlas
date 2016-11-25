@@ -17,14 +17,14 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 
-public class EquivalenceSummaryWritingHandler<T extends Content> implements EquivalenceResultHandler<T> {
+public class EquivalenceSummaryWritingHandler<T extends Content>
+        implements EquivalenceResultHandler<T> {
 
     private final EquivalenceSummaryStore equivSummaryStore;
 
@@ -33,10 +33,9 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
     }
 
     @Override
-    public void handle(
-            EquivalenceResult<T> result
-    ) {
+    public boolean handle(EquivalenceResult<T> result) {
         equivSummaryStore.store(summaryOf(result));
+        return false;
     }
 
     private EquivalenceSummary summaryOf(EquivalenceResult<T> result) {
@@ -47,6 +46,7 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
         return new EquivalenceSummary(canonicalUri,parent,candidates,equivalents);
     }
 
+    @Nullable
     private String parentOf(T subject) {
         if (subject instanceof Item) {
             ParentRef container = ((Item)subject).getContainer();
@@ -63,16 +63,19 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
     }
 
     private List<String> candidatesFrom(ScoredCandidates<T> combinedEquivalences) {
-        return ImmutableList.copyOf(Iterables.transform(combinedEquivalences.candidates().keySet(), Identified.TO_URI));
+        return ImmutableList.copyOf(Iterables.transform(
+                combinedEquivalences.candidates().keySet(),
+                Identified.TO_URI
+        ));
     }
 
-    private Multimap<Publisher, ContentRef> equivalentsFrom(Multimap<Publisher, ScoredCandidate<T>> strongEquivalences) {
-        return ImmutableMultimap.copyOf(Multimaps.transformValues(strongEquivalences, new Function<ScoredCandidate<T>, ContentRef>() {
-            @Override
-            public ContentRef apply(@Nullable ScoredCandidate<T> input) {
-                return contentRefFrom(input.candidate());
-            }
-        }));
+    private Multimap<Publisher, ContentRef> equivalentsFrom(
+            Multimap<Publisher, ScoredCandidate<T>> strongEquivalences
+    ) {
+        return ImmutableMultimap.copyOf(Multimaps.transformValues(
+                strongEquivalences,
+                input -> contentRefFrom(input.candidate())
+        ));
     }
     
     private ContentRef contentRefFrom(T candidate) {
@@ -81,5 +84,4 @@ public class EquivalenceSummaryWritingHandler<T extends Content> implements Equi
         String parent = parentOf(candidate);
         return new ContentRef(canonicalUri, publisher, parent);
     }
-
 }

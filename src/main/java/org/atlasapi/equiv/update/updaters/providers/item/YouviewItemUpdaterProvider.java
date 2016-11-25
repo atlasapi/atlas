@@ -58,6 +58,9 @@ public class YouviewItemUpdaterProvider implements EquivalenceUpdaterProvider<It
     ) {
 
         return ContentEquivalenceUpdater.<Item>builder()
+                .withExcludedUris(
+                        dependencies.getExcludedUris()
+                )
                 .withGenerators(
                         ImmutableSet.<EquivalenceGenerator<Item>>of(
                                 new BroadcastMatchingItemEquivalenceGenerator(
@@ -71,9 +74,7 @@ public class YouviewItemUpdaterProvider implements EquivalenceUpdaterProvider<It
                                                                 .minusDays(15)
                                                 )
                                 )
-                        ))
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
+                        )
                 )
                 .withScorers(
                         ImmutableSet.of(

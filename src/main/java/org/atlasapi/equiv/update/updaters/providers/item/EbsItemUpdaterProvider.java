@@ -52,6 +52,9 @@ public class EbsItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> 
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Item>builder()
+                .withExcludedUris(
+                        dependencies.getExcludedUris()
+                )
                 .withGenerators(
                         ImmutableSet.<EquivalenceGenerator<Item>>of(
                                 new BroadcastMatchingItemEquivalenceGenerator(
@@ -62,9 +65,6 @@ public class EbsItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> 
                                         Predicates.alwaysTrue()
                                 )
                         )
-                )
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
                 )
                 .withScorers(
                         ImmutableSet.of(

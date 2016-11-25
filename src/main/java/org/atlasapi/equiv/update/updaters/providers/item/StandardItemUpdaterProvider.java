@@ -52,6 +52,9 @@ public class StandardItemUpdaterProvider implements EquivalenceUpdaterProvider<I
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Item>builder()
+                .withExcludedUris(
+                        dependencies.getExcludedUris()
+                )
                 .withGenerators(
                         ImmutableSet.<EquivalenceGenerator<Item>>of(
                                 new BroadcastMatchingItemEquivalenceGenerator(
@@ -62,9 +65,6 @@ public class StandardItemUpdaterProvider implements EquivalenceUpdaterProvider<I
                                         Predicates.alwaysTrue()
                                 )
                         )
-                )
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
                 )
                 .withScorers(
                         ImmutableSet.of(

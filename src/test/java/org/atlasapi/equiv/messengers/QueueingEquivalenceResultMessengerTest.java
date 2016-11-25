@@ -1,4 +1,4 @@
-package org.atlasapi.equiv.handlers;
+package org.atlasapi.equiv.messengers;
 
 import org.atlasapi.equiv.results.EquivalenceResult;
 import org.atlasapi.equiv.results.description.DefaultDescription;
@@ -31,20 +31,20 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
-public class MessageQueueingResultHandlerTest {
+public class QueueingEquivalenceResultMessengerTest {
 
     @Mock private MessageSender<ContentEquivalenceAssertionMessage> sender;
     @Mock private Timestamper timestamper;
     @Mock private LookupEntryStore lookupEntryStore;
 
-    private MessageQueueingResultHandler<Item> resultHandler;
+    private QueueingEquivalenceResultMessenger<Item> resultHandler;
 
     private Item graphItemWithLowestId;
     private Item subject;
 
     @Before
     public void setUp() throws Exception {
-        resultHandler = MessageQueueingResultHandler.create(
+        resultHandler = QueueingEquivalenceResultMessenger.create(
                 sender, Publisher.all(), lookupEntryStore, timestamper
         );
 
@@ -75,7 +75,7 @@ public class MessageQueueingResultHandlerTest {
                                 ))
                 ));
 
-        resultHandler.handle(result);
+        resultHandler.sendMessage(result);
 
         verify(sender).sendMessage(
                 any(ContentEquivalenceAssertionMessage.class),
@@ -97,7 +97,7 @@ public class MessageQueueingResultHandlerTest {
         when(lookupEntryStore.entriesForIds(ImmutableSet.of(subject.getId())))
                 .thenReturn(ImmutableList.of());
 
-        resultHandler.handle(result);
+        resultHandler.sendMessage(result);
 
         verify(sender).sendMessage(
                 any(ContentEquivalenceAssertionMessage.class),

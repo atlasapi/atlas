@@ -3,12 +3,12 @@ package org.atlasapi.equiv.update.updaters.providers.container;
 import java.util.Set;
 
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
-import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
+import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeMatchingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
-import org.atlasapi.equiv.handlers.MessageQueueingResultHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
+import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
@@ -98,10 +98,9 @@ public class VodContainerUpdaterProvider implements EquivalenceUpdaterProvider<C
                                 .atLeastNTimesGreater(1.5)
                 )
                 .withHandler(
-                        new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
-                                new LookupWritingEquivalenceHandler<>(
-                                        dependencies.getLookupWriter(),
-                                        targetPublishers
+                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
+                                LookupWritingEquivalenceHandler.create(
+                                        dependencies.getLookupWriter()
                                 ),
                                 new EpisodeMatchingEquivalenceHandler(
                                         dependencies.getContentResolver(),
@@ -114,13 +113,14 @@ public class VodContainerUpdaterProvider implements EquivalenceUpdaterProvider<C
                                 ),
                                 new EquivalenceSummaryWritingHandler<>(
                                         dependencies.getEquivSummaryStore()
-                                ),
-                                MessageQueueingResultHandler.create(
-                                        dependencies.getMessageSender(),
-                                        targetPublishers,
-                                        dependencies.getLookupEntryStore()
                                 )
                         ))
+                )
+                .withMessenger(
+                        QueueingEquivalenceResultMessenger.create(
+                                dependencies.getMessageSender(),
+                                dependencies.getLookupEntryStore()
+                        )
                 )
                 .build();
     }

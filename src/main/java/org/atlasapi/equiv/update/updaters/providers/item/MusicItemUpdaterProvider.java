@@ -4,11 +4,12 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.SongTitleTransform;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
-import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
+import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
+import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.MusicEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
@@ -38,6 +39,9 @@ public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
             EquivalenceUpdaterProviderDependencies dependencies, Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Item>builder()
+                .withExcludedUris(
+                        dependencies.getExcludedUris()
+                )
                 .withGenerator(
                         new TitleSearchGenerator<>(
                                 dependencies.getSearchResolver(),
@@ -51,9 +55,6 @@ public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                 .withScorer(
                         new CrewMemberScorer(new SongCrewMemberExtractor())
                 )
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
                 .withCombiner(
                         new NullScoreAwareAveragingCombiner<>()
                 )
@@ -64,11 +65,10 @@ public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                         new MusicEquivalenceExtractor()
                 )
                 .withHandler(
-                        new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
+                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
                                 EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                        new LookupWritingEquivalenceHandler<>(
-                                                dependencies.getLookupWriter(),
-                                                targetPublishers
+                                        LookupWritingEquivalenceHandler.create(
+                                                dependencies.getLookupWriter()
                                         ),
                                         dependencies.getEquivSummaryStore()
                                 ),
@@ -79,6 +79,12 @@ public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                                         dependencies.getEquivSummaryStore()
                                 )
                         ))
+                )
+                .withMessenger(
+                        QueueingEquivalenceResultMessenger.create(
+                                dependencies.getMessageSender(),
+                                dependencies.getLookupEntryStore()
+                        )
                 )
                 .build();
     }

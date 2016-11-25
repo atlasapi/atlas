@@ -4,11 +4,12 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
 import org.atlasapi.equiv.generators.RadioTimesFilmEquivalenceGenerator;
-import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
+import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
+import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -29,10 +30,6 @@ import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-
-import static org.atlasapi.media.entity.Publisher.PA;
-import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
-import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
 
 public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
@@ -86,11 +83,10 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                         PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                 )
                 .withHandler(
-                        new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
+                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
                                 EpisodeFilteringEquivalenceResultHandler.relaxed(
-                                        new LookupWritingEquivalenceHandler<>(
-                                                dependencies.getLookupWriter(),
-                                                ImmutableSet.of(RADIO_TIMES, PA, PREVIEW_NETWORKS)
+                                        LookupWritingEquivalenceHandler.create(
+                                                dependencies.getLookupWriter()
                                         ),
                                         dependencies.getEquivSummaryStore()
                                 ),
@@ -100,6 +96,12 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                                         dependencies.getEquivSummaryStore()
                                 )
                         ))
+                )
+                .withMessenger(
+                        QueueingEquivalenceResultMessenger.create(
+                                dependencies.getMessageSender(),
+                                dependencies.getLookupEntryStore()
+                        )
                 )
                 .build();
     }

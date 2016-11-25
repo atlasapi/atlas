@@ -53,19 +53,19 @@ import org.springframework.context.annotation.Import;
 @Import({ KafkaMessagingModule.class })
 public class EquivModule {
 
-    private @Value("${equiv.results.directory}") String equivResultsDirectory;
-    private @Value("${messaging.destination.equiv.assert}") String equivAssertDest;
-    private @Value("${equiv.excludedUris}") String excludedUris;
+    @Value("${equiv.results.directory}") private String equivResultsDirectory;
+    @Value("${messaging.destination.equiv.assert}") private String equivAssertDest;
+    @Value("${equiv.excludedUris}") private String excludedUris;
 
-    private @Autowired ScheduleResolver scheduleResolver;
-    private @Autowired SearchResolver searchResolver;
-    private @Autowired ContentResolver contentResolver;
-    private @Autowired ChannelResolver channelResolver;
-    private @Autowired EquivalenceSummaryStore equivSummaryStore;
-    private @Autowired LookupWriter lookupWriter;
-    private @Autowired LookupEntryStore lookupEntryStore;
+    @Autowired private ScheduleResolver scheduleResolver;
+    @Autowired private SearchResolver searchResolver;
+    @Autowired private ContentResolver contentResolver;
+    @Autowired private ChannelResolver channelResolver;
+    @Autowired private EquivalenceSummaryStore equivSummaryStore;
+    @Autowired private LookupWriter lookupWriter;
+    @Autowired private LookupEntryStore lookupEntryStore;
 
-    private @Autowired KafkaMessagingModule messaging;
+    @Autowired private KafkaMessagingModule messaging;
 
     @Bean
     public EquivalenceUpdater<Content> contentUpdater() {

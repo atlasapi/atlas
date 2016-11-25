@@ -5,11 +5,12 @@ import java.util.Set;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
-import org.atlasapi.equiv.handlers.BroadcastingEquivalenceResultHandler;
+import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
+import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
@@ -101,11 +102,10 @@ public class RoviItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         PercentThresholdEquivalenceExtractor.moreThanPercent(90)
                 )
                 .withHandler(
-                        new BroadcastingEquivalenceResultHandler<>(ImmutableList.of(
+                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
                                 EpisodeFilteringEquivalenceResultHandler.strict(
-                                        new LookupWritingEquivalenceHandler<>(
-                                                dependencies.getLookupWriter(),
-                                                targetPublishers
+                                        LookupWritingEquivalenceHandler.create(
+                                                dependencies.getLookupWriter()
                                         ),
                                         dependencies.getEquivSummaryStore()
                                 ),
@@ -116,6 +116,12 @@ public class RoviItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                                         dependencies.getEquivSummaryStore()
                                 )
                         ))
+                )
+                .withMessenger(
+                        QueueingEquivalenceResultMessenger.create(
+                                dependencies.getMessageSender(),
+                                dependencies.getLookupEntryStore()
+                        )
                 )
                 .build();
     }

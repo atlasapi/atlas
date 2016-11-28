@@ -52,7 +52,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
     private final ContentWriter writer;
     private final OldContentDeactivator deactivator;
 
-    private final ItunesCollectionSeriesExtractor seriesExtractor = new ItunesCollectionSeriesExtractor();
+    private final ItunesCollectionSeriesExtractor seriesExtractor = ItunesCollectionSeriesExtractor.create();
     private final ItunesVideoEpisodeExtractor episodeExtractor = new ItunesVideoEpisodeExtractor();
     private final ItunesPricingLocationExtractor locationExtractor = new ItunesPricingLocationExtractor();
     private final AdapterLog log;

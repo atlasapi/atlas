@@ -36,6 +36,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.EBS_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.FIVE_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
@@ -56,6 +57,7 @@ import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
+import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
@@ -109,7 +111,8 @@ public class UpdaterConfigurationRegistry {
                 makeNetflixConfiguration(),
                 makeAmazonUnboxConfiguration(),
                 makeTalkTalkConfiguration(),
-                makeRteConfiguration()
+                makeRteConfiguration(),
+                makeFiveConfiguration()
         );
 
         configurations.add(
@@ -661,6 +664,24 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
+    private UpdaterConfiguration makeFiveConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(FIVE)
+                .withItemEquivalenceUpdater(
+                        FIVE_ITEM,
+                        MoreSets.add(TARGET_SOURCES, LOVEFILM)
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        MoreSets.add(TARGET_SOURCES, LOVEFILM)
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        TARGET_SOURCES
+                )
+                .build();
+    }
+
     private ImmutableList<UpdaterConfiguration> makeRoviConfigurations() {
         ImmutableSet<Publisher> targetSources = ImmutableSet.of(
                 Publisher.BBC,
@@ -671,7 +692,7 @@ public class UpdaterConfigurationRegistry {
                 Publisher.ITV,
                 Publisher.C4_PMLSD,
                 Publisher.C4_PMLSD_P06,
-                Publisher.FIVE
+                FIVE
         );
 
         return ImmutableList.of(ROVI_EN_GB, ROVI_EN_US)

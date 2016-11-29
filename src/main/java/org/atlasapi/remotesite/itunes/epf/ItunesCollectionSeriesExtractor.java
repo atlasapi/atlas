@@ -1,9 +1,8 @@
 package org.atlasapi.remotesite.itunes.epf;
 
-import static org.atlasapi.remotesite.itunes.epf.model.EpfCollection.COLLECTION_ID;
-import static org.atlasapi.remotesite.itunes.epf.model.EpfCollection.NAME;
-
 import com.google.common.annotations.VisibleForTesting;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.ContentExtractor;
@@ -13,6 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
 
+import static org.atlasapi.remotesite.itunes.epf.model.EpfCollection.COLLECTION_ID;
+import static org.atlasapi.remotesite.itunes.epf.model.EpfCollection.NAME;
+
 
 public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfCollection, Series> {
 
@@ -20,20 +22,41 @@ public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfColl
 
     // Different language series. Allows series + extra character to account for "series:" or "series," but not
     // plurals like "seasons 4, 5, 6"
-    private final String SERIES_REGEX = "(?i)series[\\W]?";
-    private final String SEASON_REGEX = "(?i)season[\\W]?";
-    private final String SAISON_REGEX = "(?i)saison[\\W]?";
-    private final String STAFFEL_REGEX = "(?i)staffel[\\W]?";
+    private final String seriesRegex = "(?i)series[\\W]?";
+    private final String seasonRegex = "(?i)season[\\W]?";
+    private final String saisonRegex = "(?i)saison[\\W]?";
+    private final String staffelRegex = "(?i)staffel[\\W]?";
+
+    private final String singleDashOrColon = "[-|:]?";
 
     // Allows a number to be preceded by one character ("#42")
-    private final String NUMBER = ".?\\d+[,|:]?";
+    private final String numberMatchingRegex = ".?\\d+[,|:]?";
 
-    private final String SINGLE_DASH_OR_COLON = "[-|:]?";
+    private final ImmutableList<String> numberWords = ImmutableList.of(
+            "one", "two", "three", "four", "five", "six", "seven", "eight", "nine", "ten", "eleven", "twelve",
+            "thirteen", "fourteen", "fifteen", "sixteen", "seventeen", "eighteen", "nineteen", "twenty"
+    );
+
+    private final ImmutableMap<String, Integer> wordToIntMap;
+
+    private ItunesCollectionSeriesExtractor() {
+
+        ImmutableMap.Builder<String, Integer> wordMapBuilder = ImmutableMap.builder();
+
+        for(int i = 1; i <= numberWords.size(); i++) {
+            wordMapBuilder.put(numberWords.get(i-1), i);
+        }
+        wordToIntMap = wordMapBuilder.build();
+    }
+
+    public static ItunesCollectionSeriesExtractor create() {
+        return new ItunesCollectionSeriesExtractor();
+    }
 
     @Override
     public Series extract(EpfCollection collection) {
         Integer collectionId = collection.get(COLLECTION_ID);
-        
+
         Series series = new Series(
                 "http://itunes.apple.com/tv-season/id"+collectionId,
                 "itunes:t-"+collectionId,
@@ -58,14 +81,15 @@ public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfColl
                 continue;
             }
 
-            // Matches on ".3" or "#34" etc.
-            if (nameParts[i+1].matches(NUMBER)) {
+            // Matches on ".3", "#34" or "3," etc.
+            if (partRepresentsNumber(nameParts[i+1])) {
                 return parseInt(nameParts[i+1]);
+            }
 
             // Allows characters separating series and number "series - 4"
-            } else if (nameParts[i+1].matches(SINGLE_DASH_OR_COLON) &&
+            if (nameParts[i+1].matches(singleDashOrColon) &&
                     nameParts.length > i+2 &&
-                    nameParts[i+2].matches(NUMBER)) {
+                    partRepresentsNumber(nameParts[i+2])) {
 
                 return parseInt(nameParts[i+2]);
             }
@@ -76,23 +100,35 @@ public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfColl
     }
 
     private boolean foundIdentifier(String part) {
-        return (part.matches(SERIES_REGEX) ||
-                part.matches(SEASON_REGEX) ||
-                part.matches(SAISON_REGEX) ||
-                part.matches(STAFFEL_REGEX)
-        );
+        return part.matches(seriesRegex) ||
+                part.matches(seasonRegex) ||
+                part.matches(saisonRegex) ||
+                part.matches(staffelRegex);
+    }
+
+    private boolean partRepresentsNumber(String part) {
+        return part.matches(numberMatchingRegex) || wordToIntMap.keySet().contains(removeNonAlphaChars(part));
     }
 
     @Nullable
     private Integer parseInt(String num) {
+
+        if (wordToIntMap.keySet().contains(removeNonAlphaChars(num))) {
+            return wordToIntMap.get(removeNonAlphaChars(num));
+        }
+
         String parsedString = num.replaceAll("[^0-9]", "");
 
         // numbers of length 4 or more are either years or something else so ignore them
-        if(parsedString.length() < 4) {
+        if (parsedString.length() < 4) {
             return Integer.parseInt(parsedString);
         } else {
             return null;
         }
+    }
+
+    private String removeNonAlphaChars(String string) {
+        return string.replaceAll("[^a-zA-Z]", "").toLowerCase();
     }
 
 }

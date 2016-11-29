@@ -101,11 +101,10 @@ public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfColl
     }
 
     private boolean foundIdentifier(String part) {
-        return (part.matches(seriesRegex) ||
+        return part.matches(seriesRegex) ||
                 part.matches(seasonRegex) ||
                 part.matches(saisonRegex) ||
-                part.matches(staffelRegex)
-        );
+                part.matches(staffelRegex);
     }
 
     private boolean partRepresentsNumber(String part) {

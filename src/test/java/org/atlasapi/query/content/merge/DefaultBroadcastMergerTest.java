@@ -13,7 +13,7 @@ import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 
-public class BroadcastMergerTest {
+public class DefaultBroadcastMergerTest {
 
     @Rule
     public ExpectedException exception = ExpectedException.none();
@@ -21,41 +21,41 @@ public class BroadcastMergerTest {
     @Test
     public void missingAssertionValueFailsParsing() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        BroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z\"");
+        DefaultBroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z\"");
     }
 
     @Test
     public void fromDateAfterToFailsParsing() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        BroadcastMerger.parse("\"cbkM\"|\"2016-01-02T00:00:00Z\"|\"2016-01-01T00:00:00Z\"");
+        DefaultBroadcastMerger.parse("\"cbkM\"|\"2016-01-02T00:00:00Z\"|\"2016-01-01T00:00:00Z\"");
     }
 
     @Test
     public void fromDateSameAsToFailsParsing() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        BroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z\"|\"2016-01-01T00:00:00Z\"");
+        DefaultBroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z\"|\"2016-01-01T00:00:00Z\"");
     }
 
     @Test
     public void invalidDateFailsParsing() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        BroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z\"|\"2016-01-01T99:00:00Z\"");
+        DefaultBroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z\"|\"2016-01-01T99:00:00Z\"");
     }
 
     @Test
     public void mergerWithMissingQuotesFailsParsing() throws Exception {
         exception.expect(IllegalArgumentException.class);
-        BroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z|\"2016-01-01T12:00:00Z\"");
+        DefaultBroadcastMerger.parse("\"cbkM\"|\"2016-01-01T00:00:00Z|\"2016-01-01T12:00:00Z\"");
     }
 
     @Test
     public void mergerWithLeadingAndTrailingWhitespaceDoesNotFailParsing() throws Exception {
-        BroadcastMerger.parse(" \"cbkM\"|\"2016-01-01T00:00:00Z\"|\"2016-01-01T12:00:00Z\" ");
+        DefaultBroadcastMerger.parse(" \"cbkM\"|\"2016-01-01T00:00:00Z\"|\"2016-01-01T12:00:00Z\" ");
     }
 
     @Test
     public void nullAssertionParameterRemovesAllExistingBroadcasts() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(null);
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(null);
 
         Broadcast broadcast = new Broadcast("channelUri", DateTime.now(), DateTime.now());
 
@@ -70,7 +70,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void emptyAssertionParameterRemovesAllExistingBroadcasts() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse("");
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse("");
 
         Broadcast broadcast = new Broadcast("channelUri", DateTime.now(), DateTime.now());
 
@@ -85,7 +85,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void nullAssertionParameterConsidersAllUpdateBroadcastsValid() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(null);
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(null);
 
         Broadcast broadcast = new Broadcast("channelUri", DateTime.now(), DateTime.now());
 
@@ -100,7 +100,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void emptyAssertionParameterConsidersAllUpdateBroadcastsValid() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse("");
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse("");
 
         Broadcast broadcast = new Broadcast("channelUri", DateTime.now(), DateTime.now());
 
@@ -115,7 +115,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerPreservesNonOverlappingBroadcast() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-01T00:00:00Z\"|\"2016-01-02T00:00:00Z\""
         );
 
@@ -136,7 +136,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerPreservesBroadcastThatEndsWhenTheAssertionBegins() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -157,7 +157,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerPreservesBroadcastThatBeginsWhenTheAssertionEnds() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -178,7 +178,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerPreservesBroadcastOnDifferentChannel() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -199,7 +199,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerDoesNotPreserveFullyOverlappingBroadcast() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -220,7 +220,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerDoesNotPreserveOverlappingAtStartBroadcast() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -241,7 +241,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerDoesNotPreserveOverlappingAtEndBroadcast() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -263,7 +263,7 @@ public class BroadcastMergerTest {
     @Test
     public void MergerWithMultipleAssertionsDoesNotPreserveOverlappingBroadcasts()
             throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(""
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(""
                 + "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\","
                 + "\"channelUri\"|\"2016-02-06T12:00:00Z\"|\"2016-02-06T14:00:00Z\","
                 + "\"otherChannelUri\"|\"2016-02-06T12:00:00Z\"|\"2016-02-06T14:00:00Z\""
@@ -296,7 +296,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerKeepsOverlappingUpdateBroadcast() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -317,7 +317,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerKeepsOverlappingUpdateBroadcastAtStartOfInterval() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -338,7 +338,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerKeepsOverlappingUpdateBroadcastAtEndOfInterval() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -359,7 +359,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerKeepsZeroDurationUpdateBroadcastAtStartOfInterval() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -380,7 +380,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerKeepsZeroDurationUpdateBroadcastAtEndOfInterval() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -401,7 +401,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerConsidersNonOverlappingUpdateBroadcastInvalid() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -421,7 +421,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerConsidersPartiallyOverlappingUpdateBroadcastInvalid() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -441,7 +441,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void mergerConsidersUpdateBroadcastOnDifferentChannelInvalid() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -461,7 +461,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void ifMergeIsFalseKeepsAllUpdateBroadcastsAndNoExistingOnes() throws Exception {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 
@@ -488,7 +488,7 @@ public class BroadcastMergerTest {
 
     @Test
     public void ifBroadcastsAreIdenticalButWithDifferentBroadcastOnShouldReplace() {
-        BroadcastMerger merger = BroadcastMerger.parse(
+        DefaultBroadcastMerger merger = DefaultBroadcastMerger.parse(
                 "\"channelUri\"|\"2016-01-05T00:00:00Z\"|\"2016-01-06T00:00:00Z\""
         );
 

@@ -7,7 +7,7 @@ import static org.junit.Assert.assertThat;
 
 public class ItunesCollectionSeriesExtractorTest {
 
-    private ItunesCollectionSeriesExtractor extractor = new ItunesCollectionSeriesExtractor();
+    private ItunesCollectionSeriesExtractor extractor = ItunesCollectionSeriesExtractor.create();
 
     @Test
     public void seriesNumberExtracterGetsSeriesNumber() {
@@ -19,6 +19,7 @@ public class ItunesCollectionSeriesExtractorTest {
         String mixedCase = "ThE cOoL sEaSoN 1";
         String seriesNumberWithComma = "test series 4, some stuff";
         String seriesDoubleDigitWithColon = "test series 88: more stuff";
+        String seriesWithWordNumber = "Spooks, Season One: spooky";
 
         assertThat(extractor.tryExtractSeriesNumber(standardCase), is(1));
         assertThat(extractor.tryExtractSeriesNumber(seriesNumberWithHash), is(3));
@@ -27,6 +28,7 @@ public class ItunesCollectionSeriesExtractorTest {
         assertThat(extractor.tryExtractSeriesNumber(mixedCase), is(1));
         assertThat(extractor.tryExtractSeriesNumber(seriesNumberWithComma), is(4));
         assertThat(extractor.tryExtractSeriesNumber(seriesDoubleDigitWithColon), is(88));
+        assertThat(extractor.tryExtractSeriesNumber(seriesWithWordNumber), is(1));
 
     }
 

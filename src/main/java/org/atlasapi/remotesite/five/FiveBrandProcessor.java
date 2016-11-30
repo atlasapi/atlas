@@ -301,9 +301,9 @@ public class FiveBrandProcessor {
 
             Image imageObj = new Image(image);
 
-            if (image.contains("api-images.channel5.com/images/default")) {
+            if (image.contains("api-images.channel5.com/images/default")
+                    || image.contains("api-images-production.channel5.com/images/default")) {
                 imageObj.setType(ImageType.GENERIC_IMAGE_CONTENT_PLAYER);
-
             }
             return Maybe.just(imageObj);
         }

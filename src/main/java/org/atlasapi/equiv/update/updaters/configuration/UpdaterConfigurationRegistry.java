@@ -692,7 +692,7 @@ public class UpdaterConfigurationRegistry {
                 Publisher.ITV,
                 Publisher.C4_PMLSD,
                 Publisher.C4_PMLSD_P06,
-                FIVE
+                Publisher.FIVE
         );
 
         return ImmutableList.of(ROVI_EN_GB, ROVI_EN_US)

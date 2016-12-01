@@ -35,8 +35,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.EBS_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.FIVE_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
@@ -192,7 +191,7 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BT_SPORT_EBS)
                 .withItemEquivalenceUpdater(
-                        EBS_ITEM,
+                        STRICT_ITEM,
                         MoreSets.add(TARGET_SOURCES, LOVEFILM)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
@@ -668,7 +667,7 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(FIVE)
                 .withItemEquivalenceUpdater(
-                        FIVE_ITEM,
+                        STRICT_ITEM,
                         MoreSets.add(TARGET_SOURCES, LOVEFILM)
                 )
                 .withTopLevelContainerEquivalenceUpdater(

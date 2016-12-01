@@ -668,11 +668,11 @@ public class UpdaterConfigurationRegistry {
                 .withSource(FIVE)
                 .withItemEquivalenceUpdater(
                         STRICT_ITEM,
-                        MoreSets.add(TARGET_SOURCES, LOVEFILM)
+                        TARGET_SOURCES
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
-                        MoreSets.add(TARGET_SOURCES, LOVEFILM)
+                        TARGET_SOURCES
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,

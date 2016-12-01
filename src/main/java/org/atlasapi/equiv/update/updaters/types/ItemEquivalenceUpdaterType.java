@@ -4,7 +4,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.item.EbsItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.StrictStandardUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.MusicItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.NopItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RoviItemUpdaterProvider;
@@ -28,8 +28,8 @@ public enum ItemEquivalenceUpdaterType {
     RT_UPCOMING_ITEM(
             RtUpcomingItemUpdaterProvider.create()
     ),
-    EBS_ITEM(
-            EbsItemUpdaterProvider.create()
+    STRICT_ITEM(
+            StrictStandardUpdaterProvider.create()
     ),
     BROADCAST_ITEM(
             BroadcastItemUpdaterProvider.create()
@@ -57,7 +57,7 @@ public enum ItemEquivalenceUpdaterType {
     ),
     MUSIC_ITEM(
             MusicItemUpdaterProvider.create()
-    )
+    ),
     ;
 
     private final EquivalenceUpdaterProvider<Item> provider;

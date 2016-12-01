@@ -38,12 +38,12 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.joda.time.Duration;
 
-public class EbsItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+public class StrictStandardUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
-    private EbsItemUpdaterProvider() { }
+    private StrictStandardUpdaterProvider() { }
 
-    public static EbsItemUpdaterProvider create() {
-        return new EbsItemUpdaterProvider();
+    public static StrictStandardUpdaterProvider create() {
+        return new StrictStandardUpdaterProvider();
     }
 
     @Override

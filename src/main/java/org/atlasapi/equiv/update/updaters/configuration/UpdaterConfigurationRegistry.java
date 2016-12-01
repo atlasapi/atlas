@@ -35,7 +35,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
-import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.EBS_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.MUSIC_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.NOP_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.ROVI_ITEM;
@@ -56,6 +56,7 @@ import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
+import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
@@ -109,7 +110,8 @@ public class UpdaterConfigurationRegistry {
                 makeNetflixConfiguration(),
                 makeAmazonUnboxConfiguration(),
                 makeTalkTalkConfiguration(),
-                makeRteConfiguration()
+                makeRteConfiguration(),
+                makeFiveConfiguration()
         );
 
         configurations.add(
@@ -189,7 +191,7 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BT_SPORT_EBS)
                 .withItemEquivalenceUpdater(
-                        EBS_ITEM,
+                        STRICT_ITEM,
                         MoreSets.add(TARGET_SOURCES, LOVEFILM)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
@@ -657,6 +659,24 @@ public class UpdaterConfigurationRegistry {
                 .withNonTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,
                         ImmutableSet.of()
+                )
+                .build();
+    }
+
+    private UpdaterConfiguration makeFiveConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(FIVE)
+                .withItemEquivalenceUpdater(
+                        STRICT_ITEM,
+                        TARGET_SOURCES
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        TARGET_SOURCES
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        TARGET_SOURCES
                 )
                 .build();
     }

@@ -26,9 +26,6 @@ import org.atlasapi.util.GroupLock;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClient;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
@@ -75,7 +72,6 @@ public class BbcNitroModule {
     private @Value("${bbc.nitro.threadCount.aroundtoday}") Integer nitroAroundTodayThreadCount;
     private @Value("${bbc.nitro.requestPageSize}") Integer nitroRequestPageSize;
     private @Value("${bbc.nitro.jobFailureThresholdPercent}") Integer jobFailureThresholdPercent;
-    private @Value("${reporting.columbus-telescope.host}") String telescopeHost;
 
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;
@@ -130,8 +126,7 @@ public class BbcNitroModule {
                 localOrRemoteNitroFetcher(
                     glycerin,
                     Optional.of(Predicates.alwaysTrue())
-                ),
-                telescopeClient()
+                )
         );
     }
 
@@ -142,10 +137,6 @@ public class BbcNitroModule {
 
     public ContentWriter contentWriter() {
         return new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
-    }
-
-    IngestTelescopeClient telescopeClient() {
-        return IngestTelescopeClientImpl.create(TelescopeClientImpl.create(telescopeHost));
     }
 
     @Bean

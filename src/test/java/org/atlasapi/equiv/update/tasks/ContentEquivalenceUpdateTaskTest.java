@@ -11,8 +11,6 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
-import com.metabroadcast.columbus.telescope.api.Task;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;

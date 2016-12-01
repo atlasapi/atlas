@@ -25,13 +25,6 @@ import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-import com.metabroadcast.columbus.telescope.api.Alias;
-import com.metabroadcast.columbus.telescope.api.EntityState;
-import com.metabroadcast.columbus.telescope.api.Environment;
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.api.Process;
-import com.metabroadcast.columbus.telescope.api.Task;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClient;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 
@@ -58,7 +51,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
     private static final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private final NitroContentAdapter contentAdapter;
-    private final IngestTelescopeClient telescopeClient;
     private final int pageSize;
     private final ContentWriter contentWriter;
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;
@@ -73,15 +65,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
     public OffScheduleContentIngestTask(
             NitroContentAdapter contentAdapter, int pageSize,
             ContentWriter contentWriter, GroupLock<String> lock,
-            LocalOrRemoteNitroFetcher localOrRemoteFetcher,
-            IngestTelescopeClient telescopeClient
+            LocalOrRemoteNitroFetcher localOrRemoteFetcher
     ) {
         this.localOrRemoteFetcher = checkNotNull(localOrRemoteFetcher);
         this.lock = checkNotNull(lock);
         this.contentWriter = checkNotNull(contentWriter);
         this.contentAdapter = checkNotNull(contentAdapter);
         this.pageSize = pageSize;
-        this.telescopeClient = checkNotNull(telescopeClient);
     }
 
     private Function<Container, Series> toSeries() {
@@ -115,16 +105,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 .build();
 
         reportStatus("Doing the discovery call");
-
-        Task ingest = telescopeClient.startIngest(
-                Process.create(
-                        "nitro-off-schedule",
-                        "Nitro Off Schedule",
-                        System.getProperty("MBST_PLATFORM", "stage").equals("stage")
-                            ? Environment.STAGE
-                            : Environment.PRODUCTION
-                )
-        );
 
         Map<String, String> payloads = new HashMap<>();
 
@@ -173,7 +153,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 );
 
                 reportStatus("Writing items");
-                writeContent(resolvedItems, series, brands, ingest.getId().get(), payloads);
+                writeContent(resolvedItems, series, brands, payloads);
 
                 payloads.clear();
             } catch (NitroException e) {
@@ -192,15 +172,12 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 ));
             }
         }
-
-        telescopeClient.endIngest(ingest.getId().get());
     }
 
     private void writeContent(
             ResolveOrFetchResult<Item> items,
             @Nullable Iterable<Series> series,
             @Nullable Iterable<Brand> brands,
-            String ingestId,
             @Nullable Map<String, String> payloads
     ) {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
@@ -221,22 +198,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 }
 
                 contentWriter.createOrUpdate(item);
-                telescopeClient.createEvents(ImmutableList.of(
-                        Event.builder()
-                                .withType(Event.Type.INGEST)
-                                .withTimestamp(LocalDateTime.now())
-                                .withTaskId(ingestId)
-                                .withStatus(Event.Status.SUCCESS)
-                                .withEntityState(EntityState.builder()
-                                        .withAtlasId(codec.encode(BigInteger.valueOf(item.getId())))
-                                        .withRemoteIds(ImmutableList.of(
-                                                Alias.create(
-                                                        "bbc:pid",
-                                                        BbcFeeds.pidFrom(canonicalUri)
-                                                )))
-                                        .withRaw(payloads.get(canonicalUri))
-                                        .build())
-                                .build()));
                 written++;
             } catch (Exception e) {
                 log.error(canonicalUri, e);

@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.update;
 
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
@@ -9,7 +8,6 @@ import org.atlasapi.equiv.update.metadata.MultipleSourceEquivalenceUpdaterMetada
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.collect.Maps;

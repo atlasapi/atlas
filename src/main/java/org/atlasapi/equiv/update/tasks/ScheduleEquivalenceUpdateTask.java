@@ -2,7 +2,6 @@ package org.atlasapi.equiv.update.tasks;
 
 import java.util.Iterator;
 import java.util.List;
-import java.util.Optional;
 
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
@@ -16,8 +15,6 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
-import com.metabroadcast.columbus.telescope.api.Environment;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -27,7 +24,6 @@ import com.metabroadcast.common.time.DayRangeGenerator;
 import com.google.common.base.Supplier;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -45,8 +41,6 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
     private final ContentResolver contentResolver;
     private final int back;
     private final int forward;
-    private final Environment reportingEnvironment;
-    private final IngestTelescopeClientImpl telescopeClient;
 
     private static final Logger log = LoggerFactory.getLogger(ScheduleEquivalenceUpdateTask.class);
 
@@ -61,9 +55,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
             List<Publisher> publishers,
             Supplier<Iterable<Channel>> channelsSupplier,
             int back,
-            int forward,
-            Environment reportingEnvironment,
-            IngestTelescopeClientImpl telescopeClient
+            int forward
     ) {
         this.contentResolver = contentResolver;
         this.updater = updater;
@@ -72,8 +64,6 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         this.channelsSupplier = channelsSupplier;
         this.back = back;
         this.forward = forward;
-        this.reportingEnvironment = reportingEnvironment;
-        this.telescopeClient = telescopeClient;
     }
 
     @Override
@@ -193,8 +183,6 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         private Supplier<Iterable<Channel>> channelsSupplier;
         private int back;
         private int forward;
-        private Environment reportingEnvironment;
-        private IngestTelescopeClientImpl telescopeClient;
 
         public ScheduleEquivalenceUpdateTask build() {
             return new ScheduleEquivalenceUpdateTask(
@@ -204,9 +192,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     publishers,
                     channelsSupplier,
                     back,
-                    forward,
-                    reportingEnvironment,
-                    telescopeClient
+                    forward
             );
         }
 

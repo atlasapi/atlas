@@ -15,10 +15,6 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
-import com.metabroadcast.columbus.telescope.api.Environment;
-import com.metabroadcast.columbus.telescope.api.Task;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-
 import com.google.common.base.Optional;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableList;
@@ -42,8 +38,6 @@ public class ScheduleEquivalenceUpdateTaskTest {
     @SuppressWarnings("unchecked") 
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
-    private final IngestTelescopeClientImpl telescopeClient = mock(IngestTelescopeClientImpl.class);
-    private final Task task = mock(Task.class);
 
     // TODO make this take multiple schedules
     private final ScheduleResolver scheduleResolver(final Schedule schedule) {
@@ -113,8 +107,6 @@ public class ScheduleEquivalenceUpdateTaskTest {
         when(contentResolver.findByCanonicalUris(ImmutableSet.of("yv2"))).thenReturn(yv2);
 
         java.util.Optional<String> taskId = java.util.Optional.of("fasf");
-        when(telescopeClient.startIngest(any())).thenReturn(task);
-        when(task.getId()).thenReturn(taskId);
 
         ScheduleEquivalenceUpdateTask.builder()
                 .withBack(0)

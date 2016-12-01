@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.update.tasks;
 
 import java.util.Iterator;
-import java.util.Optional;
 
 import javax.annotation.Nullable;
 
@@ -10,13 +9,11 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 
-import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.annotations.Beta;
 
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 
 @Beta

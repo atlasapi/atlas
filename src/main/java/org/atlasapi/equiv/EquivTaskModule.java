@@ -40,10 +40,6 @@ import org.atlasapi.remotesite.redux.ReduxServices;
 import org.atlasapi.remotesite.youview.YouViewChannelResolver;
 import org.atlasapi.remotesite.youview.YouViewCoreModule;
 
-import com.metabroadcast.columbus.telescope.api.Environment;
-import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
-import com.metabroadcast.columbus.telescope.client.TelescopeClient;
-import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.queue.kafka.KafkaConsumer;
@@ -54,7 +50,6 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 
 import com.google.api.client.util.Sets;
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.base.Supplier;
@@ -536,12 +531,6 @@ public class EquivTaskModule {
                 .withScheduleResolver(scheduleResolver)
                 .withBack(back)
                 .withForward(forward);
-    }
-
-    private static Environment getReportingEnvironment() {
-        return "prod".equals(Configurer.getPlatform())
-                              ? Environment.PRODUCTION
-                              : Environment.STAGE;
     }
 
     @Bean

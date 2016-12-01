@@ -15,6 +15,7 @@ import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
+import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
@@ -89,7 +90,8 @@ public class DefaultConfiguration {
                             AMC_EBS,
                             BT_SPORT_EBS,
                             C4_PRESS,
-                            RADIO_TIMES_UPCOMING
+                            RADIO_TIMES_UPCOMING,
+                            FIVE
                     ),
                     Sets.union(
                             MUSIC_SOURCES,

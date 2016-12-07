@@ -23,6 +23,12 @@ import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
+import org.atlasapi.query.content.merge.BroadcastMerger;
+import org.atlasapi.query.content.merge.ContentMerger;
+import org.atlasapi.query.content.merge.EpisodeMerger;
+import org.atlasapi.query.content.merge.ItemMerger;
+import org.atlasapi.query.content.merge.SongMerger;
+import org.atlasapi.query.content.merge.VersionMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.query.worker.ContentWriteMessageSerialiser;
 import org.atlasapi.query.worker.ContentWriteWorker;
@@ -51,26 +57,28 @@ import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETT
 @Configuration
 @Import({ KafkaMessagingModule.class })
 public class QueryExecutorModule {
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired private ScheduleWriter scheduleWriter;
+    @Autowired private ContentResolver contentResolver;
+    @Autowired private ChannelResolver channelResolver;
+    @Autowired @Qualifier("topicStore") private TopicStore topicStore;
+    @Autowired private LookupEntryStore lookupStore;
+    @Autowired private EventResolver eventResolver;
+    @Autowired private SegmentWriter segmentWriter;
+    @Autowired private MessageConsumerFactory<KafkaConsumer> consumerFactory;
+    @Autowired private MessageSenderFactory senderFactory;
+    @Autowired private DatabasedMongo db;
 
-    private @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) ContentWriter contentWriter;
-    private @Autowired ScheduleWriter scheduleWriter;
-    private @Autowired ContentResolver contentResolver;
-    private @Autowired ChannelResolver channelResolver;
-    private @Autowired @Qualifier("topicStore") TopicStore topicStore;
-    private @Autowired LookupEntryStore lookupStore;
-    private @Autowired EventResolver eventResolver;
-    private @Autowired SegmentWriter segmentWriter;
-    private @Autowired MessageConsumerFactory<KafkaConsumer> consumerFactory;
-    private @Autowired MessageSenderFactory senderFactory;
-    private @Autowired DatabasedMongo db;
-
-    private @Value("${messaging.system}") String messagingSystem;
-    private @Value("${messaging.destination.write.content}") String contentWriteTopic;
-    private @Value("${messaging.write.consumers.num}") Integer numOfConsumers;
-    private @Value("${messaging.enabled.write.content}") Boolean contentWriteWorkerEnabled;
-    private @Value("${processing.config}") Boolean isProcessing;
+    @Value("${messaging.system}") private String messagingSystem;
+    @Value("${messaging.destination.write.content}") private String contentWriteTopic;
+    @Value("${messaging.write.consumers.num}") private Integer numOfConsumers;
+    @Value("${messaging.enabled.write.content}") private Boolean contentWriteWorkerEnabled;
+    @Value("${processing.config}") private Boolean isProcessing;
 
     private ServiceManager consumerManager;
+
+    private QueryExecutorModule(){
+    }
 
     @PostConstruct
     public void start() throws TimeoutException {
@@ -91,6 +99,12 @@ public class QueryExecutorModule {
 
     @Bean
     public ContentWriteExecutor contentWriteExecutor() {
+        VersionMerger versionMerger = VersionMerger.create();
+        SongMerger songMerger = SongMerger.create();
+        EpisodeMerger episodeMerger = EpisodeMerger.create();
+
+        ItemMerger itemMerger = ItemMerger.create(versionMerger, songMerger);
+
         return ContentWriteExecutor.create(
                 new DefaultJacksonModelReader(),
                 delegatingModelTransformer(),
@@ -98,7 +112,9 @@ public class QueryExecutorModule {
                 contentWriter,
                 scheduleWriter,
                 channelResolver,
-                eventResolver
+                eventResolver,
+                ContentMerger.create(itemMerger, episodeMerger),
+                BroadcastMerger.create(versionMerger)
         );
     }
 

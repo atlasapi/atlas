@@ -77,7 +77,7 @@ public class QueryExecutorModule {
 
     private ServiceManager consumerManager;
 
-    private QueryExecutorModule(){
+    public QueryExecutorModule(){
     }
 
     @PostConstruct

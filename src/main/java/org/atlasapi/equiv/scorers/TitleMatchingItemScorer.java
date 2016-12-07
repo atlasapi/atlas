@@ -139,8 +139,8 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     private Score compareTitles(final String subjectTitle, final String suggestionTitle) {
         boolean matches;
-        String subjTitle = normalize(normaliseForVs(subjectTitle));
-        String suggTitle = normalize(normaliseForVs(suggestionTitle));
+        String subjTitle = normalize(subjectTitle);
+        String suggTitle = normalize(suggestionTitle);
 
         if (appearsToBeWithApostrophe(subjectTitle)) {
             String regexp = normalizeRegularExpression(subjectTitle);
@@ -200,10 +200,17 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return TRAILING_APOSTROPHE_PATTERN.matcher(title).find();
     }
 
+    private String applyCommonReplaceRules(String title) {
+        return title
+                .replaceAll(" vs. ", " vs ")
+                .replaceAll(" v ", " vs ")
+                .replaceAll(" & ", " and ")
+                .replaceAll("fc ", "")
+                .replaceAll(",", "");
+    }
+
     private String replaceSpecialChars(String title) {
-        return title.replaceAll(" & ", " and ")
-                    .replaceAll("fc ", "")
-                    .replaceAll(",", "")
+        return applyCommonReplaceRules(title)
                     .replaceAll("\\.", "")
                     .replaceAll("\\s?\\/\\s?", "-") // normalize spacing around back-to-back titles
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
@@ -211,15 +218,9 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     .replace(" ", "-");
                     
     }
-
-    private String normaliseForVs(String title) {
-        return title.replaceAll(" vs. ", " vs ")
-                    .replaceAll(" v ", " vs ");
-    }
     
     private String regularExpressionReplaceSpecialChars(String title) {
-        return title.replaceAll(" & ", " and ")
-                    .replaceAll("fc ", "")
+        return applyCommonReplaceRules(title)
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
                     .replace(" ", "\\-")
                     .replaceAll("'\\\\-", "(\\\\w+|\\\\W*)\\-");

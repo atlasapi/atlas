@@ -3,10 +3,13 @@ package org.atlasapi.query.content.merge;
 import java.util.List;
 import java.util.Set;
 
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Series;
 
 import com.metabroadcast.common.base.Maybe;
 
@@ -47,14 +50,75 @@ public class ContentMerger {
         if (possibleExisting.isNothing()) {
             return update;
         }
-        Identified existing = possibleExisting.requireValue();
-        if (existing instanceof Content) {
-            return merge((Content) existing, update, merge, defaultBroadcastMerger);
+        Identified identifiedContent = possibleExisting.requireValue();
+
+        if (identifiedContent instanceof Content) {
+            Content existingContent = (Content) identifiedContent;
+
+            if (!existingContent.getClass().equals(update.getClass())){
+                return mergeWithTypeUpdate(existingContent, update, merge, defaultBroadcastMerger);
+            }
+            return merge(existingContent, update, merge, defaultBroadcastMerger);
         }
         throw new IllegalStateException("Entity for " + update.getCanonicalUri() + " not Content");
     }
 
-    public Content merge(
+    private Content mergeWithTypeUpdate(
+            Content existing,
+            Content update,
+            boolean merge,
+            DefaultBroadcastMerger defaultBroadcastMerger
+    ){
+        if (update instanceof Item){
+            return merge(copyToItem(existing), update, merge, defaultBroadcastMerger);
+        }
+        if (update instanceof Brand){
+            return merge(copyToBrand(existing), update, merge, defaultBroadcastMerger);
+        }
+        if (update instanceof Episode){
+            return merge(copyToEpisode(existing), update, merge, defaultBroadcastMerger);
+        }
+        if (update instanceof Series){
+            return merge(copyToSeries(existing), update, merge, defaultBroadcastMerger);
+        }
+        if (update instanceof Film){
+            return merge(copyToFilm(existing), update, merge, defaultBroadcastMerger);
+        }
+
+        return merge(existing, update, merge, defaultBroadcastMerger);
+    }
+
+    private Content copyToBrand(Content existing){
+        Brand brand = new Brand();
+        Brand.copyTo(existing, brand);
+        return brand;
+    }
+
+    private Content copyToEpisode(Content existing){
+        Episode episode = new Episode();
+        Episode.copyTo(existing, episode);
+        return episode;
+    }
+
+    private Content copyToSeries(Content existing){
+        Series series = new Series();
+        Series.copyTo(existing, series);
+        return series;
+    }
+
+    private Content copyToFilm(Content existing){
+        Film film = new Film();
+        Film.copyTo(existing, film);
+        return film;
+    }
+
+    private Content copyToItem(Content existing){
+        Item item = new Item();
+        Item.copyTo(existing, item);
+        return item;
+    }
+
+    private Content merge(
             Content existing,
             Content update,
             boolean merge,

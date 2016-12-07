@@ -29,7 +29,7 @@ import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
 import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.content.merge.ContentMerger;
-import org.atlasapi.query.content.merge.DefaultBroadcastMerger;
+import org.atlasapi.query.content.merge.VersionMerger;
 
 import com.metabroadcast.common.base.Maybe;
 
@@ -50,7 +50,7 @@ public class ContentWriteExecutor {
     private final ChannelResolver channelResolver;
     private final EventResolver eventResolver;
     private final ContentMerger contentMerger;
-    private final BroadcastMerger broadcastMerger;
+    private final VersionMerger versionMerger;
 
     private ContentWriteExecutor(
             ModelReader reader,
@@ -61,7 +61,7 @@ public class ContentWriteExecutor {
             ChannelResolver channelResolver,
             EventResolver eventResolver,
             ContentMerger contentMerger,
-            BroadcastMerger broadcastMerger
+            VersionMerger versionMerger
     ) {
         this.reader = checkNotNull(reader);
         this.transformer = checkNotNull(transformer);
@@ -71,7 +71,7 @@ public class ContentWriteExecutor {
         this.channelResolver = checkNotNull(channelResolver);
         this.eventResolver = checkNotNull(eventResolver);
         this.contentMerger = checkNotNull(contentMerger);
-        this.broadcastMerger = checkNotNull(broadcastMerger);
+        this.versionMerger = checkNotNull(versionMerger);
     }
 
     public static ContentWriteExecutor create(
@@ -83,7 +83,7 @@ public class ContentWriteExecutor {
             ChannelResolver channelResolver,
             EventResolver eventResolver,
             ContentMerger contentMerger,
-            BroadcastMerger broadcastMerger
+            VersionMerger versionMerger
     ) {
         return new ContentWriteExecutor(
                 reader,
@@ -94,7 +94,7 @@ public class ContentWriteExecutor {
                 channelResolver,
                 eventResolver,
                 contentMerger,
-                broadcastMerger
+                versionMerger
         );
     }
 
@@ -108,23 +108,23 @@ public class ContentWriteExecutor {
     }
 
     public void writeContent(Content content, String type, boolean shouldMerge) {
-        writeContentInternal(content, type, shouldMerge, DefaultBroadcastMerger.defaultMerger());
+        writeContentInternal(content, type, shouldMerge, BroadcastMerger.defaultMerger());
     }
 
     public void writeContent(
             Content content,
             String type,
             boolean shouldMerge,
-            DefaultBroadcastMerger defaultBroadcastMerger
+            BroadcastMerger broadcastMerger
     ) {
-        writeContentInternal(content, type, shouldMerge, defaultBroadcastMerger);
+        writeContentInternal(content, type, shouldMerge, broadcastMerger);
     }
 
     private void writeContentInternal(
             Content content,
             String type,
             boolean shouldMerge,
-            DefaultBroadcastMerger defaultBroadcastMerger
+            BroadcastMerger broadcastMerger
     ) {
         checkArgument(content.getId() != null, "Cannot write content without an ID");
 
@@ -133,12 +133,12 @@ public class ContentWriteExecutor {
         Maybe<Identified> identified = resolveExisting(updatedContent);
 
         if ("broadcast".equals(type)) {
-            updatedContent = broadcastMerger.mergeBroadcasts(
-                    identified, updatedContent, shouldMerge, defaultBroadcastMerger
+            updatedContent = versionMerger.mergeBroadcasts(
+                    identified, updatedContent, shouldMerge, broadcastMerger
             );
         } else {
             updatedContent = contentMerger.merge(
-                    identified, updatedContent, shouldMerge, defaultBroadcastMerger
+                    identified, updatedContent, shouldMerge, broadcastMerger
             );
         }
         if (updatedContent instanceof Item) {

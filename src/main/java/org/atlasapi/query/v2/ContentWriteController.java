@@ -40,7 +40,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
-import org.atlasapi.query.content.merge.DefaultBroadcastMerger;
+import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 
 import com.metabroadcast.common.base.Maybe;
@@ -297,7 +297,7 @@ public class ContentWriteController {
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT_PARAMETER));
 
         String broadcastAssertionsParameter = req.getParameter(BROADCAST_ASSERTIONS_PARAMETER);
-        DefaultBroadcastMerger defaultBroadcastMerger = DefaultBroadcastMerger.parse(
+        BroadcastMerger broadcastMerger = BroadcastMerger.parse(
                 broadcastAssertionsParameter
         );
 
@@ -390,7 +390,7 @@ public class ContentWriteController {
             } else {
                 content.setId(contentId);
                 writeExecutor.writeContent(content, inputContent.getType(), merge,
-                        defaultBroadcastMerger
+                        broadcastMerger
                 );
             }
         } catch (IllegalArgumentException | NullPointerException e) {

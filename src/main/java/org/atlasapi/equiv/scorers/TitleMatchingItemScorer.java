@@ -139,8 +139,8 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
 
     private Score compareTitles(final String subjectTitle, final String suggestionTitle) {
         boolean matches;
-        String subjTitle = normalize(subjectTitle);
-        String suggTitle = normalize(suggestionTitle);
+        String subjTitle = normalize(normaliseForVs(subjectTitle));
+        String suggTitle = normalize(normaliseForVs(suggestionTitle));
 
         if (appearsToBeWithApostrophe(subjectTitle)) {
             String regexp = normalizeRegularExpression(subjectTitle);
@@ -210,6 +210,11 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
                     .replace("'","")
                     .replace(" ", "-");
                     
+    }
+
+    private String normaliseForVs(String title) {
+        return title.replaceAll(" vs. ", " vs ")
+                    .replaceAll(" v ", " vs ");
     }
     
     private String regularExpressionReplaceSpecialChars(String title) {

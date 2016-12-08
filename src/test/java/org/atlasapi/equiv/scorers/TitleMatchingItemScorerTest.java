@@ -67,6 +67,16 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(0, scorer.score(itemWithTitle("Kinross"), of(itemWithTitle("2. Different")), desc));
         
     }
+
+    @Test
+    public void testVsShouldNotBreakIfV() {
+        DefaultDescription desc = new DefaultDescription();
+
+        score(2, scorer.score(
+                itemWithTitle("Gabriel Iglesias vs. Randy Couture"),
+                of(itemWithTitle("Gabriel Iglesias v Randy Couture")
+                ), desc));
+    }
     
     @Test
     public void testMatchingWithAmpersands() {

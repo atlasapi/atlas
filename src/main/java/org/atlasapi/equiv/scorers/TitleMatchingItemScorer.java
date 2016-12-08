@@ -200,10 +200,17 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         return TRAILING_APOSTROPHE_PATTERN.matcher(title).find();
     }
 
+    private String applyCommonReplaceRules(String title) {
+        return title
+                .replaceAll(" vs. ", " vs ")
+                .replaceAll(" v ", " vs ")
+                .replaceAll(" & ", " and ")
+                .replaceAll("fc ", "")
+                .replaceAll(",", "");
+    }
+
     private String replaceSpecialChars(String title) {
-        return title.replaceAll(" & ", " and ")
-                    .replaceAll("fc ", "")
-                    .replaceAll(",", "")
+        return applyCommonReplaceRules(title)
                     .replaceAll("\\.", "")
                     .replaceAll("\\s?\\/\\s?", "-") // normalize spacing around back-to-back titles
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
@@ -213,8 +220,7 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
     
     private String regularExpressionReplaceSpecialChars(String title) {
-        return title.replaceAll(" & ", " and ")
-                    .replaceAll("fc ", "")
+        return applyCommonReplaceRules(title)
                     .replaceAll("[^A-Za-z0-9\\s']+", "-")
                     .replace(" ", "\\-")
                     .replaceAll("'\\\\-", "(\\\\w+|\\\\W*)\\-");

@@ -1,10 +1,12 @@
 package org.atlasapi.remotesite.pa.channels;
 
-import static org.atlasapi.remotesite.pa.channels.PaChannelGroupsIngester.getServiceProvider;
-
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.Set;
+import java.util.function.Predicate;
+
+import javax.annotation.Nullable;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Image;
@@ -23,6 +25,13 @@ import org.atlasapi.remotesite.pa.channels.bindings.ServiceProvider;
 import org.atlasapi.remotesite.pa.channels.bindings.Station;
 import org.atlasapi.remotesite.pa.channels.bindings.Url;
 import org.atlasapi.remotesite.pa.channels.bindings.Variation;
+
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
+import com.google.common.primitives.Ints;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
@@ -30,86 +39,101 @@ import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.google.common.primitives.Ints;
+import static org.atlasapi.remotesite.pa.channels.PaChannelGroupsIngester.getServiceProvider;
 
 public class PaChannelsIngester {
 
+    private static final Logger log = LoggerFactory.getLogger(PaChannelsIngester.class);
+
     public static final String BT_SERVICE_ID_ALIAS_PREFIX = "http://bt.youview.com/service/";
     public static final String YOUVIEW_SERVICE_ID_ALIAS_PREFIX = "http://youview.com/service/";
-    
+
     private static final String GENRE_ADULT = "Adult";
     private static final String SIMULCAST_LINK_TYPE = "Web_Simulcast";
     private static final String REGIONAL_VARIATION = "regional";
-    static final String IMAGE_PREFIX = "http://images.atlas.metabroadcast.com/pressassociation.com/channels/";
-    private static final String CHANNEL_URI_PREFIX = "http://ref.atlasapi.org/channels/pressassociation.com/";
+    private static final String IMAGE_PREFIX =
+            "http://images.atlas.metabroadcast.com/pressassociation.com/channels/";
+    private static final String CHANNEL_URI_PREFIX =
+            "http://ref.atlasapi.org/channels/pressassociation.com/";
     private static final String STATION_ALIAS_PREFIX = "http://pressassociation.com/stations/";
-    private static final String STATION_URI_PREFIX = "http://ref.atlasapi.org/channels/pressassociation.com/stations/";
+    private static final String STATION_URI_PREFIX =
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/";
     private static final String GENRE_URI_PREFIX = "http://pressassociation.com/genres/";
     private static final String FORMAT_HD = "HD";
-    
-    private static final Map<String, String> YOUVIEW_SERVICE_PROVIDERS_TO_ALIAS_PREFIX 
-            = ImmutableMap.of("YouView", YOUVIEW_SERVICE_ID_ALIAS_PREFIX, 
-                              "BT TV", BT_SERVICE_ID_ALIAS_PREFIX);
-    
-    public static final Iterable<String> YOUVIEW_SERVICE_ID_ALIAS_PREFIXES = YOUVIEW_SERVICE_PROVIDERS_TO_ALIAS_PREFIX.values();
-    
-    private static final Map<String, MediaType> MEDIA_TYPE_MAPPING = ImmutableMap.<String, MediaType>builder()
-        .put("TV", MediaType.VIDEO)
-        .put("Radio", MediaType.AUDIO)
-        .build();
-    
-    private static final Map<String, ImageTheme> IMAGE_THEME_MAPPING = ImmutableMap.<String, ImageTheme>builder()
-            .put("Normal", ImageTheme.LIGHT_OPAQUE)
-            .put("Transparent Dark", ImageTheme.DARK_TRANSPARENT)
-            .put("Transparent Light", ImageTheme.LIGHT_TRANSPARENT)
-            .build();
-    
-    private static final Predicate<Variation> IS_REGIONAL = new Predicate<Variation>() {
-        @Override
-        public boolean apply(Variation input) {
-            return input.getType().equals(REGIONAL_VARIATION);
-        }
-    };
-    
+
+    private static final Map<String, String> YOUVIEW_SERVICE_PROVIDERS_TO_ALIAS_PREFIX =
+            ImmutableMap.of(
+                    "YouView", YOUVIEW_SERVICE_ID_ALIAS_PREFIX,
+                    "BT TV", BT_SERVICE_ID_ALIAS_PREFIX
+            );
+
+    public static final Iterable<String> YOUVIEW_SERVICE_ID_ALIAS_PREFIXES =
+            YOUVIEW_SERVICE_PROVIDERS_TO_ALIAS_PREFIX.values();
+
+    private static final Map<String, MediaType> MEDIA_TYPE_MAPPING =
+            ImmutableMap.<String, MediaType>builder()
+                    .put("TV", MediaType.VIDEO)
+                    .put("Radio", MediaType.AUDIO)
+                    .build();
+
+    private static final Map<String, ImageTheme> IMAGE_THEME_MAPPING =
+            ImmutableMap.<String, ImageTheme>builder()
+                    .put("Normal", ImageTheme.LIGHT_OPAQUE)
+                    .put("Transparent Dark", ImageTheme.DARK_TRANSPARENT)
+                    .put("Transparent Light", ImageTheme.LIGHT_TRANSPARENT)
+                    .build();
+
+    private static final Predicate<Variation> IS_REGIONAL =
+            input -> REGIONAL_VARIATION.equals(input.getType());
+
     private final DateTimeFormatter formatter = ISODateTimeFormat.date();
-    private final Logger log = LoggerFactory.getLogger(PaChannelsIngester.class);
 
     public ChannelTree processStation(Station station, List<ServiceProvider> serviceProviders) {
         try {
             if (!station.getChannels().getChannel().isEmpty()) {
-                Boolean isAdult = null;
+                Optional<Boolean> isAdult = Optional.empty();
                 Set<String> genres = Sets.newHashSet();
                 if (station.getGenres() != null) {
                     isAdult = isAdult(station.getGenres());
                     genres = parseGenres(station.getGenres());
                 }
                 if (station.getChannels().getChannel().size() == 1) {
-                    return new ChannelTree(null, ImmutableList.of(processStandaloneChannel(station.getChannels().getChannel().get(0), serviceProviders, genres, isAdult)));
+                    return new ChannelTree(
+                            null,
+                            ImmutableList.of(processStandaloneChannel(station.getChannels()
+                                    .getChannel()
+                                    .get(0), serviceProviders, genres, isAdult.orElse(null)))
+                    );
                 } else {
-                    Channel parent = processParentChannel(station, station.getChannels().getChannel().get(0), genres, isAdult);
-                    List<Channel> children = processChildChannels(station.getChannels().getChannel(), serviceProviders, genres, isAdult);
+                    Channel parent = processParentChannel(
+                            station,
+                            station.getChannels().getChannel().get(0),
+                            genres,
+                            isAdult.orElse(null)
+                    );
+                    List<Channel> children = processChildChannels(
+                            station.getChannels().getChannel(),
+                            serviceProviders,
+                            genres,
+                            isAdult.orElse(null)
+                    );
                     return new ChannelTree(parent, children);
                 }
             } else {
-                log.error("Station with id " + station.getId() + " has no channels");
+                log.error("Station with id {} has no channels", station.getId());
             }
         } catch (Exception e) {
-            log.error("Exception thrown while processing station with id " + station.getId(), e);
+            log.error("Exception thrown while processing station with id {}", station.getId(), e);
         }
-        return new ChannelTree(null, ImmutableList.<Channel>of());
+        return new ChannelTree(null, ImmutableList.of());
     }
 
-    private List<Channel> processChildChannels(List<org.atlasapi.remotesite.pa.channels.bindings.Channel> channels, List<ServiceProvider> serviceProviders, Set<String> genres, Boolean isAdult) {
-        Builder<Channel> children = ImmutableList.<Channel>builder();
+    private List<Channel> processChildChannels(
+            List<org.atlasapi.remotesite.pa.channels.bindings.Channel> channels,
+            List<ServiceProvider> serviceProviders, Set<String> genres, Boolean isAdult) {
+        Builder<Channel> children = ImmutableList.builder();
         for (org.atlasapi.remotesite.pa.channels.bindings.Channel paChannel : channels) {
-            children.add(processStandaloneChannel(paChannel, serviceProviders, genres, isAdult)); 
+            children.add(processStandaloneChannel(paChannel, serviceProviders, genres, isAdult));
         }
         return children.build();
     }
@@ -122,12 +146,12 @@ public class PaChannelsIngester {
         return "pa-station-" + id;
     }
 
-    private Boolean isAdult(Genres genres) {
+    private Optional<Boolean> isAdult(Genres genres) {
         String genre = genres.getGenre();
         if (genre.equals(GENRE_ADULT)) {
-            return true;
+            return Optional.of(true);
         }
-        return null;
+        return Optional.empty();
     }
 
     // Genre uris are simply a standard prefix, followed by the genre value, lowercased,
@@ -137,33 +161,32 @@ public class PaChannelsIngester {
         return Sets.newHashSet(GENRE_URI_PREFIX + genre.toLowerCase().replace(' ', '_'));
     }
 
-    private Channel processParentChannel(Station station, org.atlasapi.remotesite.pa.channels.bindings.Channel firstChild, Set<String> genres, Boolean isAdult) {
-        
-        Channel parentChannel = Channel.builder()
-            .withUri(STATION_URI_PREFIX + station.getId())
-            .withKey(generateStationKey(station.getId()))
-            .withSource(Publisher.METABROADCAST)
-            .withAvailableFrom(ImmutableList.of(Publisher.PA))
-            .withAdult(isAdult)
-            .withGenres(genres)
-            .build();
-        
-        // will soon have station images, but do not currently, hence is commented out here
-//        if (station.getLogos() != null) {
-//            setChannelTitleAndImage(parentChannel, station.getNames().getName(), station.getLogos().getLogo());
-//        } else {
-        setChannelTitleAndImage(parentChannel, station.getNames().getName(), ImmutableList.<Logo>of());
-//        }
+    private Channel processParentChannel(Station station,
+            org.atlasapi.remotesite.pa.channels.bindings.Channel firstChild, Set<String> genres,
+            Boolean isAdult) {
 
-        // MediaType and HD flag can't be obtained from the PA Station, so are taken from the first child channel
+        Channel parentChannel = Channel.builder()
+                .withUri(STATION_URI_PREFIX + station.getId())
+                .withKey(generateStationKey(station.getId()))
+                .withSource(Publisher.METABROADCAST)
+                .withAvailableFrom(ImmutableList.of(Publisher.PA))
+                .withAdult(isAdult)
+                .withGenres(genres)
+                .build();
+
+        setChannelTitleAndImage(parentChannel, station.getNames().getName(), ImmutableList.of());
+
+        // MediaType and HD flag can't be obtained from the PA Station, so are taken from the
+        // first child channel
         // Regional always set to false on channels created from stations
-        // Timeshift left as null as this is the channel from which children are considered to be timeshifted
+        // Timeshift left as null as this is the channel from which children are considered
+        // to be timeshifted
         parentChannel.setMediaType(MEDIA_TYPE_MAPPING.get(firstChild.getMediaType()));
         parentChannel.setHighDefinition(getHighDefinition(firstChild.getFormat()));
         parentChannel.setRegional(false);
-            
+
         parentChannel.addAliasUrl(createStationUriFromId(station.getId()));
-        
+
         return parentChannel;
     }
 
@@ -171,9 +194,11 @@ public class PaChannelsIngester {
         return STATION_ALIAS_PREFIX + id;
     }
 
-    private Channel processStandaloneChannel(org.atlasapi.remotesite.pa.channels.bindings.Channel paChannel, List<ServiceProvider> serviceProviders, Set<String> genres, Boolean isAdult) {
+    private Channel processStandaloneChannel(
+            org.atlasapi.remotesite.pa.channels.bindings.Channel paChannel,
+            List<ServiceProvider> serviceProviders, Set<String> genres, Boolean isAdult) {
         LocalDate startDate = formatter.parseLocalDate(paChannel.getStartDate());
-        
+
         Channel channel = Channel.builder()
                 .withUri(CHANNEL_URI_PREFIX + paChannel.getId())
                 .withKey(generateChannelKey(paChannel.getId()))
@@ -184,86 +209,115 @@ public class PaChannelsIngester {
                 .withAdult(isAdult)
                 .withGenres(genres)
                 .build();
-        
+
         if (paChannel.getProviderChannelIds() != null) {
-            for (ProviderChannelId providerChannelId : paChannel.getProviderChannelIds().getProviderChannelId()) {
-                String alias = lookupAlias(providerChannelId, serviceProviders);
-                if (alias != null) {
-                    channel.addAliasUrl(alias);
-                }
+            for (ProviderChannelId providerChannelId : paChannel.getProviderChannelIds()
+                    .getProviderChannelId()) {
+                lookupAlias(
+                        providerChannelId,
+                        serviceProviders
+                ).ifPresent(channel::addAliasUrl);
             }
         }
-        
+
         if (paChannel.getUrls() != null) {
             for (Url paUrl : paChannel.getUrls().getUrl()) {
                 if (paUrl.getType().equals(SIMULCAST_LINK_TYPE)) {
                     RelatedLink relatedLink = RelatedLink.simulcastLink(paUrl.getvalue()).build();
                     channel.addRelatedLink(relatedLink);
                 } else {
-                    log.error("Link type " + paUrl.getType() + " not supported");
+                    log.error("Link type {} not supported", paUrl.getType());
                 }
             }
         }
-        
+
         if (paChannel.getMediaType() != null) {
             channel.setMediaType(MEDIA_TYPE_MAPPING.get(paChannel.getMediaType()));
         }
-        
+
         channel.setHighDefinition(getHighDefinition(paChannel.getFormat()));
-        
+
         List<Variation> variations = paChannel.getVariation();
-        channel.setRegional(!Iterables.isEmpty(Iterables.filter(variations, IS_REGIONAL)));
-        channel.setTimeshift(getTimeshift(variations));
-        
+        channel.setRegional(variations.stream().anyMatch(IS_REGIONAL));
+        channel.setTimeshift(getTimeshift(variations).orElse(null));
+
         List<Logo> logos;
         if (paChannel.getLogos() != null) {
             logos = paChannel.getLogos().getLogo();
         } else {
-            logos = ImmutableList.<Logo>of();
+            logos = ImmutableList.of();
         }
         setChannelTitleAndImage(channel, paChannel.getNames().getName(), logos);
-        
+
         channel.addAliasUrl(PaChannelMap.createUriFromId(paChannel.getId()));
-        
+
         return channel;
     }
-    
-    private Duration getTimeshift(List<Variation> variations) {
+
+    private Optional<Duration> getTimeshift(List<Variation> variations) {
         for (Variation variation : variations) {
             if (variation.getTimeshift() != null) {
-                return Duration.standardMinutes(Long.parseLong(variation.getTimeshift()));
+                return Optional.of(
+                        Duration.standardMinutes(Long.parseLong(variation.getTimeshift()))
+                );
             }
         }
-        return null;
+        return Optional.empty();
     }
 
-    private Boolean getHighDefinition(String format) {
+    private Boolean getHighDefinition(@Nullable String format) {
         if (format != null) {
             return format.equals(FORMAT_HD);
         }
         return false;
     }
 
-    private String lookupAlias(ProviderChannelId providerChannelId, List<ServiceProvider> serviceProviders) {
-        ServiceProvider serviceProvider = getServiceProvider(providerChannelId.getServiceProviderId(), serviceProviders);
-        if (serviceProvider == null) {
-            throw new RuntimeException("ServiceProvider with id " + providerChannelId.getServiceProviderId() + " not found in the channel data file");
+    private Optional<String> lookupAlias(
+            ProviderChannelId providerChannelId,
+            List<ServiceProvider> serviceProviders
+    ) {
+        Optional<ServiceProvider> serviceProvider = getServiceProvider(
+                providerChannelId.getServiceProviderId(),
+                serviceProviders
+        );
+
+        if (!serviceProvider.isPresent()) {
+            throw new IllegalStateException(
+                    String.format(
+                            "ServiceProvider with id %s not found in the channel data file",
+                            providerChannelId.getServiceProviderId()
+                    )
+            );
         }
-        if (serviceProvider.getNames().getName().isEmpty()) {
-            throw new RuntimeException("Service Provider with id " + providerChannelId.getServiceProviderId() + " has no name");
+
+        if (serviceProvider.get().getNames().getName().isEmpty()) {
+            throw new IllegalStateException(
+                    String.format(
+                            "Service Provider with id %s has no name",
+                            providerChannelId.getServiceProviderId()
+                    )
+            );
         }
-        String serviceProviderName = Iterables.getOnlyElement(serviceProvider.getNames().getName()).getvalue();
-        
+
+        String serviceProviderName = Iterables.getOnlyElement(
+                serviceProvider.get().getNames().getName()
+        ).getvalue();
+
         if (YOUVIEW_SERVICE_PROVIDERS_TO_ALIAS_PREFIX.containsKey(serviceProviderName)) {
-            return youViewAlias(serviceProviderName, providerChannelId.getvalue());
+            return Optional.of(youViewAlias(serviceProviderName, providerChannelId.getvalue()));
         }
-        
-        log.warn("service provider name " + serviceProviderName + " not recognised. Unable to process providerChannelId " + providerChannelId);
-        return null;
+
+        log.warn(
+                "service provider name {} not recognised. Unable to process providerChannelId {}",
+                serviceProviderName, providerChannelId
+        );
+
+        return Optional.empty();
     }
 
     private String youViewAlias(String serviceProviderName, String youViewChannelId) {
-        return YOUVIEW_SERVICE_PROVIDERS_TO_ALIAS_PREFIX.get(serviceProviderName) + youViewChannelId;
+        return YOUVIEW_SERVICE_PROVIDERS_TO_ALIAS_PREFIX.get(serviceProviderName)
+                + youViewChannelId;
     }
 
     private void setChannelTitleAndImage(Channel channel, List<Name> names, List<Logo> images) {
@@ -281,19 +335,21 @@ public class PaChannelsIngester {
             LocalDate imageStartDate = formatter.parseLocalDate(logo.getStartDate());
             String type = logo.getType();
             Image image = new Image(IMAGE_PREFIX + logo.getvalue());
-            ImageTheme theme = type == null ? ImageTheme.LIGHT_OPAQUE : IMAGE_THEME_MAPPING.get(type);
+            ImageTheme theme = type == null
+                               ? ImageTheme.LIGHT_OPAQUE
+                               : IMAGE_THEME_MAPPING.get(type);
             image.setTheme(theme);
             image.setWidth(Ints.tryParse(logo.getWidth()));
             image.setHeight(Ints.tryParse(logo.getHeight()));
             image.setType(ImageType.LOGO);
             image.setColor(ImageColor.COLOR);
-            
+
             if (logo.getEndDate() != null) {
                 LocalDate imageEndDate = formatter.parseLocalDate(logo.getEndDate());
                 channel.addImage(image, imageStartDate, imageEndDate.plusDays(1));
             } else {
                 channel.addImage(image, imageStartDate);
             }
-        }    
+        }
     }
 }

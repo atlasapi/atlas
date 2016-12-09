@@ -69,20 +69,20 @@ public class ContentMerger {
             boolean merge,
             DefaultBroadcastMerger defaultBroadcastMerger
     ){
-        if (update instanceof Item){
-            return merge(copyToItem(existing), update, merge, defaultBroadcastMerger);
+        if (update instanceof Episode){
+            return merge(copyToEpisode(existing), update, merge, defaultBroadcastMerger);
+        }
+        if (update instanceof Film){
+            return merge(copyToFilm(existing), update, merge, defaultBroadcastMerger);
         }
         if (update instanceof Brand){
             return merge(copyToBrand(existing), update, merge, defaultBroadcastMerger);
         }
-        if (update instanceof Episode){
-            return merge(copyToEpisode(existing), update, merge, defaultBroadcastMerger);
-        }
         if (update instanceof Series){
             return merge(copyToSeries(existing), update, merge, defaultBroadcastMerger);
         }
-        if (update instanceof Film){
-            return merge(copyToFilm(existing), update, merge, defaultBroadcastMerger);
+        if (update instanceof Item){
+            return merge(copyToItem(existing), update, merge, defaultBroadcastMerger);
         }
 
         return merge(existing, update, merge, defaultBroadcastMerger);

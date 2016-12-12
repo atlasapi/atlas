@@ -70,52 +70,97 @@ public class ContentMerger {
             DefaultBroadcastMerger defaultBroadcastMerger
     ){
         if (update instanceof Episode){
-            return merge(copyToEpisode(existing), update, merge, defaultBroadcastMerger);
+            return merge(
+                    copyToEpisode(existing, merge, defaultBroadcastMerger),
+                    update,
+                    merge,
+                    defaultBroadcastMerger
+            );
         }
         if (update instanceof Film){
-            return merge(copyToFilm(existing), update, merge, defaultBroadcastMerger);
+            return merge(
+                    copyToFilm(existing, merge, defaultBroadcastMerger),
+                    update,
+                    merge,
+                    defaultBroadcastMerger
+            );
         }
         if (update instanceof Brand){
-            return merge(copyToBrand(existing), update, merge, defaultBroadcastMerger);
+            return merge(
+                    copyToBrand(existing, merge, defaultBroadcastMerger),
+                    update,
+                    merge,
+                    defaultBroadcastMerger
+            );
         }
         if (update instanceof Series){
-            return merge(copyToSeries(existing), update, merge, defaultBroadcastMerger);
+            return merge(
+                    copyToSeries(existing, merge, defaultBroadcastMerger),
+                    update,
+                    merge,
+                    defaultBroadcastMerger
+            );
         }
         if (update instanceof Item){
-            return merge(copyToItem(existing), update, merge, defaultBroadcastMerger);
+            return merge(
+                    copyToItem(existing, merge, defaultBroadcastMerger),
+                    update,
+                    merge,
+                    defaultBroadcastMerger
+            );
         }
 
         return merge(existing, update, merge, defaultBroadcastMerger);
     }
 
-    private Content copyToBrand(Content existing){
+    private Content copyToBrand(
+            Content existing,
+            boolean merge,
+            DefaultBroadcastMerger defaultBroadcastMerger
+    ){
         Brand brand = new Brand();
         Brand.copyTo(existing, brand);
-        return brand;
+        return merge(brand, existing, merge, defaultBroadcastMerger);
     }
 
-    private Content copyToEpisode(Content existing){
+    private Content copyToEpisode(
+            Content existing,
+            boolean merge,
+            DefaultBroadcastMerger defaultBroadcastMerger
+    ){
         Episode episode = new Episode();
         Episode.copyTo(existing, episode);
-        return episode;
+        return merge(episode, existing, merge, defaultBroadcastMerger);
     }
 
-    private Content copyToSeries(Content existing){
+    private Content copyToSeries(
+            Content existing,
+            boolean merge,
+            DefaultBroadcastMerger defaultBroadcastMerger
+    ){
         Series series = new Series();
         Series.copyTo(existing, series);
-        return series;
+        return merge(series, existing, merge, defaultBroadcastMerger);
     }
 
-    private Content copyToFilm(Content existing){
+    private Content copyToFilm(
+            Content existing,
+            boolean merge,
+            DefaultBroadcastMerger defaultBroadcastMerger
+    ){
         Film film = new Film();
         Film.copyTo(existing, film);
-        return film;
+        return merge(film, existing, merge, defaultBroadcastMerger);
     }
 
-    private Content copyToItem(Content existing){
+    private Content copyToItem(
+            Content existing,
+            boolean merge,
+            DefaultBroadcastMerger defaultBroadcastMerger
+    ){
         Item item = new Item();
         Item.copyTo(existing, item);
-        return item;
+        return merge(item, existing, merge, defaultBroadcastMerger);
     }
 
     private Content merge(

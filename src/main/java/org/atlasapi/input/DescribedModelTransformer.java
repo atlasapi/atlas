@@ -1,17 +1,25 @@
 package org.atlasapi.input;
 
+import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
+import org.atlasapi.media.entity.Author;
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Distribution;
 import org.atlasapi.media.entity.ImageType;
+import org.atlasapi.media.entity.Language;
+import org.atlasapi.media.entity.LocalizedTitle;
 import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.Priority;
 import org.atlasapi.media.entity.PriorityScoreReasons;
 import org.atlasapi.media.entity.Publisher;
@@ -22,16 +30,22 @@ import org.atlasapi.media.entity.Review;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Image;
+import org.atlasapi.media.entity.simple.Localized;
 import org.atlasapi.media.entity.simple.PublisherDetails;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.UnmodifiableIterator;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.Clock;
 
-public abstract class DescribedModelTransformer<F extends Description,T extends Described> extends IdentifiedModelTransformer<F, T> {
+public abstract class DescribedModelTransformer<F extends Description, T extends Described>
+        extends IdentifiedModelTransformer<F, T> {
 
     public DescribedModelTransformer(Clock clock) {
         super(clock);
@@ -68,7 +82,9 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
             ));
         }
         if (inputContent.getSpecialization() != null) {
-            result.setSpecialization(Specialization.fromKey(inputContent.getSpecialization()).valueOrNull());
+            result.setSpecialization(
+                    Specialization.fromKey(inputContent.getSpecialization()).valueOrNull()
+            );
         }
         if (inputContent.getMediaType() != null) {
             result.setMediaType(MediaType.valueOf(inputContent.getMediaType().toUpperCase()));
@@ -79,19 +95,80 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         result.setAwards(transformAwards(inputContent.getAwards()));
         result.setPresentationChannel(inputContent.getPresentationChannel());
 
+        if (inputContent.getTitles() != null) {
+            result.setLocalizedTitles(transformLocalizedTitles(inputContent.getTitles()));
+        }
+        if (inputContent.getDistributions() != null) {
+            result.setDistributions(transformDistributions(inputContent.getDistributions()));
+        }
+        if (inputContent.getLanguage() != null) {
+            result.setLanguage(transformLanguages(inputContent.getLanguage()));
+        }
+
         return result;
+    }
+
+    private Language transformLanguages(org.atlasapi.media.entity.simple.Language language) {
+        return Language.builder()
+                .withCode(language.getCode())
+                .withDisplay(language.getDisplay())
+                .withDubbing(language.getDubbing())
+                .build();
+    }
+
+    private Distribution makeNewDistribution(
+            org.atlasapi.media.entity.simple.Distribution distribution
+    ) {
+        return Distribution.builder()
+                .withDistributor(distribution.getDistributor())
+                .withFormat(distribution.getFormat())
+                .withReleaseDate(distribution.getReleaseDate())
+                .build();
+    }
+
+    private Iterable<Distribution> transformDistributions(
+            Iterable<org.atlasapi.media.entity.simple.Distribution> distributions
+    ) {
+        List<Distribution> newDistributions = new ArrayList<Distribution>();
+        for (org.atlasapi.media.entity.simple.Distribution distribution :
+                distributions) {
+
+            Distribution newDistribution = makeNewDistribution(distribution);
+            newDistributions.add(newDistribution);
+        }
+
+        return ImmutableList.<Distribution>copyOf(newDistributions);
+    }
+
+    private LocalizedTitle makeNewTitle(org.atlasapi.media.entity.simple.LocalizedTitle title) {
+        LocalizedTitle newTitle = new LocalizedTitle();
+        newTitle.setTitle(title.getTitle());
+        newTitle.setLocale(new Locale(title.getLanguage()));
+        newTitle.setType(title.getType());
+        return newTitle;
+    }
+
+    private Set<LocalizedTitle> transformLocalizedTitles(
+            Set<org.atlasapi.media.entity.simple.LocalizedTitle> titles
+    ) {
+        return titles.stream()
+                .map(title -> makeNewTitle(title))
+                .collect(MoreCollectors.toImmutableSet());
     }
 
     private Iterable<org.atlasapi.media.entity.Image> transformImages(Set<Image> images) {
         if (images == null) {
             return ImmutableList.of();
         }
-        return Collections2.transform(images, new Function<Image, org.atlasapi.media.entity.Image>() {
+        return Collections2.transform(
+                images,
+                new Function<Image, org.atlasapi.media.entity.Image>() {
             @Override
             public org.atlasapi.media.entity.Image apply(Image input) {
-                org.atlasapi.media.entity.Image transformedImage = new org.atlasapi.media.entity.Image(
-                        input.getUri()
-                );
+                org.atlasapi.media.entity.Image transformedImage =
+                        new org.atlasapi.media.entity.Image(
+                                input.getUri()
+                        );
                 transformedImage.setHeight(input.getHeight());
                 transformedImage.setWidth(input.getWidth());
                 if (input.getType() != null) {
@@ -122,20 +199,32 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
         );
     }
 
-    private Iterable<Review> reviews(final Publisher contentPublisher, Set<org.atlasapi.media.entity.simple.Review> simpleReviews) {
-        return Iterables.transform(simpleReviews, new Function<org.atlasapi.media.entity.simple.Review, Review>() {
+    private Iterable<Review> reviews(final Publisher contentPublisher,
+            Set<org.atlasapi.media.entity.simple.Review> simpleReviews) {
+        return Iterables.transform(simpleReviews,
+                simpleReview -> {
+                    if (simpleReview.getPublisherDetails() != null &&
+                            !getPublisher(simpleReview.getPublisherDetails())
+                                    .equals(contentPublisher)) {
+                        throw new IllegalArgumentException(
+                                "Review publisher must match content publisher"
+                        );
+                    }
+                    Review review = new Review(Locale.forLanguageTag(
+                            simpleReview.getLanguage()),
+                            simpleReview.getReview()
+                    );
+                    review.setType(simpleReview.getType());
 
-            @Override
-            public Review apply(org.atlasapi.media.entity.simple.Review simpleReview) {
-                if (simpleReview.getPublisherDetails() != null &&
-                        !getPublisher(simpleReview.getPublisherDetails()).equals(contentPublisher)) {
-                    throw new IllegalArgumentException("Review publisher must match content publisher");
+                    Author author = Author.builder()
+                            .withAuthorName(simpleReview.getAuthor().getAuthorName())
+                            .withAuthorInitials(simpleReview.getAuthor().getAuthorInitials())
+                            .build();
+                    review.setAuthor(author);
+
+                    return review;
                 }
-                return new Review(Locale.forLanguageTag(simpleReview.getLanguage()), simpleReview.getReview());
-            }
-
-
-        });
+        );
     }
 
     protected Publisher getPublisher(PublisherDetails pubDets) {

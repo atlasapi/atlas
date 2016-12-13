@@ -1,7 +1,9 @@
 package org.atlasapi.output.simple;
 
+import java.util.ArrayList;
 import java.util.Currency;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import org.atlasapi.application.v3.ApplicationConfiguration;
@@ -11,23 +13,19 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.TemporalField;
-import org.atlasapi.media.entity.Actor;
+import org.atlasapi.media.entity.*;
 import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Author;
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.media.entity.CrewMember;
-import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Image;
-import org.atlasapi.media.entity.ImageTheme;
+import org.atlasapi.media.entity.Language;
 import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.RevenueContract;
-import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.media.entity.Review;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.entity.testing.ComplexBroadcastTestDataBuilder;
 import org.atlasapi.media.product.ProductResolver;
 import org.atlasapi.media.segment.SegmentResolver;
@@ -53,11 +51,13 @@ import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
+import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.Assert.assertEquals;
 import static org.hamcrest.Matchers.is;
 
 public class ItemModelSimplifierTest {
@@ -69,17 +69,22 @@ public class ItemModelSimplifierTest {
 
     private final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     private final Mockery context = new Mockery();
-    private final ContentGroupResolver contentGroupResolver = context.mock(ContentGroupResolver.class);
+    private final ContentGroupResolver contentGroupResolver =
+            context.mock(ContentGroupResolver.class);
     private final TopicQueryResolver topicResolver = context.mock(TopicQueryResolver.class);
     private final SegmentResolver segmentResolver = context.mock(SegmentResolver.class);
     private final ProductResolver productResolver = context.mock(ProductResolver.class);
     private final ContainerSummaryResolver containerSummaryResolver = context.mock(
             ContainerSummaryResolver.class);
     private final ChannelResolver channelResolver = context.mock(ChannelResolver.class);
-    private final PeopleQueryResolver peopleQueryResolver = context.mock(PeopleQueryResolver.class);
-    private final UpcomingItemsResolver upcomingResolver = context.mock(UpcomingItemsResolver.class);
-    private final AvailableItemsResolver availableResolver = context.mock(AvailableItemsResolver.class);
-    private final ChannelGroupResolver channelGroupResolver = context.mock(ChannelGroupResolver.class);
+    private final PeopleQueryResolver peopleQueryResolver =
+            context.mock(PeopleQueryResolver.class);
+    private final UpcomingItemsResolver upcomingResolver =
+            context.mock(UpcomingItemsResolver.class);
+    private final AvailableItemsResolver availableResolver =
+            context.mock(AvailableItemsResolver.class);
+    private final ChannelGroupResolver channelGroupResolver =
+            context.mock(ChannelGroupResolver.class);
     private final ChannelSimplifier channelSimplifier = new ChannelSimplifier(
             codec,
             codec,
@@ -233,7 +238,7 @@ public class ItemModelSimplifierTest {
         );
         fullItem.addPerson(person);
 
-        Item simpleItem = itemSimplifier
+        org.atlasapi.media.entity.simple.Item simpleItem = itemSimplifier
                 .simplify
                         (
                                 fullItem,
@@ -306,11 +311,141 @@ public class ItemModelSimplifierTest {
                 is(channelImage.getCanonicalUri())
         );
 
-        org.atlasapi.media.entity.simple.Award simpleAward = Iterables.getOnlyElement(simpleItem.getAwards());
+        org.atlasapi.media.entity.simple.Award simpleAward =
+                Iterables.getOnlyElement(simpleItem.getAwards());
         assertThat(simpleAward.getTitle(), is("title"));
         assertThat(simpleAward.getDescription(), is("description"));
         assertThat(simpleAward.getOutcome(), is("won"));
         assertThat(simpleAward.getYear().intValue(), is(2009));
+    }
+
+    @Test
+    public void simplifyLocalizedTitleTest() {
+        org.atlasapi.media.entity.Item item = new org.atlasapi.media.entity.Item();
+        item.setLanguage(Language.builder()
+                .withCode("code")
+                .withDisplay("display")
+                .withDubbing("dubbing")
+                .build()
+        );
+
+        ApplicationConfiguration config = ApplicationConfiguration.defaultConfiguration();
+
+        org.atlasapi.media.entity.simple.Item simple = itemSimplifier.simplify(item,
+                Sets.union(
+                        Annotation.defaultAnnotations(),
+                        ImmutableSet.of(
+                                Annotation.CHANNEL_SUMMARY,
+                                Annotation.V4_ALIASES
+                        )
+                ),
+                config
+        );
+
+        assertEquals(item.getLanguage().getDisplay(), simple.getLanguage().getDisplay());
+        assertEquals(item.getLanguage().getCode(), simple.getLanguage().getCode());
+        assertEquals(item.getLanguage().getDubbing(), simple.getLanguage().getDubbing());
+    }
+
+    @Test
+    public void simplifyReviewsTest() {
+        org.atlasapi.media.entity.Item item = new org.atlasapi.media.entity.Item();
+        Review review = new Review(new Locale("england"), "review");
+        review.setType("type");
+        review.setAuthor(Author.builder()
+                .withAuthorName("name")
+                .withAuthorInitials("initials")
+                .build()
+        );
+        List<Review> reviewList = new ArrayList<>();
+        reviewList.add(review);
+        item.setReviews(reviewList);
+
+        ApplicationConfiguration config = ApplicationConfiguration.defaultConfiguration();
+
+        org.atlasapi.media.entity.simple.Item simple = itemSimplifier.simplify(item,
+                Sets.union(
+                        Annotation.defaultAnnotations(),
+                        ImmutableSet.of(
+                                Annotation.CHANNEL_SUMMARY,
+                                Annotation.V4_ALIASES
+                        )
+                ),
+                config
+        );
+
+        for (org.atlasapi.media.entity.simple.Review simpleReview : simple.getReviews()) {
+            assertEquals(review.getAuthor(), simpleReview.getAuthor());
+            assertEquals(review.getLocale(), new Locale(simpleReview.getLanguage()));
+            assertEquals(review.getReview(), simpleReview.getReview());
+            assertEquals(review.getType(), simpleReview.getType());
+        }
+
+    }
+
+    @Test
+    public void simplifyDistributionTest() {
+        org.atlasapi.media.entity.Item item = new org.atlasapi.media.entity.Item();
+        org.atlasapi.media.entity.Distribution distribution = org.atlasapi.media.entity.Distribution
+                .builder()
+                .withDistributor("distributor")
+                .withFormat("format")
+                .withReleaseDate(DateTime.now())
+                .build();
+        List<org.atlasapi.media.entity.Distribution> distributions = new ArrayList<>();
+        distributions.add(distribution);
+        item.setDistributions(distributions);
+
+        ApplicationConfiguration config = ApplicationConfiguration.defaultConfiguration();
+
+        org.atlasapi.media.entity.simple.Item simple = itemSimplifier.simplify(item,
+                Sets.union(
+                        Annotation.defaultAnnotations(),
+                        ImmutableSet.of(
+                                Annotation.CHANNEL_SUMMARY,
+                                Annotation.V4_ALIASES
+                        )
+                ),
+                config
+        );
+
+        for (org.atlasapi.media.entity.simple.Distribution simpleDistribution :
+                simple.getDistributions()) {
+            assertEquals(distribution.getFormat(), simpleDistribution.getFormat());
+            assertEquals(distribution.getDistributor(), simpleDistribution.getDistributor());
+            assertEquals(distribution.getReleaseDate(), simpleDistribution.getReleaseDate());
+        }
+
+    }
+
+    @Test
+    public void simplifyLanguageTest() {
+        org.atlasapi.media.entity.Item item = new org.atlasapi.media.entity.Item();
+        org.atlasapi.media.entity.Language language = org.atlasapi.media.entity.Language.builder()
+                .withCode("code")
+                .withDubbing("dubbing")
+                .withDisplay("display")
+                .build();
+        item.setLanguage(language);
+
+        ApplicationConfiguration config = ApplicationConfiguration.defaultConfiguration();
+
+        org.atlasapi.media.entity.simple.Item simple = itemSimplifier.simplify(item,
+                Sets.union(
+                        Annotation.defaultAnnotations(),
+                        ImmutableSet.of(
+                                Annotation.CHANNEL_SUMMARY,
+                                Annotation.V4_ALIASES
+                        )
+                ),
+                config
+        );
+
+        org.atlasapi.media.entity.simple.Language simpleLanguage = simple.getLanguage();
+
+        assertEquals(language.getDisplay(), simpleLanguage.getDisplay());
+        assertEquals(language.getDubbing(), simpleLanguage.getDubbing());
+        assertEquals(language.getCode(), simpleLanguage.getCode());
     }
 
 }

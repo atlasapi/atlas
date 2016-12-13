@@ -1,5 +1,7 @@
 package org.atlasapi.query.content.merge;
 
+import java.util.Optional;
+
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -20,15 +22,15 @@ public class VersionMerger {
     }
 
     public Content mergeBroadcasts(
-            Maybe<Identified> possibleExisting,
+            Optional<Identified> possibleExisting,
             Content update,
             boolean merge,
             BroadcastMerger broadcastMerger
     ) {
-        if (possibleExisting.isNothing()) {
+        if (!possibleExisting.isPresent()) {
             return update;
         }
-        Identified existing = possibleExisting.requireValue();
+        Identified existing = possibleExisting.get();
         if (!(existing instanceof Item)) {
             throw new IllegalStateException("Entity for "
                     + update.getCanonicalUri()

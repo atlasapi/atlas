@@ -389,7 +389,9 @@ public class ContentWriteController {
                 sendMessage(inputStreamBytes, contentId, merge);
             } else {
                 content.setId(contentId);
-                writeExecutor.writeContent(content, inputContent.getType(), merge, broadcastMerger);
+                writeExecutor.writeContent(content, inputContent.getType(), merge,
+                        broadcastMerger
+                );
             }
         } catch (IllegalArgumentException | NullPointerException e) {
             logError("Error executing request", e, req);

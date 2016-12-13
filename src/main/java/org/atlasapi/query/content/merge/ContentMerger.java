@@ -45,84 +45,86 @@ public class ContentMerger {
             Maybe<Identified> possibleExisting,
             Content update,
             boolean merge,
-            DefaultBroadcastMerger defaultBroadcastMerger
+            BroadcastMerger broadcastMerger
     ) {
         if (possibleExisting.isNothing()) {
             return update;
         }
         Identified identifiedContent = possibleExisting.requireValue();
 
-        if (identifiedContent instanceof Content) {
-            Content existingContent = (Content) identifiedContent;
-
-            if (!existingContent.getClass().equals(update.getClass())){
-                return mergeWithTypeUpdate(existingContent, update, merge, defaultBroadcastMerger);
-            }
-            return merge(existingContent, update, merge, defaultBroadcastMerger);
+        if(!(identifiedContent instanceof Content)){
+            throw new IllegalStateException(
+                    "Entity for " + update.getCanonicalUri() + " not Content"
+            );
         }
-        throw new IllegalStateException("Entity for " + update.getCanonicalUri() + " not Content");
+
+        Content existingContent = (Content) identifiedContent;
+        if (!existingContent.getClass().equals(update.getClass())){
+            return mergeWithTypeUpdate(existingContent, update, merge, broadcastMerger);
+        }
+        return merge(existingContent, update, merge, broadcastMerger);
     }
 
     private Content mergeWithTypeUpdate(
             Content existing,
             Content update,
             boolean merge,
-            DefaultBroadcastMerger defaultBroadcastMerger
+            BroadcastMerger broadcastMerger
     ){
         if (update instanceof Episode){
-            return merge(copyToEpisode(existing), update, merge, defaultBroadcastMerger);
+            return merge(copyToEpisode(existing, broadcastMerger), update, merge, broadcastMerger);
         }
         if (update instanceof Film){
-            return merge(copyToFilm(existing), update, merge, defaultBroadcastMerger);
+            return merge(copyToFilm(existing, broadcastMerger), update, merge, broadcastMerger);
         }
         if (update instanceof Brand){
-            return merge(copyToBrand(existing), update, merge, defaultBroadcastMerger);
+            return merge(copyToBrand(existing, broadcastMerger), update, merge, broadcastMerger);
         }
         if (update instanceof Series){
-            return merge(copyToSeries(existing), update, merge, defaultBroadcastMerger);
+            return merge(copyToSeries(existing, broadcastMerger), update, merge, broadcastMerger);
         }
         if (update instanceof Item){
-            return merge(copyToItem(existing), update, merge, defaultBroadcastMerger);
+            return merge(copyToItem(existing, broadcastMerger), update, merge, broadcastMerger);
         }
 
-        return merge(existing, update, merge, defaultBroadcastMerger);
+        return merge(existing, update, merge, broadcastMerger);
     }
 
-    private Content copyToBrand(Content existing){
+    private Content copyToBrand(Content existing, BroadcastMerger broadcastMerger){
         Brand brand = new Brand();
-        Brand.copyTo(existing, brand);
-        return brand;
+        Content.copyTo(existing, brand);
+        return merge(brand, existing, false, broadcastMerger);
     }
 
-    private Content copyToEpisode(Content existing){
+    private Content copyToEpisode(Content existing, BroadcastMerger broadcastMerger){
         Episode episode = new Episode();
-        Episode.copyTo(existing, episode);
-        return episode;
+        Content.copyTo(existing, episode);
+        return merge(episode, existing, false, broadcastMerger);
     }
 
-    private Content copyToSeries(Content existing){
+    private Content copyToSeries(Content existing, BroadcastMerger broadcastMerger){
         Series series = new Series();
-        Series.copyTo(existing, series);
-        return series;
+        Content.copyTo(existing, series);
+        return merge(series, existing, false, broadcastMerger);
     }
 
-    private Content copyToFilm(Content existing){
+    private Content copyToFilm(Content existing, BroadcastMerger broadcastMerger){
         Film film = new Film();
-        Film.copyTo(existing, film);
-        return film;
+        Content.copyTo(existing, film);
+        return merge(film, existing, false, broadcastMerger);
     }
 
-    private Content copyToItem(Content existing){
+    private Content copyToItem(Content existing, BroadcastMerger broadcastMerger){
         Item item = new Item();
-        Item.copyTo(existing, item);
-        return item;
+        Content.copyTo(existing, item);
+        return merge(item, existing, false, broadcastMerger);
     }
 
     private Content merge(
             Content existing,
             Content update,
             boolean merge,
-            DefaultBroadcastMerger defaultBroadcastMerger
+            BroadcastMerger broadcastMerger
     ) {
         existing.setActivelyPublished(update.isActivelyPublished());
 
@@ -193,7 +195,7 @@ public class ContentMerger {
                     itemMerger.mergeReleaseDates((Item) existing, (Item) update, merge),
                     (Item) update,
                     merge,
-                    defaultBroadcastMerger
+                    broadcastMerger
             );
         }
         return existing;

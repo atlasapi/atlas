@@ -27,7 +27,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
-import org.atlasapi.query.content.merge.DefaultBroadcastMerger;
+import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
 
 import com.metabroadcast.common.base.Maybe;
@@ -189,7 +189,7 @@ public class ContentWriteControllerTest {
         when(request.getParameter(ContentWriteController.BROADCAST_ASSERTIONS_PARAMETER))
                 .thenReturn(assertionParameterValue);
 
-        DefaultBroadcastMerger expectedMerger = DefaultBroadcastMerger.parse(assertionParameterValue);
+        BroadcastMerger expectedMerger = BroadcastMerger.parse(assertionParameterValue);
 
         controller.postContent(request, response);
 

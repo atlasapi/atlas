@@ -37,7 +37,7 @@ public class ItemMerger {
             Item existing,
             Item update,
             boolean merge,
-            DefaultBroadcastMerger defaultBroadcastMerger
+            BroadcastMerger broadcastMerger
     ) {
         if (!update.getVersions().isEmpty()) {
             if (Iterables.isEmpty(existing.getVersions())) {
@@ -49,7 +49,7 @@ public class ItemMerger {
                     existingVersion,
                     postedVersion,
                     merge,
-                    defaultBroadcastMerger
+                    broadcastMerger
             );
         }
         existing.setCountriesOfOrigin(update.getCountriesOfOrigin());

@@ -23,7 +23,6 @@ import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
-import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.EpisodeMerger;
 import org.atlasapi.query.content.merge.ItemMerger;
@@ -114,7 +113,7 @@ public class QueryExecutorModule {
                 channelResolver,
                 eventResolver,
                 ContentMerger.create(itemMerger, episodeMerger),
-                BroadcastMerger.create(versionMerger)
+                versionMerger
         );
     }
 

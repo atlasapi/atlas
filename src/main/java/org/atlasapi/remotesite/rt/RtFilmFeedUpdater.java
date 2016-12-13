@@ -24,6 +24,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import com.google.common.base.Throwables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.metabroadcast.common.http.HttpResponseTransformer;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.http.SimpleHttpClientBuilder;
@@ -35,6 +38,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
     
     private final static DateTimeFormatter dateFormat = DateTimeFormat.forPattern("dd/MM/yyyy HH:mm:ss");
     private final static DateTime START_DATE = new DateTime(2011, DateTimeConstants.APRIL, 12, 0, 0, 0, 0);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RtFilmProcessor.class);
     
     private final SimpleHttpClient client = new SimpleHttpClientBuilder()
         .withUserAgent(HttpClients.ATLAS_USER_AGENT)
@@ -113,6 +117,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
                 }
                 catch (Exception e) {
                     log.record(new AdapterLogEntry(Severity.ERROR).withSource(RtFilmFeedUpdater.class).withCause(e).withDescription("Exception when processing film"));
+                    LOGGER.error("problem processsing element", e);
                     failures++;
                 }
                 

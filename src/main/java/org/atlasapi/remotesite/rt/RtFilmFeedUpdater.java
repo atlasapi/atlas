@@ -117,7 +117,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
                 }
                 catch (Exception e) {
                     log.record(new AdapterLogEntry(Severity.ERROR).withSource(RtFilmFeedUpdater.class).withCause(e).withDescription("Exception when processing film"));
-                    LOGGER.error("problem processsing element" + e.getStackTrace().toString(), e);
+                    LOGGER.error("problem processsing element", e);
                     failures++;
                 }
                 

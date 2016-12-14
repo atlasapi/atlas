@@ -252,7 +252,7 @@ public class RtFilmProcessor {
         if (hasValue(rating)) {
             film.setRatings(Lists.newArrayList(new Rating(
                     "Stars",
-                    Float.parseFloat(rating.toString().split(" ")[0]),
+                    Float.parseFloat(rating.getValue().split(" ")[0]),
                     Publisher.RADIO_TIMES
             )));
         }

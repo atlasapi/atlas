@@ -1,30 +1,19 @@
 package org.atlasapi.input;
 
 import java.math.BigInteger;
-import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
 
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.media.entity.simple.Author;
 import org.atlasapi.media.entity.simple.Award;
 import org.atlasapi.media.entity.simple.Broadcast;
-import org.atlasapi.media.entity.simple.Distribution;
 import org.atlasapi.media.entity.simple.EventRef;
 import org.atlasapi.media.entity.simple.Item;
-import org.atlasapi.media.entity.simple.Language;
-import org.atlasapi.media.entity.simple.LocalizedTitle;
 import org.atlasapi.media.entity.simple.Location;
-import org.atlasapi.media.entity.simple.Person;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.atlasapi.media.entity.simple.Restriction;
-import org.atlasapi.media.entity.simple.Review;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 
@@ -35,7 +24,6 @@ import com.metabroadcast.common.time.Clock;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -212,96 +200,6 @@ public class ItemModelTransformerTest {
         simpleItem.setPresentationChannel("channel");
         org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
         assertEquals("channel", complex.getPresentationChannel());
-
-    }
-
-    @Test
-    public void transformLocalizedTitlesTest() {
-        LocalizedTitle localizedTitle = new LocalizedTitle();
-        localizedTitle.setTitle("a title");
-        localizedTitle.setType("a type");
-        localizedTitle.setLanguage("english");
-        Set<LocalizedTitle> localizedTitleSet = new HashSet<>();
-        localizedTitleSet.add(localizedTitle);
-        simpleItem.setTitles(localizedTitleSet);
-        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
-        for (org.atlasapi.media.entity.LocalizedTitle complexTitle : complex.getLocalizedTitles()) {
-            assertEquals(localizedTitle.getTitle(), complexTitle.getTitle());
-            assertEquals(localizedTitle.getType(), complexTitle.getType());
-            assertEquals(localizedTitle.getLanguage(), complexTitle.getLanguageTag());
-        }
-    }
-
-    @Test
-    public void transformReviewsTest() {
-        Review review = new Review();
-        review.setType("type");
-
-        Author author = Author.builder()
-                .withAuthorInitials("B.L.")
-                .withAuthorName("someone's name")
-                .build();
-
-        review.setAuthor(author);
-        review.setLanguage("english");
-        review.setReview("a review");
-
-        List<Review> reviewList = new ArrayList<Review>();
-        reviewList.add(review);
-
-        simpleItem.setReviews(reviewList);
-        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
-
-        for (org.atlasapi.media.entity.Review complexReview : complex.getReviews()) {
-            assertEquals(review.getType(), complexReview.getType());
-            assertEquals(
-                    review.getAuthor().getAuthorInitials(),
-                    complexReview.getAuthor().getAuthorInitials()
-            );
-            assertEquals(
-                    review.getAuthor().getAuthorName(),
-                    complexReview.getAuthor().getAuthorName()
-            );
-            assertEquals(new Locale(review.getLanguage()), complexReview.getLocale());
-            assertEquals(review.getReview(), complexReview.getReview());
-        }
-    }
-
-    @Test
-    public void transformDistributionTest() {
-        Distribution distribution = Distribution.builder()
-                .withDistributor("distributor")
-                .withFormat("format")
-                .withReleaseDate(DateTime.now())
-                .build();
-        List<Distribution> distributionList = new ArrayList<>();
-        distributionList.add(distribution);
-        simpleItem.setDistributions(distributionList);
-        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
-
-        for (org.atlasapi.media.entity.Distribution complexDistribution :
-                complex.getDistributions()) {
-            assertEquals(distribution.getDistributor(), complexDistribution.getDistributor());
-            assertEquals(distribution.getFormat(), complexDistribution.getFormat());
-            assertEquals(distribution.getReleaseDate(), complexDistribution.getReleaseDate());
-        }
-    }
-
-    @Test
-    public void transformDubbingInLanguagesTest() {
-        Language language = Language.builder()
-                .withCode("code")
-                .withDisplay("display")
-                .withDubbing("dubbing")
-                .build();
-        simpleItem.setLanguage(language);
-        org.atlasapi.media.entity.Item complex = transformer.transform(simpleItem);
-
-        org.atlasapi.media.entity.Language complexLanguage = complex.getLanguage();
-
-        assertEquals(language.getCode(), complexLanguage.getCode());
-        assertEquals(language.getDisplay(), complexLanguage.getDisplay());
-        assertEquals(language.getDubbing(), complexLanguage.getDubbing());
 
     }
 

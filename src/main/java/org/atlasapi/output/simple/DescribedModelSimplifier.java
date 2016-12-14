@@ -8,7 +8,6 @@ import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
-import org.atlasapi.media.entity.simple.Author;
 import org.atlasapi.media.entity.simple.Award;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Described;
@@ -17,9 +16,7 @@ import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Description;
-import org.atlasapi.media.entity.simple.Distribution;
 import org.atlasapi.media.entity.simple.Image;
-import org.atlasapi.media.entity.simple.Language;
 import org.atlasapi.media.entity.simple.LocalizedDescription;
 import org.atlasapi.media.entity.simple.LocalizedTitle;
 import org.atlasapi.media.entity.simple.Priority;
@@ -35,10 +32,8 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.Set;
-import java.util.stream.Collectors;
 
-public abstract class DescribedModelSimplifier<F extends Described, T extends Description>
-        extends IdentifiedModelSimplifier<F,T> {
+public abstract class DescribedModelSimplifier<F extends Described, T extends Description> extends IdentifiedModelSimplifier<F,T> {
 
     private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -47,36 +42,25 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     private final DescribedImageExtractor imageExtractor = new DescribedImageExtractor();
     private final PublisherSimplifier publisherSimplifier = new PublisherSimplifier();
     private final RatingModelSimplifier ratingModelSimplifier = new RatingModelSimplifier();
-    private final AudienceStatisticsModelSimplifier audienceStatsModelSimplifier =
-            new AudienceStatisticsModelSimplifier();
-    private final SimplePersonModelSimplifier simplePersonModelSimplifier =
-            new SimplePersonModelSimplifier();
+    private final AudienceStatisticsModelSimplifier audienceStatsModelSimplifier = new AudienceStatisticsModelSimplifier();
 
     protected DescribedModelSimplifier(ImageSimplifier imageSimplifier) {
         this.imageSimplifier = imageSimplifier;
         this.descriptionWatermarker = null;
     }
 
-    protected DescribedModelSimplifier(
-            ImageSimplifier imageSimplifier,
-            NumberToShortStringCodec codec,
-            @Nullable DescriptionWatermarker descriptionWatermarker
-    ) {
+    protected DescribedModelSimplifier(ImageSimplifier imageSimplifier, NumberToShortStringCodec codec,
+            @Nullable DescriptionWatermarker descriptionWatermarker) {
         super(codec);
         this.imageSimplifier = imageSimplifier;
         this.descriptionWatermarker = descriptionWatermarker;
     }
 
-    protected void copyBasicDescribedAttributes(
-            F content,
-            T simpleDescription,
-            Set<Annotation> annotations
-    ) {
+    protected void copyBasicDescribedAttributes(F content, T simpleDescription, Set<Annotation> annotations) {
 
         copyIdentifiedAttributesTo(content, simpleDescription, annotations);
 
-        if (annotations.contains(Annotation.DESCRIPTION) ||
-                annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
+        if (annotations.contains(Annotation.DESCRIPTION) || annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
             simpleDescription.setPublisher(toPublisherDetails(content.getPublisher()));
 
             simpleDescription.setTitle(content.getTitle());
@@ -86,7 +70,6 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
             simpleDescription.setImage(content.getImage());
             simpleDescription.setShortDescription(content.getShortDescription());
             simpleDescription.setAwards(simplifyAwards(content.getAwards()));
-            simpleDescription.setDistributions(simplifyDistributions(content));
 
             MediaType mediaType = content.getMediaType();
             if (mediaType != null) {
@@ -102,24 +85,12 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         if (annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
             simpleDescription.setGenres(content.getGenres());
             simpleDescription.setTags(content.getTags());
-            simpleDescription.setSameAs(
-                    Iterables.transform(content.getEquivalentTo(), LookupRef.TO_URI)
-            );
-            simpleDescription.setEquivalents(
-                    Iterables.transform(content.getEquivalentTo(), TO_SAME_AS)
-            );
+            simpleDescription.setSameAs(Iterables.transform(content.getEquivalentTo(), LookupRef.TO_URI));
+            simpleDescription.setEquivalents(Iterables.transform(content.getEquivalentTo(), TO_SAME_AS));
             simpleDescription.setPresentationChannel(content.getPresentationChannel());
-            simpleDescription.setMediumDescription(applyWatermark(
-                    content,
-                    content.getMediumDescription()
-            ));
-            simpleDescription.setLongDescription(
-                    applyWatermark(content, content.getLongDescription())
-            );
+            simpleDescription.setMediumDescription(applyWatermark(content, content.getMediumDescription()));
+            simpleDescription.setLongDescription(applyWatermark(content, content.getLongDescription()));
             simpleDescription.setDescriptions(simplifyLocalizedDescriptions(content));
-            if (content.getLanguage() != null) {
-                simpleDescription.setLanguage(simplifyLanguage(content.getLanguage()));
-            }
             if (content.getPriority() != null) {
                 simpleDescription.setPriority(
                         new Priority(
@@ -144,24 +115,12 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         }
         if (annotations.contains(Annotation.AUDIENCE_STATISTICS)) {
             simpleDescription.setAudienceStatistics(
-                    audienceStatsModelSimplifier.simplify(
-                            content.getAudienceStatistics(),
-                            annotations,
-                            null
-                    ));
+                    audienceStatsModelSimplifier.simplify(content.getAudienceStatistics(), annotations, null));
         }
         if (annotations.contains(Annotation.RATINGS)) {
             simpleDescription.setRatings(toRatings(content.getRatings(), annotations));
         }
 
-    }
-
-    private Language simplifyLanguage(org.atlasapi.media.entity.Language language) {
-        return Language.builder()
-                .withCode(language.getCode())
-                .withDubbing(language.getDubbing())
-                .withDisplay(language.getDisplay())
-                .build();
     }
 
     private String applyWatermark(F described, String description) {
@@ -170,18 +129,12 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         }
 
         Item item = (Item) described;
-        Broadcast firstBroadcast = Iterables.getFirst(
-                Item.FLATTEN_BROADCASTS.apply(item),
-                null
-        );
+        Broadcast firstBroadcast = Iterables.getFirst(Item.FLATTEN_BROADCASTS.apply(item), null);
 
         return descriptionWatermarker.watermark(firstBroadcast, description);
     }
 
-    private Iterable<Image> toImages(
-            Iterable<org.atlasapi.media.entity.Image> images,
-            Set<Annotation> annotations
-    ) {
+    private Iterable<Image> toImages(Iterable<org.atlasapi.media.entity.Image> images, Set<Annotation> annotations) {
         Builder<Image> simpleImages = ImmutableSet.builder();
         for(org.atlasapi.media.entity.Image image : images) {
             simpleImages.add(imageSimplifier.simplify(image, annotations, null));
@@ -189,10 +142,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         return simpleImages.build();
     }
 
-    private Iterable<Rating> toRatings(
-            Iterable<org.atlasapi.media.entity.Rating> ratings,
-            Set<Annotation> annotations
-    ) {
+    private Iterable<Rating> toRatings(Iterable<org.atlasapi.media.entity.Rating> ratings, Set<Annotation> annotations) {
         ImmutableList.Builder<Rating> simpleRatings = ImmutableList.builder();
         for (org.atlasapi.media.entity.Rating rating : ratings) {
             simpleRatings.add(ratingModelSimplifier.simplify(rating, annotations, null));
@@ -213,9 +163,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     };
 
     private Iterable<RelatedLink> simplifyRelatedLinks(F described) {
-        return Iterables.transform(
-                described.getRelatedLinks(),
-                new Function<org.atlasapi.media.entity.RelatedLink, RelatedLink>() {
+        return Iterables.transform(described.getRelatedLinks(), new Function<org.atlasapi.media.entity.RelatedLink, RelatedLink>() {
 
             @Override
             public RelatedLink apply(org.atlasapi.media.entity.RelatedLink rl) {
@@ -236,9 +184,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     }
 
     private Iterable<Review> simplifyReviews(final F content) {
-        return Iterables.transform(
-                content.getReviews(),
-                new Function<org.atlasapi.media.entity.Review, Review>() {
+        return Iterables.transform(content.getReviews(), new Function<org.atlasapi.media.entity.Review, Review>() {
 
             @Override
             public Review apply(org.atlasapi.media.entity.Review complex) {
@@ -249,14 +195,6 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
                 }
                 simple.setReview(complex.getReview());
                 simple.setPublisherDetails(toPublisherDetails(content.getPublisher()));
-                simple.setType(complex.getType());
-
-                Author author = Author.builder()
-                        .withAuthorName(complex.getAuthor().getAuthorName())
-                        .withAuthorInitials(complex.getAuthor().getAuthorInitials())
-                        .build();
-
-                simple.setAuthor(author);
 
                 return simple;
             }
@@ -272,18 +210,6 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     private Set<LocalizedTitle> simplifyLocalizedTitles(F content) {
         return ImmutableSet.copyOf(Iterables.transform(content.getLocalizedTitles(),
                 TO_SIMPLE_LOCALIZED_TITLE));
-    }
-
-    private Set<Distribution> simplifyDistributions(F content) {
-        return ImmutableSet.copyOf(Iterables.transform(
-                content.getDistributions(),
-                complex -> Distribution.builder()
-                                .withFormat(complex.getFormat())
-                                .withDistributor(complex.getDistributor())
-                                .withReleaseDate(complex.getReleaseDate())
-                                .build()
-                )
-        );
     }
 
     private Set<Award> simplifyAwards(Set<org.atlasapi.media.entity.Award> awards) {
@@ -303,9 +229,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
                 .toSet();
     }
 
-    private static final Function<org.atlasapi.media.entity.LocalizedDescription,
-            LocalizedDescription> TO_SIMPLE_LOCALISED_DESCRIPTION =
-            new Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription>() {
+    private static final Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription> TO_SIMPLE_LOCALISED_DESCRIPTION = new Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription>() {
 
         @Override
         public LocalizedDescription apply(org.atlasapi.media.entity.LocalizedDescription complex) {
@@ -321,9 +245,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         }
     };
 
-    private static final Function<org.atlasapi.media.entity.LocalizedTitle,
-            LocalizedTitle> TO_SIMPLE_LOCALIZED_TITLE =
-            new Function<org.atlasapi.media.entity.LocalizedTitle, LocalizedTitle>() {
+    private static final Function<org.atlasapi.media.entity.LocalizedTitle, LocalizedTitle> TO_SIMPLE_LOCALIZED_TITLE = new Function<org.atlasapi.media.entity.LocalizedTitle, LocalizedTitle>() {
 
         @Override
         public LocalizedTitle apply(org.atlasapi.media.entity.LocalizedTitle complex) {
@@ -331,7 +253,6 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
 
             simple.setLanguage(complex.getLanguageTag());
             simple.setTitle(complex.getTitle());
-            simple.setType(complex.getType());
 
             return simple;
         }

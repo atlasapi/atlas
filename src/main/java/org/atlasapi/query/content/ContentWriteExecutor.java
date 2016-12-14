@@ -6,7 +6,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.util.List;
-import java.util.Optional;
 
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
@@ -131,9 +130,7 @@ public class ContentWriteExecutor {
 
         Content updatedContent = updateEventPublisher(content);
 
-        Optional<Identified> identified = Optional.ofNullable(
-                resolveExisting(updatedContent).valueOrNull()
-        );
+        Maybe<Identified> identified = resolveExisting(updatedContent);
 
         if ("broadcast".equals(type)) {
             updatedContent = versionMerger.mergeBroadcasts(

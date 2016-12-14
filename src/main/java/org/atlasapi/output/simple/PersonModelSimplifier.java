@@ -48,14 +48,6 @@ public class PersonModelSimplifier extends DescribedModelSimplifier<Person, org.
         person.setBirthDate(fullPerson.getBirthDate());
         person.setBirthPlace(fullPerson.getBirthPlace());
         person.setQuotes(fullPerson.getQuotes());
-
-        person.setPseudoSurname(fullPerson.getPseudoSurname());
-        person.setPseudoForename(fullPerson.getPseudoForename());
-        person.setAdditionalInfo(fullPerson.getAdditionalInfo());
-        person.setBilling(fullPerson.getBilling());
-        person.setSource(fullPerson.getSource());
-        person.setSourceTitle(fullPerson.getSourceTitle());
-
         if (annotations.contains(Annotation.UPCOMING)) {
             ImmutableSet<String> upcomingUris = ImmutableSet.copyOf(Iterables.transform(
                     upcomingResolver.upcomingItemsFor(fullPerson), ChildRef.TO_URI));

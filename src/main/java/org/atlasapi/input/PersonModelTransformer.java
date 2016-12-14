@@ -12,20 +12,14 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.time.Clock;
-import com.metabroadcast.common.time.SystemClock;
 
-public class PersonModelTransformer
-        extends DescribedModelTransformer<Person, org.atlasapi.media.entity.Person> {
+public class PersonModelTransformer extends DescribedModelTransformer<Person, org.atlasapi.media.entity.Person> {
 
     private PeopleResolver resolver;
 
     public PersonModelTransformer(Clock clock, PeopleResolver resolver) {
         super(clock);
         this.resolver = resolver;
-    }
-
-    public PersonModelTransformer() {
-        super(new SystemClock());
     }
     
     @Override
@@ -46,12 +40,6 @@ public class PersonModelTransformer
         person.setGender(simple.getGender());
         person.setBirthDate(simple.getBirthDate());
         person.setBirthPlace(simple.getBirthPlace());
-        person.setPseudoSurname(simple.getPseudoSurname());
-        person.setPseudoForename(simple.getPseudoForename());
-        person.setAdditionalInfo(simple.getAdditionalInfo());
-        person.setBilling(simple.getBilling());
-        person.setSource(simple.getSource());
-        person.setSourceTitle(simple.getSourceTitle());
         if (simple.getQuotes() != null) {
             person.setQuotes(simple.getQuotes());
         }
@@ -60,10 +48,8 @@ public class PersonModelTransformer
     
     @Override
     protected Set<LookupRef> resolveEquivalents(Set<String> sameAs) {
-        return ImmutableSet.copyOf(Iterables.transform(
-                Optional.presentInstances(Iterables.transform(
-                        sameAs,
-                        new Function<String, Optional<org.atlasapi.media.entity.Person>>() {
+        return ImmutableSet.copyOf(Iterables.transform(Optional.presentInstances(Iterables.transform(sameAs,
+                new Function<String, Optional<org.atlasapi.media.entity.Person>>() {
                     @Override
                     public Optional<org.atlasapi.media.entity.Person> apply(String input) {
                         return resolver.person(input);
@@ -74,11 +60,8 @@ public class PersonModelTransformer
 
     @Override
     protected Set<LookupRef> resolveSameAs(Set<SameAs> sameAs) {
-        return ImmutableSet.copyOf(
-                Iterables.transform(Optional.presentInstances(
-                        Iterables.transform(
-                                sameAs,
-                                new Function<SameAs, Optional<org.atlasapi.media.entity.Person>>() {
+        return ImmutableSet.copyOf(Iterables.transform(Optional.presentInstances(Iterables.transform(sameAs,
+                new Function<SameAs, Optional<org.atlasapi.media.entity.Person>>() {
                     @Override
                     public Optional<org.atlasapi.media.entity.Person> apply(SameAs input) {
                         return resolver.person(input.getUri());

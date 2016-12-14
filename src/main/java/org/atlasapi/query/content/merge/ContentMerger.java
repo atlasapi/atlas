@@ -1,7 +1,6 @@
 package org.atlasapi.query.content.merge;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
@@ -43,15 +42,15 @@ public class ContentMerger {
     }
 
     public Content merge(
-            Optional<Identified> possibleExisting,
+            Maybe<Identified> possibleExisting,
             Content update,
             boolean merge,
             BroadcastMerger broadcastMerger
     ) {
-        if (!possibleExisting.isPresent()) {
+        if (possibleExisting.isNothing()) {
             return update;
         }
-        Identified identifiedContent = possibleExisting.get();
+        Identified identifiedContent = possibleExisting.requireValue();
 
         if(!(identifiedContent instanceof Content)){
             throw new IllegalStateException(

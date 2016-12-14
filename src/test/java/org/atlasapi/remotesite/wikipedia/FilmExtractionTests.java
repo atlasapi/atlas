@@ -133,7 +133,7 @@ public class FilmExtractionTests {
         ));
         assertEquals("Hackers", flim.getTitle());
 
-        assertEquals("https://upload.wikimedia.org/wikipedia/en/6/67/Hackersposter.jpg",
+        assertEquals("http://upload.wikimedia.org/wikipedia/en/6/67/Hackersposter.jpg",
                 Iterables.getOnlyElement(flim.getImages()).getCanonicalUri());
         assertTrue(flim.getAliases().contains(new Alias("imdb:url", "http://imdb.com/title/tt0113243")));
         assertTrue(flim.getAliases().contains(new Alias("imdb:title", "0113243")));

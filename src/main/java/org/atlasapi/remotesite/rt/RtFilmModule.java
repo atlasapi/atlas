@@ -5,7 +5,6 @@ import javax.annotation.PostConstruct;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
-import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,45 +27,25 @@ public class RtFilmModule {
     @Autowired private ContentWriter contentWriter;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ItemsPeopleWriter peopleWriter;
-    @Autowired private QueuingPersonWriter queuingPersonWriter;
 
     @PostConstruct
     public void startUp() {
         scheduler.schedule(rtFilmFeedDeltaUpdater().withName("RT Film Feed Updater"), DAILY);
-        scheduler.schedule(rtFilmFeedCompleteUpdater()
-                .withName("RT Film Feed Complete Updater"), RepetitionRules.NEVER);
+        scheduler.schedule(rtFilmFeedCompleteUpdater().withName("RT Film Feed Complete Updater"), RepetitionRules.NEVER);
     }
 
     @Bean
     public RtFilmFeedUpdater rtFilmFeedDeltaUpdater() {
-        return new RtFilmFeedUpdater(
-                feedUrl,
-                log,
-                contentResolver,
-                contentWriter,
-                rtFilmProcessor()
-        );
+        return new RtFilmFeedUpdater(feedUrl, log, contentResolver, contentWriter, rtFilmProcessor());
     }
     
     @Bean
     public RtFilmFeedUpdater rtFilmFeedCompleteUpdater() {
-        return RtFilmFeedUpdater.completeUpdater(
-                feedUrl,
-                log,
-                contentResolver,
-                contentWriter,
-                rtFilmProcessor()
-        );
+        return RtFilmFeedUpdater.completeUpdater(feedUrl, log, contentResolver, contentWriter, rtFilmProcessor());
     }
     
     @Bean
     public RtFilmProcessor rtFilmProcessor() {
-        return new RtFilmProcessor(
-                contentResolver,
-                contentWriter,
-                peopleWriter,
-                log,
-                queuingPersonWriter
-        );
+        return new RtFilmProcessor(contentResolver, contentWriter, peopleWriter, log);
     }
 }

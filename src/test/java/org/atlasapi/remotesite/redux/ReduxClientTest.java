@@ -45,7 +45,8 @@ public class ReduxClientTest {
 		assertNotNull(programme.getDiskref());
 		assertNotNull(programme.getTitle());
 	}
-	
+
+	@Ignore
 	@Test
     public void testCanGetLatestForChannel() throws HttpException, Exception {
         PaginatedBaseProgrammes pbp = reduxClient.latest(Selection.ALL, ImmutableSet.of("bbcone"));

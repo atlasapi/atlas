@@ -34,7 +34,8 @@ public class ReduxClientTest {
 	public void setup() throws ParseException {
 		reduxClient = HttpBackedReduxClient.reduxClientForHost(HostSpecifier.from(TEST_REDUX_HOST)).build();
 	}
-	
+
+	@Ignore
 	@Test
 	public void testCanGetLatest() throws HttpException, Exception {
 		PaginatedBaseProgrammes pbp = reduxClient.latest(Selection.ALL);
@@ -67,7 +68,8 @@ public class ReduxClientTest {
 		assertNotNull("Media map should not be null", mediaMap);
 		assertThat(mediaMap.size(), greaterThan(0));
 	}
-	
+
+	@Ignore
 	@Test
 	public void testCachesMediaTypes() throws HttpException, Exception {
 		Map<String, ReduxMedia>mediaMap = reduxClient.getCachedMedia("radio");

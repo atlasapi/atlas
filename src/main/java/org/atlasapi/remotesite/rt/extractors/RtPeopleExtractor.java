@@ -87,10 +87,6 @@ public class RtPeopleExtractor {
     private List<Person> makeActors(Element cast) {
         List<Person> people = Lists.newArrayList();
 
-        if (!hasValue(cast)) {
-            return people;
-        }
-
         Elements actors = cast.getChildElements(ACTOR);
 
         for (int i = 0; i < actors.size(); i++) {
@@ -104,10 +100,6 @@ public class RtPeopleExtractor {
     private List<Person> makeDirectors(Element cast) {
         List<Person> people = Lists.newArrayList();
 
-        if (!hasValue(cast)) {
-            return people;
-        }
-
         Elements directors = cast.getChildElements(ACTOR);
 
         for (int i = 0; i < directors.size(); i++) {
@@ -120,10 +112,6 @@ public class RtPeopleExtractor {
 
     private List<Person> makeWriters(Element cast) {
         List<Person> people = Lists.newArrayList();
-
-        if (!hasValue(cast)) {
-            return people;
-        }
 
         Elements writers = cast.getChildElements(ACTOR);
 
@@ -215,13 +203,9 @@ public class RtPeopleExtractor {
     }
 
     private List<Actor> getActors(Element castElement) {
-        List<Actor> actors = Lists.newArrayList();
-
-        if (!hasValue(castElement)) {
-            return actors;
-        }
-
         Elements actorElements = castElement.getChildElements(ACTOR);
+
+        List<Actor> actors = Lists.newArrayList();
 
         for (int i = 0; i < actorElements.size(); i++) {
             Element actorElement = actorElements.get(i);
@@ -241,13 +225,9 @@ public class RtPeopleExtractor {
     }
 
     private List<CrewMember> getDirectors(Element directionElement) {
-        List<CrewMember> actors = Lists.newArrayList();
-
-        if (!hasValue(directionElement)) {
-            return actors;
-        }
-
         Elements directorElements = directionElement.getChildElements(DIRECTOR);
+
+        List<CrewMember> actors = Lists.newArrayList();
 
         for (int i = 0; i < directorElements.size(); i++) {
             Element directorElement = directorElements.get(i);

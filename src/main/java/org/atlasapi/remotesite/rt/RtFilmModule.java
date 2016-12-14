@@ -8,8 +8,6 @@ import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.joda.time.LocalTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
@@ -21,7 +19,6 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 public class RtFilmModule {
 
     private final static Daily DAILY = RepetitionRules.daily(new LocalTime(5, 30, 0));
-    private static final Logger LOGGER = LoggerFactory.getLogger(RtFilmModule.class);
 
     @Value("${pa.film.feedUrl}")
     private String feedUrl;
@@ -64,17 +61,12 @@ public class RtFilmModule {
     
     @Bean
     public RtFilmProcessor rtFilmProcessor() {
-        try {
-            return new RtFilmProcessor(
-                    contentResolver,
-                    contentWriter,
-                    peopleWriter,
-                    log,
-                    queuingPersonWriter
-            );
-        } catch (Exception e) {
-            LOGGER.error(" RtFilmModule problem with rtFilmProcessor()", e);
-            return null;
-        }
+        return new RtFilmProcessor(
+                contentResolver,
+                contentWriter,
+                peopleWriter,
+                log,
+                queuingPersonWriter
+        );
     }
 }

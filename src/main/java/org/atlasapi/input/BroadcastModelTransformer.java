@@ -1,17 +1,18 @@
 package org.atlasapi.input;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.BlackoutRestriction;
-import org.joda.time.DateTime;
+import org.atlasapi.media.entity.Broadcast;
+
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import org.joda.time.DateTime;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class BroadcastModelTransformer {
 
@@ -49,6 +50,7 @@ public class BroadcastModelTransformer {
         if (simple.getBlackoutRestriction() != null) {
             complex.setBlackoutRestriction(new BlackoutRestriction(simple.getBlackoutRestriction().getAll()));
         }
+        complex.setRevisedRepeat(simple.getRevisedRepeat());
         return complex;
     }
 

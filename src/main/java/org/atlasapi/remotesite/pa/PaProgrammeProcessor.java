@@ -35,7 +35,6 @@ import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
 import org.atlasapi.remotesite.pa.archives.ContentHierarchyWithoutBroadcast;
 import org.atlasapi.remotesite.pa.archives.PaProgDataUpdatesProcessor;
-import org.atlasapi.remotesite.pa.listings.bindings.Attr;
 import org.atlasapi.remotesite.pa.listings.bindings.Billing;
 import org.atlasapi.remotesite.pa.listings.bindings.CastMember;
 import org.atlasapi.remotesite.pa.listings.bindings.Category;
@@ -870,7 +869,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         Broadcast broadcast = new Broadcast(channel.getUri(), transmissionTime, duration).withId(PaHelper.getBroadcastId(progData.getShowingId()));
         
         if (progData.getAttr() != null) {
-            broadcast.setRepeat(isRepeat(progData.getAttr()));
+            broadcast.setRepeat(getBooleanValue(progData.getAttr().getRepeat()));
+            broadcast.setRevisedRepeat(getBooleanValue(progData.getAttr().getRevisedRepeat()));
             broadcast.setSubtitled(getBooleanValue(progData.getAttr().getSubtitles()));
             broadcast.setSigned(getBooleanValue(progData.getAttr().getSignLang()));
             broadcast.setAudioDescribed(getBooleanValue(progData.getAttr().getAudioDes()));
@@ -892,25 +892,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
  
     private Boolean isNewEpisode(Boolean newSeries, Boolean newEpisode) {
         return Boolean.TRUE.equals(newSeries) || Boolean.TRUE.equals(newEpisode);
-    }
-
-    //If the repeat flag is "yes" it's definitely a repeat. If it's "no" 
-    // then we can't be sure, since the PA aren't making any assertion; effectively, it's a null
-    // so we'll ingest as such
-    private Boolean isRepeat(Attr attr) {
-        Boolean repeat = getBooleanValue(attr.getRepeat());
-
-        // revised repeat means that a broadcast is a repeat, but has been edited since the
-        // original broadcast. In Atlas we do not make such a distinction, we coalesce
-        // PA's repeat and revised repeat flag into a single field
-        Boolean revisedRepeat = getBooleanValue(attr.getRevisedRepeat());
-
-        if (Boolean.TRUE.equals(revisedRepeat)
-                || Boolean.TRUE.equals(repeat)) {
-            return true;
-        }
-
-        return null;
     }
 
     private void addBroadcast(Version version, Broadcast newBroadcast) {

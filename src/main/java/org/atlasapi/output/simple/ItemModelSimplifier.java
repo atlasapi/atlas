@@ -45,9 +45,12 @@ import org.atlasapi.persistence.player.PlayerResolver;
 import org.atlasapi.persistence.service.ServiceResolver;
 import org.atlasapi.persistence.topic.TopicQueryResolver;
 
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.time.Clock;
+import com.metabroadcast.common.time.DateTimeZones;
+import com.metabroadcast.common.time.SystemClock;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -58,13 +61,9 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Ordering;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.time.Clock;
-import com.metabroadcast.common.time.DateTimeZones;
-import com.metabroadcast.common.time.SystemClock;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class ItemModelSimplifier
         extends ContentModelSimplifier<Item, org.atlasapi.media.entity.simple.Item> {
@@ -421,6 +420,7 @@ public class ItemModelSimplifier
         simpleModel.setNewSeries(broadcast.getNewSeries());
         simpleModel.setNewEpisode(broadcast.getNewEpisode());
         simpleModel.setAliases(broadcast.getAliasUrls());
+        simpleModel.setRevisedRepeat(broadcast.getRevisedRepeat());
         Maybe<org.atlasapi.media.channel.Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
         if (channel.hasValue()) {
             simpleModel.setChannel(simplify(channel.requireValue(), annotations,

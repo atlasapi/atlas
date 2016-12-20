@@ -54,6 +54,8 @@ public class ItemMerger {
         }
         existing.setCountriesOfOrigin(update.getCountriesOfOrigin());
         existing.setYear(update.getYear());
+        existing.setParentRef(update.getContainer());
+
         if (existing instanceof Song && update instanceof Song) {
             return songMerger.mergeSongs((Song) existing, (Song) update);
         }

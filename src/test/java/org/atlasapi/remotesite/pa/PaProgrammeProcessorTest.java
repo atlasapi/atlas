@@ -418,6 +418,70 @@ public class PaProgrammeProcessorTest {
     }
 
     @Test
+    public void testBroadcastWithRepeatFlag(){
+        Episode episode = new Episode("http://pressassociation.com/episodes/1", "pa:f-5", Publisher.PA);
+        Version version = new Version();
+        version.setProvider(Publisher.PA);
+        episode.addVersion(version);
+
+        Brand expectedItemBrand = new Brand(
+                "http://pressassociation.com/brands/5", "pa:b-5", Publisher.PA
+        );
+        Series expectedItemSeries= new Series(
+                "http://pressassociation.com/series/5-6", "pa:s-5-6", Publisher.PA
+        );
+        setupContentResolver(
+                ImmutableSet.<Identified>of(episode, expectedItemBrand, expectedItemSeries)
+        );
+
+        ProgData progData = setupProgData();
+        progData.getAttr().setRepeat("yes");
+
+        ContentHierarchyAndSummaries hierarchy = progProcessor.process(
+                progData, channel, UTC, Timestamp.of(0)
+        ).get();
+
+        Broadcast broadcast = Iterables.getOnlyElement(
+                Iterables.getOnlyElement(hierarchy.getItem().getVersions()).getBroadcasts()
+        );
+
+        assertTrue(broadcast.getRepeat());
+    }
+
+    @Test
+    public void testBroadcastWithRevisedRepeatFlag(){
+        Episode episode = new Episode(
+                "http://pressassociation.com/episodes/1", "pa:f-5", Publisher.PA
+        );
+        Version version = new Version();
+        version.setProvider(Publisher.PA);
+        episode.addVersion(version);
+
+        Brand expectedItemBrand = new Brand(
+                "http://pressassociation.com/brands/5", "pa:b-5", Publisher.PA
+        );
+        Series expectedItemSeries= new Series(
+                "http://pressassociation.com/series/5-6", "pa:s-5-6", Publisher.PA)
+                ;
+        setupContentResolver(
+                ImmutableSet.<Identified>of(episode, expectedItemBrand, expectedItemSeries)
+        );
+
+        ProgData progData = setupProgData();
+        progData.getAttr().setRevisedRepeat("yes");
+
+        ContentHierarchyAndSummaries hierarchy = progProcessor.process(
+                progData, channel, UTC, Timestamp.of(0)
+        ).get();
+
+        Broadcast broadcast = Iterables.getOnlyElement(
+                Iterables.getOnlyElement(hierarchy.getItem().getVersions()).getBroadcasts()
+        );
+
+        assertTrue(broadcast.getRevisedRepeat());
+    }
+
+    @Test
     public void testExtractsNewFilmWithEpisodeUri() {
         ProgData progData = setupProgFilm("title", "description");
         String brandUri = "http://pressassociation.com/brands/5";

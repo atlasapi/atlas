@@ -50,6 +50,9 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.text.MoreStrings;
 
@@ -58,6 +61,7 @@ public class RtFilmProcessor {
     private static final String RT_FILM_URI_BASE = "http://radiotimes.com/films/";
     private static final String RT_FILM_ALIAS = "rt:filmid";
     private static final String RT_RATING_SCHEME = "5STAR";
+    private static final Logger LOGGER = LoggerFactory.getLogger(RtFilmProcessor.class);
     
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;

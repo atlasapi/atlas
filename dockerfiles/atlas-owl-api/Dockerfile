@@ -5,6 +5,7 @@ ENV SERVER_PORT="8080" \
     NIMROD_LOG_LEVEL="INFO" \
     ROOT_LOG_LEVEL="INFO" \
     JVM_MEMORY="5500m" \
+    DEBUG_AND_REMOTE_OPTS="" \
     JVM_OPTS="-XX:+UseG1GC \
       -XX:MaxGCPauseMillis=150 \
       -XX:CMSInitiatingOccupancyFraction=60 \
@@ -79,5 +80,6 @@ CMD java \
     -Droot.log.level="$ROOT_LOG_LEVEL" \
     -Xmx$JVM_MEMORY \
     -Xms$JVM_MEMORY \
+    $DEBUG_AND_REMOTE_OPTS \
     $JVM_OPTS \
     -jar atlas.war

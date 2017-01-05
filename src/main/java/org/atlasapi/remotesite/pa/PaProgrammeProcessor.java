@@ -884,16 +884,12 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             Boolean newEpisode = getBooleanValue(progData.getAttr().getNewEpisode());
 
             broadcast.setNewSeries(newSeries);
-            broadcast.setNewEpisode(isNewEpisode(newSeries, newEpisode));
+            broadcast.setNewEpisode(newEpisode);
         }
         broadcast.setLastUpdated(updateAt.toDateTimeUTC());
         return broadcast;
     }
  
-    private Boolean isNewEpisode(Boolean newSeries, Boolean newEpisode) {
-        return Boolean.TRUE.equals(newSeries) || Boolean.TRUE.equals(newEpisode);
-    }
-
     private void addBroadcast(Version version, Broadcast newBroadcast) {
         if (Strings.isNullOrEmpty(newBroadcast.getSourceId())) {
             return;

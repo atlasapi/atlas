@@ -74,7 +74,7 @@ COPY log4j.properties /usr/local/jetty/log4j.properties
 
 WORKDIR /usr/local/jetty
 
-CMD java
+CMD java \
     -DMBST_PLATFORM="MBST_PLATFORM" \
     -DMONGO_POOLSIZE="MONGO_POOLSIZE" \
     -Datlas.search.host="ATLAS_SEARCH_HOST" \

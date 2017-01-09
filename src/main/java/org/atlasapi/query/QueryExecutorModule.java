@@ -53,6 +53,7 @@ import org.springframework.context.annotation.Import;
 
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
+@SuppressWarnings("PublicConstructor")
 @Configuration
 @Import({ KafkaMessagingModule.class })
 public class QueryExecutorModule {
@@ -81,19 +82,25 @@ public class QueryExecutorModule {
 
     @PostConstruct
     public void start() throws TimeoutException {
-        ImmutableList.Builder<Service> services = ImmutableList.builder();
+        ImmutableList.Builder<Service> servicesBuilder = ImmutableList.builder();
 
         if (isProcessing && contentWriteWorkerEnabled) {
-            services.add(contentWriteWorker());
+            servicesBuilder.add(contentWriteWorker());
         }
 
-        consumerManager = new ServiceManager(services.build());
-        consumerManager.startAsync().awaitHealthy(1, TimeUnit.MINUTES);
+        ImmutableList<Service> services = servicesBuilder.build();
+
+        if (!services.isEmpty()) {
+            consumerManager = new ServiceManager(services);
+            consumerManager.startAsync().awaitHealthy(1, TimeUnit.MINUTES);
+        }
     }
 
     @PreDestroy
     public void stop() throws TimeoutException {
-        consumerManager.stopAsync().awaitStopped(1, TimeUnit.MINUTES);
+        if (consumerManager != null) {
+            consumerManager.stopAsync().awaitStopped(1, TimeUnit.MINUTES);
+        }
     }
 
     @Bean

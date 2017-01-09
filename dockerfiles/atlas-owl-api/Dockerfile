@@ -75,6 +75,8 @@ COPY log4j.properties /usr/local/jetty/log4j.properties
 WORKDIR /usr/local/jetty
 
 CMD java \
+    -Djetty.home="$JETTY_HOME" \
+    -Dsun.net.inetaddr.ttl="$SUN_NET_INETADDR_TTL" \
     -DMBST_PLATFORM="$MBST_PLATFORM" \
     -DMONGO_POOLSIZE="$MONGO_POOLSIZE" \
     -Datlas.search.host="$ATLAS_SEARCH_HOST" \

@@ -71,7 +71,6 @@ import com.metabroadcast.common.time.DayOfWeek;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.mongodb.DBCollection;
-import com.sun.org.apache.xpath.internal.operations.Mod;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -86,7 +85,7 @@ import org.springframework.context.annotation.Import;
 public class PaModule {
     private final static RepetitionRule PEOPLE_COMPLETE_INGEST = RepetitionRules.NEVER;
     private final static RepetitionRule PEOPLE_INGEST = RepetitionRules.daily(LocalTime.MIDNIGHT);
-    private final static RepetitionRule CHANNELS_INGEST = RepetitionRules.every(Duration.standardHours(12));
+    private final static RepetitionRule CHANNELS_INGEST = RepetitionRules.every(Duration.standardHours(2));
     private final static RepetitionRule FEATURES_INGEST = RepetitionRules.daily(LocalTime.MIDNIGHT);
     private final static RepetitionRule RECENT_FILE_INGEST = RepetitionRules.every(Duration.standardMinutes(10)).withOffset(Duration.standardMinutes(15));
     private final static RepetitionRule RECENT_ALL_FILE_INGEST = RepetitionRules.NEVER;

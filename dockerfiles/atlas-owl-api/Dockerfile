@@ -227,7 +227,7 @@ CMD java \
     -Dpreview.feedUrl="PREVIEW_FEEDURL" \
     -Dprocessing.config="PROCESSING_CONFIG" \
     -Dredux.host="REDUX_HOST" \
-    -Dreporting.columbus-telescope.host="REPORTING_COLUMBUS-TELESCOPE_HOST" \
+    -Dreporting.columbus-telescope.host="REPORTING_COLUMBUS_TELESCOPE_HOST" \
     -Drequest.threads="REQUEST_THREADS" \
     -Drp.ftp.enabled="RP_FTP_ENABLED" \
     -Drp.ftp.manualUpload.enabled="RP_FTP_MANUALUPLOAD_ENABLED" \

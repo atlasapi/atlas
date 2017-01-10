@@ -103,7 +103,6 @@ CMD java \
     -Dbt.channels.namespace.test1="$BT_CHANNELS_NAMESPACE_TEST1" \
     -Dbt.channels.namespace.test2="$BT_CHANNELS_NAMESPACE_TEST2" \
     -Dbt.portal.baseUri="$BT_PORTAL_BASEURI" \
-    -Dbt.portal.contentGroups.baseUri="$BT_PORTAL_CONTENTGROUPS_BASEURI" \
     -Dbt.timeout="$BT_TIMEOUT" \
     -Dbt.url="$BT_URL" \
     -Dbt.vod.file="$BT_VOD_FILE" \
@@ -244,11 +243,9 @@ CMD java \
     -Drp.s3.ftp.enabled="$RP_S3_FTP_ENABLED" \
     -Drp.s3.https.enabled="$RP_S3_HTTPS_ENABLED" \
     -Drp.upload.unique="$RP_UPLOAD_UNIQUE" \
-    -Drte.feed.url="$RTE_FEED_URL" \
     -Ds3.access="$S3_ACCESS" \
     -Ds3.secret="$S3_SECRET" \
     -Dschedule.repopulator.bbc.scheduled="$SCHEDULE_REPOPULATOR_BBC_SCHEDULED" \
-    -Dschedule.repopulator.c4.scheduled="$SCHEDULE_REPOPULATOR_C4_SCHEDULED" \
     -Dschedule.repopulator.full.scheduled="$SCHEDULE_REPOPULATOR_FULL_SCHEDULED" \
     -Dschedule.repopulator.redux.scheduled="$SCHEDULE_REPOPULATOR_REDUX_SCHEDULED" \
     -Dserver.port="$SERVER_PORT" \
@@ -262,7 +259,6 @@ CMD java \
     -Dunbox.remote.s3.bucket="$UNBOX_REMOTE_S3_BUCKET" \
     -Dunbox.remote.s3.fileName="$UNBOX_REMOTE_S3_FILENAME" \
     -Dunbox.s3.bucket="$UNBOX_S3_BUCKET" \
-    -Dunbox.url="$UNBOX_URL" \
     -Dupdaters.bbc-audience-data.enabled="$UPDATERS_BBC-AUDIENCE-DATA_ENABLED" \
     -Dupdaters.bbc.enabled="$UPDATERS_BBC_ENABLED" \
     -Dupdaters.bbcnitro.enabled="$UPDATERS_BBCNITRO_ENABLED" \

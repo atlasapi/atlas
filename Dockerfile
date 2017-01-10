@@ -204,7 +204,6 @@ CMD java \
     -Dmessaging.destination.replicator="$MESSAGING_DESTINATION_REPLICATOR" \
     -Dmessaging.enabled="$MESSAGING_ENABLED" \
     -Dmessaging.zookeeper="$MESSAGING_ZOOKEEPER" \
-    -Dmongo.audit.enabled="$MONGO_AUDIT_ENABLED" \
     -Dmongo.db.tag.fallback="$MONGO_DB_TAG_FALLBACK" \
     -Dmongo.db.tag="$MONGO_DB_TAG" \
     -Dmongo.dbName="$MONGO_DBNAME" \

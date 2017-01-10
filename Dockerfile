@@ -12,6 +12,7 @@ ENV SERVER_PORT="8080" \
     IDS_GENERATE="false" \
     LAKEVIEW_UPLOAD_ENABLED="false" \
     MESSAGING_ENABLED="false" \
+    MONGO_AUDIT_ENABLED="true" \
     PA_PEOPLE_ENABLED="false" \
     RP_FTP_ENABLED="false" \
     RP_FTP_MANUALUPLOAD_ENABLED="false" \
@@ -102,9 +103,12 @@ CMD java \
     -Dbt.channels.namespace.reference="$BT_CHANNELS_NAMESPACE_REFERENCE" \
     -Dbt.channels.namespace.test1="$BT_CHANNELS_NAMESPACE_TEST1" \
     -Dbt.channels.namespace.test2="$BT_CHANNELS_NAMESPACE_TEST2" \
+    -Dbt.password="$BT_PASSWORD" \
     -Dbt.portal.baseUri="$BT_PORTAL_BASEURI" \
+    -Dbt.portal.contentGroups.baseUri="$BT_PORTAL_CONTENTGROUPS_BASEURI" \
     -Dbt.timeout="$BT_TIMEOUT" \
     -Dbt.url="$BT_URL" \
+    -Dbt.username="$BT_USERNAME" \
     -Dbt.vod.file="$BT_VOD_FILE" \
     -Dbt.vod.mpx.feed.new.baseUrl="$BT_VOD_MPX_FEED_NEW_BASEURL" \
     -Dbt.vod.mpx.prod.enabled="$BT_VOD_MPX_PROD_ENABLED" \
@@ -122,7 +126,6 @@ CMD java \
     -Dbt.vod.mpx.systest2.feed.name="$BT_VOD_MPX_SYSTEST2_FEED_NAME" \
     -Dbt.vod.mpx.systest2.feed.new.baseUrl="$BT_VOD_MPX_SYSTEST2_FEED_NEW_BASEURL" \
     -Dbt.vod.mpx.systest2.feed.new.suffix="$BT_VOD_MPX_SYSTEST2_FEED_NEW_SUFFIX" \
-    -Dbt.vod.mpx.systest2.feed.params.q="$BT_VOD_MPX_SYSTEST2_FEED_PARAMS_Q" \
     -Dbt.vod.mpx.vold.enabled="$BT_VOD_MPX_VOLD_ENABLED" \
     -Dbt.vod.mpx.vold.feed.baseUrl="$BT_VOD_MPX_VOLD_FEED_BASEURL" \
     -Dbt.vod.mpx.vold.feed.guidLookup.baseUrl="$BT_VOD_MPX_VOLD_FEED_GUIDLOOKUP_BASEURL" \
@@ -130,7 +133,6 @@ CMD java \
     -Dbt.vod.mpx.vold.feed.name="$BT_VOD_MPX_VOLD_FEED_NAME" \
     -Dbt.vod.mpx.vold.feed.new.baseUrl="$BT_VOD_MPX_VOLD_FEED_NEW_BASEURL" \
     -Dbt.vod.mpx.vold.feed.new.suffix="$BT_VOD_MPX_VOLD_FEED_NEW_SUFFIX" \
-    -Dbt.vod.mpx.vold.feed.params.q="$BT_VOD_MPX_VOLD_FEED_PARAMS_Q" \
     -Dbt.vod.mpx.vole.enabled="$BT_VOD_MPX_VOLE_ENABLED" \
     -Dbt.vod.mpx.vole.feed.baseUrl="$BT_VOD_MPX_VOLE_FEED_BASEURL" \
     -Dbt.vod.mpx.vole.feed.guidLookup.baseUrl="$BT_VOD_MPX_VOLE_FEED_GUIDLOOKUP_BASEURL" \
@@ -138,10 +140,11 @@ CMD java \
     -Dbt.vod.mpx.vole.feed.name="$BT_VOD_MPX_VOLE_FEED_NAME" \
     -Dbt.vod.mpx.vole.feed.new.baseUrl="$BT_VOD_MPX_VOLE_FEED_NEW_BASEURL" \
     -Dbt.vod.mpx.vole.feed.new.suffix="$BT_VOD_MPX_VOLE_FEED_NEW_SUFFIX" \
-    -Dbt.vod.mpx.vole.feed.params.q="$BT_VOD_MPX_VOLE_FEED_PARAMS_Q" \
     -Dbtfeatured.productBaseUri="$BTFEATURED_PRODUCTBASEURI" \
     -Dbtfeatured.rootDocumentUri="$BTFEATURED_ROOTDOCUMENTURI" \
     -Dc4.apiKey="$C4_APIKEY" \
+    -Dc4.auth.key="$C4_AUTH_KEY" \
+    -Dc4.auth.password="$C4_AUTH_PASSWORD" \
     -Dc4.keystore.password="$C4_KEYSTORE_PASSWORD" \
     -Dc4.keystore.path="$C4_KEYSTORE_PATH" \
     -Dc4.lakeviewavailability.apiroot="$C4_LAKEVIEWAVAILABILITY_APIROOT" \
@@ -171,11 +174,6 @@ CMD java \
     -Dgoogle.spreadsheet.client.secret="$GOOGLE_SPREADSHEET_CLIENT_SECRET" \
     -Dgoogle.spreadsheet.refresh.token="$GOOGLE_SPREADSHEET_REFRESH_TOKEN" \
     -Dgoogle.spreadsheet.title="$GOOGLE_SPREADSHEET_TITLE" \
-    -Dhttp.nonProxyHosts="$HTTP_NONPROXYHOSTS" \
-    -Dhttp.proxyHost="$HTTP_PROXYHOST" \
-    -Dhttp.proxyPort="$HTTP_PROXYPORT" \
-    -Dhttps.proxyHost="$HTTPS_PROXYHOST" \
-    -Dhttps.proxyPort="$HTTPS_PROXYPORT" \
     -Dids.expose="$IDS_EXPOSE" \
     -Dids.generate="$IDS_GENERATE" \
     -Dinterlinking.delta.bucket="$INTERLINKING_DELTA_BUCKET" \
@@ -185,11 +183,11 @@ CMD java \
     -Ditv.whatson.schedule.url="$ITV_WHATSON_SCHEDULE_URL" \
     -Dkm.contentdeals.aws.accessKey="$KM_CONTENTDEALS_AWS_ACCESSKEY" \
     -Dkm.contentdeals.aws.secretKey="$KM_CONTENTDEALS_AWS_SECRETKEY" \
-    -Dlakeview.upload.account="$LAKEVIEW_UPLOAD_ACCOUNT" \
     -Dlakeview.upload.enabled="$LAKEVIEW_UPLOAD_ENABLED" \
-    -Dlakeview.upload.key="$LAKEVIEW_UPLOAD_KEY" \
     -Dlocal.host.name="$LOCAL_HOST_NAME" \
     -Dlovefilm.missingThreshold="$LOVEFILM_MISSINGTHRESHOLD" \
+    -Dlovefilm.oauth.api.key="$LOVEFILM_OAUTH_API_KEY" \
+    -Dlovefilm.oauth.api.secret="$LOVEFILM_OAUTH_API_SECRET" \
     -Dlovefilm.s3.access="$LOVEFILM_S3_ACCESS" \
     -Dlovefilm.s3.bucket="$LOVEFILM_S3_BUCKET" \
     -Dlovefilm.s3.fileName="$LOVEFILM_S3_FILENAME" \
@@ -203,12 +201,12 @@ CMD java \
     -Dmessaging.destination.replicator="$MESSAGING_DESTINATION_REPLICATOR" \
     -Dmessaging.enabled="$MESSAGING_ENABLED" \
     -Dmessaging.zookeeper="$MESSAGING_ZOOKEEPER" \
+    -Dmongo.audit.enabled="$MONGO_AUDIT_ENABLED" \
     -Dmongo.db.tag.fallback="$MONGO_DB_TAG_FALLBACK" \
     -Dmongo.db.tag="$MONGO_DB_TAG" \
     -Dmongo.dbName="$MONGO_DBNAME" \
     -Dmongo.host="$MONGO_HOST" \
     -Dmusicbrainz.dataDir="$MUSICBRAINZ_DATADIR" \
-    -Dmy.very.secret.thing="$MY_VERY_SECRET_THING" \
     -Dnetflix.consumerKey="$NETFLIX_CONSUMERKEY" \
     -Dopta.events.http.credentials.rugby.password="$OPTA_EVENTS_HTTP_CREDENTIALS_RUGBY_PASSWORD" \
     -Dopta.events.http.credentials.rugby.username="$OPTA_EVENTS_HTTP_CREDENTIALS_RUGBY_USERNAME" \
@@ -227,7 +225,10 @@ CMD java \
     -Dpreview.feedUrl="$PREVIEW_FEEDURL" \
     -Dprocessing.config="$PROCESSING_CONFIG" \
     -Dredux.host="$REDUX_HOST" \
-    -Dreporting.columbus-telescope.host="$REPORTING_COLUMBUS_TELESCOPE_HOST" \
+    -Dredux.password="$REDUX_PASSWORD" \
+    -Dredux.username="$REDUX_USERNAME" \
+    -Dreporting.columbus-telescope.environment="$REPORTING_COLUMBUS-TELESCOPE_ENVIRONMENT" \
+    -Dreporting.columbus-telescope.host="$REPORTING_COLUMBUS-TELESCOPE_HOST" \
     -Drequest.threads="$REQUEST_THREADS" \
     -Drp.ftp.enabled="$RP_FTP_ENABLED" \
     -Drp.ftp.manualUpload.enabled="$RP_FTP_MANUALUPLOAD_ENABLED" \
@@ -239,26 +240,36 @@ CMD java \
     -Drp.https.password="$RP_HTTPS_PASSWORD" \
     -Drp.https.services="$RP_HTTPS_SERVICES" \
     -Drp.https.username="$RP_HTTPS_USERNAME" \
+    -Drp.password.unique="$RP_PASSWORD_UNIQUE" \
     -Drp.s3.bucket="$RP_S3_BUCKET" \
     -Drp.s3.ftp.enabled="$RP_S3_FTP_ENABLED" \
     -Drp.s3.https.enabled="$RP_S3_HTTPS_ENABLED" \
     -Drp.upload.unique="$RP_UPLOAD_UNIQUE" \
+    -Drte.feed.url="$RTE_FEED_URL" \
     -Ds3.access="$S3_ACCESS" \
     -Ds3.secret="$S3_SECRET" \
     -Dschedule.repopulator.bbc.scheduled="$SCHEDULE_REPOPULATOR_BBC_SCHEDULED" \
+    -Dschedule.repopulator.c4.scheduled="$SCHEDULE_REPOPULATOR_C4_SCHEDULED" \
     -Dschedule.repopulator.full.scheduled="$SCHEDULE_REPOPULATOR_FULL_SCHEDULED" \
     -Dschedule.repopulator.redux.scheduled="$SCHEDULE_REPOPULATOR_REDUX_SCHEDULED" \
     -Dserver.port="$SERVER_PORT" \
     -Dservice.ios.id="$SERVICE_IOS_ID" \
     -Dservice.web.id="$SERVICE_WEB_ID" \
+    -Dsitemaps.c4.brightcove.playerId="$SITEMAPS_C4_BRIGHTCOVE_PLAYERID" \
+    -Dsitemaps.c4.brightcove.publisherId="$SITEMAPS_C4_BRIGHTCOVE_PUBLISHERID" \
+    -Dsitemaps.c4.flashplayerversion.uri="$SITEMAPS_C4_FLASHPLAYERVERSION_URI" \
+    -Dsitemaps.c4.flashplayerversion="$SITEMAPS_C4_FLASHPLAYERVERSION" \
     -Dtalktalk.host="$TALKTALK_HOST" \
     -Dtalktalk.validate="$TALKTALK_VALIDATE" \
     -Dthespace.url="$THESPACE_URL" \
     -Dtwitter.auth.consumerKey="$TWITTER_AUTH_CONSUMERKEY" \
     -Dtwitter.auth.consumerSecret="$TWITTER_AUTH_CONSUMERSECRET" \
+    -Dunbox.remote.s3.access="$UNBOX_REMOTE_S3_ACCESS" \
     -Dunbox.remote.s3.bucket="$UNBOX_REMOTE_S3_BUCKET" \
     -Dunbox.remote.s3.fileName="$UNBOX_REMOTE_S3_FILENAME" \
+    -Dunbox.remote.s3.secret="$UNBOX_REMOTE_S3_SECRET" \
     -Dunbox.s3.bucket="$UNBOX_S3_BUCKET" \
+    -Dunbox.url="$UNBOX_URL" \
     -Dupdaters.bbc-audience-data.enabled="$UPDATERS_BBC-AUDIENCE-DATA_ENABLED" \
     -Dupdaters.bbc.enabled="$UPDATERS_BBC_ENABLED" \
     -Dupdaters.bbcnitro.enabled="$UPDATERS_BBCNITRO_ENABLED" \
@@ -319,4 +330,3 @@ CMD java \
     $DEBUG_AND_REMOTE_OPTS \
     $JVM_OPTS \
     -jar atlas.war
-

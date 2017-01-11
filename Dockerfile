@@ -82,7 +82,7 @@ CMD java \
     -DMONGO_POOLSIZE="$MONGO_POOLSIZE" \
     -Datlas.search.host="$ATLAS_SEARCH_HOST" \
     -Daz="$AZ" \
-    -Dbbc.audience-data.filename="$BBC_AUDIENCE-DATA_FILENAME" \
+    -Dbbc.audience-data.filename="$BBC_AUDIENCE_DATA_FILENAME" \
     -Dbbc.nitro.apiKey="$BBC_NITRO_APIKEY" \
     -Dbbc.nitro.releaseDateIngest.enabled="$BBC_NITRO_RELEASEDATEINGEST_ENABLED" \
     -Dbbc.nitro.requestPageSize="$BBC_NITRO_REQUESTPAGESIZE" \
@@ -158,9 +158,9 @@ CMD java \
     -Demipub.dataFile="$EMIPUB_DATAFILE" \
     -Dequiv.excludedUris="$EQUIV_EXCLUDEDURIS" \
     -Dequiv.results.directory="$EQUIV_RESULTS_DIRECTORY" \
-    -Dequiv.stream-updater.consumers.default="$EQUIV_STREAM-UPDATER_CONSUMERS_DEFAULT" \
-    -Dequiv.stream-updater.consumers.max="$EQUIV_STREAM-UPDATER_CONSUMERS_MAX" \
-    -Dequiv.stream-updater.enabled="$EQUIV_STREAM-UPDATER_ENABLED" \
+    -Dequiv.stream-updater.consumers.default="$EQUIV_STREAM_UPDATER_CONSUMERS_DEFAULT" \
+    -Dequiv.stream-updater.consumers.max="$EQUIV_STREAM_UPDATER_CONSUMERS_MAX" \
+    -Dequiv.stream-updater.enabled="$EQUIV_STREAM_UPDATER_ENABLED" \
     -Dequiv.updater.enabled="$EQUIV_UPDATER_ENABLED" \
     -Devents.whitelist.ids="$EVENTS_WHITELIST_IDS" \
     -Dfive.apiBaseUrl="$FIVE_APIBASEURL" \
@@ -227,8 +227,8 @@ CMD java \
     -Dredux.host="$REDUX_HOST" \
     -Dredux.password="$REDUX_PASSWORD" \
     -Dredux.username="$REDUX_USERNAME" \
-    -Dreporting.columbus-telescope.environment="$REPORTING_COLUMBUS-TELESCOPE_ENVIRONMENT" \
-    -Dreporting.columbus-telescope.host="$REPORTING_COLUMBUS-TELESCOPE_HOST" \
+    -Dreporting.columbus-telescope.environment="$REPORTING_COLUMBUS_TELESCOPE_ENVIRONMENT" \
+    -Dreporting.columbus-telescope.host="$REPORTING_COLUMBUS_TELESCOPE_HOST" \
     -Drequest.threads="$REQUEST_THREADS" \
     -Drp.ftp.enabled="$RP_FTP_ENABLED" \
     -Drp.ftp.manualUpload.enabled="$RP_FTP_MANUALUPLOAD_ENABLED" \
@@ -270,11 +270,11 @@ CMD java \
     -Dunbox.remote.s3.secret="$UNBOX_REMOTE_S3_SECRET" \
     -Dunbox.s3.bucket="$UNBOX_S3_BUCKET" \
     -Dunbox.url="$UNBOX_URL" \
-    -Dupdaters.bbc-audience-data.enabled="$UPDATERS_BBC-AUDIENCE-DATA_ENABLED" \
+    -Dupdaters.bbc-audience-data.enabled="$UPDATERS_BBC_AUDIENCE-DATA_ENABLED" \
     -Dupdaters.bbc.enabled="$UPDATERS_BBC_ENABLED" \
     -Dupdaters.bbcnitro.enabled="$UPDATERS_BBCNITRO_ENABLED" \
-    -Dupdaters.bt-channels.enabled="$UPDATERS_BT-CHANNELS_ENABLED" \
-    -Dupdaters.bt-events.enabled="$UPDATERS_BT-EVENTS_ENABLED" \
+    -Dupdaters.bt-channels.enabled="$UPDATERS_BT_CHANNELS_ENABLED" \
+    -Dupdaters.bt-events.enabled="$UPDATERS_BT_EVENTS_ENABLED" \
     -Dupdaters.bt.enabled="$UPDATERS_BT_ENABLED" \
     -Dupdaters.btfeatured.enabled="$UPDATERS_BTFEATURED_ENABLED" \
     -Dupdaters.btvod.enabled="$UPDATERS_BTVOD_ENABLED" \
@@ -288,7 +288,7 @@ CMD java \
     -Dupdaters.lakeview.enabled="$UPDATERS_LAKEVIEW_ENABLED" \
     -Dupdaters.lovefilm.enabled="$UPDATERS_LOVEFILM_ENABLED" \
     -Dupdaters.metabroadcastpicks.enabled="$UPDATERS_METABROADCASTPICKS_ENABLED" \
-    -Dupdaters.opta-events.enabled="$UPDATERS_OPTA-EVENTS_ENABLED" \
+    -Dupdaters.opta-events.enabled="$UPDATERS_OPTA_EVENTS_ENABLED" \
     -Dupdaters.pa.enabled="$UPDATERS_PA_ENABLED" \
     -Dupdaters.redux.enabled="$UPDATERS_REDUX_ENABLED" \
     -Dupdaters.rovi.enabled="$UPDATERS_ROVI_ENABLED" \

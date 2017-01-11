@@ -1,28 +1,5 @@
 package org.atlasapi;
 
-import com.codahale.metrics.Histogram;
-import com.codahale.metrics.JvmAttributeGaugeSet;
-import com.codahale.metrics.MetricFilter;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.graphite.Graphite;
-import com.codahale.metrics.graphite.GraphiteReporter;
-import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
-import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
-import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import org.atlasapi.util.jetty.InstrumentedQueuedThreadPool;
-import org.eclipse.jetty.io.ByteBufferPool;
-import org.eclipse.jetty.server.Connector;
-import org.eclipse.jetty.server.HttpConfiguration;
-import org.eclipse.jetty.server.HttpConnectionFactory;
-import org.eclipse.jetty.server.Server;
-import org.eclipse.jetty.server.ServerConnector;
-import org.eclipse.jetty.util.thread.QueuedThreadPool;
-import org.eclipse.jetty.util.thread.Scheduler;
-import org.eclipse.jetty.webapp.WebAppContext;
-
 import java.io.File;
 import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
@@ -34,6 +11,31 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
+
+import org.atlasapi.util.jetty.InstrumentedQueuedThreadPool;
+
+import com.codahale.metrics.Histogram;
+import com.codahale.metrics.JvmAttributeGaugeSet;
+import com.codahale.metrics.MetricFilter;
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.graphite.Graphite;
+import com.codahale.metrics.graphite.GraphiteReporter;
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
+import com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import org.eclipse.jetty.io.ByteBufferPool;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
+import org.eclipse.jetty.util.thread.QueuedThreadPool;
+import org.eclipse.jetty.util.thread.Scheduler;
+import org.eclipse.jetty.webapp.WebAppContext;
 
 public class AtlasMain {
 
@@ -105,7 +107,7 @@ public class AtlasMain {
         String requestThreadsString = System.getProperty(
                 SERVER_REQUEST_THREADS_OVERRIDE_PROPERTY_NAME
         );
-        if (requestThreadsString == null) {
+        if (Strings.isNullOrEmpty(requestThreadsString)) {
             requestThreads = DEFAULT_SERVER_REQUEST_THREADS;
         } else {
             requestThreads = Integer.parseInt(requestThreadsString);

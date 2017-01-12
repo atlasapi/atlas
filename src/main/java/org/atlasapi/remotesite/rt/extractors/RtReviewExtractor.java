@@ -92,14 +92,11 @@ public class RtReviewExtractor {
             Element authorInitials,
             String type
     ) {
-        if (hasValue(reviewText) &&
-                hasValue(authorName) &&
-                hasValue(authorInitials)
-                ) {
+        if (hasValue(reviewText)) {
             return Optional.of(makeReview(
                     reviewText.getValue(),
-                    authorName.getValue(),
-                    authorInitials.getValue(),
+                    hasValue(authorName) ? authorName.getValue() : "",
+                    hasValue(authorInitials) ? authorInitials.getValue() : "",
                     type
             ));
         } else {

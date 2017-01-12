@@ -32,6 +32,7 @@ public class RtPeopleExtractor {
     private static final String ROLE = "role";
     private static final String ADDITIONAL_INFO = "additional_info";
     private static final String WRITING = "writing";
+    private static final String WRITER = "writer";
     private static final String BILLING = "billing";
     private static final String SOURCE = "source";
     private static final String SOURCE_TITLE = "source_title";
@@ -50,7 +51,6 @@ public class RtPeopleExtractor {
         this.filmElement = checkNotNull(filmElement);
         this.film = checkNotNull(film);
         this.log = checkNotNull(log);
-        List<Person> people = Lists.newArrayList();
     }
 
     public static RtPeopleExtractor create(Element filmElement, Film film, AdapterLog log) {
@@ -64,15 +64,14 @@ public class RtPeopleExtractor {
     public void process() {
         List<CrewMember> otherPublisherPeople = getOtherPublisherPeople(film);
 
-        if (otherPublisherPeople.isEmpty()) {
-            film.setPeople(ImmutableList.copyOf(
-                    Iterables.concat(
-                            getActors(filmElement.getFirstChildElement(CAST)),
-                            getDirectors(filmElement.getFirstChildElement(DIRECTION))
-                    )));
-        } else {
-            film.setPeople(otherPublisherPeople);
-        }
+        film.setPeople(ImmutableList.copyOf(
+                Iterables.concat(
+                        getActors(filmElement.getFirstChildElement(CAST)),
+                        getDirectors(filmElement.getFirstChildElement(DIRECTION)),
+                        getWriters(filmElement.getFirstChildElement(WRITING)),
+                        otherPublisherPeople
+                )));
+
 
         people = Lists.newArrayList(
                 Iterables.concat(
@@ -108,7 +107,7 @@ public class RtPeopleExtractor {
             return people;
         }
 
-        Elements directors = cast.getChildElements(ACTOR);
+        Elements directors = cast.getChildElements(DIRECTOR);
 
         for (int i = 0; i < directors.size(); i++) {
             Element director = directors.get(i);
@@ -125,7 +124,7 @@ public class RtPeopleExtractor {
             return people;
         }
 
-        Elements writers = cast.getChildElements(ACTOR);
+        Elements writers = cast.getChildElements(WRITER);
 
         for (int i = 0; i < writers.size(); i++) {
             Element writer = writers.get(i);
@@ -276,6 +275,44 @@ public class RtPeopleExtractor {
         }
 
         return actors;
+    }
+
+    private List<CrewMember> getWriters(Element writingElement) {
+        List<CrewMember> writers = Lists.newArrayList();
+
+        if (!hasValue(writingElement)) {
+            return writers;
+        }
+
+        Elements writerElements = writingElement.getChildElements(WRITER);
+
+        for (int i = 0; i < writerElements.size(); i++) {
+            Element writerElement = writerElements.get(i);
+
+            String role = writerElement.getFirstChildElement(ROLE)
+                    .getValue().trim().replace(" ", "_").toLowerCase();
+
+            Optional<String> optionalName = makeName(writerElement);
+
+            if (optionalName.isPresent()) {
+                if (CrewMember.Role.fromPossibleKey(role).isNothing()) {
+                    log.record(new AdapterLogEntry(
+                                    AdapterLogEntry.Severity.WARN
+                            ).withSource(getClass()).withDescription(String.format(
+                            "Ignoring crew member with unrecognised role: %s", role
+                            ))
+                    );
+                } else {
+                    writers.add(CrewMember.crewMemberWithoutId(
+                            optionalName.get(),
+                            role,
+                            Publisher.RADIO_TIMES
+                    ));
+                }
+            }
+        }
+
+        return writers;
     }
 
     private Optional<String> makeName(Element personElement) {

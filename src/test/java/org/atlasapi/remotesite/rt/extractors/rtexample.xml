@@ -1,0 +1,516 @@
+<films>
+    <film>
+        <cast>
+        <actor>
+            <role>Max Rockatansky</role>
+            <forename>Tom</forename>
+            <surname>Hardy</surname>
+            <pseudo_forename>Tommy</pseudo_forename>
+            <pseudo_surname>H</pseudo_surname>
+            <additional_info>He is blond</additional_info>
+            <billing><![CDATA[S]]></billing>
+        </actor>
+        </cast>
+
+            <direction>
+                <director>
+                    <role>Director</role>
+                    <forename>George</forename>
+                    <surname>Miller</surname>
+                    <pseudo_forename>Georgy</pseudo_forename>
+                    <pseudo_surname>M</pseudo_surname>
+                    <additional_info>He is not blond</additional_info>
+                </director>
+            </direction>
+
+            <writing>
+                <writer>
+                    <role>Writer</role>
+                    <forename>Jeanne-Marie</forename>
+                    <surname>Leprince de Beaumont</surname>
+                    <pseudo_forename>JM</pseudo_forename>
+                    <pseudo_surname>LPDB</pseudo_surname>
+                    <source>Fairy tale</source>
+                    <source_title>La Belle et la Be{circumflex}te</source_title>
+                </writer>
+            </writing>
+    </film>
+    <film>
+        <film_reference_no>56766</film_reference_no>
+        <title>
+            <![CDATA[ Cameraperson ]]>
+        </title>
+        <year>2016</year>
+        <genre>Documentary</genre>
+        <colour>
+            <![CDATA[ Colour ]]>
+        </colour>
+        <cast>
+            <actor>
+                <role>
+                    <![CDATA[ Ma Feng ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Eddie ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Peng ]]>
+                </surname>
+                <pseudo_forename>
+                    <![CDATA[ Eddie ]]>
+                </pseudo_forename>
+                <pseudo_surname>
+                    <![CDATA[ Peng Yu Yan ]]>
+                </pseudo_surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Kirsten Johnson ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Kirsten ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Johnson (2) ]]>
+                </surname>
+                <billing>S</billing>
+            </actor>
+        </cast>
+        <direction>
+            <director>
+                <role>
+                    <![CDATA[ Director ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Kirsten ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Johnson (2) ]]>
+                </surname>
+            </director>
+        </direction>
+        <review_author/>
+        <review_author_initials/>
+        <warnings/>
+        <country_of_origin>US</country_of_origin>
+        <certifcate>15</certifcate>
+        <rating/>
+        <running_time>
+            <![CDATA[ 102 ]]>
+        </running_time>
+        <alphabetical_title>
+            <![CDATA[ Cameraperson ]]>
+        </alphabetical_title>
+        <original_language>
+            <![CDATA[ English ]]>
+        </original_language>
+        <certificate>
+            <![CDATA[ 15 ]]>
+        </certificate>
+        <theatrical_distributor>
+            <![CDATA[ Dogwoof ]]>
+        </theatrical_distributor>
+        <UK_cinema_certificate_BBFC>
+            <![CDATA[ 15 ]]>
+        </UK_cinema_certificate_BBFC>
+        <UK_release_date>
+            <![CDATA[ 27/01/2017 ]]>
+        </UK_release_date>
+        <imdb_ref>
+            <![CDATA[ www.imdb.com/title/tt5375040 ]]>
+        </imdb_ref>
+    </film>
+    <film>
+        <film_reference_no>56773</film_reference_no>
+        <title>
+            <![CDATA[ Endless Poetry ]]>
+        </title>
+        <alternative_title>
+            <alt_title>
+                <![CDATA[ Poesia sin fin ]]>
+            </alt_title>
+        </alternative_title>
+        <year>2016</year>
+        <genre>Biographical fantasy drama</genre>
+        <subtitles>
+            <![CDATA[ Spanish, French, English +subtitles ]]>
+        </subtitles>
+        <colour>
+            <![CDATA[ Colour ]]>
+        </colour>
+        <cast>
+            <actor>
+                <role>
+                    <![CDATA[ Alexandro ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Adan ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Jodorowsky ]]>
+                </surname>
+                <billing>S</billing>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Sara / Stella Diaz ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Pamela ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Flores ]]>
+                </surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Jaime ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Brontis ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Jodorowsky ]]>
+                </surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Enrique Lihn ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Leandro ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Taub ]]>
+                </surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Alexandro as a child ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Jeremias ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Herskovits ]]>
+                </surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Old Alexandro ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Alexandro ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Jodorowsky ]]>
+                </surname>
+            </actor>
+        </cast>
+        <direction>
+            <director>
+                <role>
+                    <![CDATA[ Director ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Alexandro ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Jodorowsky ]]>
+                </surname>
+            </director>
+        </direction>
+        <normal_review>
+            <![CDATA[
+Continuing where <em>The Dance of Reality</em> (2013) signed off, the second part of Chilean auteur Alexandro Jodorowsky's autobiographical quintet follows the family from the backwater town of Tocopilla to 1940s Santiago, where the young Jodorowsky learns about life, love and art. Whether falling o
+]]>
+            <![CDATA[
+ut with his bigoted shopkeeper father, Jaime (Brontis Jodorowsky), flirting with kinky muse Stella Diaz (Pamela Flores, who doubles brilliantly as Jodorowsky's singing mother) or shocking the establishment with fellow poet Enrique Lihn (Leandro Taub), Jodorowsky (played from teenager to adult by Jeremias Herskovits and Adan Jodorowsky) drifts between harsh reality and bohemian fantasy with the assurance of a sleepwalker. Cinematographer Christopher Doyle captures intimate incidents and surreal set pieces with lustrous panache, while Jodorowsky acts as both his own production designer (the home-made backdrops and props are inspired) and the on-screen chorus, who watches his younger self dabble in puppetry, poetry, politics, sex and the circus before setting sail for Paris to continue his remarkable journey.
+]]>
+        </normal_review>
+        <review_author>David Parkinson</review_author>
+        <review_author_initials>DP</review_author_initials>
+        <warnings>Violence, swearing, sex scenes, nudity</warnings>
+        <country_of_origin>Chil / Jpn / Fr / UK</country_of_origin>
+        <certifcate>15</certifcate>
+        <rating>4 Stars</rating>
+        <running_time>
+            <![CDATA[ 128 ]]>
+        </running_time>
+        <alphabetical_title>
+            <![CDATA[ Endless Poetry ]]>
+        </alphabetical_title>
+        <original_language>
+            <![CDATA[ Spanish / French / English ]]>
+        </original_language>
+        <book_warning>
+            <![CDATA[ Violence, swearing, sex scenes, nudity ]]>
+        </book_warning>
+        <certificate>
+            <![CDATA[ 15 ]]>
+        </certificate>
+        <theatrical_distributor>
+            <![CDATA[ Artificial Eye ]]>
+        </theatrical_distributor>
+        <UK_cinema_certificate_BBFC>
+            <![CDATA[ 15 ]]>
+        </UK_cinema_certificate_BBFC>
+        <UK_release_date>
+            <![CDATA[ 06/01/2017 ]]>
+        </UK_release_date>
+        <imdb_ref>
+            <![CDATA[ www.imdb.com/title/tt4451458 ]]>
+        </imdb_ref>
+    </film>
+    <film>
+        <film_reference_no>56776</film_reference_no>
+        <title>
+            <![CDATA[ Call of Heroes ]]>
+        </title>
+        <year>2016</year>
+        <genre>Period martial arts adventure</genre>
+        <subtitles>
+            <![CDATA[ Cantonese +subtitles ]]>
+        </subtitles>
+        <colour>
+            <![CDATA[ Colour and BW ]]>
+        </colour>
+        <cast>
+            <actor>
+                <role>
+                    <![CDATA[ Yang Kenan ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Lau Ching Wan ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ ]]>
+                </surname>
+                <pseudo_forename>
+                    <![CDATA[ Sean ]]>
+                </pseudo_forename>
+                <pseudo_surname>
+                    <![CDATA[ Lau ]]>
+                </pseudo_surname>
+                <billing>S</billing>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Cao Shaolun ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Louis ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Koo ]]>
+                </surname>
+                <billing>S</billing>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Ma Feng ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Eddie ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Peng ]]>
+                </surname>
+                <pseudo_forename>
+                    <![CDATA[ Eddie ]]>
+                </pseudo_forename>
+                <pseudo_surname>
+                    <![CDATA[ Peng Yu Yan ]]>
+                </pseudo_surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Zhang Yi ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Wu Jing ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ ]]>
+                </surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Bai Ling ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Jiang Shu Ying ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ ]]>
+                </surname>
+            </actor>
+        </cast>
+        <direction>
+            <director>
+                <role>
+                    <![CDATA[ Director ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Benny ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Chan ]]>
+                </surname>
+            </director>
+            <director>
+                <role>
+                    <![CDATA[ Action director ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Sammo ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Hung ]]>
+                </surname>
+            </director>
+        </direction>
+        <normal_review>
+            <![CDATA[
+Benny Chan's lively period martial arts tale puts an eastern "wire-fu" spin on the western, as a sheriff arrests a man for murder only to discover he is an untouchable warlord whose forces are poised to overrun the town. The maniacal Cao Shaolun (Louis Koo) holds all the aces despite the death sentence hanging over him, with lawman Yang Kenan (Sean Lau) increasingly in danger from a jittery populace fearful of reprisals if justice is carried out. There are shades of <em>High Noon</em> as time ticks away to the hour of execution, with Lau a fair match for Gary Cooper in the morally upright stakes. He can crack a mean whip, too, and legendary action director Sammo Hung makes creative use of an array of lethal weaponry in the excitingly choreographed fight scenes. Koo's cackling, child-murdering psychopath may take boo-hiss villainy to ludicrously high levels, but the backstory between friends-turned-adversaries Eddie Peng Yu Yan and Wu Jing offers more character shading, while a late gear change gives the potentially downbeat story a rousing finish.
+]]>
+        </normal_review>
+        <review_author>Jamie Healy</review_author>
+        <review_author_initials>JH</review_author_initials>
+        <warnings>Violence.</warnings>
+        <country_of_origin>HK</country_of_origin>
+        <certifcate>15</certifcate>
+        <rating>3 Stars</rating>
+        <running_time>
+            <![CDATA[ 119 ]]>
+        </running_time>
+        <alphabetical_title>
+            <![CDATA[ Call of Heroes ]]>
+        </alphabetical_title>
+        <original_language>
+            <![CDATA[ Cantonese ]]>
+        </original_language>
+        <book_warning>
+            <![CDATA[ Violence. ]]>
+        </book_warning>
+        <certificate>
+            <![CDATA[ 15 ]]>
+        </certificate>
+        <available_on_DVD>
+            <![CDATA[ Yes ]]>
+        </available_on_DVD>
+        <available_on_blu_ray>
+            <![CDATA[ Yes ]]>
+        </available_on_blu_ray>
+        <DVD_distributor>
+            <![CDATA[ Cine Asia ]]>
+        </DVD_distributor>
+        <UK_cinema_certificate_BBFC>
+            <![CDATA[ 15 ]]>
+        </UK_cinema_certificate_BBFC>
+        <UK_video_certificate_BBFC>
+            <![CDATA[ 15 ]]>
+        </UK_video_certificate_BBFC>
+    </film>
+    <film>
+        <film_reference_no>56780</film_reference_no>
+        <title>
+            <![CDATA[ Embrace ]]>
+        </title>
+        <year>2016</year>
+        <genre>Documentary</genre>
+        <colour>
+            <![CDATA[ Colour ]]>
+        </colour>
+        <cast>
+            <actor>
+                <role>
+                    <![CDATA[ Taryn Brumfitt ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Taryn ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Brumfitt ]]>
+                </surname>
+                <billing>S</billing>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Ricki Lake ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Ricki ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Lake ]]>
+                </surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Amanda De Cadenet ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Amanda ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ De Cadenet ]]>
+                </surname>
+            </actor>
+            <actor>
+                <role>
+                    <![CDATA[ Nora Tschirner ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Nora ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Tschirner ]]>
+                </surname>
+            </actor>
+        </cast>
+        <direction>
+            <director>
+                <role>
+                    <![CDATA[ Director ]]>
+                </role>
+                <forename>
+                    <![CDATA[ Taryn ]]>
+                </forename>
+                <surname>
+                    <![CDATA[ Brumfitt ]]>
+                </surname>
+            </director>
+        </direction>
+        <review_author/>
+        <review_author_initials/>
+        <warnings>Swearing, nudity, brief surgical detail</warnings>
+        <country_of_origin>US / UK / Can / Ger / Aus / Dominican Republic</country_of_origin>
+        <certifcate>12A</certifcate>
+        <rating/>
+        <running_time>
+            <![CDATA[ 90 ]]>
+        </running_time>
+        <alphabetical_title>
+            <![CDATA[ Embrace ]]>
+        </alphabetical_title>
+        <original_language>
+            <![CDATA[ English ]]>
+        </original_language>
+        <book_warning>
+            <![CDATA[ Swearing, nudity, brief surgical detail ]]>
+        </book_warning>
+        <certificate>
+            <![CDATA[ 12A ]]>
+        </certificate>
+        <UK_cinema_certificate_BBFC>
+            <![CDATA[ 12A ]]>
+        </UK_cinema_certificate_BBFC>
+        <UK_release_date>
+            <![CDATA[ 16/01/2017 ]]>
+        </UK_release_date>
+        <imdb_ref>
+            <![CDATA[ www.imdb.com/title/tt4862478 ]]>
+        </imdb_ref>
+    </film>
+</films>

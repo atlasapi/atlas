@@ -14,6 +14,7 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.remotesite.itunes.epf.model.ArtistType;
@@ -349,6 +350,7 @@ public class ItunesEpfUpdateTask extends ScheduledTask {
                 Integer rowId = row.get(EpfArtist.ARTIST_ID);
                 Brand brand = new Brand(uriForBrand(rowId), curieForBrand(rowId), Publisher.ITUNES);
                 brand.setTitle(row.get(EpfArtist.NAME));
+                brand.setSpecialization(Specialization.TV);
                 return brand;
             }
 

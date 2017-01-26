@@ -52,6 +52,6 @@ public class AmazonUnboxModule {
     
     @Bean
     public AmazonUnboxHttpFeedSupplier amazonUnboxFeedSupplier() {
-        return new AmazonUnboxHttpFeedSupplier(HttpClients.webserviceClient(), unboxUrl);
+        return new AmazonUnboxHttpFeedSupplier(unboxUrl);
     }
 }

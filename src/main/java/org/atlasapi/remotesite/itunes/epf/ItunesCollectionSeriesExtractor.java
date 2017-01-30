@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.itunes.epf.model.EpfCollection;
 import org.slf4j.Logger;
@@ -64,6 +65,7 @@ public class ItunesCollectionSeriesExtractor implements ContentExtractor<EpfColl
         );
         series.setTitle(collection.get(NAME));
         series.withSeriesNumber(tryExtractSeriesNumber(collection.get(NAME)));
+        series.setSpecialization(Specialization.TV);
 
         return series;
     }

@@ -96,7 +96,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     @Override
     public Iterable<Content> extract(AmazonUnboxItem source) {
         if(ContentType.MOVIE.equals(source.getContentType())) {
-            return ImmutableSet.of((Content)extractFilm(source));                
+            return ImmutableSet.of(extractFilm(source));
         }
         if (ContentType.TVSERIES.equals(source.getContentType())) {
             return ImmutableSet.of(extractBrand(source));
@@ -124,6 +124,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 episode.setSeriesNumber(source.getSeasonNumber());
             }
             episode.setParentRef(new ParentRef(createBrandUri(source.getSeriesAsin())));
+            episode.setSpecialization(Specialization.TV);
             
             item = episode;
         } else {

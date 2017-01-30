@@ -1,7 +1,6 @@
 package org.atlasapi.remotesite.pa;
 
 import java.util.List;
-import java.util.Map;
 import java.util.Set;
 
 import org.atlasapi.genres.GenreMap;
@@ -35,6 +34,7 @@ import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
 import org.atlasapi.remotesite.pa.archives.ContentHierarchyWithoutBroadcast;
 import org.atlasapi.remotesite.pa.archives.PaProgDataUpdatesProcessor;
+import org.atlasapi.remotesite.pa.deletes.ExistingItemUnPublisher;
 import org.atlasapi.remotesite.pa.listings.bindings.Billing;
 import org.atlasapi.remotesite.pa.listings.bindings.CastMember;
 import org.atlasapi.remotesite.pa.listings.bindings.PictureUsage;
@@ -116,23 +116,32 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
     private final GenreMap genreMap = new PaGenreMap();
     private final PaTagMap paTagMap;
+    private final ExistingItemUnPublisher existingItemUnPublisher;
 
     private PaProgrammeProcessor(
             ContentResolver contentResolver,
             AdapterLog adapterLog,
-            PaTagMap paTagMap
+            PaTagMap paTagMap,
+            ExistingItemUnPublisher existingItemUnPublisher
     ) {
         this.contentResolver = checkNotNull(contentResolver);
         this.adapterLog = checkNotNull(adapterLog);
         this.paTagMap = checkNotNull(paTagMap);
+        this.existingItemUnPublisher = checkNotNull(existingItemUnPublisher);
     }
 
     public static PaProgrammeProcessor create(
             ContentResolver contentResolver,
             AdapterLog adapterLog,
-            PaTagMap paTagMap
+            PaTagMap paTagMap,
+            ExistingItemUnPublisher existingItemUnPublisher
     ) {
-        return new PaProgrammeProcessor(contentResolver, adapterLog, paTagMap);
+        return new PaProgrammeProcessor(
+                contentResolver,
+                adapterLog,
+                paTagMap,
+                existingItemUnPublisher
+        );
     }
 
     @Override
@@ -335,20 +344,24 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             ProgData progData, Channel channel,
             DateTimeZone zone, Timestamp updatedAt
     ) {
-        final String uri = CLOSED_EPISODE_PREFIX + getClosedPostfix(channel);
+        String uri = CLOSED_EPISODE_PREFIX + getClosedPostfix(channel);
 
-        Maybe<Identified> resolvedContent = contentResolver.findByCanonicalUris(
+        java.util.Optional<Identified> existing = contentResolver.findByCanonicalUris(
                 ImmutableList.of(uri)
         )
-                .getFirstValue();
+                .getFirstValue()
+                .toOptional();
 
         Episode episode;
-        if (resolvedContent.hasValue()
-                && resolvedContent.requireValue() instanceof Episode) {
-            episode = (Episode) resolvedContent.requireValue();
+
+        if (existing.isPresent() && existing.get() instanceof Episode) {
+            episode = (Episode) existing.get();
         } else {
-            episode = (Episode) getBasicEpisode(progData, true);
-            episode.setCanonicalUri(uri);
+            episode = (Episode) getBasicEpisode(
+                    progData,
+                    true,
+                    uri
+            );
         }
         episode.setCurie(CLOSED_CURIE + getClosedPostfix(channel));
         episode.setTitle(progData.getTitle());
@@ -645,27 +658,30 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private Item getBasicFilmWithoutBroadcast(ProgData progData) {
-        ImmutableList.Builder<String> uris = ImmutableList.builder();
-
-        Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
-
         // Previously when constructing the uri we would failover to ProgId if the rtFilmIdentifier
         // was missing but still write to the same namespace. To avoid creating duplicates we have
-        // to replicate this old behavior and use the rtFilmIdentifier for resolution when its
-        // available
+        // to un-publish any existing content with these old identifiers
+        existingItemUnPublisher.unPublishItems(
+                PaHelper.getLegacyFilmUri(progData.getProgId())
+        );
+        Optional<String> rtFilmIdentifier = rtFilmIdentifierFor(progData);
+        if (rtFilmIdentifier.isPresent()) {
+            existingItemUnPublisher.unPublishItems(
+                    PaHelper.getLegacyFilmUri(rtFilmIdentifier.get())
+            );
+        }
 
-        String legacyFilmUri = rtFilmIdentifier.isPresent()
-                               ? PaHelper.getLegacyFilmUri(rtFilmIdentifier.get())
-                               : PaHelper.getLegacyFilmUri(progData.getProgId());
+        String uri = PaHelper.getFilmUri(progData.getProgId());
 
-        uris.add(legacyFilmUri);
-        uris.add(PaHelper.getAlias(progData.getProgId()));
-        uris.add(PaHelper.getFilmUri(identifierFor(progData)));
-        Map<String, Identified> resolvedContent = contentResolver.findByUris(
-                uris.build()
-        ).asResolvedMap();
-
-        Film film = getFilmFromResolvedContent(progData, resolvedContent, legacyFilmUri);
+        Film film = getFilmFromResolvedContent(
+                progData,
+                contentResolver.findByCanonicalUris(
+                        ImmutableList.of(uri)
+                )
+                        .getFirstValue()
+                        .toOptional(),
+                uri
+        );
 
         if (progData.getFilmYear() != null
                 && MoreStrings.containsOnlyAsciiDigits(progData.getFilmYear())) {
@@ -676,25 +692,14 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
     private Film getFilmFromResolvedContent(
             ProgData progData,
-            Map<String, Identified> resolvedContent,
-            String legacyFilmUri
+            java.util.Optional<Identified> resolvedContent,
+            String uri
     ) {
-        // After updating our version 3 alias URI's we started introducing duplicates
-        // by only resolving and updating content with the new URI's
-        // This method gives precedence to films found with the old version 3 alias URI's
-        // and updates them in the namespace they already exist in
-
-        if (resolvedContent.isEmpty()) {
-            return getBasicFilm(progData);
+        if (!resolvedContent.isPresent()) {
+            return getBasicFilm(progData, uri);
         }
 
-        Identified previous;
-        if (resolvedContent.containsKey(legacyFilmUri)) {
-            previous = resolvedContent.get(legacyFilmUri);
-
-        } else {
-            previous = Iterables.getFirst(resolvedContent.values(), null);
-        }
+        Identified previous = resolvedContent.get();
 
         Film film;
         if (previous instanceof Film) {
@@ -754,7 +759,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             episode.addAlias(PaHelper.getLegacyFilmAlias(rtFilmIdentifier.get()));
         }
         episode.addAliasUrl(PaHelper.getAlias(progData.getProgId()));
-        episode.addAlias(PaHelper.getNewFilmAlias(identifierFor(progData)));
+        episode.addAlias(PaHelper.getNewFilmAlias(progData.getProgId()));
     }
 
     private Broadcast addBroadcast(
@@ -843,21 +848,30 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private Item getBasicEpisodeWithoutBroadcast(ProgData progData, boolean isEpisode) {
-        String episodeUri = PaHelper.getEpisodeUri(identifierFor(progData));
+        // We used to write films with a uri schema that is being sunsetted. We un-publish
+        // any film with the legacy uri here in case this episode was originally ingested as a film
+        // with that legacy uri.
+        existingItemUnPublisher.unPublishItems(
+                PaHelper.getLegacyFilmUri(progData.getProgId())
+        );
 
-        Maybe<Identified> possiblePrevious = contentResolver.findByCanonicalUris(
-                ImmutableList.of(episodeUri)
+        String uri = PaHelper.getEpisodeUri(progData.getProgId());
+
+        java.util.Optional<Identified> existing = contentResolver.findByCanonicalUris(
+                ImmutableList.of(uri)
         )
-                .getFirstValue();
+                .getFirstValue()
+                .toOptional();
 
         Item item;
-        if (possiblePrevious.hasValue()) {
-            Item previous = (Item) possiblePrevious.requireValue();
+
+        if (existing.isPresent()) {
+            Item previous = (Item) existing.get();
 
             if (!(previous instanceof Episode) && isEpisode) {
                 String message = String.format(
                         "%s resolved as %s being ingested as Episode",
-                        episodeUri, previous.getClass().getSimpleName()
+                        uri, previous.getClass().getSimpleName()
                 );
 
                 adapterLog.record(warnEntry()
@@ -870,7 +884,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             } else if (previous instanceof Episode && !isEpisode) {
                 String message = String.format(
                         "%s resolved as %s being ingested as Item",
-                        episodeUri, previous.getClass().getSimpleName()
+                        uri, previous.getClass().getSimpleName()
                 );
 
                 adapterLog.record(errorEntry()
@@ -885,14 +899,14 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
                 item = previous;
             }
         } else {
-            item = getBasicEpisode(progData, isEpisode);
+            item = getBasicEpisode(progData, isEpisode, uri);
         }
 
-        if (SCHEDULED_ONLY_EPISODE.equals(episodeUri)) {
+        if (SCHEDULED_ONLY_EPISODE.equals(uri)) {
             item.setScheduleOnly(true);
         }
 
-        item.addAlias(PaHelper.getEpisodeAlias(identifierFor(progData)));
+        item.addAlias(PaHelper.getEpisodeAlias(progData.getProgId()));
 
         try {
             if (item instanceof Episode) {
@@ -903,7 +917,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             }
         } catch (NumberFormatException e) {
             // sometimes we don't get valid numbers
-            log.warn("Failed to parse a numeric field for PA episode {}", episodeUri, e);
+            log.warn("Failed to parse a numeric field for PA episode {}", uri, e);
         }
         return item;
     }
@@ -1062,10 +1076,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         return versions.iterator().next();
     }
 
-    private Film getBasicFilm(ProgData progData) {
+    private Film getBasicFilm(ProgData progData, String uri) {
         Film film = new Film(
-                PaHelper.getFilmUri(identifierFor(progData)),
-                PaHelper.getEpisodeCurie(identifierFor(progData)),
+                uri,
+                PaHelper.getEpisodeCurie(progData.getProgId()),
                 Publisher.PA
         );
         setBasicDetails(progData, film);
@@ -1073,10 +1087,10 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         return film;
     }
 
-    private Item getBasicEpisode(ProgData progData, boolean isEpisode) {
+    private Item getBasicEpisode(ProgData progData, boolean isEpisode, String uri) {
         Item item = isEpisode ? new Episode() : new Item();
-        item.setCanonicalUri(PaHelper.getEpisodeUri(identifierFor(progData)));
-        item.setCurie("pa:e-" + identifierFor(progData));
+        item.setCanonicalUri(uri);
+        item.setCurie("pa:e-" + progData.getProgId());
         item.setPublisher(Publisher.PA);
         setBasicDetails(progData, item);
         return item;
@@ -1112,10 +1126,6 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
         return DateTimeFormat.forPattern("dd/MM/yyyy-HH:mm")
                 .withZone(zone)
                 .parseDateTime(dateString);
-    }
-
-    private static String identifierFor(ProgData progData) {
-        return progData.getProgId();
     }
 
     private Optional<String> rtFilmIdentifierFor(ProgData progData) {

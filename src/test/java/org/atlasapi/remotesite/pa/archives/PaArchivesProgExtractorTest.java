@@ -68,7 +68,7 @@ public class PaArchivesProgExtractorTest {
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
         when(resolver.findByUris(anyCollection())).thenReturn(resolvedContent);
-        progProcessor = new PaProgrammeProcessor(resolver,log,paTagMap);
+        progProcessor = PaProgrammeProcessor.create(resolver,log,paTagMap);
         transformer = new PaDataToUpdatesTransformer();
     }
 

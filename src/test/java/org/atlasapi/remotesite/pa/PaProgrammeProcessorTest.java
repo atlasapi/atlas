@@ -82,7 +82,7 @@ public class PaProgrammeProcessorTest {
     public void setup() {
         MockitoAnnotations.initMocks(this);
         
-        progProcessor = new PaProgrammeProcessor(contentResolver, log, paTagMap);
+        progProcessor = PaProgrammeProcessor.create(contentResolver, log, paTagMap);
     }
     
     @Test 

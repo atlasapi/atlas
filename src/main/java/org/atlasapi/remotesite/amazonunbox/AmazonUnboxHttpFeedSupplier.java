@@ -1,24 +1,26 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.FileInputStream;
-import java.io.InputStream;
-import java.util.zip.ZipEntry;
+import java.io.IOException;
 import java.util.zip.ZipInputStream;
 
+import javax.xml.parsers.ParserConfigurationException;
 import javax.xml.parsers.SAXParser;
 import javax.xml.parsers.SAXParserFactory;
+
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.http.SimpleHttpClient;
+import com.metabroadcast.common.http.SimpleHttpRequest;
 
 import com.google.common.base.Supplier;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
-import com.metabroadcast.common.http.HttpException;
-import com.metabroadcast.common.http.HttpResponsePrologue;
-import com.metabroadcast.common.http.HttpResponseTransformer;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.http.SimpleHttpClient;
-import com.metabroadcast.common.http.SimpleHttpRequest;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
+import org.xml.sax.SAXException;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 /**
@@ -31,43 +33,43 @@ import com.metabroadcast.common.http.SimpleHttpRequest;
  */
 public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<AmazonUnboxItem>> {
 
-    private final SimpleHttpClient httpClient;
     private final String uri;
 
-    public AmazonUnboxHttpFeedSupplier(SimpleHttpClient httpClient, String uri) {
+    public AmazonUnboxHttpFeedSupplier(String uri) {
         this.uri = checkNotNull(uri);
-        this.httpClient = checkNotNull(httpClient);
     }
     
     @Override
     public ImmutableList<AmazonUnboxItem> get() {
-        
-        try {
+        HttpGet get = new HttpGet(uri);
+        final ItemCollatingAmazonUnboxProcessor processor = new ItemCollatingAmazonUnboxProcessor();
+        final AmazonUnboxContentHandler handler = new AmazonUnboxContentHandler(processor);
+
+        try (
+                CloseableHttpClient client = HttpClients.createDefault();
+                CloseableHttpResponse response = client.execute(get)
+        ) {
             SAXParserFactory factory = SAXParserFactory.newInstance();
             final SAXParser saxParser = factory.newSAXParser();
-            final ItemCollatingAmazonUnboxProcessor processor = new ItemCollatingAmazonUnboxProcessor();
-            final AmazonUnboxContentHandler handler = new AmazonUnboxContentHandler(processor);
-            
-            return httpClient.get(new SimpleHttpRequest<>(uri, new HttpResponseTransformer<ImmutableList<AmazonUnboxItem>>() {
-    
-                @Override
-                public ImmutableList<AmazonUnboxItem> transform(HttpResponsePrologue prologue, InputStream body)
-                        throws HttpException, Exception {
-                    if (HttpStatusCode.OK.code() != prologue.statusCode()) {
-                        throw new RuntimeException("Response code " + prologue.statusCode() + " returned from " + uri);
-                    }
-                    
-                    ZipInputStream zis = new ZipInputStream(body);
-                    zis.getNextEntry();
-                    
-                    saxParser.parse(zis, handler);
-                    return processor.getResult();
-                }
-            }));
-        } catch (Exception e) {
-            throw Throwables.propagate(e);
+
+            int statusCode = response.getStatusLine().getStatusCode();
+            if (HttpStatusCode.OK.code() != statusCode) {
+                throw new RuntimeException("Response code " + statusCode + " returned from " + uri);
+            }
+
+            ZipInputStream zis = new ZipInputStream(response.getEntity().getContent());
+
+            zis.getNextEntry();
+
+            saxParser.parse(zis, handler);
+
+            zis.close();
+
+            return processor.getResult();
+
+        } catch (IOException | ParserConfigurationException | SAXException e) {
+            throw new RuntimeException(e);
         }
-        
     }
 
     private static class ItemCollatingAmazonUnboxProcessor implements AmazonUnboxProcessor<ImmutableList<AmazonUnboxItem>> {

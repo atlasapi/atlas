@@ -207,7 +207,7 @@ public class PaModule {
     }
 
     @Bean PaProgDataProcessor paProgrammeProcessor() {
-        return new PaProgrammeProcessor(contentBuffer(), log, paTagMap());
+        return PaProgrammeProcessor.create(contentBuffer(), log, paTagMap());
     }
 
     @Bean PaCompleteUpdater paCompleteUpdater() {
@@ -260,7 +260,7 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paRecentArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = PaProgrammeProcessor.create(
                 contentBuffer(), log, paTagMap()
         );
         PaUpdatesProcessor updatesProcessor = PaUpdatesProcessor.create(
@@ -272,7 +272,7 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = PaProgrammeProcessor.create(
                 contentBuffer(), log, paTagMap()
         );
         PaUpdatesProcessor updatesProcessor = PaUpdatesProcessor.create(

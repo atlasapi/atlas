@@ -28,11 +28,22 @@ public class EquivalenceBreaker {
     private final LookupWriter lookupWriter;
     private final ContentResolver contentResolver;
     
-    public EquivalenceBreaker(ContentResolver contentResolver, 
-            LookupEntryStore entryStore, LookupWriter lookupWriter) {
+    private EquivalenceBreaker(
+            ContentResolver contentResolver,
+            LookupEntryStore entryStore,
+            LookupWriter lookupWriter
+    ) {
         this.entryStore = checkNotNull(entryStore);
         this.lookupWriter = checkNotNull(lookupWriter);
         this.contentResolver = checkNotNull(contentResolver);
+    }
+
+    public static EquivalenceBreaker create(
+            ContentResolver contentResolver,
+            LookupEntryStore entryStore,
+            LookupWriter lookupWriter
+    ) {
+        return new EquivalenceBreaker(contentResolver, entryStore, lookupWriter);
     }
     
     public void removeFromSet(String sourceUri, final String directEquivUriToRemove) {

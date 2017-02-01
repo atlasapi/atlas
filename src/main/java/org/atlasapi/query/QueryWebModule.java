@@ -92,12 +92,15 @@ import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.PeopleResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.content.mongo.LastUpdatedContentFinder;
+import org.atlasapi.persistence.content.mongo.MongoContentLister;
+import org.atlasapi.persistence.content.mongo.MongoContentResolver;
 import org.atlasapi.persistence.content.people.PersonStore;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
@@ -138,6 +141,7 @@ import org.atlasapi.query.v2.TaskController;
 import org.atlasapi.query.v2.TopicController;
 import org.atlasapi.query.v2.TopicWriteController;
 import org.atlasapi.query.worker.ContentWriteMessage;
+import org.atlasapi.remotesite.util.OldContentDeactivator;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -385,10 +389,18 @@ public class QueryWebModule {
                 lookupStore,
                 contentResolver,
                 contentWriter,
-                new EquivalenceBreaker(
+                EquivalenceBreaker.create(
                         contentResolver,
                         entryStore,
                         lookupWriter
+                ),
+                OldContentDeactivator.create(
+                        new MongoContentLister(
+                                mongo,
+                                new MongoContentResolver(mongo, lookupStore)
+                        ),
+                        contentWriter,
+                        contentResolver
                 )
         );
     }

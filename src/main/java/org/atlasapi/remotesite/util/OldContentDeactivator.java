@@ -39,11 +39,22 @@ public class OldContentDeactivator {
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
 
-    public OldContentDeactivator(ContentLister contentLister, ContentWriter contentWriter,
-            ContentResolver contentResolver) {
+    private OldContentDeactivator(
+            ContentLister contentLister,
+            ContentWriter contentWriter,
+            ContentResolver contentResolver
+    ) {
         this.contentResolver = checkNotNull(contentResolver);
         this.contentLister = checkNotNull(contentLister);
         this.contentWriter = checkNotNull(contentWriter);
+    }
+
+    public static OldContentDeactivator create(
+            ContentLister contentLister,
+            ContentWriter contentWriter,
+            ContentResolver contentResolver
+    ) {
+        return new OldContentDeactivator(contentLister, contentWriter, contentResolver);
     }
     
     /**

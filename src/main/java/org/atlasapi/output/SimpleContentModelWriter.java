@@ -27,7 +27,8 @@ import com.google.common.collect.ImmutableSet;
  *  
  * @author Robert Chatley (robert@metabroadcast.com)
  */
-public class SimpleContentModelWriter extends TransformingModelWriter<QueryResult<Identified,? extends Identified>, ContentQueryResult> {
+public class SimpleContentModelWriter extends
+		TransformingModelWriter<QueryResult<Identified,? extends Identified>, ContentQueryResult> {
 
     private final ItemModelSimplifier itemModelSimplifier;
     private final ContainerModelSimplifier containerModelSimplifier;
@@ -36,9 +37,15 @@ public class SimpleContentModelWriter extends TransformingModelWriter<QueryResul
     private final ProductModelSimplifier productSimplifier;
     private final PersonModelSimplifier personSimplifier;
 
-	public SimpleContentModelWriter(AtlasModelWriter<ContentQueryResult> outputter, ItemModelSimplifier itemModelSimplifier, 
-	        ContainerModelSimplifier containerModelSimplifier, TopicModelSimplifier topicSimplifier, ProductModelSimplifier productSimplifier,
-	        ImageSimplifier imageSimplifier, PersonModelSimplifier personSimplifier) {
+	public SimpleContentModelWriter(
+			AtlasModelWriter<ContentQueryResult> outputter,
+			ItemModelSimplifier itemModelSimplifier,
+	        ContainerModelSimplifier containerModelSimplifier,
+			TopicModelSimplifier topicSimplifier,
+			ProductModelSimplifier productSimplifier,
+	        ImageSimplifier imageSimplifier,
+			PersonModelSimplifier personSimplifier
+	) {
 	    super(outputter);
 	    this.itemModelSimplifier = itemModelSimplifier;
 		this.containerModelSimplifier = containerModelSimplifier;
@@ -49,19 +56,30 @@ public class SimpleContentModelWriter extends TransformingModelWriter<QueryResul
 	}
 	
 	@Override
-	protected ContentQueryResult transform(QueryResult<Identified,? extends Identified> fullGraph, Set<Annotation> annotations, ApplicationConfiguration config) {
-	    
+	protected ContentQueryResult transform(
+			QueryResult<Identified,? extends Identified> fullGraph,
+			Set<Annotation> annotations,
+			ApplicationConfiguration config
+	) {
 	    ContentQueryResult result = new ContentQueryResult();
 
 	    Optional<? extends Identified> possibleContext = fullGraph.getContext();
 	    if(possibleContext.isPresent() && annotations.contains(Annotation.FILTERING_RESOURCE)) {
 	        Identified context = possibleContext.get();
 	        if (context instanceof Topic) {
-	            org.atlasapi.media.entity.simple.Topic simpleContext = topicSimplifier.simplify((Topic) context, ImmutableSet.copyOf(Annotation.values()),config);
+	            org.atlasapi.media.entity.simple.Topic simpleContext = topicSimplifier.simplify(
+	            		(Topic) context,
+			            ImmutableSet.copyOf(Annotation.values()),
+			            config
+	            );
                 result = ContentQueryResult.withContext(simpleContext);
 	        }
 	        if (context instanceof Product) {
-	            org.atlasapi.media.entity.simple.Product simpleContext = productSimplifier.simplify((Product)context, ImmutableSet.copyOf(Annotation.values()), config);
+	            org.atlasapi.media.entity.simple.Product simpleContext = productSimplifier.simplify(
+	            		(Product)context,
+			            ImmutableSet.copyOf(Annotation.values()),
+			            config
+	            );
 	            result = ContentQueryResult.withContext(simpleContext);
             }
 	    }
@@ -74,16 +92,37 @@ public class SimpleContentModelWriter extends TransformingModelWriter<QueryResul
 	    return result;
 	}
 
-    private ContentQueryResult setContent(ContentQueryResult result, QueryResult<Identified, ? extends Identified> fullGraph, Set<Annotation> annotations, ApplicationConfiguration config) {
+    private ContentQueryResult setContent(
+    		ContentQueryResult result,
+		    QueryResult<Identified, ? extends Identified> fullGraph,
+		    Set<Annotation> annotations,
+		    ApplicationConfiguration config
+    ) {
 		for (Identified described : fullGraph.getContent()) {
 			if (described instanceof Container) {
-			    result.add(containerModelSimplifier.simplify((Container) described, annotations, config));
+			    result.add(containerModelSimplifier.simplify(
+			    		(Container) described,
+					    annotations,
+					    config)
+			    );
 			} else if (described instanceof org.atlasapi.media.entity.Person) {
-                result.add(personSimplifier.simplify((org.atlasapi.media.entity.Person) described, annotations, config));
+                result.add(personSimplifier.simplify(
+                		(org.atlasapi.media.entity.Person) described,
+		                annotations,
+		                config)
+                );
             } else if (described instanceof ContentGroup) {
-			    result.add(contentGroupSimplifier.simplify((ContentGroup) described, annotations, config));
+			    result.add(contentGroupSimplifier.simplify(
+			    		(ContentGroup) described,
+					    annotations,
+					    config)
+			    );
 			} else if (described instanceof org.atlasapi.media.entity.Item) {
-			    result.add(itemModelSimplifier.simplify((org.atlasapi.media.entity.Item) described, annotations, config));
+			    result.add(itemModelSimplifier.simplify(
+			    		(org.atlasapi.media.entity.Item) described,
+					    annotations,
+					    config)
+			    );
 			}
 			
 		}

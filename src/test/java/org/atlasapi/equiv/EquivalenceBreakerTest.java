@@ -58,7 +58,11 @@ public class EquivalenceBreakerTest {
     private final LookupWriter lookupWriter = mock(LookupWriter.class);
     private final LookupEntryStore lookupEntryStore = mock(LookupEntryStore.class);
     
-    private final EquivalenceBreaker equivalenceBreaker = new EquivalenceBreaker(contentResolver, lookupEntryStore, lookupWriter);
+    private final EquivalenceBreaker equivalenceBreaker = EquivalenceBreaker.create(
+            contentResolver,
+            lookupEntryStore,
+            lookupWriter
+    );
     
     @Before
     public void setUp() {

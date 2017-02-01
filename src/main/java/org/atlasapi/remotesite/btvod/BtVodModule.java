@@ -434,7 +434,7 @@ public class BtVodModule {
     private BtVodOldContentDeactivator oldContentDeactivator(Publisher publisher) {
         return new BtVodOldContentDeactivator(
                         publisher, 
-                        new OldContentDeactivator(contentLister, contentWriter, contentResolver), 
+                        OldContentDeactivator.create(contentLister, contentWriter, contentResolver),
                         THRESHOLD_FOR_NOT_REMOVING_OLD_CONTENT);
     }
 

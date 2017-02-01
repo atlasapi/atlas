@@ -73,7 +73,7 @@ public class ItunesModule {
     }
 
     private OldContentDeactivator contentDeactivator() {
-        return new OldContentDeactivator(contentLister, contentWriter, contentResolver);
+        return OldContentDeactivator.create(contentLister, contentWriter, contentResolver);
     }
 
 }

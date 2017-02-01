@@ -7,6 +7,7 @@ import java.math.BigInteger;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.Optional;
 import java.util.UUID;
 
 import javax.annotation.Nullable;
@@ -27,6 +28,7 @@ import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
+import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
@@ -42,6 +44,7 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
+import org.atlasapi.remotesite.util.OldContentDeactivator;
 
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
@@ -57,6 +60,7 @@ import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.api.client.util.Maps;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import org.apache.commons.io.IOUtils;
 import org.joda.time.DateTime;
@@ -74,6 +78,8 @@ public class ContentWriteController {
     public static final String ASYNC_PARAMETER = "async";
     public static final String BROADCAST_ASSERTIONS_PARAMETER = "broadcastAssertions";
     private static final String STRICT_PARAMETER = "strict";
+    private static final String SOURCE_PARAMETER = "source";
+    private static final String VALID_URIS_PARAMETER = "valid_uris";
 
     private static final String ID = "id";
     private static final String URI = "uri";
@@ -93,6 +99,9 @@ public class ContentWriteController {
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
     private final EquivalenceBreaker equivalenceBreaker;
+    private final OldContentDeactivator oldContentDeactivator;
+
+    private Maybe<ApplicationConfiguration> possibleConfig;
 
     private ContentWriteController(
             ApplicationConfigurationFetcher appConfigFetcher,
@@ -103,7 +112,8 @@ public class ContentWriteController {
             LookupEntryStore lookupEntryStore,
             ContentResolver contentResolver,
             ContentWriter contentWriter,
-            EquivalenceBreaker equivalenceBreaker
+            EquivalenceBreaker equivalenceBreaker,
+            OldContentDeactivator oldContentDeactivator
     ) {
         this.appConfigFetcher = checkNotNull(appConfigFetcher);
         this.writeExecutor = checkNotNull(contentWriteExecutor);
@@ -114,6 +124,7 @@ public class ContentWriteController {
         this.contentResolver = checkNotNull(contentResolver);
         this.contentWriter = checkNotNull(contentWriter);
         this.equivalenceBreaker = checkNotNull(equivalenceBreaker);
+        this.oldContentDeactivator = checkNotNull(oldContentDeactivator);
     }
 
     public static ContentWriteController create(
@@ -125,7 +136,8 @@ public class ContentWriteController {
             LookupEntryStore lookupEntryStore,
             ContentResolver contentResolver,
             ContentWriter contentWriter,
-            EquivalenceBreaker equivalenceBreaker
+            EquivalenceBreaker equivalenceBreaker,
+            OldContentDeactivator oldContentDeactivator
     ) {
         return new ContentWriteController(
                 appConfigFetcher,
@@ -136,7 +148,8 @@ public class ContentWriteController {
                 lookupEntryStore,
                 contentResolver,
                 contentWriter,
-                equivalenceBreaker
+                equivalenceBreaker,
+                oldContentDeactivator
         );
     }
 
@@ -155,7 +168,89 @@ public class ContentWriteController {
     @Nullable
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.DELETE)
     public WriteResponse unpublishContent(HttpServletRequest req, HttpServletResponse resp) {
+
+        Optional<AtlasErrorSummary> configErrorSummary = validateApplicationConfiguration(
+                req,
+                resp
+        );
+        if (configErrorSummary.isPresent()) {
+            return error(req, resp, configErrorSummary.get());
+        }
+
+        if (!Strings.isNullOrEmpty(req.getParameter(SOURCE_PARAMETER))
+                && !req.getParameter(VALID_URIS_PARAMETER).isEmpty()) {
+            return unpublishOldContent(req, resp);
+        }
+
         return setPublishStatus(req, resp, false);
+    }
+
+    @Nullable
+    private WriteResponse unpublishOldContent(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        String source = request.getParameter(SOURCE_PARAMETER);
+        ImmutableList<String> validUris = ImmutableList.copyOf(
+                request.getParameter(VALID_URIS_PARAMETER)
+                        .split(",")
+        );
+
+        Publisher publisher = Publisher.fromKey(source).requireValue();
+
+        Optional<AtlasErrorSummary> apiKeyErrorSummary = validateApiKey(
+                request,
+                response,
+                publisher
+        );
+        if (apiKeyErrorSummary.isPresent()) {
+            return error(request, response, apiKeyErrorSummary.get());
+        }
+
+        if (oldContentDeactivator.deactivateOldContent(publisher, validUris, 50)) {
+            response.setStatus(HttpServletResponse.SC_OK);
+        }
+
+        return null;
+    }
+
+    private Optional<AtlasErrorSummary> validateApplicationConfiguration(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        try {
+            possibleConfig = appConfigFetcher.configurationFor(request);
+        } catch (ApiKeyNotFoundException |
+                RevokedApiKeyException |
+                InvalidIpForApiKeyException ex
+                ) {
+            return Optional.of(AtlasErrorSummary.forException(ex));
+        }
+
+        if (possibleConfig.isNothing()) {
+            return Optional.of(
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
+            );
+        }
+
+        return Optional.empty();
+    }
+
+    private Optional<AtlasErrorSummary> validateApiKey(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            Publisher publisher
+    ) {
+        if (!possibleConfig.requireValue().canWrite(publisher)) {
+            return Optional.of(
+                    AtlasErrorSummary.forException(new ForbiddenException(
+                            "API key does not have write permission"
+                    ))
+            );
+        }
+        return Optional.empty();
     }
 
     @Nullable
@@ -164,26 +259,6 @@ public class ContentWriteController {
             HttpServletResponse resp,
             boolean publishStatus
     ) {
-        // check API key has permissions to do this
-        @SuppressWarnings("deprecation")
-        Maybe<ApplicationConfiguration> possibleConfig;
-        try {
-            possibleConfig = appConfigFetcher.configurationFor(req);
-        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-            return error(req, resp, AtlasErrorSummary.forException(ex));
-        }
-
-        if (possibleConfig.isNothing()) {
-
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new UnauthorizedException(
-                            "API key is unauthorised"
-                    ))
-            );
-        }
-
         // get ID / URI, if ID, lookup URI from it
         LookupEntry lookupEntry;
         if (req.getParameter(ID) != null) {
@@ -242,15 +317,13 @@ public class ContentWriteController {
         Described described = (Described) identified.requireValue();
 
         // Check if the api key has write permissions for this publisher
-        if (!possibleConfig.requireValue().canWrite(described.getPublisher())) {
-
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new ForbiddenException(
-                            "API key does not have write permission"
-                    ))
-            );
+        Optional<AtlasErrorSummary> apiKeyErrorSummary = validateApiKey(
+                req,
+                resp,
+                described.getPublisher()
+        );
+        if (apiKeyErrorSummary.isPresent()) {
+            return error(req, resp, apiKeyErrorSummary.get());
         }
 
         // remove from equivset if un-publishing
@@ -323,22 +396,9 @@ public class ContentWriteController {
             );
         }
 
-        Maybe<ApplicationConfiguration> possibleConfig;
-        try {
-            possibleConfig = appConfigFetcher.configurationFor(req);
-        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
-            return error(req, resp, AtlasErrorSummary.forException(ex));
-        }
-
-        if (possibleConfig.isNothing()) {
-
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new UnauthorizedException(
-                            "API key is unauthorised"
-                    ))
-            );
+        Optional<AtlasErrorSummary> configErrorSummary = validateApplicationConfiguration(req, resp);
+        if (configErrorSummary.isPresent()) {
+            return error(req, resp, configErrorSummary.get());
         }
 
         byte[] inputStreamBytes;
@@ -371,15 +431,13 @@ public class ContentWriteController {
 
         Content content = inputContent.getContent();
 
-        if (!possibleConfig.requireValue().canWrite(content.getPublisher())) {
-
-            return error(
-                    req,
-                    resp,
-                    AtlasErrorSummary.forException(new ForbiddenException(
-                            "API key does not have write permission"
-                    ))
-            );
+        Optional<AtlasErrorSummary> apiKeyErrorSummary = validateApiKey(
+                req,
+                resp,
+                content.getPublisher()
+        );
+        if (apiKeyErrorSummary.isPresent()) {
+            return error(req, resp, apiKeyErrorSummary.get());
         }
 
         Long contentId = lookupBackedContentIdGenerator.getId(content);
@@ -463,8 +521,11 @@ public class ContentWriteController {
         log.error(errorBuilder.toString(), e);
     }
 
-    private WriteResponse error(HttpServletRequest request, HttpServletResponse response,
-            AtlasErrorSummary summary) {
+    private WriteResponse error(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AtlasErrorSummary summary
+    ) {
         try {
             outputWriter.writeError(request, response, summary);
         } catch (IOException e) {

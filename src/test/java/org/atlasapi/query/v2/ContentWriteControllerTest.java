@@ -1,6 +1,7 @@
 package org.atlasapi.query.v2;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.Iterator;
@@ -10,7 +11,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 
+import org.atlasapi.application.query.ApiKeyNotFoundException;
 import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.application.v3.SourceStatus;
 import org.atlasapi.equiv.EquivalenceBreaker;
@@ -19,7 +23,10 @@ import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
+import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
@@ -29,15 +36,18 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.query.content.ContentWriteExecutor;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.worker.ContentWriteMessage;
+import org.atlasapi.remotesite.util.OldContentDeactivator;
 
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.queue.MessageSender;
 
+import arq.cmdline.Arg;
 import com.amazonaws.util.IOUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.gdata.data.docs.Publish;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -51,13 +61,17 @@ import org.springframework.mock.web.DelegatingServletInputStream;
 import static org.hamcrest.CoreMatchers.nullValue;
 import static org.hamcrest.core.Is.is;
 import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
+import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -71,6 +85,7 @@ public class ContentWriteControllerTest {
     private @Captor ArgumentCaptor<ContentWriteMessage> messageCaptor;
     private @Captor ArgumentCaptor<InputStream> streamCaptor;
 
+    private @Mock ContentWriteController mockedController;
     private @Mock ApplicationConfigurationFetcher configurationFetcher;
     private @Mock ContentWriteExecutor writeExecutor;
     private @Mock LookupBackedContentIdGenerator idGenerator;
@@ -93,6 +108,7 @@ public class ContentWriteControllerTest {
     private @Mock Identified identified;
     private @Mock Described described;
     private @Mock SubstitutionTableNumberCodec substitutionTableNumberCodec;
+    private @Mock OldContentDeactivator oldContentDeactivator;
 
     private NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
@@ -135,9 +151,16 @@ public class ContentWriteControllerTest {
                 .thenReturn(resolvedContent);
 
         controller = ContentWriteController.create(
-                configurationFetcher, writeExecutor, idGenerator, messageSender, modelWriter,
-                lookupEntryStore, contentResolver, contentWriter,
-                equivalenceBreaker
+                configurationFetcher,
+                writeExecutor,
+                idGenerator,
+                messageSender,
+                modelWriter,
+                lookupEntryStore,
+                contentResolver,
+                contentWriter,
+                equivalenceBreaker,
+                oldContentDeactivator
         );
     }
 
@@ -250,5 +273,51 @@ public class ContentWriteControllerTest {
         String expectedEncodedId = codec.encode(BigInteger.valueOf(contentId));
         assertThat(locationCaptor.getValue().contains("/3.0/content.json?id=" + expectedEncodedId),
                 is(true));
+    }
+
+    @Test
+    public void deactivateContentWithCorrectParams()
+            throws InvalidIpForApiKeyException, ApiKeyNotFoundException, RevokedApiKeyException {
+
+        ApplicationConfiguration configuration = ApplicationConfiguration.defaultConfiguration()
+                .withSource(Publisher.RADIO_TIMES_UPCOMING, SourceStatus.AVAILABLE_ENABLED)
+                .copyWithWritableSources(ImmutableList.of(Publisher.RADIO_TIMES_UPCOMING));
+
+
+        when(configurationFetcher.configurationFor(request)).thenReturn(Maybe.just(configuration));
+        when(request.getParameter("source")).thenReturn("upcoming.radiotimes.com");
+        when(request.getParameter("valid_uris")).thenReturn("uri1,uri2,uri3");
+
+        controller.unpublishContent(request, response);
+
+        verify(oldContentDeactivator, times(1)).deactivateOldContent(
+                Publisher.RADIO_TIMES_UPCOMING,
+                ImmutableList.of("uri1","uri2","uri3"),
+                50);
+    }
+
+    @Test
+    public void doNotDeactivateWithoutWritePermissions()
+            throws InvalidIpForApiKeyException, ApiKeyNotFoundException, RevokedApiKeyException,
+            IOException {
+
+        ApplicationConfiguration configuration = ApplicationConfiguration.defaultConfiguration();
+
+        when(configurationFetcher.configurationFor(request)).thenReturn(Maybe.just(configuration));
+        when(request.getParameter("source")).thenReturn("upcoming.radiotimes.com");
+        when(request.getParameter("valid_uris")).thenReturn("uri1,uri2,uri3");
+
+        controller.unpublishContent(request, response);
+
+        ArgumentCaptor<AtlasErrorSummary> argument = ArgumentCaptor.forClass(
+                AtlasErrorSummary.class
+        );
+
+        verify(modelWriter).writeError(eq(request), eq(response), argument.capture());
+
+        assertThat("403", is(argument.getValue().statusCode().toString()));
+        assertThat("API key does not have write permission",
+                is(argument.getValue().message())
+        );
     }
 }

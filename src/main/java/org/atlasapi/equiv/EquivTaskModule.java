@@ -580,7 +580,7 @@ public class EquivTaskModule {
 
     @Bean
     public EquivalenceBreaker equivalenceBreaker() {
-        return new EquivalenceBreaker(contentResolver, lookupStore, lookupWriter);
+        return EquivalenceBreaker.create(contentResolver, lookupStore, lookupWriter);
     }
 
     //Probes...

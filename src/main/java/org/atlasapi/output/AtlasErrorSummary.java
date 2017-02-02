@@ -7,7 +7,9 @@ import java.util.UUID;
 
 import javax.validation.ConstraintViolationException;
 
-import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.output.exceptions.UnauthorizedException;
 
@@ -106,9 +108,21 @@ public class AtlasErrorSummary {
                         )
                 )
                 .put(
-                        InvalidApiKeyException.class,
+                        ApiKeyNotFoundException.class,
                         new ExceptionExposingAtlasExceptionBuilder(
-                                "INVALID_API_KEY", HttpStatusCode.FORBIDDEN
+                                "API_KEY_NOT_FOUND", HttpStatusCode.FORBIDDEN
+                        )
+                )
+                .put(
+                        InvalidIpForApiKeyException.class,
+                        new ExceptionExposingAtlasExceptionBuilder(
+                                "INVALID_IP_FOR_API_KEY", HttpStatusCode.FORBIDDEN
+                        )
+                )
+                .put(
+                        RevokedApiKeyException.class,
+                        new ExceptionExposingAtlasExceptionBuilder(
+                                "REVOKED_API_KEY", HttpStatusCode.FORBIDDEN
                         )
                 )
                 .put(

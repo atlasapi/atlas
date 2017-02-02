@@ -3,7 +3,7 @@ package org.atlasapi.output.simple;
 import java.util.List;
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.Organisation;
@@ -14,6 +14,7 @@ import org.atlasapi.output.Annotation;
 
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 import static com.google.api.client.util.Preconditions.checkNotNull;
@@ -26,12 +27,8 @@ public class EventModelSimplifier extends IdentifiedModelSimplifier<Event, org.a
     private final OrganisationModelSimplifier organisationSimplifier;
     private final NumberToShortStringCodec codecForContent;
 
-    public EventModelSimplifier(
-            TopicModelSimplifier topicSimplifier,
-            PersonModelSimplifier personSimplifier,
-            OrganisationModelSimplifier organisationSimplifier,
-            NumberToShortStringCodec codecForContent
-    ) {
+    public EventModelSimplifier(TopicModelSimplifier topicSimplifier, PersonModelSimplifier personSimplifier, 
+            OrganisationModelSimplifier organisationSimplifier, NumberToShortStringCodec codecForContent) {
         super(codecForContent);
         this.topicSimplifier = checkNotNull(topicSimplifier);
         this.personSimplifier = checkNotNull(personSimplifier);
@@ -40,11 +37,8 @@ public class EventModelSimplifier extends IdentifiedModelSimplifier<Event, org.a
     }
 
     @Override
-    public org.atlasapi.media.entity.simple.Event simplify(
-            Event model,
-            Set<Annotation> annotations,
-            Application application
-    ) {
+    public org.atlasapi.media.entity.simple.Event simplify(Event model,
+            Set<Annotation> annotations, ApplicationConfiguration config) {
         org.atlasapi.media.entity.simple.Event event = new org.atlasapi.media.entity.simple.Event();
         
         copyIdentifiedAttributesTo(model, event, annotations);
@@ -52,7 +46,7 @@ public class EventModelSimplifier extends IdentifiedModelSimplifier<Event, org.a
         event.setTitle(model.title());
         event.setPublisher(model.publisher());
         if (model.venue() != null) {
-            event.setVenue(topicSimplifier.simplify(model.venue(), annotations, application));
+            event.setVenue(topicSimplifier.simplify(model.venue(), annotations, config));
         }
         if (model.startTime() != null) {
             event.setStartTime(model.startTime().toDate());
@@ -60,50 +54,55 @@ public class EventModelSimplifier extends IdentifiedModelSimplifier<Event, org.a
         if (model.endTime() != null) {
             event.setEndTime(model.endTime().toDate());
         }
-        event.setParticipants(simplifyParticipants(model.participants(), annotations, application));
-        event.setOrganisations(simplifyOrganisations(model.organisations(), annotations, application));
-        event.setEventGroups(simplifyEventGroups(model.eventGroups(), annotations, application));
+        event.setParticipants(simplifyParticipants(model.participants(), annotations, config));
+        event.setOrganisations(simplifyOrganisations(model.organisations(), annotations, config));
+        event.setEventGroups(simplifyEventGroups(model.eventGroups(), annotations, config));
         
         if (annotations.contains(Annotation.CONTENT)) {
-            event.setContent(simplifyContent(model.content(), annotations, application));
+            event.setContent(simplifyContent(model.content(), annotations, config));
         }
         
         return event;
     }
 
     private Iterable<org.atlasapi.media.entity.simple.Person> simplifyParticipants(
-            List<Person> participants,
-            final Set<Annotation> annotations,
-            final Application application
-    ) {
-        return Iterables.transform(participants,
-                input -> personSimplifier.simplify(input, annotations, application));
+            List<Person> participants, final Set<Annotation> annotations, final ApplicationConfiguration config) {
+        return Iterables.transform(participants, new Function<Person, org.atlasapi.media.entity.simple.Person>() {
+            @Override
+            public org.atlasapi.media.entity.simple.Person apply(Person input) {
+                return personSimplifier.simplify(input, annotations, config);
+            }
+        });
     }
     
     private Iterable<org.atlasapi.media.entity.simple.Organisation> simplifyOrganisations(
-            List<Organisation> organisations,
-            final Set<Annotation> annotations,
-            final Application application
-    ) {
-        return Iterables.transform(organisations,
-                input -> organisationSimplifier.simplify(input, annotations, application));
+            List<Organisation> organisations, final Set<Annotation> annotations,
+            final ApplicationConfiguration config) {
+        return Iterables.transform(organisations, new Function<Organisation, org.atlasapi.media.entity.simple.Organisation>() {
+            @Override
+            public org.atlasapi.media.entity.simple.Organisation apply(Organisation input) {
+                return organisationSimplifier.simplify(input, annotations, config);
+            }
+        });
     }
     
     private Iterable<org.atlasapi.media.entity.simple.Topic> simplifyEventGroups(
-            List<Topic> eventGroups,
-            final Set<Annotation> annotations,
-            final Application application
-    ) {
-        return Iterables.transform(eventGroups,
-                input -> topicSimplifier.simplify(input, annotations, application));
+            List<Topic> eventGroups, final Set<Annotation> annotations, final ApplicationConfiguration config) {
+        return Iterables.transform(eventGroups, new Function<Topic, org.atlasapi.media.entity.simple.Topic>() {
+            @Override
+            public org.atlasapi.media.entity.simple.Topic apply(Topic input) {
+                return topicSimplifier.simplify(input, annotations, config);
+            }
+        });
     }
     
-    private Iterable<ContentIdentifier> simplifyContent(
-            List<ChildRef> content,
-            Set<Annotation> annotations,
-            Application application
-    ) {
-        return Iterables.transform(content,
-                input -> ContentIdentifier.identifierFor(input, codecForContent));
+    private Iterable<ContentIdentifier> simplifyContent(List<ChildRef> content, Set<Annotation> annotations,
+            ApplicationConfiguration config) {
+        return Iterables.transform(content, new Function<ChildRef, ContentIdentifier>() {
+            @Override
+            public ContentIdentifier apply(ChildRef input) {
+                return ContentIdentifier.identifierFor(input, codecForContent);
+            }
+        });
     }
 }

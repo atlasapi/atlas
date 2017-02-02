@@ -16,13 +16,12 @@ package org.atlasapi.output;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.containsString;
-import static org.mockito.Mockito.mock;
 
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import junit.framework.TestCase;
 
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.entity.simple.Location;
 
@@ -55,7 +54,7 @@ public class JsonTranslatorTest extends TestCase {
 		item.addLocation(location);
 		graph.add(item);
 		
-		new JsonTranslator<Item>().writeTo(request, response, item, ImmutableSet.<Annotation>of(), mock(Application.class));
+		new JsonTranslator<Item>().writeTo(request, response, item, ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
 		
 		String output = response.getResponseAsString();
 		assertThat(output, containsString("\"uri\":\"http://www.bbc.co.uk/bluepeter\""));

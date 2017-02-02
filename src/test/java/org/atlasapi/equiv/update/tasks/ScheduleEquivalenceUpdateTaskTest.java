@@ -1,9 +1,10 @@
 package org.atlasapi.equiv.update.tasks;
 
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Broadcast;
@@ -18,13 +19,18 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 
+import com.google.common.base.Supplier;
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalDateTime;
 import org.junit.Test;
+import static org.junit.Assert.assertThat;
+import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.when;
 
 import com.google.common.base.Optional;
@@ -45,13 +51,13 @@ public class ScheduleEquivalenceUpdateTaskTest {
             
             @Override
             public Schedule schedule(DateTime from, DateTime to, Iterable<Channel> channels,
-                    Iterable<Publisher> publisher, Optional<Application> mergeApp) {
+                    Iterable<Publisher> publisher, Optional<ApplicationConfiguration> mergeConfig) {
                 return schedule;
             }
             
             @Override
             public Schedule schedule(DateTime from, int count, Iterable<Channel> channels,
-                    Iterable<Publisher> publisher, Optional<Application> mergeApp) {
+                    Iterable<Publisher> publisher, Optional<ApplicationConfiguration> mergeConfig) {
                 return schedule;
             }
             

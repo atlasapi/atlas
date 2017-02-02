@@ -3,7 +3,7 @@ package org.atlasapi.output.simple;
 import static org.junit.Assert.*;
 import static org.mockito.Mockito.mock;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.persistence.output.AvailableItemsResolver;
@@ -24,7 +24,7 @@ public class PersonModelSimplifierTest {
         
         Person person = new Person();
         person.setId(1234l);
-        org.atlasapi.media.entity.simple.Person simplePerson = personSimplifier.simplify(person , Annotation.defaultAnnotations(), Mockito.mock(Application.class));
+        org.atlasapi.media.entity.simple.Person simplePerson = personSimplifier.simplify(person , Annotation.defaultAnnotations(), Mockito.mock(ApplicationConfiguration.class));
         
         String lowercasedId = simplePerson.getId().toLowerCase();
         assertEquals(lowercasedId, simplePerson.getId());

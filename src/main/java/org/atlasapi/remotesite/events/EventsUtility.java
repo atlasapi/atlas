@@ -111,7 +111,7 @@ public abstract class EventsUtility<S> {
             return topic;
         }
         throw new IllegalStateException(String.format(
-                "Topic store failed to create Topic with namespace %s and value %s",
+                "Topic store failed to create Topic with namespace %s and value %s", 
                 namespace,
                 value
         ));

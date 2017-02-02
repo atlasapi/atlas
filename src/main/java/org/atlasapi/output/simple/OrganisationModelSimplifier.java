@@ -5,11 +5,12 @@ import static com.google.api.client.util.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Organisation;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.output.Annotation;
 
+import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 
@@ -25,21 +26,25 @@ public class OrganisationModelSimplifier extends DescribedModelSimplifier<Organi
 
     @Override
     public org.atlasapi.media.entity.simple.Organisation simplify(Organisation model,
-            final Set<Annotation> annotations, final Application application) {
+            final Set<Annotation> annotations, final ApplicationConfiguration config) {
         org.atlasapi.media.entity.simple.Organisation organisation = new org.atlasapi.media.entity.simple.Organisation();
         
         organisation.setType(Organisation.class.getSimpleName());
         copyBasicDescribedAttributes(model, organisation, annotations);
         
-        organisation.setMembers(simplifyMembers(model.members(), annotations, application));
+        organisation.setMembers(simplifyMembers(model.members(), annotations, config));
         
         return organisation;
     }
 
     private Iterable<org.atlasapi.media.entity.simple.Person> simplifyMembers(List<Person> members,
-            final Set<Annotation> annotations, final Application application) {
-        return Iterables.transform(members,
-                input -> personSimplifier.simplify(input, annotations, application));
+            final Set<Annotation> annotations, final ApplicationConfiguration config) {
+        return Iterables.transform(members, new Function<Person, org.atlasapi.media.entity.simple.Person>() {
+            @Override
+            public org.atlasapi.media.entity.simple.Person apply(Person input) {
+                return personSimplifier.simplify(input, annotations, config);
+            }
+        });
     }
 
 }

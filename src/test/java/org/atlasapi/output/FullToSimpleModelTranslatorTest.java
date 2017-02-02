@@ -7,7 +7,7 @@ import static org.mockito.Mockito.verify;
 
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Episode;
@@ -120,8 +120,7 @@ public class FullToSimpleModelTranslatorTest {
             imageSimplifier,
             personSimplifier
     );
-
-    private Application application = mock(Application.class);
+    
 	private StubHttpServletRequest request;
 	private StubHttpServletResponse response;
 
@@ -137,9 +136,9 @@ public class FullToSimpleModelTranslatorTest {
 		Set<Identified> graph = Sets.newHashSet();
 		graph.add(new Episode());
 		
-        translator.writeTo(request, response, QueryResult.of(graph), ImmutableSet.<Annotation>of(), application);
+        translator.writeTo(request, response, QueryResult.of(graph), ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
         
-        verify(xmlOutputter).writeTo(eq(request), eq(response), argThat(simpleGraph()), eq(ImmutableSet.<Annotation>of()), eq(application));
+        verify(xmlOutputter).writeTo(eq(request), eq(response), argThat(simpleGraph()), eq(ImmutableSet.<Annotation>of()), eq(ApplicationConfiguration.DEFAULT_CONFIGURATION));
 	}
 
 	protected Matcher<ContentQueryResult> simpleGraph() {

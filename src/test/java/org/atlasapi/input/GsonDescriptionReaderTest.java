@@ -5,14 +5,12 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.mock;
 
 import java.io.StringReader;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.entity.simple.TopicRef;
@@ -42,7 +40,7 @@ public class GsonDescriptionReaderTest {
 
         HttpServletRequest request = new StubHttpServletRequest();
         StubHttpServletResponse response = new StubHttpServletResponse();
-        writer.writeTo(request, response, testItem, ImmutableSet.copyOf(Annotation.values()), mock(Application.class));
+        writer.writeTo(request, response, testItem, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration.defaultConfiguration());
 
         String respBody = response.getResponseAsString();
 

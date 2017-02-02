@@ -9,8 +9,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.application.v3.SourceStatus;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
@@ -28,6 +28,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ComparisonChain;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.MinMaxPriorityQueue;
 import com.google.common.collect.Sets;
 
@@ -42,24 +43,26 @@ public class DefaultSimilarContentProvider implements SimilarContentProvider {
     private final TraitHashCalculator traitHashCalculator;
     private final AvailableItemsResolver availableItemsResolver;
     private final UpcomingItemsResolver upcomingItemsResolver;
-    private final Application application;
+    private final ApplicationConfiguration appConfig = 
+            ApplicationConfiguration.defaultConfiguration()
+                                    .withSources(Maps.asMap(Publisher.all(), new Function<Publisher, SourceStatus>() {
 
-    public DefaultSimilarContentProvider (
-            ContentLister contentLister,
-            Publisher publisher,
-            int similarItemLimit,
-            TraitHashCalculator traitHashCalculator,
-            AvailableItemsResolver availableItemsResolver,
-            UpcomingItemsResolver upcomingItemsResolver,
-            Application application
-    ) {
+                                            @Override
+                                            public SourceStatus apply(Publisher publisher) {
+                                                return SourceStatus.AVAILABLE_ENABLED;
+                                            }
+        
+                                     }));
+    
+    public DefaultSimilarContentProvider (ContentLister contentLister, Publisher publisher, 
+            int similarItemLimit, TraitHashCalculator traitHashCalculator, 
+            AvailableItemsResolver availableItemsResolver, UpcomingItemsResolver upcomingItemsResolver) {
         this.contentLister = checkNotNull(contentLister);
         this.publisher = checkNotNull(publisher);
         this.traitHashCalculator = checkNotNull(traitHashCalculator);
         this.availableItemsResolver = checkNotNull(availableItemsResolver);
         this.upcomingItemsResolver = checkNotNull(upcomingItemsResolver);
         this.similarItemLimit = similarItemLimit;
-        this.application = application;
     }
     
     public void initialise() {
@@ -84,12 +87,12 @@ public class DefaultSimilarContentProvider implements SimilarContentProvider {
         
         if (content instanceof Container) {
             Container container = (Container) content;
-            availableFromPublishers = availableItemsResolver.availableItemsByPublisherFor(container, application).keySet();
+            availableFromPublishers = availableItemsResolver.availableItemsByPublisherFor(container, appConfig).keySet();
             upcomingPublishers = upcomingItemsResolver.upcomingItemsByPublisherFor(container).keySet();
         } else if (content instanceof Item) {
             Item item = (Item) content;
-            availableFromPublishers = availableItemsResolver.availableItemsByPublisherFor(item, application).keySet();
-            upcomingPublishers = upcomingItemsResolver.upcomingItemsByPublisherFor(item, application).keySet();
+            availableFromPublishers = availableItemsResolver.availableItemsByPublisherFor(item, appConfig).keySet();
+            upcomingPublishers = upcomingItemsResolver.upcomingItemsByPublisherFor(item, appConfig).keySet();
         } else {
             throw new IllegalArgumentException("Can't deal with Content of type " + 
                             content.getClass().getSimpleName());
@@ -149,9 +152,14 @@ public class DefaultSimilarContentProvider implements SimilarContentProvider {
         }
     }
     
-    private static final Function<ScoredContent, SimilarContentRef> TO_SIMILARREF = sc ->
-            SimilarContentRef.Builder.from(sc.ref)
-                    .withScore(sc.score)
-                    .build();
+    private static final Function<ScoredContent, SimilarContentRef> TO_SIMILARREF = new Function<ScoredContent, SimilarContentRef>() {
+
+        @Override
+        public SimilarContentRef apply(ScoredContent sc) {
+            return SimilarContentRef.Builder.from(sc.ref)
+                        .withScore(sc.score)
+                        .build();
+        }
+    };
     
 }

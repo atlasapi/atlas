@@ -26,11 +26,11 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
 
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.simple.Broadcast;
 import org.atlasapi.media.entity.simple.Channel;
 import org.atlasapi.media.entity.simple.ChannelGroup;
@@ -102,7 +102,7 @@ public class JaxbXmlTranslator<T> implements AtlasModelWriter<T> {
     }
 
     @Override
-	public void writeTo(final HttpServletRequest request, final HttpServletResponse response, T result, Set<Annotation> annotations, Application application) throws IOException {
+	public void writeTo(final HttpServletRequest request, final HttpServletResponse response, T result, Set<Annotation> annotations, ApplicationConfiguration config) throws IOException {
 		try {
             writeOut(request, response, result);
         } catch (JAXBException e) {

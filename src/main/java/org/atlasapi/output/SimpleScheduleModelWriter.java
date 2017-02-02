@@ -2,7 +2,7 @@ package org.atlasapi.output;
 
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.simple.ScheduleQueryResult;
 import org.atlasapi.output.simple.ChannelSimplifier;
@@ -36,11 +36,11 @@ public class SimpleScheduleModelWriter
     protected ScheduleQueryResult transform(
             Iterable<ScheduleChannel> fullGraph,
             Set<Annotation> annotations,
-            Application application
+            ApplicationConfiguration config
     ) {
         ScheduleQueryResult outputGraph = new ScheduleQueryResult();
         for (ScheduleChannel scheduleChannel : fullGraph) {
-            outputGraph.add(scheduleChannelFrom(scheduleChannel, annotations, application));
+            outputGraph.add(scheduleChannelFrom(scheduleChannel, annotations, config));
         }
         return outputGraph;
     }
@@ -48,7 +48,7 @@ public class SimpleScheduleModelWriter
     private org.atlasapi.media.entity.simple.ScheduleChannel scheduleChannelFrom(
             ScheduleChannel scheduleChannel,
             Set<Annotation> annotations,
-            Application application
+            ApplicationConfiguration config
     ) {
         org.atlasapi.media.entity.simple.ScheduleChannel newScheduleChannel
                 = new org.atlasapi.media.entity.simple.ScheduleChannel();
@@ -63,14 +63,14 @@ public class SimpleScheduleModelWriter
                     false,
                     false,
                     false,
-                    application
+                    config
             ));
         }
 
         ImmutableList.Builder<org.atlasapi.media.entity.simple.Item> items
                 = ImmutableList.builder();
         for (org.atlasapi.media.entity.Item item : scheduleChannel.items()) {
-            items.add(itemModelSimplifier.simplify(item, annotations, application));
+            items.add(itemModelSimplifier.simplify(item, annotations, config));
         }
 
         newScheduleChannel.setItems(items.build());

@@ -5,17 +5,17 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
 import java.math.BigInteger;
-import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.HttpHeaders;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import org.atlasapi.application.query.ApplicationFetcher;
-import org.atlasapi.application.query.ApplicationNotFoundException;
-import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
@@ -24,6 +24,7 @@ import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.exceptions.ForbiddenException;
+import org.atlasapi.output.exceptions.UnauthorizedException;
 import org.atlasapi.persistence.topic.TopicStore;
 
 import com.metabroadcast.common.base.Maybe;
@@ -44,7 +45,7 @@ public class TopicWriteController {
 
     private static final Logger log = LoggerFactory.getLogger(TopicWriteController.class);
 
-    private final ApplicationFetcher appConfigFetcher;
+    private final ApplicationConfigurationFetcher appConfigFetcher;
     private final TopicStore store;
     private final ModelReader reader;
     private static final NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
@@ -53,7 +54,7 @@ public class TopicWriteController {
     private AtlasModelWriter<Iterable<Topic>> outputter;
     private static final String STRICT = "strict";
 
-    public TopicWriteController(ApplicationFetcher appConfigFetcher, TopicStore store,
+    public TopicWriteController(ApplicationConfigurationFetcher appConfigFetcher, TopicStore store,
             ModelReader reader,
             ModelTransformer<org.atlasapi.media.entity.simple.Topic, Topic> transformer,
             AtlasModelWriter<Iterable<Topic>> outputter) {
@@ -69,26 +70,23 @@ public class TopicWriteController {
     public WriteResponse writeContent(HttpServletRequest req, HttpServletResponse resp) {
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
 
-        Optional<Application> possibleApp;
+        Maybe<ApplicationConfiguration> possibleConfig;
         try {
-            possibleApp = appConfigFetcher.applicationFor(req);
-        } catch (InvalidApiKeyException e) {
+            possibleConfig = appConfigFetcher.configurationFor(req);
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             return error(req, resp, AtlasErrorSummary.forException(e));
 
         }
 
-        if (!possibleApp.isPresent()) {
-            log.error("No application found for request: {}", req.getRequestURL().toString());
+        if (possibleConfig.isNothing()) {
             return error(
                     req,
                     resp,
-                    AtlasErrorSummary.forException(
-                            ApplicationNotFoundException.create(req.getRequestURL().toString())
-                    )
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
             );
         }
-
-        Application application = possibleApp.get();
 
         Topic topic;
         try {
@@ -112,7 +110,7 @@ public class TopicWriteController {
 
         }
 
-        if (!application.getConfiguration().isWriteEnabled(topic.getPublisher())) {
+        if (!possibleConfig.requireValue().canWrite(topic.getPublisher())) {
             return error(
                     req,
                     resp,

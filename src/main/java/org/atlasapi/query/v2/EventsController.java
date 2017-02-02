@@ -4,16 +4,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.io.IOException;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import org.atlasapi.application.query.ApplicationFetcher;
-import org.atlasapi.application.query.InvalidApiKeyException;
-import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.output.AtlasErrorSummary;
@@ -27,10 +26,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
@@ -62,22 +63,28 @@ public class EventsController extends BaseController<Iterable<Event>> {
     private final TopicQueryResolver topicResolver;
     private final Predicate<Event> filterNonWhitelistedEvents;
 
-    public EventsController(ApplicationFetcher configFetcher, AdapterLog log,
+    public EventsController(ApplicationConfigurationFetcher configFetcher, AdapterLog log, 
             AtlasModelWriter<? super Iterable<Event>> outputter, NumberToShortStringCodec idCodec, 
             EventResolver eventResolver, TopicQueryResolver topicResolver, Iterable<String> whitelistedIds) {
-        super(configFetcher, log, outputter, idCodec, DefaultApplication.createDefault());
+        super(configFetcher, log, outputter, idCodec);
         this.topicResolver = topicResolver;
         this.eventResolver = checkNotNull(eventResolver);
         this.filterNonWhitelistedEvents = createFilter(whitelistedIds);
     }
 
     private Predicate<Event> createFilter(Iterable<String> whitelistedIds) {
-        final Set<Long> ids = ImmutableSet.copyOf(
-                StreamSupport.stream(checkNotNull(whitelistedIds).spliterator(), false)
-                        .map(input -> idCodec.decode(input).longValue())
-                        .collect(Collectors.toList())
-        );
-        return input -> ids.contains(input.getId());
+        final Set<Long> ids = ImmutableSet.copyOf(Iterables.transform(checkNotNull(whitelistedIds), new Function<String, Long>() {
+            @Override
+            public Long apply(String input) {
+                return idCodec.decode(input).longValue();
+            }
+        }));
+        return new Predicate<Event>() {
+            @Override
+            public boolean apply(Event input) {
+                return ids.contains(input.getId());
+            }
+        };
     }
 
     @RequestMapping(value={"/3.0/events.*", "/events.*"})
@@ -86,10 +93,10 @@ public class EventsController extends BaseController<Iterable<Event>> {
             @RequestParam(value = "from", required = false) String fromStr,
             @RequestParam(value = "no_whitelist", required = false) Boolean noWhitelist) throws IOException {
         try {
-            final Application application;
+            final ApplicationConfiguration appConfig;
             try {
-                application = application(request);
-            } catch (InvalidApiKeyException ex) {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -112,17 +119,13 @@ public class EventsController extends BaseController<Iterable<Event>> {
                 from = Optional.fromNullable(dateTimeInQueryParser.parse(fromStr));
             }
             
-            Predicate<Event> eventFilter = isEnabled(application);
+            Predicate<Event> eventFilter = isEnabled(appConfig);
             if (!Boolean.TRUE.equals(noWhitelist)) {
                 eventFilter = Predicates.and(eventFilter, filterNonWhitelistedEvents); 
             }
-            events = selection.apply(
-                    StreamSupport.stream(eventResolver.fetch(eventGroup, from).spliterator(), false)
-                            .filter(eventFilter::apply)
-                            .collect(Collectors.toList())
-            );
+            events = selection.apply(Iterables.filter(eventResolver.fetch(eventGroup, from), eventFilter));
 
-            modelAndViewFor(request, response, events, application);
+            modelAndViewFor(request, response, events, appConfig);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
@@ -132,10 +135,10 @@ public class EventsController extends BaseController<Iterable<Event>> {
     public void singleEvent(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("id") String id) throws IOException {
         try {
-            final Application application;
+            final ApplicationConfiguration appConfig;
             try {
-                application = application(request);
-            } catch (InvalidApiKeyException ex) {
+                appConfig = appConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -145,18 +148,23 @@ public class EventsController extends BaseController<Iterable<Event>> {
                 errorViewFor(request, response, NOT_FOUND);
                 return;
             }
-            if (!application.getConfiguration().isReadEnabled(event.get().publisher())) {
+            if (!appConfig.isEnabled(event.get().publisher())) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
 
-            modelAndViewFor(request, response, event.asSet(), application);
+            modelAndViewFor(request, response, event.asSet(), appConfig);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
     }
     
-    private static Predicate<Event> isEnabled(final Application application) {
-        return input -> application.getConfiguration().isReadEnabled(input.publisher());
+    private static Predicate<Event> isEnabled(final ApplicationConfiguration appConfig) {
+        return new Predicate<Event>() {
+            @Override
+            public boolean apply(Event input) {
+                return appConfig.isEnabled(input.publisher());
+            }
+        };
     }
 }

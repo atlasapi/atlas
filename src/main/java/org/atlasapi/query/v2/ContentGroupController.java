@@ -5,9 +5,10 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.query.ApplicationFetcher;
-import org.atlasapi.application.query.InvalidApiKeyException;
-import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.ContentGroup;
@@ -41,8 +42,8 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
     private final QueryController queryController;
     private final KnownTypeQueryExecutor queryExecutor;
 
-    public ContentGroupController(ContentGroupResolver contentGroupResolver, KnownTypeQueryExecutor queryExecutor, ApplicationFetcher configFetcher, AdapterLog log, AtlasModelWriter<? super Iterable<ContentGroup>> outputter, QueryController queryController) {
-        super(configFetcher, log, outputter, DefaultApplication.createDefault());
+    public ContentGroupController(ContentGroupResolver contentGroupResolver, KnownTypeQueryExecutor queryExecutor, ApplicationConfigurationFetcher configFetcher, AdapterLog log, AtlasModelWriter<? super Iterable<ContentGroup>> outputter, QueryController queryController) {
+        super(configFetcher, log, outputter);
         this.contentGroupResolver = contentGroupResolver;
         this.queryExecutor = queryExecutor;
         this.queryController = queryController;
@@ -53,8 +54,8 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
         ContentQuery query;
         try {
             query = buildQuery(req);
-            modelAndViewFor(req, resp, query.getSelection().apply(Iterables.filter(contentGroupResolver.findAll(), publisherFilter(query))), query.getApplication());
-        } catch (InvalidApiKeyException e) {
+            modelAndViewFor(req, resp, query.getSelection().apply(Iterables.filter(contentGroupResolver.findAll(), publisherFilter(query))), query.getConfiguration());
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
         }
     }
@@ -72,7 +73,7 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
         ContentQuery query;
         try {
             query = buildQuery(req);
-        } catch (InvalidApiKeyException e) {
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
             return;
         }
@@ -87,7 +88,7 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
             outputter.writeError(req, resp, FORBIDDEN.withErrorCode("Content Group not available"));
             return;
         }
-        modelAndViewFor(req, resp, ImmutableSet.of(contentGroup), query.getApplication());
+        modelAndViewFor(req, resp, ImmutableSet.of(contentGroup), query.getConfiguration());
     }
 
     @RequestMapping(value = {"3.0/content_groups/{id}/content.*", "content_groups/{id}/content.*"})
@@ -103,7 +104,7 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
         ContentQuery query;
         try {
             query = buildQuery(req);
-        } catch (InvalidApiKeyException e) {
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
             return;
         }
@@ -127,7 +128,7 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
                     queryExecutor.executeUriQuery(Iterables.transform(query.getSelection().apply(contentGroup.getContents()), ChildRef.TO_URI), query).values()),
                     Identified.class),
                     contentGroup);
-            queryController.modelAndViewFor(req, resp, result.withSelection(selection), query.getApplication());
+            queryController.modelAndViewFor(req, resp, result.withSelection(selection), query.getConfiguration());
         } catch (Exception e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
         }
@@ -135,6 +136,12 @@ public class ContentGroupController extends BaseController<Iterable<ContentGroup
     
     private Predicate<ContentGroup> publisherFilter(final ContentQuery query)  {
 
-        return input -> query.allowsSource(input.getPublisher());
+        return new Predicate<ContentGroup>() {
+
+            @Override
+            public boolean apply(ContentGroup input) {
+                return query.allowsSource(input.getPublisher());
+            }
+        };
     }
 }

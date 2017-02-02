@@ -3,7 +3,7 @@ package org.atlasapi.equiv.query;
 import java.util.List;
 import java.util.Map;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.equiv.OutputContentMerger;
 import org.atlasapi.media.entity.Content;
@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -28,27 +29,18 @@ public class MergeOnOutputQueryExecutor implements KnownTypeQueryExecutor {
     }
 
     @Override
-    public Map<String, List<Identified>> executeUriQuery(
-            Iterable<String> uris,
-            final ContentQuery query
-    ) {
+    public Map<String, List<Identified>> executeUriQuery(Iterable<String> uris, final ContentQuery query) {
         return mergeResults(query, delegate.executeUriQuery(uris, query));
     }
 
     @Override
-    public Map<String, List<Identified>> executeIdQuery(
-            Iterable<Long> ids,
-            final ContentQuery query
-    ) {
+    public Map<String, List<Identified>> executeIdQuery(Iterable<Long> ids, final ContentQuery query) {
         return mergeResults(query, delegate.executeIdQuery(ids, query));
     }
 
     @Override
-    public Map<String, List<Identified>> executeAliasQuery(
-            Optional<String> namespace,
-            Iterable<String> values,
-            ContentQuery query
-    ) {
+    public Map<String, List<Identified>> executeAliasQuery(Optional<String> namespace, Iterable<String> values,
+            ContentQuery query) {
         return mergeResults(query, delegate.executeAliasQuery(namespace, values, query));
     }
     
@@ -58,30 +50,30 @@ public class MergeOnOutputQueryExecutor implements KnownTypeQueryExecutor {
         return mergeResults(query, delegate.executePublisherQuery(publishers, query));
     }
 
-    private Map<String, List<Identified>> mergeResults(
-            final ContentQuery query,
-            Map<String, List<Identified>> unmergedResult
-    ) {
-        final Application application = query.getApplication();
-        if (!application.getConfiguration().isPrecedenceEnabled()) {
+    private Map<String, List<Identified>> mergeResults(final ContentQuery query, Map<String, List<Identified>> unmergedResult) {
+        final ApplicationConfiguration config = query.getConfiguration();
+        if (!config.precedenceEnabled()) {
             return unmergedResult;
         }
-        return Maps.transformValues(unmergedResult,
-                input -> {
+        return Maps.transformValues(unmergedResult, new Function<List<Identified>, List<Identified>>() {
 
-                    List<Content> content = Lists.newArrayList();
-                    List<Identified> ids = Lists.newArrayList();
+            @Override
+            public List<Identified> apply(List<Identified> input) {
 
-                    for (Identified ided : input) {
-                        if (ided instanceof Content) {
-                            content.add((Content) ided);
-                        } else {
-                            ids.add(ided);
-                        }
+                List<Content> content = Lists.newArrayList();
+                List<Identified> ids = Lists.newArrayList();
+
+                for (Identified ided : input) {
+                    if (ided instanceof Content) {
+                        content.add((Content) ided);
+                    } else {
+                        ids.add(ided);
                     }
+                }
 
-                    return ImmutableList.copyOf(Iterables.concat(merger.merge(application, content), ids));
-                });
+                return ImmutableList.copyOf(Iterables.concat(merger.merge(config, content), ids));
+            }
+        });
     }
 
 }

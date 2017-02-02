@@ -5,7 +5,7 @@ import static com.google.api.client.util.Preconditions.checkNotNull;
 import java.math.BigInteger;
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.feeds.tasks.Destination;
 import org.atlasapi.feeds.tasks.Response;
 import org.atlasapi.feeds.tasks.Task;
@@ -24,20 +24,14 @@ public class TaskModelSimplifier implements ModelSimplifier<Task, org.atlasapi.f
     private final ResponseModelSimplifier responseSimplifier;
     private final NumberToShortStringCodec idCodec;
 
-    public TaskModelSimplifier(
-            NumberToShortStringCodec idCodec,
-            ResponseModelSimplifier responseSimplifier
-    ) {
+    public TaskModelSimplifier(NumberToShortStringCodec idCodec, ResponseModelSimplifier responseSimplifier) {
         this.idCodec = checkNotNull(idCodec);
         this.responseSimplifier = checkNotNull(responseSimplifier);
     }
 
     @Override
-    public org.atlasapi.feeds.tasks.simple.Task simplify(
-            Task model,
-            Set<Annotation> annotations,
-            Application application
-    ) {
+    public org.atlasapi.feeds.tasks.simple.Task simplify(Task model,
+            Set<Annotation> annotations, ApplicationConfiguration config) {
         org.atlasapi.feeds.tasks.simple.Task task = new org.atlasapi.feeds.tasks.simple.Task();
         
         task.setId(idCodec.encode(BigInteger.valueOf(model.id())));
@@ -51,7 +45,7 @@ public class TaskModelSimplifier implements ModelSimplifier<Task, org.atlasapi.f
         task.setStatus(model.status());
         
         if (annotations.contains(Annotation.REMOTE_RESPONSES)) {
-            task.setRemoteResponses(simplifyResponses(model.remoteResponses(), annotations, application));
+            task.setRemoteResponses(simplifyResponses(model.remoteResponses(), annotations, config));
         }
         if (annotations.contains(Annotation.PAYLOAD)) {
             task.setPayload(simplifyPayload(model.payload().orNull()));
@@ -60,10 +54,8 @@ public class TaskModelSimplifier implements ModelSimplifier<Task, org.atlasapi.f
         return task;
     }
 
-    private void simplifyDestination(
-            org.atlasapi.feeds.tasks.simple.Task task,
-            Destination destination
-    ) {
+    private void simplifyDestination(org.atlasapi.feeds.tasks.simple.Task task,
+            Destination destination) {
         task.setDestinationType(destination.type());
         switch(destination.type()) {
         case RADIOPLAYER:
@@ -80,21 +72,21 @@ public class TaskModelSimplifier implements ModelSimplifier<Task, org.atlasapi.f
     }
 
     private Iterable<org.atlasapi.feeds.tasks.simple.Response> simplifyResponses(
-            Set<Response> remoteResponses,
-            final Set<Annotation> annotations,
-            final Application application
-    ) {
+            Set<Response> remoteResponses, final Set<Annotation> annotations, final ApplicationConfiguration config) {
         return FluentIterable.from(remoteResponses)
-                .transform(simplifyResponse(annotations, application))
+                .transform(simplifyResponse(annotations, config))
                 .toSortedList(Ordering.natural());
     }
 
     private Function<Response, org.atlasapi.feeds.tasks.simple.Response> simplifyResponse(
-            final Set<Annotation> annotations,
-            final Application application
-    ) {
+            final Set<Annotation> annotations, final ApplicationConfiguration config) {
         
-        return input -> responseSimplifier.simplify(input, annotations, application);
+        return new Function<Response, org.atlasapi.feeds.tasks.simple.Response>() {
+            @Override
+            public org.atlasapi.feeds.tasks.simple.Response apply(Response input) {
+                return responseSimplifier.simplify(input, annotations, config);
+            }
+        };
     }
     
     private Payload simplifyPayload(org.atlasapi.feeds.tasks.Payload payload) {

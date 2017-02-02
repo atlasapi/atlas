@@ -2,7 +2,7 @@ package org.atlasapi.output.simple;
 
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.output.Annotation;
 
@@ -20,7 +20,7 @@ public class TopicModelSimplifier extends IdentifiedModelSimplifier<Topic, org.a
     }
     
     @Override
-    public org.atlasapi.media.entity.simple.Topic simplify(Topic fullTopic, Set<Annotation> annotations, final Application application) {
+    public org.atlasapi.media.entity.simple.Topic simplify(Topic fullTopic, Set<Annotation> annotations, final ApplicationConfiguration config) {
         org.atlasapi.media.entity.simple.Topic topic = new org.atlasapi.media.entity.simple.Topic();
         copyIdentifiedAttributesTo(fullTopic, topic, annotations);
         topic.setType(fullTopic.getClass().getSimpleName().toLowerCase());

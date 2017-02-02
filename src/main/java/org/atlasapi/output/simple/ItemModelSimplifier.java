@@ -7,7 +7,7 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Broadcast;
@@ -206,21 +206,21 @@ public class ItemModelSimplifier
 
     @Override
     public org.atlasapi.media.entity.simple.Item simplify(Item full,
-            final Set<Annotation> annotations, final Application application) {
+            final Set<Annotation> annotations, final ApplicationConfiguration config) {
 
         org.atlasapi.media.entity.simple.Item simple = new org.atlasapi.media.entity.simple.Item();
 
-        copyProperties(full, simple, annotations, application);
+        copyProperties(full, simple, annotations, config);
 
         boolean doneSegments = false;
         for (Version version : full.getVersions()) {
-            addTo(simple, version, full, annotations, application);
+            addTo(simple, version, full, annotations, config);
             if (!doneSegments && !version.getSegmentEvents().isEmpty() && annotations.contains(
                     Annotation.SEGMENT_EVENTS) && segmentSimplifier != null) {
                 simple.setSegments(segmentSimplifier.simplify(
                         version.getSegmentEvents(),
                         annotations,
-                        application
+                        config
                 ));
                 doneSegments = true;
             }
@@ -230,8 +230,8 @@ public class ItemModelSimplifier
     }
 
     private void copyProperties(Item fullItem, org.atlasapi.media.entity.simple.Item simpleItem,
-            Set<Annotation> annotations, Application application) {
-        copyBasicContentAttributes(fullItem, simpleItem, annotations, application);
+            Set<Annotation> annotations, ApplicationConfiguration config) {
+        copyBasicContentAttributes(fullItem, simpleItem, annotations, config);
         simpleItem.setType(EntityType.from(fullItem).toString());
 
         if (annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
@@ -287,11 +287,17 @@ public class ItemModelSimplifier
             Set<ReleaseDate> releaseDates) {
         return Iterables.transform(
                 releaseDates,
-                input -> new org.atlasapi.media.entity.simple.ReleaseDate(
-                        input.date().toDateTimeAtStartOfDay(DateTimeZones.UTC).toDate(),
-                        input.country().code(),
-                        input.type().toString().toLowerCase()
-                )
+                new Function<ReleaseDate, org.atlasapi.media.entity.simple.ReleaseDate>() {
+
+                    @Override
+                    public org.atlasapi.media.entity.simple.ReleaseDate apply(ReleaseDate input) {
+                        return new org.atlasapi.media.entity.simple.ReleaseDate(
+                                input.date().toDateTimeAtStartOfDay(DateTimeZones.UTC).toDate(),
+                                input.country().code(),
+                                input.type().toString().toLowerCase()
+                        );
+                    }
+                }
         );
     }
 
@@ -299,22 +305,26 @@ public class ItemModelSimplifier
             Set<Subtitles> subtitles) {
         return Iterables.filter(Iterables.transform(
                 subtitles,
-                input -> {
-                    Language lang = languageForCode(input.code());
-                    return lang == null
-                           ? null
-                           : new org.atlasapi.media.entity.simple.Subtitles(lang);
+                new Function<Subtitles, org.atlasapi.media.entity.simple.Subtitles>() {
+
+                    @Override
+                    public org.atlasapi.media.entity.simple.Subtitles apply(Subtitles input) {
+                        Language lang = languageForCode(input.code());
+                        return lang == null
+                               ? null
+                               : new org.atlasapi.media.entity.simple.Subtitles(lang);
+                    }
                 }
         ), Predicates.notNull());
     }
 
     private void addTo(org.atlasapi.media.entity.simple.Item simpleItem, Version version, Item item,
-            Set<Annotation> annotations, Application application) {
+            Set<Annotation> annotations, ApplicationConfiguration config) {
 
         if (annotations.contains(Annotation.LOCATIONS)
                 || annotations.contains(Annotation.AVAILABLE_LOCATIONS)) {
             for (Encoding encoding : version.getManifestedAs()) {
-                addTo(simpleItem, version, encoding, item, annotations, application);
+                addTo(simpleItem, version, encoding, item, annotations, config);
             }
         }
 
@@ -331,7 +341,7 @@ public class ItemModelSimplifier
                 org.atlasapi.media.entity.simple.Broadcast simpleBroadcast = simplify(
                         broadcast,
                         annotations,
-                        application
+                        config
                 );
                 copyProperties(version, simpleBroadcast, item);
                 simpleItem.addBroadcast(simpleBroadcast);
@@ -372,11 +382,17 @@ public class ItemModelSimplifier
     }
 
     private Iterable<Broadcast> filterInactive(Iterable<Broadcast> broadcasts) {
-        return Iterables.filter(broadcasts, Broadcast::isActivelyPublished);
+        return Iterables.filter(broadcasts, new Predicate<Broadcast>() {
+
+            @Override
+            public boolean apply(Broadcast input) {
+                return input.isActivelyPublished();
+            }
+        });
     }
 
     private org.atlasapi.media.entity.simple.Broadcast simplify(Broadcast broadcast,
-            Set<Annotation> annotations, Application application) {
+            Set<Annotation> annotations, ApplicationConfiguration config) {
         org.atlasapi.media.entity.simple.Broadcast simpleModel = new org.atlasapi.media.entity.simple.Broadcast(
                 broadcast.getBroadcastOn(),
                 broadcast.getTransmissionTime(),
@@ -408,7 +424,7 @@ public class ItemModelSimplifier
         Maybe<org.atlasapi.media.channel.Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
         if (channel.hasValue()) {
             simpleModel.setChannel(simplify(channel.requireValue(), annotations,
-                    Optional.<Image>absent(), Optional.<Set<Image>>absent(), application
+                    Optional.<Image>absent(), Optional.<Set<Image>>absent(), config
             ));
         } else {
             log.error("Could not resolve channel " + broadcast.getBroadcastOn());
@@ -429,11 +445,11 @@ public class ItemModelSimplifier
     private Channel simplify(org.atlasapi.media.channel.Channel channel,
             Set<Annotation> annotations,
             Optional<Image> overrideImage, Optional<Set<Image>> overrideChannelImages,
-            Application application) {
+            ApplicationConfiguration config) {
         Channel simpleChannel = new Channel();
         simpleChannel.setId(channelIdCodec.encode(BigInteger.valueOf(channel.getId())));
         if (annotations.contains(Annotation.CHANNEL_SUMMARY)) {
-            simpleChannel = channelSimplifier.simplify(channel, false, false, false, false, application);
+            simpleChannel = channelSimplifier.simplify(channel, false, false, false, false, config);
 
             if (overrideImage.isPresent()) {
                 simpleChannel.setImage(overrideImage.get().getCanonicalUri());
@@ -444,24 +460,30 @@ public class ItemModelSimplifier
             if (overrideChannelImages.isPresent()) {
                 simpleChannel.setImages(Iterables.transform(
                         overrideChannelImages.get(),
-                        input -> imageSimplifier.simplify(
-                                input,
-                                ImmutableSet.<Annotation>of(),
-                                null
-                        )
+                        new Function<Image, org.atlasapi.media.entity.simple.Image>() {
+
+                            @Override
+                            public org.atlasapi.media.entity.simple.Image apply(Image input) {
+                                return imageSimplifier.simplify(
+                                        input,
+                                        ImmutableSet.<Annotation>of(),
+                                        null
+                                );
+                            }
+                        }
                 ));
             }
             simpleChannel.setParent(simplifyParentChannel(
                     channel.getParent(),
                     annotations,
-                    application
+                    config
             ));
         }
         return simpleChannel;
     }
 
     private Channel simplifyParentChannel(Long parent, Set<Annotation> annotations,
-            Application application) {
+            ApplicationConfiguration config) {
         if (parent == null) {
             return null;
         }
@@ -483,7 +505,7 @@ public class ItemModelSimplifier
             if (channelForImages.hasValue()) {
                 return simplify(channel, annotations,
                         Optional.of(channelForImages.requireValue().getImage()),
-                        Optional.of(channelForImages.requireValue().getImages()), application
+                        Optional.of(channelForImages.requireValue().getImages()), config
                 );
             }
         }
@@ -492,7 +514,7 @@ public class ItemModelSimplifier
                 annotations,
                 Optional.<Image>absent(),
                 Optional.<Set<Image>>absent(),
-                application
+                config
         );
     }
 
@@ -528,18 +550,22 @@ public class ItemModelSimplifier
             return null;
         }
         return Ordering.natural()
-                .max(Iterables.transform(broadcasts, input -> {
-                    Integer duration = input.getBroadcastDuration();
-                    if (duration == null) {
-                        return 0;
+                .max(Iterables.transform(broadcasts, new Function<Broadcast, Integer>() {
+
+                    @Override
+                    public Integer apply(Broadcast input) {
+                        Integer duration = input.getBroadcastDuration();
+                        if (duration == null) {
+                            return 0;
+                        }
+                        return duration;
                     }
-                    return duration;
                 }));
     }
 
     private void addTo(org.atlasapi.media.entity.simple.Item simpleItem, Version version,
             Encoding encoding, Item item, Set<Annotation> annotations,
-            Application application) {
+            ApplicationConfiguration config) {
         DateTime now = new DateTime(DateTimeZones.UTC);
         for (Location location : encoding.getAvailableAt()) {
             if (!location.getAvailable()) {
@@ -548,7 +574,7 @@ public class ItemModelSimplifier
 
             if (!annotations.contains(Annotation.AVAILABLE_LOCATIONS)
                     || withinAvailabilityWindow(location, now)) {
-                addTo(simpleItem, version, encoding, location, item, annotations, application);
+                addTo(simpleItem, version, encoding, location, item, annotations, config);
             }
         }
     }
@@ -566,13 +592,13 @@ public class ItemModelSimplifier
 
     private void addTo(org.atlasapi.media.entity.simple.Item simpleItem, Version version,
             Encoding encoding, Location location, Item item, Set<Annotation> annotations,
-            Application application) {
+            ApplicationConfiguration config) {
 
         org.atlasapi.media.entity.simple.Location simpleLocation = new org.atlasapi.media.entity.simple.Location();
 
         copyProperties(version, simpleLocation, item);
         copyProperties(encoding, simpleLocation);
-        copyProperties(location, simpleLocation, annotations, application);
+        copyProperties(location, simpleLocation, annotations, config);
 
         simpleItem.addLocation(simpleLocation);
 
@@ -646,7 +672,7 @@ public class ItemModelSimplifier
 
     private void copyProperties(Location location,
             org.atlasapi.media.entity.simple.Location simpleLocation, Set<Annotation> annotations,
-            Application application) {
+            ApplicationConfiguration config) {
         Policy policy = location.getPolicy();
         if (policy != null) {
             if (policy.getActualAvailabilityStart() != null) {
@@ -682,7 +708,7 @@ public class ItemModelSimplifier
                 Optional<Service> service = serviceResolver.serviceFor(policy.getService());
                 if (service.isPresent()) {
                     simpleLocation.setService(serviceModelSimplifier.simplify(service.get(),
-                            annotations, application
+                            annotations, config
                     ));
                 }
             }
@@ -690,7 +716,7 @@ public class ItemModelSimplifier
                 Optional<Player> player = playerResolver.playerFor(policy.getPlayer());
                 if (player.isPresent()) {
                     simpleLocation.setPlayer(playerModelSimplifier.simplify(player.get(),
-                            annotations, application
+                            annotations, config
                     ));
                 }
             }

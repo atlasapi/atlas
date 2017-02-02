@@ -6,7 +6,7 @@ import java.io.StringReader;
 import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolationException;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ReadException;
@@ -24,13 +24,13 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
+
 
 public class AtlasErrorSummaryTest {
 
     private ModelReader reader = new DefaultJacksonModelReader();
     private JsonTranslator<Item> writer = new JsonTranslator<>();
-    private Application application = mock(Application.class);
+
 
     @Test
     public void constraintViolationsTest() throws IOException, ReadException {
@@ -40,7 +40,9 @@ public class AtlasErrorSummaryTest {
 
         HttpServletRequest request = new StubHttpServletRequest();
         StubHttpServletResponse response = new StubHttpServletResponse();
-        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), application);
+        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration
+                .defaultConfiguration());
+
         String respBody = response.getResponseAsString();
 
 
@@ -80,7 +82,8 @@ public class AtlasErrorSummaryTest {
 
         HttpServletRequest request = new StubHttpServletRequest();
         StubHttpServletResponse response = new StubHttpServletResponse();
-        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), application);
+        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration
+                .defaultConfiguration());
 
         String respBody = response.getResponseAsString().replace("locations", "hello");
 

@@ -7,8 +7,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.validation.ConstraintViolation;
 import javax.validation.ConstraintViolationException;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.simple.Broadcast;
 import org.atlasapi.media.entity.simple.ContentIdentifier;
 import org.atlasapi.media.entity.simple.Description;
@@ -19,6 +18,7 @@ import org.atlasapi.media.entity.simple.Playlist;
 import org.atlasapi.media.entity.simple.TopicRef;
 import org.atlasapi.media.entity.testing.ItemTestDataBuilder;
 import org.atlasapi.output.Annotation;
+import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.JsonTranslator;
 
 import com.metabroadcast.common.intl.Countries;
@@ -37,14 +37,12 @@ import org.junit.Test;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
-import static org.mockito.Mockito.mock;
 
 public class DefaultJacksonModelReaderTest {
 
     private DefaultJacksonModelReader reader;
     private JsonTranslator<Item> writer;
     private Boolean strict = Boolean.TRUE;
-    private Application application = mock(Application.class);
 
     @Before
     public void setUp() {
@@ -81,7 +79,8 @@ public class DefaultJacksonModelReaderTest {
                 response,
                 testItem,
                 ImmutableSet.copyOf(Annotation.values()),
-                application
+                ApplicationConfiguration
+                        .defaultConfiguration()
         );
 
         String respBody = response.getResponseAsString();
@@ -106,7 +105,8 @@ public class DefaultJacksonModelReaderTest {
                 response,
                 testItem,
                 ImmutableSet.copyOf(Annotation.values()),
-                application
+                ApplicationConfiguration
+                        .defaultConfiguration()
         );
 
         String respBody = response.getResponseAsString();
@@ -139,7 +139,8 @@ public class DefaultJacksonModelReaderTest {
                 response,
                 testItem,
                 ImmutableSet.copyOf(Annotation.values()),
-                application
+                ApplicationConfiguration
+                        .defaultConfiguration()
         );
 
         String respBody = response.getResponseAsString();
@@ -168,7 +169,8 @@ public class DefaultJacksonModelReaderTest {
                 response,
                 testItem,
                 ImmutableSet.copyOf(Annotation.values()),
-                application
+                ApplicationConfiguration
+                        .defaultConfiguration()
         );
 
         String respBody = response.getResponseAsString();
@@ -197,7 +199,8 @@ public class DefaultJacksonModelReaderTest {
                 response,
                 item,
                 ImmutableSet.copyOf(Annotation.values()),
-                application
+                ApplicationConfiguration
+                        .defaultConfiguration()
         );
 
         String respBody = response.getResponseAsString();
@@ -224,7 +227,8 @@ public class DefaultJacksonModelReaderTest {
                 response,
                 person,
                 ImmutableSet.copyOf(Annotation.values()),
-                application
+                ApplicationConfiguration
+                        .defaultConfiguration()
         );
 
         String respBody = response.getResponseAsString();
@@ -258,7 +262,8 @@ public class DefaultJacksonModelReaderTest {
 
         HttpServletRequest request = new StubHttpServletRequest();
         StubHttpServletResponse response = new StubHttpServletResponse();
-        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), application);
+        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration
+                .defaultConfiguration());
 
         String respBody = response.getResponseAsString().replace("locations", "hello");
 
@@ -277,7 +282,8 @@ public class DefaultJacksonModelReaderTest {
 
         HttpServletRequest request = new StubHttpServletRequest();
         StubHttpServletResponse response = new StubHttpServletResponse();
-        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), application);
+        writer.writeTo(request, response, item, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration
+                .defaultConfiguration());
 
         String respBody = response.getResponseAsString().replace("locations", "hello");
 

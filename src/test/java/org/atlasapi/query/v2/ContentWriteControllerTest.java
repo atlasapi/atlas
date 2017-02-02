@@ -1,27 +1,32 @@
 package org.atlasapi.query.v2;
 
 import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.InputStream;
 import java.math.BigInteger;
 import java.util.Iterator;
-import java.util.Optional;
 
 import javax.servlet.ServletOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.ws.rs.core.HttpHeaders;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.applications.client.model.internal.ApplicationConfiguration;
-import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.application.v3.SourceStatus;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
+import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
@@ -38,9 +43,11 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.queue.MessageSender;
 
+import arq.cmdline.Arg;
 import com.amazonaws.util.IOUtils;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import com.google.gdata.data.docs.Publish;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,26 +55,25 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.mock.web.DelegatingServletInputStream;
 
+import static org.hamcrest.CoreMatchers.nullValue;
+import static org.hamcrest.core.Is.is;
+import static org.hamcrest.core.IsNot.not;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyBoolean;
 import static org.mockito.Matchers.anyList;
 import static org.mockito.Matchers.anyString;
 import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.atLeast;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
-
-import static org.hamcrest.CoreMatchers.nullValue;
-import static org.hamcrest.core.Is.is;
-import static org.hamcrest.core.IsNot.not;
-import static org.junit.Assert.assertThat;
-
 
 @RunWith(MockitoJUnitRunner.class)
 public class ContentWriteControllerTest {
@@ -79,7 +85,8 @@ public class ContentWriteControllerTest {
     private @Captor ArgumentCaptor<ContentWriteMessage> messageCaptor;
     private @Captor ArgumentCaptor<InputStream> streamCaptor;
 
-    private @Mock ApplicationFetcher applicationFetcher;
+    private @Mock ContentWriteController mockedController;
+    private @Mock ApplicationConfigurationFetcher configurationFetcher;
     private @Mock ContentWriteExecutor writeExecutor;
     private @Mock LookupBackedContentIdGenerator idGenerator;
     private @Mock MessageSender<ContentWriteMessage> messageSender;
@@ -114,14 +121,9 @@ public class ContentWriteControllerTest {
 
     @Before
     public void setUp() throws Exception {
-
-        Application application = mock(Application.class);
-        ApplicationConfiguration configuration = ApplicationConfiguration.builder()
-                .withPrecedence(ImmutableList.of(Publisher.METABROADCAST))
-                .withEnabledWriteSources(ImmutableList.of(Publisher.METABROADCAST))
-                .build();
-
-        when(application.getConfiguration()).thenReturn(configuration);
+        ApplicationConfiguration configuration = ApplicationConfiguration.defaultConfiguration()
+                .withSource(Publisher.METABROADCAST, SourceStatus.AVAILABLE_ENABLED)
+                .copyWithWritableSources(ImmutableList.of(Publisher.METABROADCAST));
 
         inputBytes = "{ content: {} }".getBytes();
         DelegatingServletInputStream inputStream = new DelegatingServletInputStream(
@@ -133,7 +135,7 @@ public class ContentWriteControllerTest {
         inputContent = ContentWriteExecutor.InputContent.create(content, "item");
         contentId = 0L;
 
-        when(applicationFetcher.applicationFor(request)).thenReturn(Optional.of(application));
+        when(configurationFetcher.configurationFor(request)).thenReturn(Maybe.just(configuration));
         when(request.getInputStream()).thenReturn(inputStream);
         when(writeExecutor.parseInputStream(any(InputStream.class), anyBoolean()))
                 .thenReturn(inputContent);
@@ -149,7 +151,7 @@ public class ContentWriteControllerTest {
                 .thenReturn(resolvedContent);
 
         controller = ContentWriteController.create(
-                applicationFetcher,
+                configurationFetcher,
                 writeExecutor,
                 idGenerator,
                 messageSender,
@@ -274,22 +276,34 @@ public class ContentWriteControllerTest {
     }
 
     @Test
-    public void deactivateContentWithCorrectParams() throws Exception {
+    public void deactivateContentWithCorrectParams()
+            throws InvalidIpForApiKeyException, ApiKeyNotFoundException, RevokedApiKeyException {
 
-        when(request.getParameter("source")).thenReturn("metabroadcast.com");
+        ApplicationConfiguration configuration = ApplicationConfiguration.defaultConfiguration()
+                .withSource(Publisher.RADIO_TIMES_UPCOMING, SourceStatus.AVAILABLE_ENABLED)
+                .copyWithWritableSources(ImmutableList.of(Publisher.RADIO_TIMES_UPCOMING));
+
+
+        when(configurationFetcher.configurationFor(request)).thenReturn(Maybe.just(configuration));
+        when(request.getParameter("source")).thenReturn("upcoming.radiotimes.com");
         when(request.getParameter("valid_uris")).thenReturn("uri1,uri2,uri3");
 
         controller.unpublishContent(request, response);
 
         verify(oldContentDeactivator, times(1)).deactivateOldContent(
-                Publisher.METABROADCAST,
+                Publisher.RADIO_TIMES_UPCOMING,
                 ImmutableList.of("uri1","uri2","uri3"),
                 50);
     }
 
     @Test
-    public void doNotDeactivateWithoutWritePermissions() throws Exception {
+    public void doNotDeactivateWithoutWritePermissions()
+            throws InvalidIpForApiKeyException, ApiKeyNotFoundException, RevokedApiKeyException,
+            IOException {
 
+        ApplicationConfiguration configuration = ApplicationConfiguration.defaultConfiguration();
+
+        when(configurationFetcher.configurationFor(request)).thenReturn(Maybe.just(configuration));
         when(request.getParameter("source")).thenReturn("upcoming.radiotimes.com");
         when(request.getParameter("valid_uris")).thenReturn("uri1,uri2,uri3");
 

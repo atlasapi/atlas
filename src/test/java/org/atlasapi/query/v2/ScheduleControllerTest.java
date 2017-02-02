@@ -5,12 +5,13 @@ import java.util.Set;
 
 import javax.servlet.http.HttpServletRequest;
 
-import com.metabroadcast.applications.client.model.internal.AccessRoles;
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.applications.client.model.internal.ApplicationConfiguration;
-import org.atlasapi.application.query.ApplicationFetcher;
-import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationAccessRole;
+import org.atlasapi.application.v3.ApplicationConfiguration;
+import org.atlasapi.application.v3.SourceStatus;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
@@ -31,6 +32,7 @@ import com.metabroadcast.common.time.DateTimeZones;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.Before;
@@ -65,8 +67,8 @@ public class ScheduleControllerTest {
             mock(ScheduleResolver.class);
     private final ChannelResolver channelResolver =
             mock(ChannelResolver.class);
-    private final ApplicationFetcher configFetcher =
-            mock(ApplicationFetcher.class);
+    private final ApplicationConfigurationFetcher configFetcher =
+            mock(ApplicationConfigurationFetcher.class);
 
     private final AdapterLog log = new NullAdapterLog();
 
@@ -74,18 +76,12 @@ public class ScheduleControllerTest {
     private final AtlasModelWriter<Iterable<ScheduleChannel>> outputter =
             mock(AtlasModelWriter.class);
 
-    private final AccessRoles owlRole = mock(AccessRoles.class);
-    private final AccessRoles owlAndSunsetRoles = mock(AccessRoles.class);
-    private final AccessRoles defaultRoles = mock(AccessRoles.class);
-    private final Application application = getMockApplication();
-
     private final ScheduleController controller = new ScheduleController(
             scheduleResolver,
             channelResolver,
             configFetcher,
             log,
-            outputter,
-            application
+            outputter
     );
 
     private DateTime to;
@@ -95,22 +91,17 @@ public class ScheduleControllerTest {
     private Channel channel;
     
     @Before
-    public void setup() throws InvalidApiKeyException {
+    public void setup() throws ApiKeyNotFoundException, RevokedApiKeyException, InvalidIpForApiKeyException {
         from = new DateTime(DateTimeZones.UTC);
         to = new DateTime(DateTimeZones.UTC);
         request = new StubHttpServletRequest();
         response = new StubHttpServletResponse();
         channel = new Channel.Builder().build();
         
-        when(configFetcher.applicationFor(request))
-            .thenReturn(java.util.Optional.empty());
+        when(configFetcher.configurationFor(request))
+            .thenReturn(Maybe.nothing());
         when(channelResolver.fromId(any(Long.class)))
             .thenReturn(Maybe.just(channel));
-
-        when(owlRole.hasRole(ApplicationAccessRole.OWL_ACCESS.getRole())).thenReturn(true);
-        when(owlAndSunsetRoles.hasRole(ApplicationAccessRole.OWL_ACCESS.getRole())).thenReturn(true);
-        when(owlAndSunsetRoles.hasRole(ApplicationAccessRole.SUNSETTED_API_FEATURES_ACCESS.getRole())).thenReturn(true);
-        when(defaultRoles.hasRole(any())).thenReturn(false);
     }
     
     @Test
@@ -120,33 +111,29 @@ public class ScheduleControllerTest {
         controller.schedule(from.toString(), to.toString(), NO_COUNT, NO_ON, NO_CHANNEL_KEY, "cid", NO_PUBLISHERS, request, response);
         
         verify(outputter).writeError(argThat(is(request)), argThat(is(response)), any(AtlasErrorSummary.class));
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
     }
 
     @Test
     public void testScheduleRequestPassWithJustPublishers() throws IOException {
-
-        when(application.getAccessRoles()).thenReturn(defaultRoles);
-
+        
         when(scheduleResolver.schedule(eq(from), eq(to), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
             .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, to)));
         
         controller.schedule(from.toString(), to.toString(), NO_COUNT, NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
     }
 
     @Test
     public void testScheduleRequestWithOnParameter() throws IOException {
-
-        when(application.getAccessRoles()).thenReturn(defaultRoles);
-
+        
         when(scheduleResolver.schedule(eq(from), eq(to), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
             .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, to)));
         
         controller.schedule(NO_FROM, NO_TO, NO_COUNT, from.toString(), NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
     }
     
     @Test
@@ -158,7 +145,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), NO_TO, String.valueOf(count), NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
     }
 
     @Test
@@ -166,7 +153,7 @@ public class ScheduleControllerTest {
 
         controller.schedule(NO_FROM, NO_TO, NO_COUNT, NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
     }
     
@@ -175,7 +162,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), from.toString(), "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -185,7 +172,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), NO_TO, NO_COUNT, NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -195,7 +182,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(NO_FROM, to.toString(), NO_COUNT, NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -205,7 +192,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(NO_FROM, NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -213,10 +200,10 @@ public class ScheduleControllerTest {
     @Test
     public void testErrorsWhenApiKeyForUnknownAppIsSupplied() throws Exception {
         HttpServletRequest req = request.withParam("apiKey", "unknownKey");
-        when(configFetcher.applicationFor(req)).thenThrow(InvalidApiKeyException.class);
+        when(configFetcher.configurationFor(req)).thenThrow(RevokedApiKeyException.class);
 
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", req, response);
-        verifyExceptionThrownAndWrittenToUser(InvalidApiKeyException.class);
+        verifyExceptionThrownAndWrittenToUser(RevokedApiKeyException.class);
     }
 
     @Test
@@ -224,7 +211,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "not_a_publisher", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -234,7 +221,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, "bbcone", "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -247,7 +234,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -255,18 +242,19 @@ public class ScheduleControllerTest {
     @Test
     public void testPassesAppConfigToResolverWhenNoPublishersSupplied() throws Exception {
         HttpServletRequest req = request.withParam("apiKey", "key");
-
-        when(application.getAccessRoles()).thenReturn(owlRole);
-
-        when(configFetcher.applicationFor(req))
-            .thenReturn(java.util.Optional.of(application));
-        when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.of(application))))
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
+                .build();
+        
+        when(configFetcher.configurationFor(req))
+            .thenReturn(Maybe.just(appConfig));
+        when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.of(appConfig))))
             .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, from)));
         
         String NO_PUBLISHERS = null;
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", NO_PUBLISHERS, req, response);
         
-        verify(outputter).writeTo(argThat(is(req)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), argThat(is(application)));
+        verify(outputter).writeTo(argThat(is(req)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), argThat(is(appConfig)));
         
     }
 
@@ -274,18 +262,19 @@ public class ScheduleControllerTest {
     public void testDoesntPassAppConfigToResolverWhenPublishersSuppliedWithApiKey() throws Exception {
         
         HttpServletRequest req = request.withParam("apiKey", "key");
-
-        when(application.getAccessRoles()).thenReturn(owlRole);
-
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
+                .build();
+        
         HttpServletRequest matchRequest = req;
-        when(configFetcher.applicationFor(matchRequest))
-            .thenReturn(java.util.Optional.of(application));
+        when(configFetcher.configurationFor(matchRequest))
+            .thenReturn(Maybe.just(appConfig));
         when(scheduleResolver.schedule(eq(from), eq(5), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
             .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, from)));
         
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", matchRequest, response);
         
-        verify(outputter).writeTo(argThat(is(matchRequest)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), argThat(is(application)));
+        verify(outputter).writeTo(argThat(is(matchRequest)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), argThat(is(appConfig)));
         
     }
     
@@ -298,7 +287,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), NO_TO, "5", NO_ON, "bbcone", null, "bbc.co.uk", request, response);
         
-        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         
     }
     
@@ -307,7 +296,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), NO_TO, "0", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -317,7 +306,7 @@ public class ScheduleControllerTest {
         
         controller.schedule(from.toString(), NO_TO, "11", NO_ON, NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
         
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(ApplicationConfiguration.class));
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
         
     }
@@ -325,10 +314,14 @@ public class ScheduleControllerTest {
     @Test
     public void privilegedKeysAreAllowedToAskForBigSchedules() throws Exception {
         HttpServletRequest request = this.request.withParam("apiKey", "key");
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(
+                        ApplicationAccessRole.OWL_ACCESS,
+                        ApplicationAccessRole.SUNSETTED_API_FEATURES_ACCESS
+                ))
+                .build();
 
-        when(application.getAccessRoles()).thenReturn(owlAndSunsetRoles);
-
-        when(configFetcher.applicationFor(request)).thenReturn(java.util.Optional.of(application));
+        when(configFetcher.configurationFor(request)).thenReturn(Maybe.just(appConfig));
 
         when(
                 scheduleResolver.schedule(
@@ -362,17 +355,18 @@ public class ScheduleControllerTest {
                 argThat(is(response)),
                 anyChannelSchedules(),
                 anySetOfPublishers(),
-                any(Application.class)
+                any(ApplicationConfiguration.class)
         );
     }
 
     @Test
     public void nonPrivilegedKeysAreAllowedToAskForOneScheduleDay() throws Exception {
         HttpServletRequest request = this.request.withParam("apiKey", "key");
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
+                .build();
 
-        when(application.getAccessRoles()).thenReturn(owlAndSunsetRoles);
-
-        when(configFetcher.applicationFor(request)).thenReturn(java.util.Optional.of(application));
+        when(configFetcher.configurationFor(request)).thenReturn(Maybe.just(appConfig));
 
         when(
                 scheduleResolver.schedule(
@@ -406,17 +400,18 @@ public class ScheduleControllerTest {
                 argThat(is(response)),
                 anyChannelSchedules(),
                 anySetOfPublishers(),
-                any(Application.class)
+                any(ApplicationConfiguration.class)
         );
     }
 
     @Test
     public void nonPrivilegedKeysAreNotAllowedToAskForMoreThanOneScheduleDay() throws Exception {
         HttpServletRequest request = this.request.withParam("apiKey", "key");
+        ApplicationConfiguration appConfig = getApplicationConfigurationBuilder()
+                .withAccessRoles(ImmutableSet.of(ApplicationAccessRole.OWL_ACCESS))
+                .build();
 
-        when(application.getAccessRoles()).thenReturn(owlRole);
-
-        when(configFetcher.applicationFor(request)).thenReturn(java.util.Optional.of(application));
+        when(configFetcher.configurationFor(request)).thenReturn(Maybe.just(appConfig));
 
         when(
                 scheduleResolver.schedule(
@@ -450,7 +445,7 @@ public class ScheduleControllerTest {
                 argThat(is(response)),
                 anyChannelSchedules(),
                 anySetOfPublishers(),
-                any(Application.class)
+                any(ApplicationConfiguration.class)
         );
         verifyExceptionThrownAndWrittenToUser(IllegalArgumentException.class);
     }
@@ -472,15 +467,12 @@ public class ScheduleControllerTest {
         assertThat(errorCaptor.getValue().exception(), is(instanceOf(expectedException)));
     }
 
-    private Application getMockApplication() {
-
-        Application application = mock(Application.class);
-        ApplicationConfiguration configuration = ApplicationConfiguration.builder()
-                .withPrecedence(ImmutableList.of(Publisher.BBC))
-                .withEnabledWriteSources(ImmutableList.of())
-                .build();
-
-        when(application.getConfiguration()).thenReturn(configuration);
-        return application;
+    private ApplicationConfiguration.Builder getApplicationConfigurationBuilder() {
+        return ApplicationConfiguration
+                .builder()
+                .withSourceStatuses(ImmutableMap.of(Publisher.BBC,  SourceStatus.AVAILABLE_ENABLED))
+                .withPrecedence(ImmutableList.of())
+                .withWritableSources(ImmutableList.of())
+                .withContentHierarchyPrecedence(Optional.absent());
     }
 }

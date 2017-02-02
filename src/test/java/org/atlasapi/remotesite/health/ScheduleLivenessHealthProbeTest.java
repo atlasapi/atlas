@@ -6,9 +6,9 @@ import static org.hamcrest.Matchers.lessThan;
 
 import java.util.List;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import junit.framework.TestCase;
 
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
@@ -21,6 +21,7 @@ import org.joda.time.Interval;
 import org.joda.time.Minutes;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.health.ProbeResult;
@@ -123,20 +124,27 @@ public class ScheduleLivenessHealthProbeTest extends TestCase {
 			
 			final List<Channel> channelList = ImmutableList.copyOf(channels);
 			
-			return new Schedule(ImmutableList.copyOf(Iterables.filter(schedule.scheduleChannels(),
-					input -> channelList.contains(input.channel()))), schedule.interval());
+			return new Schedule(ImmutableList.copyOf(Iterables.filter(schedule.scheduleChannels(), new Predicate<ScheduleChannel>() {
+
+				@Override
+				public boolean apply(ScheduleChannel input) {
+					return channelList.contains(input.channel());
+				}
+				
+				
+			})), schedule.interval());
 			
 		}
 		
 		@Override
 		public Schedule schedule(DateTime from, DateTime to, Iterable<Channel> channels,
-		        Iterable<Publisher> publisher, Optional<Application> mergeApp) {
+		        Iterable<Publisher> publisher, Optional<ApplicationConfiguration> mergeConfig) {
 		    return null;
 		}
 		
 		@Override
 		public Schedule schedule(DateTime from, int count, Iterable<Channel> channels,
-		        Iterable<Publisher> publisher, Optional<Application> mergeApp) {
+		        Iterable<Publisher> publisher, Optional<ApplicationConfiguration> mergeConfig) {
 		    return null;
 		}
 		

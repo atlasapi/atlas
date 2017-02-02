@@ -16,14 +16,11 @@ package org.atlasapi.query.content;
 
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.Matchers.hasItems;
-import static org.mockito.Mockito.mock;
 
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.query.Selection;
 import junit.framework.TestCase;
 
 import org.atlasapi.content.criteria.ContentQuery;
@@ -51,7 +48,7 @@ import com.google.common.collect.ImmutableSet;
 @RunWith(JMock.class)
 public class UriFetchingQueryExecutorTest extends TestCase {
 
-	private static final ContentQuery A_FILTER = new ContentQuery(ImmutableList.of(), Selection.ALL, mock(Application.class));
+	private static final ContentQuery A_FILTER = ContentQuery.MATCHES_EVERYTHING;
 	
 	private static final Episode item1 = new Episode("item1", "curie:1", Publisher.BBC);
 	private static final Episode item2 = new Episode("item2", "curie:2", Publisher.BBC);

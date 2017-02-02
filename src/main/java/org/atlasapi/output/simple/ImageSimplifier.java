@@ -2,19 +2,17 @@ package org.atlasapi.output.simple;
 
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageType;
 import org.atlasapi.output.Annotation;
 
 
 public class ImageSimplifier extends IdentifiedModelSimplifier<Image, org.atlasapi.media.entity.simple.Image> {
 
     @Override
-    public org.atlasapi.media.entity.simple.Image simplify(
-            Image image,
-            Set<Annotation> annotations,
-            Application application
-    ) {
+    public org.atlasapi.media.entity.simple.Image simplify(Image image,
+            Set<Annotation> annotations, ApplicationConfiguration config) {
         if (image == null) {
             return new org.atlasapi.media.entity.simple.Image();
         }

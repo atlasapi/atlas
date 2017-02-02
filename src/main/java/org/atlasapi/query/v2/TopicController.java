@@ -6,9 +6,10 @@ import java.util.Iterator;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.query.ApplicationFetcher;
-import org.atlasapi.application.query.InvalidApiKeyException;
-import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
@@ -44,9 +45,8 @@ public class TopicController extends BaseController<Iterable<Topic>> {
     private final QueryController queryController;
     private final TopicWriteController topicWriteController;
 
-    public TopicController(TopicQueryResolver topicResolver, TopicContentLister contentLister, ApplicationFetcher configFetcher, AdapterLog log, AtlasModelWriter<Iterable<Topic>> atlasModelOutputter, QueryController queryController, TopicWriteController topicWriteController) {
-        super(configFetcher, log, atlasModelOutputter, SubstitutionTableNumberCodec.lowerCaseOnly(),
-                DefaultApplication.createDefault());
+    public TopicController(TopicQueryResolver topicResolver, TopicContentLister contentLister, ApplicationConfigurationFetcher configFetcher, AdapterLog log, AtlasModelWriter<Iterable<Topic>> atlasModelOutputter, QueryController queryController, TopicWriteController topicWriteController) {
+        super(configFetcher, log, atlasModelOutputter, SubstitutionTableNumberCodec.lowerCaseOnly());
         this.topicResolver = topicResolver;
         this.contentLister = contentLister;
         this.queryController = queryController;
@@ -59,12 +59,12 @@ public class TopicController extends BaseController<Iterable<Topic>> {
             ContentQuery query;
             try {
                 query = buildQuery(req);
-            } catch (InvalidApiKeyException ex) {
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
                 errorViewFor(req, resp, AtlasErrorSummary.forException(ex));
                 return;
             }
 
-            modelAndViewFor(req, resp, topicResolver.topicsFor(query), query.getApplication());
+            modelAndViewFor(req, resp, topicResolver.topicsFor(query), query.getConfiguration());
         } catch (Exception e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
         }
@@ -76,7 +76,7 @@ public class TopicController extends BaseController<Iterable<Topic>> {
         ContentQuery query;
         try {
             query = buildQuery(req);
-        } catch (InvalidApiKeyException e) {
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             outputter.writeError(req, resp, AtlasErrorSummary.forException(e));
             return;
         }
@@ -96,7 +96,7 @@ public class TopicController extends BaseController<Iterable<Topic>> {
         }
         
         
-        modelAndViewFor(req, resp, ImmutableSet.of(topicForUri.requireValue()), query.getApplication());
+        modelAndViewFor(req, resp, ImmutableSet.of(topicForUri.requireValue()), query.getConfiguration());
     }
     
     @RequestMapping(value={"3.0/topics/{id}/content.*", "/topics/{id}/content"})
@@ -104,7 +104,7 @@ public class TopicController extends BaseController<Iterable<Topic>> {
         ContentQuery query;
         try {
             query = buildQuery(req);
-        } catch (InvalidApiKeyException e) {
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
             outputter.writeError(req, resp, AtlasErrorSummary.forException(e));
             return;
         }
@@ -129,14 +129,19 @@ public class TopicController extends BaseController<Iterable<Topic>> {
             QueryResult<Identified, Topic> result = QueryResult.of(
                             Iterables.filter(iterable(contentLister.contentForTopic(decodedId, query)), Identified.class), 
                             topic);
-            queryController.modelAndViewFor(req, resp, result.withSelection(selection), query.getApplication());
+            queryController.modelAndViewFor(req, resp, result.withSelection(selection), query.getConfiguration());
         } catch (Exception e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
         }
     }
 
     private Iterable<Content> iterable(final Iterator<Content> iterator) {
-        return () -> iterator;
+        return new Iterable<Content>() {
+            @Override
+            public Iterator<Content> iterator() {
+                return iterator;
+            }
+        };
     }
      
     @RequestMapping(value="/3.0/topics.json", method = RequestMethod.POST)

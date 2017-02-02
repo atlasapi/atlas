@@ -2,18 +2,18 @@ package org.atlasapi.query.v2;
 
 import java.io.IOException;
 import java.text.MessageFormat;
-import java.util.Optional;
 import java.util.Set;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import org.atlasapi.application.query.ApplicationFetcher;
-import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
 import org.atlasapi.application.v3.ApplicationAccessRole;
-import org.atlasapi.application.v3.DefaultApplication;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
@@ -29,6 +29,8 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.webapp.query.DateTimeInQueryParser;
 
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -57,7 +59,8 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
     private final ScheduleResolver scheduleResolver;
     private final ChannelResolver channelResolver;
 
-    private final Application defaultApplication;
+    private final ApplicationConfiguration defaultConfig
+            = ApplicationConfiguration.forNoApiKey();
 
     private final DateTimeInQueryParser dateTimeInQueryParser = new DateTimeInQueryParser();
     private final NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
@@ -65,15 +68,13 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
     public ScheduleController(
             ScheduleResolver scheduleResolver,
             ChannelResolver channelResolver,
-            ApplicationFetcher configFetcher,
+            ApplicationConfigurationFetcher configFetcher,
             AdapterLog log,
-            AtlasModelWriter<Iterable<ScheduleChannel>> outputter,
-            Application application
+            AtlasModelWriter<Iterable<ScheduleChannel>> outputter
     ) {
-        super(configFetcher, log, outputter, application);
+        super(configFetcher, log, outputter);
         this.scheduleResolver = scheduleResolver;
         this.channelResolver = channelResolver;
-        this.defaultApplication = application;
     }
 
     @RequestMapping("/3.0/schedule.*")
@@ -86,10 +87,10 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
             @Nullable @RequestParam(required = false) String publisher,
             HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            Optional<Application> requestedApp;
+            Maybe<ApplicationConfiguration> requestedConfig;
             try {
-                requestedApp = possibleApp(request);
-            } catch (InvalidApiKeyException ex) {
+                requestedConfig = possibleAppConfig(request);
+            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -137,15 +138,15 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         + "or 'from' and 'count'");
             }
 
-            Application application = requestedApp.orElse(defaultApplication);
+            ApplicationConfiguration appConfig = requestedConfig.valueOrDefault(defaultConfig);
 
             if (toWhen != null) {
-                checkRequestedInterval(application, fromWhen, toWhen);
+                checkRequestedInterval(appConfig, fromWhen, toWhen);
             }
 
             boolean publishersSupplied = !Strings.isNullOrEmpty(publisher);
 
-            Set<Publisher> publishers = getPublishers(publisher, application);
+            Set<Publisher> publishers = getPublishers(publisher, appConfig);
 
             if (publishers.isEmpty()) {
                 throw new IllegalArgumentException(
@@ -164,7 +165,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         "You must specify at least one channel that exists using the channel or channel_id parameter");
             }
 
-            Application mergeConfig = !publishersSupplied ? application : null;
+            ApplicationConfiguration mergeConfig = !publishersSupplied ? appConfig : null;
             Schedule schedule;
             if (count != null) {
                 schedule = scheduleResolver.schedule(
@@ -172,7 +173,7 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         count,
                         channels,
                         publishers,
-                        com.google.common.base.Optional.fromNullable(mergeConfig)
+                        Optional.fromNullable(mergeConfig)
                 );
             } else {
                 schedule = scheduleResolver.schedule(
@@ -180,10 +181,10 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
                         toWhen,
                         channels,
                         publishers,
-                        com.google.common.base.Optional.fromNullable(mergeConfig)
+                        Optional.fromNullable(mergeConfig)
                 );
             }
-            modelAndViewFor(request, response, schedule.scheduleChannels( ), application);
+            modelAndViewFor(request, response, schedule.scheduleChannels( ), appConfig);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
@@ -198,20 +199,13 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
         return true;
     }
 
-    private Set<Publisher> getPublishers(String publisher, Application application) {
+    private Set<Publisher> getPublishers(String publisher,
+            ApplicationConfiguration appConfig) {
         if (!Strings.isNullOrEmpty(publisher)) {
-            return Sets.intersection(
-                    publishersFrom(publisher),
-                    application.getConfiguration().getEnabledReadSources()
-            );
+            return Sets.intersection(publishersFrom(publisher), appConfig.getEnabledSources());
         }
-        if (application.getConfiguration().isPrecedenceEnabled()) {
-            return ImmutableSet.of(
-                    application.getConfiguration()
-                            .getReadPrecedenceOrdering()
-                            .sortedCopy(application.getConfiguration().getEnabledReadSources())
-                            .get(0)
-            );
+        if (appConfig.precedenceEnabled()) {
+            return ImmutableSet.of(appConfig.orderdPublishers().get(0));
         }
         throw new IllegalArgumentException("Need precedence enabled");
     }
@@ -219,7 +213,13 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
     private Set<Channel> channelsFromIds(String channelId) {
         return ImmutableSet.copyOf(Iterables.transform(Iterables.filter(Iterables.transform(
                 URI_SPLITTER.split(channelId),
-                input -> channelResolver.fromId(idCodec.decode(input).longValue())
+                new Function<String, Maybe<Channel>>() {
+
+                    @Override
+                    public Maybe<Channel> apply(String input) {
+                        return channelResolver.fromId(idCodec.decode(input).longValue());
+                    }
+                }
         ), Maybe.HAS_VALUE), Maybe.requireValueFunction()));
     }
 
@@ -235,12 +235,12 @@ public class ScheduleController extends BaseController<Iterable<ScheduleChannel>
     }
 
     private void checkRequestedInterval(
-            Application application,
+            ApplicationConfiguration configuration,
             DateTime fromWhen,
             DateTime toWhen
     ) {
         // These API keys are allowed to make big schedule requests
-        if (application.getAccessRoles().hasRole(ApplicationAccessRole.SUNSETTED_API_FEATURES_ACCESS.getRole())) {
+        if (configuration.hasAccessRole(ApplicationAccessRole.SUNSETTED_API_FEATURES_ACCESS)) {
             return;
         }
 

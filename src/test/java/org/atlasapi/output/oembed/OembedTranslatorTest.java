@@ -17,15 +17,16 @@ package org.atlasapi.output.oembed;
 
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import junit.framework.TestCase;
 
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
+import org.atlasapi.output.Annotation;
 import org.atlasapi.output.oembed.OembedTranslator.OutputFactory;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
@@ -38,8 +39,6 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.servlet.StubHttpServletRequest;
 import com.metabroadcast.common.servlet.StubHttpServletResponse;
-
-import static org.mockito.Mockito.mock;
 
 /**
  * Unit test for {@link OembedTranslator}.
@@ -59,8 +58,6 @@ public class OembedTranslatorTest extends TestCase {
 	private StubHttpServletRequest request;
 	private StubHttpServletResponse response;
 
-	private Application application = mock(Application.class);
-
 	@Override
 	@Before
 	public void setUp() throws Exception {
@@ -75,7 +72,7 @@ public class OembedTranslatorTest extends TestCase {
 			one(outputFactory).createOutput(); 
 		}});
 		
-		new OembedTranslator(outputFactory).writeTo(request, response, graph, ImmutableSet.of(), application);
+		new OembedTranslator(outputFactory).writeTo(request, response, graph, ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
 	}
 	
 	@Test
@@ -86,7 +83,7 @@ public class OembedTranslatorTest extends TestCase {
 			one(oembedOutput).writeTo(response.getOutputStream());
 		}});
 		
-		new OembedTranslator(outputFactory).writeTo(request, response, graph, ImmutableSet.of(), application);
+		new OembedTranslator(outputFactory).writeTo(request, response, graph, ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
 	}
 	
 	@Test
@@ -123,7 +120,7 @@ public class OembedTranslatorTest extends TestCase {
 			one(oembedOutput).setEmbedCode("<embed src=\\\"a\\\" />");
 		}});
 		
-		new OembedTranslator(outputFactory).writeTo(request, response, graph, ImmutableSet.of(), application);
+		new OembedTranslator(outputFactory).writeTo(request, response, graph, ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
 	}
 
 }

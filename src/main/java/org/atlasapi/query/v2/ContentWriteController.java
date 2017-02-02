@@ -16,9 +16,11 @@ import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 import javax.ws.rs.core.HttpHeaders;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import org.atlasapi.application.query.ApplicationFetcher;
-import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
@@ -88,7 +90,7 @@ public class ContentWriteController {
     private static final Logger log = LoggerFactory.getLogger(ContentWriteController.class);
     private static final NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
-    private final ApplicationFetcher applicationFetcher;
+    private final ApplicationConfigurationFetcher appConfigFetcher;
     private final ContentWriteExecutor writeExecutor;
     private final LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     private final MessageSender<ContentWriteMessage> messageSender;
@@ -99,10 +101,10 @@ public class ContentWriteController {
     private final EquivalenceBreaker equivalenceBreaker;
     private final OldContentDeactivator oldContentDeactivator;
 
-    private Optional<Application> possibleApplication;
+    private Maybe<ApplicationConfiguration> possibleConfig;
 
     private ContentWriteController(
-            ApplicationFetcher applicationFetcher,
+            ApplicationConfigurationFetcher appConfigFetcher,
             ContentWriteExecutor contentWriteExecutor,
             LookupBackedContentIdGenerator lookupBackedContentIdGenerator,
             MessageSender<ContentWriteMessage> messageSender,
@@ -113,7 +115,7 @@ public class ContentWriteController {
             EquivalenceBreaker equivalenceBreaker,
             OldContentDeactivator oldContentDeactivator
     ) {
-        this.applicationFetcher = checkNotNull(applicationFetcher);
+        this.appConfigFetcher = checkNotNull(appConfigFetcher);
         this.writeExecutor = checkNotNull(contentWriteExecutor);
         this.lookupBackedContentIdGenerator = checkNotNull(lookupBackedContentIdGenerator);
         this.messageSender = checkNotNull(messageSender);
@@ -126,7 +128,7 @@ public class ContentWriteController {
     }
 
     public static ContentWriteController create(
-            ApplicationFetcher applicationFetcher,
+            ApplicationConfigurationFetcher appConfigFetcher,
             ContentWriteExecutor contentWriteExecutor,
             LookupBackedContentIdGenerator lookupBackedContentIdGenerator,
             MessageSender<ContentWriteMessage> messageSender,
@@ -138,7 +140,7 @@ public class ContentWriteController {
             OldContentDeactivator oldContentDeactivator
     ) {
         return new ContentWriteController(
-                applicationFetcher,
+                appConfigFetcher,
                 contentWriteExecutor,
                 lookupBackedContentIdGenerator,
                 messageSender,
@@ -217,12 +219,15 @@ public class ContentWriteController {
             HttpServletResponse response
     ) {
         try {
-            possibleApplication = applicationFetcher.applicationFor(request);
-        } catch (InvalidApiKeyException ex) {
+            possibleConfig = appConfigFetcher.configurationFor(request);
+        } catch (ApiKeyNotFoundException |
+                RevokedApiKeyException |
+                InvalidIpForApiKeyException ex
+                ) {
             return Optional.of(AtlasErrorSummary.forException(ex));
         }
 
-        if (!possibleApplication.isPresent()) {
+        if (possibleConfig.isNothing()) {
             return Optional.of(
                     AtlasErrorSummary.forException(new UnauthorizedException(
                             "API key is unauthorised"
@@ -238,7 +243,7 @@ public class ContentWriteController {
             HttpServletResponse response,
             Publisher publisher
     ) {
-        if (!possibleApplication.isPresent() || !possibleApplication.get().getConfiguration().isWriteEnabled(publisher)) {
+        if (!possibleConfig.requireValue().canWrite(publisher)) {
             return Optional.of(
                     AtlasErrorSummary.forException(new ForbiddenException(
                             "API key does not have write permission"
@@ -375,7 +380,7 @@ public class ContentWriteController {
                     resp,
                     AtlasErrorSummary.forException(new IllegalArgumentException(
                             "The '" + ASYNC_PARAMETER + "' and '" + BROADCAST_ASSERTIONS_PARAMETER
-                                    + "' request parameters are mutually exclusive"
+                            + "' request parameters are mutually exclusive"
                     ))
             );
         }

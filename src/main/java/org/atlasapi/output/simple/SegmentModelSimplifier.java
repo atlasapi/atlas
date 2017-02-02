@@ -5,13 +5,14 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.segment.Segment;
 import org.atlasapi.media.segment.SegmentEvent;
 import org.atlasapi.media.segment.SegmentRef;
 import org.atlasapi.media.segment.SegmentResolver;
 import org.atlasapi.output.Annotation;
 
+import com.google.common.base.Function;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -35,16 +36,20 @@ public class SegmentModelSimplifier implements
     @Override
     public List<org.atlasapi.media.entity.simple.SegmentEvent> simplify(
             List<SegmentEvent> segmentEvents, Set<Annotation> annotations,
-            Application application) {
+            ApplicationConfiguration config) {
         final Map<SegmentRef, Maybe<Segment>> resolvedSegs = segmentResolver.resolveById(
                 ImmutableSet.copyOf(Lists.transform(segmentEvents, SegmentEvent.TO_REF)));
         return ImmutableList.copyOf(Iterables.filter(Iterables.transform(segmentEvents,
-                input -> {
-                    Maybe<Segment> segment = resolvedSegs.get(input.getSegment());
-                    if (segment.hasValue()) {
-                        return simplify(input, segment.requireValue());
+                new Function<SegmentEvent, org.atlasapi.media.entity.simple.SegmentEvent>() {
+
+                    @Override
+                    public org.atlasapi.media.entity.simple.SegmentEvent apply(SegmentEvent input) {
+                        Maybe<Segment> segment = resolvedSegs.get(input.getSegment());
+                        if (segment.hasValue()) {
+                            return simplify(input, segment.requireValue());
+                        }
+                        return null;
                     }
-                    return null;
                 }), Predicates.notNull()));
     }
 

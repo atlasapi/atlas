@@ -2,7 +2,7 @@ package org.atlasapi.output.simple;
 
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.output.Annotation;
 
@@ -15,11 +15,8 @@ public class ChannelNumberingChannelGroupModelSimplifier extends IdentifiedModel
     }
     
     @Override
-    public org.atlasapi.media.entity.simple.ChannelGroup simplify(
-            ChannelGroup input,
-            Set<Annotation> annotations,
-            Application application
-    ) {
+    public org.atlasapi.media.entity.simple.ChannelGroup simplify(ChannelGroup input, Set<Annotation> annotations,
+            ApplicationConfiguration config) {
         return simplifier.simplify(input, annotations.contains(Annotation.HISTORY));
     }
 }

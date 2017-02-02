@@ -2,7 +2,7 @@ package org.atlasapi.output.simple;
 
 import static org.junit.Assert.assertEquals;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Container;
@@ -27,7 +27,7 @@ import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 public class ContentModelSimplifierTest {
     
-    private Application application = Mockito.mock(Application.class);
+    private ApplicationConfiguration applicationConfig = Mockito.mock(ApplicationConfiguration.class);
 
     @SuppressWarnings("unchecked")
     private final ContainerModelSimplifier containerSimplifier = new ContainerModelSimplifier(
@@ -75,14 +75,14 @@ public class ContentModelSimplifierTest {
         Container container = new Container();
         container.setId(1234l);
         containerSimplifier.exposeIds(true);
-        Playlist simplified = containerSimplifier.simplify(container, Annotation.defaultAnnotations(), application);
+        Playlist simplified = containerSimplifier.simplify(container, Annotation.defaultAnnotations(), applicationConfig);
         String lowerCasedId = simplified.getId().toLowerCase();
         assertEquals(lowerCasedId, simplified.getId());
         
         Item item = new Item();
         item.setId(1234l);
         itemSimplifier.exposeIds(true);
-        org.atlasapi.media.entity.simple.Item simpleItem = itemSimplifier.simplify(item , Annotation.defaultAnnotations(), application);
+        org.atlasapi.media.entity.simple.Item simpleItem = itemSimplifier.simplify(item , Annotation.defaultAnnotations(), applicationConfig);
         lowerCasedId = simplified.getId().toLowerCase();
         assertEquals(lowerCasedId, simpleItem.getId());
     }

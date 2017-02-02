@@ -21,11 +21,9 @@ import static org.atlasapi.media.entity.testing.PlaylistTestDataBuilder.playlist
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.allOf;
 import static org.hamcrest.Matchers.is;
-import static org.mockito.Mockito.mock;
 
 import java.io.IOException;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import junit.framework.TestCase;
 import nu.xom.Builder;
 import nu.xom.Document;
@@ -33,6 +31,7 @@ import nu.xom.Element;
 import nu.xom.ParsingException;
 import nu.xom.ValidityException;
 
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.ContentIdentifier;
 import org.atlasapi.media.entity.simple.ContentQueryResult;
@@ -249,7 +248,7 @@ public class JaxbXmlTranslatorTest extends TestCase {
 	}
 
     private Document serializeToXml(ContentQueryResult result) throws IOException, ParsingException, ValidityException {
-        translator.writeTo(request, response, result, ImmutableSet.copyOf(Annotation.values()), mock(Application.class));
+        translator.writeTo(request, response, result, ImmutableSet.copyOf(Annotation.values()), ApplicationConfiguration.DEFAULT_CONFIGURATION);
         
         String output = response.getResponseAsString();
 

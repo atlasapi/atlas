@@ -2,7 +2,7 @@ package org.atlasapi.query.content.search;
 
 import java.util.List;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
@@ -22,7 +22,7 @@ public class DummySearcher implements SearchResolver {
     }
 
     @Override
-    public List<Identified> search(SearchQuery query, Application application) {
+    public List<Identified> search(SearchQuery query, ApplicationConfiguration appConfig) {
         return ImmutableList.copyOf(respondWith);
     }
 }

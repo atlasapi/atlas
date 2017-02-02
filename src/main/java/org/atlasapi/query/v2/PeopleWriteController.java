@@ -10,13 +10,11 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 
-import com.google.common.base.Optional;
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.social.exceptions.ResourceNotFoundException;
-import org.atlasapi.application.query.ApplicationFetchException;
-import org.atlasapi.application.query.ApplicationFetcher;
-import org.atlasapi.application.query.ApplicationNotFoundException;
-import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.query.ApiKeyNotFoundException;
+import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.InvalidIpForApiKeyException;
+import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.input.ReadException;
@@ -24,12 +22,15 @@ import org.atlasapi.media.entity.Person;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.exceptions.ForbiddenException;
+import org.atlasapi.output.exceptions.UnauthorizedException;
 import org.atlasapi.persistence.content.people.PersonStore;
 
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
@@ -46,21 +47,18 @@ public class PeopleWriteController {
 
     private static final Logger log = LoggerFactory.getLogger(PeopleWriteController.class);
 
-    private final ApplicationFetcher applicationFetcher;
+    private final ApplicationConfigurationFetcher appConfigFetcher;
     private final PersonStore store;
     private final ModelReader reader;
 
     private ModelTransformer<org.atlasapi.media.entity.simple.Person, Person> transformer;
     private AtlasModelWriter<Iterable<Person>> outputter;
 
-    public PeopleWriteController(
-            ApplicationFetcher applicationFetcher,
-            PersonStore store,
-            ModelReader reader,
+    public PeopleWriteController(ApplicationConfigurationFetcher appConfigFetcher,
+            PersonStore store, ModelReader reader,
             ModelTransformer<org.atlasapi.media.entity.simple.Person, Person> transformer,
-            AtlasModelWriter<Iterable<Person>> outputter
-    ) {
-        this.applicationFetcher = applicationFetcher;
+            AtlasModelWriter<Iterable<Person>> outputter) {
+        this.appConfigFetcher = appConfigFetcher;
         this.store = store;
         this.reader = reader;
         this.transformer = transformer;
@@ -77,32 +75,26 @@ public class PeopleWriteController {
         return deserializeAndUpdatePerson(req, resp, OVERWRITE);
     }
 
-    private Void deserializeAndUpdatePerson(
-            HttpServletRequest req,
-            HttpServletResponse resp,
-            boolean merge
-    ) {
-        java.util.Optional<Application> possibleApplication;
+    private Void deserializeAndUpdatePerson(HttpServletRequest req, HttpServletResponse resp,
+            boolean merge) {
+        Maybe<ApplicationConfiguration> possibleConfig;
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
         try {
-            possibleApplication = applicationFetcher.applicationFor(req);
-        } catch (InvalidApiKeyException e) {
-            log.error("Problem with API key for request: {}", req.getRequestURL(), e);
+            possibleConfig = appConfigFetcher.configurationFor(req);
+        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
+            log.error("Problem with API key for request " + req.getRequestURL(), e);
             return error(req, resp, AtlasErrorSummary.forException(e));
         }
 
-        if (!possibleApplication.isPresent()) {
-            log.error("No application found for request: {}", req.getRequestURL());
+        if (possibleConfig.isNothing()) {
             return error(
                     req,
                     resp,
-                    AtlasErrorSummary.forException(
-                            ApplicationNotFoundException.create(req.getRequestURL().toString())
-                    )
+                    AtlasErrorSummary.forException(new UnauthorizedException(
+                            "API key is unauthorised"
+                    ))
             );
         }
-
-        Application application = possibleApplication.get();
 
         Person person;
         try {
@@ -118,7 +110,7 @@ public class PeopleWriteController {
             return error(req, resp, AtlasErrorSummary.forException(ioe));
 
         } catch (Exception e) {
-            log.error("Error reading input for request  " + req.getRequestURL(), e);
+            log.error("Error reading input for request " + req.getRequestURL(), e);
             AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
                     .withMessage("Error reading input for the request")
                     .withStatusCode(HttpStatusCode.BAD_REQUEST);
@@ -126,7 +118,7 @@ public class PeopleWriteController {
             return error(req, resp, errorSummary);
         }
 
-        if (!application.getConfiguration().isWriteEnabled(person.getPublisher())) {
+        if (!possibleConfig.requireValue().canWrite(person.getPublisher())) {
             return error(
                     req,
                     resp,

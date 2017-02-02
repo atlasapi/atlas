@@ -2,9 +2,9 @@ package org.atlasapi.query.content;
 
 import java.util.List;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import junit.framework.TestCase;
 
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.content.criteria.ContentQueryBuilder;
 import org.atlasapi.content.criteria.attribute.Attributes;
@@ -31,8 +31,6 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.query.Selection;
 
-import static org.mockito.Mockito.mock;
-
 @RunWith(JMock.class)
 public class ContentResolvingSearchTest extends TestCase {
     
@@ -58,11 +56,7 @@ public class ContentResolvingSearchTest extends TestCase {
     @Test
     public void testShouldReturnSearchedForItem() {
         final String searchQuery = "test";
-        final ContentQuery contentQuery = ContentQueryBuilder.query()
-                .isAnEnumIn(Attributes.DESCRIPTION_PUBLISHER, ImmutableList.<Enum<Publisher>>copyOf(publishers))
-                .withSelection(selection)
-                .withApplication(mock(Application.class))
-                .build();
+        final ContentQuery contentQuery = ContentQueryBuilder.query().isAnEnumIn(Attributes.DESCRIPTION_PUBLISHER, ImmutableList.<Enum<Publisher>>copyOf(publishers)).withSelection(selection).build();
         final SearchQuery query = new SearchQuery(searchQuery, selection, publishers, 1.0f, 0.0f, 0.0f);
         
         context.checking(new Expectations() {{ 
@@ -70,7 +64,7 @@ public class ContentResolvingSearchTest extends TestCase {
             one(contentResolver).executeUriQuery(ImmutableList.of(brand.getCanonicalUri()), contentQuery); will(returnValue(ImmutableMap.of(brand.getCanonicalUri(), ImmutableList.of(brand))));
         }});
             
-        List<Identified> content = searcher.search(query, mock(Application.class));
+        List<Identified> content = searcher.search(query, ApplicationConfiguration.DEFAULT_CONFIGURATION);
         assertFalse(content.isEmpty());
         Brand result = (Brand) Iterables.getOnlyElement(content);
         assertFalse(result.getChildRefs().isEmpty());

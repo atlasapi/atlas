@@ -3,7 +3,7 @@ package org.atlasapi.query.content;
 import java.util.List;
 import java.util.Map;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
@@ -20,7 +20,9 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.google.common.base.Function;
 import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -37,35 +39,17 @@ public class LookupResolvingQueryExecutor implements KnownTypeQueryExecutor {
     private final EquivalentContentResolver mongoEquivsResolver;
     private final LookupEntryStore lookupEntryStore;
 
-    public LookupResolvingQueryExecutor(
-            KnownTypeContentResolver cassandraContentResolver,
-            KnownTypeContentResolver mongoContentResolver,
-            LookupEntryStore mongoLookupResolver,
-            boolean cassandraEnabled
-    ) {
+    public LookupResolvingQueryExecutor(KnownTypeContentResolver cassandraContentResolver, KnownTypeContentResolver mongoContentResolver, LookupEntryStore mongoLookupResolver, boolean cassandraEnabled) {
         this.cassandraContentResolver = cassandraContentResolver;
-        this.mongoEquivsResolver = new DefaultEquivalentContentResolver(
-                mongoContentResolver,
-                mongoLookupResolver
-        );
+        this.mongoEquivsResolver = new DefaultEquivalentContentResolver(mongoContentResolver, mongoLookupResolver);
         this.cassandraEnabled = cassandraEnabled;
         this.lookupEntryStore = mongoLookupResolver;
     }
 
     @Override
-    public Map<String, List<Identified>> executeUriQuery(
-            Iterable<String> uris,
-            final ContentQuery query
-    ) {
-        EquivalentContent mongoResolved = mongoEquivsResolver.resolveUris(
-                uris,
-                query.getApplication(),
-                query.getAnnotations(),
-                true
-        );
-        Map<String, List<Identified>> results = Multimaps.asMap(
-                ArrayListMultimap.<String, Identified>create(mongoResolved)
-        );
+    public Map<String, List<Identified>> executeUriQuery(Iterable<String> uris, final ContentQuery query) {
+        EquivalentContent mongoResolved = mongoEquivsResolver.resolveUris(uris, query.getConfiguration(), query.getAnnotations(), true);
+        Map<String, List<Identified>> results = Multimaps.asMap(ArrayListMultimap.<String, Identified>create(mongoResolved));
         if (cassandraEnabled && results.isEmpty()) {
             try {
                 results = resolveCassandraEntries(uris, query);
@@ -78,74 +62,48 @@ public class LookupResolvingQueryExecutor implements KnownTypeQueryExecutor {
     }
 
     @Override
-    public Map<String, List<Identified>> executePublisherQuery(
-            Iterable<Publisher> publishers,
-            final ContentQuery query
-    ) {
-        Iterable<LookupEntry> entries = lookupEntryStore.entriesForPublishers(
-                publishers,
-                query.getSelection()
-        );
-        return executeUriQuery(
-                Iterables.transform(entries, LookupEntry.TO_ID),
-                query.copyWithSelection(Selection.all())
-        );
+    public Map<String, List<Identified>> executePublisherQuery(Iterable<Publisher> publishers, final ContentQuery query) {
+        Iterable<LookupEntry> entries = lookupEntryStore.entriesForPublishers(publishers, query.getSelection());
+        return executeUriQuery(Iterables.transform(entries, LookupEntry.TO_ID), query.copyWithSelection(Selection.all()));
     }
 
     @Override
-    public Map<String, List<Identified>> executeIdQuery(
-            Iterable<Long> ids,
-            final ContentQuery query
-    ) {
-        EquivalentContent mongoResolved = mongoEquivsResolver.resolveIds(
-                ids,
-                query.getApplication(),
-                query.getAnnotations()
-        );
-        Map<String, List<Identified>> mongoResults = Multimaps.asMap(
-                ArrayListMultimap.<String, Identified>create(mongoResolved)
-        );
+    public Map<String, List<Identified>> executeIdQuery(Iterable<Long> ids, final ContentQuery query) {
+        EquivalentContent mongoResolved = mongoEquivsResolver.resolveIds(ids, query.getConfiguration(), query.getAnnotations());
+        Map<String, List<Identified>> mongoResults = Multimaps.asMap(ArrayListMultimap.<String, Identified>create(mongoResolved));
         return ImmutableMap.copyOf(mongoResults);
     }
 
     @Override
-    public Map<String, List<Identified>> executeAliasQuery(
-            Optional<String> namespace,
-            Iterable<String> values,
-            ContentQuery query
-    ) {
-        EquivalentContent mongoResolved = mongoEquivsResolver.resolveAliases(
-                namespace,
-                values,
-                query.getApplication(),
-                query.getAnnotations()
-        );
-        Map<String, List<Identified>> mongoResults = Multimaps.asMap(
-                ArrayListMultimap.<String, Identified>create(mongoResolved)
-        );
+    public Map<String, List<Identified>> executeAliasQuery(Optional<String> namespace, Iterable<String> values,
+            ContentQuery query) {
+        EquivalentContent mongoResolved = mongoEquivsResolver.resolveAliases(namespace, values, query.getConfiguration(), query.getAnnotations());
+        Map<String, List<Identified>> mongoResults = Multimaps.asMap(ArrayListMultimap.<String, Identified>create(mongoResolved));
         return ImmutableMap.copyOf(mongoResults);
     }
 
-    private Map<String, List<Identified>> resolveCassandraEntries(
-            Iterable<String> uris,
-            ContentQuery query
-    ) {
-        final Application application = query.getApplication();
-        ResolvedContent result = cassandraContentResolver.findByLookupRefs(
-                Iterables.transform(
-                        uris,
-                        input -> new LookupRef(input, null, null, null)
-                )
-        );
+    private Map<String, List<Identified>> resolveCassandraEntries(Iterable<String> uris, ContentQuery query) {
+        final ApplicationConfiguration configuration = query.getConfiguration();
+        ResolvedContent result = cassandraContentResolver.findByLookupRefs(Iterables.transform(uris, new Function<String, LookupRef>() {
 
-        return Maps.transformValues(
-                Maps.filterValues(
-                        result.asResolvedMap(),
-                        input -> ((input instanceof Described)
-                                && application.getConfiguration()
-                                .isReadEnabled(((Described) input).getPublisher()))
-                ),
-                ImmutableList::of
-        );
+            @Override
+            public LookupRef apply(String input) {
+                return new LookupRef(input, null, null, null);
+            }
+        }));
+        return Maps.transformValues(Maps.filterValues(result.asResolvedMap(), new Predicate<Identified>() {
+
+            @Override
+            public boolean apply(Identified input) {
+                return ((input instanceof Described)
+                        && configuration.isEnabled(((Described) input).getPublisher()));
+            }
+        }), new Function<Identified, List<Identified>>() {
+
+            @Override
+            public List<Identified> apply(Identified input) {
+                return ImmutableList.of(input);
+            }
+        });
     }
 }

@@ -2,7 +2,7 @@ package org.atlasapi.output.simple;
 
 import java.util.Set;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Actor;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.simple.Person;
@@ -16,7 +16,7 @@ public class CrewMemberSimplifier extends IdentifiedModelSimplifier<CrewMember,P
         super(SubstitutionTableNumberCodec.lowerCaseOnly());
     }
     
-    public Person simplify(CrewMember fullCrew, Set<Annotation> annotations, Application application) {
+    public Person simplify(CrewMember fullCrew, Set<Annotation> annotations, ApplicationConfiguration config) {
         Person person = new Person();
         
         person.setType(Person.class.getSimpleName());

@@ -21,7 +21,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Item;
@@ -50,7 +50,7 @@ public class OembedTranslator implements AtlasModelWriter<Iterable<Content>> {
 	}
 
 	@Override
-	public void writeTo(HttpServletRequest request, HttpServletResponse response, Iterable<Content> graph, Set<Annotation> annotations, Application application) throws IOException {
+	public void writeTo(HttpServletRequest request, HttpServletResponse response, Iterable<Content> graph, Set<Annotation> annotations, ApplicationConfiguration config) throws IOException {
 
 		OembedOutput output = feedFactory.createOutput();
 		

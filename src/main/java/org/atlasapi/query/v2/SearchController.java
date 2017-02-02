@@ -7,12 +7,11 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.IpCheckingApiKeyConfigurationFetcher;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.query.ApiKeyApplicationFetcher;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
@@ -29,7 +28,6 @@ import org.springframework.web.bind.annotation.RequestParam;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 
-import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.text.MoreStrings;
 import org.atlasapi.media.entity.Specialization;
@@ -56,7 +54,7 @@ public class SearchController extends BaseController<QueryResult<Identified,?ext
 
     private final SearchResolver searcher;
     private final ParameterChecker paramChecker = new ParameterChecker(ImmutableSet.of(
-        IpCheckingApiKeyConfigurationFetcher.API_KEY_QUERY_PARAMETER,
+        ApiKeyApplicationFetcher.API_KEY_QUERY_PARAMETER,
         Selection.LIMIT_REQUEST_PARAM,
         Selection.START_INDEX_REQUEST_PARAM,
         QUERY_PARAM,
@@ -72,8 +70,8 @@ public class SearchController extends BaseController<QueryResult<Identified,?ext
         CURRENT_BROADCASTS_ONLY,
         PRIORITY_CHANNEL_WEIGHTING
     ));
-    public SearchController(SearchResolver searcher, ApplicationConfigurationFetcher configFetcher, AdapterLog log, AtlasModelWriter<QueryResult<Identified,?extends Identified>> outputter) {
-        super(configFetcher, log, outputter);
+    public SearchController(SearchResolver searcher, ApplicationFetcher configFetcher, AdapterLog log, AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter) {
+        super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.searcher = searcher;
     }
 
@@ -106,16 +104,16 @@ public class SearchController extends BaseController<QueryResult<Identified,?ext
             float catchupWeighting = getFloatParam(catchupWeightingParam, DEFAULT_CATCHUP_WEIGHTING);
             float priorityChannelWeighting = getFloatParam(priorityChannelWeightingParam, DEFAULT_PRIORITY_CHANNEL_WEIGHTING);
 
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
 
             Set<Specialization> specializations = specializations(specialization);
-            Set<Publisher> publishers = publishers(publisher, appConfig);
+            Set<Publisher> publishers = publishers(publisher, application);
             List<Identified> content = searcher.search(SearchQuery.builder(q)
                 .withSelection(selection)
                 .withSpecializations(specializations)
@@ -127,9 +125,9 @@ public class SearchController extends BaseController<QueryResult<Identified,?ext
                 .withType(type)
                 .isTopLevelOnly(!Strings.isNullOrEmpty(topLevel) ? Boolean.valueOf(topLevel) : null)
                 .withCurrentBroadcastsOnly(!Strings.isNullOrEmpty(currentBroadcastsOnly) ? Boolean.valueOf(currentBroadcastsOnly) : null)
-                .build(), appConfig);
+                .build(), application);
 
-            modelAndViewFor(request, response, QueryResult.of(content), appConfig);
+            modelAndViewFor(request, response, QueryResult.of(content), application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }

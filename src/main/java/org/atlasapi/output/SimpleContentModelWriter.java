@@ -2,7 +2,7 @@ package org.atlasapi.output;
 
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.ContentGroup;
 import org.atlasapi.media.entity.Identified;
@@ -58,9 +58,10 @@ public class SimpleContentModelWriter extends
 	@Override
 	protected ContentQueryResult transform(
 			QueryResult<Identified,? extends Identified> fullGraph,
-			Set<Annotation> annotations,
-			ApplicationConfiguration config
-	) {
+				Set<Annotation> annotations,
+				Application application
+		) {
+	    
 	    ContentQueryResult result = new ContentQueryResult();
 
 	    Optional<? extends Identified> possibleContext = fullGraph.getContext();
@@ -70,7 +71,7 @@ public class SimpleContentModelWriter extends
 	            org.atlasapi.media.entity.simple.Topic simpleContext = topicSimplifier.simplify(
 	            		(Topic) context,
 			            ImmutableSet.copyOf(Annotation.values()),
-			            config
+			            application
 	            );
                 result = ContentQueryResult.withContext(simpleContext);
 	        }
@@ -78,7 +79,7 @@ public class SimpleContentModelWriter extends
 	            org.atlasapi.media.entity.simple.Product simpleContext = productSimplifier.simplify(
 	            		(Product)context,
 			            ImmutableSet.copyOf(Annotation.values()),
-			            config
+			            application
 	            );
 	            result = ContentQueryResult.withContext(simpleContext);
             }
@@ -87,41 +88,41 @@ public class SimpleContentModelWriter extends
 	    if (fullGraph.getSelection() != null) {
 	        result.setPagination(Pagination.fromSelection(fullGraph.getSelection()));
 	    }
-	    setContent(result, fullGraph, annotations, config);
+	    setContent(result, fullGraph, annotations, application);
 	    
 	    return result;
 	}
 
     private ContentQueryResult setContent(
     		ContentQueryResult result,
-		    QueryResult<Identified, ? extends Identified> fullGraph,
-		    Set<Annotation> annotations,
-		    ApplicationConfiguration config
-    ) {
+			QueryResult<Identified, ? extends Identified> fullGraph,
+			Set<Annotation> annotations,
+			Application application
+	) {
 		for (Identified described : fullGraph.getContent()) {
 			if (described instanceof Container) {
 			    result.add(containerModelSimplifier.simplify(
 			    		(Container) described,
 					    annotations,
-					    config)
+					    application)
 			    );
 			} else if (described instanceof org.atlasapi.media.entity.Person) {
                 result.add(personSimplifier.simplify(
                 		(org.atlasapi.media.entity.Person) described,
 		                annotations,
-		                config)
+		                application)
                 );
             } else if (described instanceof ContentGroup) {
 			    result.add(contentGroupSimplifier.simplify(
 			    		(ContentGroup) described,
 					    annotations,
-					    config)
+					    application)
 			    );
 			} else if (described instanceof org.atlasapi.media.entity.Item) {
 			    result.add(itemModelSimplifier.simplify(
 			    		(org.atlasapi.media.entity.Item) described,
 					    annotations,
-					    config)
+					    application)
 			    );
 			}
 			

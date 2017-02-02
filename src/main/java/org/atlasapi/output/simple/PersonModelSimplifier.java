@@ -5,7 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.util.List;
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.simple.ContentIdentifier;
@@ -25,14 +25,22 @@ public class PersonModelSimplifier extends DescribedModelSimplifier<Person, org.
     private final UpcomingItemsResolver upcomingResolver;
     private final AvailableItemsResolver availableResolver;
 
-    public PersonModelSimplifier(ImageSimplifier imageSimplifier, UpcomingItemsResolver upcomingResolver, AvailableItemsResolver availableResolver) {
+    public PersonModelSimplifier(
+            ImageSimplifier imageSimplifier,
+            UpcomingItemsResolver upcomingResolver,
+            AvailableItemsResolver availableResolver
+    ) {
         super(imageSimplifier, SubstitutionTableNumberCodec.lowerCaseOnly(), null);
         this.upcomingResolver = checkNotNull(upcomingResolver);
         this.availableResolver = checkNotNull(availableResolver);
     }
     
     @Override
-    public org.atlasapi.media.entity.simple.Person simplify(Person fullPerson, Set<Annotation> annotations, ApplicationConfiguration config) {
+    public org.atlasapi.media.entity.simple.Person simplify(
+            Person fullPerson,
+            Set<Annotation> annotations,
+            Application application
+    ) {
         org.atlasapi.media.entity.simple.Person person = new org.atlasapi.media.entity.simple.Person();
 
         person.setType(Person.class.getSimpleName());
@@ -57,7 +65,7 @@ public class PersonModelSimplifier extends DescribedModelSimplifier<Person, org.
 
         if (annotations.contains(Annotation.AVAILABLE_LOCATIONS)) {
             ImmutableSet<String> availableUris = ImmutableSet.copyOf(Iterables.transform(
-                    availableResolver.availableItemsFor(fullPerson, config), ChildRef.TO_URI));
+                    availableResolver.availableItemsFor(fullPerson, application), ChildRef.TO_URI));
             
             person.setAvailableContent(simpleContentListFrom(filterContent(fullPerson, availableUris)));
         }

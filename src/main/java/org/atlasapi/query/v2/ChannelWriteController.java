@@ -4,16 +4,15 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.validation.ConstraintViolationException;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ReadException;
@@ -24,7 +23,6 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.output.exceptions.UnauthorizedException;
 
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 
 import com.fasterxml.jackson.core.JsonParseException;
@@ -40,7 +38,7 @@ public class ChannelWriteController {
 
     private final Logger log = LoggerFactory.getLogger(ChannelWriteController.class);
 
-    private final ApplicationConfigurationFetcher appConfigFetcher;
+    private final ApplicationFetcher appConfigFetcher;
     private final ChannelStore store;
     private final ModelReader reader;
     private final ChannelModelTransformer channelTransformer;
@@ -50,7 +48,7 @@ public class ChannelWriteController {
 
 
     private ChannelWriteController(
-            ApplicationConfigurationFetcher appConfigFetcher,
+            ApplicationFetcher appConfigFetcher,
             ChannelStore store,
             ModelReader reader,
             ChannelModelTransformer channelTransformer,
@@ -64,7 +62,7 @@ public class ChannelWriteController {
     }
 
     public static ChannelWriteController create(
-            ApplicationConfigurationFetcher appConfigFetcher,
+            ApplicationFetcher appConfigFetcher,
             ChannelStore store,
             ModelReader reader,
             ChannelModelTransformer channelTransformer,
@@ -87,14 +85,14 @@ public class ChannelWriteController {
     private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
         Boolean strict = Boolean.valueOf(req.getParameter(STRICT));
 
-        Maybe<ApplicationConfiguration> possibleConfig;
+        Optional<Application> possibleApplication;
         try {
-            possibleConfig = appConfigFetcher.configurationFor(req);
-        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+            possibleApplication = appConfigFetcher.applicationFor(req);
+        } catch (InvalidApiKeyException ex) {
             return error(req, resp, AtlasErrorSummary.forException(ex));
         }
 
-        if (possibleConfig.isNothing()) {
+        if (!possibleApplication.isPresent()) {
             return error(
                     req,
                     resp,
@@ -126,7 +124,7 @@ public class ChannelWriteController {
             return error(req, resp, errorSummary);
         }
 
-        if (!possibleConfig.requireValue().canWrite(channel.getSource())) {
+        if (!possibleApplication.get().getConfiguration().isWriteEnabled(channel.getSource())) {
             return error(
                     req,
                     resp,

@@ -2,13 +2,18 @@ package org.atlasapi.output.simple;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
+import java.util.Arrays;
 import java.util.Map;
 
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.applications.client.model.internal.ApplicationConfiguration;
 import junit.framework.TestCase;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
-import org.atlasapi.application.v3.SourceStatus;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupStore;
@@ -36,9 +41,10 @@ import com.metabroadcast.common.ids.NumberToShortStringCodec;
 public class ChannelNumberingSimplificationTest extends TestCase {
     
     private static final DummyChannelGroupStore channelGroupStore = new DummyChannelGroupStore();
-    private static final ChannelSimplifier channelSimplifier = new ChannelSimplifier(Mockito.mock(NumberToShortStringCodec.class), Mockito.mock(NumberToShortStringCodec.class), Mockito.mock(ChannelResolver.class), new PublisherSimplifier(), new ImageSimplifier(), 
-            new ChannelGroupSummarySimplifier(Mockito.mock(NumberToShortStringCodec.class), channelGroupStore), channelGroupStore);
-    private static final ChannelGroupSimplifier channelGroupSimplifier = new ChannelGroupSimplifier(Mockito.mock(NumberToShortStringCodec.class), channelGroupStore, new PublisherSimplifier());
+    private static final ChannelSimplifier channelSimplifier = new ChannelSimplifier(mock(NumberToShortStringCodec.class), mock(NumberToShortStringCodec.class), mock(ChannelResolver.class), new PublisherSimplifier(), new ImageSimplifier(),
+            new ChannelGroupSummarySimplifier(mock(NumberToShortStringCodec.class), channelGroupStore), channelGroupStore);
+    private static final ChannelGroupSimplifier channelGroupSimplifier = new ChannelGroupSimplifier(
+            mock(NumberToShortStringCodec.class), channelGroupStore, new PublisherSimplifier());
     private static final ChannelNumberingChannelGroupModelSimplifier nestedChannelGroupSimplifier = new ChannelNumberingChannelGroupModelSimplifier(channelGroupSimplifier);
     private static final ChannelNumberingsChannelToChannelGroupModelSimplifier numberingSimplifier = new ChannelNumberingsChannelToChannelGroupModelSimplifier(channelGroupStore, nestedChannelGroupSimplifier);
     
@@ -52,21 +58,9 @@ public class ChannelNumberingSimplificationTest extends TestCase {
     private static final long channelId = 1234L;
     private static final long channelGroupId = 5678L;
     private static final long bbcPublisherChannelGroupId = 5679L;
-    private static final ApplicationConfiguration appConfigWithMb = 
-            ApplicationConfiguration.DEFAULT_CONFIGURATION
-                                    .withSource(Publisher.BBC, SourceStatus.AVAILABLE_DISABLED)
-                                    .withSource(Publisher.METABROADCAST, SourceStatus.AVAILABLE_ENABLED);
-    
-    private static final ApplicationConfiguration appConfigWithBbc = 
-            ApplicationConfiguration.DEFAULT_CONFIGURATION
-                                    .withSource(Publisher.BBC, SourceStatus.AVAILABLE_ENABLED)
-                                    .withSource(Publisher.METABROADCAST, SourceStatus.AVAILABLE_DISABLED);
-    
-    private static final ApplicationConfiguration appConfigWithBbcAndMb = 
-            ApplicationConfiguration.DEFAULT_CONFIGURATION
-                                    .withSource(Publisher.BBC, SourceStatus.AVAILABLE_ENABLED)
-                                    .withSource(Publisher.METABROADCAST, SourceStatus.AVAILABLE_ENABLED);
-   
+    private static final Application appWithMb = mock(Application.class);
+    private static final Application appWithBbc = mock(Application.class);
+    private static final Application appWithBbcAndMb = mock(Application.class);
     
     @Override
     @Before
@@ -86,6 +80,10 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         bbcPublishedPlatform.setPublisher(Publisher.BBC);
         
         channelGroupStore.createOrUpdate(bbcPublishedPlatform);
+
+        when(appWithMb.getConfiguration()).thenReturn(configWithReads(Publisher.METABROADCAST));
+        when(appWithBbc.getConfiguration()).thenReturn(configWithReads(Publisher.BBC));
+        when(appWithBbcAndMb.getConfiguration()).thenReturn(configWithReads(Publisher.BBC, Publisher.METABROADCAST));
     }
     
     @Test
@@ -106,12 +104,14 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         channelGroup.addChannelNumbering(numbering);
         
         channelGroup = channelGroupStore.createOrUpdate(channelGroup);
-        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.HISTORY), appConfigWithBbc);
+        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.HISTORY),
+                appWithBbc);
         org.atlasapi.media.entity.simple.ChannelNumbering simpleNumbering = Iterables.getOnlyElement(simpleChannel.getChannelGroups());
         assertEquals(startDate.toDate(), simpleNumbering.getStartDate());
         assertEquals(endDate.toDate(), simpleNumbering.getEndDate());
         
-        simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS), appConfigWithBbc);
+        simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS),
+                appWithBbc);
         assertTrue(simpleChannel.getChannelGroups().isEmpty());
     }
 
@@ -139,7 +139,8 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         channelGroup.addChannelNumbering(two);
         
         channelGroup = channelGroupStore.createOrUpdate(channelGroup);
-        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS), appConfigWithBbc);
+        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS),
+                appWithBbc);
         assertThat(simpleChannel.getChannelGroups().size(), is(2));
         
         assertEquals("1", simpleChannel.getChannelGroups().get(0).getChannelNumber());
@@ -183,7 +184,8 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         
         channelGroup = channelGroupStore.createOrUpdate(channelGroup);
 
-        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS), appConfigWithBbc);
+        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS),
+                appWithBbc);
         assertThat(simpleChannel.getChannelGroups().size(), is(2));
         
         org.atlasapi.media.entity.simple.ChannelNumbering first = simpleChannel.getChannelGroups().get(0);
@@ -228,7 +230,8 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         
         channelGroup = channelGroupStore.createOrUpdate(channelGroup);
         
-         org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.HISTORY), appConfigWithBbc);
+         org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.HISTORY),
+                 appWithBbc);
         assertThat(simpleChannel.getChannelGroups().size(), is(1));
         
         org.atlasapi.media.entity.simple.ChannelNumbering first = Iterables.getOnlyElement(simpleChannel.getChannelGroups());
@@ -279,7 +282,8 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         
         channelGroup = channelGroupStore.createOrUpdate(channelGroup);
         
-        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.HISTORY), appConfigWithBbc);
+        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.HISTORY),
+                appWithBbc);
         assertThat(simpleChannel.getChannelGroups().size(), is(2));
         
         org.atlasapi.media.entity.simple.ChannelNumbering first = Iterables.get(simpleChannel.getChannelGroups(), 0);
@@ -306,7 +310,8 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         // Test with key that has MB enabled only
         //
         
-        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.CHANNEL_GROUPS_SUMMARY), appConfigWithMb);
+        org.atlasapi.media.entity.simple.Channel simpleChannel = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.CHANNEL_GROUPS_SUMMARY),
+                appWithMb);
         org.atlasapi.media.entity.simple.Alias alias = Iterables.getOnlyElement(Iterables.getOnlyElement(simpleChannel.getGroups()).getAliases());
         
         assertEquals(mbAlias.getNamespace(), alias.getNamespace());
@@ -316,7 +321,8 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         // Test with key that has BBC enabled only
         //
         
-        org.atlasapi.media.entity.simple.Channel simpleChannelWithBbc = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.CHANNEL_GROUPS_SUMMARY), appConfigWithBbc);
+        org.atlasapi.media.entity.simple.Channel simpleChannelWithBbc = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.CHANNEL_GROUPS_SUMMARY),
+                appWithBbc);
         org.atlasapi.media.entity.simple.Alias simpleActualBbcAlias = Iterables.getOnlyElement(Iterables.getOnlyElement(simpleChannelWithBbc.getGroups()).getAliases());
         
         assertEquals(bbcAlias.getNamespace(), simpleActualBbcAlias.getNamespace());
@@ -326,9 +332,17 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         // Test with key that has BBC + MB enabled
         //
         
-        org.atlasapi.media.entity.simple.Channel simpleWithBoth = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.CHANNEL_GROUPS_SUMMARY), appConfigWithBbcAndMb);
+        org.atlasapi.media.entity.simple.Channel simpleWithBoth = simplifier.simplify(channel, ImmutableSet.of(Annotation.CHANNEL_GROUPS, Annotation.CHANNEL_GROUPS_SUMMARY),
+                appWithBbcAndMb);
         assertEquals(simpleWithBoth.getGroups().size(), 2);
         
+    }
+
+    private ApplicationConfiguration configWithReads(Publisher... publishers) {
+        return ApplicationConfiguration.builder()
+                .withPrecedence(Arrays.asList(publishers))
+                .withEnabledWriteSources(ImmutableList.of())
+                .build();
     }
     
     private static class DummyChannelGroupStore implements ChannelGroupStore {

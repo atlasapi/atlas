@@ -3,12 +3,11 @@ package org.atlasapi.output.simple;
 import java.math.BigInteger;
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.product.Product;
 import org.atlasapi.media.product.ProductLocation;
 import org.atlasapi.output.Annotation;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -24,7 +23,7 @@ public class ProductModelSimplifier extends IdentifiedModelSimplifier<Product, o
     }
     
     @Override
-    public org.atlasapi.media.entity.simple.Product simplify(Product model, Set<Annotation> annotations, ApplicationConfiguration config) {
+    public org.atlasapi.media.entity.simple.Product simplify(Product model, Set<Annotation> annotations, Application application) {
         org.atlasapi.media.entity.simple.Product simpleProduct = new org.atlasapi.media.entity.simple.Product();
         
         String id = idCodec.encode(BigInteger.valueOf(model.getId()));
@@ -44,16 +43,13 @@ public class ProductModelSimplifier extends IdentifiedModelSimplifier<Product, o
     }
 
     private Set<org.atlasapi.media.entity.simple.ProductLocation> simplify(Set<ProductLocation> locations) {
-        return ImmutableSet.copyOf(Iterables.transform(locations, new Function<ProductLocation, org.atlasapi.media.entity.simple.ProductLocation>() {
-            @Override
-            public org.atlasapi.media.entity.simple.ProductLocation apply(ProductLocation input) {
-                org.atlasapi.media.entity.simple.ProductLocation productLocation = new org.atlasapi.media.entity.simple.ProductLocation();
-                productLocation.setUri(input.getUri());
-                productLocation.setAvailability(input.getAvailability());
-                productLocation.setPrice(input.getPrice() != null ? input.getPrice().toString() : null);
-                productLocation.setShippingPrice(input.getShippingPrice() != null ? input.getShippingPrice().toString() : null);
-                return productLocation;
-            }
+        return ImmutableSet.copyOf(Iterables.transform(locations, input -> {
+            org.atlasapi.media.entity.simple.ProductLocation productLocation = new org.atlasapi.media.entity.simple.ProductLocation();
+            productLocation.setUri(input.getUri());
+            productLocation.setAvailability(input.getAvailability());
+            productLocation.setPrice(input.getPrice() != null ? input.getPrice().toString() : null);
+            productLocation.setShippingPrice(input.getShippingPrice() != null ? input.getShippingPrice().toString() : null);
+            return productLocation;
         }));
     }
 

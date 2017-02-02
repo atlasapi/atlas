@@ -7,11 +7,10 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
 import org.atlasapi.media.entity.Publisher;
@@ -42,9 +41,13 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
     
     private final FeedStatisticsResolver statsResolver;
     
-    public FeedStatsController(ApplicationConfigurationFetcher configFetcher, AdapterLog log,
-            AtlasModelWriter<Iterable<FeedStatistics>> outputter, FeedStatisticsResolver statsResolver) {
-        super(configFetcher, log, outputter);
+    public FeedStatsController(
+            ApplicationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<Iterable<FeedStatistics>> outputter,
+            FeedStatisticsResolver statsResolver
+    ) {
+        super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.statsResolver = checkNotNull(statsResolver);
     }
 
@@ -52,16 +55,16 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
     public void statistics(HttpServletRequest request, HttpServletResponse response,
             @PathVariable("publisher") String publisherStr) throws IOException {
         try {
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
 
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
-            if (!appConfig.isEnabled(publisher)) {
+            if (!application.getConfiguration().isReadEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
@@ -72,7 +75,7 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
                 return;
             }
 
-            modelAndViewFor(request, response, ImmutableSet.of(resolved.get()), appConfig);
+            modelAndViewFor(request, response, ImmutableSet.of(resolved.get()), application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }

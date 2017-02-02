@@ -2,6 +2,9 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 
 import java.util.Set;
 
+import com.google.api.client.util.Lists;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
@@ -70,6 +73,9 @@ public class RoviItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                                 new FilmEquivalenceGenerator(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
+                                        DefaultApplication.createWithReads(
+                                                Lists.newArrayList(targetPublishers)
+                                        ),
                                         true
                                 )
                         )

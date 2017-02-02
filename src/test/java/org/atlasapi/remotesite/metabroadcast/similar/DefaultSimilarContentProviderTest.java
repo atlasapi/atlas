@@ -9,7 +9,7 @@ import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
@@ -48,10 +48,11 @@ public class DefaultSimilarContentProviderTest {
     private final TraitHashCalculator traitHashCalculator = mock(TraitHashCalculator.class);
     private final AvailableItemsResolver availableItemsResolver = mock(AvailableItemsResolver.class);
     private final UpcomingItemsResolver upcomingItemsResolver = mock(UpcomingItemsResolver.class);
+    private final Application application = mock(Application.class);
     
     private final DefaultSimilarContentProvider similarContentProvider 
         = new DefaultSimilarContentProvider(contentLister, PUBLISHER, SIMILAR_CONTENT_LIMIT, 
-                traitHashCalculator, availableItemsResolver, upcomingItemsResolver);
+                traitHashCalculator, availableItemsResolver, upcomingItemsResolver, application);
     
     @Test
     public void testInitialise() {
@@ -99,7 +100,7 @@ public class DefaultSimilarContentProviderTest {
         //TODO make these mocks better
         when(upcomingItemsResolver.upcomingItemsByPublisherFor((Container) anyObject()))
                 .thenReturn(ImmutableMultimap.<Publisher, ChildRef>of());
-        when(availableItemsResolver.availableItemsByPublisherFor((Container) anyObject(), (ApplicationConfiguration) anyObject()))
+        when(availableItemsResolver.availableItemsByPublisherFor((Container) anyObject(), (Application) anyObject()))
                 .thenReturn(ImmutableMultimap.<Publisher, ChildRef>of());
         
         for (Content c : brands) {
@@ -131,18 +132,12 @@ public class DefaultSimilarContentProviderTest {
                     .build();
     }
     
-    private static Function<Content, SimilarContentRef> TO_SIMILAR_CONTENT_REF = new Function<Content, SimilarContentRef>() {
-
-        @Override
-        public SimilarContentRef apply(Content c) {
-            return SimilarContentRef.builder()
-                                    .withEntityType(EntityType.from(c))
-                                    .withId(c.getId())
-                                    .withUri(c.getCanonicalUri())
-                                    .withScore(3)
-                                    .build();
-        }
-        
-    };
+    private static Function<Content, SimilarContentRef> TO_SIMILAR_CONTENT_REF = c ->
+            SimilarContentRef.builder()
+                    .withEntityType(EntityType.from(c))
+                    .withId(c.getId())
+                    .withUri(c.getCanonicalUri())
+                    .withScore(3)
+                    .build();
     
 }

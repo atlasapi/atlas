@@ -5,7 +5,7 @@ import static com.google.api.client.util.Preconditions.checkNotNull;
 import java.math.BigInteger;
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.output.Annotation;
@@ -28,21 +28,28 @@ public class EventRefModelSimplifier implements ModelSimplifier<EventRef, org.at
     private final EventModelSimplifier eventSimplifier;
     private final EventResolver eventResolver;
 
-    public EventRefModelSimplifier(EventModelSimplifier eventSimplifier, EventResolver eventResolver, NumberToShortStringCodec codecForContent) {
+    public EventRefModelSimplifier(
+            EventModelSimplifier eventSimplifier,
+            EventResolver eventResolver,
+            NumberToShortStringCodec codecForContent
+    ) {
         this.eventSimplifier = checkNotNull(eventSimplifier);
         this.eventResolver = checkNotNull(eventResolver);
         this.codecForContent = checkNotNull(codecForContent);
     }
 
     @Override
-    public org.atlasapi.media.entity.simple.Event simplify(EventRef model,
-            Set<Annotation> annotations, ApplicationConfiguration config) {
+    public org.atlasapi.media.entity.simple.Event simplify(
+            EventRef model,
+            Set<Annotation> annotations,
+            Application application
+    ) {
         if (annotations.contains(Annotation.EVENTS)) {
             Optional<Event> resolved = eventResolver.fetch(model.id());
             if (!resolved.isPresent()) {
               throw new RuntimeException(String.format("Attempt to simplify EventRef with invalid id %d", model.id()));
             } 
-            return eventSimplifier.simplify(resolved.get(), annotations, config);
+            return eventSimplifier.simplify(resolved.get(), annotations, application);
         } else {
             org.atlasapi.media.entity.simple.Event event = new org.atlasapi.media.entity.simple.Event();
             event.setId(codecForContent.encode(BigInteger.valueOf(model.id())));

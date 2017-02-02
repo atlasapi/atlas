@@ -42,8 +42,11 @@ public class ApplicationConfigurationQueryExecutor implements KnownTypeQueryExec
 	}
 
     @Override
-    public Map<String, List<Identified>> executeAliasQuery(Optional<String> namespace, Iterable<String> values,
-            ContentQuery query) {
+    public Map<String, List<Identified>> executeAliasQuery(
+    		Optional<String> namespace,
+		    Iterable<String> values,
+            ContentQuery query
+    ) {
         return delegate.executeAliasQuery(namespace, values, queryForContent(query));
     }
     
@@ -60,14 +63,13 @@ public class ApplicationConfigurationQueryExecutor implements KnownTypeQueryExec
 		
 		query.setSoftConstraints(softs);
 
-		Iterable<AtomicQuery> queryAtoms = ImmutableSet.of((AtomicQuery)
-			mergeAttribute(Attributes.DESCRIPTION_PUBLISHER, query)
+		Iterable<AtomicQuery> queryAtoms = ImmutableSet.of(mergeAttribute(Attributes.DESCRIPTION_PUBLISHER, query)
 		);
 		return ContentQuery.joinTo(query, new ContentQuery(queryAtoms));
 	}
 
 	private AtomicQuery mergeAttribute(Attribute<?> attr, ContentQuery query){
-		Set<Publisher> configPublishers = query.getConfiguration().getEnabledSources();
+		Set<Publisher> configPublishers = query.getApplication().getConfiguration().getEnabledReadSources();
 		ImmutableSet<Publisher> requestedPublishers = query.includedPublishers();
 		
 		Set<?> values;

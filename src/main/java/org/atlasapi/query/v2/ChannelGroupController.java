@@ -9,11 +9,10 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -32,10 +31,8 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.api.client.util.Lists;
 import com.google.common.base.Joiner;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -85,9 +82,9 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private final QueryParameterAnnotationsExtractor annotationExtractor;
    
 
-    public ChannelGroupController(ApplicationConfigurationFetcher configFetcher, AdapterLog log, AtlasModelWriter<Iterable<ChannelGroup>> outputter, 
+    public ChannelGroupController(ApplicationFetcher configFetcher, AdapterLog log, AtlasModelWriter<Iterable<ChannelGroup>> outputter,
             ChannelGroupResolver channelGroupResolver, ChannelResolver channelResolver, NumberToShortStringCodec idCodec) {
-        super(configFetcher, log, outputter);
+        super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.channelGroupResolver = channelGroupResolver;
         this.channelResolver = checkNotNull(channelResolver);
         this.idCodec = idCodec;
@@ -100,10 +97,10 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             @RequestParam(value = PLATFORM_ID_KEY, required = false) String platformId,
             @RequestParam(value = ADVERTISED, required = false) String advertised) throws IOException {
         try {
-            final ApplicationConfiguration appConfig;
+            final Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -119,12 +116,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             Selection selection = SELECTION_BUILDER.build(request);        
             channelGroups = selection.applyTo(Iterables.filter(
                 filterer.filter(channelGroups, constructFilter(platformId, type, advertised)),
-                    new Predicate<ChannelGroup>() {
-                        @Override
-                        public boolean apply(ChannelGroup input) {
-                            return appConfig.isEnabled(input.getPublisher());
-                        }
-                    }));
+                    input -> application.getConfiguration().isReadEnabled(input.getPublisher())));
 
             if (!Strings.isNullOrEmpty(advertised)) {
                 ImmutableList.Builder filtered = ImmutableList.builder();
@@ -135,7 +127,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             }
 
 
-            modelAndViewFor(request, response, channelGroups, appConfig);
+            modelAndViewFor(request, response, channelGroups, application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
@@ -147,10 +139,10 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             @RequestParam(value = CHANNEL_GENRES_KEY, required = false) String channelGenres,
             @RequestParam(value = ADVERTISED, required = false) String advertised) throws IOException {
         try {
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -161,7 +153,7 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                 return;
             }
 
-            if (!appConfig.isEnabled(possibleChannelGroup.get().getPublisher())) {
+            if (!application.getConfiguration().isReadEnabled(possibleChannelGroup.get().getPublisher())) {
                 outputter.writeError(request, response, FORBIDDEN.withMessage("ChannelGroup " + id + " not available"));
                 return;
             }
@@ -183,33 +175,29 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
                 toReturn = filterByAdvertised(toReturn);
             }
 
-            modelAndViewFor(request, response, ImmutableList.of(toReturn), appConfig);
+            modelAndViewFor(request, response, ImmutableList.of(toReturn), application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
     }
     
     private ChannelGroup filterByChannelGenres(ChannelGroup channelGroup, final Set<String> genres) {
-        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(), new Predicate<ChannelNumbering>() {
-            @Override
-            public boolean apply(ChannelNumbering input) {
-                Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
-                return hasMatchingGenre(channel, genres);
-            }
-        });
+        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(),
+                input -> {
+                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
+                    return hasMatchingGenre(channel, genres);
+                });
         ChannelGroup filteredGroup = channelGroup.copy();
         filteredGroup.setChannelNumberings(filtered);
         return filteredGroup;
     }
 
     private ChannelGroup filterByAdvertised(ChannelGroup channelGroup) {
-        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(), new Predicate<ChannelNumbering>() {
-            @Override
-            public boolean apply(ChannelNumbering input) {
-                Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
-                return isAdvertised(channel);
-            }
-        });
+        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(),
+                input -> {
+                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
+                    return isAdvertised(channel);
+                });
         ChannelGroup filteredGroup = channelGroup.copy();
         filteredGroup.setChannelNumberings(filtered);
         return filteredGroup;

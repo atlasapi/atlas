@@ -26,7 +26,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.output.Annotation;
 import org.springframework.beans.factory.InitializingBean;
 
@@ -78,7 +78,7 @@ public abstract class JenaRdfTranslator<EntityType extends Iterable<?>> extends 
     }
 
 	@Override
-    public void writeTo(HttpServletRequest request, HttpServletResponse response, EntityType graph, Set<Annotation> annotations, ApplicationConfiguration config) throws IOException {
+    public void writeTo(HttpServletRequest request, HttpServletResponse response, EntityType graph, Set<Annotation> annotations, Application application) throws IOException {
 		OntModel rdf = ModelFactory.createOntologyModel(OWL_MEM);
 
 		loadOntologies(rdf);

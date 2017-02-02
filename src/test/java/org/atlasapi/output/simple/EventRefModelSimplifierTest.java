@@ -4,7 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.math.BigInteger;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.EventRef;
 import org.atlasapi.media.entity.Organisation;
 import org.atlasapi.media.entity.Person;
@@ -31,12 +31,12 @@ public class EventRefModelSimplifierTest {
     private EventResolver eventResolver = Mockito.mock(EventResolver.class);
     private NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     private final EventRefModelSimplifier simplifier = new EventRefModelSimplifier(eventSimplifier, eventResolver, codec);
-    private ApplicationConfiguration config = Mockito.mock(ApplicationConfiguration.class);
+    private Application application = Mockito.mock(Application.class);
     
     @Test
     public void testSimplificationWithoutEventsAnnotation() {
         long id = 1234l;
-        Event simplified = simplifier.simplify(new EventRef(id), ImmutableSet.<Annotation>of(), config);
+        Event simplified = simplifier.simplify(new EventRef(id), ImmutableSet.<Annotation>of(), application);
         
         Mockito.verifyZeroInteractions(eventResolver);
         Mockito.verifyZeroInteractions(eventSimplifier);
@@ -52,10 +52,10 @@ public class EventRefModelSimplifierTest {
         org.atlasapi.media.entity.Event resolved = createEvent().build();
         Mockito.when(eventResolver.fetch(id)).thenReturn(Optional.of(resolved));
         
-        simplifier.simplify(new EventRef(id), annotations, config);
+        simplifier.simplify(new EventRef(id), annotations, application);
         
         Mockito.verify(eventResolver).fetch(id);
-        Mockito.verify(eventSimplifier).simplify(resolved, annotations, config);
+        Mockito.verify(eventSimplifier).simplify(resolved, annotations, application);
     }
     
     static org.atlasapi.media.entity.Event.Builder createEvent() {

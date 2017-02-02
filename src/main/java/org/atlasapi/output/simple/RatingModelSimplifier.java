@@ -2,7 +2,7 @@ package org.atlasapi.output.simple;
 
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.simple.Rating;
 import org.atlasapi.output.Annotation;
 
@@ -12,8 +12,11 @@ public class RatingModelSimplifier implements ModelSimplifier<org.atlasapi.media
     private final PublisherSimplifier publisherSimplifier = new PublisherSimplifier();
     
     @Override
-    public Rating simplify(org.atlasapi.media.entity.Rating model, Set<Annotation> annotations,
-            ApplicationConfiguration config) {
+    public Rating simplify(
+            org.atlasapi.media.entity.Rating model,
+            Set<Annotation> annotations,
+            Application application
+    ) {
         Rating rating = new Rating();
         rating.setType(model.getType());
         rating.setValue(model.getValue());

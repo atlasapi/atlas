@@ -1,13 +1,14 @@
 package org.atlasapi.output;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.io.ByteArrayOutputStream;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.entity.simple.Playlist;
 import org.atlasapi.media.entity.testing.BroadcastTestDataBuilder;
@@ -26,6 +27,7 @@ import com.metabroadcast.common.servlet.StubHttpServletResponse;
 public class AtlasContentCopyTest {
     private HttpServletRequest request = new StubHttpServletRequest();
     private HttpServletResponse response = new StubHttpServletResponse();
+    private Application application = mock(Application.class);
 
     @Test
     public void testCopyItem() throws Exception {
@@ -42,14 +44,14 @@ public class AtlasContentCopyTest {
         
         ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
         
-        translator.writeTo(request, response, ImmutableList.of(item), ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
+        translator.writeTo(request, response, ImmutableList.of(item), ImmutableSet.<Annotation>of(), application);
         
         String itemOriginalString = outputStream1.toString(Charsets.UTF_8.name());
         outputStream1.close();
         
         ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
         
-        translator.writeTo(request, response, ImmutableList.of(item.copy()), ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
+        translator.writeTo(request, response, ImmutableList.of(item.copy()), ImmutableSet.<Annotation>of(), application);
         
         String itemCopyString = outputStream2.toString(Charsets.UTF_8.name());
         outputStream2.close();
@@ -85,14 +87,14 @@ public class AtlasContentCopyTest {
         
         ByteArrayOutputStream outputStream1 = new ByteArrayOutputStream();
         
-        translator.writeTo(request, response, ImmutableList.of(playlist), ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
+        translator.writeTo(request, response, ImmutableList.of(playlist), ImmutableSet.<Annotation>of(), application);
         
         String playlistOriginalString = outputStream1.toString(Charsets.UTF_8.name());
         outputStream1.close();
         
         ByteArrayOutputStream outputStream2 = new ByteArrayOutputStream();
         
-        translator.writeTo(request, response, ImmutableList.of(playlist.copy()), ImmutableSet.<Annotation>of(), ApplicationConfiguration.DEFAULT_CONFIGURATION);
+        translator.writeTo(request, response, ImmutableList.of(playlist.copy()), ImmutableSet.<Annotation>of(), application);
         
         String playlistCopyString = outputStream2.toString(Charsets.UTF_8.name());
         outputStream2.close();

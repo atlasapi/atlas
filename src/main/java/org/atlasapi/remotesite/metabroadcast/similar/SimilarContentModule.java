@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.metabroadcast.similar;
 
 import javax.annotation.PostConstruct;
 
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.MongoContentPersistenceModule;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -52,9 +53,15 @@ public class SimilarContentModule {
     }
     
     SimilarContentProvider similarContentProvider() {
-        return new DefaultSimilarContentProvider(contentLister, Publisher.PA, 10, 
-                new GenreAndPeopleTraitHashCalculator(), availableItemsResolver(), 
-                        upcomingItemsResolver());
+        return new DefaultSimilarContentProvider(
+                contentLister,
+                Publisher.PA,
+                10,
+                new GenreAndPeopleTraitHashCalculator(),
+                availableItemsResolver(),
+                upcomingItemsResolver(),
+                DefaultApplication.createWithReads(Publisher.all().asList())
+        );
     }
     
     SeparateSourceSimilarContentWriter similarContentWriter() {

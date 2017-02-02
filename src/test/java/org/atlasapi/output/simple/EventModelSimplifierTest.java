@@ -1,11 +1,12 @@
 package org.atlasapi.output.simple;
 
 import static org.atlasapi.output.simple.EventRefModelSimplifierTest.createEvent;
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.EntityType;
 import org.atlasapi.media.entity.Event;
@@ -28,7 +29,7 @@ public class EventModelSimplifierTest {
     private PersonModelSimplifier personSimplifier = Mockito.mock(PersonModelSimplifier.class);
     private OrganisationModelSimplifier organisationSimplifier = Mockito.mock(OrganisationModelSimplifier.class);
     private NumberToShortStringCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
-    private ApplicationConfiguration config = Mockito.mock(ApplicationConfiguration.class);
+    private Application application = Mockito.mock(Application.class);
     
     private final EventModelSimplifier simplifier = new EventModelSimplifier(topicSimplifier, personSimplifier, organisationSimplifier, codec);
     
@@ -41,7 +42,7 @@ public class EventModelSimplifierTest {
                 .build();
         
         
-        org.atlasapi.media.entity.simple.Event simplified = simplifier.simplify(event, annotations, config);
+        org.atlasapi.media.entity.simple.Event simplified = simplifier.simplify(event, annotations, application);
         
         assertTrue(simplified.content().isEmpty());
     }
@@ -56,7 +57,7 @@ public class EventModelSimplifierTest {
                 .build();
         
         
-        org.atlasapi.media.entity.simple.Event simplified = simplifier.simplify(event, annotations, config);
+        org.atlasapi.media.entity.simple.Event simplified = simplifier.simplify(event, annotations, application);
         
         assertEquals(ContentIdentifier.identifierFor(childRef, codec), Iterables.getOnlyElement(simplified.content()));
     }

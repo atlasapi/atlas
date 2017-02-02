@@ -6,11 +6,10 @@ import java.util.List;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
@@ -25,7 +24,6 @@ import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.Iterables;
 
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.query.Selection;
@@ -44,22 +42,29 @@ public class PeopleController extends BaseController<Iterable<Person>> {
 
     private final PeopleQueryResolver resolver;
     private final PeopleWriteController personWriteController;
+    private final Application defaultApplication;
 
-    public PeopleController(PeopleQueryResolver resolver, ApplicationConfigurationFetcher configFetcher,
-                    AdapterLog log, AtlasModelWriter<Iterable<Person>> outputter, PeopleWriteController personWriteController) {
-        super(configFetcher, log, outputter, SubstitutionTableNumberCodec.lowerCaseOnly());
+    public PeopleController(
+            PeopleQueryResolver resolver,
+            ApplicationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<Iterable<Person>> outputter,
+            PeopleWriteController personWriteController,
+            Application application
+    ) {
+        super(configFetcher, log, outputter, SubstitutionTableNumberCodec.lowerCaseOnly(), application);
         this.resolver = resolver;
         this.personWriteController = personWriteController;
+        this.defaultApplication = application;
     }
 
     @RequestMapping("/3.0/people.*")
     public void content(HttpServletRequest request, HttpServletResponse response) throws IOException {
         try {
-            ApplicationConfiguration config;
+            Application application;
             try {
-                config = possibleAppConfig(request).valueOrDefault(ApplicationConfiguration
-                        .defaultConfiguration());
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = possibleApp(request).orElse(defaultApplication);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -75,9 +80,9 @@ public class PeopleController extends BaseController<Iterable<Person>> {
             if (uri != null || id != null) {
                 Optional<Person> person;
                 if (uri != null) {
-                    person = resolver.person(uri, config);
+                    person = resolver.person(uri, application);
                 } else {
-                    person = resolver.person(idCodec.decode(id).longValue(), config);
+                    person = resolver.person(idCodec.decode(id).longValue(), application);
                 }
                 if(!person.isPresent()) {
                     errorViewFor(request, response, NOT_FOUND);
@@ -87,12 +92,12 @@ public class PeopleController extends BaseController<Iterable<Person>> {
             } else {
                 List<Publisher> publishers = Publisher.fromCsv(publisher);
                 for (Publisher pub : publishers) {
-                    if (!config.isEnabled(pub)) {
+                    if (!application.getConfiguration().isReadEnabled(pub)) {
                         errorViewFor(request, response, FORBIDDEN);
                         return;
                     }
                 }
-                people = resolver.people(publishers, config, selectionBuilder.build(request));
+                people = resolver.people(publishers, application, selectionBuilder.build(request));
             }
             
             if(Iterables.size(people) == 0) {
@@ -100,7 +105,7 @@ public class PeopleController extends BaseController<Iterable<Person>> {
                 return;
             }         
             
-            modelAndViewFor(request, response, people, config);
+            modelAndViewFor(request, response, people, application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }

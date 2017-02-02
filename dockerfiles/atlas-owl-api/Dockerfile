@@ -77,6 +77,7 @@ CMD java \
     -Dlog4j.configuration="$LOG4J_CONFIGURATION" \
     -Dnimrod.log.level="$NIMROD_LOG_LEVEL" \
     -Droot.log.level="$ROOT_LOG_LEVEL" \
+    -Dapplications.client.host="$APPLICATIONS_CLIENT_HOST" \
     -Xmx$JVM_MEMORY \
     -Xms$JVM_MEMORY \
     $JVM_OPTS \

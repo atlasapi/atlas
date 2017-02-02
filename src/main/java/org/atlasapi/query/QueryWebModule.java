@@ -2,7 +2,8 @@ package org.atlasapi.query;
 
 import javax.xml.bind.JAXBElement;
 
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.feeds.tasks.Task;
 import org.atlasapi.feeds.tasks.persistence.TaskStore;
@@ -92,7 +93,6 @@ import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.ContentGroupWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.LookupBackedContentIdGenerator;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.PeopleResolver;
@@ -204,7 +204,7 @@ public class QueryWebModule {
     @Autowired private LookupWriter lookupWriter;
 
     @Autowired private KnownTypeQueryExecutor queryExecutor;
-    @Autowired private ApplicationConfigurationFetcher configFetcher;
+    @Autowired private ApplicationFetcher applicationFetcher;
     @Autowired private AdapterLog log;
     @Autowired private EventContentLister eventContentLister;
 
@@ -214,13 +214,13 @@ public class QueryWebModule {
     @Bean
     ChannelController channelController() {
         return new ChannelController(
-                configFetcher,
+                applicationFetcher,
                 log,
                 channelModelWriter(),
                 channelResolver,
                 new SubstitutionTableNumberCodec(),
                 ChannelWriteController.create(
-                        configFetcher,
+                        applicationFetcher,
                         channelStore,
                         new DefaultJacksonModelReader(),
                         ChannelModelTransformer.create(
@@ -321,7 +321,7 @@ public class QueryWebModule {
     ChannelGroupController channelGroupController() {
         NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
         return new ChannelGroupController(
-                configFetcher,
+                applicationFetcher,
                 log,
                 channelGroupModelWriter(),
                 cachingChannelGroupResolver(),
@@ -367,7 +367,7 @@ public class QueryWebModule {
     QueryController queryController() {
         return new QueryController(
                 queryExecutor,
-                configFetcher,
+                applicationFetcher,
                 log,
                 contentModelOutputter(),
                 contentWriteController(),
@@ -381,7 +381,7 @@ public class QueryWebModule {
 
     private ContentWriteController contentWriteController() {
         return ContentWriteController.create(
-                configFetcher,
+                applicationFetcher,
                 contentWriteExecutor,
                 lookupBackedContentIdGenerator,
                 contentWriteMessageSender,
@@ -407,7 +407,7 @@ public class QueryWebModule {
 
     TopicWriteController topicWriteController() {
         return new TopicWriteController(
-                configFetcher,
+                applicationFetcher,
                 topicStore,
                 new DefaultJacksonModelReader(),
                 new TopicModelTransformer(),
@@ -420,9 +420,10 @@ public class QueryWebModule {
         return new ScheduleController(
                 scheduleResolver,
                 channelResolver,
-                configFetcher,
+                applicationFetcher,
                 log,
-                scheduleChannelModelOutputter()
+                scheduleChannelModelOutputter(),
+                DefaultApplication.createDefault()
         );
     }
 
@@ -430,16 +431,17 @@ public class QueryWebModule {
     PeopleController peopleController() {
         return new PeopleController(
                 peopleQueryResolver,
-                configFetcher,
+                applicationFetcher,
                 log,
                 personModelOutputter(),
-                peopleWriteController()
+                peopleWriteController(),
+                DefaultApplication.createDefault()
         );
     }
 
     private PeopleWriteController peopleWriteController() {
         return new PeopleWriteController(
-                configFetcher,
+                applicationFetcher,
                 personStore,
                 new DefaultJacksonModelReader(),
                 new PersonModelTransformer(new SystemClock(), personStore),
@@ -449,7 +451,7 @@ public class QueryWebModule {
 
     @Bean
     SearchController searchController() {
-        return new SearchController(searchResolver, configFetcher, log, contentModelOutputter());
+        return new SearchController(searchResolver, applicationFetcher, log, contentModelOutputter());
     }
 
     @Bean
@@ -457,7 +459,7 @@ public class QueryWebModule {
         return new TopicController(
                 new PublisherFilteringTopicResolver(topicResolver),
                 new PublisherFilteringTopicContentLister(topicContentLister),
-                configFetcher,
+                applicationFetcher,
                 log,
                 topicModelOutputter(),
                 queryController(),
@@ -470,7 +472,7 @@ public class QueryWebModule {
         return new ProductController(
                 productResolver,
                 queryExecutor,
-                configFetcher,
+                applicationFetcher,
                 log,
                 productModelOutputter(),
                 queryController()
@@ -482,7 +484,7 @@ public class QueryWebModule {
         return new ContentGroupController(
                 contentGroupResolver,
                 queryExecutor,
-                configFetcher,
+                applicationFetcher,
                 log,
                 contentGroupOutputter(),
                 queryController()
@@ -493,7 +495,7 @@ public class QueryWebModule {
     EventsController eventController() {
         Iterable<String> whitelistedIds = Splitter.on(',').split(eventsWhitelist);
         return new EventsController(
-                configFetcher,
+                applicationFetcher,
                 log,
                 eventModelOutputter(),
                 idCodec(),
@@ -505,13 +507,13 @@ public class QueryWebModule {
 
     @Bean
     TaskController taskController() {
-        return new TaskController(configFetcher, log, taskModelOutputter(), taskStore, idCodec());
+        return new TaskController(applicationFetcher, log, taskModelOutputter(), taskStore, idCodec());
     }
 
     @Bean
     FeedStatsController feedStatsController() {
         return new FeedStatsController(
-                configFetcher,
+                applicationFetcher,
                 log,
                 feedStatsModelOutputter(),
                 feedStatsResolver
@@ -521,7 +523,7 @@ public class QueryWebModule {
     @Bean
     ContentFeedController contentFeedController() {
         return new ContentFeedController(
-                configFetcher,
+                applicationFetcher,
                 log,
                 tvaModelOutputter(),
                 feedGenerator,

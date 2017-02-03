@@ -135,4 +135,8 @@ var renderGraph = function(error, data) {
 
 }
 
-d3.json("graph/data.json?uri=" + uri + "&min_edges=" + min_edges, renderGraph);
+if (id) {
+  d3.json("graph/data.json?id=" + id + "&min_edges=" + min_edges, renderGraph);
+} else if (uri) {
+  d3.json("graph/data.json?uri=" + uri + "&min_edges=" + min_edges, renderGraph);
+}

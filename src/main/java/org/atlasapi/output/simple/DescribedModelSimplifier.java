@@ -1,20 +1,19 @@
 package org.atlasapi.output.simple;
 
 import com.google.common.base.Function;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
-import org.atlasapi.media.entity.simple.Award;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Specialization;
+import org.atlasapi.media.entity.simple.Award;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.LocalizedDescription;
@@ -32,6 +31,7 @@ import org.slf4j.LoggerFactory;
 import javax.annotation.Nullable;
 import java.math.BigInteger;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class DescribedModelSimplifier<F extends Described, T extends Description> extends IdentifiedModelSimplifier<F,T> {
 
@@ -49,14 +49,21 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         this.descriptionWatermarker = null;
     }
 
-    protected DescribedModelSimplifier(ImageSimplifier imageSimplifier, NumberToShortStringCodec codec,
-            @Nullable DescriptionWatermarker descriptionWatermarker) {
+    protected DescribedModelSimplifier(
+            ImageSimplifier imageSimplifier,
+            NumberToShortStringCodec codec,
+            @Nullable DescriptionWatermarker descriptionWatermarker
+    ) {
         super(codec);
         this.imageSimplifier = imageSimplifier;
         this.descriptionWatermarker = descriptionWatermarker;
     }
 
-    protected void copyBasicDescribedAttributes(F content, T simpleDescription, Set<Annotation> annotations) {
+    protected void copyBasicDescribedAttributes(
+            F content,
+            T simpleDescription,
+            Set<Annotation> annotations
+    ) {
 
         copyIdentifiedAttributesTo(content, simpleDescription, annotations);
 
@@ -150,54 +157,42 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
         return simpleRatings.build();
     }
 
-    private Function<LookupRef, SameAs> TO_SAME_AS = new Function<LookupRef, SameAs>() {
-
-        @Override
-        public SameAs apply(LookupRef input) {
-            Long id = input.id();
-            if (id == null) {
-                log.info("null id for {}", input);
-            }
-            return new SameAs(id != null ? idCodec.encode(BigInteger.valueOf(id)) : null, input.uri());
+    private Function<LookupRef, SameAs> TO_SAME_AS = input -> {
+        Long id = input.id();
+        if (id == null) {
+            log.info("null id for {}", input);
         }
+        return new SameAs(id != null ? idCodec.encode(BigInteger.valueOf(id)) : null, input.uri());
     };
 
     private Iterable<RelatedLink> simplifyRelatedLinks(F described) {
-        return Iterables.transform(described.getRelatedLinks(), new Function<org.atlasapi.media.entity.RelatedLink, RelatedLink>() {
+        return Iterables.transform(described.getRelatedLinks(), rl -> {
+            RelatedLink simpleLink = new RelatedLink();
 
-            @Override
-            public RelatedLink apply(org.atlasapi.media.entity.RelatedLink rl) {
-                RelatedLink simpleLink = new RelatedLink();
+            simpleLink.setUrl(rl.getUrl());
+            simpleLink.setType(rl.getType().toString().toLowerCase());
+            simpleLink.setSourceId(rl.getSourceId());
+            simpleLink.setShortName(rl.getShortName());
+            simpleLink.setTitle(rl.getTitle());
+            simpleLink.setDescription(rl.getDescription());
+            simpleLink.setImage(rl.getImage());
+            simpleLink.setThumbnail(rl.getThumbnail());
 
-                simpleLink.setUrl(rl.getUrl());
-                simpleLink.setType(rl.getType().toString().toLowerCase());
-                simpleLink.setSourceId(rl.getSourceId());
-                simpleLink.setShortName(rl.getShortName());
-                simpleLink.setTitle(rl.getTitle());
-                simpleLink.setDescription(rl.getDescription());
-                simpleLink.setImage(rl.getImage());
-                simpleLink.setThumbnail(rl.getThumbnail());
-
-                return simpleLink;
-            }
+            return simpleLink;
         });
     }
 
     private Iterable<Review> simplifyReviews(final F content) {
-        return Iterables.transform(content.getReviews(), new Function<org.atlasapi.media.entity.Review, Review>() {
+        return Iterables.transform(content.getReviews(), complex -> {
+            Review simple = new Review();
 
-            @Override
-            public Review apply(org.atlasapi.media.entity.Review complex) {
-                Review simple = new Review();
-
-                if (complex.getLocale() != null) {
-                    simple.setLanguage(complex.getLocale().toLanguageTag());
-                }
-                simple.setReview(complex.getReview());
-                simple.setPublisherDetails(toPublisherDetails(content.getPublisher()));
-
-                return simple;
+            if (complex.getLocale() != null) {
+                simple.setLanguage(complex.getLocale().toLanguageTag());
             }
+            simple.setReview(complex.getReview());
+            simple.setPublisherDetails(toPublisherDetails(content.getPublisher()));
+
+            return simple;
         });
     }
 
@@ -213,49 +208,37 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     }
 
     private Set<Award> simplifyAwards(Set<org.atlasapi.media.entity.Award> awards) {
-        return FluentIterable.from(awards)
-                .transform(new Function<org.atlasapi.media.entity.Award, Award>() {
-
-                    @Override
-                    public Award apply(org.atlasapi.media.entity.Award input) {
-                        Award award = new Award();
-                        award.setDescription(input.getDescription());
-                        award.setOutcome(input.getOutcome());
-                        award.setTitle(input.getTitle());
-                        award.setYear(input.getYear());
-                        return award;
-                    }
+        return awards.stream()
+                .map(input -> {
+                    Award award = new Award();
+                    award.setDescription(input.getDescription());
+                    award.setOutcome(input.getOutcome());
+                    award.setYear(input.getYear());
+                    award.setTitle(input.getTitle());
+                    return award;
                 })
-                .toSet();
+                .collect(Collectors.toSet());
     }
 
-    private static final Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription> TO_SIMPLE_LOCALISED_DESCRIPTION = new Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription>() {
+    private static final Function<org.atlasapi.media.entity.LocalizedDescription, LocalizedDescription> TO_SIMPLE_LOCALISED_DESCRIPTION = complex -> {
+        LocalizedDescription simple = new LocalizedDescription();
 
-        @Override
-        public LocalizedDescription apply(org.atlasapi.media.entity.LocalizedDescription complex) {
-            LocalizedDescription simple = new LocalizedDescription();
+        simple.setLanguage(complex.getLanguageTag());
+        simple.setDescription(complex.getDescription());
+        simple.setLongDescription(complex.getLongDescription());
+        simple.setMediumDescription(complex.getMediumDescription());
+        simple.setShortDescription(complex.getShortDescription());
 
-            simple.setLanguage(complex.getLanguageTag());
-            simple.setDescription(complex.getDescription());
-            simple.setLongDescription(complex.getLongDescription());
-            simple.setMediumDescription(complex.getMediumDescription());
-            simple.setShortDescription(complex.getShortDescription());
-
-            return simple;
-        }
+        return simple;
     };
 
-    private static final Function<org.atlasapi.media.entity.LocalizedTitle, LocalizedTitle> TO_SIMPLE_LOCALIZED_TITLE = new Function<org.atlasapi.media.entity.LocalizedTitle, LocalizedTitle>() {
+    private static final Function<org.atlasapi.media.entity.LocalizedTitle, LocalizedTitle> TO_SIMPLE_LOCALIZED_TITLE = complex -> {
+        LocalizedTitle simple = new LocalizedTitle();
 
-        @Override
-        public LocalizedTitle apply(org.atlasapi.media.entity.LocalizedTitle complex) {
-            LocalizedTitle simple = new LocalizedTitle();
+        simple.setLanguage(complex.getLanguageTag());
+        simple.setTitle(complex.getTitle());
 
-            simple.setLanguage(complex.getLanguageTag());
-            simple.setTitle(complex.getTitle());
-
-            return simple;
-        }
+        return simple;
     };
 
 }

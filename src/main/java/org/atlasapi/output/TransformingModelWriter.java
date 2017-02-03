@@ -6,7 +6,7 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 
 public abstract class TransformingModelWriter<I, O> implements AtlasModelWriter<I> {
 
@@ -22,23 +22,29 @@ public abstract class TransformingModelWriter<I, O> implements AtlasModelWriter<
             HttpServletResponse response,
             I model,
             Set<Annotation> annotations,
-            ApplicationConfiguration config
+            Application application
     ) throws IOException {
         delegate.writeTo(
                 request,
                 response,
-                transform(model, annotations, config),
+                transform(model, annotations, application),
                 annotations,
-                config
+                application
         );
     }
 
-    protected abstract O transform(I model, Set<Annotation> annotations,
-            ApplicationConfiguration config);
+    protected abstract O transform(
+            I model,
+            Set<Annotation> annotations,
+            Application application
+    );
 
     @Override
-    public void writeError(HttpServletRequest request, HttpServletResponse response,
-            AtlasErrorSummary exception) throws IOException {
+    public void writeError(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AtlasErrorSummary exception
+    ) throws IOException {
         delegate.writeError(request, response, exception);
     }
 

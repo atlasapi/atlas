@@ -4,7 +4,7 @@ import java.util.Currency;
 import java.util.List;
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
 import org.atlasapi.media.channel.Channel;
@@ -59,6 +59,7 @@ import org.junit.Test;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 
 public class ItemModelSimplifierTest {
 
@@ -115,7 +116,6 @@ public class ItemModelSimplifierTest {
     @Test
     @SuppressWarnings("unchecked")
     public void testCanCreateSimpleItemFromFullItem() throws Exception {
-        final ApplicationConfiguration config = ApplicationConfiguration.defaultConfiguration();
         Image channelImage = Image.builder("http://example.com/image")
                 .withTheme(ImageTheme.LIGHT_OPAQUE)
                 .build();
@@ -244,7 +244,7 @@ public class ItemModelSimplifierTest {
                                                 Annotation.V4_ALIASES
                                         )
                                 ),
-                                config
+                                mock(Application.class)
                         );
 
         List<org.atlasapi.media.entity.simple.Person> people = simpleItem.getPeople();

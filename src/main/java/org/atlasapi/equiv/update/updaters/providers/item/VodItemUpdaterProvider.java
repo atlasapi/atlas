@@ -2,6 +2,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 
 import java.util.Set;
 
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
@@ -62,6 +63,9 @@ public class VodItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> 
                                 new FilmEquivalenceGenerator(
                                         dependencies.getSearchResolver(),
                                         targetPublishers,
+                                        DefaultApplication.createWithReads(
+                                                ImmutableList.copyOf(targetPublishers)
+                                        ),
                                         true)
                         )
                 )

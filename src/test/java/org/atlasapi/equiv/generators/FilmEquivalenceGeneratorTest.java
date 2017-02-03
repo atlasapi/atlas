@@ -3,12 +3,13 @@ package org.atlasapi.equiv.generators;
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
+import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 
+import com.metabroadcast.applications.client.model.internal.Application;
 import junit.framework.TestCase;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
@@ -35,7 +36,8 @@ public class FilmEquivalenceGeneratorTest extends TestCase {
 
     private final Mockery context = new Mockery();
     private final SearchResolver resolver = context.mock(SearchResolver.class);
-    private final FilmEquivalenceGenerator generator = new FilmEquivalenceGenerator(resolver, ImmutableSet.of(Publisher.PREVIEW_NETWORKS), false);
+    private final Application application = mock(Application.class);
+    private final FilmEquivalenceGenerator generator = new FilmEquivalenceGenerator(resolver, ImmutableSet.of(Publisher.PREVIEW_NETWORKS), application, false);
     
     private final Film subjectFilm = aFilm(Publisher.PA, "test film title", 2000, "http://imdb.com/title/tt0409345");
 
@@ -61,7 +63,7 @@ public class FilmEquivalenceGeneratorTest extends TestCase {
 
     private void checkScore(final Film anotherFilm, Score score) {
         context.checking(new Expectations(){{
-            oneOf(resolver).search(with(searchQueryFor(subjectFilm.getTitle())), with(any(ApplicationConfiguration.class)));
+            oneOf(resolver).search(with(searchQueryFor(subjectFilm.getTitle())), with(any(Application.class)));
                 will(returnValue(ImmutableList.<Identified> of(anotherFilm)));
         }});
         

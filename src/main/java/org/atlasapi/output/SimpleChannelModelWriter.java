@@ -2,12 +2,11 @@ package org.atlasapi.output;
 
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.simple.ChannelQueryResult;
 import org.atlasapi.output.simple.ChannelModelSimplifier;
 
-import com.google.common.base.Function;
 import com.google.common.collect.Iterables;
 
 /**
@@ -26,15 +25,10 @@ public class SimpleChannelModelWriter extends TransformingModelWriter<Iterable<C
     }
     
     @Override
-    protected ChannelQueryResult transform(Iterable<Channel> channels, final Set<Annotation> annotations, final ApplicationConfiguration config) {
+    protected ChannelQueryResult transform(Iterable<Channel> channels, final Set<Annotation> annotations, final Application application) {
         ChannelQueryResult simpleChannels = new ChannelQueryResult();
-        simpleChannels.setChannels(Iterables.transform(channels, new Function<Channel, org.atlasapi.media.entity.simple.Channel>() {
-
-            @Override
-            public org.atlasapi.media.entity.simple.Channel apply(Channel input) {
-                return simplifier.simplify(input, annotations, config);
-            }
-        }));
+        simpleChannels.setChannels(Iterables.transform(channels,
+                input -> simplifier.simplify(input, annotations, application)));
         return simpleChannels;
     }
 

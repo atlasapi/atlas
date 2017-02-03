@@ -10,10 +10,9 @@ import java.util.Set;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.http.HttpStatusCode;
@@ -29,7 +28,11 @@ public class DispatchingAtlasModelWriter<T> implements AtlasModelWriter<T> {
         
         private ImmutableList.Builder<MappedWriter<T>> writers = ImmutableList.builder();
         
-        public Builder<T> register(AtlasModelWriter<? super T> writer, String ext, MimeType contentType) {
+        public Builder<T> register(
+                AtlasModelWriter<? super T> writer,
+                String ext,
+                MimeType contentType
+        ) {
             writers.add(new MappedWriter<T>(ext, contentType, writer));
             return this;
         }
@@ -43,16 +46,15 @@ public class DispatchingAtlasModelWriter<T> implements AtlasModelWriter<T> {
 	private final Map<String, MappedWriter<T>> extensionMap;
 	
 	public DispatchingAtlasModelWriter(List<MappedWriter<T>> writers) {
-        extensionMap = Maps.uniqueIndex(writers, new Function<MappedWriter<T>, String>() {
-            @Override
-            public String apply(MappedWriter<T> input) {
-                return input.extension;
-            }
-        });
+        extensionMap = Maps.uniqueIndex(writers, input -> input.extension);
 	}
 
 	@Override
-	public void writeError(HttpServletRequest request, HttpServletResponse response, AtlasErrorSummary exception) throws IOException {
+	public void writeError(
+	        HttpServletRequest request,
+            HttpServletResponse response,
+            AtlasErrorSummary exception
+    ) throws IOException {
 		MappedWriter<T> writer = findWriterFor(request);
 		if (writer != null) {
 			writer.writeError(request, response, exception);
@@ -62,10 +64,16 @@ public class DispatchingAtlasModelWriter<T> implements AtlasModelWriter<T> {
 	}
 
     @Override
-    public void writeTo(HttpServletRequest request, HttpServletResponse response, T graph, Set<Annotation> annotations, ApplicationConfiguration config) throws IOException {
+    public void writeTo(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            T graph,
+            Set<Annotation> annotations,
+            Application application
+    ) throws IOException {
         MappedWriter<T> writer = findWriterFor(request);
         if (writer != null) {
-            writer.writeTo(request, response, graph, annotations, config);
+            writer.writeTo(request, response, graph, annotations, application);
         } else {
             writeNotFound(response);
         }
@@ -80,8 +88,8 @@ public class DispatchingAtlasModelWriter<T> implements AtlasModelWriter<T> {
 	}
 
     private String extensionFrom(String requestUri) {
-        String resource = requestUri.substring(requestUri.lastIndexOf("/"));
-        int suffixStart = resource.indexOf(".");
+        String resource = requestUri.substring(requestUri.lastIndexOf('/'));
+        int suffixStart = resource.indexOf('.');
         if (suffixStart >= 0) {
             return resource.substring(suffixStart);
         }
@@ -109,16 +117,26 @@ public class DispatchingAtlasModelWriter<T> implements AtlasModelWriter<T> {
 		}
 		
         @Override
-        public void writeTo(HttpServletRequest request, HttpServletResponse response, T graph, Set<Annotation> annotations, final ApplicationConfiguration config) throws IOException {
+        public void writeTo(
+                HttpServletRequest request,
+                HttpServletResponse response,
+                T graph,
+                Set<Annotation> annotations,
+                final Application application
+        ) throws IOException {
             response.setStatus(HttpStatusCode.OK.code());
             response.setCharacterEncoding(Charsets.UTF_8.toString());
             response.setContentType(mimeType.toString());
             addCorsHeader(response);
-            writer.writeTo(request, response, graph, annotations, config);
+            writer.writeTo(request, response, graph, annotations, application);
         }
 
 		@Override
-		public void writeError(HttpServletRequest request, HttpServletResponse response, AtlasErrorSummary error) throws IOException {
+		public void writeError(
+		        HttpServletRequest request,
+                HttpServletResponse response,
+                AtlasErrorSummary error
+        ) throws IOException {
 			response.setStatus(error.statusCode().code());
 			response.setCharacterEncoding(Charsets.UTF_8.toString());
 			response.setContentType(mimeType.toString());

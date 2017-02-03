@@ -11,11 +11,10 @@ import static org.mockito.Mockito.when;
 
 import java.util.Set;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ModelTransformer;
 import org.atlasapi.media.entity.Person;
@@ -24,7 +23,6 @@ import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
-import org.atlasapi.persistence.content.PeopleResolver;
 import org.atlasapi.persistence.content.people.PersonStore;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.NullAdapterLog;
@@ -32,7 +30,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import com.google.common.base.Optional;
-import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.servlet.StubHttpServletRequest;
 import com.metabroadcast.common.servlet.StubHttpServletResponse;
@@ -41,31 +38,31 @@ import com.metabroadcast.common.servlet.StubHttpServletResponse;
 public class PeopleControllerTest {
 
     private PeopleQueryResolver resolver = mock(PeopleQueryResolver.class);
-    private final ApplicationConfigurationFetcher configFetcher = mock(ApplicationConfigurationFetcher.class);
+    private final ApplicationFetcher configFetcher = mock(ApplicationFetcher.class);
     private final AdapterLog log = new NullAdapterLog();
     @SuppressWarnings("unchecked")
     private final AtlasModelWriter<Iterable<Person>> outputter = mock(AtlasModelWriter.class);
-    
+
+    private Application application = mock(Application.class);
     private PersonStore store = mock(PersonStore.class);
     private ModelReader reader = mock(ModelReader.class);
     @SuppressWarnings("unchecked")
     private ModelTransformer<org.atlasapi.media.entity.simple.Person, Person> transformer = mock(ModelTransformer.class);
-    private PeopleWriteController writeController = new PeopleWriteController(configFetcher, store, reader, transformer, outputter );
+    private PeopleWriteController writeController = new PeopleWriteController(configFetcher, store, reader, transformer, outputter);
 
-    private final PeopleController peopleController = new PeopleController(resolver, configFetcher, log, outputter, writeController);
+    private final PeopleController peopleController = new PeopleController(resolver, configFetcher, log, outputter, writeController, application);
     private final SubstitutionTableNumberCodec idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private StubHttpServletRequest request;
     private StubHttpServletResponse response;
-    private ApplicationConfiguration appConfig;
-    
+
     @Before
-    public void setup() throws ApiKeyNotFoundException, RevokedApiKeyException, InvalidIpForApiKeyException {
+    public void setup() throws InvalidApiKeyException {
         request = new StubHttpServletRequest();
         response = new StubHttpServletResponse();
-        appConfig = ApplicationConfiguration.defaultConfiguration();
-        when(configFetcher.configurationFor(request))
-            .thenReturn(Maybe.<ApplicationConfiguration>nothing());
+
+        when(configFetcher.applicationFor(request))
+            .thenReturn(java.util.Optional.empty());
     }
     
     @Test
@@ -76,7 +73,7 @@ public class PeopleControllerTest {
         peopleController.content(request, response);
         
         verify(outputter).writeError(argThat(is(request)), argThat(is(response)), any(AtlasErrorSummary.class));
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyPeople(), anySetOfPublishers(), any(ApplicationConfiguration.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyPeople(), anySetOfPublishers(), any(Application.class));
 
     }
     
@@ -85,12 +82,12 @@ public class PeopleControllerTest {
         String uri = "aUri";
         request.withParam("uri", uri);
         
-        when(resolver.person(uri, appConfig)).thenReturn(Optional.<Person>absent());
+        when(resolver.person(uri, application)).thenReturn(Optional.absent());
         
         peopleController.content(request, response);
         
         verify(outputter).writeError(argThat(is(request)), argThat(is(response)), any(AtlasErrorSummary.class));
-        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyPeople(), anySetOfPublishers(), any(ApplicationConfiguration.class));
+        verify(outputter, never()).writeTo(argThat(is(request)), argThat(is(response)), anyPeople(), anySetOfPublishers(), any(Application.class));
 
     }
 
@@ -102,13 +99,13 @@ public class PeopleControllerTest {
         
         Person person = new Person();
         person.setPublisher(Publisher.BBC);
-        when(resolver.person(idCodec.decode(id).longValue(), appConfig))
+        when(resolver.person(idCodec.decode(id).longValue(), application))
             .thenReturn(Optional.of(person));
         
         peopleController.content(request, response);
         
         verify(outputter, never()).writeError(argThat(is(request)), argThat(is(response)), any(AtlasErrorSummary.class));
-        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), argThat(hasItems(person)), anySetOfPublishers(), any(ApplicationConfiguration.class));
+        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), argThat(hasItems(person)), anySetOfPublishers(), any(Application.class));
         
     }
 
@@ -119,12 +116,12 @@ public class PeopleControllerTest {
         
         Person person = new Person();
         person.setPublisher(Publisher.BBC);
-        when(resolver.person(uri, appConfig)).thenReturn(Optional.of(person));
+        when(resolver.person(uri, application)).thenReturn(Optional.of(person));
         
         peopleController.content(request, response);
         
         verify(outputter, never()).writeError(argThat(is(request)), argThat(is(response)), any(AtlasErrorSummary.class));
-        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), argThat(hasItems(person)), anySetOfPublishers(), any(ApplicationConfiguration.class));
+        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), argThat(hasItems(person)), anySetOfPublishers(), any(Application.class));
         
     }
 

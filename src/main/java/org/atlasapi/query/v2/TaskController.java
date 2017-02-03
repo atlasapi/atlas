@@ -5,11 +5,10 @@ import java.io.IOException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.feeds.tasks.Action;
 import org.atlasapi.feeds.tasks.Destination.DestinationType;
 import org.atlasapi.feeds.tasks.Status;
@@ -59,9 +58,9 @@ public class TaskController extends BaseController<Iterable<Task>> {
     private final TaskStore taskStore;
     private final NumberToShortStringCodec idCodec;
     
-    public TaskController(ApplicationConfigurationFetcher configFetcher, AdapterLog log,
+    public TaskController(ApplicationFetcher configFetcher, AdapterLog log,
             AtlasModelWriter<Iterable<Task>> outputter, TaskStore taskStore, NumberToShortStringCodec idCodec) {
-        super(configFetcher, log, outputter);
+        super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.taskStore = checkNotNull(taskStore);
         this.idCodec = checkNotNull(idCodec);
     }
@@ -81,10 +80,10 @@ public class TaskController extends BaseController<Iterable<Task>> {
         try {
             Selection selection = SELECTION_BUILDER.build(request);
 
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -97,7 +96,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
                 return;
             }
 
-            if (!appConfig.isEnabled(publisher)) {
+            if (!application.getConfiguration().isReadEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
@@ -107,7 +106,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
 
             Iterable<Task> allTasks = taskStore.allTasks(taskQuery);
 
-            modelAndViewFor(request, response, allTasks, appConfig);
+            modelAndViewFor(request, response, allTasks, application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
@@ -122,9 +121,18 @@ public class TaskController extends BaseController<Iterable<Task>> {
         return null;
     }
 
-    private TaskQuery queryFrom(DestinationType destinationType, Publisher publisher, Selection selection, 
-            String contentUri, String remoteId, String statusStr, String actionStr, String typeStr, 
-            String elementId, String orderBy) {
+    private TaskQuery queryFrom(
+            DestinationType destinationType,
+            Publisher publisher,
+            Selection selection,
+            String contentUri,
+            String remoteId,
+            String statusStr,
+            String actionStr,
+            String typeStr,
+            String elementId,
+            String orderBy
+    ) {
 
         if (contentUri != null 
                 && !contentUri.startsWith(NITRO_URI_PREFIX)) {
@@ -188,7 +196,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
         try {
             
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
-            ApplicationConfiguration appConfig = appConfig(request);
+            Application application = application(request);
             DestinationType destinationType = parseDestinationFrom(destinationTypeStr);
             
             if (destinationType == null) {
@@ -196,7 +204,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
                 return;
             }
             
-            if (!appConfig.isEnabled(publisher)) {
+            if (!application.getConfiguration().isReadEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
@@ -206,7 +214,7 @@ public class TaskController extends BaseController<Iterable<Task>> {
                 errorViewFor(request, response, NOT_FOUND);
                 return;
             }
-            modelAndViewFor(request, response, ImmutableList.of(resolved.get()), appConfig);
+            modelAndViewFor(request, response, ImmutableList.of(resolved.get()), application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }

@@ -13,11 +13,10 @@ import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import com.metabroadcast.applications.client.model.internal.Application;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Serializer;
-
-import org.atlasapi.application.v3.ApplicationConfiguration;
 
 import com.google.common.base.Charsets;
 import com.metabroadcast.common.http.HttpHeaders;
@@ -30,9 +29,13 @@ public class JaxbTVAnytimeModelWriter implements AtlasModelWriter<JAXBElement<TV
     private static final String GZIP_HEADER_VALUE = "gzip";
 
     @Override
-    public void writeTo(HttpServletRequest request, HttpServletResponse response,
-            JAXBElement<TVAMainType> result, Set<Annotation> annotations,
-            ApplicationConfiguration config) throws IOException {
+    public void writeTo(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            JAXBElement<TVAMainType> result,
+            Set<Annotation> annotations,
+            Application application
+    ) throws IOException {
         try {
             writeOut(request, response, result);
         } catch (JAXBException e) {

@@ -28,7 +28,7 @@ import java.util.zip.GZIPOutputStream;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.entity.simple.Person;
@@ -64,13 +64,14 @@ public class JsonTranslator<T> implements AtlasModelWriter<T> {
 
 	public JsonTranslator() {
 		this(new GsonBuilder()
-					.disableHtmlEscaping()
-					.setDateFormat(DateFormat.LONG)
-					.setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
-					.registerTypeAdapter(AtlasErrorSummary.class, new AtlasExceptionJsonSerializer())
-					.registerTypeAdapter(Date.class, new DateTimeSerializer())
-					.registerTypeAdapter(Description.class, new DescriptionSerializer())
-					.registerTypeAdapter(DateTime.class, new JodaDateTimeSerializer()));
+                .disableHtmlEscaping()
+                .setDateFormat(DateFormat.LONG)
+                .setFieldNamingPolicy(FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES)
+                .registerTypeAdapter(AtlasErrorSummary.class, new AtlasExceptionJsonSerializer())
+                .registerTypeAdapter(Date.class, new DateTimeSerializer())
+                .registerTypeAdapter(Description.class, new DescriptionSerializer())
+                .registerTypeAdapter(DateTime.class, new JodaDateTimeSerializer())
+        );
 	}
 
     public JsonTranslator(GsonBuilder gsonBuilder) {
@@ -78,7 +79,13 @@ public class JsonTranslator<T> implements AtlasModelWriter<T> {
     }
 
     @Override
-	public void writeTo(HttpServletRequest request, HttpServletResponse response, T model, Set<Annotation> annotations, ApplicationConfiguration config) throws IOException {
+	public void writeTo(
+			HttpServletRequest request,
+		    HttpServletResponse response,
+		    T model,
+		    Set<Annotation> annotations,
+		    Application application
+    ) throws IOException {
 
 	    OutputStream out = response.getOutputStream();
 
@@ -125,10 +132,17 @@ public class JsonTranslator<T> implements AtlasModelWriter<T> {
 	}
 
 	@Override
-	public void writeError(HttpServletRequest request, HttpServletResponse response, AtlasErrorSummary exception) throws IOException {
+	public void writeError(
+	        HttpServletRequest request,
+            HttpServletResponse response,
+            AtlasErrorSummary exception
+    ) throws IOException {
 		String callback = callback(request);
 
-		OutputStreamWriter writer = new OutputStreamWriter(response.getOutputStream(), Charsets.UTF_8);
+		OutputStreamWriter writer = new OutputStreamWriter(
+		        response.getOutputStream(),
+                Charsets.UTF_8
+        );
 
 		try {
 			if (callback != null) {
@@ -153,7 +167,11 @@ public class JsonTranslator<T> implements AtlasModelWriter<T> {
 	private static class AtlasExceptionJsonSerializer implements JsonSerializer<AtlasErrorSummary> {
 
 		@Override
-		public JsonElement serialize(AtlasErrorSummary src, Type typeOfSrc, JsonSerializationContext context) {
+		public JsonElement serialize(
+		        AtlasErrorSummary src,
+                Type typeOfSrc,
+                JsonSerializationContext context
+        ) {
 			JsonObject serialized = new JsonObject();
 			JsonObject error = new JsonObject();
 			error.addProperty("message", src.message());
@@ -174,7 +192,11 @@ public class JsonTranslator<T> implements AtlasModelWriter<T> {
 	private static final class DescriptionSerializer implements JsonSerializer<Description> {
 
 		@Override
-		public JsonElement serialize(Description description, Type type, JsonSerializationContext context) {
+		public JsonElement serialize(
+		        Description description,
+                Type type,
+                JsonSerializationContext context
+        ) {
 			JsonElement element = null;
 			if (description instanceof Item) {
 				element = context.serialize(description, Item.class);
@@ -183,7 +205,10 @@ public class JsonTranslator<T> implements AtlasModelWriter<T> {
 			} else if (description instanceof Playlist ) {
 				element = context.serialize(description, Playlist.class);
 			} else {
-			    throw new IllegalArgumentException("Cannot serialise subclass of Description of type " + description.getClass().getName());
+			    throw new IllegalArgumentException(
+			            "Cannot serialise subclass of Description of type "
+                                + description.getClass().getName()
+                );
 			}
 			return element;
 		}
@@ -193,7 +218,10 @@ public class JsonTranslator<T> implements AtlasModelWriter<T> {
 
         @Override
         public JsonElement serialize(Date date, Type type, JsonSerializationContext context) {
-            return new JsonPrimitive(new DateTime(date,DateTimeZones.UTC).toString(ISODateTimeFormat.dateTimeNoMillis()));
+            return new JsonPrimitive(
+                    new DateTime(date,DateTimeZones.UTC)
+                            .toString(ISODateTimeFormat.dateTimeNoMillis())
+            );
         }
     }
     

@@ -1,10 +1,10 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.Map;
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
-import org.atlasapi.application.v3.SourceStatus;
+import com.google.api.client.util.Lists;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.results.description.ResultDescription;
@@ -21,12 +21,9 @@ import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
-
-import static org.atlasapi.application.v3.ApplicationConfiguration.defaultConfiguration;
 
 public class TitleSearchGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
@@ -34,7 +31,11 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     public final static String NAME = "Title";
     private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
     
-    public static final <T extends Content> TitleSearchGenerator<T> create(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, double exactMatchScore) {
+    public static final <T extends Content> TitleSearchGenerator<T> create(
+            SearchResolver searchResolver, Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            double exactMatchScore
+    ) {
         return new TitleSearchGenerator<T>(searchResolver, cls, publishers, exactMatchScore);
     }
     
@@ -46,12 +47,21 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final int searchLimit;
     private final ExpandingTitleTransformer titleExpander;
 
-    public TitleSearchGenerator(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, double exactMatchScore) {
+    public TitleSearchGenerator(
+            SearchResolver searchResolver, Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            double exactMatchScore
+    ) {
         this(searchResolver, cls, publishers, Functions.<String>identity(), 20, exactMatchScore);
     }
     
-    public TitleSearchGenerator(SearchResolver searchResolver, Class<? extends T> cls, Iterable<Publisher> publishers, Function<String,String> titleTransform, int searchLimit,
-            double exactMatchScore) {
+    public TitleSearchGenerator(
+            SearchResolver searchResolver, Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            Function<String,String> titleTransform,
+            int searchLimit,
+            double exactMatchScore
+    ) {
         this.searchResolver = searchResolver;
         this.cls = cls;
         this.searchLimit = searchLimit;
@@ -81,7 +91,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
 
     private Iterable<? extends T> searchForCandidates(T content, ResultDescription desc) {
         Set<Publisher> publishers = Sets.difference(searchPublishers, ImmutableSet.of(content.getPublisher()));
-        ApplicationConfiguration appConfig = defaultConfiguration().withSources(enabledPublishers(publishers));
+        Application application = DefaultApplication.createWithReads(Lists.newArrayList(publishers));
 
         String title = titleTransform.apply(content.getTitle());
         title = normalize(title);
@@ -96,23 +106,25 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                 content.getSpecialization(),
                 publishers);
 
-        Iterable<? extends T> results = Iterables.filter(searchResolver.search(
-                titleQuery.build(),
-                appConfig
-        ), cls);
+        Iterable<? extends T> results = Iterables.filter(
+                searchResolver.search(titleQuery.build(), application),
+                cls
+        );
 
         String expandedTitle = titleExpander.expand(title);
 
         if (!title.toLowerCase().equals(expandedTitle)) {
-            SearchQuery.Builder expandedTitleQuery = getSearchQueryBuilder(publishers,
-                    expandedTitle);
+            SearchQuery.Builder expandedTitleQuery = getSearchQueryBuilder(
+                    publishers,
+                    expandedTitle
+            );
             if (content.getSpecialization() != null) {
                 titleQuery.withSpecializations(ImmutableSet.of(content.getSpecialization()));
             }
-            Iterable<? extends T> filteredExpandedTitleResults = Iterables.filter(searchResolver.search(
-                    expandedTitleQuery.build(),
-                    appConfig
-            ), cls);
+            Iterable<? extends T> filteredExpandedTitleResults = Iterables.filter(
+                    searchResolver.search(expandedTitleQuery.build(), application),
+                    cls
+            );
 
             results = Iterables.concat(results, filteredExpandedTitleResults);
         }
@@ -128,18 +140,6 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                         .withTitleWeighting(TITLE_WEIGHTING);
     }
 
-    private Map<Publisher, SourceStatus> enabledPublishers(Set<Publisher> enabledSources) {
-        ImmutableMap.Builder<Publisher, SourceStatus> builder = ImmutableMap.builder();
-        for (Publisher publisher : Publisher.values()) {
-            if (enabledSources.contains(publisher)) {
-                builder.put(publisher, SourceStatus.AVAILABLE_ENABLED);
-            } else {
-                builder.put(publisher, SourceStatus.AVAILABLE_DISABLED);
-            }
-        }
-        return builder.build();
-    }
-
     private String normalize(String title) {
         for (String removed : TO_REMOVE) {
             title = title.toLowerCase().replaceAll(removed, "");
@@ -152,12 +152,6 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         return "Title-matching Generator";
     }
 
-    private static Predicate<Content> IS_ACTIVELY_PUBLISHED = new Predicate<Content>() {
-
-        @Override
-        public boolean apply(Content input) {
-            return input.isActivelyPublished();
-        }
-    };
+    private static Predicate<Content> IS_ACTIVELY_PUBLISHED = input -> input.isActivelyPublished();
     
 }

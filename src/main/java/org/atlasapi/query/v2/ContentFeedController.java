@@ -12,11 +12,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBElement;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.RevokedApiKeyException;
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.feeds.tasks.Destination.DestinationType;
 import org.atlasapi.feeds.tvanytime.TvAnytimeGenerator;
 import org.atlasapi.feeds.tvanytime.TvaGenerationException;
@@ -91,10 +90,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
     private final ContentResolver contentResolver;
     private final ContentHierarchyExpander hierarchyExpander;
     
-    public ContentFeedController(ApplicationConfigurationFetcher configFetcher, AdapterLog log, 
+    public ContentFeedController(ApplicationFetcher configFetcher, AdapterLog log,
             AtlasModelWriter<JAXBElement<TVAMainType>> outputter, TvAnytimeGenerator feedGenerator, 
             ContentResolver contentResolver, ContentHierarchyExpander hierarchyExpander) {
-        super(configFetcher, log, outputter);
+        super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.feedGenerator = checkNotNull(feedGenerator);
         this.contentResolver = checkNotNull(contentResolver);
         this.hierarchyExpander = checkNotNull(hierarchyExpander);
@@ -117,10 +116,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
 
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -131,7 +130,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
             
-            if (!appConfig.isEnabled(publisher)) {
+            if (!application.getConfiguration().isReadEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
@@ -156,10 +155,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 Map<String, ItemOnDemandHierarchy> onDemands = hierarchyExpander.onDemandHierarchiesFor(item);
                 
                 JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get(), versions, broadcasts, onDemands);
-                modelAndViewFor(request, response, tva, appConfig);
+                modelAndViewFor(request, response, tva, application);
             } else {
                 JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get());
-                modelAndViewFor(request, response, tva, appConfig);
+                modelAndViewFor(request, response, tva, application);
             }
             
         } catch (TvaGenerationException e) {
@@ -177,10 +176,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
 
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -191,7 +190,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
             
-            if (!appConfig.isEnabled(publisher)) {
+            if (!application.getConfiguration().isReadEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
@@ -208,7 +207,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             }
             JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get());
             
-            modelAndViewFor(request, response, tva, appConfig);
+            modelAndViewFor(request, response, tva, application);
         } catch (TvaGenerationException e) {
             errorViewFor(request, response, tvaGenerationError(e));
         } catch (Exception e) {
@@ -225,10 +224,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
 
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -239,7 +238,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
             
-            if (!appConfig.isEnabled(publisher)) {
+            if (!application.getConfiguration().isReadEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
@@ -267,10 +266,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                     return;
                 }
                 JAXBElement<TVAMainType> tva = feedGenerator.generateVersionTVAFrom(versionHierarchy.get(), versionCrid);
-                modelAndViewFor(request, response, tva, appConfig);
+                modelAndViewFor(request, response, tva, application);
             } else {
                 JAXBElement<TVAMainType> tva = feedGenerator.generateVersionTVAFrom(hierarchies);
-                modelAndViewFor(request, response, tva, appConfig);
+                modelAndViewFor(request, response, tva, application);
             }
         } catch (TvaGenerationException e) {
             errorViewFor(request, response, tvaGenerationError(e));
@@ -288,10 +287,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
 
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -302,7 +301,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
             
-            if (!appConfig.isEnabled(publisher)) {
+            if (!application.getConfiguration().isReadEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
@@ -331,10 +330,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                     return;
                 }
                 JAXBElement<TVAMainType> tva = feedGenerator.generateBroadcastTVAFrom(broadcastHierarchy.get(), broadcastImi);
-                modelAndViewFor(request, response, tva, appConfig);
+                modelAndViewFor(request, response, tva, application);
             } else {
                 JAXBElement<TVAMainType> tva = feedGenerator.generateBroadcastTVAFrom(hierarchies);
-                modelAndViewFor(request, response, tva, appConfig);
+                modelAndViewFor(request, response, tva, application);
             }
         } catch (TvaGenerationException e) {
             errorViewFor(request, response, tvaGenerationError(e));
@@ -352,10 +351,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
         try {
             Publisher publisher = Publisher.valueOf(publisherStr.trim().toUpperCase());
 
-            ApplicationConfiguration appConfig;
+            Application application;
             try {
-                appConfig = appConfig(request);
-            } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException ex) {
+                application = application(request);
+            } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
             }
@@ -367,7 +366,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
             
-            if (!appConfig.isEnabled(publisher)) {
+            if (!application.getConfiguration().isReadEnabled(publisher)) {
                 errorViewFor(request, response, FORBIDDEN);
                 return;
             }
@@ -396,10 +395,10 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                     return;
                 }
                 JAXBElement<TVAMainType> tva = feedGenerator.generateOnDemandTVAFrom(onDemandHierarchy.get(), onDemandImi);
-                modelAndViewFor(request, response, tva, appConfig);
+                modelAndViewFor(request, response, tva, application);
             } else {
                 JAXBElement<TVAMainType> tva = feedGenerator.generateOnDemandTVAFrom(hierarchies);
-                modelAndViewFor(request, response, tva, appConfig);
+                modelAndViewFor(request, response, tva, application);
             }
         } catch (TvaGenerationException e) {
             errorViewFor(request, response, tvaGenerationError(e));

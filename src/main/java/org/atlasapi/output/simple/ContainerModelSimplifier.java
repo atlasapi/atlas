@@ -5,7 +5,7 @@ import static com.metabroadcast.common.base.MorePredicates.transformingPredicate
 import java.math.BigInteger;
 import java.util.Set;
 
-import org.atlasapi.application.v3.ApplicationConfiguration;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
@@ -43,27 +43,36 @@ public class ContainerModelSimplifier extends ContentModelSimplifier<Container, 
     private final UpcomingItemsResolver upcomingItemsResolver;
     private final RecentlyBroadcastChildrenResolver recentlyBroadcastResolver;
     private final ContainerSummaryResolver containerSummaryResolver;
-    private final Function<ChildRef, ContentIdentifier> toContentIdentifier = new Function<ChildRef, ContentIdentifier>() {
-
-        @Override
-        public ContentIdentifier apply(ChildRef input) {
-            return ContentIdentifier.identifierFor(input, idCodec);
-        }
-    };
+    private final Function<ChildRef, ContentIdentifier> toContentIdentifier = input -> ContentIdentifier.identifierFor(input, idCodec);
     
-    private final Function<SeriesRef, SeriesIdentifier> toSeriesIdentifier = new Function<SeriesRef, SeriesIdentifier>() {
+    private final Function<SeriesRef, SeriesIdentifier> toSeriesIdentifier = input -> ContentIdentifier.seriesIdentifierFor(input, idCodec);
 
-        @Override
-        public SeriesIdentifier apply(SeriesRef input) {
-            return ContentIdentifier.seriesIdentifierFor(input, idCodec);
-        }
-    };
-
-    public ContainerModelSimplifier(ModelSimplifier<Item, org.atlasapi.media.entity.simple.Item> itemSimplifier, String localHostName, 
-            ContentGroupResolver contentGroupResolver, TopicQueryResolver topicResolver, AvailableItemsResolver availableResovler, 
-            UpcomingItemsResolver upcomingResolver, ProductResolver productResolver, RecentlyBroadcastChildrenResolver recentChildren,
-            ImageSimplifier imageSimplifier, PeopleQueryResolver peopleResolver, ContainerSummaryResolver containerSummaryResolver, EventRefModelSimplifier eventSimplifier) {
-        super(localHostName, contentGroupResolver, topicResolver, productResolver, imageSimplifier, peopleResolver, upcomingResolver, availableResovler, null, eventSimplifier);
+    public ContainerModelSimplifier(
+            ModelSimplifier<Item, org.atlasapi.media.entity.simple.Item> itemSimplifier,
+            String localHostName,
+            ContentGroupResolver contentGroupResolver,
+            TopicQueryResolver topicResolver,
+            AvailableItemsResolver availableResovler,
+            UpcomingItemsResolver upcomingResolver,
+            ProductResolver productResolver,
+            RecentlyBroadcastChildrenResolver recentChildren,
+            ImageSimplifier imageSimplifier,
+            PeopleQueryResolver peopleResolver,
+            ContainerSummaryResolver containerSummaryResolver,
+            EventRefModelSimplifier eventSimplifier
+    ) {
+        super(
+                localHostName,
+                contentGroupResolver,
+                topicResolver,
+                productResolver,
+                imageSimplifier,
+                peopleResolver,
+                upcomingResolver,
+                availableResovler,
+                null,
+                eventSimplifier
+        );
         this.itemSimplifier = itemSimplifier;
         this.availableItemsResolver = availableResovler;
         this.upcomingItemsResolver = upcomingResolver;
@@ -72,11 +81,11 @@ public class ContainerModelSimplifier extends ContentModelSimplifier<Container, 
     }
 
     @Override
-    public Playlist simplify(Container fullPlayList, Set<Annotation> annotations, ApplicationConfiguration config) {
+    public Playlist simplify(Container fullPlayList, Set<Annotation> annotations, Application application) {
 
         Playlist simplePlaylist = new Playlist();
 
-        copyBasicContentAttributes(fullPlayList, simplePlaylist, annotations, config);
+        copyBasicContentAttributes(fullPlayList, simplePlaylist, annotations, application);
         simplePlaylist.setType(EntityType.from(fullPlayList).toString());
 
         if (annotations.contains(Annotation.EXTENDED_DESCRIPTION)) {
@@ -99,7 +108,7 @@ public class ContainerModelSimplifier extends ContentModelSimplifier<Container, 
         }
 
         if (annotations.contains(Annotation.AVAILABLE_LOCATIONS)) {
-            simplePlaylist.setAvailableContent(Iterables.transform(availableItems(fullPlayList, config), toContentIdentifier));
+            simplePlaylist.setAvailableContent(Iterables.transform(availableItems(fullPlayList, application), toContentIdentifier));
         }
 
         if (annotations.contains(Annotation.UPCOMING)) {
@@ -138,8 +147,8 @@ public class ContainerModelSimplifier extends ContentModelSimplifier<Container, 
         return Iterables.transform(Iterables.filter(fullPlayList.getChildRefs(), filter), toContentIdentifier);
     }
 
-    private Iterable<ChildRef> availableItems(Container fullPlayList, ApplicationConfiguration config) {
-        return availableItemsResolver.availableItemsFor(fullPlayList, config);
+    private Iterable<ChildRef> availableItems(Container fullPlayList, Application application) {
+        return availableItemsResolver.availableItemsFor(fullPlayList, application);
     }
 
     private Iterable<ChildRef> upcomingItems(Container fullPlayList) {
@@ -155,7 +164,11 @@ public class ContainerModelSimplifier extends ContentModelSimplifier<Container, 
     }
 
     @Override
-    protected org.atlasapi.media.entity.simple.Item simplify(org.atlasapi.media.entity.Item item, Set<Annotation> annotations, ApplicationConfiguration config) {
-        return itemSimplifier.simplify(item, annotations, config);
+    protected org.atlasapi.media.entity.simple.Item simplify(
+            org.atlasapi.media.entity.Item item,
+            Set<Annotation> annotations,
+            Application application
+    ) {
+        return itemSimplifier.simplify(item, annotations, application);
     }
 }

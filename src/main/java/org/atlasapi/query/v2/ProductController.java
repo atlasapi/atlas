@@ -1,14 +1,15 @@
 package org.atlasapi.query.v2;
 
 import java.io.IOException;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.atlasapi.application.query.ApiKeyNotFoundException;
-import org.atlasapi.application.query.ApplicationConfigurationFetcher;
-import org.atlasapi.application.query.InvalidIpForApiKeyException;
-import org.atlasapi.application.query.RevokedApiKeyException;
+import org.atlasapi.application.query.ApplicationFetcher;
+import org.atlasapi.application.query.InvalidApiKeyException;
+import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.content.criteria.ContentQuery;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.product.Product;
@@ -44,8 +45,15 @@ public class ProductController extends BaseController<Iterable<Product>> {
 
     private final NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
 
-    public ProductController(ProductResolver productResolver, KnownTypeQueryExecutor queryExecutor, ApplicationConfigurationFetcher configFetcher, AdapterLog log, AtlasModelWriter<? super Iterable<Product>> outputter, QueryController queryController) {
-        super(configFetcher, log, outputter);
+    public ProductController(
+            ProductResolver productResolver,
+            KnownTypeQueryExecutor queryExecutor,
+            ApplicationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<? super Iterable<Product>> outputter,
+            QueryController queryController
+    ) {
+        super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.productResolver = productResolver;
         this.queryExecutor = queryExecutor;
         this.queryController = queryController;
@@ -55,29 +63,37 @@ public class ProductController extends BaseController<Iterable<Product>> {
     public void products(HttpServletRequest req, HttpServletResponse resp) throws IOException  {
         try {
             final ContentQuery query = buildQuery(req);
-            modelAndViewFor(req, resp, Iterables.filter(productResolver.products(), new Predicate<Product>() {
-                @Override
-                public boolean apply(Product input) {
-                    return query.allowsSource(input.getPublisher());
-                }
-            }), query.getConfiguration());
+            modelAndViewFor(
+                    req,
+                    resp,
+                    StreamSupport.stream(productResolver.products().spliterator(), false)
+                            .filter(input -> query.allowsSource(input.getPublisher()))
+                            .collect(Collectors.toList()),
+                    query.getApplication()
+            );
         } catch (Exception e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
         }
     }
     
     @RequestMapping(value={"3.0/products/{id}.*","/products/{id}.*"})
-    public void topic(HttpServletRequest req, HttpServletResponse resp, @PathVariable("id") String id) throws IOException {
+    public void topic(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            @PathVariable("id") String id
+    ) throws IOException {
         
         ContentQuery query;
         try {
             query = buildQuery(req);
-        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
+        } catch (InvalidApiKeyException e) {
             outputter.writeError(req, resp, AtlasErrorSummary.forException(e));
             return;
         }
         
-        Optional<Product> productForId = productResolver.productForId(idCodec.decode(id).longValue());
+        Optional<Product> productForId = productResolver.productForId(
+                idCodec.decode(id).longValue()
+        );
         
         if(!productForId.isPresent()) {
             outputter.writeError(req, resp, NOT_FOUND.withMessage("Product " + id + " not found"));
@@ -91,15 +107,19 @@ public class ProductController extends BaseController<Iterable<Product>> {
             return;
         }
         
-        modelAndViewFor(req, resp, ImmutableSet.of(product), query.getConfiguration());
+        modelAndViewFor(req, resp, ImmutableSet.of(product), query.getApplication());
     }
     
     @RequestMapping(value={"3.0/products/{id}/content.*", "/products/{id}/content"})
-    public void topicContents(HttpServletRequest req, HttpServletResponse resp, @PathVariable("id") String id) throws IOException {
+    public void topicContents(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            @PathVariable("id") String id
+    ) throws IOException {
         ContentQuery query;
         try {
             query = buildQuery(req);
-        } catch (ApiKeyNotFoundException | RevokedApiKeyException | InvalidIpForApiKeyException e) {
+        } catch (InvalidApiKeyException e) {
             outputter.writeError(req, resp, AtlasErrorSummary.forException(e));
             return;
         }
@@ -123,10 +143,19 @@ public class ProductController extends BaseController<Iterable<Product>> {
             Selection selection = query.getSelection();
             QueryResult<Identified, Product> result = QueryResult.of(
                     Iterables.filter(
-                            queryExecutor.executeUriQuery(query.getSelection().apply(product.getContent()), query).values(),
+                            queryExecutor.executeUriQuery(
+                                    query.getSelection().apply(product.getContent()), query
+                            ).values(),
                             Identified.class
-                    ), product);
-            queryController.modelAndViewFor(req, resp, result.withSelection(selection), query.getConfiguration());
+                    ),
+                    product);
+
+            queryController.modelAndViewFor(
+                    req,
+                    resp,
+                    result.withSelection(selection),
+                    query.getApplication()
+            );
         } catch (Exception e) {
             errorViewFor(req, resp, AtlasErrorSummary.forException(e));
         }

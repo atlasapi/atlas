@@ -168,19 +168,17 @@ public class AtlasMain {
             String portPropertyName,
             int acceptQueueSize
     ) {
-        int acceptors = Runtime.getRuntime().availableProcessors();
         Executor defaultExecutor = null;
         Scheduler defaultScheduler = null;
         ByteBufferPool defaultByteBufferPool = null;
-        int selectors = 0;
 
         ServerConnector connector = new ServerConnector(
                 server,
                 defaultExecutor,
                 defaultScheduler,
                 defaultByteBufferPool,
-                acceptors,
-                selectors,
+                -1, // use default == number of logical CPU cores
+                -1, // use default
                 connectionFactory
         );
 

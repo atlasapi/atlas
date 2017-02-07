@@ -382,7 +382,7 @@ public class PaModule {
                 contentResolver,
                 contentWriter,
                 lookupEntryStore,
-                new EquivalenceBreaker(
+                EquivalenceBreaker.create(
                         contentResolver,
                         lookupEntryStore,
                         lookupWriter

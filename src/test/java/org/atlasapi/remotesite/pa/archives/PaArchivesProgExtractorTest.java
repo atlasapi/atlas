@@ -3,7 +3,6 @@ package org.atlasapi.remotesite.pa.archives;
 import java.net.URISyntaxException;
 import java.util.Set;
 
-import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Identified;
@@ -23,7 +22,7 @@ import org.atlasapi.remotesite.pa.archives.bindings.Billings;
 import org.atlasapi.remotesite.pa.archives.bindings.CastMember;
 import org.atlasapi.remotesite.pa.archives.bindings.Category;
 import org.atlasapi.remotesite.pa.archives.bindings.ProgData;
-import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
+import org.atlasapi.remotesite.pa.deletes.ExistingItemUnPublisher;
 
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.time.Timestamp;
@@ -49,16 +48,12 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class PaArchivesProgExtractorTest {
-    @Mock
-    private PaProgrammeDataStore store;
-    @Mock
-    private FileUploadResultStore resultStore;
-    @Mock
-    private AdapterLog log;
-    @Mock
-    private ContentResolver resolver;
-    @Mock
-    private ResolvedContent resolvedContent;
+
+    @Mock private AdapterLog log;
+    @Mock private ContentResolver resolver;
+    @Mock private ResolvedContent resolvedContent;
+    @Mock private ExistingItemUnPublisher existingItemUnPublisher;
+
     private PaProgDataUpdatesProcessor progProcessor;
     private PaDataToUpdatesTransformer transformer;
     private final PaTagMap paTagMap = mock(PaTagMap.class);
@@ -68,7 +63,12 @@ public class PaArchivesProgExtractorTest {
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
         when(resolver.findByUris(anyCollection())).thenReturn(resolvedContent);
-        progProcessor = new PaProgrammeProcessor(resolver,log,paTagMap);
+        progProcessor = PaProgrammeProcessor.create(
+                resolver,
+                log,
+                paTagMap,
+                existingItemUnPublisher
+        );
         transformer = new PaDataToUpdatesTransformer();
     }
 

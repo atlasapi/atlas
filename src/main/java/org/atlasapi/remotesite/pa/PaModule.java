@@ -7,6 +7,7 @@ import java.util.concurrent.locks.ReentrantLock;
 
 import javax.annotation.PostConstruct;
 
+import org.atlasapi.equiv.EquivalenceBreaker;
 import org.atlasapi.equiv.PaAliasBackPopulatorTask;
 import org.atlasapi.equiv.update.tasks.MongoScheduleTaskProgressStore;
 import org.atlasapi.feeds.upload.persistence.FileUploadResultStore;
@@ -32,6 +33,8 @@ import org.atlasapi.persistence.ids.MongoSequentialIdGenerator;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
+import org.atlasapi.persistence.lookup.LookupWriter;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
@@ -46,6 +49,7 @@ import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
 import org.atlasapi.remotesite.pa.channels.PaChannelsUpdater;
 import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
+import org.atlasapi.remotesite.pa.deletes.ExistingItemUnPublisher;
 import org.atlasapi.remotesite.pa.deletes.PaContentDeactivator;
 import org.atlasapi.remotesite.pa.deletes.PaContentDeactivatorTask;
 import org.atlasapi.remotesite.pa.features.ContentGroupDetails;
@@ -112,6 +116,8 @@ public class PaModule {
     private @Autowired DatabasedMongo mongo;
     private @Autowired @Qualifier("topicStore") TopicStore topicStore;
     private @Autowired ContentLister contentLister;
+    private @Autowired LookupEntryStore lookupEntryStore;
+    private @Autowired LookupWriter lookupWriter;
 
     // to ensure the complete and daily people ingest jobs are not run simultaneously 
     private final Lock peopleLock = new ReentrantLock();
@@ -207,7 +213,12 @@ public class PaModule {
     }
 
     @Bean PaProgDataProcessor paProgrammeProcessor() {
-        return new PaProgrammeProcessor(contentBuffer(), log, paTagMap());
+        return PaProgrammeProcessor.create(
+                contentBuffer(),
+                log,
+                paTagMap(),
+                existingItemUnPublisher()
+        );
     }
 
     @Bean PaCompleteUpdater paCompleteUpdater() {
@@ -260,8 +271,11 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paRecentArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
-                contentBuffer(), log, paTagMap()
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = PaProgrammeProcessor.create(
+                contentBuffer(),
+                log,
+                paTagMap(),
+                existingItemUnPublisher()
         );
         PaUpdatesProcessor updatesProcessor = PaUpdatesProcessor.create(
                 paProgDataUpdatesProcessor, contentWriter
@@ -272,8 +286,11 @@ public class PaModule {
     }
 
     @Bean PaArchivesUpdater paCompleteArchivesUpdater() {
-        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = new PaProgrammeProcessor(
-                contentBuffer(), log, paTagMap()
+        PaProgDataUpdatesProcessor paProgDataUpdatesProcessor = PaProgrammeProcessor.create(
+                contentBuffer(),
+                log,
+                paTagMap(),
+                existingItemUnPublisher()
         );
         PaUpdatesProcessor updatesProcessor = PaUpdatesProcessor.create(
                 paProgDataUpdatesProcessor, contentWriter
@@ -358,5 +375,18 @@ public class PaModule {
                 new MongoScheduleTaskProgressStore(mongo)
         );
         return new PaAliasBackPopulatorTask(aliasBackPopulator, false);
+    }
+
+    private ExistingItemUnPublisher existingItemUnPublisher() {
+        return ExistingItemUnPublisher.create(
+                contentResolver,
+                contentWriter,
+                lookupEntryStore,
+                new EquivalenceBreaker(
+                        contentResolver,
+                        lookupEntryStore,
+                        lookupWriter
+                )
+        );
     }
 }

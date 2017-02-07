@@ -36,6 +36,7 @@ import org.atlasapi.persistence.player.PlayerResolver;
 import org.atlasapi.persistence.service.ServiceResolver;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
+import org.atlasapi.remotesite.pa.deletes.ExistingItemUnPublisher;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 
 import com.metabroadcast.common.base.Maybe;
@@ -116,7 +117,12 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
         channelResolver = new DummyChannelResolver();
         contentWriter = new MongoContentWriter(db, lookupStore, persistenceAuditLog, playerResolver, serviceResolver, clock);
-        programmeProcessor = new PaProgrammeProcessor(resolver, log, paTagMap);
+        programmeProcessor = PaProgrammeProcessor.create(
+                resolver,
+                log,
+                paTagMap,
+                mock(ExistingItemUnPublisher.class)
+        );
         EquivalentContentResolver equivContentResolver = context.mock(EquivalentContentResolver.class);
         scheduleWriter = new MongoScheduleStore(db, channelResolver, contentBuffer, equivContentResolver, ms);
         contentBuffer = new ContentBuffer(resolver, contentWriter, new DummyItemsPeopleWriter());

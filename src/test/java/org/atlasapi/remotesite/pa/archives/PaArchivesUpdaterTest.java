@@ -12,6 +12,7 @@ import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.remotesite.pa.PaProgrammeProcessor;
 import org.atlasapi.remotesite.pa.PaTagMap;
 import org.atlasapi.remotesite.pa.data.PaProgrammeDataStore;
+import org.atlasapi.remotesite.pa.deletes.ExistingItemUnPublisher;
 
 import com.metabroadcast.common.base.Maybe;
 
@@ -32,18 +33,14 @@ import static org.mockito.Mockito.when;
 @RunWith(MockitoJUnitRunner.class)
 public class PaArchivesUpdaterTest {
 
-    @Mock
-    private PaProgrammeDataStore store;
-    @Mock
-    private FileUploadResultStore resultStore;
-    @Mock
-    private ContentWriter writer;
-    @Mock
-    private AdapterLog log;
-    @Mock
-    private ContentResolver resolver;
-    @Mock
-    private ResolvedContent resolvedContent;
+    @Mock private PaProgrammeDataStore store;
+    @Mock private FileUploadResultStore resultStore;
+    @Mock private ContentWriter writer;
+    @Mock private AdapterLog log;
+    @Mock private ContentResolver resolver;
+    @Mock private ResolvedContent resolvedContent;
+    @Mock private ExistingItemUnPublisher existingItemUnPublisher;
+
     private PaUpdatesProcessor paUpdatesProcessor;
     private PaCompleteArchivesUpdater updater;
     private File file;
@@ -51,12 +48,24 @@ public class PaArchivesUpdaterTest {
 
     @Before
     public void setUp() throws URISyntaxException {
-        file = new File(Resources.getResource(getClass(), "201601121258_1201_tvarchive.xml").toURI());
+        file = new File(Resources.getResource(
+                getClass(),
+                "201601121258_1201_tvarchive.xml"
+        )
+                .toURI());
+
         when(resolvedContent.getFirstValue()).thenReturn(Maybe.<Identified>nothing());
         when(resolver.findByCanonicalUris(anyCollection())).thenReturn(resolvedContent);
-        PaProgDataUpdatesProcessor progProcessor = new PaProgrammeProcessor(resolver,log,paTagMap);
+
+        PaProgDataUpdatesProcessor progProcessor = PaProgrammeProcessor.create(
+                resolver,
+                log,
+                paTagMap,
+                existingItemUnPublisher
+        );
         paUpdatesProcessor = PaUpdatesProcessor.create(progProcessor, writer);
         updater = new PaCompleteArchivesUpdater(store,resultStore,paUpdatesProcessor);
+
         when(store.localArchivesFiles(any(Predicate.class))).thenReturn(ImmutableList.of(file));
         when(store.copyForProcessing(file)).thenReturn(file);
     }

@@ -11,6 +11,7 @@ ENV SERVER_PORT="8080" \
     EQUIV_UPDATER_ENABLED="false" \
     EQUIV_UPDATER_YOUVIEWSCHEDULE_ENABLED="false" \
     IDS_GENERATE="false" \
+    JSSE_ENABLESNIEXTENSION="false" \
     LAKEVIEW_UPLOAD_ENABLED="false" \
     MESSAGING_ENABLED="false" \
     MONGO_AUDIT_ENABLED="true" \
@@ -213,6 +214,7 @@ CMD java \
     -Ditunes.epf.password="$ITUNES_EPF_PASSWORD" \
     -Ditunes.epf.feedPath="$ITUNES_EPF_FEEDPATH" \
     -Ditv.whatson.schedule.url="$ITV_WHATSON_SCHEDULE_URL" \
+    -Djsse.enableSNIExtension="$JSSE_ENABLESNIEXTENSION" \
     -Dkm.contentdeals.aws.accessKey="$KM_CONTENTDEALS_AWS_ACCESSKEY" \
     -Dkm.contentdeals.aws.secretKey="$KM_CONTENTDEALS_AWS_SECRETKEY" \
     -Dlakeview.upload.account="$LAKEVIEW_UPLOAD_ACCOUNT" \

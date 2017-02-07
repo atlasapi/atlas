@@ -1,0 +1,1666 @@
+<programme_information xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+<watchables>
+<watchable>
+  <id>C5203540001</id>
+  <title>The Competition Begins</title>
+  <copyright_info>AETN</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/episode/C5203540001/1024x576.jpg?1454496977</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/episode/C5203540001/1024x576.jpg?1454496977</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/episode/C5203540001/1024x576.jpg?1454496977</image>
+    <image>http://api-images-production.channel5.com/images/episode/C5203540001/1024x576.jpg?1454496977</image>
+  </images>
+  <short_description>The students are enrolled in the national championships.</short_description>
+  <medium_description>Reality series about children's early careers in show business. Abby Lee Miller informs her young students they will compete in the national championships.</medium_description>
+  <long_description>Reality series following children's early careers in dance show business and their mothers. Welcome to the intense world of competitive dance, as we follow daily life with demanding instructor Abby Lee Miller, her young students and their ambitious mothers. Abby informs her girls they will compete in the national championships.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>1</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5203540001</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/20354">
+<season>
+  <id>20354</id>
+  <title>1</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5203540001_1454958000_1454961600</id>
+    <transmission_start>2016-02-08T19:00:00+00:00</transmission_start>
+    <transmission_end>2016-02-08T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1455022800_1455026400</id>
+    <transmission_start>2016-02-09T13:00:00+00:00</transmission_start>
+    <transmission_end>2016-02-09T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1455359100_1455362400</id>
+    <transmission_start>2016-02-13T10:25:00+00:00</transmission_start>
+    <transmission_end>2016-02-13T11:20:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1464976800_1464980400</id>
+    <transmission_start>2016-06-03T19:00:00+01:00</transmission_start>
+    <transmission_end>2016-06-03T20:00:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1465149600_1465153200</id>
+    <transmission_start>2016-06-05T19:00:00+01:00</transmission_start>
+    <transmission_end>2016-06-05T20:00:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1465214400_1465217700</id>
+    <transmission_start>2016-06-06T13:00:00+01:00</transmission_start>
+    <transmission_end>2016-06-06T13:55:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1475479500_1475482200</id>
+    <transmission_start>2016-10-03T08:25:00+01:00</transmission_start>
+    <transmission_end>2016-10-03T09:10:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540001_1475483100_1475485800</id>
+    <transmission_start>2016-10-03T09:25:00+01:00</transmission_start>
+    <transmission_end>2016-10-03T10:10:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1483005300_1483008600</id>
+    <transmission_start>2016-12-29T09:55:00+00:00</transmission_start>
+    <transmission_end>2016-12-29T10:50:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540001_1483008900_1483012200</id>
+    <transmission_start>2016-12-29T10:55:00+00:00</transmission_start>
+    <transmission_end>2016-12-29T11:50:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1483259100_1483261800</id>
+    <transmission_start>2017-01-01T08:25:00+00:00</transmission_start>
+    <transmission_end>2017-01-01T09:10:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540001_1483262700_1483265400</id>
+    <transmission_start>2017-01-01T09:25:00+00:00</transmission_start>
+    <transmission_end>2017-01-01T10:10:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1483950300_1483953000</id>
+    <transmission_start>2017-01-09T08:25:00+00:00</transmission_start>
+    <transmission_end>2017-01-09T09:10:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540001_1483953900_1483956600</id>
+    <transmission_start>2017-01-09T09:25:00+00:00</transmission_start>
+    <transmission_end>2017-01-09T10:10:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1486753200_1486756800</id>
+    <transmission_start>2017-02-10T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-10T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540001_1486756800_1486760400</id>
+    <transmission_start>2017-02-10T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-10T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540001_1486990800_1486994400</id>
+    <transmission_start>2017-02-13T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-13T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540001_1486994400_1486998000</id>
+    <transmission_start>2017-02-13T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-13T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540001">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2016-02-08T19:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2016-03-09T20:00:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5203540002</id>
+  <title>Wildly Inappropriate</title>
+  <copyright_info>AETN</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>The girls wear revealing outfits in a dance competition.</short_description>
+  <medium_description>Reality series about young dancers and their mothers. The mothers allow their girls to wear revealing outfits in a dance competition and scandal ensues.</medium_description>
+  <long_description>Reality series following children's early careers in dance show business and their mothers. The mothers allow their girls to wear revealing outfits in a dance competition and scandal ensues. Meanwhile, Abby's new racy routine raises eyebrows.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>2</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5203540002</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/20354">
+<season>
+  <id>20354</id>
+  <title>1</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5203540002_1455044400_1455048000</id>
+    <transmission_start>2016-02-09T19:00:00+00:00</transmission_start>
+    <transmission_end>2016-02-09T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1455109200_1455112800</id>
+    <transmission_start>2016-02-10T13:00:00+00:00</transmission_start>
+    <transmission_end>2016-02-10T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1455362400_1455366000</id>
+    <transmission_start>2016-02-13T11:20:00+00:00</transmission_start>
+    <transmission_end>2016-02-13T12:20:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1465236000_1465239300</id>
+    <transmission_start>2016-06-06T19:00:00+01:00</transmission_start>
+    <transmission_end>2016-06-06T19:55:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1465300800_1465304100</id>
+    <transmission_start>2016-06-07T13:00:00+01:00</transmission_start>
+    <transmission_end>2016-06-07T13:55:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1465668000_1465671600</id>
+    <transmission_start>2016-06-11T19:00:00+01:00</transmission_start>
+    <transmission_end>2016-06-11T20:00:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1475482200_1475485500</id>
+    <transmission_start>2016-10-03T09:10:00+01:00</transmission_start>
+    <transmission_end>2016-10-03T10:05:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540002_1475485800_1475489100</id>
+    <transmission_start>2016-10-03T10:10:00+01:00</transmission_start>
+    <transmission_end>2016-10-03T11:05:00+01:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1483953000_1483956300</id>
+    <transmission_start>2017-01-09T09:10:00+00:00</transmission_start>
+    <transmission_end>2017-01-09T10:05:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540002_1483956600_1483959900</id>
+    <transmission_start>2017-01-09T10:10:00+00:00</transmission_start>
+    <transmission_end>2017-01-09T11:05:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1487012400_1487016000</id>
+    <transmission_start>2017-02-13T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-13T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540002_1487016000_1487019600</id>
+    <transmission_start>2017-02-13T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-13T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5203540002_1487077200_1487080800</id>
+    <transmission_start>2017-02-14T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-14T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5203540002_1487080800_1487084400</id>
+    <transmission_start>2017-02-14T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-14T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5203540002">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2016-02-09T19:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2016-03-10T20:00:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060022</id>
+  <title>Live From LA, It's Kendall K</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>The team finally makes its permanent move to Los Angeles.</short_description>
+  <medium_description>The team finally makes its permanent move to Los Angeles, where Kendall's video is set to premiere. But the pressure pushes her to the limit.</medium_description>
+  <long_description>Reality series following careers of children in dance and show business. The team finally makes its permanent move to Los Angeles, where Kendall's video is set to premiere. But the pressure pushes her to the limit.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>22</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060022</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060022_1483473600_1483477200</id>
+    <transmission_start>2017-01-03T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-03T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060022">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060022_1483477200_1483480800</id>
+    <transmission_start>2017-01-03T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-03T22:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060022">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060022_1483864500_1483867200</id>
+    <transmission_start>2017-01-08T08:35:00+00:00</transmission_start>
+    <transmission_end>2017-01-08T09:20:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060022">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060022_1483868100_1483870800</id>
+    <transmission_start>2017-01-08T09:35:00+00:00</transmission_start>
+    <transmission_end>2017-01-08T10:20:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060022">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060022_1486062000_1486065600</id>
+    <transmission_start>2017-02-02T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-02T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060022">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060022_1486065600_1486069200</id>
+    <transmission_start>2017-02-02T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-02T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060022">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060022_1486126800_1486130400</id>
+    <transmission_start>2017-02-03T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-03T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060022">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060022_1486130400_1486134000</id>
+    <transmission_start>2017-02-03T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-03T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060022">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-01-03T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-02-02T21:00:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060023</id>
+  <title>Dance Moms</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>For the first time, sisters Maddie and Mackenzie Ziegler are competing against each other.
+</short_description>
+  <medium_description>For the first time in years, sisters Maddie and Mackenzie Ziegler are competing against each other. The pressure is even higher for Maddie who has a new video with pop singer Sia premiering this week.
+</medium_description>
+  <long_description></long_description>
+  <sub_title></sub_title>
+  <duration>3300</duration>
+  <episode_number>23</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060023</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060023_1484078400_1484081700</id>
+    <transmission_start>2017-01-10T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-10T20:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060023">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060023_1484082000_1484085300</id>
+    <transmission_start>2017-01-10T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-10T21:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060023">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060023_1484469300_1484472000</id>
+    <transmission_start>2017-01-15T08:35:00+00:00</transmission_start>
+    <transmission_end>2017-01-15T09:20:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060023">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060023_1484472900_1484475600</id>
+    <transmission_start>2017-01-15T09:35:00+00:00</transmission_start>
+    <transmission_end>2017-01-15T10:20:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060023">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060023_1486148400_1486152000</id>
+    <transmission_start>2017-02-03T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-03T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060023">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060023_1486152000_1486155600</id>
+    <transmission_start>2017-02-03T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-03T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060023">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060023_1486386000_1486389600</id>
+    <transmission_start>2017-02-06T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-06T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060023">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060023_1486389600_1486393200</id>
+    <transmission_start>2017-02-06T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-06T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060023">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-01-10T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-02-09T20:55:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060024</id>
+  <title>West Coast Strikes Back</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>The ALDC's biggest west coast rival, MDP, is back.</short_description>
+  <medium_description>Reality series. The ALDC's biggest west coast rival, MDP, is back and Abby wants to put her best foot forward at the upcoming competition.</medium_description>
+  <long_description>Reality series following careers of children in dance and show business. The ALDC's biggest west coast rival, MDP, is back and Abby wants to put her best foot forward at the upcoming competition.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>24</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060024</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060024_1484683200_1484686500</id>
+    <transmission_start>2017-01-17T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-17T20:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060024">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060024_1484686800_1484690100</id>
+    <transmission_start>2017-01-17T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-17T21:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060024">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060024_1485076800_1485080100</id>
+    <transmission_start>2017-01-22T09:20:00+00:00</transmission_start>
+    <transmission_end>2017-01-22T10:15:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060024">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060024_1485080400_1485083700</id>
+    <transmission_start>2017-01-22T10:20:00+00:00</transmission_start>
+    <transmission_end>2017-01-22T11:15:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060024">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060024_1486407600_1486411200</id>
+    <transmission_start>2017-02-06T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-06T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060024">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060024_1486411200_1486414800</id>
+    <transmission_start>2017-02-06T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-06T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060024">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060024_1486472400_1486476000</id>
+    <transmission_start>2017-02-07T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-07T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060024">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060024_1486476000_1486479600</id>
+    <transmission_start>2017-02-07T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-07T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060024">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-01-17T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-02-16T20:55:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060025</id>
+  <title>Abby vs Kira</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>Kira takes matters into her own hands and brings in help.</short_description>
+  <medium_description>Reality series. When Abby refuses to take responsibility for the girls' lack of training, Kira takes matters into her own hands and brings in outside help.</medium_description>
+  <long_description>Reality series following careers of children in dance and show business. When Abby refuses to take responsibility for the girls' lack of training, Kira takes matters into her own hands and brings in outside help.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>25</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060025</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060025_1485288000_1485291300</id>
+    <transmission_start>2017-01-24T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-24T20:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060025">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060025_1485291600_1485294900</id>
+    <transmission_start>2017-01-24T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-24T21:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060025">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060025_1485681900_1485685200</id>
+    <transmission_start>2017-01-29T09:25:00+00:00</transmission_start>
+    <transmission_end>2017-01-29T10:20:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060025">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060025_1485685500_1485688800</id>
+    <transmission_start>2017-01-29T10:25:00+00:00</transmission_start>
+    <transmission_end>2017-01-29T11:20:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060025">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060025_1486494000_1486497600</id>
+    <transmission_start>2017-02-07T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-07T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060025">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060025_1486497600_1486501200</id>
+    <transmission_start>2017-02-07T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-07T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060025">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060025_1486558800_1486562400</id>
+    <transmission_start>2017-02-08T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-08T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060025">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060025_1486562400_1486566000</id>
+    <transmission_start>2017-02-08T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-08T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060025">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-01-24T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-02-23T20:55:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060026</id>
+  <title>Where in the World Is Abby Lee Miller?</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>Abby, Kira and Kalani are nowhere to be found.</short_description>
+  <medium_description>Reality series following careers of children in dance and show business. Last week's argument between Abby, Kira and Kalani leaves all three nowhere to be found.</medium_description>
+  <long_description>Reality series following careers of children in dance and show business. Last week's argument between Abby, Kira and Kalani leaves all three nowhere to be found.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>26</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060026</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060026_1485892800_1485896100</id>
+    <transmission_start>2017-01-31T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-31T20:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060026">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060026_1485896400_1485899700</id>
+    <transmission_start>2017-01-31T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-01-31T21:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060026">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060026_1486283700_1486286700</id>
+    <transmission_start>2017-02-05T08:35:00+00:00</transmission_start>
+    <transmission_end>2017-02-05T09:25:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060026">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060026_1486287300_1486290300</id>
+    <transmission_start>2017-02-05T09:35:00+00:00</transmission_start>
+    <transmission_end>2017-02-05T10:25:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060026">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060026_1486580400_1486584000</id>
+    <transmission_start>2017-02-08T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-08T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060026">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060026_1486584000_1486587600</id>
+    <transmission_start>2017-02-08T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-08T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060026">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060026_1486645200_1486648800</id>
+    <transmission_start>2017-02-09T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-09T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060026">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060026_1486648800_1486652400</id>
+    <transmission_start>2017-02-09T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-09T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060026">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-01-31T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-03-02T20:55:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060027</id>
+  <title>Abby vs Kira... Again!</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>The ALDC is desperate for a group routine win.</short_description>
+  <medium_description>Reality series. With only four weeks until Nationals, the ALDC is desperate for a group routine win. The Candy Apples return with a surprise guest.</medium_description>
+  <long_description>Reality series following careers of children in dance and show business. With only four weeks until Nationals, the ALDC is desperate for a group routine win. The Candy Apples return with a surprise guest.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>27</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060027</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060027_1486497600_1486500900</id>
+    <transmission_start>2017-02-07T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-07T20:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060027">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060027_1486501200_1486504500</id>
+    <transmission_start>2017-02-07T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-07T21:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060027">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-02-07T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-03-09T20:55:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060028</id>
+  <title>Solo Battle, Round 1</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>Jeanette takes over the Candy Apples with an epic routine.</short_description>
+  <medium_description>Reality series. Jeanette takes over the Candy Apples with an epic routine, Abby tests the girls with a challenging prop, and Kendall and JoJo go head-to-head.</medium_description>
+  <long_description>Reality series following careers of children in dance and show business. Jeanette takes over the Candy Apples with an epic routine, Abby tests the girls with a challenging prop, and Kendall and JoJo go head-to-head in a showdown.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>28</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060028</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060028_1486670400_1486673700</id>
+    <transmission_start>2017-02-09T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-09T20:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060028">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060028_1486674000_1486677300</id>
+    <transmission_start>2017-02-09T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-09T21:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060028">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060028_1486887000_1486889700</id>
+    <transmission_start>2017-02-12T08:10:00+00:00</transmission_start>
+    <transmission_end>2017-02-12T08:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060028">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060028_1486890600_1486893300</id>
+    <transmission_start>2017-02-12T09:10:00+00:00</transmission_start>
+    <transmission_end>2017-02-12T09:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060028">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-02-09T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-03-11T20:55:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060029</id>
+  <title>Baby Dance Mama Drama</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>The girls have a bridesmaid-themed group dance.</short_description>
+  <medium_description>Reality series. Abby announces that the opening party will coincide with Nationals. Kendall gets a solo and the girls have a bridesmaid-themed group dance.</medium_description>
+  <long_description>Reality series following careers of children in dance and show business. Abby announces that the grand opening party of ALDC LA will coincide with Nationals. Kendall gets a solo and the girls have a bridesmaid-themed group dance.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>29</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060029</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060029_1487275200_1487278500</id>
+    <transmission_start>2017-02-16T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-16T20:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060029">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060029_1487278800_1487282100</id>
+    <transmission_start>2017-02-16T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-16T21:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060029">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060029_1487491800_1487494500</id>
+    <transmission_start>2017-02-19T08:10:00+00:00</transmission_start>
+    <transmission_end>2017-02-19T08:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060029">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060029_1487495400_1487498100</id>
+    <transmission_start>2017-02-19T09:10:00+00:00</transmission_start>
+    <transmission_end>2017-02-19T09:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060029">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-02-16T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-03-18T20:55:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060033</id>
+  <title>Throwback Specials: Maddie &amp; Melissa</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>A look back at Maddie and Melissa's Dance Moms journey.
+</short_description>
+  <medium_description>This special episode looks back at Maddie and Melissa's journey, from Maddie's earliest days as Abby's star pupil to her life now in the spotlight.
+</medium_description>
+  <long_description>This special episode looks back at Maddie and Melissa's journey, from Maddie's earliest days as Abby's star pupil to her life now in the spotlight.
+</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>33</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060033</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060033_1486666800_1486670400</id>
+    <transmission_start>2017-02-09T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-09T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060033">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060033_1486670400_1486674000</id>
+    <transmission_start>2017-02-09T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-09T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060033">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060033_1486731600_1486735200</id>
+    <transmission_start>2017-02-10T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-10T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060033">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060033_1486735200_1486738800</id>
+    <transmission_start>2017-02-10T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-10T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060033">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060033_1487772000_1487775600</id>
+    <transmission_start>2017-02-22T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-22T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060033">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060033_1487775600_1487779200</id>
+    <transmission_start>2017-02-22T15:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-22T16:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060033">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-02-09T19:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-03-11T20:00:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060034</id>
+  <title>Throwback Specials: Kalani &amp; Kira / Jojo &amp; Jessalyn</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/episode/C5213060034/1024x576.jpg?1486641887</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/episode/C5213060034/1024x576.jpg?1486641887</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/episode/C5213060034/1024x576.jpg?1486641887</image>
+    <image>http://api-images-production.channel5.com/images/episode/C5213060034/1024x576.jpg?1486641887</image>
+  </images>
+  <short_description>ALDC's newest members give fans a look at defining moments.
+</short_description>
+  <medium_description>Kalani and Kira reveal stories about their ups and downs with Abby. JoJo and Jessalynn share their determination to become official ALDC team members.
+</medium_description>
+  <long_description>The ALDC&#8217;s newest team members give fans a look at their most defining moments. Kalani and Kira reveal stories about their ups and downs with Abby and the tough decision to stay or go. JoJo and Jessalynn share details about their determination to become official ALDC team members along with their struggle of staying true to themselves.
+</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>34</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060034</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060034_1487271600_1487275200</id>
+    <transmission_start>2017-02-16T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-16T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060034">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060034_1487275200_1487278800</id>
+    <transmission_start>2017-02-16T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-16T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060034">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060034_1487336400_1487340000</id>
+    <transmission_start>2017-02-17T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-17T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060034">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060034_1487340000_1487343600</id>
+    <transmission_start>2017-02-17T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-17T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060034">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060034_1487858400_1487862000</id>
+    <transmission_start>2017-02-23T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-23T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060034">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060034_1487862000_1487865600</id>
+    <transmission_start>2017-02-23T15:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-23T16:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060034">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-02-16T19:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-03-18T20:00:00+00:00</scheduled_vod_end>
+  <vod_readiness>true</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060035</id>
+  <title>Throwback Specials: Kendall &amp; Jill</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>Kendall and Jill reveal plenty of never-before-heard gossip.</short_description>
+  <medium_description>Kendall and Jill take fans back to their first season with the Abby Lee Dance Company and reveal plenty of never-before-heard juicy gossip.</medium_description>
+  <long_description>Kendall and Jill take fans back to their first season with the Abby Lee Dance Company and reveal plenty of never-before-heard juicy gossip.</long_description>
+  <sub_title></sub_title>
+  <duration>3600</duration>
+  <episode_number>35</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060035</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060035_1487876400_1487880000</id>
+    <transmission_start>2017-02-23T19:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-23T20:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060035">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060035_1487880000_1487883600</id>
+    <transmission_start>2017-02-23T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-23T21:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060035">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060035_1487944800_1487948400</id>
+    <transmission_start>2017-02-24T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-24T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060035">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060035_1487948400_1487952000</id>
+    <transmission_start>2017-02-24T15:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-24T16:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060035">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-02-23T19:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-03-25T20:00:00+00:00</scheduled_vod_end>
+  <vod_readiness>false</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+<watchable>
+  <id>C5213060030</id>
+  <title>Nia vs Kalani: Winner Takes All</title>
+  <copyright_info>Viacom</copyright_info>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description>Abby gives Kalani and Nia head-to-head solos.</short_description>
+  <medium_description>Abby gives Kalani and Nia head-to-head solos to determine who will get the starring role in the upcoming senior division competition.</medium_description>
+  <long_description>Abby gives Kalani and Nia head-to-head solos to determine who will get the starring role in the upcoming senior division competition.</long_description>
+  <sub_title></sub_title>
+  <duration>3300</duration>
+  <episode_number>30</episode_number>
+  <vod_url>http://www.channel5.com/watch/C5213060030</vod_url>
+  <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+  </show_link>
+  <season_link href="https://pdb.five.tv/internal/seasons/21306">
+<season>
+  <id>21306</id>
+  <title>5</title>
+  <genre>entertainment</genre>
+  <main_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+  <thumbnail_image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+  <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+  <images>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479911</image>
+    <image>http://api-images-production.channel5.com/images/show/3937285830/1024x576.jpg?1486479908</image>
+  </images>
+  <short_description></short_description>
+  <long_description></long_description>
+</season>
+  </season_link>
+<transmissions>
+  <transmission>
+    <id>C6_C5213060030_1487880000_1487883300</id>
+    <transmission_start>2017-02-23T20:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-23T20:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060030">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060030_1487883600_1487886900</id>
+    <transmission_start>2017-02-23T21:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-23T21:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060030">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060030_1487941200_1487944800</id>
+    <transmission_start>2017-02-24T13:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-24T14:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060030">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060030_1487944800_1487948400</id>
+    <transmission_start>2017-02-24T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-24T15:00:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060030">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060030_1488031200_1488034500</id>
+    <transmission_start>2017-02-25T14:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-25T14:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060030">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060030_1488034800_1488038100</id>
+    <transmission_start>2017-02-25T15:00:00+00:00</transmission_start>
+    <transmission_end>2017-02-25T15:55:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060030">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6_C5213060030_1488098100_1488100500</id>
+    <transmission_start>2017-02-26T08:35:00+00:00</transmission_start>
+    <transmission_end>2017-02-26T09:15:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060030">
+    </watchable_link>
+  </transmission>
+  <transmission>
+    <id>C6P1_C5213060030_1488101700_1488104100</id>
+    <transmission_start>2017-02-26T09:35:00+00:00</transmission_start>
+    <transmission_end>2017-02-26T10:15:00+00:00</transmission_end>
+    <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+    </channel_link>
+    <watchable_link href="https://pdb.five.tv/internal/watchables/C5213060030">
+    </watchable_link>
+  </transmission>
+</transmissions>
+  <vod_start xsi:nil="true"/>
+  <vod_end xsi:nil="true"/>
+  <scheduled_vod_start>2017-02-23T20:00:00+00:00</scheduled_vod_start>
+  <scheduled_vod_end>2017-03-25T20:55:00+00:00</scheduled_vod_end>
+  <vod_readiness>false</vod_readiness>
+  <subtitled>false</subtitled>
+  <deaf_signed>false</deaf_signed>
+  <audio_described>false</audio_described>
+  <rat></rat>
+  <adv></adv>
+</watchable>
+</watchables>
+</programme_information>

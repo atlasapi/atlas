@@ -19,6 +19,8 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+
 @SuppressWarnings("PublicConstructor")
 @Configuration
 public class FiveModule {
@@ -37,22 +39,44 @@ public class FiveModule {
     private @Value("${service.web.id}") Long webServiceId;
     private @Value("${player.demand5.id}") Long demand5PlayerId;
     private @Value("${service.ios.id}") Long iOsServiceId;
-    
+    private final int socketTimeout = checkNotNull(Configurer.get("five.timeout.socket", "180").toInt());
+
     @PostConstruct
     public void startBackgroundTasks() {
-        scheduler.schedule(fiveUpdater().withName("Five Updater"), DAILY);
+        scheduler.schedule(
+                fiveUpdaterDelegate(FiveUpdater.TimeFrame.ALL)
+                        .withName("Five Updater"),
+                DAILY
+        );
         log.info("Installed Five updater");
+        scheduler.schedule(
+                fiveUpdaterDelegate(FiveUpdater.TimeFrame.TODAY)
+                        .withName("Five Today Updater"),
+                RepetitionRules.NEVER
+        );
+        log.info("Installed FiveToday updater");
+        scheduler.schedule(
+                fiveUpdaterDelegate(FiveUpdater.TimeFrame.PLUS_MINUS_7_DAYS)
+                        .withName("Five +-7 Days Updater"),
+                RepetitionRules.NEVER
+        );
+        log.info("Installed FivePlusMinusSevenDays updater");
     }
     
     @Bean
     public FiveUpdater fiveUpdater() {
-        return FiveUpdater.create(
-                contentWriter,
-                channelResolver,
-                contentResolver,
-                fiveLocationPolicyIds(),
-                Configurer.get("five.timeout.socket", "180").toInt()
-        );
+        return fiveUpdaterDelegate(FiveUpdater.TimeFrame.ALL);
+    }
+
+    private FiveUpdater fiveUpdaterDelegate(FiveUpdater.TimeFrame timeFrame) {
+        return FiveUpdater.builder()
+                .withContentWriter(contentWriter)
+                .withChannelResolver(channelResolver)
+                .withContentResolver(contentResolver)
+                .withLocationPolicyIds(fiveLocationPolicyIds())
+                .withSocketTimeout(socketTimeout)
+                .withTimeFrame(timeFrame)
+                .build();
     }
     
     @Bean

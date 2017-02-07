@@ -47,9 +47,9 @@ import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class FiveEpisodeProcessor {
+public class FiveShowProcessor {
 
-    private static final Logger log = LoggerFactory.getLogger(FiveEpisodeProcessor.class);
+    private static final Logger log = LoggerFactory.getLogger(FiveShowProcessor.class);
 
     private final GenreMap genreMap = new FiveGenreMap();
     private final DateTimeFormatter dateParser = DateTimeFormat.forPattern(
@@ -62,7 +62,7 @@ public class FiveEpisodeProcessor {
     private final Multimap<String, Channel> channelMap;
     private final FiveLocationPolicyIds locationPolicyIds;
 
-    private FiveEpisodeProcessor(
+    protected FiveShowProcessor(
             String baseApiUrl,
             RemoteSiteClient<HttpResponse> httpClient,
             Multimap<String, Channel> channelMap,
@@ -74,13 +74,13 @@ public class FiveEpisodeProcessor {
         this.locationPolicyIds = checkNotNull(locationPolicyIds);
     }
 
-    public static FiveEpisodeProcessor create(
+    public static FiveShowProcessor create(
             String baseApiUrl,
             RemoteSiteClient<HttpResponse> httpClient,
             Multimap<String, Channel> channelMap,
             FiveLocationPolicyIds locationPolicyIds
     ) {
-        return new FiveEpisodeProcessor(baseApiUrl, httpClient, channelMap, locationPolicyIds);
+        return new FiveShowProcessor(baseApiUrl, httpClient, channelMap, locationPolicyIds);
     }
 
     public Item processEpisode(Element element, Brand brand) throws Exception {

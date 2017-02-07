@@ -51,16 +51,16 @@ public class FiveBrandProcessor {
 
     private static final Pattern FILM_YEAR = Pattern.compile(".*\\((\\d{4})\\)$");
 
-    private final static String WATCHABLES_URL_SUFFIX = "/watchables?expand=season%7Ctransmissions";
+    protected final static String WATCHABLES_URL_SUFFIX = "/watchables?expand=season%7Ctransmissions";
     private final ContentWriter writer;
     private final GenreMap genreMap = new FiveGenreMap();
-    private final FiveEpisodeProcessor episodeProcessor;
+    private final FiveShowProcessor episodeProcessor;
     private final String baseApiUrl;
-    private final RemoteSiteClient<HttpResponse> httpClient;
-    private final ContentResolver contentResolver;
+    protected final RemoteSiteClient<HttpResponse> httpClient;
+    protected final ContentResolver contentResolver;
     private final ContentMerger contentMerger;
 
-    private FiveBrandProcessor(
+    protected FiveBrandProcessor(
             ContentWriter writer,
             ContentResolver contentResolver,
             String baseApiUrl,
@@ -72,7 +72,7 @@ public class FiveBrandProcessor {
         this.baseApiUrl = checkNotNull(baseApiUrl);
         this.httpClient = checkNotNull(httpClient);
         this.contentResolver = checkNotNull(contentResolver);
-        this.episodeProcessor = FiveEpisodeProcessor.create(
+        this.episodeProcessor = FiveShowProcessor.create(
                 baseApiUrl,
                 httpClient,
                 channelMap,
@@ -103,7 +103,7 @@ public class FiveBrandProcessor {
         );
     }
 
-    public void processShow(Element element) {
+    public int processShow(Element element) {
         Brand brand = extractBrand(element);
 
         String id = childValue(element, "id");
@@ -114,10 +114,16 @@ public class FiveBrandProcessor {
 
         try {
             String responseBody = httpClient.get(getShowUri(id) + WATCHABLES_URL_SUFFIX).body();
+
+            log.info("responseBody: " + responseBody + "\n");
+
             new Builder(nodeFactory).build(new StringReader(responseBody));
         } catch(Exception e) {
-            log.error("Exception parsing episodes for brand " + brand.getTitle(), e);
-            return;
+            log.error(
+                    "Exception parsing episodes for brand " + brand.getTitle() + "with id " + id,
+                    e
+            );
+            return 0;
         }
 
         if(FILM.equals(brand.getSpecialization()) && nodeFactory.items.size() == 1) {
@@ -132,9 +138,10 @@ public class FiveBrandProcessor {
 
         nodeFactory.items
                 .forEach(item -> write(brand, item));
+        return 0;
     }
 
-    private void write(Brand brand, Item itemToWrite) {
+    protected void write(Brand brand, Item itemToWrite) {
         itemToWrite.setContainer(brand);
 
         Maybe<Identified> maybeExisting = contentResolver.findByCanonicalUris(
@@ -149,7 +156,7 @@ public class FiveBrandProcessor {
         writer.createOrUpdate(itemToWrite);
     }
 
-    private void write(Container containerToWrite) {
+    protected void write(Container containerToWrite) {
         Maybe<Identified> maybeExisting = contentResolver.findByCanonicalUris(
                 ImmutableSet.of(containerToWrite.getCanonicalUri())
         )
@@ -183,7 +190,7 @@ public class FiveBrandProcessor {
         }
     }
 
-    private Brand mergeBrand(Brand current, Brand extracted) {
+    protected Brand mergeBrand(Brand current, Brand extracted) {
         current.setCurie(extracted.getCurie());
 
         current.setTitle(extracted.getTitle());
@@ -224,7 +231,7 @@ public class FiveBrandProcessor {
         return brand;  
     }
 
-    private void setFilmDescription(Film film, Element element) {
+    protected void setFilmDescription(Film film, Element element) {
         Maybe<String> description = getDescription(element);
 
         if(description.hasValue()) {
@@ -240,26 +247,26 @@ public class FiveBrandProcessor {
         }
     }
 
-    private Specialization specializationFrom(Element element) {
+    protected Specialization specializationFrom(Element element) {
         String progType = childValue(element, "programme_type");
 
-        if(progType.equals("Feature Film") || progType.equals("TV Movie")) {
+        if("Feature Film".equals(progType) || "TV Movie".equals(progType)) {
             return Specialization.FILM;
         }
 
         return Specialization.TV;
     }
 
-    private String getShowUri(String id) {
+    protected String getShowUri(String id) {
         return baseApiUrl + "/shows/" + id;
     }
 
-    private String getBrandCurie(String id) {
+    protected String getBrandCurie(String id) {
         return "five:b-" + id;
     }
 
     @Nullable
-    private String childValue(Element element, String childName) {
+    protected String childValue(Element element, String childName) {
         Element firstChild = element.getFirstChildElement(childName);
         if(firstChild != null) {
             return firstChild.getValue();
@@ -267,7 +274,7 @@ public class FiveBrandProcessor {
         return null;
     }
 
-    private Maybe<String> getDescription(Element element) {
+    protected Maybe<String> getDescription(Element element) {
         String longDescription = element.getFirstChildElement("long_description").getValue();
         if (!Strings.isNullOrEmpty(longDescription)) {
             return Maybe.just(longDescription);
@@ -281,13 +288,13 @@ public class FiveBrandProcessor {
         return Maybe.nothing();
     }
 
-    private Set<String> getGenres(Element element) {
+    protected Set<String> getGenres(Element element) {
         return genreMap.mapRecognised(ImmutableSet.of(
                 "http://www.five.tv/genres/" + element.getFirstChildElement("genre").getValue())
         );
     }
 
-    private Maybe<Image> getImage(Element element) {
+    protected Maybe<Image> getImage(Element element) {
         Elements imageElements = element
                 .getFirstChildElement("images")
                 .getChildElements("image");
@@ -311,20 +318,20 @@ public class FiveBrandProcessor {
         return Maybe.nothing();
     }
 
-    private static class EpisodeProcessingNodeFactory extends NodeFactory {
+    protected static class EpisodeProcessingNodeFactory extends NodeFactory {
 
-        private final FiveEpisodeProcessor episodeProcessor;
-        private final List<Item> items = Lists.newArrayList();
+        private final FiveShowProcessor episodeProcessor;
+        protected final List<Item> items = Lists.newArrayList();
         private final Brand brand;
 
-        private EpisodeProcessingNodeFactory(Brand brand, FiveEpisodeProcessor episodeProcessor) {
+        private EpisodeProcessingNodeFactory(Brand brand, FiveShowProcessor episodeProcessor) {
             this.brand = checkNotNull(brand);
             this.episodeProcessor = checkNotNull(episodeProcessor);
         }
 
         public static EpisodeProcessingNodeFactory create(
                 Brand brand,
-                FiveEpisodeProcessor episodeProcessor
+                FiveShowProcessor episodeProcessor
         ) {
             return new EpisodeProcessingNodeFactory(brand, episodeProcessor);
         }

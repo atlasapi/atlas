@@ -1,0 +1,177 @@
+<programme_information xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+    <transmissions>
+        <transmission>
+            <id>C6P1_C5203560037_1483268700_1483272300</id>
+            <transmission_start>2017-01-01T11:05:00+00:00</transmission_start>
+            <transmission_end>2017-01-01T12:05:00+00:00</transmission_end>
+            <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+            </channel_link>
+            <watchable_link href="https://pdb.five.tv/internal/watchables/C5203560037">
+                <watchable>
+                    <id>C5203560037</id>
+                    <title>Do-Si-Do and Do-Si-Don't</title>
+                    <copyright_info>Viacom</copyright_info>
+                    <genre>entertainment</genre>
+                    <main_image>/images/show/3937285830/1024x576.jpg?1486479911</main_image>
+                    <thumbnail_image>/images/show/3937285830/1024x576.jpg?1486479908</thumbnail_image>
+                    <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+                    <images>
+                        <image>/images/show/3937285830/1024x576.jpg?1486479911</image>
+                        <image>/images/show/3937285830/1024x576.jpg?1486479908</image>
+                    </images>
+                    <short_description>Abby assigns a country-style group number.</short_description>
+                    <medium_description>Reality series. Abby assigns a country-style group number that proves to be physically demanding before creating interesting pairings for the duets.</medium_description>
+                    <long_description>Reality series following children's early showbusiness careers and their mothers. Abby assigns a country-style group number that proves to be physically demanding before creating interesting pairings for the duets.</long_description>
+                    <sub_title></sub_title>
+                    <duration>3600</duration>
+                    <episode_number>37</episode_number>
+                    <vod_url>http://www.channel5.com/watch/C5203560037</vod_url>
+                    <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+                    </show_link>
+                    <season_link href="https://pdb.five.tv/internal/seasons/20356">
+                    </season_link>
+                    <vod_start xsi:nil="true"/>
+                    <vod_end xsi:nil="true"/>
+                    <scheduled_vod_start>2016-05-30T19:00:00+01:00</scheduled_vod_start>
+                    <scheduled_vod_end>2016-06-29T20:00:00+01:00</scheduled_vod_end>
+                    <vod_readiness>true</vod_readiness>
+                    <subtitled>false</subtitled>
+                    <deaf_signed>false</deaf_signed>
+                    <audio_described>false</audio_described>
+                    <rat></rat>
+                    <adv></adv>
+                </watchable>
+            </watchable_link>
+        </transmission>
+        <transmission>
+            <id>C6P1_C5213050008_1483272300_1483275900</id>
+            <transmission_start>2017-01-01T12:05:00+00:00</transmission_start>
+            <transmission_end>2017-01-01T13:05:00+00:00</transmission_end>
+            <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+            </channel_link>
+            <watchable_link href="https://pdb.five.tv/internal/watchables/C5213050008">
+                <watchable>
+                    <id>C5213050008</id>
+                    <title>Clash of the Chloes</title>
+                    <copyright_info>AETN</copyright_info>
+                    <genre>entertainment</genre>
+                    <main_image>/images/episode/C5213050008/1024x576.jpg?1467021154</main_image>
+                    <thumbnail_image>/images/episode/C5213050008/1024x576.jpg?1467021154</thumbnail_image>
+                    <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+                    <images>
+                        <image>/images/episode/C5213050008/1024x576.jpg?1467021154</image>
+                        <image>/images/episode/C5213050008/1024x576.jpg?1467021154</image>
+                    </images>
+                    <short_description>Christi frets when Abby offers new dancer Chloe a trial.</short_description>
+                    <medium_description>Reality series. Christi frets when Abby offers new dancer Chloe a trial on the competition team. Melissa fears her girls are being overshadowed.</medium_description>
+                    <long_description>Reality series following children's early showbusiness careers and their mothers. Christi frets when Abby offers new dancer Chloe a trial on the competition team. For the first time, Melissa fears her girls are being overshadowed.</long_description>
+                    <sub_title></sub_title>
+                    <duration>3600</duration>
+                    <episode_number>7</episode_number>
+                    <vod_url>http://www.channel5.com/watch/C5213050008</vod_url>
+                    <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+                    </show_link>
+                    <season_link href="https://pdb.five.tv/internal/seasons/21305">
+                    </season_link>
+                    <vod_start xsi:nil="true"/>
+                    <vod_end xsi:nil="true"/>
+                    <scheduled_vod_start>2016-06-28T19:00:00+01:00</scheduled_vod_start>
+                    <scheduled_vod_end>2016-07-28T20:00:00+01:00</scheduled_vod_end>
+                    <vod_readiness>true</vod_readiness>
+                    <subtitled>false</subtitled>
+                    <deaf_signed>false</deaf_signed>
+                    <audio_described>false</audio_described>
+                    <rat></rat>
+                    <adv></adv>
+                </watchable>
+            </watchable_link>
+        </transmission>
+        <transmission>
+            <id>C6P1_C5203550027_1483275900_1483279500</id>
+            <transmission_start>2017-01-01T13:05:00+00:00</transmission_start>
+            <transmission_end>2017-01-01T14:05:00+00:00</transmission_end>
+            <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+            </channel_link>
+            <watchable_link href="https://pdb.five.tv/internal/watchables/C5203550027">
+                <watchable>
+                    <id>C5203550027</id>
+                    <title>Nationals</title>
+                    <copyright_info>Viacom</copyright_info>
+                    <genre>entertainment</genre>
+                    <main_image>/images/episode/C5203550027/1024x576.jpg?1459438321</main_image>
+                    <thumbnail_image>/images/episode/C5203550027/1024x576.jpg?1459438321</thumbnail_image>
+                    <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+                    <images>
+                        <image>/images/episode/C5203550027/1024x576.jpg?1459438321</image>
+                        <image>/images/episode/C5203550027/1024x576.jpg?1459438321</image>
+                    </images>
+                    <short_description>The Abby Lee Dance Company battle for a national title.
+                    </short_description>
+                    <medium_description>The Abby Lee Dance Company battle for a national title in Beverly Hills, where the results cause Cathy and Christi to clash like never before.</medium_description>
+                    <long_description>The Abby Lee Dance Company battle for a national title in Beverly Hills, where the results cause Cathy and Christi to clash like never before.</long_description>
+                    <sub_title></sub_title>
+                    <duration>3600</duration>
+                    <episode_number>27</episode_number>
+                    <vod_url>http://www.channel5.com/watch/C5203550027</vod_url>
+                    <show_link href="https://pdb.five.tv/internal/shows/3937285830">
+                    </show_link>
+                    <season_link href="https://pdb.five.tv/internal/seasons/20355">
+                    </season_link>
+                    <vod_start xsi:nil="true"/>
+                    <vod_end xsi:nil="true"/>
+                    <scheduled_vod_start>2016-04-06T19:00:00+01:00</scheduled_vod_start>
+                    <scheduled_vod_end>2016-05-06T20:00:00+01:00</scheduled_vod_end>
+                    <vod_readiness>true</vod_readiness>
+                    <subtitled>false</subtitled>
+                    <deaf_signed>false</deaf_signed>
+                    <audio_described>false</audio_described>
+                    <rat></rat>
+                    <adv></adv>
+                </watchable>
+            </watchable_link>
+        </transmission>
+        <transmission>
+            <id>C6P1_C5182180017_1483357200_1483359000</id>
+            <transmission_start>2017-01-02T11:40:00+00:00</transmission_start>
+            <transmission_end>2017-01-02T12:10:00+00:00</transmission_end>
+            <channel_link href="https://pdb.five.tv/internal/channels/C6P1">
+            </channel_link>
+            <watchable_link href="https://pdb.five.tv/internal/watchables/C5182180017">
+                <watchable>
+                    <id>C5182180017</id>
+                    <title>Episode 17</title>
+                    <copyright_info>Viacom</copyright_info>
+                    <genre>entertainment</genre>
+                    <main_image>/images/default/Channel5/1024x576.jpg?1479393097</main_image>
+                    <thumbnail_image>/images/default/Channel5/1024x576.jpg?1479393097</thumbnail_image>
+                    <!-- (ED-461) The images tag and contents are only here for backwards compatibiity, and will be removed when no longer needed. -->
+                    <images>
+                        <image>/images/default/Channel5/1024x576.jpg?1479393097</image>
+                        <image>/images/default/Channel5/1024x576.jpg?1479393097</image>
+                    </images>
+                    <short_description>Family role-reversal sitcom. Michael and Jay attempt to conceal their disappointment when they don't receive the wedding anniversary gifts they expected. (S4 Ep 17)</short_description>
+                    <medium_description></medium_description>
+                    <long_description>Family role-reversal sitcom. Michael and Jay attempt to conceal their disappointment when they don't receive the wedding anniversary gifts they expected. (S4 Ep 17)</long_description>
+                    <sub_title></sub_title>
+                    <duration>1800</duration>
+                    <episode_number>17</episode_number>
+                    <vod_url>http://www.channel5.com/watch/C5182180017</vod_url>
+                    <show_link href="https://pdb.five.tv/internal/shows/3967510738">
+                    </show_link>
+                    <season_link href="https://pdb.five.tv/internal/seasons/18218">
+                    </season_link>
+                    <vod_start xsi:nil="true"/>
+                    <vod_end xsi:nil="true"/>
+                    <scheduled_vod_start xsi:nil="true"/>
+                    <scheduled_vod_end xsi:nil="true"/>
+                    <vod_readiness>false</vod_readiness>
+                    <subtitled>false</subtitled>
+                    <deaf_signed>false</deaf_signed>
+                    <audio_described>false</audio_described>
+                    <rat></rat>
+                    <adv></adv>
+                </watchable>
+            </watchable_link>
+        </transmission>
+    </transmissions>
+</programme_information>

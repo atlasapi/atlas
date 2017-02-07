@@ -196,7 +196,11 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(1, scorer.score(itemWithTitle("CSI: NY"), of(itemWithTitle("CSI")), desc));
     }
 
-
+    @Test
+    public void testForOutOfBoundsException() {
+        DefaultDescription desc = new DefaultDescription();
+        score(1, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle(":Storage Hunters: UK")), desc));
+    }
 
     
     private void score(double expected, ScoredCandidates<Item> scores) {

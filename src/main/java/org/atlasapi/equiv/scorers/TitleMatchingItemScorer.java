@@ -160,6 +160,12 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private Score partialTitleScore(String subjectTitle, String suggestionTitle) {
+        if (subjectTitle.indexOf(':') == 0) {
+            subjectTitle = subjectTitle.substring(1);
+        }
+        if (suggestionTitle.indexOf(':') == 0) {
+            suggestionTitle = suggestionTitle.substring(1);
+        }
         if (subjectTitle.contains(":") && suggestionTitle.contains(":")) {
             String subjTitle = normalizeWithoutReplacing(subjectTitle);
             subjTitle = subjTitle.substring(0, subjTitle.indexOf(":"));

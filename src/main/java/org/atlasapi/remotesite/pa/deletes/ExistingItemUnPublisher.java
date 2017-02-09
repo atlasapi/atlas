@@ -4,6 +4,7 @@ import java.util.Optional;
 import java.util.stream.StreamSupport;
 
 import org.atlasapi.equiv.EquivalenceBreaker;
+import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
@@ -73,6 +74,7 @@ public class ExistingItemUnPublisher {
                 .map(Optional::get)
                 .filter(content -> content instanceof Item)
                 .map(content -> (Item) content)
+                .filter(Described::isActivelyPublished)
                 .collect(MoreCollectors.toImmutableMap(
                         Identified::getCanonicalUri,
                         item -> item

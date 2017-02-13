@@ -36,7 +36,7 @@ public class EquivalenceGeneratorsTest {
 
     @Before
     public void setUp() {
-        excludedUris = ImmutableSet.of("excluded");
+        excludedUris = ImmutableSet.of("ffds6w","http://excluded");
         generators = EquivalenceGenerators.from(Collections.singleton(generator), excludedUris);
         when(generator.generate(any(Content.class), any(ResultDescription.class))).thenReturn(candidates);
     }
@@ -44,7 +44,8 @@ public class EquivalenceGeneratorsTest {
     @Test
     public void generatorCreatesNoCandidatesForExcludedUri() {
         Item item = new Item();
-        item.setCanonicalUri("excluded");
+        item.setId(44690524L);
+        item.setCanonicalUri("http://excluded");
         List<ScoredCandidates<Content>> generated = generators.generate(item, resultDescription);
         assertTrue(generated.isEmpty());
     }

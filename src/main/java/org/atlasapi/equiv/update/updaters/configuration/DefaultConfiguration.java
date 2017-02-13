@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
 import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
+import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
@@ -20,6 +21,7 @@ import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
+import static org.atlasapi.media.entity.Publisher.PA_SERIES_SUMMARIES;
 import static org.atlasapi.media.entity.Publisher.PREVIEW_NETWORKS;
 import static org.atlasapi.media.entity.Publisher.RADIO_TIMES;
 import static org.atlasapi.media.entity.Publisher.RADIO_TIMES_UPCOMING;
@@ -38,6 +40,8 @@ import static org.atlasapi.media.entity.Publisher.YOUTUBE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO;
+import static org.atlasapi.media.entity.Publisher.YOUVIEW_SCOTLAND_RADIO_STAGE;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_STAGE;
 
 public class DefaultConfiguration {
@@ -68,8 +72,9 @@ public class DefaultConfiguration {
             VF_VUBIQUITY
     );
 
-    public static final ImmutableSet<Publisher> NON_STANDARD_SOURCES = ImmutableSet.copyOf(
-            Sets.union(
+    public static final ImmutableSet<Publisher> NON_STANDARD_SOURCES = ImmutableSet
+            .<Publisher>builder()
+            .addAll(
                     ImmutableSet.of(
                             ITUNES,
                             BBC_REDUX,
@@ -84,6 +89,7 @@ public class DefaultConfiguration {
                             YOUVIEW_BT_STAGE,
                             TALK_TALK,
                             PA,
+                            PA_SERIES_SUMMARIES,
                             BT_VOD,
                             BT_TVE_VOD,
                             BETTY,
@@ -91,13 +97,16 @@ public class DefaultConfiguration {
                             BT_SPORT_EBS,
                             C4_PRESS,
                             RADIO_TIMES_UPCOMING,
-                            FIVE
-                    ),
-                    Sets.union(
-                            MUSIC_SOURCES,
-                            ROVI_SOURCES
+                            FIVE,
+                            AMAZON_UNBOX,
+                            YOUVIEW_SCOTLAND_RADIO,
+                            YOUVIEW_SCOTLAND_RADIO_STAGE
                     )
-    ));
+            )
+            .addAll(MUSIC_SOURCES)
+            .addAll(ROVI_SOURCES)
+            .addAll(VF_SOURCES)
+            .build();
 
     public static final ImmutableSet<Publisher> TARGET_SOURCES = ImmutableSet.copyOf(
             Sets.difference(

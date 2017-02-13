@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.update.updaters.configuration;
 
+import java.util.Set;
+
 import org.atlasapi.media.entity.Publisher;
 
 import com.metabroadcast.common.collect.MoreSets;
@@ -9,6 +11,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 
+import static java.lang.String.format;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.MUSIC_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration
         .NON_STANDARD_SOURCES;
@@ -91,7 +94,7 @@ public class UpdaterConfigurationRegistry {
         return updaterConfigurations;
     }
 
-    private ImmutableList<UpdaterConfiguration> makeConfigurations() {
+    private static ImmutableList<UpdaterConfiguration> makeConfigurations() {
         ImmutableList.Builder<UpdaterConfiguration> configurations = ImmutableList.builder();
 
         configurations.addAll(makeDefaultConfigurations());
@@ -140,18 +143,37 @@ public class UpdaterConfigurationRegistry {
                 makeMusicConfigurations()
         );
 
-        return configurations.build();
+        ImmutableList<UpdaterConfiguration> builtConfigurations = configurations.build();
+
+        validate(builtConfigurations);
+
+        return builtConfigurations;
     }
 
-    private ImmutableList<UpdaterConfiguration> makeDefaultConfigurations() {
+    private static void validate(ImmutableList<UpdaterConfiguration> configurations) {
+        Set<Publisher> configuredSources = Sets.newHashSet();
+
+        for (UpdaterConfiguration configuration : configurations) {
+            if (configuredSources.contains(configuration.getSource())) {
+                throw new IllegalArgumentException(format(
+                        "Found duplicate updater configuration for source %s",
+                        configuration.getSource()
+                ));
+            }
+
+            configuredSources.add(configuration.getSource());
+        }
+    }
+
+    private static ImmutableList<UpdaterConfiguration> makeDefaultConfigurations() {
         return Publisher.all()
                 .stream()
                 .filter(source -> !NON_STANDARD_SOURCES.contains(source))
-                .map(this::makeDefaultConfiguration)
+                .map(UpdaterConfigurationRegistry::makeDefaultConfiguration)
                 .collect(MoreCollectors.toImmutableList());
     }
 
-    private UpdaterConfiguration makeDefaultConfiguration(Publisher publisher) {
+    private static UpdaterConfiguration makeDefaultConfiguration(Publisher publisher) {
         return UpdaterConfiguration.builder()
                 .withSource(publisher)
                 .withItemEquivalenceUpdater(
@@ -169,7 +191,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeRadioTimesUpcomingConfiguration() {
+    private static UpdaterConfiguration makeRadioTimesUpcomingConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(RADIO_TIMES_UPCOMING)
                 .withItemEquivalenceUpdater(
@@ -187,7 +209,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeEbsConfiguration() {
+    private static UpdaterConfiguration makeEbsConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(BT_SPORT_EBS)
                 .withItemEquivalenceUpdater(
@@ -205,7 +227,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeAmcEbsConfiguration() {
+    private static UpdaterConfiguration makeAmcEbsConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(AMC_EBS)
                 .withItemEquivalenceUpdater(
@@ -223,7 +245,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeRadioTimesConfiguration() {
+    private static UpdaterConfiguration makeRadioTimesConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(RADIO_TIMES)
                 .withItemEquivalenceUpdater(
@@ -241,7 +263,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeYouviewConfiguration() {
+    private static UpdaterConfiguration makeYouviewConfiguration() {
         ImmutableSet<Publisher> targetSources = Sets.union(
                 Sets.difference(
                         TARGET_SOURCES,
@@ -268,7 +290,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeYouviewStageConfiguration() {
+    private static UpdaterConfiguration makeYouviewStageConfiguration() {
         ImmutableSet<Publisher> targetSources = Sets.union(
                 Sets.difference(
                         TARGET_SOURCES,
@@ -295,7 +317,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeYouviewBtConfiguration() {
+    private static UpdaterConfiguration makeYouviewBtConfiguration() {
         ImmutableSet<Publisher> targetSources = Sets.union(
                 Sets.difference(
                         TARGET_SOURCES,
@@ -322,7 +344,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeYouviewBtStageConfiguration() {
+    private static UpdaterConfiguration makeYouviewBtStageConfiguration() {
         ImmutableSet<Publisher> targetSources = Sets.union(
                 Sets.difference(
                         TARGET_SOURCES,
@@ -349,7 +371,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeYouviewScotlandRadioConfiguration() {
+    private static UpdaterConfiguration makeYouviewScotlandRadioConfiguration() {
         ImmutableSet<Publisher> targetSources = Sets.union(
                 Sets.difference(
                         TARGET_SOURCES,
@@ -376,7 +398,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeYouviewScotlandRadioStageConfiguration() {
+    private static UpdaterConfiguration makeYouviewScotlandRadioStageConfiguration() {
         ImmutableSet<Publisher> targetSources = Sets.union(
                 Sets.difference(
                         TARGET_SOURCES,
@@ -403,7 +425,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeBbcReduxConfiguration() {
+    private static UpdaterConfiguration makeBbcReduxConfiguration() {
         ImmutableSet<Publisher> targetSources = MoreSets.add(
                 TARGET_SOURCES,
                 BBC_REDUX
@@ -427,7 +449,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeC4PressConfiguration() {
+    private static UpdaterConfiguration makeC4PressConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(C4_PRESS)
                 .withItemEquivalenceUpdater(
@@ -445,7 +467,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeBettyConfiguration() {
+    private static UpdaterConfiguration makeBettyConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(BETTY)
                 .withItemEquivalenceUpdater(
@@ -463,7 +485,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeFacebookConfiguration() {
+    private static UpdaterConfiguration makeFacebookConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(FACEBOOK)
                 .withItemEquivalenceUpdater(
@@ -485,7 +507,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeITunesConfiguration() {
+    private static UpdaterConfiguration makeITunesConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(ITUNES)
                 .withItemEquivalenceUpdater(
@@ -503,7 +525,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeLovefilmConfiguration() {
+    private static UpdaterConfiguration makeLovefilmConfiguration() {
         ImmutableSet<Publisher> targetSources = Sets.union(
                 TARGET_SOURCES,
                 ImmutableSet.of(LOVEFILM)
@@ -527,7 +549,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeNetflixConfiguration() {
+    private static UpdaterConfiguration makeNetflixConfiguration() {
         ImmutableSet<Publisher> targetSources = ImmutableSet.of(BBC, NETFLIX);
 
         return UpdaterConfiguration.builder()
@@ -547,7 +569,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeAmazonUnboxConfiguration() {
+    private static UpdaterConfiguration makeAmazonUnboxConfiguration() {
         ImmutableSet<Publisher> targetSources = ImmutableSet.of(AMAZON_UNBOX, PA);
 
         return UpdaterConfiguration.builder()
@@ -567,7 +589,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeTalkTalkConfiguration() {
+    private static UpdaterConfiguration makeTalkTalkConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(TALK_TALK)
                 .withItemEquivalenceUpdater(
@@ -585,7 +607,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeBtVodConfiguration() {
+    private static UpdaterConfiguration makeBtVodConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(BT_VOD)
                 .withItemEquivalenceUpdater(
@@ -603,7 +625,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeBtTveVodConfiguration() {
+    private static UpdaterConfiguration makeBtTveVodConfiguration() {
         ImmutableSet<Publisher> targetSources = ImmutableSet.of(PA);
 
         return UpdaterConfiguration.builder()
@@ -623,7 +645,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private ImmutableList<UpdaterConfiguration> makeVfConfigurations() {
+    private static ImmutableList<UpdaterConfiguration> makeVfConfigurations() {
         ImmutableSet<Publisher> targetSources = ImmutableSet.of(PA);
 
         return VF_SOURCES.stream()
@@ -645,7 +667,7 @@ public class UpdaterConfigurationRegistry {
                 .collect(MoreCollectors.toImmutableList());
     }
 
-    private UpdaterConfiguration makeRteConfiguration() {
+    private static UpdaterConfiguration makeRteConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(RTE)
                 .withItemEquivalenceUpdater(
@@ -663,7 +685,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private UpdaterConfiguration makeFiveConfiguration() {
+    private static UpdaterConfiguration makeFiveConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(FIVE)
                 .withItemEquivalenceUpdater(
@@ -681,7 +703,7 @@ public class UpdaterConfigurationRegistry {
                 .build();
     }
 
-    private ImmutableList<UpdaterConfiguration> makeRoviConfigurations() {
+    private static ImmutableList<UpdaterConfiguration> makeRoviConfigurations() {
         ImmutableSet<Publisher> targetSources = ImmutableSet.of(
                 Publisher.BBC,
                 Publisher.PA,
@@ -714,7 +736,7 @@ public class UpdaterConfigurationRegistry {
                 .collect(MoreCollectors.toImmutableList());
     }
 
-    private ImmutableList<UpdaterConfiguration> makeMusicConfigurations() {
+    private static ImmutableList<UpdaterConfiguration> makeMusicConfigurations() {
         return MUSIC_SOURCES.stream()
                 .map(source -> UpdaterConfiguration.builder()
                         .withSource(source)

@@ -18,10 +18,12 @@ import com.google.common.base.Splitter;
 
 public class AmazonUnboxContentHandler extends DefaultHandler {
     
-    private static final Splitter SPLIT_ON_COMMA = Splitter.on(',').trimResults().omitEmptyStrings();
+    private static final Splitter SPLIT_ON_COMMA =
+            Splitter.on(',').trimResults().omitEmptyStrings();
     
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentHandler.class);
-    private final DateTimeFormatter dateParser = ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.forID("Europe/London"));
+    private final DateTimeFormatter dateParser =
+            ISODateTimeFormat.dateTimeParser().withZone(DateTimeZone.forID("Europe/London"));
     private final AmazonUnboxProcessor<?> processor;
     
     private AmazonUnboxItem.Builder item = null;
@@ -34,7 +36,9 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     }
     
     @Override
-    public void startElement (String uri, String localName, String qName, Attributes attributes) throws SAXException {
+    public void startElement (
+            String uri,
+            String localName, String qName, Attributes attributes) throws SAXException {
         if (item != null) {
             currentField = ItemField.valueOf(qName);
             buffer = new StringBuffer();

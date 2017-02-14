@@ -163,6 +163,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                                      .build();
         
         brand.setRelatedLinks(ImmutableSet.of(relatedLink));
+        brand.setImage(source.getLargeImageUrl());
         return brand;
     }
 

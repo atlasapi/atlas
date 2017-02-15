@@ -50,9 +50,8 @@ public class StandardTopLevelContainerUpdaterProvider
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Container> builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
                                 TitleSearchGenerator.create(
@@ -87,7 +86,10 @@ public class StandardTopLevelContainerUpdaterProvider
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(dependencies.getExcludedUris()),
+                                new ExclusionListFilter<>(
+                                        dependencies.getExcludedUris(),
+                                        dependencies.getExcludedIds()
+                                ),
                                 new FilmFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()

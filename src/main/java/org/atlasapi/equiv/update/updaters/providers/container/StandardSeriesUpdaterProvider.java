@@ -45,9 +45,8 @@ public class StandardSeriesUpdaterProvider implements EquivalenceUpdaterProvider
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Container>builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
                         new ContainerCandidatesContainerEquivalenceGenerator(
                                 dependencies.getContentResolver(),
@@ -66,7 +65,10 @@ public class StandardSeriesUpdaterProvider implements EquivalenceUpdaterProvider
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(dependencies.getExcludedUris()),
+                                new ExclusionListFilter<>(
+                                        dependencies.getExcludedUris(),
+                                        dependencies.getExcludedIds()
+                                ),
                                 new FilmFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>(),

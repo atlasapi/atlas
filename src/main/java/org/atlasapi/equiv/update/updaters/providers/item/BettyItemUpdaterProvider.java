@@ -41,9 +41,8 @@ public class BettyItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
     ) {
 
         return ContentEquivalenceUpdater.<Item>builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(new BroadcastMatchingItemEquivalenceGenerator(
                         dependencies.getScheduleResolver(),
                         dependencies.getChannelResolver(),

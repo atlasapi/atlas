@@ -17,20 +17,27 @@ import com.google.common.collect.ImmutableList.Builder;
 
 public class EquivalenceGenerators<T extends Content> {
     
-    public static <T extends Content> EquivalenceGenerators<T> from(Iterable<? extends EquivalenceGenerator<T>> generators, Set<String> excludedUris) {
-        return new EquivalenceGenerators<T>(generators, excludedUris);
+    public static <T extends Content> EquivalenceGenerators<T> from(Iterable<? extends
+            EquivalenceGenerator<T>> generators,
+            Set<String> excludedUris,
+            Set<String> excludedIds
+    ) {
+        return new EquivalenceGenerators<T>(generators, excludedUris, excludedIds);
     }
 
     private final List<? extends EquivalenceGenerator<T>> generators;
     private final Set<String> excludedUris;
+    private final Set<String> excludedIds;
     private final SubstitutionTableNumberCodec codec;
 
     public EquivalenceGenerators(
             Iterable<? extends EquivalenceGenerator<T>> generators,
-            Set<String> excludedUris
+            Set<String> excludedUris,
+            Set<String> excludedIds
     ) {
         this.generators = ImmutableList.copyOf(generators);
         this.excludedUris = excludedUris;
+        this.excludedIds = excludedIds;
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
     
@@ -38,13 +45,12 @@ public class EquivalenceGenerators<T extends Content> {
         desc.startStage("Generating equivalences");
         Builder<ScoredCandidates<T>> generatedScores = ImmutableList.builder();
 
-        ImmutableList<Long> excludedIds = excludedUris.stream()
-                .filter(id -> !id.contains("http"))
+        ImmutableList<Long> excludedDecodedIds = excludedIds.stream()
                 .map(id -> codec.decode(id).longValue())
                 .collect(MoreCollectors.toImmutableList());
 
         if (excludedUris.contains(content.getCanonicalUri())
-                || excludedIds.contains(content.getId())) {
+                || excludedDecodedIds.contains(content.getId())) {
             desc.appendText("Content %s is in equivalence blacklist and will not be equivalated",
                     content.getCanonicalUri());
             return generatedScores.build();

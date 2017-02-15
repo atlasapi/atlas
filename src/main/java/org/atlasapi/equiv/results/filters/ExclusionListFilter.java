@@ -16,23 +16,24 @@ import com.google.common.collect.ImmutableSet;
 public class ExclusionListFilter<T extends Identified> extends AbstractEquivalenceFilter<T> {
 
     private final Set<String> excludedUris;
+    private final Set<String> excludedIds;
     private final SubstitutionTableNumberCodec codec;
 
-    public ExclusionListFilter(Iterable<String> excludedUris) {
+    public ExclusionListFilter(Iterable<String> excludedUris, Iterable<String> excludedIds) {
         this.excludedUris = ImmutableSet.copyOf(excludedUris);
+        this.excludedIds = ImmutableSet.copyOf(excludedIds);
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
     
     @Override
     protected boolean doFilter(ScoredCandidate<T> candidate, T subject, ResultDescription desc) {
 
-        ImmutableList<Long> excludedIds = excludedUris.stream()
-                .filter(id -> !id.contains("http"))
+        ImmutableList<Long> excludedDecodedIds = excludedIds.stream()
                 .map(id -> codec.decode(id).longValue())
                 .collect(MoreCollectors.toImmutableList());
 
         boolean result = !excludedUris.contains(candidate.candidate().getCanonicalUri())
-                && !excludedIds.contains(candidate.candidate().getId());
+                && !excludedDecodedIds.contains(candidate.candidate().getId());
 
         if (!result) {
             desc.appendText("%s removed as contained in exclusion list", 

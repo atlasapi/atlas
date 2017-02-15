@@ -24,6 +24,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
     private final String extractor;
     private final String handler;
     private final ImmutableList<String> excludedUris;
+    private final ImmutableList<String> excludedIds;
 
     private ContentEquivalenceUpdaterMetadata(
             Iterable<EquivalenceGeneratorMetadata> generators,
@@ -32,7 +33,8 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
             String filter,
             String extractor,
             String handler,
-            Iterable<String> excludedUris
+            Iterable<String> excludedUris,
+            Iterable<String> excludedIds
     ) {
         this.generators = ImmutableList.copyOf(generators);
         this.scorers = ImmutableList.copyOf(scorers);
@@ -41,6 +43,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         this.extractor = checkNotNull(extractor);
         this.handler = checkNotNull(handler);
         this.excludedUris = ImmutableList.copyOf(excludedUris);
+        this.excludedIds = ImmutableList.copyOf(excludedIds);
     }
 
     public static GeneratorsStep builder() {
@@ -75,6 +78,10 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         return excludedUris;
     }
 
+    public ImmutableList<String> getExcludedIds() {
+        return excludedIds;
+    }
+
     public interface GeneratorsStep {
 
         <T> ScorersStep withGenerators(Iterable<EquivalenceGenerator<T>> generators);
@@ -107,7 +114,12 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
 
     public interface ExcludedUrisStep {
 
-        BuildStep withExcludedUris(Set<String> excludedUris);
+        ExcludedIdsStep withExcludedUris(Set<String> excludedUris);
+    }
+
+    public interface ExcludedIdsStep {
+
+        BuildStep withExcludedIds(Set<String> excludedUris);
     }
 
     public interface BuildStep {
@@ -116,7 +128,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
     }
 
     public static class Builder implements GeneratorsStep, ScorersStep, CombinerStep, FilterStep,
-            ExtractorStep, HandlerStep, ExcludedUrisStep, BuildStep {
+            ExtractorStep, HandlerStep, ExcludedUrisStep, ExcludedIdsStep, BuildStep {
 
         private List<EquivalenceGeneratorMetadata> generators;
         private List<String> scorers;
@@ -125,6 +137,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         private String extractor;
         private String handler;
         private Set<String> excludedUris;
+        private Set<String> excludedIds;
 
         private Builder() {
         }
@@ -168,8 +181,14 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         }
 
         @Override
-        public BuildStep withExcludedUris(Set<String> excludedUris) {
+        public ExcludedIdsStep withExcludedUris(Set<String> excludedUris) {
             this.excludedUris = excludedUris;
+            return this;
+        }
+
+        @Override
+        public BuildStep withExcludedIds(Set<String> excludedIds) {
+            this.excludedIds = excludedIds;
             return this;
         }
 
@@ -182,7 +201,8 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
                     this.filter,
                     this.extractor,
                     this.handler,
-                    this.excludedUris
+                    this.excludedUris,
+                    this.excludedIds
             );
         }
     }

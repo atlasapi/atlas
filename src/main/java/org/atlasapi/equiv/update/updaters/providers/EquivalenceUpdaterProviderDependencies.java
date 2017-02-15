@@ -28,6 +28,7 @@ public class EquivalenceUpdaterProviderDependencies {
     private final RecentEquivalenceResultStore equivalenceResultStore;
     private final MessageSender<ContentEquivalenceAssertionMessage> messageSender;
     private final ImmutableSet<String> excludedUris;
+    private final ImmutableSet<String> excludedIds;
 
     private EquivalenceUpdaterProviderDependencies(
             ScheduleResolver scheduleResolver,
@@ -39,7 +40,8 @@ public class EquivalenceUpdaterProviderDependencies {
             LookupEntryStore lookupEntryStore,
             RecentEquivalenceResultStore equivalenceResultStore,
             MessageSender<ContentEquivalenceAssertionMessage> messageSender,
-            ImmutableSet<String> excludedUris
+            ImmutableSet<String> excludedUris,
+            ImmutableSet<String> excludedIds
     ) {
         this.scheduleResolver = checkNotNull(scheduleResolver);
         this.searchResolver = checkNotNull(searchResolver);
@@ -51,6 +53,7 @@ public class EquivalenceUpdaterProviderDependencies {
         this.equivalenceResultStore = checkNotNull(equivalenceResultStore);
         this.messageSender = checkNotNull(messageSender);
         this.excludedUris = ImmutableSet.copyOf(excludedUris);
+        this.excludedIds = ImmutableSet.copyOf(excludedIds);
     }
 
     public static ScheduleResolverStep builder() {
@@ -95,6 +98,10 @@ public class EquivalenceUpdaterProviderDependencies {
 
     public ImmutableSet<String> getExcludedUris() {
         return excludedUris;
+    }
+
+    public ImmutableSet<String> getExcludedIds() {
+        return excludedIds;
     }
 
     public interface ScheduleResolverStep {
@@ -146,7 +153,12 @@ public class EquivalenceUpdaterProviderDependencies {
 
     public interface ExcludedUrisStep {
 
-        BuildStep withExcludedUris(ImmutableSet<String> excludedUris);
+        ExcludedIdsStep withExcludedUris(ImmutableSet<String> excludedUris);
+    }
+
+    public interface ExcludedIdsStep {
+
+        BuildStep withExcludedIds(ImmutableSet<String> excludedIds);
     }
 
     public interface BuildStep {
@@ -157,7 +169,8 @@ public class EquivalenceUpdaterProviderDependencies {
     public static class Builder
             implements ScheduleResolverStep, SearchResolverStep, ContentResolverStep,
             ChannelResolverStep, EquivSummaryStoreStep, LookupWriterStep, LookupEntryStoreStep,
-            EquivalenceResultStoreStep, MessageSenderStep, ExcludedUrisStep, BuildStep {
+            EquivalenceResultStoreStep, MessageSenderStep, ExcludedUrisStep, ExcludedIdsStep,
+            BuildStep {
 
         private ScheduleResolver scheduleResolver;
         private SearchResolver searchResolver;
@@ -169,6 +182,7 @@ public class EquivalenceUpdaterProviderDependencies {
         private RecentEquivalenceResultStore equivalenceResultStore;
         private MessageSender<ContentEquivalenceAssertionMessage> messageSender;
         private ImmutableSet<String> excludedUris;
+        private ImmutableSet<String> excludedIds;
 
         private Builder() {
         }
@@ -230,8 +244,14 @@ public class EquivalenceUpdaterProviderDependencies {
         }
 
         @Override
-        public BuildStep withExcludedUris(ImmutableSet<String> excludedUris) {
+        public ExcludedIdsStep withExcludedUris(ImmutableSet<String> excludedUris) {
             this.excludedUris = excludedUris;
+            return this;
+        }
+
+        @Override
+        public BuildStep withExcludedIds(ImmutableSet<String> excludedIds) {
+            this.excludedIds = excludedIds;
             return this;
         }
 
@@ -247,7 +267,8 @@ public class EquivalenceUpdaterProviderDependencies {
                     this.lookupEntryStore,
                     this.equivalenceResultStore,
                     this.messageSender,
-                    this.excludedUris
+                    this.excludedUris,
+                    this.excludedIds
             );
         }
     }

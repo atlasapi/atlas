@@ -39,9 +39,8 @@ public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
             EquivalenceUpdaterProviderDependencies dependencies, Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Item>builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
                         new TitleSearchGenerator<>(
                                 dependencies.getSearchResolver(),

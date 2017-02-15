@@ -198,7 +198,6 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
                         .withScheduleWriter(scheduleWriter)
                         .withScheduleVersionStore(scheduleVersionStore)
                         .withContentBuffer(contentBuffer)
-                        .withContentWriter(contentWriter)
                         .build()
         );
         updater.run();
@@ -312,7 +311,6 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
                         .withScheduleWriter(scheduleWriter)
                         .withScheduleVersionStore(scheduleVersionStore)
                         .withContentBuffer(contentBuffer)
-                        .withContentWriter(contentWriter)
                         .build()
         );
         updater.run();
@@ -360,7 +358,6 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
                         .withScheduleWriter(scheduleWriter)
                         .withScheduleVersionStore(scheduleVersionStore)
                         .withContentBuffer(contentBuffer)
-                        .withContentWriter(contentWriter)
                         .build()
         );
         updater.run();

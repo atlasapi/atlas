@@ -312,7 +312,6 @@ public class PaModule {
                 .withScheduleWriter(scheduleWriter)
                 .withScheduleVersionStore(paScheduleVersionStore())
                 .withContentBuffer(contentBuffer())
-                .withContentWriter(contentWriter)
                 .build();
 
         ExecutorService executor = Executors.newFixedThreadPool(
@@ -336,7 +335,6 @@ public class PaModule {
                 .withScheduleWriter(scheduleWriter)
                 .withScheduleVersionStore(paScheduleVersionStore())
                 .withContentBuffer(contentBuffer())
-                .withContentWriter(contentWriter)
                 .build();
 
         ExecutorService executor = Executors.newFixedThreadPool(
@@ -363,7 +361,6 @@ public class PaModule {
                 .withScheduleWriter(scheduleWriter)
                 .withScheduleVersionStore(paScheduleVersionStore())
                 .withContentBuffer(contentBuffer())
-                .withContentWriter(contentWriter)
                 .build();
 
         ExecutorService executor = Executors.newFixedThreadPool(
@@ -446,7 +443,6 @@ public class PaModule {
                 .withScheduleWriter(scheduleWriter)
                 .withScheduleVersionStore(paScheduleVersionStore())
                 .withContentBuffer(contentBuffer())
-                .withContentWriter(contentWriter)
                 .build();
 
         return new PaSingleDateUpdatingController(

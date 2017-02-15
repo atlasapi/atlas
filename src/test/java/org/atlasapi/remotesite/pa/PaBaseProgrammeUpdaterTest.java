@@ -5,6 +5,8 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -92,17 +94,20 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
     private ChannelResolver channelResolver;
     private ContentBuffer contentBuffer;
-    private MessageSender<ScheduleUpdateMessage> ms = new MessageSender<ScheduleUpdateMessage>(){
+    private MessageSender<ScheduleUpdateMessage> ms = new MessageSender<ScheduleUpdateMessage>() {
 
         @Override
-        public void close() throws Exception { }
+        public void close() throws Exception {
+        }
 
         @Override
-        public void sendMessage(ScheduleUpdateMessage message) throws MessagingException { }
+        public void sendMessage(ScheduleUpdateMessage message) throws MessagingException {
+        }
 
         @Override
         public void sendMessage(ScheduleUpdateMessage scheduleUpdateMessage, byte[] bytes)
-                throws MessagingException { }
+                throws MessagingException {
+        }
     };
     private final PaTagMap paTagMap = mock(PaTagMap.class);
 
@@ -112,20 +117,39 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         super.setUp();
         DatabasedMongo db = MongoTestHelper.anEmptyTestDatabase();
         MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(db.collection("lookup"),
-                persistenceAuditLog, ReadPreference.primary());
-        resolver = new LookupResolvingContentResolver(new MongoContentResolver(db, lookupStore), lookupStore);
+                persistenceAuditLog, ReadPreference.primary()
+        );
+        resolver = new LookupResolvingContentResolver(
+                new MongoContentResolver(db, lookupStore),
+                lookupStore
+        );
 
         channelResolver = new DummyChannelResolver();
-        contentWriter = new MongoContentWriter(db, lookupStore, persistenceAuditLog, playerResolver, serviceResolver, clock);
+        contentWriter = new MongoContentWriter(
+                db,
+                lookupStore,
+                persistenceAuditLog,
+                playerResolver,
+                serviceResolver,
+                clock
+        );
         programmeProcessor = PaProgrammeProcessor.create(
                 resolver,
                 log,
                 paTagMap,
                 mock(ExistingItemUnPublisher.class)
         );
-        EquivalentContentResolver equivContentResolver = context.mock(EquivalentContentResolver.class);
-        scheduleWriter = new MongoScheduleStore(db, channelResolver, contentBuffer, equivContentResolver, ms);
-        contentBuffer = new ContentBuffer(resolver, contentWriter, new DummyItemsPeopleWriter());
+        EquivalentContentResolver equivContentResolver = context.mock(
+                EquivalentContentResolver.class
+        );
+        scheduleWriter = new MongoScheduleStore(
+                db,
+                channelResolver,
+                contentBuffer,
+                equivContentResolver,
+                ms
+        );
+        contentBuffer = ContentBuffer.create(resolver, contentWriter, new DummyItemsPeopleWriter());
 
         File tmpTestDirectory = new File(TMP_TEST_DIRECTORY);
         if (tmpTestDirectory.exists()) {
@@ -137,10 +161,17 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
     @Test
     public void testShouldCreateCorrectPaData() throws Exception {
-        final PaScheduleVersionStore scheduleVersionStore = context.mock(PaScheduleVersionStore.class);
-        final Channel channel = channelResolver.fromUri("http://www.bbc.co.uk/bbcone").requireValue();
-        final LocalDate scheduleDay = new LocalDate(2011, DateTimeConstants.JANUARY, 15);
+        PaScheduleVersionStore scheduleVersionStore = context.mock(
+                PaScheduleVersionStore.class
+        );
+        BroadcastTrimmer broadcastTrimmer = context.mock(BroadcastTrimmer.class);
+
+        Channel channel = channelResolver.fromUri("http://www.bbc.co.uk/bbcone")
+                .requireValue();
+        LocalDate scheduleDay = new LocalDate(2011, DateTimeConstants.JANUARY, 15);
+
         context.checking(new Expectations() {{
+            ignoring(broadcastTrimmer);
             oneOf(scheduleVersionStore).get(channel, scheduleDay);
             will(returnValue(Optional.<Long>absent()));
             oneOf(scheduleVersionStore).store(channel, scheduleDay, 1);
@@ -153,14 +184,30 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
             will(returnValue(Optional.of(201202251115L)));
         }});
 
-        TestPaProgrammeUpdater updater = new TestPaProgrammeUpdater(programmeProcessor, channelResolver, log, scheduleWriter, ImmutableList.of(
-                new File(Resources.getResource("20110115_tvdata.xml").getFile()),
-                new File(Resources.getResource("201202251115_20110115_tvdata.xml").getFile())), null, scheduleVersionStore,
-                contentBuffer, contentWriter);
+        TestPaProgrammeUpdater updater = new TestPaProgrammeUpdater(
+                channelResolver,
+                ImmutableList.of(
+                        new File(Resources.getResource("20110115_tvdata.xml").getFile()),
+                        new File(Resources.getResource("201202251115_20110115_tvdata.xml")
+                                .getFile())
+                ),
+                scheduleVersionStore,
+                PaChannelProcessor.builder()
+                        .withProcessor(programmeProcessor)
+                        .withTrimmer(broadcastTrimmer)
+                        .withScheduleWriter(scheduleWriter)
+                        .withScheduleVersionStore(scheduleVersionStore)
+                        .withContentBuffer(contentBuffer)
+                        .withContentWriter(contentWriter)
+                        .build()
+        );
         updater.run();
-        Identified content = null;
 
-        content = resolver.findByCanonicalUris(ImmutableList.of("http://pressassociation.com/brands/122139")).get("http://pressassociation.com/brands/122139").requireValue();
+        Identified content;
+
+        content = resolver.findByCanonicalUris(ImmutableList.of(
+                "http://pressassociation.com/brands/122139")).get(
+                "http://pressassociation.com/brands/122139").requireValue();
 
         assertNotNull(content);
         assertTrue(content instanceof Brand);
@@ -168,14 +215,18 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         assertFalse(brand.getChildRefs().isEmpty());
         assertNotNull(brand.getImage());
         Image brandImage = Iterables.getOnlyElement(brand.getImages());
-        assertEquals("http://images.atlas.metabroadcast.com/pressassociation.com/webcomeflywithme1.jpg", brandImage.getCanonicalUri());
-        assertEquals(new DateTime(2010, DateTimeConstants.DECEMBER, 18, 0, 0, 0, 0).withZone(DateTimeZone.UTC), brandImage.getAvailabilityStart());
-        assertEquals(new DateTime(2011, DateTimeConstants.FEBRUARY, 6, 0, 0, 0, 0).withZone(DateTimeZone.UTC), brandImage.getAvailabilityEnd());
+        assertEquals(
+                "http://images.atlas.metabroadcast.com/pressassociation.com/webcomeflywithme1.jpg",
+                brandImage.getCanonicalUri()
+        );
+        assertEquals(new DateTime(2010, DateTimeConstants.DECEMBER, 18, 0, 0, 0, 0).withZone(
+                DateTimeZone.UTC), brandImage.getAvailabilityStart());
+        assertEquals(new DateTime(2011, DateTimeConstants.FEBRUARY, 6, 0, 0, 0, 0).withZone(
+                DateTimeZone.UTC), brandImage.getAvailabilityEnd());
         assertEquals(MimeType.IMAGE_JPG, brandImage.getMimeType());
         assertEquals(ImageType.PRIMARY, brandImage.getType());
-        assertEquals((Integer)1024, brandImage.getWidth());
-        assertEquals((Integer)576, brandImage.getHeight());
-
+        assertEquals((Integer) 1024, brandImage.getWidth());
+        assertEquals((Integer) 576, brandImage.getHeight());
 
         Item item = loadItemAtPosition(brand, 0);
         assertTrue(item.getCanonicalUri().contains("episodes"));
@@ -200,13 +251,15 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         updater.run();
         Thread.sleep(1000);
 
-        content = resolver.findByCanonicalUris(ImmutableList.of("http://pressassociation.com/brands/122139")).get("http://pressassociation.com/brands/122139").requireValue();
+        content = resolver.findByCanonicalUris(ImmutableList.of(
+                "http://pressassociation.com/brands/122139")).get(
+                "http://pressassociation.com/brands/122139").requireValue();
         assertNotNull(content);
         assertTrue(content instanceof Brand);
         brand = (Brand) content;
         assertFalse(brand.getChildRefs().isEmpty());
 
-        item =  loadItemAtPosition(brand, 0);
+        item = loadItemAtPosition(brand, 0);
         assertFalse(item.getVersions().isEmpty());
 
         version = item.getVersions().iterator().next();
@@ -220,70 +273,118 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
     @Test
     public void testBroadcastsTrimmerWindowNoTimesInFile() {
-        final BroadcastTrimmer trimmer = context.mock(BroadcastTrimmer.class);
-        final Interval firstFileInterval = new Interval(new DateTime(2011, DateTimeConstants.JANUARY, 15, 6, 0, 0, 0, DateTimeZones.LONDON), new DateTime(2011, DateTimeConstants.JANUARY, 16, 6, 0, 0, 0, DateTimeZones.LONDON));
+        PaScheduleVersionStore scheduleVersionStore = context.mock(
+                PaScheduleVersionStore.class
+        );
+        BroadcastTrimmer trimmer = context.mock(BroadcastTrimmer.class);
+
+        Interval firstFileInterval = new Interval(new DateTime(
+                2011,
+                DateTimeConstants.JANUARY,
+                15,
+                6,
+                0,
+                0,
+                0,
+                DateTimeZones.LONDON
+        ), new DateTime(2011, DateTimeConstants.JANUARY, 16, 6, 0, 0, 0, DateTimeZones.LONDON));
 
         context.checking(new Expectations() {{
-            oneOf (trimmer).trimBroadcasts(firstFileInterval, channelResolver.fromUri("http://www.bbc.co.uk/bbcone").requireValue(), ImmutableMap.of("pa:71118471", "http://pressassociation.com/episodes/1424497"));
+            ignoring(scheduleVersionStore);
+            oneOf(trimmer).trimBroadcasts(
+                    firstFileInterval,
+                    channelResolver.fromUri("http://www.bbc.co.uk/bbcone").requireValue(),
+                    ImmutableMap.of("pa:71118471", "http://pressassociation.com/episodes/1424497")
+            );
         }});
 
+        // The reason for setting a null schedule version store in the updater a non-null one in the
+        // channel processor is that the former can deal with the lack of a version store while
+        // the latter cannot and will NPE. This needs a rethink of the PA ingester to determine
+        // whether it's legitimate to have them behave differently
         TestPaProgrammeUpdater updater = new TestPaProgrammeUpdater(
-                programmeProcessor,
                 channelResolver,
-                log,
-                scheduleWriter,
                 ImmutableList.of(new File(Resources.getResource("20110115_tvdata.xml").getFile())),
-                trimmer,
                 null,
-                contentBuffer,
-                contentWriter);
+                PaChannelProcessor.builder()
+                        .withProcessor(programmeProcessor)
+                        .withTrimmer(trimmer)
+                        .withScheduleWriter(scheduleWriter)
+                        .withScheduleVersionStore(scheduleVersionStore)
+                        .withContentBuffer(contentBuffer)
+                        .withContentWriter(contentWriter)
+                        .build()
+        );
         updater.run();
     }
 
     @Test
     public void testBroadcastTrimmerWindowTimesInFile() {
-        final BroadcastTrimmer trimmer = context.mock(BroadcastTrimmer.class);
-        final Interval fileInterval = new Interval(new DateTime(2011, DateTimeConstants.JANUARY, 15, 21, 40, 0, 0, DateTimeZones.LONDON), new DateTime(2011, DateTimeConstants.JANUARY, 15, 23, 30, 0, 0, DateTimeZones.LONDON));
+        PaScheduleVersionStore scheduleVersionStore = context.mock(
+                PaScheduleVersionStore.class
+        );
+        BroadcastTrimmer trimmer = context.mock(BroadcastTrimmer.class);
+
+        Interval fileInterval = new Interval(new DateTime(
+                2011,
+                DateTimeConstants.JANUARY,
+                15,
+                21,
+                40,
+                0,
+                0,
+                DateTimeZones.LONDON
+        ), new DateTime(2011, DateTimeConstants.JANUARY, 15, 23, 30, 0, 0, DateTimeZones.LONDON));
 
         context.checking(new Expectations() {{
-            oneOf (trimmer).trimBroadcasts(fileInterval, channelResolver.fromUri("http://www.bbc.co.uk/bbcone").requireValue(), ImmutableMap.of("pa:71118472", "http://pressassociation.com/episodes/1424497"));
+            ignoring(scheduleVersionStore);
+            oneOf(trimmer).trimBroadcasts(
+                    fileInterval,
+                    channelResolver.fromUri("http://www.bbc.co.uk/bbcone").requireValue(),
+                    ImmutableMap.of("pa:71118472", "http://pressassociation.com/episodes/1424497")
+            );
         }});
 
+        // The reason for setting a null schedule version store in the updater a non-null one in the
+        // channel processor is that the former can deal with the lack of a version store while
+        // the latter cannot and will NPE. This needs a rethink of the PA ingester to determine
+        // whether it's legitimate to have them behave differently
         TestPaProgrammeUpdater updater = new TestPaProgrammeUpdater(
-                programmeProcessor,
                 channelResolver,
-                log,
-                scheduleWriter,
-                ImmutableList.of(new File(Resources.getResource("201202251115_20110115_tvdata.xml").getFile())),
-                trimmer,
+                ImmutableList.of(new File(Resources.getResource("201202251115_20110115_tvdata.xml")
+                        .getFile())),
                 null,
-                contentBuffer,
-                contentWriter);
+                PaChannelProcessor.builder()
+                        .withProcessor(programmeProcessor)
+                        .withTrimmer(trimmer)
+                        .withScheduleWriter(scheduleWriter)
+                        .withScheduleVersionStore(scheduleVersionStore)
+                        .withContentBuffer(contentBuffer)
+                        .withContentWriter(contentWriter)
+                        .build()
+        );
         updater.run();
     }
 
     private Item loadItemAtPosition(Brand brand, int index) {
-        return (Item) resolver.findByCanonicalUris(ImmutableList.of(brand.getChildRefs().get(index).getUri())).getFirstValue().requireValue();
+        return (Item) resolver.findByCanonicalUris(ImmutableList.of(brand.getChildRefs()
+                .get(index)
+                .getUri())).getFirstValue().requireValue();
     }
 
     static class TestPaProgrammeUpdater extends PaBaseProgrammeUpdater {
 
         private List<File> files;
 
-        public TestPaProgrammeUpdater(PaProgDataProcessor processor, ChannelResolver channelResolver, AdapterLog log,
-                MongoScheduleStore scheduleWriter, List<File> files, BroadcastTrimmer trimmer,
-                PaScheduleVersionStore scheduleVersionStore, ContentBuffer contentBuffer, ContentWriter contentWriter) {
-
+        public TestPaProgrammeUpdater(
+                ChannelResolver channelResolver,
+                List<File> files,
+                @Nullable PaScheduleVersionStore scheduleVersionStore,
+                PaChannelProcessor paChannelProcessor
+        ) {
             super(
                     MoreExecutors.sameThreadExecutor(),
-                    new PaChannelProcessor(
-                            processor,
-                            trimmer,
-                            scheduleWriter,
-                            scheduleVersionStore,
-                            contentBuffer,
-                            contentWriter
-                    ),
+                    paChannelProcessor,
                     new DefaultPaProgrammeDataStore(TMP_TEST_DIRECTORY, null),
                     channelResolver,
                     Optional.fromNullable(scheduleVersionStore),
@@ -315,7 +416,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
         @Override
         public Maybe<Channel> fromKey(String key) {
-            if("bbcone".equals(key)) {
+            if ("bbcone".equals(key)) {
                 return Maybe.just(channel);
             }
             return Maybe.just(Channel.builder().build());
@@ -328,7 +429,7 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
 
         @Override
         public Maybe<Channel> fromUri(String uri) {
-            if("http://www.bbc.co.uk/bbcone".equals(uri)) {
+            if ("http://www.bbc.co.uk/bbcone".equals(uri)) {
                 return Maybe.just(channel);
             }
             return Maybe.just(Channel.builder().build());
@@ -359,7 +460,5 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         public Iterable<Channel> allChannels(ChannelQuery query) {
             throw new UnsupportedOperationException();
         }
-
     }
-
 }

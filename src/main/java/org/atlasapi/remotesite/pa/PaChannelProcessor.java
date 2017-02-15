@@ -16,14 +16,17 @@ import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import static com.google.common.base.Preconditions.checkNotNull;
+import static java.lang.String.format;
+
 public class PaChannelProcessor {
 
     private static final Logger log = LoggerFactory.getLogger(PaChannelProcessor.class);
+
     private final PaProgDataProcessor processor;
     private final BroadcastTrimmer trimmer;
     private final ScheduleWriter scheduleWriter;
@@ -31,22 +34,28 @@ public class PaChannelProcessor {
     private final ContentBuffer contentBuffer;
     private final ContentWriter contentWriter;
 
-    public PaChannelProcessor(PaProgDataProcessor processor, BroadcastTrimmer trimmer, ScheduleWriter scheduleWriter, 
-            PaScheduleVersionStore scheduleVersionStore, ContentBuffer contentBuffer, ContentWriter contentWriter) {
-        this.processor = processor;
-        this.trimmer = trimmer;
-        this.scheduleWriter = scheduleWriter;
-        this.scheduleVersionStore = scheduleVersionStore;
-        this.contentBuffer = contentBuffer;
-        this.contentWriter = contentWriter;
+    private PaChannelProcessor(Builder builder) {
+        this.processor = checkNotNull(builder.processor);
+        this.trimmer = checkNotNull(builder.trimmer);
+        this.scheduleWriter = checkNotNull(builder.scheduleWriter);
+        this.scheduleVersionStore = checkNotNull(builder.scheduleVersionStore);
+        this.contentBuffer = checkNotNull(builder.contentBuffer);
+        this.contentWriter = checkNotNull(builder.contentWriter);
+    }
+
+    public static ProcessorStep builder() {
+        return new Builder();
     }
 
     public int process(PaChannelData channelData, Set<String> currentlyProcessing) {
         int processed = 0;
-        Set<ItemRefAndBroadcast> broadcasts = new HashSet<ItemRefAndBroadcast>();
+        Set<ItemRefAndBroadcast> broadcasts = new HashSet<>();
+
         Channel channel = channelData.channel();
+
         Set<ContentHierarchyAndSummaries> hierarchiesAndSummaries = Sets.newHashSet();
-        Builder<String, String> acceptableBroadcastIds = ImmutableMap.builder();
+        ImmutableMap.Builder<String, String> acceptableBroadcastIds = ImmutableMap.builder();
+
         try {
             for (ProgData programme : channelData.programmes()) {
                 String programmeLock = lockIdentifier(programme);
@@ -59,6 +68,7 @@ public class PaChannelProcessor {
                             channelData.zone(),
                             channelData.lastUpdated()
                     );
+
                     if (possibleHierarchy.isPresent()) {
                         ContentHierarchyAndSummaries hierarchy = possibleHierarchy.get();
                         contentBuffer.add(hierarchy);
@@ -74,40 +84,49 @@ public class PaChannelProcessor {
                                 hierarchy.getItem().getCanonicalUri()
                         );
                     }
+
                     processed++;
                 } catch (Exception e) {
-                    log.error(String.format("Error processing channel %s, prog id %s",
-                            channel.getKey(), programme.getProgId()));
+                    log.error(format("Error processing channel %s, prog id %s",
+                            channel.getKey(), programme.getProgId()
+                    ));
                 } finally {
                     unlock(currentlyProcessing, programmeLock);
                 }
             }
         } catch (Exception e) {
-            //TODO: should we just throw e?
-            log.error(String.format("Error processing channel %s", channel.getKey()), e);
+            log.error(format("Error processing channel %s", channel.getKey()), e);
         } finally {
             writeContent(hierarchiesAndSummaries, channel);
         }
-        
+
         try {
-            if (trimmer != null) {
-                ImmutableMap<String, String> acceptableIds = acceptableBroadcastIds.build();
-                log.trace("Trimming broadcasts for period {}; will remove IDs others than {}",
-                        channelData.schedulePeriod(), acceptableIds);
-                trimmer.trimBroadcasts(channelData.schedulePeriod(), channel, acceptableIds);
-            }
+            ImmutableMap<String, String> acceptableIds = acceptableBroadcastIds.build();
+            log.trace("Trimming broadcasts for period {}; will remove IDs others than {}",
+                    channelData.schedulePeriod(), acceptableIds
+            );
+            trimmer.trimBroadcasts(channelData.schedulePeriod(), channel, acceptableIds);
+
             scheduleWriter.replaceScheduleBlock(Publisher.PA, channel, broadcasts);
 
-            log.trace("Storing version {} for channel {} on day {}",
+            log.trace(
+                    "Storing version {} for channel {} on day {}",
                     channelData.version(),
                     channel,
-                    channelData.scheduleDay());
+                    channelData.scheduleDay()
+            );
 
             scheduleVersionStore.store(channel, channelData.scheduleDay(), channelData.version());
         } catch (Exception e) {
-            log.error(String.format("Error trimming and writing schedule for channel %s", channel.getKey()), e);
+            log.error(
+                    format(
+                            "Error trimming and writing schedule for channel %s",
+                            channel.getKey()
+                    ),
+                    e
+            );
         }
-        
+
         return processed;
     }
 
@@ -123,10 +142,10 @@ public class PaChannelProcessor {
                 }
             }
         } catch (Exception e) {
-            log.error(String.format("Error writing content for channel %s", channel.getKey()), e);
+            log.error(format("Error writing content for channel %s", channel.getKey()), e);
         }
     }
-    
+
     private void unlock(Set<String> currentlyProcessing, String programmeLock) {
         synchronized (currentlyProcessing) {
             currentlyProcessing.remove(programmeLock);
@@ -134,7 +153,8 @@ public class PaChannelProcessor {
         }
     }
 
-    private void lock(Set<String> currentlyProcessing, String programmeLock) throws InterruptedException {
+    private void lock(Set<String> currentlyProcessing, String programmeLock)
+            throws InterruptedException {
         synchronized (currentlyProcessing) {
             while (currentlyProcessing.contains(programmeLock)) {
                 currentlyProcessing.wait();
@@ -144,6 +164,101 @@ public class PaChannelProcessor {
     }
 
     private String lockIdentifier(ProgData programme) {
-        return Strings.isNullOrEmpty(programme.getSeriesId()) ? programme.getProgId() : programme.getSeriesId();
+        return Strings.isNullOrEmpty(programme.getSeriesId())
+               ? programme.getProgId()
+               : programme.getSeriesId();
+    }
+
+    public interface ProcessorStep {
+
+        TrimmerStep withProcessor(PaProgDataProcessor processor);
+    }
+
+    public interface TrimmerStep {
+
+        ScheduleWriterStep withTrimmer(BroadcastTrimmer trimmer);
+    }
+
+    public interface ScheduleWriterStep {
+
+        ScheduleVersionStoreStep withScheduleWriter(ScheduleWriter scheduleWriter);
+    }
+
+    public interface ScheduleVersionStoreStep {
+
+        ContentBufferStep withScheduleVersionStore(PaScheduleVersionStore scheduleVersionStore);
+    }
+
+    public interface ContentBufferStep {
+
+        ContentWriterStep withContentBuffer(ContentBuffer contentBuffer);
+    }
+
+    public interface ContentWriterStep {
+
+        BuildStep withContentWriter(ContentWriter contentWriter);
+    }
+
+    public interface BuildStep {
+
+        PaChannelProcessor build();
+    }
+
+    public static class Builder
+            implements ProcessorStep, TrimmerStep, ScheduleWriterStep, ScheduleVersionStoreStep,
+            ContentBufferStep, ContentWriterStep, BuildStep {
+
+        private PaProgDataProcessor processor;
+        private BroadcastTrimmer trimmer;
+        private ScheduleWriter scheduleWriter;
+        private PaScheduleVersionStore scheduleVersionStore;
+        private ContentBuffer contentBuffer;
+        private ContentWriter contentWriter;
+
+        private Builder() {
+        }
+
+        @Override
+        public TrimmerStep withProcessor(PaProgDataProcessor processor) {
+            this.processor = processor;
+            return this;
+        }
+
+        @Override
+        public ScheduleWriterStep withTrimmer(BroadcastTrimmer trimmer) {
+            this.trimmer = trimmer;
+            return this;
+        }
+
+        @Override
+        public ScheduleVersionStoreStep withScheduleWriter(ScheduleWriter scheduleWriter) {
+            this.scheduleWriter = scheduleWriter;
+            return this;
+        }
+
+        @Override
+        public ContentBufferStep withScheduleVersionStore(
+                PaScheduleVersionStore scheduleVersionStore
+        ) {
+            this.scheduleVersionStore = scheduleVersionStore;
+            return this;
+        }
+
+        @Override
+        public ContentWriterStep withContentBuffer(ContentBuffer contentBuffer) {
+            this.contentBuffer = contentBuffer;
+            return this;
+        }
+
+        @Override
+        public BuildStep withContentWriter(ContentWriter contentWriter) {
+            this.contentWriter = contentWriter;
+            return this;
+        }
+
+        @Override
+        public PaChannelProcessor build() {
+            return new PaChannelProcessor(this);
+        }
     }
 }

@@ -98,7 +98,7 @@ public class YouviewItemUpdaterProvider implements EquivalenceUpdaterProvider<It
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(
+                                ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),

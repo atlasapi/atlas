@@ -570,7 +570,7 @@ public class EquivTaskModule {
 
     @Bean
     public EquivGraphController debugGraphController() {
-        return new EquivGraphController(lookupStore);
+        return EquivGraphController.create(lookupStore);
     }
 
     @Bean

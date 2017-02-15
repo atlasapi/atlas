@@ -82,7 +82,7 @@ public class StrictStandardUpdaterProvider implements EquivalenceUpdaterProvider
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(
+                                ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),

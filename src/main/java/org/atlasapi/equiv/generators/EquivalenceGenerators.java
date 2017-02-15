@@ -16,21 +16,13 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 public class EquivalenceGenerators<T extends Content> {
-    
-    public static <T extends Content> EquivalenceGenerators<T> from(Iterable<? extends
-            EquivalenceGenerator<T>> generators,
-            Set<String> excludedUris,
-            Set<String> excludedIds
-    ) {
-        return new EquivalenceGenerators<T>(generators, excludedUris, excludedIds);
-    }
 
     private final List<? extends EquivalenceGenerator<T>> generators;
     private final Set<String> excludedUris;
     private final Set<String> excludedIds;
     private final SubstitutionTableNumberCodec codec;
 
-    public EquivalenceGenerators(
+    private EquivalenceGenerators(
             Iterable<? extends EquivalenceGenerator<T>> generators,
             Set<String> excludedUris,
             Set<String> excludedIds
@@ -40,7 +32,15 @@ public class EquivalenceGenerators<T extends Content> {
         this.excludedIds = excludedIds;
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
-    
+
+    public static <T extends Content> EquivalenceGenerators<T> create(
+            Iterable<? extends EquivalenceGenerator<T>> generators,
+            Set<String> excludedUris,
+            Set<String> excludedIds
+    ) {
+        return new EquivalenceGenerators<T>(generators, excludedUris, excludedIds);
+    }
+
     public List<ScoredCandidates<T>> generate(T content, ResultDescription desc) {
         desc.startStage("Generating equivalences");
         Builder<ScoredCandidates<T>> generatedScores = ImmutableList.builder();

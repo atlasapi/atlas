@@ -82,7 +82,7 @@ public class StandardItemUpdaterProvider implements EquivalenceUpdaterProvider<I
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(
+                                ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),

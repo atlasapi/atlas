@@ -3,7 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import java.util.Set;
 
 import com.google.api.client.util.Lists;
-import com.metabroadcast.applications.client.model.internal.Application;
+
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
@@ -97,7 +97,7 @@ public class RoviItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(
+                                ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),

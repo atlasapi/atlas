@@ -89,7 +89,7 @@ public class VodItemWithSeriesSequenceUpdaterProvider implements EquivalenceUpda
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(
+                                ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
                                 ),

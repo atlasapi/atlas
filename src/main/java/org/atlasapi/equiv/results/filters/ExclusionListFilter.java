@@ -19,12 +19,19 @@ public class ExclusionListFilter<T extends Identified> extends AbstractEquivalen
     private final Set<String> excludedIds;
     private final SubstitutionTableNumberCodec codec;
 
-    public ExclusionListFilter(Iterable<String> excludedUris, Iterable<String> excludedIds) {
+    private ExclusionListFilter(Iterable<String> excludedUris, Iterable<String> excludedIds) {
         this.excludedUris = ImmutableSet.copyOf(excludedUris);
         this.excludedIds = ImmutableSet.copyOf(excludedIds);
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
-    
+
+    public static <T extends Identified> ExclusionListFilter<T> create(
+            Iterable<String> excludedUris,
+            Iterable<String> excludedIds
+    ) {
+        return new ExclusionListFilter<T>(excludedUris, excludedIds);
+    }
+
     @Override
     protected boolean doFilter(ScoredCandidate<T> candidate, T subject, ResultDescription desc) {
 

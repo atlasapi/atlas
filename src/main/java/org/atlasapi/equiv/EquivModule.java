@@ -81,8 +81,8 @@ public class EquivModule {
                 .withLookupEntryStore(lookupEntryStore)
                 .withEquivalenceResultStore(equivalenceResultStore())
                 .withMessageSender(equivAssertDestination())
-                .withExcludedUris(excludedUrisFromProperties())
-                .withExcludedIds(excludedIdsFromProperties())
+                .withExcludedUris(excludedContentFromProperties(excludedUris))
+                .withExcludedIds(excludedContentFromProperties(excludedIds))
                 .build();
 
         UpdaterConfigurationRegistry registry = UpdaterConfigurationRegistry.create();
@@ -144,17 +144,11 @@ public class EquivModule {
                 );
     }
 
-    private ImmutableSet<String> excludedUrisFromProperties() {
-        if (Strings.isNullOrEmpty(excludedUris)) {
+    private ImmutableSet<String> excludedContentFromProperties(String excludedContent) {
+        if (Strings.isNullOrEmpty(excludedContent)) {
             return ImmutableSet.of();
         }
-        return ImmutableSet.copyOf(Splitter.on(',').split(excludedUris));
+        return ImmutableSet.copyOf(Splitter.on(',').split(excludedContent));
     }
 
-    private ImmutableSet<String> excludedIdsFromProperties() {
-        if (Strings.isNullOrEmpty(excludedIds)) {
-            return ImmutableSet.of();
-        }
-        return ImmutableSet.copyOf(Splitter.on(',').split(excludedIds));
-    }
 }

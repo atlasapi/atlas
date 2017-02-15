@@ -46,7 +46,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         ImmutableSet<EquivalenceScorer<T>> builtScorers = builder.scorers.build();
 
         this.merger = new ScoredEquivalentsMerger();
-        this.generators = EquivalenceGenerators.from(
+        this.generators = EquivalenceGenerators.create(
                 builtGenerators,
                 builder.excludedUris,
                 builder.excludedIds

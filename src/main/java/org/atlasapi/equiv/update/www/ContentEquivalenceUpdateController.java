@@ -119,7 +119,7 @@ public class ContentEquivalenceUpdateController {
                 .collect(Collectors.toList());
 
         return StreamSupport.stream(lookupEntryStore.entriesForIds(ids).spliterator(), false)
-                .map(LookupEntry.TO_ID::apply)
+                .map(LookupEntry::uri)
                 .collect(Collectors.toList());
     }
 

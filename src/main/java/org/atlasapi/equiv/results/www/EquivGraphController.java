@@ -33,9 +33,13 @@ public class EquivGraphController {
     private final LookupEntryStore lookupStore;
     private final SubstitutionTableNumberCodec codec;
 
-    public EquivGraphController(LookupEntryStore lookupStore) {
+    private EquivGraphController(LookupEntryStore lookupStore) {
         this.lookupStore = checkNotNull(lookupStore);
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
+    }
+
+    public static EquivGraphController create(LookupEntryStore lookupStore) {
+        return new EquivGraphController(lookupStore);
     }
 
     @RequestMapping("/system/equivalence/graph")
@@ -69,7 +73,10 @@ public class EquivGraphController {
         model.put("uri", uri);
         model.put("min_edges", minimumEdgeCount);
 
-        String uriFromId = getUriFromId(id).get();
+        String uriFromId = "";
+        if (getUriFromId(id).isPresent()) {
+            uriFromId = getUriFromId(id).get();
+        }
 
         LookupEntry subj = Iterables.getOnlyElement(
                 lookupStore.entriesForCanonicalUris(ImmutableList.of(uri, uriFromId)),

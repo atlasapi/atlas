@@ -13,7 +13,6 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.people.ItemsPeopleWriter;
-import org.atlasapi.remotesite.channel4.pmlsd.epg.ContentHierarchyAndBroadcast;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -28,61 +27,57 @@ import static com.google.common.base.Preconditions.checkNotNull;
 /**
  * Maintain a buffer of content to write, which acts as a write-through caching implementation
  * of a {@link ContentResolver}
- * 
- * @author tom
- *
  */
 public class ContentBuffer implements ContentResolver {
 
     private static final Logger log = LoggerFactory.getLogger(ContentBuffer.class);
-    
-    private static ThreadLocal<Map<String, Identified>> contentCache = new ThreadLocal<Map<String, Identified>>() {
-        
-        @Override 
-        protected Map<String, Identified> initialValue() {
-            return Maps.newHashMap();
-        }
-    };
 
-    private static ThreadLocal<Map<String, String>> aliasToCanonicalUri = new ThreadLocal<Map<String, String>>() {
+    private static ThreadLocal<Map<String, Identified>> contentCache =
+            ThreadLocal.withInitial(Maps::newHashMap);
 
-        @Override
-        protected Map<String, String> initialValue() {
-            return Maps.newHashMap();
-        }
-    };
-    
-    private static ThreadLocal<List<ContentHierarchyAndBroadcast>> hierarchies = new ThreadLocal<List<ContentHierarchyAndBroadcast>>() {
-        
-        @Override
-        protected List<ContentHierarchyAndBroadcast> initialValue() {
-            return Lists.newArrayList();
-        }
-    };
+    private static ThreadLocal<Map<String, String>> aliasToCanonicalUri =
+            ThreadLocal.withInitial(Maps::newHashMap);
+
+    private static ThreadLocal<List<ContentHierarchyAndSummaries>> hierarchies =
+            ThreadLocal.withInitial(Lists::newArrayList);
 
     private final ContentResolver resolver;
     private final ContentWriter writer;
     private final ItemsPeopleWriter peopleWriter;
     
-    public ContentBuffer(ContentResolver contentResolver, ContentWriter contentWriter, ItemsPeopleWriter peopleWriter) {
+    private ContentBuffer(
+            ContentResolver contentResolver,
+            ContentWriter contentWriter,
+            ItemsPeopleWriter peopleWriter
+    ) {
         this.resolver = checkNotNull(contentResolver);
         this.writer = checkNotNull(contentWriter);
         this.peopleWriter = checkNotNull(peopleWriter);
     }
-    
-    public void add(ContentHierarchyAndBroadcast hierarchy) {
+
+    public static ContentBuffer create(
+            ContentResolver contentResolver,
+            ContentWriter contentWriter,
+            ItemsPeopleWriter peopleWriter
+    ) {
+        return new ContentBuffer(contentResolver, contentWriter, peopleWriter);
+    }
+
+    public void add(ContentHierarchyAndSummaries hierarchy) {
         if (hierarchy.getBrand().isPresent()) {
             contentCache.get().put(
                     hierarchy.getBrand().get().getCanonicalUri(),
                     hierarchy.getBrand().get()
             );
         }
+
         if (hierarchy.getSeries().isPresent()) {
             contentCache.get().put(
                     hierarchy.getSeries().get().getCanonicalUri(),
                     hierarchy.getSeries().get()
             );
         }
+
         contentCache.get().put(
                 hierarchy.getItem().getCanonicalUri(),
                 hierarchy.getItem()
@@ -92,9 +87,24 @@ public class ContentBuffer implements ContentResolver {
             aliasToCanonicalUri.get().put(aliasUrl, hierarchy.getItem().getCanonicalUri());
         }
 
+        if (hierarchy.getBrandSummary().isPresent()) {
+            contentCache.get().put(
+                    hierarchy.getBrandSummary().get().getCanonicalUri(),
+                    hierarchy.getBrandSummary().get()
+            );
+        }
+
+        if (hierarchy.getSeriesSummary().isPresent()) {
+            contentCache.get().put(
+                    hierarchy.getSeriesSummary().get().getCanonicalUri(),
+                    hierarchy.getSeriesSummary().get()
+            );
+        }
+
         hierarchies.get().add(hierarchy);
     }
-    
+
+    @Override
     public ResolvedContent findByCanonicalUris(Iterable<String> canonicalUris) {
         Identified identified = contentCache.get().get(Iterables.getOnlyElement(canonicalUris));
         
@@ -124,13 +134,15 @@ public class ContentBuffer implements ContentResolver {
         }
         return resolver.findByUris(uris);
     }
-    
+
     public void flush() {
         Set<Identified> written = Sets.newHashSet();
+
         try {
-            for(ContentHierarchyAndBroadcast hierarchy : ImmutableList.copyOf(hierarchies.get()).reverse()) {
+            for(ContentHierarchyAndSummaries hierarchy
+                    : ImmutableList.copyOf(hierarchies.get()).reverse()) {
                 try {
-                    process(hierarchy, written);
+                    write(hierarchy, written);
                 } catch (Exception e) {
                     log.error(String.format("Failed writing item %s, broadcast %s on %s", 
                                 hierarchy.getItem().getCanonicalUri(),
@@ -145,42 +157,97 @@ public class ContentBuffer implements ContentResolver {
         }
     }
 
-    private void process(ContentHierarchyAndBroadcast hierarchy, Set<Identified> alreadyWritten) {
+    private void write(ContentHierarchyAndSummaries hierarchy, Set<Identified> alreadyWritten) {
         if (hierarchy.getBrand().isPresent()) {
-            Brand brand = hierarchy.getBrand().get();
-            if (!alreadyWritten.contains(brand)) {
-                writer.createOrUpdate(brand);
-                alreadyWritten.add(brand);
-            }
-            hierarchy.getItem().setContainer(brand);
+            writeBrand(hierarchy, alreadyWritten);
         }
         
         if (hierarchy.getSeries().isPresent()) {
-            Series series = hierarchy.getSeries().get();
-            if (!alreadyWritten.contains(series)) {
-                if (hierarchy.getBrand().isPresent()) {
-                    series.setParent(hierarchy.getBrand().get());
-                }
-                writer.createOrUpdate(series);
-                alreadyWritten.add(series);
+            writeSeries(hierarchy, alreadyWritten);
+        }
+
+        writeItem(hierarchy, alreadyWritten);
+
+        if (hierarchy.getBrandSummary().isPresent()) {
+            writeBrandSummary(hierarchy, alreadyWritten);
+        }
+
+        if (hierarchy.getSeriesSummary().isPresent()) {
+            writeSeriesSummary(hierarchy, alreadyWritten);
+        }
+    }
+
+    private void writeBrand(
+            ContentHierarchyAndSummaries hierarchy,
+            Set<Identified> alreadyWritten
+    ) {
+        Brand brand = hierarchy.getBrand().get();
+
+        if (!alreadyWritten.contains(brand)) {
+            writer.createOrUpdate(brand);
+            alreadyWritten.add(brand);
+        }
+
+        hierarchy.getItem().setContainer(brand);
+    }
+
+    private void writeSeries(
+            ContentHierarchyAndSummaries hierarchy,
+            Set<Identified> alreadyWritten
+    ) {
+        Series series = hierarchy.getSeries().get();
+
+        if (!alreadyWritten.contains(series)) {
+            if (hierarchy.getBrand().isPresent()) {
+                series.setParent(hierarchy.getBrand().get());
             }
-            
-            if (!hierarchy.getBrand().isPresent()) {
-                hierarchy.getItem().setContainer(series);
-            } else {
-                if (hierarchy.getItem() instanceof Episode) {
-                    ((Episode) hierarchy.getItem()).setSeries(series);
-                }
+            writer.createOrUpdate(series);
+            alreadyWritten.add(series);
+        }
+
+        if (!hierarchy.getBrand().isPresent()) {
+            hierarchy.getItem().setContainer(series);
+        } else {
+            if (hierarchy.getItem() instanceof Episode) {
+                ((Episode) hierarchy.getItem()).setSeries(series);
             }
         }
-        
+    }
+
+    private void writeItem(
+            ContentHierarchyAndSummaries hierarchy,
+            Set<Identified> alreadyWritten
+    ) {
         if (!alreadyWritten.contains(hierarchy.getItem())) {
             Item item = hierarchy.getItem();
-            
+
             writer.createOrUpdate(item);
             peopleWriter.createOrUpdatePeople(item);
             alreadyWritten.add(item);
         }
     }
-    
+
+    private void writeBrandSummary(
+            ContentHierarchyAndSummaries hierarchy,
+            Set<Identified> alreadyWritten
+    ) {
+        Brand brandSummary = hierarchy.getBrandSummary().get();
+
+        if (!alreadyWritten.contains(brandSummary)) {
+            writer.createOrUpdate(brandSummary);
+            alreadyWritten.add(brandSummary);
+        }
+    }
+
+    private void writeSeriesSummary(
+            ContentHierarchyAndSummaries hierarchy,
+            Set<Identified> alreadyWritten
+    ) {
+        Series seriesSummary = hierarchy.getSeriesSummary().get();
+
+        if (!alreadyWritten.contains(seriesSummary)) {
+            writer.createOrUpdate(seriesSummary);
+            alreadyWritten.add(seriesSummary);
+        }
+    }
 }

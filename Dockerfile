@@ -94,6 +94,7 @@ CMD java \
     -DMBST_PLATFORM="$MBST_PLATFORM" \
     -DMONGO.POOLSIZE="$MONGO_POOLSIZE" \
     -Dapplications.client.host="$APPLICATIONS_CLIENT_HOST" \
+    -Dapplications.client.env="$APPLICATIONS_CLIENT_ENV" \
     -Datlas.search.host="$ATLAS_SEARCH_HOST" \
     -Daz="$AZ" \
     -Dbbc.audience-data.filename="$BBC_AUDIENCE_DATA_FILENAME" \

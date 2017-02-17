@@ -46,9 +46,10 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         ImmutableSet<EquivalenceScorer<T>> builtScorers = builder.scorers.build();
 
         this.merger = new ScoredEquivalentsMerger();
-        this.generators = EquivalenceGenerators.from(
+        this.generators = EquivalenceGenerators.create(
                 builtGenerators,
-                builder.excludedUris
+                builder.excludedUris,
+                builder.excludedIds
         );
         this.scorers = EquivalenceScorers.from(builtScorers);
         this.resultBuilder = new DefaultEquivalenceResultBuilder<>(
@@ -67,6 +68,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 .withExtractor(builder.extractor)
                 .withHandler(handler)
                 .withExcludedUris(builder.excludedUris)
+                .withExcludedIds(builder.excludedIds)
                 .build();
     }
 
@@ -111,7 +113,12 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
 
     public interface ExcludedUrisStep<T extends Content> {
 
-        GeneratorStep<T> withExcludedUris(Set<String> excludedUris);
+        ExcludedIdsStep<T> withExcludedUris(Set<String> excludedUris);
+    }
+
+    public interface ExcludedIdsStep<T extends Content> {
+
+        GeneratorStep<T> withExcludedIds(Set<String> excludedIds);
     }
 
     public interface GeneratorStep<T extends Content> {
@@ -159,8 +166,8 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     public static class Builder<T extends Content> implements ExcludedUrisStep<T>,
-            GeneratorStep<T>, ScorerStep<T>, CombinerStep<T>, FilterStep<T>, ExtractorStep<T>,
-            HandlerStep<T>, MessengerStep<T>, BuildStep<T> {
+            ExcludedIdsStep<T>, GeneratorStep<T>, ScorerStep<T>, CombinerStep<T>, FilterStep<T>,
+            ExtractorStep<T>, HandlerStep<T>, MessengerStep<T>, BuildStep<T> {
 
         private ImmutableSet.Builder<EquivalenceGenerator<T>> generators = ImmutableSet.builder();
         private ImmutableSet.Builder<EquivalenceScorer<T>> scorers = ImmutableSet.builder();
@@ -170,13 +177,20 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         private EquivalenceResultHandler<T> handler;
         private EquivalenceResultMessenger<T> messenger;
         private Set<String> excludedUris;
+        private Set<String> excludedIds;
 
         private Builder() {
         }
 
         @Override
-        public GeneratorStep<T> withExcludedUris(Set<String> excludedUris) {
+        public ExcludedIdsStep<T> withExcludedUris(Set<String> excludedUris) {
             this.excludedUris = excludedUris;
+            return this;
+        }
+
+        @Override
+        public GeneratorStep<T> withExcludedIds(Set<String> excludedIds) {
+            this.excludedIds = excludedIds;
             return this;
         }
 

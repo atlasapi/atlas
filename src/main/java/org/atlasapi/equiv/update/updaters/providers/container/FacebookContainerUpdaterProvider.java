@@ -41,9 +41,8 @@ public class FacebookContainerUpdaterProvider implements EquivalenceUpdaterProvi
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Container>builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
                                 TitleSearchGenerator.create(

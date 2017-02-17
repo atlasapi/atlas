@@ -3,7 +3,7 @@ package org.atlasapi.equiv.update.updaters.providers.item;
 import java.util.Set;
 
 import com.google.api.client.util.Lists;
-import com.metabroadcast.applications.client.model.internal.Application;
+
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
@@ -55,9 +55,8 @@ public class RoviItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Item>builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
                                 new BroadcastMatchingItemEquivalenceGenerator(
@@ -98,7 +97,10 @@ public class RoviItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(dependencies.getExcludedUris()),
+                                ExclusionListFilter.create(
+                                        dependencies.getExcludedUris(),
+                                        dependencies.getExcludedIds()
+                                ),
                                 new FilmFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()

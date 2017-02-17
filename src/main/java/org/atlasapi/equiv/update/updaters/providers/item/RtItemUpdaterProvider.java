@@ -47,9 +47,8 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Item>builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.of(
                                 new RadioTimesFilmEquivalenceGenerator(
@@ -77,7 +76,10 @@ public class RtItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(dependencies.getExcludedUris()),
+                                ExclusionListFilter.create(
+                                        dependencies.getExcludedUris(),
+                                        dependencies.getExcludedIds()
+                                ),
                                 new FilmFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()

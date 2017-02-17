@@ -9,6 +9,8 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
 import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
@@ -24,9 +26,6 @@ import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class EquivalenceGeneratorsTest {
-
-    private EquivalenceGenerators<Content> generators;
-    private Set<String> excludedUris;
     @Mock
     private EquivalenceGenerator<Content> generator;
     @Mock
@@ -34,17 +33,38 @@ public class EquivalenceGeneratorsTest {
     @Mock
     private ScoredCandidates candidates;
 
+    private EquivalenceGenerators<Content> generators;
+
     @Before
     public void setUp() {
-        excludedUris = ImmutableSet.of("excluded");
-        generators = EquivalenceGenerators.from(Collections.singleton(generator), excludedUris);
-        when(generator.generate(any(Content.class), any(ResultDescription.class))).thenReturn(candidates);
+        Set<String> excludedUris = ImmutableSet.of("excluded");
+        Set<String> excludedIds = ImmutableSet.of("ffds6w");
+
+        generators = EquivalenceGenerators.create(
+                Collections.singleton(generator),
+                excludedUris,
+                excludedIds
+        );
+
+        when(generator.generate(any(Content.class), any(ResultDescription.class)))
+                .thenReturn(candidates);
     }
 
     @Test
     public void generatorCreatesNoCandidatesForExcludedUri() {
         Item item = new Item();
         item.setCanonicalUri("excluded");
+        List<ScoredCandidates<Content>> generated = generators.generate(item, resultDescription);
+        assertTrue(generated.isEmpty());
+    }
+
+    @Test
+    public void generatorCreatesNoCandidatesForExcludedId() {
+        SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
+        Long decodedExcludedId = codec.decode("ffds6w").longValue();
+
+        Item item = new Item();
+        item.setId(decodedExcludedId);
         List<ScoredCandidates<Content>> generated = generators.generate(item, resultDescription);
         assertTrue(generated.isEmpty());
     }
@@ -57,4 +77,11 @@ public class EquivalenceGeneratorsTest {
         verify(generator).generate(item, resultDescription);
     }
 
+    @Test
+    public void generatorCreatesCandidatesForNonExcludedId() {
+        Item item = new Item();
+        item.setId(12345678L);
+        generators.generate(item, resultDescription);
+        verify(generator).generate(item, resultDescription);
+    }
 }

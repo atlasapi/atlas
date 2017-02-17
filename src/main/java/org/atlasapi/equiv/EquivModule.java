@@ -56,6 +56,7 @@ public class EquivModule {
     @Value("${equiv.results.directory}") private String equivResultsDirectory;
     @Value("${messaging.destination.equiv.assert}") private String equivAssertDest;
     @Value("${equiv.excludedUris}") private String excludedUris;
+    @Value("${equiv.excludedIds}") private String excludedIds;
 
     @Autowired private ScheduleResolver scheduleResolver;
     @Autowired private SearchResolver searchResolver;
@@ -80,7 +81,8 @@ public class EquivModule {
                 .withLookupEntryStore(lookupEntryStore)
                 .withEquivalenceResultStore(equivalenceResultStore())
                 .withMessageSender(equivAssertDestination())
-                .withExcludedUris(excludedUrisFromProperties())
+                .withExcludedUris(excludedContentFromProperties(excludedUris))
+                .withExcludedIds(excludedContentFromProperties(excludedIds))
                 .build();
 
         UpdaterConfigurationRegistry registry = UpdaterConfigurationRegistry.create();
@@ -142,10 +144,11 @@ public class EquivModule {
                 );
     }
 
-    private ImmutableSet<String> excludedUrisFromProperties() {
-        if (Strings.isNullOrEmpty(excludedUris)) {
+    private ImmutableSet<String> excludedContentFromProperties(String excludedContent) {
+        if (Strings.isNullOrEmpty(excludedContent)) {
             return ImmutableSet.of();
         }
-        return ImmutableSet.copyOf(Splitter.on(',').split(excludedUris));
+        return ImmutableSet.copyOf(Splitter.on(',').split(excludedContent));
     }
+
 }

@@ -50,9 +50,8 @@ public class RteContainerUpdaterProvider implements EquivalenceUpdaterProvider<C
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Container>builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
                         TitleSearchGenerator.create(
                                 dependencies.getSearchResolver(),
@@ -86,7 +85,10 @@ public class RteContainerUpdaterProvider implements EquivalenceUpdaterProvider<C
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(dependencies.getExcludedUris()),
+                                ExclusionListFilter.create(
+                                        dependencies.getExcludedUris(),
+                                        dependencies.getExcludedIds()
+                                ),
                                 new FilmFilter<>(),
                                 new UnpublishedContentFilter<>()
                         ))

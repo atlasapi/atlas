@@ -55,9 +55,8 @@ public class BroadcastItemUpdaterProvider implements EquivalenceUpdaterProvider<
             Set<Publisher> targetPublishers
     ) {
         return ContentEquivalenceUpdater.<Item>builder()
-                .withExcludedUris(
-                        dependencies.getExcludedUris()
-                )
+                .withExcludedUris(dependencies.getExcludedUris())
+                .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.<EquivalenceGenerator<Item>>of(
                                 new BroadcastMatchingItemEquivalenceGenerator(
@@ -90,7 +89,10 @@ public class BroadcastItemUpdaterProvider implements EquivalenceUpdaterProvider<
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
                                 new PublisherFilter<>(),
-                                new ExclusionListFilter<>(dependencies.getExcludedUris()),
+                                ExclusionListFilter.create(
+                                        dependencies.getExcludedUris(),
+                                        dependencies.getExcludedIds()
+                                ),
                                 new FilmFilter<>(),
                                 new DummyContainerFilter<>(),
                                 new UnpublishedContentFilter<>()

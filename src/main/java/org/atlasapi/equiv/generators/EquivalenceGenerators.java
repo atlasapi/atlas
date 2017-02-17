@@ -7,29 +7,50 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.media.entity.Content;
 
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.api.client.util.Lists;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 
 public class EquivalenceGenerators<T extends Content> {
-    
-    public static <T extends Content> EquivalenceGenerators<T> from(Iterable<? extends EquivalenceGenerator<T>> generators, Set<String> excludedUris) {
-        return new EquivalenceGenerators<T>(generators, excludedUris);
-    }
 
     private final List<? extends EquivalenceGenerator<T>> generators;
     private final Set<String> excludedUris;
+    private final Set<String> excludedIds;
+    private final SubstitutionTableNumberCodec codec;
 
-    public EquivalenceGenerators(Iterable<? extends EquivalenceGenerator<T>> generators, Set<String> excludedUris) {
+    private EquivalenceGenerators(
+            Iterable<? extends EquivalenceGenerator<T>> generators,
+            Set<String> excludedUris,
+            Set<String> excludedIds
+    ) {
         this.generators = ImmutableList.copyOf(generators);
         this.excludedUris = excludedUris;
+        this.excludedIds = excludedIds;
+        this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
-    
+
+    public static <T extends Content> EquivalenceGenerators<T> create(
+            Iterable<? extends EquivalenceGenerator<T>> generators,
+            Set<String> excludedUris,
+            Set<String> excludedIds
+    ) {
+        return new EquivalenceGenerators<T>(generators, excludedUris, excludedIds);
+    }
+
     public List<ScoredCandidates<T>> generate(T content, ResultDescription desc) {
         desc.startStage("Generating equivalences");
         Builder<ScoredCandidates<T>> generatedScores = ImmutableList.builder();
 
-        if (excludedUris.contains(content.getCanonicalUri())) {
+        ImmutableList<Long> excludedDecodedIds = excludedIds.stream()
+                .map(id -> codec.decode(id).longValue())
+                .collect(MoreCollectors.toImmutableList());
+
+        if (excludedUris.contains(content.getCanonicalUri())
+                || excludedDecodedIds.contains(content.getId())) {
             desc.appendText("Content %s is in equivalence blacklist and will not be equivalated",
                     content.getCanonicalUri());
             return generatedScores.build();

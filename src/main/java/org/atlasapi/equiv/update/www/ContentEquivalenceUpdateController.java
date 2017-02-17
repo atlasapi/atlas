@@ -4,6 +4,8 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 import javax.servlet.http.HttpServletResponse;
@@ -24,7 +26,6 @@ import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -40,11 +41,11 @@ import static com.metabroadcast.common.http.HttpStatusCode.OK;
 
 @Controller
 public class ContentEquivalenceUpdateController {
-    
+
     private static final Logger log = LoggerFactory.getLogger(
             ContentEquivalenceUpdateController.class
     );
-    
+
     private final Splitter commaSplitter = Splitter.on(',').trimResults().omitEmptyStrings();
 
     private final EquivalenceUpdater<Content> contentUpdater;
@@ -80,15 +81,20 @@ public class ContentEquivalenceUpdateController {
     }
 
     @RequestMapping(value = "/system/equivalence/update", method = RequestMethod.POST)
-    public void runUpdate(HttpServletResponse response,
-            @RequestParam(value="uris", required=false) String uris,
-            @RequestParam(value="ids", required=false) String ids) throws IOException {
+    public void runUpdate(
+            HttpServletResponse response,
+            @RequestParam(value = "uris", required = false, defaultValue = "") String uris,
+            @RequestParam(value = "ids", required = false, defaultValue = "") String ids
+    ) throws IOException {
 
         if (Strings.isNullOrEmpty(uris) && Strings.isNullOrEmpty(ids)) {
             throw new IllegalArgumentException("Must specify at least one of 'uris' or 'ids'");
         }
 
-        Iterable<String> allRequestedUris = Iterables.concat(commaSplitter.split(uris), urisFor(ids));
+        Iterable<String> allRequestedUris = Iterables.concat(
+                commaSplitter.split(uris),
+                urisFor(ids)
+        );
         ResolvedContent resolved = contentResolver.findByCanonicalUris(allRequestedUris);
 
         if (resolved.isEmpty()) {
@@ -102,6 +108,30 @@ public class ContentEquivalenceUpdateController {
         }
         response.setStatus(OK.code());
 
+    }
+
+    private Iterable<String> urisFor(String csvIds) {
+        if (Strings.isNullOrEmpty((csvIds))) {
+            return ImmutableSet.of();
+        }
+        Iterable<Long> ids = StreamSupport.stream(commaSplitter.split(csvIds).spliterator(), false)
+                .map(input -> codec.decode(input).longValue())
+                .collect(Collectors.toList());
+
+        return StreamSupport.stream(lookupEntryStore.entriesForIds(ids).spliterator(), false)
+                .map(LookupEntry::uri)
+                .collect(Collectors.toList());
+    }
+
+    private Runnable updateFor(final Content content) {
+        return () -> {
+            try {
+                contentUpdater.updateEquivalences(content);
+                log.info("Finished updating {}", content);
+            } catch (Exception e) {
+                log.error(content.toString(), e);
+            }
+        };
     }
 
     @RequestMapping(value = "/system/equivalence/configuration", method = RequestMethod.GET)
@@ -127,33 +157,6 @@ public class ContentEquivalenceUpdateController {
                 metadata
         );
         response.setStatus(OK.code());
-    }
-
-    private Iterable<String> urisFor(String csvIds) {
-        if (Strings.isNullOrEmpty((csvIds))) {
-            return ImmutableSet.of();
-        }
-        Iterable<Long> ids = Iterables.transform(commaSplitter.split(csvIds), new Function<String, Long>() {
-
-            @Override public Long apply(String input) {
-                return codec.decode(input).longValue();
-            }
-        });
-        return Iterables.transform(lookupEntryStore.entriesForIds(ids), LookupEntry.TO_ID);
-    }
-
-    private Runnable updateFor(final Content content) {
-        return new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    contentUpdater.updateEquivalences(content);
-                    log.info("Finished updating {}",content);
-                } catch (Exception e) {
-                    log.error(content.toString(), e);
-                }
-            }
-        };
     }
 
 }

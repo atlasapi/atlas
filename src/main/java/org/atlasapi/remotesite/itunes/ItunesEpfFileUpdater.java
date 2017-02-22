@@ -8,6 +8,8 @@ import java.net.Authenticator;
 import java.net.PasswordAuthentication;
 import java.net.URL;
 import java.net.URLConnection;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -181,7 +183,9 @@ public class ItunesEpfFileUpdater {
                 itunesFeedFile
         );
 
-        s3client.put(fileName, itunesFeedFile);
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+        s3client.put(String.format("%s_%s", fileName, currentDate), itunesFeedFile);
     }
 
     public static class ItunesAuthenticator extends Authenticator {

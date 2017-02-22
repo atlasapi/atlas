@@ -84,6 +84,7 @@ public class PaChannelsIngester {
 
     private static final Predicate<Variation> IS_REGIONAL =
             input -> REGIONAL_VARIATION.equals(input.getType());
+    public static final String PA_CHANNEL_ID_NAMESPACE = "pa:channel:id";
 
     private final DateTimeFormatter formatter = ISODateTimeFormat.date();
 
@@ -196,6 +197,8 @@ public class PaChannelsIngester {
 
         parentChannel.addAliasUrl(createStationUriFromId(station.getId()));
 
+        parentChannel.addAlias(new Alias(PA_CHANNEL_ID_NAMESPACE, station.getId()));
+
         return parentChannel;
     }
 
@@ -262,6 +265,8 @@ public class PaChannelsIngester {
         setChannelTitleAndImage(channel, paChannel.getNames().getName(), logos);
 
         channel.addAliasUrl(PaChannelMap.createUriFromId(paChannel.getId()));
+
+        channel.addAlias(new Alias(PA_CHANNEL_ID_NAMESPACE, paChannel.getId()));
 
         return channel;
     }

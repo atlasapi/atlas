@@ -11,10 +11,9 @@ import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 import org.atlasapi.s3.S3Client;
 
@@ -30,7 +29,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ItunesEpfFileUpdater {
 
     private static final Logger log = LoggerFactory.getLogger(ItunesEpfFileUpdater.class);
-    private static final ImmutableList<String> requiredPricingFiles = ImmutableList.of("video_price");
+    private static final ImmutableList<String> requiredPricingFiles = ImmutableList.of(
+            "video_price"
+    );
     private static final ImmutableList<String> requiredItunesFiles = ImmutableList.of(
             "application_detail",
             "artist",
@@ -49,6 +50,7 @@ public class ItunesEpfFileUpdater {
 
     private String itunesDirectory;
     private String pricingDirectory;
+    private File tempItunesDirectory;
 
     private ItunesEpfFileUpdater(
             String username,
@@ -61,36 +63,17 @@ public class ItunesEpfFileUpdater {
         this.password = checkNotNull(password);
         this.feedPath = checkNotNull(feedPath);
         this.localFilesPath = checkNotNull(localFilesPath);
-        this.s3client = s3Client;
+        this.s3client = checkNotNull(s3Client);
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public void handleItunesDirectory() throws IOException {
-        Authenticator.setDefault(ItunesAuthenticator.create(username, password));
-
-        List<String> latestDirectoryNames = getLatestDirectoryNames();
-        itunesDirectory = latestDirectoryNames.get(0);
-        pricingDirectory = latestDirectoryNames.get(1);
-
-        File localDirectory = new File(localFilesPath);
-        File existingItunesDirectory = getExistingItunesDirectory(localDirectory.listFiles());
-
-        if (existingItunesDirectory == null) {
-            createNewItunesDirectory();
-        } else if (existingItunesDirectory.isDirectory() &&
-                !existingItunesDirectory.getName().equals(itunesDirectory)) {
-
-            existingItunesDirectory.delete();
-
-            createNewItunesDirectory();
-        }
-    }
-
     public void updateEpfFiles() throws Exception {
         Authenticator.setDefault(ItunesAuthenticator.create(username, password));
+
+        createTempItunesDirectory();
 
         try {
             requiredItunesFiles.forEach(fileName -> {
@@ -108,71 +91,31 @@ public class ItunesEpfFileUpdater {
                     throw Throwables.propagate(e);
                 }
             });
-
         } catch (Exception e) {
             log.error("Error when trying to copy files from iTunes feed ", e);
         }
+
+        deleteExistingItunesDirectory();
+
+        tempItunesDirectory.renameTo(
+                new File(String.format("%s%s", localFilesPath, itunesDirectory))
+        );
     }
 
-    private List<String> getLatestDirectoryNames() throws IOException {
-        String inputLine;
+    private void createTempItunesDirectory() throws IOException {
+        getLatestDirectoryNames();
 
-        List<String> currentDirectories = Lists.newArrayList();
-
-        Pattern itunesPattern = Pattern.compile("itunes\\d{8}");
-        Pattern pricingPattern = Pattern.compile("pricing\\d{8}");
-
-        URL currentUrl = new URL(feedPath);
-
-        URLConnection urlConnection = currentUrl.openConnection();
-
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                urlConnection.getInputStream()
-        ));
-
-        while ((inputLine = in.readLine()) != null) {
-            Matcher itunesMatcher = itunesPattern.matcher(inputLine);
-            Matcher pricingMatcher = pricingPattern.matcher(inputLine);
-
-            if (itunesMatcher.find()) {
-                currentDirectories.add(itunesMatcher.group(0));
-            } else if (pricingMatcher.find()) {
-                currentDirectories.add(pricingMatcher.group(0));
-            }
-        }
-
-        in.close();
-
-        return currentDirectories;
-    }
-
-    @Nullable
-    private File getExistingItunesDirectory(File[] files) {
-        File existingDir = null;
-
-        for (File file : files) {
-            if (file.isDirectory() &&
-                    file.getName().startsWith("itunes") &&
-                    file.getName().matches("itunes\\d{8}")) {
-                existingDir = file;
-            }
-        }
-
-        return existingDir;
-    }
-
-    private void createNewItunesDirectory() {
-        File newItunesDirectory = new File(
-                String.format("%s%s", localFilesPath, itunesDirectory)
+        tempItunesDirectory = new File(
+                String.format("%stmp_%s", localFilesPath, itunesDirectory)
         );
 
-        newItunesDirectory.mkdir();
+        tempItunesDirectory.mkdir();
     }
 
     private void saveFeedFile(String directory, String fileName) throws IOException {
         URL fileUrl = new URL(String.format("%s%s/%s.tbz", feedPath, directory, fileName));
         File itunesFeedFile = new File(String.format(
-                "%s%s/%s",
+                "%stmp_%s/%s",
                 localFilesPath,
                 itunesDirectory,
                 fileName
@@ -186,6 +129,60 @@ public class ItunesEpfFileUpdater {
         String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
 
         s3client.put(String.format("%s_%s", fileName, currentDate), itunesFeedFile);
+    }
+
+    private void deleteExistingItunesDirectory() throws IOException {
+        File localDirectory = new File(localFilesPath);
+        Optional<File> existingItunesDirectory = getExistingItunesDirectory(
+                localDirectory.listFiles()
+        );
+
+        existingItunesDirectory.ifPresent(File::delete);
+    }
+
+    private void getLatestDirectoryNames() throws IOException {
+        String inputLine;
+
+        List<String> currentDirectories = Lists.newArrayList();
+
+        Pattern itunesPattern = Pattern.compile("itunes\\d{8}");
+        Pattern pricingPattern = Pattern.compile("pricing\\d{8}");
+
+        URL currentUrl = new URL(feedPath);
+
+        URLConnection urlConnection = currentUrl.openConnection();
+
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(urlConnection.getInputStream())
+        )) {
+            while ((inputLine = in.readLine()) != null) {
+                Matcher itunesMatcher = itunesPattern.matcher(inputLine);
+                Matcher pricingMatcher = pricingPattern.matcher(inputLine);
+
+                if (itunesMatcher.find()) {
+                    currentDirectories.add(itunesMatcher.group(0));
+                } else if (pricingMatcher.find()) {
+                    currentDirectories.add(pricingMatcher.group(0));
+                }
+            }
+        }
+
+        itunesDirectory = currentDirectories.get(0);
+        pricingDirectory = currentDirectories.get(1);
+    }
+
+    private Optional<File> getExistingItunesDirectory(File[] files) {
+        File existingDir = null;
+
+        for (File file : files) {
+            if (file.isDirectory() &&
+                    file.getName().startsWith("itunes") &&
+                    file.getName().matches("itunes\\d{8}")) {
+                existingDir = file;
+            }
+        }
+
+        return Optional.ofNullable(existingDir);
     }
 
     public static class ItunesAuthenticator extends Authenticator {

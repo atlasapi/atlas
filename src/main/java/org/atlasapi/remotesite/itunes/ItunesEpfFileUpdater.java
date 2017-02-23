@@ -11,10 +11,9 @@ import java.net.URLConnection;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
 
 import org.atlasapi.s3.S3Client;
 
@@ -30,7 +29,9 @@ import static com.google.common.base.Preconditions.checkNotNull;
 public class ItunesEpfFileUpdater {
 
     private static final Logger log = LoggerFactory.getLogger(ItunesEpfFileUpdater.class);
-    private static final ImmutableList<String> requiredPricingFiles = ImmutableList.of("video_price");
+    private static final ImmutableList<String> requiredPricingFiles = ImmutableList.of(
+            "video_price"
+    );
     private static final ImmutableList<String> requiredItunesFiles = ImmutableList.of(
             "application_detail",
             "artist",
@@ -49,6 +50,7 @@ public class ItunesEpfFileUpdater {
 
     private String itunesDirectory;
     private String pricingDirectory;
+    private File tempItunesDirectory;
 
     private ItunesEpfFileUpdater(
             String username,
@@ -61,37 +63,18 @@ public class ItunesEpfFileUpdater {
         this.password = checkNotNull(password);
         this.feedPath = checkNotNull(feedPath);
         this.localFilesPath = checkNotNull(localFilesPath);
-        this.s3client = s3Client;
+        this.s3client = checkNotNull(s3Client);
     }
 
     public static Builder builder() {
         return new Builder();
     }
 
-    public void handleItunesDirectory() throws IOException {
-        Authenticator.setDefault(ItunesAuthenticator.create(username, password));
-
-        List<String> latestDirectoryNames = getLatestDirectoryNames();
-        itunesDirectory = latestDirectoryNames.get(0);
-        pricingDirectory = latestDirectoryNames.get(1);
-
-        File localDirectory = new File(localFilesPath);
-        File existingItunesDirectory = getExistingItunesDirectory(localDirectory.listFiles());
-
-        if (existingItunesDirectory == null) {
-            createNewItunesDirectory();
-        } else if (existingItunesDirectory.isDirectory() &&
-                !existingItunesDirectory.getName().equals(itunesDirectory)) {
-
-            existingItunesDirectory.delete();
-
-            createNewItunesDirectory();
-        }
-    }
 
     public void updateEpfFiles() throws Exception {
         Authenticator.setDefault(ItunesAuthenticator.create(username, password));
 
+        createTempItunesDirectory();
         try {
             requiredItunesFiles.forEach(fileName -> {
                 try {
@@ -112,9 +95,24 @@ public class ItunesEpfFileUpdater {
         } catch (Exception e) {
             log.error("Error when trying to copy files from iTunes feed ", e);
         }
+
+        deleteExistingItunesDirectory();
+
+        tempItunesDirectory.renameTo(
+                new File(String.format("%s%s", localFilesPath, itunesDirectory))
+        );
     }
 
-    private List<String> getLatestDirectoryNames() throws IOException {
+    private void deleteExistingItunesDirectory() throws IOException {
+        File localDirectory = new File(localFilesPath);
+        Optional<File> existingItunesDirectory = getExistingItunesDirectory(
+                localDirectory.listFiles()
+        );
+
+        existingItunesDirectory.ifPresent(File::delete);
+    }
+
+    private void getLatestDirectoryNames() throws IOException {
         String inputLine;
 
         List<String> currentDirectories = Lists.newArrayList();
@@ -126,28 +124,26 @@ public class ItunesEpfFileUpdater {
 
         URLConnection urlConnection = currentUrl.openConnection();
 
-        BufferedReader in = new BufferedReader(new InputStreamReader(
-                urlConnection.getInputStream()
-        ));
+        try (BufferedReader in = new BufferedReader(
+                new InputStreamReader(urlConnection.getInputStream())
+        )) {
+            while ((inputLine = in.readLine()) != null) {
+                Matcher itunesMatcher = itunesPattern.matcher(inputLine);
+                Matcher pricingMatcher = pricingPattern.matcher(inputLine);
 
-        while ((inputLine = in.readLine()) != null) {
-            Matcher itunesMatcher = itunesPattern.matcher(inputLine);
-            Matcher pricingMatcher = pricingPattern.matcher(inputLine);
-
-            if (itunesMatcher.find()) {
-                currentDirectories.add(itunesMatcher.group(0));
-            } else if (pricingMatcher.find()) {
-                currentDirectories.add(pricingMatcher.group(0));
+                if (itunesMatcher.find()) {
+                    currentDirectories.add(itunesMatcher.group(0));
+                } else if (pricingMatcher.find()) {
+                    currentDirectories.add(pricingMatcher.group(0));
+                }
             }
         }
 
-        in.close();
-
-        return currentDirectories;
+        itunesDirectory = currentDirectories.get(0);
+        pricingDirectory = currentDirectories.get(1);
     }
 
-    @Nullable
-    private File getExistingItunesDirectory(File[] files) {
+    private Optional<File> getExistingItunesDirectory(File[] files) {
         File existingDir = null;
 
         for (File file : files) {
@@ -158,21 +154,23 @@ public class ItunesEpfFileUpdater {
             }
         }
 
-        return existingDir;
+        return Optional.ofNullable(existingDir);
     }
 
-    private void createNewItunesDirectory() {
-        File newItunesDirectory = new File(
-                String.format("%s%s", localFilesPath, itunesDirectory)
+    private void createTempItunesDirectory() throws IOException {
+        getLatestDirectoryNames();
+
+        tempItunesDirectory = new File(
+                String.format("%stmp_%s", localFilesPath, itunesDirectory)
         );
 
-        newItunesDirectory.mkdir();
+        tempItunesDirectory.mkdir();
     }
 
     private void saveFeedFile(String directory, String fileName) throws IOException {
         URL fileUrl = new URL(String.format("%s%s/%s.tbz", feedPath, directory, fileName));
         File itunesFeedFile = new File(String.format(
-                "%s%s/%s",
+                "%stmp_%s/%s",
                 localFilesPath,
                 itunesDirectory,
                 fileName

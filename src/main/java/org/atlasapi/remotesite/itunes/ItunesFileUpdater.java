@@ -24,7 +24,6 @@ public class ItunesFileUpdater extends ScheduledTask {
     @Override
     public void runTask() {
         try {
-            fileUpdater.handleItunesDirectory();
             fileUpdater.updateEpfFiles();
         } catch (Exception e) {
             log.error("Error when updating files from the iTunes feed site", e);

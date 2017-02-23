@@ -70,11 +70,11 @@ public class ItunesEpfFileUpdater {
         return new Builder();
     }
 
-
     public void updateEpfFiles() throws Exception {
         Authenticator.setDefault(ItunesAuthenticator.create(username, password));
 
         createTempItunesDirectory();
+
         try {
             requiredItunesFiles.forEach(fileName -> {
                 try {
@@ -91,7 +91,6 @@ public class ItunesEpfFileUpdater {
                     throw Throwables.propagate(e);
                 }
             });
-
         } catch (Exception e) {
             log.error("Error when trying to copy files from iTunes feed ", e);
         }
@@ -101,6 +100,35 @@ public class ItunesEpfFileUpdater {
         tempItunesDirectory.renameTo(
                 new File(String.format("%s%s", localFilesPath, itunesDirectory))
         );
+    }
+
+    private void createTempItunesDirectory() throws IOException {
+        getLatestDirectoryNames();
+
+        tempItunesDirectory = new File(
+                String.format("%stmp_%s", localFilesPath, itunesDirectory)
+        );
+
+        tempItunesDirectory.mkdir();
+    }
+
+    private void saveFeedFile(String directory, String fileName) throws IOException {
+        URL fileUrl = new URL(String.format("%s%s/%s.tbz", feedPath, directory, fileName));
+        File itunesFeedFile = new File(String.format(
+                "%stmp_%s/%s",
+                localFilesPath,
+                itunesDirectory,
+                fileName
+        ));
+
+        FileUtils.copyURLToFile(
+                fileUrl,
+                itunesFeedFile
+        );
+
+        String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
+
+        s3client.put(String.format("%s_%s", fileName, currentDate), itunesFeedFile);
     }
 
     private void deleteExistingItunesDirectory() throws IOException {
@@ -155,35 +183,6 @@ public class ItunesEpfFileUpdater {
         }
 
         return Optional.ofNullable(existingDir);
-    }
-
-    private void createTempItunesDirectory() throws IOException {
-        getLatestDirectoryNames();
-
-        tempItunesDirectory = new File(
-                String.format("%stmp_%s", localFilesPath, itunesDirectory)
-        );
-
-        tempItunesDirectory.mkdir();
-    }
-
-    private void saveFeedFile(String directory, String fileName) throws IOException {
-        URL fileUrl = new URL(String.format("%s%s/%s.tbz", feedPath, directory, fileName));
-        File itunesFeedFile = new File(String.format(
-                "%stmp_%s/%s",
-                localFilesPath,
-                itunesDirectory,
-                fileName
-        ));
-
-        FileUtils.copyURLToFile(
-                fileUrl,
-                itunesFeedFile
-        );
-
-        String currentDate = new SimpleDateFormat("yyyy-MM-dd").format(new Date());
-
-        s3client.put(String.format("%s_%s", fileName, currentDate), itunesFeedFile);
     }
 
     public static class ItunesAuthenticator extends Authenticator {

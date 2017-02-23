@@ -49,6 +49,7 @@ public class ItunesModule {
 
     @PostConstruct
     public void startBackgroundTasks() {
+        checkArgument(!Strings.isNullOrEmpty(localFilesPath));
         try {
             scheduler.schedule(
                     itunesFileUpdater().withName("iTunes File Updater"),
@@ -60,25 +61,20 @@ public class ItunesModule {
                     .withSource(getClass())
             );
 
-            if (!Strings.isNullOrEmpty(localFilesPath)) {
-                scheduler.schedule(
-                        new ItunesEpfUpdateTask(
-                                new LatestEpfDataSetSupplier(new File(localFilesPath)),
-                                contentDeactivator(),
-                                contentWriter,
-                                log
-                        ).withName("iTunes EPF Updater"), ITUNES_EPF_UPDATER);
+            scheduler.schedule(
+                    new ItunesEpfUpdateTask(
+                            new LatestEpfDataSetSupplier(new File(localFilesPath)),
+                            contentDeactivator(),
+                            contentWriter,
+                            log
+                    ).withName("iTunes EPF Updater"),
+                    ITUNES_EPF_UPDATER
+            );
 
-                log.record(infoEntry()
-                        .withDescription("iTunes EPF update task installed (%s)", localFilesPath)
-                        .withSource(getClass())
-                );
-            } else {
-                log.record(infoEntry()
-                        .withDescription("iTunes EPF update task not installed", localFilesPath)
-                        .withSource(getClass())
-                );
-            }
+            log.record(infoEntry()
+                    .withDescription("iTunes EPF update task installed (%s)", localFilesPath)
+                    .withSource(getClass())
+            );
         } catch (Exception e) {
             log.record(infoEntry()
                     .withDescription("iTunes EPF update task installed failed")

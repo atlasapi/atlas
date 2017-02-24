@@ -30,13 +30,13 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
 
         boolean passes = !unacceptable.contains(candidate.candidate().getPublisher());
         if (!passes) {
-            desc.appendText("%s removed. %s ∈ %s", candidate, candidate.candidate().getPublisher(), unacceptable);
+            desc.appendText(
+                    "%s removed. %s ∈ %s",
+                    candidate,
+                    candidate.candidate().getPublisher(),
+                    unacceptable
+            );
         }
         return passes;
-    }
-
-    @Override
-    public String toString() {
-        return "Publisher filter";
     }
 }

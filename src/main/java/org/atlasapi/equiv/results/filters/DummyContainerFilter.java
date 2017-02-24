@@ -20,8 +20,12 @@ public class DummyContainerFilter<T extends Content> extends AbstractEquivalence
         boolean retain = haveValuableInformation(subjectContainer, candidateContainer);
 
         if (!retain) {
-            desc.appendText("%s and %s removed. One of the containers is dummy and shouldn't be equivalated.",
-                    subjectContainer, candidateContainer);
+            desc.appendText(
+                    "%s and %s removed. One of the containers is dummy and shouldn't "
+                            + "be equivalated.",
+                    subjectContainer,
+                    candidateContainer
+            );
         }
 
         return retain;
@@ -33,10 +37,4 @@ public class DummyContainerFilter<T extends Content> extends AbstractEquivalence
                 .isEmpty()) && (!candidateContainer.getChildRefs().isEmpty()
                 || !candidateContainer.people().isEmpty());
     }
-
-    @Override
-    public String toString() {
-        return "Dummy container filter";
-    }
-
 }

@@ -26,10 +26,4 @@ public class MediaTypeFilter<T extends Content> extends AbstractEquivalenceFilte
         }
         return result;
     }
-
-    @Override
-    public String toString() {
-        return "MediaType matching filter";
-    }
-    
 }

@@ -124,7 +124,9 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             @RequestParam(value = "genres", required = false) String genresString,
             @RequestParam(value = "advertised", required = false) String advertiseFromKey,
             @RequestParam(value = "publisher", required = false) String publisherKey,
-            @RequestParam(value = "uri", required = false) String uriKey
+            @RequestParam(value = "uri", required = false) String uriKey,
+            @RequestParam(value = "aliases.namespace", required = false) String aliasNamespace,
+            @RequestParam(value = "aliases.value", required = false) String aliasValue
     ) throws IOException {
         try {
             final Application application;
@@ -146,7 +148,9 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                     genresString,
                     advertiseFromKey,
                     publisherKey,
-                    uriKey
+                    uriKey,
+                    aliasNamespace,
+                    aliasValue
             );
 
             Iterable<Channel> channels = channelResolver.allChannels(query);
@@ -182,7 +186,9 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             String genresString,
             String advertiseFromKey,
             String publisherKey,
-            String uri
+            String uri,
+            String aliasNamespace,
+            String aliasValue
     ) {
         ChannelQuery.Builder query = ChannelQuery.builder();
 
@@ -218,6 +224,14 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
 
         if (!Strings.isNullOrEmpty(uri)) {
             query.withUri(uri);
+        }
+
+        if (!Strings.isNullOrEmpty(aliasNamespace)) {
+            query.withAliasNamespace(aliasNamespace);
+        }
+
+        if (!Strings.isNullOrEmpty(aliasValue)) {
+            query.withAliasValue(aliasValue);
         }
         return query.build();
     }

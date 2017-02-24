@@ -124,8 +124,8 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             @RequestParam(value = "genres", required = false) String genresString,
             @RequestParam(value = "advertised", required = false) String advertiseFromKey,
             @RequestParam(value = "publisher", required = false) String publisherKey,
-            @RequestParam(value = "uri", required = false) String uriKey)
-            throws IOException {
+            @RequestParam(value = "uri", required = false) String uriKey
+    ) throws IOException {
         try {
             final Application application;
             try {
@@ -173,10 +173,17 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         }
     }
 
-    private ChannelQuery constructQuery(String platformId, String regionIds,
-            String broadcasterKey, String mediaTypeKey, String availableFromKey,
-            String genresString, String advertiseFromKey, String publisherKey,
-            String uri) {
+    private ChannelQuery constructQuery(
+            String platformId,
+            String regionIds,
+            String broadcasterKey,
+            String mediaTypeKey,
+            String availableFromKey,
+            String genresString,
+            String advertiseFromKey,
+            String publisherKey,
+            String uri
+    ) {
         ChannelQuery.Builder query = ChannelQuery.builder();
 
         Set<Long> channelGroups = getChannelGroups(platformId, regionIds);

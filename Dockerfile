@@ -204,6 +204,9 @@ CMD java \
     -Diris.password="$IRIS_PASSWORD" \
     -Diris.url="$IRIS_URL" \
     -Diris.user="$IRIS_USER" \
+    -Ditunes.epf.username="$ITUNES_EPF_USERNAME" \
+    -Ditunes.epf.password="$ITUNES_EPF_PASSWORD" \
+    -Ditunes.epf.feedPath="$ITUNES_EPF_FEEDPATH" \
     -Ditv.whatson.schedule.url="$ITV_WHATSON_SCHEDULE_URL" \
     -Dkm.contentdeals.aws.accessKey="$KM_CONTENTDEALS_AWS_ACCESSKEY" \
     -Dkm.contentdeals.aws.secretKey="$KM_CONTENTDEALS_AWS_SECRETKEY" \

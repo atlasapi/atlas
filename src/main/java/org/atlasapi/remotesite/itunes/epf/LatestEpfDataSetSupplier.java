@@ -29,13 +29,13 @@ public class LatestEpfDataSetSupplier implements Supplier<EpfDataSet> {
     }
 
     private File latestDirectory() {
-        return Ordering.natural().max(ImmutableList.copyOf(dataDirectory.listFiles(new FileFilter() {
-            
-            @Override
-            public boolean accept(File pathname) {
-                return pathname.isDirectory() && pathname.getName().startsWith("itunes") && pathname.getName().matches("itunes\\d{8}");
-            }
-        })));
+        return Ordering.natural().max(ImmutableList.copyOf(
+                dataDirectory.listFiles(pathname ->
+                        pathname.isDirectory() &&
+                                pathname.getName().startsWith("itunes") &&
+                                pathname.getName().matches("itunes\\d{8}")
+                )
+        ));
     }
 
 }

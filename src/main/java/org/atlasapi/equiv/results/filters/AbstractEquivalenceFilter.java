@@ -11,7 +11,11 @@ import com.google.common.collect.ImmutableList.Builder;
 public abstract class AbstractEquivalenceFilter<T> implements EquivalenceFilter<T> {
 
     @Override
-    public final List<ScoredCandidate<T>> apply(Iterable<ScoredCandidate<T>> candidates, final T subject, final ResultDescription desc) {
+    public final List<ScoredCandidate<T>> apply(
+            Iterable<ScoredCandidate<T>> candidates,
+            final T subject,
+            final ResultDescription desc
+    ) {
         desc.startStage(toString());
         Builder<ScoredCandidate<T>> results = ImmutableList.builder();
         for (ScoredCandidate<T> candidate : candidates) {
@@ -23,6 +27,15 @@ public abstract class AbstractEquivalenceFilter<T> implements EquivalenceFilter<
         return results.build();
     }
 
-    protected abstract boolean doFilter(ScoredCandidate<T> input, T subject, ResultDescription desc);
+    protected abstract boolean doFilter(
+            ScoredCandidate<T> input,
+            T subject,
+            ResultDescription desc
+    );
+
+    @Override
+    public String toString() {
+        return this.getClass().getSimpleName();
+    }
     
 }

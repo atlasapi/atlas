@@ -15,7 +15,7 @@ public class ContainerHierarchyFilter extends AbstractEquivalenceFilter<Containe
     @Override
     protected boolean doFilter(ScoredCandidate<Container> input, Container subject,
             ResultDescription desc) {
-        boolean retain = !(isTopLevel(subject) ^ isTopLevel(input.candidate()));
+        boolean retain = isTopLevel(subject) == isTopLevel(input.candidate());
         if (!retain) {
             desc.appendText("remove %s", input.candidate());
         }
@@ -30,10 +30,4 @@ public class ContainerHierarchyFilter extends AbstractEquivalenceFilter<Containe
         return container instanceof Series 
             && ((Series) container).getParent() == null;
     }
-
-    @Override
-    public String toString() {
-        return "Series Hierarchy filter";
-    }
-    
 }

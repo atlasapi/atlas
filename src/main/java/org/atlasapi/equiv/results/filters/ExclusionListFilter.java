@@ -49,5 +49,4 @@ public class ExclusionListFilter<T extends Identified> extends AbstractEquivalen
 
         return result;
     }
-
 }

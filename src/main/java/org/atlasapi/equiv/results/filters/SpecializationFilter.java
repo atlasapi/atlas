@@ -25,9 +25,4 @@ public class SpecializationFilter<T extends Content> extends AbstractEquivalence
         }
         return result;
     }
-
-    @Override
-    public String toString() {
-        return "Specialization matching filter";
-    }
 }

@@ -25,10 +25,4 @@ public class UnpublishedContentFilter<T extends Content> extends AbstractEquival
         }
         return isActivelyPublished;
     }
-
-    @Override
-    public String toString() {
-        return "Specialization matching filter";
-    }
-
 }

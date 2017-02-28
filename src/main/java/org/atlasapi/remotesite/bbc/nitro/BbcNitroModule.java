@@ -215,9 +215,17 @@ public class BbcNitroModule {
     }
 
     private Supplier<ImmutableSet<Channel>> bbcChannelSupplier() {
+
         return () -> ImmutableSet.copyOf(BbcIonServices.services.values()
                 .stream()
-                .map(channelResolver::fromUri)
+                .map(uri -> {
+                    Maybe<Channel> channelMaybe = channelResolver.fromUri(uri);
+                    if (!channelMaybe.hasValue()) {
+                        log.error("Did not resolve channel for uri: {}", uri);
+                    }
+                    return channelMaybe;
+                })
+                .filter(Maybe::hasValue)
                 .map(Maybe::requireValue)
                 .collect(Collectors.toList()));
     }

@@ -113,8 +113,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             @RequestParam(value = "genres", required = false) String genresString,
             @RequestParam(value = "advertised", required = false) String advertiseFromKey,
             @RequestParam(value = "publisher", required = false) String publisherKey,
-            @RequestParam(value = "uri", required = false) String uriKey,
-            @RequestParam(value = "type", required = false) String channelType
+            @RequestParam(value = "uri", required = false) String uriKey
     ) throws IOException {
         try {
             final Application application;
@@ -136,8 +135,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                     genresString,
                     advertiseFromKey,
                     publisherKey,
-                    uriKey,
-                    channelType
+                    uriKey
             );
 
             Iterable<Channel> channels = channelResolver.allChannels(query);
@@ -209,8 +207,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             String genresString,
             String advertiseFromKey,
             String publisherKey,
-            String uri,
-            String channelType
+            String uri
     ) {
         ChannelQuery.Builder query = ChannelQuery.builder();
 
@@ -246,10 +243,6 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
 
         if (!Strings.isNullOrEmpty(uri)) {
             query.withUri(uri);
-        }
-
-        if (!Strings.isNullOrEmpty(channelType)) {
-            query.withChannelType(ChannelType.fromKey(channelType).get());
         }
 
         return query.build();

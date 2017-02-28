@@ -106,7 +106,16 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
     }
 
     private boolean taskFailureRateExceedsJobFailThreshold() {
-        return ( 100 * progress.get().getFailures() / progress.get().getTotalProgress()) >= jobFailThresholdInPercent; 
+        UpdateProgress updateProgress = progress.get();
+
+        int totalProgress = updateProgress.getTotalProgress();
+        if (totalProgress == 0) {
+            // avoid weird division by zero errors
+            return false;
+        }
+
+        int failures = updateProgress.getFailures();
+        return (100 * failures / totalProgress) >= jobFailThresholdInPercent;
     }
 
     private void waitForFinish(ImmutableList<ListenableFuture<UpdateProgress>> taskResults) {

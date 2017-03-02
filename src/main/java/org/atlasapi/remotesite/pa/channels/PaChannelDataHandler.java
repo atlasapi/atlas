@@ -189,6 +189,7 @@ public class PaChannelDataHandler {
                             )
                     )
             ));
+            existingChannel.addAliases(newChannel.getAliases());
 
             return channelWriter.createOrUpdate(existingChannel);
         } else {

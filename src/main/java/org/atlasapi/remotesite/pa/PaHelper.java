@@ -8,6 +8,9 @@ public class PaHelper {
     private static final String PA_BASE_ALIAS = "pa:";
     private static final String PA_BASE_ALIAS_V2 = "gb:pa:";
 
+    private PaHelper() {
+    }
+
     public static String getFilmUri(String id) {
         //previously film ids were generated from rtfilmnumber, now we will be using progId
         //since they have different numberspace, we will save films under /episode/progId
@@ -69,8 +72,9 @@ public class PaHelper {
     }
 
     public static Alias getLegacyFilmAlias(String id) {
-        return new Alias(PA_BASE_ALIAS_V2 + "rt_filmnumber", id);
+        return new Alias("rt:filmid", id);
     }
+
     public static Alias getNewFilmAlias(String id) {
         return new Alias(PA_BASE_ALIAS_V2 + "prog_id", id);
     }

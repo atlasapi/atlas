@@ -75,22 +75,36 @@ public class PaArchivesProgExtractorTest {
     @Test
     public void testTransformsFromArchivesToListings() throws Exception {
         ProgData archives = generateArchiveProgdata();
-        org.atlasapi.remotesite.pa.listings.bindings.ProgData listing = transformer.transformToListingProgdata(archives);
+        org.atlasapi.remotesite.pa.listings.bindings.ProgData listing = transformer
+                .transformToListingProgdata(
+                archives);
         assertEquals(archives.getAttr().getAsLive(), listing.getAttr().getAsLive());
         assertEquals(archives.getAttr().getAudioDes(), listing.getAttr().getAudioDes());
         assertEquals(archives.getAttr().getFilm(), listing.getAttr().getFilm());
         assertEquals(archives.getAttr().getThreeD(), listing.getAttr().getThreeD());
         assertEquals(archives.getBillings().getBilling().size(), 2);
-        org.atlasapi.remotesite.pa.listings.bindings.Billing billing = Iterables.getFirst(listing.getBillings().getBilling(), null);
+        org.atlasapi.remotesite.pa.listings.bindings.Billing billing = Iterables.getFirst(listing
+                .getBillings()
+                .getBilling(), null);
         assertEquals(billing.getType(), "synopsis");
-        assertEquals(billing.getvalue(), "Sci-fi adventure sequel, with Harrison Ford, Mark Hamill, Carrie Fisher, Billy Dee Williams, Alec Guinness and David Prowse.");
+        assertEquals(
+                billing.getvalue(),
+                "Sci-fi adventure sequel, with Harrison Ford, Mark Hamill, Carrie Fisher, Billy "
+                        + "Dee Williams, Alec Guinness and David Prowse."
+        );
         assertEquals(archives.getColour(), "Colour");
-        org.atlasapi.remotesite.pa.listings.bindings.CastMember castMember = Iterables.getFirst(listing.getCastMember(), null);
+        org.atlasapi.remotesite.pa.listings.bindings.CastMember castMember = Iterables.getFirst(
+                listing.getCastMember(),
+                null
+        );
         org.atlasapi.remotesite.pa.listings.bindings.Actor actor = castMember.getActor();
         assertEquals(castMember.getCharacter(), "Luke Skywalker");
         assertEquals(actor.getvalue(), "Mark Hamill");
         assertEquals(actor.getPersonId(), "10012");
-        org.atlasapi.remotesite.pa.listings.bindings.Category category = Iterables.getFirst(listing.getCategory(), null);
+        org.atlasapi.remotesite.pa.listings.bindings.Category category = Iterables.getFirst(
+                listing.getCategory(),
+                null
+        );
         assertEquals(category.getCategoryCode(), "1300");
         assertEquals(category.getCategoryName(), "Science Fiction");
         assertEquals(listing.getTitle(), "Star Wars Episode V: the Empire Strikes Back");
@@ -103,19 +117,39 @@ public class PaArchivesProgExtractorTest {
     public void testIngestHierarchyFromProgdata() throws Exception {
         DateTime dateTime = DateTime.now(DateTimeZone.UTC);
         ProgData archives = generateArchiveProgdata();
-        org.atlasapi.remotesite.pa.listings.bindings.ProgData listing = transformer.transformToListingProgdata(archives);
-        ContentHierarchyWithoutBroadcast hierarchy = progProcessor.process(listing, DateTimeZone.UTC, Timestamp.of(dateTime)).get();
+        org.atlasapi.remotesite.pa.listings.bindings.ProgData listing = transformer
+                .transformToListingProgdata(
+                archives);
+        ContentHierarchyWithoutBroadcast hierarchy = progProcessor.process(
+                listing,
+                DateTimeZone.UTC,
+                Timestamp.of(dateTime)
+        ).get();
         assertThat(hierarchy.getBrandSummary(), is(Optional.<Brand>absent()));
         assertThat(hierarchy.getSeriesSummary(), is(Optional.<Series>absent()));
         Item item = hierarchy.getItem();
-        Set<Alias> aliases = ImmutableSet.of(new Alias("gb:pa:rt_filmnumber", "5217"), new Alias("gb:pa:prog_id", "263544"), new Alias("gb:pressassociation:prod:prog_id", "263544"));
+        Set<Alias> aliases = ImmutableSet.of(
+                new Alias("rt:filmid", "5217"),
+                new Alias("gb:pa:prog_id", "263544"),
+                new Alias("gb:pressassociation:prod:prog_id", "263544")
+        );
         assertThat(item.getAliases(), is(aliases));
-        Set<String> aliasUrls = ImmutableSet.of("http://pressassociation.com/263544", "http://pressassociation.com/films/5217");
+        Set<String> aliasUrls = ImmutableSet.of(
+                "http://pressassociation.com/263544",
+                "http://pressassociation.com/films/5217"
+        );
         assertThat(item.getAliasUrls(), is(aliasUrls));
         assertThat(item.getBlackAndWhite(), is(false));
         assertThat(item.getCanonicalUri(), is("http://pressassociation.com/episodes/263544"));
-        assertThat(item.getDescription(), is("Sci-fi adventure sequel, with Harrison Ford, Mark Hamill, Carrie Fisher, Billy Dee Williams, Alec Guinness and David Prowse."));
-        Set<String> genres = ImmutableSet.of("http://ref.atlasapi.org/genres/atlas/drama", "http://pressassociation.com/genres/1300");
+        assertThat(
+                item.getDescription(),
+                is("Sci-fi adventure sequel, with Harrison Ford, Mark Hamill, Carrie Fisher, "
+                        + "Billy Dee Williams, Alec Guinness and David Prowse.")
+        );
+        Set<String> genres = ImmutableSet.of(
+                "http://ref.atlasapi.org/genres/atlas/drama",
+                "http://pressassociation.com/genres/1300"
+        );
         assertThat(item.getGenres(), is(genres));
         assertThat(item.getImages(), is(Matchers.<Set<Image>>nullValue()));
         Set<String> tags = ImmutableSet.of();
@@ -150,7 +184,9 @@ public class PaArchivesProgExtractorTest {
         Billings billings = new Billings();
         Billing synopsis = new Billing();
         synopsis.setType("synopsis");
-        synopsis.setvalue("Sci-fi adventure sequel, with Harrison Ford, Mark Hamill, Carrie Fisher, Billy Dee Williams, Alec Guinness and David Prowse.");
+        synopsis.setvalue(
+                "Sci-fi adventure sequel, with Harrison Ford, Mark Hamill, Carrie Fisher, Billy "
+                        + "Dee Williams, Alec Guinness and David Prowse.");
         Billing paDetail = new Billing();
         paDetail.setType("pa_detail1");
         paDetail.setvalue("Sci-fi adventure sequel, with Mark Hamill and Harrison Ford.");
@@ -179,5 +215,4 @@ public class PaArchivesProgExtractorTest {
         progData.setAttr(attr);
         return progData;
     }
-
 }

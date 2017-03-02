@@ -8,7 +8,8 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 
 
-public class AmazonUnboxPreProcessingItemProcessor implements AmazonUnboxItemProcessor, AmazonUnboxBrandProcessor {
+public class AmazonUnboxPreProcessingItemProcessor
+        implements AmazonUnboxItemProcessor, AmazonUnboxBrandProcessor {
 
     private final Map<String, String> contentUriToTitleMap = Maps.newHashMap();
     private final Multimap<String, String> brandUriToSeriesUrisMap = ArrayListMultimap.create();
@@ -59,7 +60,9 @@ public class AmazonUnboxPreProcessingItemProcessor implements AmazonUnboxItemPro
                 if (seriesUriToEpisodeUrisMap.get(series).size() == 1) {
                     String episode = Iterables.getOnlyElement(seriesUriToEpisodeUrisMap.get(series));
                     if (contentUriToTitleMap.get(brand).equals(contentUriToTitleMap.get(series))) {
-                        if (contentUriToTitleMap.get(brand).equals(contentUriToTitleMap.get(episode))) {
+                        if (contentUriToTitleMap.get(brand).equals(
+                                contentUriToTitleMap.get(episode)
+                        )) {
                             brandUriToTypeMap.put(brand, BrandType.STAND_ALONE_EPISODE);
                         } else {
                             brandUriToTypeMap.put(brand, BrandType.TOP_LEVEL_SERIES);

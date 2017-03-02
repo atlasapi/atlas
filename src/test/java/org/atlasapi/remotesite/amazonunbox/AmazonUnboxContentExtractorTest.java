@@ -283,6 +283,7 @@ public class AmazonUnboxContentExtractorTest {
         Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
         
         assertEquals("http://unbox.amazon.co.uk/filmAsin", film.getCanonicalUri());
+        assertEquals("Large Image", film.getImage());
     }
     
     //TODO hierarchied episodes?

@@ -1,18 +1,13 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import static com.google.common.base.Predicates.and;
-import static com.google.common.base.Predicates.not;
-
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-
-import javax.annotation.Nullable;
+import java.util.function.Predicate;
+import java.util.stream.Collectors;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -34,12 +29,10 @@ import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 
+import com.metabroadcast.common.base.Maybe;
+
 import com.google.common.collect.BiMap;
 import com.google.common.collect.HashBiMap;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import com.google.common.base.Predicate;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -47,7 +40,12 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import com.metabroadcast.common.base.Maybe;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Predicates.and;
+import static com.google.common.base.Predicates.not;
 
 
 public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemProcessor {
@@ -79,26 +77,15 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         }
     };
 
-    private static final Predicate<Content> IS_BRAND = new Predicate<Content>() {
-
-        @Override
-        public boolean apply(@Nullable Content input) {
-            return input instanceof Brand;
-        }
-    };
+    private static final Predicate<Content> IS_BRAND =
+            input -> input instanceof Brand;
     
-    private static final Predicate<Content> IS_SERIES = new Predicate<Content>() {
-        @Override
-        public boolean apply(Content input) {
-            return input instanceof Series;
-        }
-    };
-    private static final Predicate<Content> IS_ITEM = new Predicate<Content>() {
-        @Override
-        public boolean apply(Content input) {
-            return input instanceof Item;
-        }
-    };
+    private static final Predicate<Content> IS_SERIES =
+            input -> input instanceof Series;
+
+    private static final Predicate<Content> IS_ITEM =
+            input -> input instanceof Item;
+
     public static final String CONTAINER = "CONTAINER";
     public static final String EPISODE = "EPISODE";
     public static final String ITEM = "ITEM";
@@ -107,15 +94,12 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public static final String FILM = "FILM";
     public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
 
-    private final Predicate<Alias> AMAZON_ALIAS = new Predicate<Alias>() {
+    private final Predicate<Alias> AMAZON_ALIAS =
+            input -> GB_AMAZON_ASIN.equals(input.getNamespace());
 
-        @Override
-        public boolean apply(Alias input) {
-            return GB_AMAZON_ASIN.equals(input.getNamespace());
-        }
-    };
-
-    private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentWritingItemProcessor.class);
+    private final Logger log = LoggerFactory.getLogger(
+            AmazonUnboxContentWritingItemProcessor.class
+    );
     private final Map<String, Container> seenContainer = Maps.newHashMap();
     private final SetMultimap<String, Content> cached = HashMultimap.create();
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
@@ -134,15 +118,25 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final AmazonUnboxBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
 
-    public AmazonUnboxContentWritingItemProcessor(ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor, ContentResolver resolver, 
-            ContentWriter writer, ContentLister lister, int missingContentPercentage, AmazonUnboxBrandProcessor brandProcessor) {
+    public AmazonUnboxContentWritingItemProcessor(
+            ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor,
+            ContentResolver resolver,
+            ContentWriter writer,
+            ContentLister lister,
+            int missingContentPercentage,
+            AmazonUnboxBrandProcessor brandProcessor
+    ) {
         this.extractor = checkNotNull(extractor);
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(writer);
         this.lister = checkNotNull(lister);
         this.missingContentPercentage = checkNotNull(missingContentPercentage);
         this.brandProcessor = checkNotNull(brandProcessor);
-        this.contentMerger = new ContentMerger(MergeStrategy.REPLACE, MergeStrategy.REPLACE, MergeStrategy.REPLACE);
+        this.contentMerger = new ContentMerger(
+                MergeStrategy.REPLACE,
+                MergeStrategy.REPLACE,
+                MergeStrategy.REPLACE
+        );
     }
 
     @Override
@@ -196,7 +190,12 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 int episodeNumber = episode.getEpisodeNumber();
                 int seasonNumber = episode.getSeriesNumber();
                 String brandTitle = episode.getShortDescription();
-                key.append(title).append(brandTitle).append(episodeNumber).append(seasonNumber).append(EPISODE);
+                key
+                        .append(title)
+                        .append(brandTitle)
+                        .append(episodeNumber)
+                        .append(seasonNumber)
+                        .append(EPISODE);
             } else if (content instanceof Film) {
                 Film film = (Film) content;
                 String title = film.getTitle();
@@ -222,7 +221,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private Content mergeAliasesAndLocations(Content item, Content seen) {
         Version version = Iterables.getOnlyElement(item.getVersions());
-        Alias alias = Iterables.getOnlyElement(Iterables.filter(item.getAliases(), AMAZON_ALIAS));
+        Alias alias = Iterables.getOnlyElement(Iterables.filter(item.getAliases(),
+                AMAZON_ALIAS::test
+        ));
         version.addAlias(alias);
         seen.addAlias(alias);
         seen.addVersion(version);
@@ -253,17 +254,21 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void processSeenContent() {
-        Iterable<Content> brands = Iterables.filter(seenContent.values(), IS_BRAND);
+        Iterable<Content> brands = Iterables.filter(seenContent.values(), IS_BRAND::test);
         for (Content container : brands) {
             checkAndWriteSeenContent(container);
         }
 
-        Iterable<Content> series = Iterables.filter(seenContent.values(), IS_SERIES);
+        Iterable<Content> series = Iterables.filter(seenContent.values(), IS_SERIES::test);
         for (Content container : series) {
             checkAndWriteSeenContent(container);
         }
 
-        Iterable<Content> notContainers = Iterables.filter(seenContent.values(), and(not(IS_BRAND), not(IS_SERIES)));
+        Iterable<Content> notContainers =
+                seenContent.values()
+                        .stream()
+                        .filter(and(not(IS_BRAND::test), not(IS_SERIES::test))::apply)
+                        .collect(Collectors.toList());
         for (Content notContainer : notContainers) {
             checkAndWriteSeenContent(notContainer);
         }
@@ -278,14 +283,18 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             if (content instanceof Item) {
                 write(contentMerger.merge(ContentMerger.asItem(identified), (Item) content));
             } else if (content instanceof Container) {
-                write(contentMerger.merge(ContentMerger.asContainer(identified), (Container) content));
+                write(contentMerger.merge(
+                        ContentMerger.asContainer(identified), (Container) content)
+                );
             }
         }
     }
 
     private void processStandAloneEpisodes() {
         for (Entry<String, Brand> entry : standAloneEpisodes.entrySet()) {
-            Item item = (Item) Iterables.getOnlyElement(Iterables.filter(cached.get(entry.getKey()), IS_ITEM));
+            Item item = (Item) Iterables.getOnlyElement(
+                    Iterables.filter(cached.get(entry.getKey()), IS_ITEM::test)
+            );
             cached.removeAll(entry.getKey());
             
             if (item instanceof Episode) {
@@ -301,7 +310,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void processTopLevelSeries() {
         for (Entry<String, Brand> entry : topLevelSeries.entrySet()) {
             
-            Series series = (Series) Iterables.getOnlyElement(Iterables.filter(cached.get(entry.getKey()), IS_SERIES));
+            Series series = (Series) Iterables.getOnlyElement(
+                    Iterables.filter(cached.get(entry.getKey()), IS_SERIES::test)
+            );
             cached.remove(entry.getKey(), series);
             
             series.setParentRef(null);
@@ -336,9 +347,12 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         Set<Content> allLoveFilmContent = ImmutableSet.copyOf(resolveAllLoveFilmContent());
         Set<Content> notSeen = Sets.difference(allLoveFilmContent, seenContent.values());
         
-        float missingPercentage = ((float) notSeen.size() / (float) allLoveFilmContent.size()) * 100;
+        float missingPercentage =
+                ((float) notSeen.size() / (float) allLoveFilmContent.size()) * 100;
         if (missingPercentage > (float) missingContentPercentage) {
-            throw new RuntimeException("File failed to update " + missingPercentage + "% of all LoveFilm content. File may be truncated.");
+            throw new RuntimeException("File failed to update " +
+                            missingPercentage +
+                            "% of all LoveFilm content. File may be truncated.");
         } else {
             List<Content> orderedContent = REVERSE_HIERARCHICAL_ORDER.sortedCopy(notSeen);
             for (Content notSeenContent : orderedContent) {
@@ -348,7 +362,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 } else if (notSeenContent instanceof Container) {
                     writer.createOrUpdate((Container) notSeenContent);
                 } else {
-                    throw new RuntimeException("LoveFilm content with uri " + notSeenContent.getCanonicalUri() + " not an Item or a Container");
+                    throw new RuntimeException("LoveFilm content with uri " +
+                            notSeenContent.getCanonicalUri() + " not an Item or a Container");
                 }
             }
         }
@@ -416,7 +431,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void cacheOrWriteSeriesAndSubContents(Series series) {
         ParentRef parent = series.getParent();
         if (parent != null) {
-            Brand brand = commonBrandKeyToCommonBrandMap.get(duplicatedBrandToCommonKeyMap.get(parent.getUri()));
+            Brand brand = commonBrandKeyToCommonBrandMap.get(
+                    duplicatedBrandToCommonKeyMap.get(parent.getUri())
+            );
             if (brand != null) {
                 series.setParent(brand);
             }
@@ -452,7 +469,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         ParentRef parent = episode.getContainer();
 
         if (parent != null) {
-            Brand brand = commonBrandKeyToCommonBrandMap.get(duplicatedBrandToCommonKeyMap.get(parent.getUri()));
+            Brand brand = commonBrandKeyToCommonBrandMap.get(
+                    duplicatedBrandToCommonKeyMap.get(parent.getUri())
+            );
             episode.setContainer(brand);
             String brandUri = brand.getCanonicalUri();
             if (!seenContainer.containsKey(brandUri)) {
@@ -463,7 +482,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         
         String seriesUri = episode.getSeriesRef() != null ? episode.getSeriesRef().getUri() : null;
         if (seriesUri != null) {
-            Series series = commonSeriesKeyToCommonSeriesMap.get(duplicatedSeriesToCommonKeyMap.get(seriesUri));
+            Series series = commonSeriesKeyToCommonSeriesMap.get(
+                    duplicatedSeriesToCommonKeyMap.get(seriesUri)
+            );
             if (series != null) {
                 episode.setSeriesRef(ParentRef.parentRefFrom(series));
                 seriesUri = series.getCanonicalUri();

@@ -9,6 +9,7 @@ import java.util.function.Predicate;
 import javax.annotation.Nullable;
 
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageColor;
 import org.atlasapi.media.entity.ImageTheme;
@@ -43,11 +44,9 @@ import static org.atlasapi.remotesite.pa.channels.PaChannelGroupsIngester.getSer
 
 public class PaChannelsIngester {
 
-    private static final Logger log = LoggerFactory.getLogger(PaChannelsIngester.class);
-
     public static final String BT_SERVICE_ID_ALIAS_PREFIX = "http://bt.youview.com/service/";
     public static final String YOUVIEW_SERVICE_ID_ALIAS_PREFIX = "http://youview.com/service/";
-
+    private static final Logger log = LoggerFactory.getLogger(PaChannelsIngester.class);
     private static final String GENRE_ADULT = "Adult";
     private static final String SIMULCAST_LINK_TYPE = "Web_Simulcast";
     private static final String REGIONAL_VARIATION = "regional";
@@ -85,6 +84,7 @@ public class PaChannelsIngester {
 
     private static final Predicate<Variation> IS_REGIONAL =
             input -> REGIONAL_VARIATION.equals(input.getType());
+    public static final String PA_CHANNEL_ID_NAMESPACE = "pa:channel:id";
 
     private final DateTimeFormatter formatter = ISODateTimeFormat.date();
 
@@ -100,9 +100,14 @@ public class PaChannelsIngester {
                 if (station.getChannels().getChannel().size() == 1) {
                     return new ChannelTree(
                             null,
-                            ImmutableList.of(processStandaloneChannel(station.getChannels()
-                                    .getChannel()
-                                    .get(0), serviceProviders, genres, isAdult.orElse(null)))
+                            ImmutableList.of(
+                                    processStandaloneChannel(
+                                            station.getChannels().getChannel().get(0),
+                                            serviceProviders,
+                                            genres,
+                                            isAdult.orElse(null)
+                                    )
+                            )
                     );
                 } else {
                     Channel parent = processParentChannel(
@@ -130,7 +135,10 @@ public class PaChannelsIngester {
 
     private List<Channel> processChildChannels(
             List<org.atlasapi.remotesite.pa.channels.bindings.Channel> channels,
-            List<ServiceProvider> serviceProviders, Set<String> genres, Boolean isAdult) {
+            List<ServiceProvider> serviceProviders,
+            Set<String> genres,
+            Boolean isAdult
+    ) {
         Builder<Channel> children = ImmutableList.builder();
         for (org.atlasapi.remotesite.pa.channels.bindings.Channel paChannel : channels) {
             children.add(processStandaloneChannel(paChannel, serviceProviders, genres, isAdult));
@@ -161,10 +169,12 @@ public class PaChannelsIngester {
         return Sets.newHashSet(GENRE_URI_PREFIX + genre.toLowerCase().replace(' ', '_'));
     }
 
-    private Channel processParentChannel(Station station,
-            org.atlasapi.remotesite.pa.channels.bindings.Channel firstChild, Set<String> genres,
-            Boolean isAdult) {
-
+    private Channel processParentChannel(
+            Station station,
+            org.atlasapi.remotesite.pa.channels.bindings.Channel firstChild,
+            Set<String> genres,
+            Boolean isAdult
+    ) {
         Channel parentChannel = Channel.builder()
                 .withUri(STATION_URI_PREFIX + station.getId())
                 .withKey(generateStationKey(station.getId()))
@@ -187,6 +197,8 @@ public class PaChannelsIngester {
 
         parentChannel.addAliasUrl(createStationUriFromId(station.getId()));
 
+        parentChannel.addAlias(new Alias(PA_CHANNEL_ID_NAMESPACE, station.getId()));
+
         return parentChannel;
     }
 
@@ -196,7 +208,10 @@ public class PaChannelsIngester {
 
     private Channel processStandaloneChannel(
             org.atlasapi.remotesite.pa.channels.bindings.Channel paChannel,
-            List<ServiceProvider> serviceProviders, Set<String> genres, Boolean isAdult) {
+            List<ServiceProvider> serviceProviders,
+            Set<String> genres,
+            Boolean isAdult
+    ) {
         LocalDate startDate = formatter.parseLocalDate(paChannel.getStartDate());
 
         Channel channel = Channel.builder()
@@ -250,6 +265,8 @@ public class PaChannelsIngester {
         setChannelTitleAndImage(channel, paChannel.getNames().getName(), logos);
 
         channel.addAliasUrl(PaChannelMap.createUriFromId(paChannel.getId()));
+
+        channel.addAlias(new Alias(PA_CHANNEL_ID_NAMESPACE, paChannel.getId()));
 
         return channel;
     }

@@ -29,7 +29,7 @@ public class ExistingItemUnPublisher {
     /**
      * Disabled until the long term solution for cleaning-up duplicates is introduced.
      */
-    private static final boolean DISABLED = true;
+    private final boolean disabled;
 
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
@@ -40,8 +40,11 @@ public class ExistingItemUnPublisher {
             ContentResolver contentResolver,
             ContentWriter contentWriter,
             LookupEntryStore lookupEntryStore,
-            EquivalenceBreaker equivalenceBreaker
+            EquivalenceBreaker equivalenceBreaker,
+            boolean disabled
     ) {
+        this.disabled = disabled;
+
         this.contentResolver = checkNotNull(contentResolver);
         this.contentWriter = checkNotNull(contentWriter);
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
@@ -52,18 +55,20 @@ public class ExistingItemUnPublisher {
             ContentResolver contentResolver,
             ContentWriter contentWriter,
             LookupEntryStore lookupEntryStore,
-            EquivalenceBreaker equivalenceBreaker
+            EquivalenceBreaker equivalenceBreaker,
+            boolean disabled
     ) {
         return new ExistingItemUnPublisher(
                 contentResolver,
                 contentWriter,
                 lookupEntryStore,
-                equivalenceBreaker
+                equivalenceBreaker,
+                disabled
         );
     }
 
     public void unPublishItems(String uri) {
-        if (DISABLED) {
+        if (disabled) {
             return;
         }
 

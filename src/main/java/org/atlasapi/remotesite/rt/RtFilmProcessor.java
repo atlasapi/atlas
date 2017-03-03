@@ -170,7 +170,7 @@ public class RtFilmProcessor {
             film.setCertificates(certificate(ukCinemaCertificate));
         }
 
-        ArrayList<Review> reviews = new ArrayList(2);
+        ArrayList<Review> reviews = new ArrayList<>(3);
 
         for (ReviewType reviewType : ReviewType.values()) {
             Element review = filmElement.getFirstChildElement(reviewType.lowercase());

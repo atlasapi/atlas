@@ -64,9 +64,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String URL_SUFFIX_TO_REMOVE = "ref=atv_feed_catalog";
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
-    private static final OptionalMap<String, Certificate> certificateMap = ImmutableOptionalMap.fromMap(
-            ImmutableMap.<String,Certificate>builder()
-                // tba/NR temporarily set to '18' to prevent unsuitable material from being misclassified.
+    private static final OptionalMap<String, Certificate> certificateMap =
+            ImmutableOptionalMap.fromMap(
+                    ImmutableMap.<String,Certificate>builder()
+     // tba/NR temporarily set to '18' to prevent unsuitable material from being misclassified.
                 .put("NR",new Certificate("18", Countries.GB))
                 .put("to_be_announced",new Certificate("18", Countries.GB))
                 .put("universal",new Certificate("U", Countries.GB))
@@ -77,19 +78,19 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             .build()
         );
     
-    public static final String createBrandUri(String asin) { 
+    public static String createBrandUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
     
-    public static final String createSeriesUri(String asin) { 
+    public static String createSeriesUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
     
-    public static final String createEpisodeUri(String asin) { 
+    public static String createEpisodeUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
     
-    public static final String createFilmUri(String asin) {
+    public static String createFilmUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
 
@@ -155,10 +156,14 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         brand.setSpecialization(Specialization.TV);
         
         RelatedLink relatedLink = RelatedLink
-                                     .vodLink(String.format(SERIES_URI_PATTERN, source.getSeriesAsin()))
+                                     .vodLink(String.format(
+                                             SERIES_URI_PATTERN,
+                                             source.getSeriesAsin()
+                                     ))
                                      .build();
         
         brand.setRelatedLinks(ImmutableSet.of(relatedLink));
+        brand.setImage(source.getLargeImageUrl());
         return brand;
     }
 
@@ -176,9 +181,19 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         
         if (Boolean.TRUE.equals(source.isTrident())) {
             if (isHd(source)) {
-                hdLocations.add(createLocation(source, RevenueContract.SUBSCRIPTION, null, source.getUrl()));
+                hdLocations.add(createLocation(
+                        source,
+                        RevenueContract.SUBSCRIPTION,
+                        null,
+                        source.getUrl()
+                ));
             } else {
-                sdLocations.add(createLocation(source, RevenueContract.SUBSCRIPTION, null, source.getUrl()));
+                sdLocations.add(createLocation(
+                        source,
+                        RevenueContract.SUBSCRIPTION,
+                        null,
+                        source.getUrl()
+                ));
             }
         }
         
@@ -262,7 +277,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return location;
     }
     
-    private Policy generatePolicy(AmazonUnboxItem source, RevenueContract revenueContract, @Nullable String price) {
+    private Policy generatePolicy(
+            AmazonUnboxItem source,
+            RevenueContract revenueContract,
+            @Nullable String price
+    ) {
         Policy policy = new Policy();
         policy.setRevenueContract(revenueContract);
         if (price != null) {
@@ -280,7 +299,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         content.setTitle(title);
     }
 
-    private void setFieldsForNonSynthesizedContent(Content content, AmazonUnboxItem source, String uri) {
+    private void setFieldsForNonSynthesizedContent(
+            Content content,
+            AmazonUnboxItem source,
+            String uri
+    ) {
         setCommonFields(content, source.getTitle(), uri);
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
@@ -354,7 +377,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         if (item.getTConst() == null) {
             return ImmutableList.of(amazonAsinAlias);
         }
-        return ImmutableList.of(amazonAsinAlias, String.format(IMDB_ALIAS_URL_PREFIX, item.getTConst()));
+        return ImmutableList.of(
+                amazonAsinAlias,
+                String.format(IMDB_ALIAS_URL_PREFIX, item.getTConst())
+        );
     }
 
     private List<Image> generateImages(AmazonUnboxItem item) {

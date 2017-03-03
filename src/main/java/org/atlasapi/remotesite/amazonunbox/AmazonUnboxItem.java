@@ -72,50 +72,44 @@ public class AmazonUnboxItem {
         return item.getContentType().equals(ContentType.MOVIE);
     }
     
-    private AmazonUnboxItem(float amazonRating, Integer amazonRatingsCount, String asin, ContentType contentType, String director, 
-            Integer episodeNumber, Set<AmazonUnboxGenre> genres, String largeImageUrl, Quality quality, Boolean isPreOrder, 
-            Boolean isRental, Boolean isSeasonPass, Boolean isStreamable, String synopsis, String rating, String price, 
-            DateTime releaseDate, Duration duration, Set<String> starring, String seasonAsin, Integer seasonNumber, 
-            String seriesAsin, String seriesTitle, String studio, String tConst, String title, Boolean isTivoEnabled, String url,
-            String unboxSdPurchasePrice, String unboxSdPurchaseUrl, String unboxHdPurchasePrice, String unboxHdPurchaseUrl, 
-            String unboxSdRentalPrice, String unboxSdRentalUrl, String unboxHdRentalPrice, String unboxHdRentalUrl, Boolean isTrident) {
-        this.amazonRating = amazonRating;
-        this.amazonRatingsCount = amazonRatingsCount;
-        this.asin = asin;
-        this.contentType = contentType;
-        this.director = director;
-        this.episodeNumber = episodeNumber;
-        this.unboxSdPurchasePrice = unboxSdPurchasePrice;
-        this.unboxSdPurchaseUrl = unboxSdPurchaseUrl;
-        this.unboxHdPurchasePrice = unboxHdPurchasePrice;
-        this.unboxHdPurchaseUrl = unboxHdPurchaseUrl;
-        this.unboxSdRentalPrice = unboxSdRentalPrice;
-        this.unboxSdRentalUrl = unboxSdRentalUrl;
-        this.unboxHdRentalPrice = unboxHdRentalPrice;
-        this.unboxHdRentalUrl = unboxHdRentalUrl;
-        this.isTrident = isTrident;
-        this.starring = ImmutableSet.copyOf(starring);
-        this.genres = ImmutableSet.copyOf(genres);
-        this.largeImageUrl = largeImageUrl;
-        this.quality = quality;
-        this.isPreOrder = isPreOrder;
-        this.isRental = isRental;
-        this.isSeasonPass = isSeasonPass;
-        this.isStreamable = isStreamable;
-        this.synopsis = synopsis;
-        this.rating = rating;
-        this.price = price;
-        this.releaseDate = releaseDate;
-        this.duration = duration;
-        this.seasonAsin = seasonAsin;
-        this.seasonNumber = seasonNumber;
-        this.seriesAsin = seriesAsin;
-        this.seriesTitle = seriesTitle;
-        this.studio = studio;
-        this.tConst = tConst;
-        this.title = title;
-        this.isTivoEnabled = isTivoEnabled;
-        this.url = url;
+    private AmazonUnboxItem(Builder builder) {
+        this.amazonRating = builder.amazonRating;
+        this.amazonRatingsCount = builder.amazonRatingsCount;
+        this.asin = builder.asin;
+        this.contentType = builder.contentType;
+        this.director = builder.director;
+        this.episodeNumber = builder.episodeNumber;
+        this.unboxSdPurchasePrice = builder.unboxSdPurchasePrice;
+        this.unboxSdPurchaseUrl = builder.unboxSdPurchaseUrl;
+        this.unboxHdPurchasePrice = builder.unboxHdPurchasePrice;
+        this.unboxHdPurchaseUrl = builder.unboxHdPurchaseUrl;
+        this.unboxSdRentalPrice = builder.unboxSdRentalPrice;
+        this.unboxSdRentalUrl = builder.unboxSdRentalUrl;
+        this.unboxHdRentalPrice = builder.unboxHdRentalPrice;
+        this.unboxHdRentalUrl = builder.unboxHdRentalUrl;
+        this.isTrident = builder.isTrident;
+        this.starring = ImmutableSet.copyOf(builder.starring);
+        this.genres = ImmutableSet.copyOf(builder.genres);
+        this.largeImageUrl = builder.largeImageUrl;
+        this.quality = builder.quality;
+        this.isPreOrder = builder.isPreOrder;
+        this.isRental = builder.isRental;
+        this.isSeasonPass = builder.isSeasonPass;
+        this.isStreamable = builder.isStreamable;
+        this.synopsis = builder.synopsis;
+        this.rating = builder.rating;
+        this.price = builder.price;
+        this.releaseDate = builder.releaseDate;
+        this.duration = builder.duration;
+        this.seasonAsin = builder.seasonAsin;
+        this.seasonNumber = builder.seasonNumber;
+        this.seriesAsin = builder.seriesAsin;
+        this.seriesTitle = builder.seriesTitle;
+        this.studio = builder.studio;
+        this.tConst = builder.tConst;
+        this.title = builder.title;
+        this.isTivoEnabled = builder.isTivoEnabled;
+        this.url = builder.url;
     }
     
     public float getAmazonRating() {
@@ -371,12 +365,7 @@ public class AmazonUnboxItem {
         private Builder() {}
         
         public AmazonUnboxItem build() {
-            return new AmazonUnboxItem(amazonRating, amazonRatingsCount, asin, contentType, director, 
-                    episodeNumber, genres, largeImageUrl, quality, isPreOrder, isRental, isSeasonPass, 
-                    isStreamable, synopsis, rating, price, releaseDate, duration, starring, seasonAsin, 
-                    seasonNumber, seriesAsin, seriesTitle, studio, tConst, title, isTivoEnabled, url, 
-                    unboxSdPurchasePrice, unboxSdPurchaseUrl, unboxHdPurchasePrice, unboxHdPurchaseUrl,
-                    unboxSdRentalPrice, unboxSdRentalUrl, unboxHdRentalPrice, unboxHdRentalUrl, isTrident);
+            return new AmazonUnboxItem(this);
         }
         
         public Builder withAmazonRating(float amazonRating) {

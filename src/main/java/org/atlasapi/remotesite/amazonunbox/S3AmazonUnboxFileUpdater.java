@@ -23,7 +23,12 @@ public class S3AmazonUnboxFileUpdater implements AmazonUnboxFileUpdater {
     private final AmazonUnboxFileStore fileStore;
     private final Ordering<S3Object> fileOrdering;
 
-    public S3AmazonUnboxFileUpdater(Supplier<S3Service> serviceSupplier, String bucketName, Ordering<S3Object> fileOrdering, AmazonUnboxFileStore fileStore) {
+    public S3AmazonUnboxFileUpdater(
+            Supplier<S3Service> serviceSupplier,
+            String bucketName,
+            Ordering<S3Object> fileOrdering,
+            AmazonUnboxFileStore fileStore
+    ) {
         this.fileOrdering = checkNotNull(fileOrdering);
         this.serviceSupplier = checkNotNull(serviceSupplier);
         this.bucketName = checkNotNull(bucketName);
@@ -46,7 +51,10 @@ public class S3AmazonUnboxFileUpdater implements AmazonUnboxFileUpdater {
         } 
     }
 
-    private InputStream inputStreamFor(S3Service service, S3Object object) throws ServiceException {
+    private InputStream inputStreamFor(
+            S3Service service,
+            S3Object object
+    ) throws ServiceException {
         S3Object fullObject = service.getObject(bucketName, object.getKey());
         return fullObject.getDataInputStream();
     }

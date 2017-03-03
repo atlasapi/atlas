@@ -153,7 +153,13 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                     aliasValue
             );
 
-            Iterable<Channel> channels = channelResolver.allChannels(query);
+            Iterable<Channel> channels;
+
+            if (queryHasAliasAttributesOnly(query)) {
+                channels = channelResolver.forKeyPairAlias(query);
+            } else {
+                channels = channelResolver.allChannels(query);
+            }
 
             // TODO This is expensive!
             Optional<Ordering<Channel>> ordering = ordering(orderBy);
@@ -175,6 +181,20 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
+    }
+
+    private boolean queryHasAliasAttributesOnly(ChannelQuery channelQuery) {
+
+        return !channelQuery.getAdvertisedOn().isPresent() &&
+                !channelQuery.getAvailableFrom().isPresent() &&
+                !channelQuery.getBroadcaster().isPresent() &&
+                !channelQuery.getChannelGroups().isPresent() &&
+                !channelQuery.getGenres().isPresent() &&
+                !channelQuery.getMediaType().isPresent() &&
+                !channelQuery.getPublisher().isPresent() &&
+                !channelQuery.getUri().isPresent() &&
+                channelQuery.getAliasNamespace().isPresent() &&
+                channelQuery.getAliasValue().isPresent();
     }
 
     private ChannelQuery constructQuery(

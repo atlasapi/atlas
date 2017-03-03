@@ -50,7 +50,8 @@ public class ExistingItemUnPublisherTest {
                 contentResolver,
                 contentWriter,
                 lookupEntryStore,
-                equivalenceBreaker
+                equivalenceBreaker,
+                false
         );
 
         item = new Item();

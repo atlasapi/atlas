@@ -535,7 +535,8 @@ public class PaModule {
                         contentResolver,
                         lookupEntryStore,
                         lookupWriter
-                )
+                ),
+                true
         );
     }
 }

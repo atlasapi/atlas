@@ -183,17 +183,24 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     }
 
     private Iterable<Review> simplifyReviews(final F content) {
-        return Iterables.transform(content.getReviews(), complex -> {
-            Review simple = new Review();
+        return content.getReviews().stream()
+                .map(complex -> {
+                    Review simple = new Review();
 
-            if (complex.getLocale() != null) {
-                simple.setLanguage(complex.getLocale().toLanguageTag());
-            }
-            simple.setReview(complex.getReview());
-            simple.setPublisherDetails(toPublisherDetails(content.getPublisher()));
+                    if (complex.getLocale() != null) {
+                        simple.setLanguage(complex.getLocale().toLanguageTag());
+                    }
+                    simple.setReview(complex.getReview());
+                    simple.setReviewType(complex.getReviewType());
+                    simple.setDate(complex.getDate());
+                    simple.setAuthor(complex.getAuthor());
+                    simple.setAuthorInitials(complex.getAuthorInitials());
+                    simple.setRating(complex.getRating());
+                    simple.setPublisherDetails(toPublisherDetails(content.getPublisher()));
 
-            return simple;
-        });
+                    return simple;
+                })
+                .collect(Collectors.toList());
     }
 
 

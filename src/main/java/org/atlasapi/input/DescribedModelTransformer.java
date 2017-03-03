@@ -3,6 +3,7 @@ package org.atlasapi.input;
 import java.util.List;
 import java.util.Locale;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
@@ -26,7 +27,6 @@ import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.joda.time.DateTime;
 
 import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.time.Clock;
@@ -123,19 +123,24 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
     }
 
     private Iterable<Review> reviews(final Publisher contentPublisher, Set<org.atlasapi.media.entity.simple.Review> simpleReviews) {
-        return Iterables.transform(simpleReviews, new Function<org.atlasapi.media.entity.simple.Review, Review>() {
+        return simpleReviews.stream()
+                .map(simpleReview -> {
+                    if (simpleReview.getPublisherDetails() != null &&
+                            !getPublisher(simpleReview.getPublisherDetails()).equals(contentPublisher)) {
+                        throw new IllegalArgumentException("Review publisher must match content publisher");
+                    }
 
-            @Override
-            public Review apply(org.atlasapi.media.entity.simple.Review simpleReview) {
-                if (simpleReview.getPublisherDetails() != null &&
-                        !getPublisher(simpleReview.getPublisherDetails()).equals(contentPublisher)) {
-                    throw new IllegalArgumentException("Review publisher must match content publisher");
-                }
-                return new Review(Locale.forLanguageTag(simpleReview.getLanguage()), simpleReview.getReview());
-            }
-
-
-        });
+                    return Review.builder()
+                            .withLocale(Locale.forLanguageTag(simpleReview.getLanguage()))
+                            .withReview(simpleReview.getReview())
+                            .withDate(simpleReview.getDate())
+                            .withAuthor(simpleReview.getAuthor())
+                            .withAuthorInitials(simpleReview.getAuthorInitials())
+                            .withRating(simpleReview.getRating())
+                            .withReviewType(simpleReview.getReviewType())
+                            .build();
+                })
+                .collect(Collectors.toList());
     }
 
     protected Publisher getPublisher(PublisherDetails pubDets) {

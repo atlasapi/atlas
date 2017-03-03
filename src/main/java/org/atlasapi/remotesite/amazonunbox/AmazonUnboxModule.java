@@ -42,10 +42,19 @@ public class AmazonUnboxModule {
     @Bean
     public AmazonUnboxUpdateTask amazonUnboxUpdater() {
         
-        AmazonUnboxPreProcessingItemProcessor preProcessor = new AmazonUnboxPreProcessingItemProcessor();
+        AmazonUnboxPreProcessingItemProcessor preProcessor =
+                new AmazonUnboxPreProcessingItemProcessor();
         
-        ContentExtractor<AmazonUnboxItem,Iterable<Content>> contentExtractor = new AmazonUnboxContentExtractor();
-        AmazonUnboxItemProcessor processor = new AmazonUnboxContentWritingItemProcessor(contentExtractor, resolver, contentWriter, contentLister, missingContentPercentage, preProcessor);
+        ContentExtractor<AmazonUnboxItem,Iterable<Content>> contentExtractor =
+                new AmazonUnboxContentExtractor();
+        AmazonUnboxItemProcessor processor = new AmazonUnboxContentWritingItemProcessor(
+                contentExtractor,
+                resolver,
+                contentWriter,
+                contentLister,
+                missingContentPercentage,
+                preProcessor
+        );
         
         return new AmazonUnboxUpdateTask(preProcessor, processor, amazonUnboxFeedSupplier());
     }

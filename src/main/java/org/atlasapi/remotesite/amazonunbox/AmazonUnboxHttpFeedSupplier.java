@@ -72,7 +72,8 @@ public class AmazonUnboxHttpFeedSupplier implements Supplier<ImmutableList<Amazo
         }
     }
 
-    private static class ItemCollatingAmazonUnboxProcessor implements AmazonUnboxProcessor<ImmutableList<AmazonUnboxItem>> {
+    private static class ItemCollatingAmazonUnboxProcessor implements
+            AmazonUnboxProcessor<ImmutableList<AmazonUnboxItem>> {
     
         private final ImmutableList.Builder<AmazonUnboxItem> items = ImmutableList.builder();
         

@@ -23,7 +23,11 @@ public class DefaultAmazonUnboxFileStore implements AmazonUnboxFileStore {
     private final S3Client s3client;
     private final Ordering<File> fileOrdering;
 
-    public DefaultAmazonUnboxFileStore(String localFilesPath, Ordering<File> fileOrdering, S3Client s3client) {
+    public DefaultAmazonUnboxFileStore(
+            String localFilesPath,
+            Ordering<File> fileOrdering,
+            S3Client s3client
+    ) {
         checkNotNull(localFilesPath);
         this.fileOrdering = checkNotNull(fileOrdering);
         this.s3client = checkNotNull(s3client);

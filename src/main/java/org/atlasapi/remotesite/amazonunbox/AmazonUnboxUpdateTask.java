@@ -19,9 +19,11 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
     private final AmazonUnboxItemProcessor itemProcessor;
     private final AmazonUnboxHttpFeedSupplier feedSupplier;
     
-    public AmazonUnboxUpdateTask(AmazonUnboxItemProcessor preHandler, 
-                AmazonUnboxItemProcessor handler,
-                AmazonUnboxHttpFeedSupplier feedSupplier) {
+    public AmazonUnboxUpdateTask(
+            AmazonUnboxItemProcessor preHandler,
+            AmazonUnboxItemProcessor handler,
+            AmazonUnboxHttpFeedSupplier feedSupplier
+    ) {
         this.itemPreProcessor = checkNotNull(preHandler);
         this.itemProcessor = checkNotNull(handler);
         this.feedSupplier = checkNotNull(feedSupplier);

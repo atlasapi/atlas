@@ -67,4 +67,8 @@ public class C4DummyChannelResolver implements ChannelResolver {
         throw new UnsupportedOperationException();
     }
 
+    @Override
+    public Iterable<Channel> forKeyPairAlias(ChannelQuery query) {
+        throw new UnsupportedOperationException();
+    }
 }

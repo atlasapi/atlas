@@ -457,5 +457,10 @@ public class PaBaseProgrammeUpdaterTest extends TestCase {
         public Iterable<Channel> allChannels(ChannelQuery query) {
             throw new UnsupportedOperationException();
         }
+
+        @Override
+        public Iterable<Channel> forKeyPairAlias(ChannelQuery query) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

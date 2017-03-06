@@ -1,6 +1,8 @@
 package org.atlasapi.output;
 
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.channel.Channel;
@@ -27,8 +29,10 @@ public class SimpleChannelModelWriter extends TransformingModelWriter<Iterable<C
     @Override
     protected ChannelQueryResult transform(Iterable<Channel> channels, final Set<Annotation> annotations, final Application application) {
         ChannelQueryResult simpleChannels = new ChannelQueryResult();
-        simpleChannels.setChannels(Iterables.transform(channels,
-                input -> simplifier.simplify(input, annotations, application)));
+        simpleChannels.setChannels(StreamSupport.stream(
+                channels.spliterator(), false)
+                .map(input -> simplifier.simplify(input, annotations, application))
+                .collect(Collectors.toList()));
         return simpleChannels;
     }
 

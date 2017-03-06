@@ -8,6 +8,8 @@ import com.google.common.collect.Sets;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
+
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -16,6 +18,7 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.RelatedLink;
+import org.atlasapi.media.entity.simple.Alias;
 import org.atlasapi.media.entity.simple.ChannelGroupSummary;
 import org.atlasapi.media.entity.simple.HistoricalChannelEntry;
 
@@ -70,7 +73,12 @@ public class ChannelSimplifier {
         if (input.getId() != null) {
             simple.setId(idCodec.encode(BigInteger.valueOf(input.getId())));
         }
-
+        simple.setV4Aliases(ImmutableSet.copyOf(
+                input.getAliases()
+                        .stream()
+                        .map(alias -> new Alias(alias.getNamespace(), alias.getValue()))
+                        .collect(MoreCollectors.toImmutableSet())
+        ));
         simple.setAliases(Sets.union(
                 input.getAliasUrls(),
                 ImmutableSet.of(createV4AliasUrl(input))

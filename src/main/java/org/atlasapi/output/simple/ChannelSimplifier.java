@@ -1,13 +1,10 @@
 package org.atlasapi.output.simple;
 
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import java.math.BigInteger;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
+
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -16,13 +13,18 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.RelatedLink;
-import org.atlasapi.media.entity.simple.ChannelGroupSummary;
+import org.atlasapi.media.entity.simple.Alias;
 import org.atlasapi.media.entity.simple.HistoricalChannelEntry;
 
-import java.math.BigInteger;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -35,7 +37,7 @@ public class ChannelSimplifier {
     private final ImageSimplifier imageSimplifier;
     private final ChannelGroupSummarySimplifier channelGroupAliasSimplifier;
     private final ChannelGroupResolver channelGroupResolver;
-    
+
     public ChannelSimplifier(
             NumberToShortStringCodec idCodec,
             NumberToShortStringCodec v4Codec,
@@ -62,15 +64,20 @@ public class ChannelSimplifier {
             final boolean showGroupSummary,
             final Application application
     ) {
-        
+
         org.atlasapi.media.entity.simple.Channel simple = new org.atlasapi.media.entity.simple.Channel();
-        
+
         simple.setType("channel");
         simple.setUri(input.getCanonicalUri());
         if (input.getId() != null) {
             simple.setId(idCodec.encode(BigInteger.valueOf(input.getId())));
         }
-
+        simple.setV4Aliases(ImmutableSet.copyOf(
+                input.getAliases()
+                        .stream()
+                        .map(alias -> new Alias(alias.getNamespace(), alias.getValue()))
+                        .collect(MoreCollectors.toImmutableSet())
+        ));
         simple.setAliases(Sets.union(
                 input.getAliasUrls(),
                 ImmutableSet.of(createV4AliasUrl(input))
@@ -86,60 +93,78 @@ public class ChannelSimplifier {
         if (image != null) {
             simple.setImage(image.getCanonicalUri());
         }
-        simple.setImages(Iterables.transform(
-            input.getImages(),
-                input1 -> imageSimplifier.simplify(input1, ImmutableSet.of(), null)
-        ));
+        simple.setImages(input.getImages()
+                .stream()
+                .map(input1 -> imageSimplifier.simplify(input1, ImmutableSet.of(), null))
+                .collect(MoreCollectors.toImmutableList())
+        );
         if (input.getMediaType() != null) {
             simple.setMediaType(input.getMediaType().toString().toLowerCase());
         }
         simple.setRelatedLinks(simplifyRelatedLinks(input.getRelatedLinks()));
-        simple.setStartDate(input.getStartDate());            
+        simple.setStartDate(input.getStartDate());
         simple.setEndDate(input.getEndDate());
-        if(input.getAdvertiseFrom() != null) {
+        if (input.getAdvertiseFrom() != null) {
             simple.setAdvertisedFrom(input.getAdvertiseFrom().toDate());
         }
         simple.setGenres(input.getGenres());
-        
+
         simple.setPublisherDetails(publisherSimplifier.simplify(input.getSource()));
         simple.setBroadcaster(publisherSimplifier.simplify(input.getBroadcaster()));
-        simple.setAvailableFrom(Iterables.transform(input.getAvailableFrom(),
-                publisherSimplifier::simplify));
-        
+        simple.setAvailableFrom(input.getAvailableFrom()
+                .stream()
+                .map(publisherSimplifier::simplify)
+                .collect(MoreCollectors.toImmutableList())
+        );
+
         if (input.getParent() != null) {
             Maybe<Channel> channel = channelResolver.fromId(input.getParent());
             if (!channel.hasValue()) {
-                throw new RuntimeException("Could not resolve channel with id " + input.getParent());
+                throw new RuntimeException("Could not resolve channel with id "
+                        + input.getParent());
             }
             if (showParent) {
-                simple.setParent(simplify(channel.requireValue(), showHistory, false, false, showGroupSummary, application));
+                simple.setParent(simplify(
+                        channel.requireValue(),
+                        showHistory,
+                        false,
+                        false,
+                        showGroupSummary,
+                        application
+                ));
             } else {
                 simple.setParent(toSubChannel(channel.requireValue()));
             }
         }
         if (input.getVariations() != null && !input.getVariations().isEmpty()) {
-            simple.setVariations(Iterables.transform(
-                channelResolver.forIds(input.getVariations()),
-                    channel -> {
+            simple.setVariations(StreamSupport.stream(
+                    channelResolver.forIds(input.getVariations()).spliterator(),
+                    false
+            ).map(channel -> {
                         if (showVariations) {
-                            return simplify(channel, showHistory, false, false, showGroupSummary, application);
+                            return simplify(
+                                    channel,
+                                    showHistory,
+                                    false,
+                                    false,
+                                    showGroupSummary,
+                                    application
+                            );
                         } else {
                             return toSubChannel(channel);
                         }
-                    }
-            ));
+                    }).collect(MoreCollectors.toImmutableList()));
         }
-        
-        if (showHistory) {            
+
+        if (showHistory) {
             simple.setHistory(calculateChannelHistory(input));
         }
-        
-        
+
         if (showGroupSummary) {
             Iterable<ChannelGroup> groups = channelGroupResolver.channelGroupsFor(
                     input.getChannelNumbers().stream()
-                    .map(ChannelNumbering.TO_CHANNEL_GROUP::apply)
-                    .collect(Collectors.toList())
+                            .map(ChannelNumbering.TO_CHANNEL_GROUP::apply)
+                            .collect(Collectors.toList())
             );
 
             simple.setGroups(
@@ -154,7 +179,8 @@ public class ChannelSimplifier {
         return simple;
     }
 
-    public Iterable<org.atlasapi.media.entity.simple.RelatedLink> simplifyRelatedLinks(Iterable<RelatedLink> relatedLinks) {
+    public Iterable<org.atlasapi.media.entity.simple.RelatedLink> simplifyRelatedLinks(
+            Iterable<RelatedLink> relatedLinks) {
         return StreamSupport.stream(relatedLinks.spliterator(), false)
                 .map(relatedLink -> {
                     org.atlasapi.media.entity.simple.RelatedLink simpleLink = new org.atlasapi.media.entity.simple.RelatedLink();
@@ -172,7 +198,7 @@ public class ChannelSimplifier {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     private Set<HistoricalChannelEntry> calculateChannelHistory(Channel input) {
         Builder<HistoricalChannelEntry> entries = ImmutableSet.builder();
         for (TemporalField<String> title : input.getAllTitles()) {
@@ -189,7 +215,11 @@ public class ChannelSimplifier {
                 entry.setImage(Iterables.getOnlyElement(primaryImages).getCanonicalUri());
             }
             entry.setImages(input.getImagesForDate(title.getStartDate()).stream()
-                    .map(imageForDate -> imageSimplifier.simplify(imageForDate, ImmutableSet.of(), null))
+                    .map(imageForDate -> imageSimplifier.simplify(
+                            imageForDate,
+                            ImmutableSet.of(),
+                            null
+                    ))
                     .collect(Collectors.toList())
             );
             entries.add(entry);
@@ -202,7 +232,11 @@ public class ChannelSimplifier {
             entry.setTitle(input.getTitleForDate(image.getStartDate()));
             entry.setImage(image.getValue().getCanonicalUri());
             entry.setImages(input.getImagesForDate(image.getStartDate()).stream()
-                    .map(imageForDate -> imageSimplifier.simplify(imageForDate, ImmutableSet.of(), null))
+                    .map(imageForDate -> imageSimplifier.simplify(
+                            imageForDate,
+                            ImmutableSet.of(),
+                            null
+                    ))
                     .collect(Collectors.toList())
             );
             entries.add(entry);
@@ -216,7 +250,7 @@ public class ChannelSimplifier {
         simple.setTitle(input.getTitle());
         return simple;
     }
-    
+
     private String createV4AliasUrl(Channel input) {
         return String.format(
                 "http://atlas.metabroadcast.com/4.0/channels/%s",

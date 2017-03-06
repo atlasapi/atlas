@@ -2,11 +2,12 @@ package org.atlasapi.query.v2;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.application.v3.DefaultApplication;
@@ -20,12 +21,14 @@ import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 
+import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.base.MoreOrderings;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.query.Selection.SelectionBuilder;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -54,37 +57,53 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     private static final Splitter SPLIT_ON_COMMA = Splitter.on(',');
 
     private static final ImmutableSet<Annotation> validAnnotations = ImmutableSet.<Annotation>builder()
-        .add(Annotation.CHANNEL_GROUPS)
-        .add(Annotation.HISTORY)
-        .add(Annotation.PARENT)
-        .add(Annotation.VARIATIONS)
-        .add(Annotation.RELATED_LINKS)
-        .build();
+            .add(Annotation.CHANNEL_GROUPS)
+            .add(Annotation.HISTORY)
+            .add(Annotation.PARENT)
+            .add(Annotation.VARIATIONS)
+            .add(Annotation.RELATED_LINKS)
+            .build();
 
     private static final AtlasErrorSummary NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
-        .withMessage("No such Channel exists")
-        .withMessage("Channel not found")
-        .withStatusCode(HttpStatusCode.NOT_FOUND);
+            .withMessage("No such Channel exists")
+            .withErrorCode("Channel not found")
+            .withStatusCode(HttpStatusCode.NOT_FOUND);
 
     private static final AtlasErrorSummary FORBIDDEN = new AtlasErrorSummary(new NullPointerException())
-        .withMessage("You require an API key to view this data")
-        .withErrorCode("Api Key required")
-        .withStatusCode(HttpStatusCode.FORBIDDEN);
+            .withMessage("You require an API key to view this data")
+            .withErrorCode("Api Key required")
+            .withStatusCode(HttpStatusCode.FORBIDDEN);
 
     private static final AtlasErrorSummary BAD_ANNOTATION = new AtlasErrorSummary(new NullPointerException())
-        .withMessage("Invalid annotation specified. Valid annotations are: " + Joiner.on(',').join(Iterables.transform(validAnnotations, Annotation.TO_KEY)))
-        .withErrorCode("Invalid annotation")
-        .withStatusCode(HttpStatusCode.BAD_REQUEST);
+            .withMessage("Invalid annotation specified. Valid annotations are: " + Joiner.on(',')
+                    .join(validAnnotations.stream()
+                            .map(Annotation.TO_KEY::apply)
+                            .collect(MoreCollectors.toImmutableList())
+                    )
+            )
+            .withErrorCode("Invalid annotation")
+            .withStatusCode(HttpStatusCode.BAD_REQUEST);
 
-    private static final SelectionBuilder SELECTION_BUILDER = Selection.builder().withMaxLimit(100).withDefaultLimit(10);
+    private static final SelectionBuilder SELECTION_BUILDER = Selection.builder()
+            .withMaxLimit(100)
+            .withDefaultLimit(10);
     private static final Splitter CSV_SPLITTER = SPLIT_ON_COMMA.trimResults().omitEmptyStrings();
     private static final String TITLE = "title";
     private static final String TITLE_REVERSE = "title.reverse";
+    private static final Function<Channel, String> TO_ORDERING_TITLE = input ->
+            Strings.nullToEmpty(input.getTitle());
 
     private final NumberToShortStringCodec codec;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
     private final ChannelResolver channelResolver;
     private final ChannelWriteController channelWriteController;
+    private final Function<String, Long> toDecodedId = new Function<String, Long>() {
+
+        @Override
+        public Long apply(String input) {
+            return codec.decode(input).longValue();
+        }
+    };
 
     public ChannelController(
             ApplicationFetcher configFetcher,
@@ -101,7 +120,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         this.channelWriteController = checkNotNull(channelWriteController);
     }
 
-    @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.GET)
+    @RequestMapping(value = { "/3.0/channels.*", "/channels.*" }, method = RequestMethod.GET)
     public void listChannels(HttpServletRequest request, HttpServletResponse response,
             @RequestParam(value = "platforms", required = false) String platformKey,
             @RequestParam(value = "regions", required = false) String regionKeys,
@@ -112,8 +131,10 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             @RequestParam(value = "genres", required = false) String genresString,
             @RequestParam(value = "advertised", required = false) String advertiseFromKey,
             @RequestParam(value = "publisher", required = false) String publisherKey,
-            @RequestParam(value = "uri", required = false) String uriKey)
-    throws IOException {
+            @RequestParam(value = "uri", required = false) String uriKey,
+            @RequestParam(value = "aliases.namespace", required = false) String aliasNamespace,
+            @RequestParam(value = "aliases.value", required = false) String aliasValue
+    ) throws IOException {
         try {
             final Application application;
             try {
@@ -134,10 +155,18 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                     genresString,
                     advertiseFromKey,
                     publisherKey,
-                    uriKey
+                    uriKey,
+                    aliasNamespace,
+                    aliasValue
             );
 
-            Iterable<Channel> channels = channelResolver.allChannels(query);
+            Iterable<Channel> channels;
+
+            if (queryHasAliasAttributesOnly(query)) {
+                channels = channelResolver.forKeyPairAlias(query);
+            } else {
+                channels = channelResolver.allChannels(query);
+            }
 
             // TODO This is expensive!
             Optional<Ordering<Channel>> ordering = ordering(orderBy);
@@ -145,9 +174,11 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                 channels = ordering.get().immutableSortedCopy(channels);
             }
 
-            channels = selection.applyTo(Iterables.filter(
-                channels,
-                    input -> application.getConfiguration().isReadEnabled(input.getSource())));
+            channels = selection.applyTo(StreamSupport.stream(channels.spliterator(), false)
+                    .filter(input -> application.getConfiguration()
+                            .isReadEnabled(input.getSource())
+                    )
+                    .collect(MoreCollectors.toImmutableList()));
 
             Optional<Set<Annotation>> annotations = annotationExtractor.extract(request);
             if (annotations.isPresent() && !validAnnotations(annotations.get())) {
@@ -160,47 +191,33 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         }
     }
 
-    @RequestMapping(value={"/3.0/channels/{id}.*", "/channels/{id}.*"}, method = RequestMethod.GET)
-    public void listChannel(HttpServletRequest request, HttpServletResponse response,
-            @PathVariable("id") String id) throws IOException {
-        try {
-            Maybe<Channel> possibleChannel = channelResolver.fromId(codec.decode(id).longValue());
-            if (possibleChannel.isNothing()) {
-                errorViewFor(request, response, NOT_FOUND);
-            } else {
-                Application application = application(request);
-                if (!application.getConfiguration().isReadEnabled(possibleChannel.requireValue().getSource())) {
-                    outputter.writeError(request, response, FORBIDDEN.withMessage("Channel " + id + " not available"));
-                    return;
-                }
+    private boolean queryHasAliasAttributesOnly(ChannelQuery channelQuery) {
 
-                Optional<Set<Annotation>> annotations = annotationExtractor.extract(request);
-                if (annotations.isPresent() && !validAnnotations(annotations.get())) {
-                    errorViewFor(request, response, BAD_ANNOTATION);
-                } else {
-                    modelAndViewFor(request, response, ImmutableList.of(possibleChannel.requireValue()), application);
-                }
-            }
-        } catch (IllegalArgumentException e) {
-            response.sendError(HttpStatusCode.BAD_REQUEST.code(), e.getMessage());
-        } catch (InvalidApiKeyException e) {
-            response.sendError(HttpStatusCode.FORBIDDEN.code(), e.getMessage());
-        }
+        return !channelQuery.getAdvertisedOn().isPresent() &&
+                !channelQuery.getAvailableFrom().isPresent() &&
+                !channelQuery.getBroadcaster().isPresent() &&
+                !channelQuery.getChannelGroups().isPresent() &&
+                !channelQuery.getGenres().isPresent() &&
+                !channelQuery.getMediaType().isPresent() &&
+                !channelQuery.getPublisher().isPresent() &&
+                !channelQuery.getUri().isPresent() &&
+                channelQuery.getAliasNamespace().isPresent() &&
+                channelQuery.getAliasValue().isPresent();
     }
 
-    @RequestMapping(value={"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
-    public void postChannel(HttpServletRequest request, HttpServletResponse response) {
-        channelWriteController.postChannel(request, response);
-    }
-
-    private boolean validAnnotations(Set<Annotation> annotations) {
-        return validAnnotations.containsAll(annotations);
-    }
-
-    private ChannelQuery constructQuery(String platformId, String regionIds,
-            String broadcasterKey, String mediaTypeKey, String availableFromKey,
-            String genresString, String advertiseFromKey, String publisherKey,
-            String uri) {
+    private ChannelQuery constructQuery(
+            String platformId,
+            String regionIds,
+            String broadcasterKey,
+            String mediaTypeKey,
+            String availableFromKey,
+            String genresString,
+            String advertiseFromKey,
+            String publisherKey,
+            String uri,
+            String aliasNamespace,
+            String aliasValue
+    ) {
         ChannelQuery.Builder query = ChannelQuery.builder();
 
         Set<Long> channelGroups = getChannelGroups(platformId, regionIds);
@@ -236,6 +253,14 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         if (!Strings.isNullOrEmpty(uri)) {
             query.withUri(uri);
         }
+
+        if (!Strings.isNullOrEmpty(aliasNamespace)) {
+            query.withAliasNamespace(aliasNamespace);
+        }
+
+        if (!Strings.isNullOrEmpty(aliasValue)) {
+            query.withAliasValue(aliasValue);
+        }
         return query.build();
     }
 
@@ -244,32 +269,82 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             if (orderBy.equals(TITLE)) {
                 return Optional.of(MoreOrderings.transformingOrdering(TO_ORDERING_TITLE));
             } else if (orderBy.equals(TITLE_REVERSE)) {
-                return Optional.of(MoreOrderings.transformingOrdering(TO_ORDERING_TITLE, Ordering.<String>natural().reverse()));
+                return Optional.of(MoreOrderings.transformingOrdering(
+                        TO_ORDERING_TITLE,
+                        Ordering.<String>natural().reverse()
+                ));
             }
         }
 
         return Optional.absent();
     }
 
-    private static final Function<Channel, String> TO_ORDERING_TITLE = input ->
-            Strings.nullToEmpty(input.getTitle());
+    private boolean validAnnotations(Set<Annotation> annotations) {
+        return validAnnotations.containsAll(annotations);
+    }
 
     private Set<Long> getChannelGroups(String platformId, String regionIds) {
         Builder<Long> channelGroups = ImmutableSet.builder();
         if (platformId != null) {
-            channelGroups.addAll(transform(CSV_SPLITTER.split(platformId), toDecodedId));
+            channelGroups.addAll(StreamSupport.stream(
+                    CSV_SPLITTER.split(platformId).spliterator(),
+                    false
+            )
+                    .map(toDecodedId::apply)
+                    .collect(MoreCollectors.toImmutableList()));
         }
         if (regionIds != null) {
-            channelGroups.addAll(transform(CSV_SPLITTER.split(regionIds), toDecodedId));
+            channelGroups.addAll(StreamSupport.stream(
+                    CSV_SPLITTER.split(regionIds).spliterator(),
+                    false
+            )
+                    .map(toDecodedId::apply)
+                    .collect(MoreCollectors.toImmutableList()));
         }
         return channelGroups.build();
     }
 
-    private final Function<String, Long> toDecodedId = new Function<String, Long>() {
+    @RequestMapping(value = { "/3.0/channels/{id}.*", "/channels/{id}.*" },
+            method = RequestMethod.GET)
+    public void listChannel(HttpServletRequest request, HttpServletResponse response,
+            @PathVariable("id") String id) throws IOException {
+        try {
+            Maybe<Channel> possibleChannel = channelResolver.fromId(codec.decode(id).longValue());
+            if (possibleChannel.isNothing()) {
+                errorViewFor(request, response, NOT_FOUND);
+            } else {
+                Application application = application(request);
+                if (!application.getConfiguration()
+                        .isReadEnabled(possibleChannel.requireValue().getSource())) {
+                    outputter.writeError(
+                            request,
+                            response,
+                            FORBIDDEN.withMessage("Channel " + id + " not available")
+                    );
+                    return;
+                }
 
-        @Override
-        public Long apply(String input) {
-            return codec.decode(input).longValue();
+                Optional<Set<Annotation>> annotations = annotationExtractor.extract(request);
+                if (annotations.isPresent() && !validAnnotations(annotations.get())) {
+                    errorViewFor(request, response, BAD_ANNOTATION);
+                } else {
+                    modelAndViewFor(
+                            request,
+                            response,
+                            ImmutableList.of(possibleChannel.requireValue()),
+                            application
+                    );
+                }
+            }
+        } catch (IllegalArgumentException e) {
+            response.sendError(HttpStatusCode.BAD_REQUEST.code(), e.getMessage());
+        } catch (InvalidApiKeyException e) {
+            response.sendError(HttpStatusCode.FORBIDDEN.code(), e.getMessage());
         }
-    };
+    }
+
+    @RequestMapping(value = { "/3.0/channels.*", "/channels.*" }, method = RequestMethod.POST)
+    public void postChannel(HttpServletRequest request, HttpServletResponse response) {
+        channelWriteController.postChannel(request, response);
+    }
 }

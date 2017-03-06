@@ -26,6 +26,11 @@ import static com.google.common.base.Preconditions.checkNotNull;
  */
 public class ExistingItemUnPublisher {
 
+    /**
+     * Disabled until the long term solution for cleaning-up duplicates is introduced.
+     */
+    private final boolean disabled;
+
     private final ContentResolver contentResolver;
     private final ContentWriter contentWriter;
     private final LookupEntryStore lookupEntryStore;
@@ -35,8 +40,11 @@ public class ExistingItemUnPublisher {
             ContentResolver contentResolver,
             ContentWriter contentWriter,
             LookupEntryStore lookupEntryStore,
-            EquivalenceBreaker equivalenceBreaker
+            EquivalenceBreaker equivalenceBreaker,
+            boolean disabled
     ) {
+        this.disabled = disabled;
+
         this.contentResolver = checkNotNull(contentResolver);
         this.contentWriter = checkNotNull(contentWriter);
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
@@ -47,17 +55,27 @@ public class ExistingItemUnPublisher {
             ContentResolver contentResolver,
             ContentWriter contentWriter,
             LookupEntryStore lookupEntryStore,
-            EquivalenceBreaker equivalenceBreaker
+            EquivalenceBreaker equivalenceBreaker,
+            boolean disabled
     ) {
         return new ExistingItemUnPublisher(
                 contentResolver,
                 contentWriter,
                 lookupEntryStore,
-                equivalenceBreaker
+                equivalenceBreaker,
+                disabled
         );
     }
 
     public void unPublishItems(String uri) {
+        if (disabled) {
+            return;
+        }
+
+        unPublishItemsInternal(uri);
+    }
+
+    private void unPublishItemsInternal(String uri) {
         Iterable<LookupEntry> lookupEntries = lookupEntryStore.entriesForCanonicalUris(
                 ImmutableList.of(uri)
         );

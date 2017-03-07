@@ -2,12 +2,9 @@ package org.atlasapi.remotesite.rt;
 
 import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
-import java.sql.Date;
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
-import java.time.Instant;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;

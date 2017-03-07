@@ -142,7 +142,7 @@ public class NitroChannelHydrator {
                 for (LocatorWithRegions locatorWithRegions : locatorsWithRegions) {
                     Channel copy = Channel.builder(channel).build();
 
-                    String dvb = locatorWithRegions.getLocator();
+                    String dvb = locatorWithRegions.getLocator().toLowerCase();
                     List<String> regions = locatorWithRegions.getRegions();
 
                     setChannelDvbData(sid, copy, dvb);
@@ -182,7 +182,7 @@ public class NitroChannelHydrator {
             }
         } else {
             if (sidsToValues.contains(sid, DVB_LOCATOR)) {
-                String dvb = sidsToValues.get(sid, DVB_LOCATOR);
+                String dvb = sidsToValues.get(sid, DVB_LOCATOR).toLowerCase();
                 setChannelDvbData(sid, channel, dvb);
 
                 log.debug(

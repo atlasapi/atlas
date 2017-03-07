@@ -31,15 +31,16 @@ import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.nullValue;
 import static org.junit.Assert.assertNotNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.when;
 
 @RunWith(MockitoJUnitRunner.class)
 public class GlycerinNitroChannelAdapterTest {
 
+    private static final String TERRESTRIAL_LOCATOR = "dvb://233A..1700";
     @Mock private Glycerin glycerin;
     @Mock private GlycerinResponse response;
     private GlycerinNitroChannelAdapter channelAdapter;
@@ -227,6 +228,27 @@ public class GlycerinNitroChannelAdapterTest {
         assertThat(channel.getBroadcaster(), is(Publisher.BBC));
     }
 
+    @Test
+    public void dvbLocatorsGetLowercased() throws GlycerinException {
+        Service service = getBasicService();
+        setIds(service);
+
+        when(response.getResults()).thenReturn(ImmutableList.of(service));
+
+        ImmutableList<Channel> services = channelAdapter.fetchServices();
+        Channel channel = services.stream()
+                .filter(chan -> chan.getCanonicalUri() != null)
+                .findFirst()
+                .get();
+
+        assertThat(
+                channel.getUri(),
+                is("http://nitro.bbc.co.uk/services/bbc_radio_fourlw_233a_1700")
+        );
+        assertTrue(channel.getAliases().stream()
+                .anyMatch(alias -> TERRESTRIAL_LOCATOR.toLowerCase().equals(alias.getValue())));
+    }
+
     private void setDateRange(Service service) {
         DateRange dateRange = new DateRange();
 
@@ -244,7 +266,7 @@ public class GlycerinNitroChannelAdapterTest {
         ids.getId().add(id);
         Id id2 = new Id();
         id2.setType("terrestrial_service_locator");
-        id2.setValue("dvb://233a..1700");
+        id2.setValue(TERRESTRIAL_LOCATOR);
         ids.getId().add(id2);
         service.setIds(ids);
     }

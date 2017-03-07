@@ -9,6 +9,7 @@ import com.google.common.collect.Collections2;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
 
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.ImageType;
@@ -83,31 +84,32 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
     }
 
     private Iterable<org.atlasapi.media.entity.Image> transformImages(Set<Image> images) {
-        if (images == null) {
+        if (images == null || images.isEmpty()) {
             return ImmutableList.of();
         }
-        return Collections2.transform(images, new Function<Image, org.atlasapi.media.entity.Image>() {
-            @Override
-            public org.atlasapi.media.entity.Image apply(Image input) {
-                org.atlasapi.media.entity.Image transformedImage = new org.atlasapi.media.entity.Image(
-                        input.getUri()
-                );
-                transformedImage.setHeight(input.getHeight());
-                transformedImage.setWidth(input.getWidth());
-                if (input.getType() != null) {
-                    transformedImage.setType(ImageType.valueOf(input.getImageType().toUpperCase()));
+        return Collections2.transform(
+                images,
+                input -> {
+                    org.atlasapi.media.entity.Image transformedImage = new org.atlasapi.media.entity.Image(
+                            input.getUri()
+                    );
+
+                    transformedImage.setHeight(input.getHeight());
+                    transformedImage.setWidth(input.getWidth());
+
+                    if (input.getType() != null) {
+                        transformedImage.setType(ImageType.valueOf(input.getImageType().toUpperCase()));
+                    }
+                    return transformedImage;
                 }
-                return transformedImage;
-            }
-        });
+        );
     }
 
     private Iterable<RelatedLink> relatedLinks(
             List<org.atlasapi.media.entity.simple.RelatedLink> relatedLinks) {
-        return Lists.transform(relatedLinks,
-            new Function<org.atlasapi.media.entity.simple.RelatedLink, RelatedLink>() {
-                @Override
-                public RelatedLink apply(org.atlasapi.media.entity.simple.RelatedLink input) {
+        return Lists.transform(
+                relatedLinks,
+                input -> {
                     LinkType type = LinkType.valueOf(input.getType().toUpperCase());
                     Builder link = RelatedLink.relatedLink(type,input.getUrl())
                        .withSourceId(input.getSourceId())
@@ -118,11 +120,13 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                        .withThumbnail(input.getThumbnail());
                     return link.build();
                 }
-            }
         );
     }
 
-    private Iterable<Review> reviews(final Publisher contentPublisher, Set<org.atlasapi.media.entity.simple.Review> simpleReviews) {
+    private Iterable<Review> reviews(
+            final Publisher contentPublisher,
+            Set<org.atlasapi.media.entity.simple.Review> simpleReviews
+    ) {
         return simpleReviews.stream()
                 .map(simpleReview -> {
                     if (simpleReview.getPublisherDetails() != null &&
@@ -140,7 +144,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                             .withReviewType(simpleReview.getReviewType())
                             .build();
                 })
-                .collect(Collectors.toList());
+                .collect(MoreCollectors.toImmutableList());
     }
 
     protected Publisher getPublisher(PublisherDetails pubDets) {

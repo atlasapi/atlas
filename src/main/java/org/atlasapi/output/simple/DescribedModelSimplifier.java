@@ -6,6 +6,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Described;
@@ -200,7 +201,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
 
                     return simple;
                 })
-                .collect(Collectors.toList());
+                .collect(MoreCollectors.toImmutableList());
     }
 
 

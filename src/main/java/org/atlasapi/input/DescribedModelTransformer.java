@@ -1,15 +1,11 @@
 package org.atlasapi.input;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import com.google.common.collect.Collections2;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.ImageType;
@@ -27,10 +23,9 @@ import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.joda.time.DateTime;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Clock;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public abstract class DescribedModelTransformer<F extends Description,T extends Described> extends IdentifiedModelTransformer<F, T> {
 
@@ -159,19 +154,15 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
     }
 
     private Set<Award> transformAwards(Set<org.atlasapi.media.entity.simple.Award> awards) {
-        return FluentIterable.from(awards)
-                .transform(new Function<org.atlasapi.media.entity.simple.Award, Award>() {
-
-                    @Override
-                    public Award apply(org.atlasapi.media.entity.simple.Award input) {
-                        Award award = new Award();
-                        award.setDescription(input.getDescription());
-                        award.setOutcome(input.getOutcome());
-                        award.setTitle(input.getTitle());
-                        award.setYear(input.getYear());
-                        return award;
-                    }
+        return awards.stream()
+                .map(input -> {
+                    Award award = new Award();
+                    award.setDescription(input.getDescription());
+                    award.setOutcome(input.getOutcome());
+                    award.setTitle(input.getTitle());
+                    award.setYear(input.getYear());
+                    return award;
                 })
-                .toSet();
+                .collect(MoreCollectors.toImmutableSet());
     }
 }

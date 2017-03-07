@@ -3,7 +3,11 @@ package org.atlasapi.remotesite.rt;
 import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
 import java.sql.Date;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.time.Instant;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -333,7 +337,12 @@ public class RtFilmProcessor {
         if (reviewType.equals(ReviewType.FOTD_REVIEW)) {
             Element reviewDate = filmElement.getFirstChildElement(reviewType.dateTag());
             if (hasValue(reviewDate)) {
-                builder.withDate(Date.from(Instant.parse(reviewDate.getValue())));
+                DateFormat dateFormat = new SimpleDateFormat("dd/mm/yyyy");
+                try {
+                    builder.withDate(dateFormat.parse(reviewDate.getValue()));
+                } catch (ParseException e) {
+                    // bad date, continue
+                }
             }
         }
 

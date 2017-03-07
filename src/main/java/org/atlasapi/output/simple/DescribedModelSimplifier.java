@@ -6,12 +6,14 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.ReviewType;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Award;
 import org.atlasapi.media.entity.simple.Description;
@@ -183,17 +185,24 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
     }
 
     private Iterable<Review> simplifyReviews(final F content) {
-        return Iterables.transform(content.getReviews(), complex -> {
-            Review simple = new Review();
+        return content.getReviews().stream()
+                .map(complex -> {
+                    Review simple = new Review();
 
-            if (complex.getLocale() != null) {
-                simple.setLanguage(complex.getLocale().toLanguageTag());
-            }
-            simple.setReview(complex.getReview());
-            simple.setPublisherDetails(toPublisherDetails(content.getPublisher()));
+                    if (complex.getLocale() != null) {
+                        simple.setLanguage(complex.getLocale().toLanguageTag());
+                    }
+                    simple.setReview(complex.getReview());
+                    simple.setReviewType(ReviewType.fromKey(complex.getReviewTypeKey()));
+                    simple.setDate(complex.getDate());
+                    simple.setAuthor(complex.getAuthor());
+                    simple.setAuthorInitials(complex.getAuthorInitials());
+                    simple.setRating(complex.getRating());
+                    simple.setPublisherDetails(toPublisherDetails(content.getPublisher()));
 
-            return simple;
-        });
+                    return simple;
+                })
+                .collect(MoreCollectors.toImmutableList());
     }
 
 

@@ -2,6 +2,9 @@ package org.atlasapi.remotesite.rt;
 
 import static org.atlasapi.persistence.logging.AdapterLogEntry.warnEntry;
 
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -25,6 +28,7 @@ import org.atlasapi.media.entity.ReleaseDate;
 import org.atlasapi.media.entity.ReleaseDate.ReleaseType;
 import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Review;
+import org.atlasapi.media.entity.ReviewType;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Subtitles;
 import org.atlasapi.media.entity.Version;
@@ -167,15 +171,18 @@ public class RtFilmProcessor {
             film.setCertificates(certificate(ukCinemaCertificate));
         }
 
-        ArrayList<Review> reviews = new ArrayList(2);
-        Element normalReview = filmElement.getFirstChildElement("normal_review");
-        if (hasValue(normalReview)) {
-            reviews.add(new Review(Locale.ENGLISH, normalReview.getValue()));
-        }
+        ArrayList<Review> reviews = new ArrayList<>(3);
 
-        Element shortReview = filmElement.getFirstChildElement("short_review");
-        if (hasValue(shortReview)) {
-            reviews.add(new Review(Locale.ENGLISH, shortReview.getValue()));
+        for (ReviewType reviewType : ReviewType.values()) {
+            Element review = filmElement.getFirstChildElement(reviewType.toKey());
+            if (hasValue(review)) {
+                Review.Builder builder = Review.builder()
+                        .withLocale(Locale.ENGLISH)
+                        .withReview(review.getValue())
+                        .withReviewTypeKey(reviewType.toKey());
+
+                reviews.add(processAdditionalReviewFields(reviewType, builder, filmElement));
+            }
         }
 
         film.setReviews(reviews);
@@ -303,6 +310,40 @@ public class RtFilmProcessor {
         }
         
         return actors;
+    }
+
+    private Review processAdditionalReviewFields(
+            ReviewType reviewType,
+            Review.Builder builder,
+            Element filmElement
+    ) {
+        Element author = filmElement.getFirstChildElement(reviewType.authorTag());
+        Element authorInitials = filmElement.getFirstChildElement(reviewType.authorInitialsTag());
+        Element rating = filmElement.getFirstChildElement("rating");
+
+        if (hasValue(author)) {
+            builder.withAuthor(author.getValue());
+        }
+        if (hasValue(authorInitials)) {
+            builder.withAuthorInitials(authorInitials.getValue());
+        }
+        if (hasValue(rating)) {
+            builder.withRating(rating.getValue());
+        }
+
+        if (reviewType.equals(ReviewType.FOTD_REVIEW)) {
+            Element reviewDate = filmElement.getFirstChildElement(reviewType.dateTag());
+            if (hasValue(reviewDate)) {
+                DateFormat dateFormat = new SimpleDateFormat("dd/mm/yyyy");
+                try {
+                    builder.withDate(dateFormat.parse(reviewDate.getValue()));
+                } catch (ParseException e) {
+                    // bad date, continue
+                }
+            }
+        }
+
+        return builder.build();
     }
     
     private String name(Element personElement) {

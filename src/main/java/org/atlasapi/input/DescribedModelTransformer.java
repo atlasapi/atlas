@@ -1,13 +1,11 @@
 package org.atlasapi.input;
 
-import java.util.List;
-import java.util.Locale;
-import java.util.Set;
-
 import com.google.common.collect.Collections2;
-import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
-
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Award;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.ImageType;
@@ -25,11 +23,9 @@ import org.atlasapi.media.entity.simple.Image;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 import org.joda.time.DateTime;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Clock;
+import java.util.List;
+import java.util.Locale;
+import java.util.Set;
 
 public abstract class DescribedModelTransformer<F extends Description,T extends Described> extends IdentifiedModelTransformer<F, T> {
 
@@ -83,31 +79,32 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
     }
 
     private Iterable<org.atlasapi.media.entity.Image> transformImages(Set<Image> images) {
-        if (images == null) {
+        if (images == null || images.isEmpty()) {
             return ImmutableList.of();
         }
-        return Collections2.transform(images, new Function<Image, org.atlasapi.media.entity.Image>() {
-            @Override
-            public org.atlasapi.media.entity.Image apply(Image input) {
-                org.atlasapi.media.entity.Image transformedImage = new org.atlasapi.media.entity.Image(
-                        input.getUri()
-                );
-                transformedImage.setHeight(input.getHeight());
-                transformedImage.setWidth(input.getWidth());
-                if (input.getType() != null) {
-                    transformedImage.setType(ImageType.valueOf(input.getImageType().toUpperCase()));
+        return Collections2.transform(
+                images,
+                input -> {
+                    org.atlasapi.media.entity.Image transformedImage = new org.atlasapi.media.entity.Image(
+                            input.getUri()
+                    );
+
+                    transformedImage.setHeight(input.getHeight());
+                    transformedImage.setWidth(input.getWidth());
+
+                    if (input.getType() != null) {
+                        transformedImage.setType(ImageType.valueOf(input.getImageType().toUpperCase()));
+                    }
+                    return transformedImage;
                 }
-                return transformedImage;
-            }
-        });
+        );
     }
 
     private Iterable<RelatedLink> relatedLinks(
             List<org.atlasapi.media.entity.simple.RelatedLink> relatedLinks) {
-        return Lists.transform(relatedLinks,
-            new Function<org.atlasapi.media.entity.simple.RelatedLink, RelatedLink>() {
-                @Override
-                public RelatedLink apply(org.atlasapi.media.entity.simple.RelatedLink input) {
+        return Lists.transform(
+                relatedLinks,
+                input -> {
                     LinkType type = LinkType.valueOf(input.getType().toUpperCase());
                     Builder link = RelatedLink.relatedLink(type,input.getUrl())
                        .withSourceId(input.getSourceId())
@@ -118,24 +115,31 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                        .withThumbnail(input.getThumbnail());
                     return link.build();
                 }
-            }
         );
     }
 
-    private Iterable<Review> reviews(final Publisher contentPublisher, Set<org.atlasapi.media.entity.simple.Review> simpleReviews) {
-        return Iterables.transform(simpleReviews, new Function<org.atlasapi.media.entity.simple.Review, Review>() {
+    private Iterable<Review> reviews(
+            final Publisher contentPublisher,
+            Set<org.atlasapi.media.entity.simple.Review> simpleReviews
+    ) {
+        return simpleReviews.stream()
+                .map(simpleReview -> {
+                    if (simpleReview.getPublisherDetails() != null &&
+                            !getPublisher(simpleReview.getPublisherDetails()).equals(contentPublisher)) {
+                        throw new IllegalArgumentException("Review publisher must match content publisher");
+                    }
 
-            @Override
-            public Review apply(org.atlasapi.media.entity.simple.Review simpleReview) {
-                if (simpleReview.getPublisherDetails() != null &&
-                        !getPublisher(simpleReview.getPublisherDetails()).equals(contentPublisher)) {
-                    throw new IllegalArgumentException("Review publisher must match content publisher");
-                }
-                return new Review(Locale.forLanguageTag(simpleReview.getLanguage()), simpleReview.getReview());
-            }
-
-
-        });
+                    return Review.builder()
+                            .withLocale(Locale.forLanguageTag(simpleReview.getLanguage()))
+                            .withReview(simpleReview.getReview())
+                            .withDate(simpleReview.getDate())
+                            .withAuthor(simpleReview.getAuthor())
+                            .withAuthorInitials(simpleReview.getAuthorInitials())
+                            .withRating(simpleReview.getRating())
+                            .withReviewTypeKey(simpleReview.getReviewType().toKey())
+                            .build();
+                })
+                .collect(MoreCollectors.toImmutableList());
     }
 
     protected Publisher getPublisher(PublisherDetails pubDets) {
@@ -150,19 +154,15 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
     }
 
     private Set<Award> transformAwards(Set<org.atlasapi.media.entity.simple.Award> awards) {
-        return FluentIterable.from(awards)
-                .transform(new Function<org.atlasapi.media.entity.simple.Award, Award>() {
-
-                    @Override
-                    public Award apply(org.atlasapi.media.entity.simple.Award input) {
-                        Award award = new Award();
-                        award.setDescription(input.getDescription());
-                        award.setOutcome(input.getOutcome());
-                        award.setTitle(input.getTitle());
-                        award.setYear(input.getYear());
-                        return award;
-                    }
+        return awards.stream()
+                .map(input -> {
+                    Award award = new Award();
+                    award.setDescription(input.getDescription());
+                    award.setOutcome(input.getOutcome());
+                    award.setTitle(input.getTitle());
+                    award.setYear(input.getYear());
+                    return award;
                 })
-                .toSet();
+                .collect(MoreCollectors.toImmutableSet());
     }
 }

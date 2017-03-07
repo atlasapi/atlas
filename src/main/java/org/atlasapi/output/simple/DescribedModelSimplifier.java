@@ -13,6 +13,7 @@ import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.ReviewType;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.simple.Award;
 import org.atlasapi.media.entity.simple.Description;
@@ -192,7 +193,7 @@ public abstract class DescribedModelSimplifier<F extends Described, T extends De
                         simple.setLanguage(complex.getLocale().toLanguageTag());
                     }
                     simple.setReview(complex.getReview());
-                    simple.setReviewType(complex.getReviewType());
+                    simple.setReviewType(ReviewType.fromKey(complex.getReviewTypeKey()));
                     simple.setDate(complex.getDate());
                     simple.setAuthor(complex.getAuthor());
                     simple.setAuthorInitials(complex.getAuthorInitials());

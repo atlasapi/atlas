@@ -173,12 +173,12 @@ public class RtFilmProcessor {
         ArrayList<Review> reviews = new ArrayList<>(3);
 
         for (ReviewType reviewType : ReviewType.values()) {
-            Element review = filmElement.getFirstChildElement(reviewType.lowercase());
+            Element review = filmElement.getFirstChildElement(reviewType.toKey());
             if (hasValue(review)) {
                 Review.Builder builder = Review.builder()
                         .withLocale(Locale.ENGLISH)
                         .withReview(review.getValue())
-                        .withReviewType(reviewType);
+                        .withReviewTypeKey(reviewType.toKey());
 
                 reviews.add(processAdditionalReviewFields(reviewType, builder, filmElement));
             }

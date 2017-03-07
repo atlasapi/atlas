@@ -136,7 +136,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                             .withAuthor(simpleReview.getAuthor())
                             .withAuthorInitials(simpleReview.getAuthorInitials())
                             .withRating(simpleReview.getRating())
-                            .withReviewType(simpleReview.getReviewType())
+                            .withReviewTypeKey(simpleReview.getReviewType().toKey())
                             .build();
                 })
                 .collect(MoreCollectors.toImmutableList());

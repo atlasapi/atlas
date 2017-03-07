@@ -318,7 +318,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         Channel channel = getChannel(result, uriToParentChannels);
 
         if (id != null && DVB.equals(id.getType())) {
-            String locatorValue = id.getValue();
+            String locatorValue = id.getValue().toLowerCase();
             String canonicalUri = String.format(
                     "http://nitro.bbc.co.uk/%s/%s_%s",
                     channel.getChannelType() == ChannelType.MASTERBRAND ? "masterbrands" : "services",

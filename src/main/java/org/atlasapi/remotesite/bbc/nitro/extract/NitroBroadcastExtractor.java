@@ -104,7 +104,11 @@ public class NitroBroadcastExtractor
     }
 
     private Alias createAlias(Id id) {
-        return new Alias(namespaceFor(id), id.getValue());
+        if (TERRESTRIAL_EVENT_LOCATOR_TYPE.equals(id.getType())) {
+            return new Alias(namespaceFor(id), id.getValue().toLowerCase());
+        } else {
+            return new Alias(namespaceFor(id), id.getValue());
+        }
     }
 
     private String namespaceFor(Id id) {

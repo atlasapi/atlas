@@ -69,6 +69,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
 
         String serviceId = getSid(channelDay.getChannel());
         if (serviceId == null) {
+            log.warn("No SID found for channel {}", channelDay.getChannel());
             return new UpdateProgress(0, 0);
         }
 

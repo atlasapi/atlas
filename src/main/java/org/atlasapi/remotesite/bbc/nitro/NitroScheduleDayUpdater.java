@@ -10,6 +10,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
@@ -67,12 +68,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     @Override
     public UpdateProgress process(ChannelDay channelDay) throws Exception {
 
-        String serviceId = getSid(channelDay.getChannel());
-        if (serviceId == null) {
-            log.warn("No SID found for channel {}", channelDay.getChannel());
-            return new UpdateProgress(0, 0);
-        }
-
+        String serviceId = BbcIonServices.services.inverse().get(channelDay.getChannel().getUri());
         DateTime from = channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZones.UTC);
         DateTime to = from.plusDays(1);
         log.debug("updating {}: {} -> {}", serviceId, from, to);
@@ -96,17 +92,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         return new UpdateProgress(processedCount, failedCount);
     }
 
-    private String getSid(Channel channel) {
-        for (Alias alias : channel.getAliases()) {
-            if ("bbc:service:sid".equals(alias.getNamespace())) {
-                return alias.getValue();
-            }
-        }
-
-        return null;
-    }
-
-    private void updateSchedule(Channel channel, DateTime from, DateTime to, 
+    private void updateSchedule(Channel channel, DateTime from, DateTime to,
             Iterable<ItemRefAndBroadcast> processed) {
         if (Iterables.isEmpty(processed)) {
             return;

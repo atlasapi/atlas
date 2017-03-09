@@ -132,6 +132,7 @@ public abstract class DescribedModelTransformer<F extends Description,T extends 
                     return Review.builder()
                             .withLocale(Locale.forLanguageTag(simpleReview.getLanguage()))
                             .withReview(simpleReview.getReview())
+                            .withPublisherKey(simpleReview.getPublisherDetails().getKey())
                             .withDate(simpleReview.getDate())
                             .withAuthor(simpleReview.getAuthor())
                             .withAuthorInitials(simpleReview.getAuthorInitials())

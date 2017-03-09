@@ -9,6 +9,7 @@ import org.atlasapi.media.entity.simple.ChannelQueryResult;
 import org.atlasapi.output.simple.ChannelModelSimplifier;
 
 import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 /**
  * {@link AtlasModelWriter} that translates the full Atlas Channel model
@@ -40,7 +41,7 @@ public class SimpleChannelModelWriter
         simpleChannels.setChannels(StreamSupport.stream(
                 channels.spliterator(), false)
                 .map(input -> simplifier.simplify(input, annotations, application))
-                .collect(Collectors.toList()));
+                .collect(MoreCollectors.toImmutableList()));
 
         return simpleChannels;
     }

@@ -2,6 +2,8 @@ package org.atlasapi.query.v2;
 
 import java.io.IOException;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -27,6 +29,7 @@ import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.query.Selection.SelectionBuilder;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Function;
 import com.google.common.base.Joiner;
@@ -64,7 +67,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
 
     private static final AtlasErrorSummary NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
             .withMessage("No such Channel exists")
-            .withMessage("Channel not found")
+            .withErrorCode("Channel not found")
             .withStatusCode(HttpStatusCode.NOT_FOUND);
 
     private static final AtlasErrorSummary FORBIDDEN = new AtlasErrorSummary(new NullPointerException())
@@ -74,7 +77,11 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
 
     private static final AtlasErrorSummary BAD_ANNOTATION = new AtlasErrorSummary(new NullPointerException())
             .withMessage("Invalid annotation specified. Valid annotations are: " + Joiner.on(',')
-                    .join(Iterables.transform(validAnnotations, Annotation.TO_KEY)))
+                    .join(validAnnotations.stream()
+                            .map(Annotation.TO_KEY::apply)
+                            .collect(MoreCollectors.toImmutableList())
+                    )
+            )
             .withErrorCode("Invalid annotation")
             .withStatusCode(HttpStatusCode.BAD_REQUEST);
 
@@ -168,10 +175,11 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                 channels = ordering.get().immutableSortedCopy(channels);
             }
 
-            channels = selection.applyTo(Iterables.filter(
-                    channels,
-                    input -> application.getConfiguration().isReadEnabled(input.getSource())
-            ));
+            channels = selection.applyTo(StreamSupport.stream(channels.spliterator(), false)
+                    .filter(input -> application.getConfiguration()
+                            .isReadEnabled(input.getSource())
+                    )
+                    .collect(MoreCollectors.toImmutableList()));
 
             Optional<Set<Annotation>> annotations = annotationExtractor.extract(request);
             if (annotations.isPresent() && !validAnnotations(annotations.get())) {
@@ -280,10 +288,20 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     private Set<Long> getChannelGroups(String platformId, String regionIds) {
         Builder<Long> channelGroups = ImmutableSet.builder();
         if (platformId != null) {
-            channelGroups.addAll(transform(CSV_SPLITTER.split(platformId), toDecodedId));
+            channelGroups.addAll(StreamSupport.stream(
+                    CSV_SPLITTER.split(platformId).spliterator(),
+                    false
+            )
+                    .map(toDecodedId::apply)
+                    .collect(MoreCollectors.toImmutableList()));
         }
         if (regionIds != null) {
-            channelGroups.addAll(transform(CSV_SPLITTER.split(regionIds), toDecodedId));
+            channelGroups.addAll(StreamSupport.stream(
+                    CSV_SPLITTER.split(regionIds).spliterator(),
+                    false
+            )
+                    .map(toDecodedId::apply)
+                    .collect(MoreCollectors.toImmutableList()));
         }
         return channelGroups.build();
     }

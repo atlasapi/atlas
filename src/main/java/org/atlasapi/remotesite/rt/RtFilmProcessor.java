@@ -179,7 +179,8 @@ public class RtFilmProcessor {
                 Review.Builder builder = Review.builder()
                         .withLocale(Locale.ENGLISH)
                         .withReview(review.getValue())
-                        .withReviewTypeKey(reviewType.toKey());
+                        .withReviewTypeKey(reviewType.toKey())
+                        .withPublisherKey(Publisher.RADIO_TIMES.key());
 
                 reviews.add(processAdditionalReviewFields(reviewType, builder, filmElement));
             }

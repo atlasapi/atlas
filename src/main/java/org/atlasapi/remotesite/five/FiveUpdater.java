@@ -176,7 +176,7 @@ public class FiveUpdater extends ScheduledTask {
 
     private List<Element> getElementsForAll(int startingPoint) throws Exception {
         List<Element> elementArrayList = Lists.newArrayList();
-        Elements elements = getElements(startingPoint, "");
+        Elements elements = getElements(startingPoint);
 
         for (int i = 0; i < elements.size(); i++) {
             elementArrayList.add(elements.get(i));
@@ -191,9 +191,9 @@ public class FiveUpdater extends ScheduledTask {
             ));
     }
 
-    private Elements getElements(int startingPoint, String id) throws Exception{
+    private Elements getElements(int startingPoint) throws Exception{
         Document document = streamHttpClient.get(new SimpleHttpRequest<>(
-                getApiCall(startingPoint, id, DateTime.now()),
+                getApiCall(startingPoint, "", DateTime.now()),
                 (responsePrologue, inputStream) -> parseResponse(inputStream)
         ));
 

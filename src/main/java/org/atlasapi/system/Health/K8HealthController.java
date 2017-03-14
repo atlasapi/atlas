@@ -25,22 +25,22 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 
 @Controller
-public class HealthController {
+public class K8HealthController {
 
-    private static final Logger log = LoggerFactory.getLogger(HealthController.class);
+    private static final Logger log = LoggerFactory.getLogger(K8HealthController.class);
     private static final String JSON_TYPE = "application/json";
 
     private final ObjectMapper mapper;
 
     private Map<String, Health> healthMap;
 
-    private HealthController(ObjectMapper mapper) {
+    private K8HealthController(ObjectMapper mapper) {
         healthMap = Maps.newConcurrentMap();
         this.mapper = mapper;
     }
 
-    public static HealthController create(ObjectMapper mapper) {
-        return new HealthController(mapper);
+    public static K8HealthController create(ObjectMapper mapper) {
+        return new K8HealthController(mapper);
     }
 
     public void registerHealth(String name, Health health) {

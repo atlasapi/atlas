@@ -27,14 +27,15 @@ public class HealthModule {
     private final ObjectMapper mapper = JsonFactory.makeJsonMapper();
 
     @Autowired private Mongo mongo;
-    @Autowired private HealthController healthController;
+    @Autowired private K8HealthController healthController;
 
     @Bean
-    public HealthController apiHealthController() {
-        HealthController healthController = HealthController.create(mapper);
+    public K8HealthController healthController() {
+        K8HealthController healthController = K8HealthController.create(mapper);
         healthController.registerHealth(
                 "api", Health.create(getApiProbes())
         );
+
         return healthController;
     }
 
@@ -49,5 +50,4 @@ public class HealthModule {
                 MongoProbe.create((MongoClient) mongo)
         );
     }
-
 }

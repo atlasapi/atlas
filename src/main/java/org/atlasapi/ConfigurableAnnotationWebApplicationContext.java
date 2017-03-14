@@ -40,13 +40,7 @@ import org.springframework.web.context.support.AnnotationConfigWebApplicationCon
 
 public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfigWebApplicationContext {
 
-	private static final Function<Class<?>, String> TO_FQN = new Function<Class<?>, String>() {
-
-		@Override
-		public String apply(Class<?> clazz) {
-			return clazz.getCanonicalName();
-		}
-	};
+	private static final Function<Class<?>, String> TO_FQN = Class::getCanonicalName;
 
 	@Override
 	public final void setConfigLocation(String location) {

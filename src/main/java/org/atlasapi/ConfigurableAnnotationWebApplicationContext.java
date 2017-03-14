@@ -67,7 +67,7 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
             EquivModule.class,
             TVAnytimeFeedsModule.class,
             NitroYouViewResolutionModule.class,
-            org.atlasapi.system.Health.HealthModule.class
+            org.atlasapi.system.Health.K8HealthModule.class
         );
         
         if(runProcessingOnly()) {

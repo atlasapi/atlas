@@ -18,7 +18,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 @Configuration
-public class HealthModule {
+public class K8HealthModule {
 
     private static final String HEALTH_URI = "http://atlas.metabroadcast.com/3.0/channels.json";
     private static final String JSON_URI = "http://atlas.metabroadcast.com/3.0/channels/999.json";

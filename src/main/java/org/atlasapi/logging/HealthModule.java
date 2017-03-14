@@ -18,7 +18,11 @@ import com.metabroadcast.common.webapp.health.HealthController;
 @Configuration
 public class HealthModule {
 	
-	private final ImmutableList<HealthProbe> systemProbes = ImmutableList.<HealthProbe>of(new MemoryInfoProbe(), new DiskSpaceProbe(), new MongoConnectionPoolProbe());
+	private final ImmutableList<HealthProbe> systemProbes = ImmutableList.of(
+			new MemoryInfoProbe(),
+			new DiskSpaceProbe(),
+			new MongoConnectionPoolProbe()
+	);
 	
 	private @Autowired Collection<HealthProbe> probes;
 	private @Autowired HealthController healthController;

@@ -30,7 +30,7 @@ public class HealthModule {
     @Autowired private HealthController healthController;
 
     @Bean
-    public HealthController healthController() {
+    public HealthController apiHealthController() {
         HealthController healthController = HealthController.create(mapper);
         healthController.registerHealth(
                 "api", Health.create(getApiProbes())

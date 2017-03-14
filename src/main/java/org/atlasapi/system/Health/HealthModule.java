@@ -23,13 +23,7 @@ public class HealthModule {
     private static final HttpClient HTTP_CLIENT = HttpClientBuilder.create().build();
 
     @Autowired private Mongo mongo;
-
-    private HealthModule() {
-    }
-
-    public static HealthModule create() {
-        return new HealthModule();
-    }
+    @Autowired private Health health;
 
     @Bean
     public Health health() {

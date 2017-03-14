@@ -66,8 +66,7 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
             RemoteSiteHealthModule.class, 
             EquivModule.class,
             TVAnytimeFeedsModule.class,
-            NitroYouViewResolutionModule.class,
-            org.atlasapi.system.Health.K8HealthModule.class
+            NitroYouViewResolutionModule.class
         );
         
         if(runProcessingOnly()) {

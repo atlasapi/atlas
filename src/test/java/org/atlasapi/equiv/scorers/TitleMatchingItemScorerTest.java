@@ -6,10 +6,10 @@ import junit.framework.TestCase;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer.TitleType;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+
 import org.junit.Test;
 
 import com.google.common.collect.Iterables;
@@ -199,9 +199,20 @@ public class TitleMatchingItemScorerTest extends TestCase {
     @Test
     public void testForOutOfBoundsException() {
         DefaultDescription desc = new DefaultDescription();
-        score(1, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle(":Storage Hunters: UK")), desc));
+        score(0, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle(":Storage Hunters: UK")), desc));
     }
 
+    @Test
+    public void testForMultipleColonsToStart() {
+        DefaultDescription desc = new DefaultDescription();
+        score(0, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle("::::Storage Hunters: UK")), desc));
+    }
+
+    @Test
+    public void testForPrefixRemovalBug() {
+        DefaultDescription desc = new DefaultDescription();
+        score(0, scorer.score(itemWithTitle("Storage: Bunters"), of(itemWithTitle(" 5 : Storage Hunters")), desc));
+    }
     
     private void score(double expected, ScoredCandidates<Item> scores) {
         Score value = Iterables.getOnlyElement(scores.candidates().entrySet()).getValue();

@@ -1,5 +1,6 @@
 package org.atlasapi.system.Health;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.health.Health;
 import com.metabroadcast.common.health.probes.HttpProbe;
@@ -11,6 +12,7 @@ import com.mongodb.MongoClient;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.serialization.json.JsonFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -22,15 +24,21 @@ public class HealthModule {
     private static final String JSON_URI = "http://atlas.metabroadcast.com/3.0/channels/999.json";
     private static final HttpClient HTTP_CLIENT = HttpClientBuilder.create().build();
 
+    private final ObjectMapper mapper = JsonFactory.makeJsonMapper();
+
     @Autowired private Mongo mongo;
-    @Autowired private Health health;
+    @Autowired private HealthController healthController;
 
     @Bean
-    public Health health() {
-        return Health.create(getProbes());
+    public HealthController healthController() {
+        HealthController healthController = HealthController.create(mapper);
+        healthController.registerHealth(
+                "api", Health.create(getApiProbes())
+        );
+        return healthController;
     }
 
-    private Iterable<Probe> getProbes() {
+    private Iterable<Probe> getApiProbes() {
         return ImmutableList.of(
                 HttpProbe.create(HEALTH_URI, HTTP_CLIENT),
                 JsonHttpProbe.builder(Channel.class)

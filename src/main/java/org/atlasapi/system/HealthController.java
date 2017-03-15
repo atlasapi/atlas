@@ -34,6 +34,6 @@ public class HealthController {
 	@RequestMapping("/system/alive")
     public void isAlive(HttpServletResponse response) throws IOException {
         response.setContentType("text/html");
-        response.setStatus(200);
+        response.setStatus(500);
     }
 }

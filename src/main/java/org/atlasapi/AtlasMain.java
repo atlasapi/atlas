@@ -63,7 +63,13 @@ public class AtlasMain {
 
     private static final String SAMPLING_PERIOD_PROPERTY = "samplingPeriodMinutes";
     private static final int DEFAULT_SAMPLING_PERIOD_MINUTES = 3;
-    public static final InetSocketAddress GRAPHITE_ADDRESS = new InetSocketAddress("graphite.mbst.tv", 2003);
+    private static final InetSocketAddress GRAPHITE_ADDRESS = new InetSocketAddress(
+            "graphite.mbst.tv",
+            2003
+    );
+    private static final boolean GRAPHITE_REPORTING_ENABLED = Boolean.getBoolean(
+            System.getProperty("metrics.graphite.enabled", "true")
+    );
 
     public final MetricRegistry metrics = new MetricRegistry();
     private final GraphiteReporter reporter = startGraphiteReporter();
@@ -249,17 +255,20 @@ public class AtlasMain {
         metrics.registerAll(new MemoryUsageGaugeSet());
         metrics.registerAll(new ThreadStatesGaugeSet());
         metrics.registerAll(new JvmAttributeGaugeSet());
+
         try {
-            final GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics)
+            GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics)
                     .prefixedWith("atlas-owl-api.".concat(InetAddress.getLocalHost().getHostName()))
                     .convertRatesTo(TimeUnit.SECONDS)
                     .convertDurationsTo(TimeUnit.MILLISECONDS)
                     .filter(MetricFilter.ALL)
                     .build(new Graphite(GRAPHITE_ADDRESS));
-            if (!IS_PROCESSING) {
+
+            if (!IS_PROCESSING && GRAPHITE_REPORTING_ENABLED) {
                 reporter.start(30, TimeUnit.SECONDS);
                 System.out.println("Started Graphite reporter");
             }
+
             return reporter;
         } catch (Exception e) {
             throw Throwables.propagate(e);

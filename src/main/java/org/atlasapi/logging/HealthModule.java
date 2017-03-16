@@ -71,11 +71,6 @@ public class HealthModule {
     private Iterable<Probe> getApiProbes() {
         return ImmutableList.of(
                 HttpProbe.create(HEALTH_URI, HTTP_CLIENT),
-                JsonHttpProbe.builder(Channel.class)
-                        .withHealthy(channel -> channel.getId().equals(999L))
-                        .withUri(JSON_URI)
-                        .withClient(HTTP_CLIENT)
-                        .build(),
                 MongoProbe.create((MongoClient) mongo)
         );
     }

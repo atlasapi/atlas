@@ -1,11 +1,13 @@
 package org.atlasapi.system.Health;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Maps;
 import com.metabroadcast.common.health.Health;
 import com.metabroadcast.common.health.Result;
 import com.metabroadcast.common.health.Status;
 import com.metabroadcast.common.health.probes.ProbeResult;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -57,26 +59,26 @@ public class K8HealthController {
     public void listProbes(HttpServletResponse response) throws IOException {
         response.setStatus(SC_OK);
         response.setContentType(JSON_TYPE);
-        OutputStream out = response.getOutputStream();
-        mapper.writeValue(out, healthMap.keySet());
-        out.close();
+
+        mapper.writeValue(response.getOutputStream(), healthMap.keySet());
     }
 
     @RequestMapping("/system/healthcheck/probes")
     public void showHealthForProbes(HttpServletResponse response) throws IOException {
 
-        ServletOutputStream out = response.getOutputStream();
         response.setContentType(JSON_TYPE);
 
-        healthMap.entrySet().forEach(entry -> {
+        List<Result> results = healthMap.entrySet().stream()
+                .map(entry -> {
                     Result result = entry.getValue().status(Health.FailurePolicy.ANY);
-                    response.setStatus(result.getStatus() == Status.HEALTHY ?
-                                       SC_OK :
-                                       SC_INTERNAL_SERVER_ERROR);
-                    writeResult(out, result.getProbeResults());
-                });
+                    if (result.getStatus() == Status.UNHEALTHY) {
+                        response.setStatus(SC_INTERNAL_SERVER_ERROR);
+                    }
+                    return result;
+                })
+                .collect(MoreCollectors.toImmutableList());
 
-        out.close();
+        writeResults(response.getOutputStream(), results);
     }
 
     @RequestMapping("/system/healthcheck/probes/{slug}")
@@ -91,12 +93,11 @@ public class K8HealthController {
         if (health.isPresent()) {
             Result result = health.get().status(Health.FailurePolicy.ANY);
 
-            response.setStatus(result.getStatus() == Status.HEALTHY ? SC_OK : SC_INTERNAL_SERVER_ERROR);
+            response.setStatus(result.getStatus() == Status.HEALTHY ?
+                               SC_OK :
+                               SC_INTERNAL_SERVER_ERROR);
 
-            ServletOutputStream out = response.getOutputStream();
-            writeResult(out, result.getProbeResults());
-
-            out.close();
+            writeResults(response.getOutputStream(), ImmutableList.of(result));
         } else {
             response.setStatus(SC_NOT_FOUND);
         }
@@ -107,22 +108,21 @@ public class K8HealthController {
     public void showThreads(HttpServletResponse response) throws IOException {
         response.setContentType(JSON_TYPE);
         response.setStatus(200);
-        ServletOutputStream out = response.getOutputStream();
         Map<Thread, StackTraceElement[]> traces = Thread.getAllStackTraces();
 
         try {
-            mapper.writeValue(out, traces.entrySet());
+            mapper.writeValue(response.getOutputStream(), traces.entrySet());
         } catch (IOException e) {
-            log.error("Could not write trace for threads");
+            log.error("Could not write trace for threads", e);
         }
 
     }
 
-    private void writeResult(OutputStream out, List<ProbeResult> probeResults) {
+    private void writeResults(OutputStream out, List<Result> results) {
         try {
-            mapper.writeValue(out, probeResults);
+            mapper.writeValue(out, results);
         } catch (IOException e) {
-            log.error("Could not write probe results", e);
+            log.error("Coult not write results", e);
         }
     }
 }

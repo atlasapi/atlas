@@ -160,31 +160,37 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     private Score partialTitleScore(String subjectTitle, String suggestionTitle) {
-        if (subjectTitle.indexOf(':') == 0) {
-            subjectTitle = subjectTitle.substring(1);
-        }
-        if (suggestionTitle.indexOf(':') == 0) {
-            suggestionTitle = suggestionTitle.substring(1);
-        }
-        if (subjectTitle.contains(":") && suggestionTitle.contains(":")) {
-            String subjTitle = normalizeWithoutReplacing(subjectTitle);
+
+        String subjectTitleWithoutLeadingColons = removeLeadingColons(subjectTitle);
+        String suggestionTitleWithoutLeadingColons = removeLeadingColons(suggestionTitle);
+
+        String subjTitle = normalizeWithoutReplacing(subjectTitleWithoutLeadingColons);
+        String suggTitle = normalizeWithoutReplacing(suggestionTitleWithoutLeadingColons);
+
+        if (subjTitle.contains(":") && suggTitle.contains(":")) {
+
             subjTitle = subjTitle.substring(0, subjTitle.indexOf(":"));
-            String suggTitle = normalizeWithoutReplacing(suggestionTitle);
             suggTitle = suggTitle.substring(0, suggTitle.indexOf(":"));
             return subjTitle.equals(suggTitle) ? Score.valueOf(1D) : scoreOnMismatch;
-        } else if (subjectTitle.contains(":") && subjectTitle.length() > suggestionTitle.length()) {
-            String subjTitle = normalizeWithoutReplacing(subjectTitle);
-            String suggTitle = normalizeWithoutReplacing(suggestionTitle);
+        } else if (subjTitle.contains(":") && subjTitle.length() > suggTitle.length()) {
+
             String subjSubstring = subjTitle.substring(0, subjTitle.indexOf(":"));
             return subjSubstring.equals(suggTitle) ? Score.valueOf(1D) : scoreOnMismatch;
-        } else if (suggestionTitle.contains(":")) {
-            String subjTitle = normalizeWithoutReplacing(subjectTitle);
-            String suggTitle = normalizeWithoutReplacing(suggestionTitle);
+        } else if (suggTitle.contains(":")) {
+
             String suggSubstring = suggTitle.substring(0, suggestionTitle.indexOf(":"));
             return suggSubstring.equals(subjTitle) ? Score.valueOf(1D) : scoreOnMismatch;
         }
 
         return scoreOnMismatch;
+    }
+
+    private String removeLeadingColons(String title) {
+        Pattern colonsAtStart = Pattern.compile(":+(.*)");
+
+        Matcher titleMatcher = colonsAtStart.matcher(title);
+
+        return titleMatcher.matches() ? titleMatcher.group(1) : title;
     }
 
     private String normalize(String title) {

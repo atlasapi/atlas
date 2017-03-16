@@ -583,8 +583,8 @@ public class UpdaterConfigurationRegistry {
                         targetSources
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        VOD_CONTAINER,
-                        targetSources
+                        NOP_CONTAINER,
+                        ImmutableSet.of()
                 )
                 .build();
     }

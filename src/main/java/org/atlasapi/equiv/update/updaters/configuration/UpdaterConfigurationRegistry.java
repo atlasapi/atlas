@@ -583,7 +583,7 @@ public class UpdaterConfigurationRegistry {
                         targetSources
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        VOD_CONTAINER,
+                        STANDARD_SERIES,
                         targetSources
                 )
                 .build();

@@ -14,6 +14,8 @@ import java.util.concurrent.TimeUnit;
 
 import org.atlasapi.util.jetty.InstrumentedQueuedThreadPool;
 
+import com.metabroadcast.common.properties.Configurer;
+
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.JvmAttributeGaugeSet;
 import com.codahale.metrics.MetricFilter;
@@ -63,9 +65,13 @@ public class AtlasMain {
 
     private static final String SAMPLING_PERIOD_PROPERTY = "samplingPeriodMinutes";
     private static final int DEFAULT_SAMPLING_PERIOD_MINUTES = 3;
-    public static final InetSocketAddress GRAPHITE_ADDRESS = new InetSocketAddress("graphite.mbst.tv", 2003);
 
-    public final MetricRegistry metrics = new MetricRegistry();
+    private final boolean graphiteReportingEnabled = Configurer.get("metrics.graphite.enabled")
+            .toBoolean();
+    private final String graphiteHost = Configurer.get("metrics.graphite.host").toString();
+    private final int graphitePort = Configurer.get("metrics.graphite.port").toInt();
+
+    private final MetricRegistry metrics = new MetricRegistry();
     private final GraphiteReporter reporter = startGraphiteReporter();
 
     public static void main(String[] args) throws Exception {
@@ -249,14 +255,19 @@ public class AtlasMain {
         metrics.registerAll(new MemoryUsageGaugeSet());
         metrics.registerAll(new ThreadStatesGaugeSet());
         metrics.registerAll(new JvmAttributeGaugeSet());
+
         try {
-            final GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics)
+            GraphiteReporter reporter = GraphiteReporter.forRegistry(metrics)
                     .prefixedWith("atlas-owl-api.".concat(InetAddress.getLocalHost().getHostName()))
                     .convertRatesTo(TimeUnit.SECONDS)
                     .convertDurationsTo(TimeUnit.MILLISECONDS)
                     .filter(MetricFilter.ALL)
-                    .build(new Graphite(GRAPHITE_ADDRESS));
-            if (!IS_PROCESSING) {
+                    .build(new Graphite(new InetSocketAddress(
+                            graphiteHost,
+                            graphitePort
+                    )));
+
+            if (!IS_PROCESSING && graphiteReportingEnabled) {
                 reporter.start(30, TimeUnit.SECONDS);
                 System.out.println("Started Graphite reporter");
             }

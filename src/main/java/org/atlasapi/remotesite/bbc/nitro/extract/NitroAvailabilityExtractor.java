@@ -43,23 +43,9 @@ public class NitroAvailabilityExtractor {
 
     private static final LocationEquivalence LOCATION_EQUIVALENCE = new LocationEquivalence();
 
-    private static final Function<Location, Equivalence.Wrapper<Location>> TO_WRAPPED_LOCATION
-            = new Function<Location, Equivalence.Wrapper<Location>>() {
+    private static final Function<Location, Equivalence.Wrapper<Location>> TO_WRAPPED_LOCATION = LOCATION_EQUIVALENCE::wrap;
 
-        @Override
-        public Wrapper<Location> apply(Location input) {
-            return LOCATION_EQUIVALENCE.wrap(input);
-        }
-    };
-
-    private static final Function<Equivalence.Wrapper<Location>, Location> UNWRAP_LOCATION
-            = new Function<Equivalence.Wrapper<Location>, Location>() {
-
-        @Override
-        public Location apply(Equivalence.Wrapper<Location> input) {
-            return input.get();
-        }
-    };
+    private static final Function<Equivalence.Wrapper<Location>, Location> UNWRAP_LOCATION = Wrapper::get;
 
     private static final String IPLAYER_URL_BASE = "http://www.bbc.co.uk/iplayer/episode/";
     private static final String APPLE_IPHONE4_IPAD_HLS_3G = "apple-iphone4-ipad-hls-3g";
@@ -79,83 +65,63 @@ public class NitroAvailabilityExtractor {
 
     private static final String VIDEO_MEDIA_TYPE = "Video";
 
-    private static final Predicate<Availability> IS_HD = new Predicate<Availability>() {
-        @Override
-        public boolean apply(Availability input) {
-            return !input.getMediaSet().contains("iptv-sd");
-        }
-    };
+    private static final Predicate<Availability> IS_HD = input -> !input.getMediaSet().contains("iptv-sd");
 
-    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_HD = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
-        @Override
-        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
-            for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
-                    .getMediaSets()
-                    .getMediaSet()) {
-                if ("iptv-sd".equals(mediaSet.getName())) {
-                    return false;
-                }
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_HD = input -> {
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
+                .getMediaSets()
+                .getMediaSet()) {
+            if ("iptv-hd".equals(mediaSet.getName())) {
+                return true;
             }
-
-            return true;
         }
+
+        return false;
     };
 
-    private static final Predicate<Availability> IS_SUBTITLED = new Predicate<Availability>() {
-        @Override
-        public boolean apply(Availability input) {
-            return input.getMediaSet().contains("captions");
-        }
-    };
-
-    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_SUBTITLED = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
-        @Override
-        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
-            AvailableVersions.Version.Availabilities.Availability.MediaSets mediaSets = input.getMediaSets();
-            for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet ms : mediaSets.getMediaSet()) {
-                if ("captions".equals(ms.getName())) {
-                    return true;
-                }
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_SD = input -> {
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
+                .getMediaSets()
+                .getMediaSet()) {
+            if ("iptv-sd".equals(mediaSet.getName())) {
+                return true;
             }
-
-            return false;
         }
+
+        return false;
     };
 
-    private static final Predicate<Availability> IS_AVAILABLE = new Predicate<Availability>() {
-        @Override
-        public boolean apply(Availability input) {
-            return AVAILABLE.equals(input.getStatus());
-        }
-    };
 
-    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_AVAILABLE = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
-        @Override
-        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
-            return AVAILABLE.equals(input.getStatus());
-        }
-    };
 
-    private static final Predicate<Availability> IS_IPTV = new Predicate<Availability>() {
-        @Override
-        public boolean apply(Availability input) {
-            return input.getMediaSet().contains("iptv-all");
-        }
-    };
+    private static final Predicate<Availability> IS_SUBTITLED = input -> input.getMediaSet().contains("captions");
 
-    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_IPTV = new Predicate<AvailableVersions.Version.Availabilities.Availability>() {
-        @Override
-        public boolean apply(AvailableVersions.Version.Availabilities.Availability input) {
-            for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
-                    .getMediaSets()
-                    .getMediaSet()) {
-                if ("iptv-all".equals(mediaSet.getName())) {
-                    return true;
-                }
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_SUBTITLED = input -> {
+        AvailableVersions.Version.Availabilities.Availability.MediaSets mediaSets = input.getMediaSets();
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet ms : mediaSets.getMediaSet()) {
+            if ("captions".equals(ms.getName())) {
+                return true;
             }
-
-            return false;
         }
+
+        return false;
+    };
+
+    private static final Predicate<Availability> IS_AVAILABLE = input -> AVAILABLE.equals(input.getStatus());
+
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_AVAILABLE = input -> AVAILABLE.equals(input.getStatus());
+
+    private static final Predicate<Availability> IS_IPTV = input -> input.getMediaSet().contains("iptv-all");
+
+    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_IPTV = input -> {
+        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
+                .getMediaSets()
+                .getMediaSet()) {
+            if ("iptv-all".equals(mediaSet.getName())) {
+                return true;
+            }
+        }
+
+        return false;
     };
 
     private final Map<String, Platform> mediaSetPlatform = ImmutableMap.of(
@@ -184,16 +150,32 @@ public class NitroAvailabilityExtractor {
         );
 
         for (AvailableVersions.Version.Availabilities.Availability availability : availabilities) {
+            boolean hd = false;
+            boolean sd = false;
+
+            if (MIXIN_IS_IPTV.apply(availability)) {
+                if (MIXIN_IS_HD.apply(availability)) {
+                    hd = true;
+                } else if (MIXIN_IS_SD.apply(availability)) {
+                    sd = true;
+                }
+            }
+
+            if (!hd && !sd) {
+                continue;
+            }
+
             ImmutableList<Wrapper<Location>> locations =
                     FluentIterable.from(getLocationsFor(programmePid, availability, mediaType))
                             .transform(TO_WRAPPED_LOCATION)
                             .toList();
 
-            if (MIXIN_IS_IPTV.apply(availability) && MIXIN_IS_HD.apply(availability)) {
+            if (hd) {
                 hdLocations.addAll(locations);
             } else {
                 sdLocations.addAll(locations);
             }
+
         }
         // only create encodings if locations are present for HD/SD
         if (hdLocations.isEmpty()) {

@@ -21,6 +21,7 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.Episode;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.common.time.Clock;
 
@@ -39,6 +40,7 @@ import org.slf4j.LoggerFactory;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.AVAILABLE_VERSIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
@@ -190,7 +192,13 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         for (List<PidReference> ref : Iterables.partition(refs, NITRO_BATCH_SIZE)) {
             ProgrammesQuery query = ProgrammesQuery.builder()
                     .withPid(toStrings(ref))
-                    .withMixins(ANCESTOR_TITLES, CONTRIBUTIONS, IMAGES, GENRE_GROUPINGS)
+                    .withMixins(
+                            ANCESTOR_TITLES,
+                            CONTRIBUTIONS,
+                            IMAGES,
+                            GENRE_GROUPINGS,
+                            AVAILABLE_VERSIONS
+                    )
                     .withPageSize(pageSize)
                     .build();
 

@@ -65,7 +65,7 @@ public class NitroAvailabilityExtractor {
 
     private static final String VIDEO_MEDIA_TYPE = "Video";
 
-    private static final Predicate<Availability> IS_HD = input -> !input.getMediaSet().contains("iptv-sd");
+    private static final Predicate<Availability> IS_HD = input -> input.getMediaSet().contains("iptv-hd");
 
     private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_HD = input -> {
         for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
@@ -78,20 +78,6 @@ public class NitroAvailabilityExtractor {
 
         return false;
     };
-
-    private static final Predicate<AvailableVersions.Version.Availabilities.Availability> MIXIN_IS_SD = input -> {
-        for (AvailableVersions.Version.Availabilities.Availability.MediaSets.MediaSet mediaSet : input
-                .getMediaSets()
-                .getMediaSet()) {
-            if ("iptv-sd".equals(mediaSet.getName())) {
-                return true;
-            }
-        }
-
-        return false;
-    };
-
-
 
     private static final Predicate<Availability> IS_SUBTITLED = input -> input.getMediaSet().contains("captions");
 
@@ -150,27 +136,12 @@ public class NitroAvailabilityExtractor {
         );
 
         for (AvailableVersions.Version.Availabilities.Availability availability : availabilities) {
-            boolean hd = false;
-            boolean sd = false;
-
-            if (MIXIN_IS_IPTV.apply(availability)) {
-                if (MIXIN_IS_HD.apply(availability)) {
-                    hd = true;
-                } else if (MIXIN_IS_SD.apply(availability)) {
-                    sd = true;
-                }
-            }
-
-            if (!hd && !sd) {
-                continue;
-            }
-
             ImmutableList<Wrapper<Location>> locations =
                     FluentIterable.from(getLocationsFor(programmePid, availability, mediaType))
                             .transform(TO_WRAPPED_LOCATION)
                             .toList();
 
-            if (hd) {
+            if (MIXIN_IS_IPTV.apply(availability) && MIXIN_IS_HD.apply(availability)) {
                 hdLocations.addAll(locations);
             } else {
                 sdLocations.addAll(locations);

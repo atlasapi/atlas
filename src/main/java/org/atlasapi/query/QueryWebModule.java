@@ -15,6 +15,7 @@ import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
+import org.atlasapi.input.ChannelGroupTransformer;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
@@ -125,6 +126,7 @@ import org.atlasapi.query.topic.PublisherFilteringTopicContentLister;
 import org.atlasapi.query.topic.PublisherFilteringTopicResolver;
 import org.atlasapi.query.v2.ChannelController;
 import org.atlasapi.query.v2.ChannelGroupController;
+import org.atlasapi.query.v2.ChannelGroupWriteController;
 import org.atlasapi.query.v2.ChannelWriteController;
 import org.atlasapi.query.v2.ContentFeedController;
 import org.atlasapi.query.v2.ContentGroupController;
@@ -325,9 +327,21 @@ public class QueryWebModule {
                 log,
                 channelGroupModelWriter(),
                 cachingChannelGroupResolver(),
+                channelGroupWriteController(),
                 channelResolver,
                 idCodec
         );
+    }
+
+    private ChannelGroupWriteController channelGroupWriteController() {
+        return ChannelGroupWriteController.builder()
+                .withReader(new DefaultJacksonModelReader())
+                .withStore(channelGroupStore)
+                .withApplicationFetcher(applicationFetcher)
+                .withChannelGroupResolver(cachingChannelGroupResolver())
+                .withOutputWriter(channelGroupModelWriter())
+                .withTransformer(new ChannelGroupTransformer())
+                .build();
     }
 
     @Bean

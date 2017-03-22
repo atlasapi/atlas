@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -126,9 +127,14 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             List<ChannelGroup> channelGroups = ImmutableList.copyOf(channelGroupResolver.channelGroups());
 
             Selection selection = SELECTION_BUILDER.build(request);        
-            channelGroups = selection.applyTo(Iterables.filter(
-                filterer.filter(channelGroups, constructFilter(platformId, type, advertised)),
-                    input -> application.getConfiguration().isReadEnabled(input.getPublisher())));
+            channelGroups = selection.applyTo(filterer.filter(
+                    channelGroups,
+                    constructFilter(platformId, type, advertised)
+            )
+                    .stream()
+                    .filter(input -> application.getConfiguration()
+                            .isReadEnabled(input.getPublisher()))
+                    .collect(Collectors.toList()));
 
             if (!Strings.isNullOrEmpty(advertised)) {
                 ImmutableList.Builder filtered = ImmutableList.builder();
@@ -213,22 +219,28 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
 //    }
     
     private ChannelGroup filterByChannelGenres(ChannelGroup channelGroup, final Set<String> genres) {
-        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(),
-                input -> {
-                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
+        Iterable<ChannelNumbering> filtered = channelGroup.getChannelNumberings()
+                .stream()
+                .filter(input -> {
+                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(
+                            input.getChannel())));
                     return hasMatchingGenre(channel, genres);
-                });
+                })
+                .collect(Collectors.toList());
         ChannelGroup filteredGroup = channelGroup.copy();
         filteredGroup.setChannelNumberings(filtered);
         return filteredGroup;
     }
 
     private ChannelGroup filterByAdvertised(ChannelGroup channelGroup) {
-        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(),
-                input -> {
-                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
+        Iterable<ChannelNumbering> filtered = channelGroup.getChannelNumberings()
+                .stream()
+                .filter(input -> {
+                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(
+                            input.getChannel())));
                     return isAdvertised(channel);
-                });
+                })
+                .collect(Collectors.toList());
         ChannelGroup filteredGroup = channelGroup.copy();
         filteredGroup.setChannelNumberings(filtered);
         return filteredGroup;

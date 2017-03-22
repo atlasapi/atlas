@@ -48,8 +48,10 @@ public class ChannelGroupTransformer implements
 
         Maybe<Publisher> possiblePublisher = Publisher.fromKey(publisherDetails.getKey());
         if (possiblePublisher.isNothing()) {
-            throw new IllegalArgumentException(String.format("Unknown publisher with key %s",
-                    publisherDetails.getKey()));
+            throw new IllegalArgumentException(String.format(
+                    "Unknown publisher with key %s",
+                    publisherDetails.getKey()
+            ));
         }
 
         return possiblePublisher.requireValue();

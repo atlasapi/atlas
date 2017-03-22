@@ -20,6 +20,7 @@ import org.atlasapi.media.channel.ChannelGroupType;
 import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.Platform;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
@@ -29,6 +30,7 @@ import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter.ChannelGrou
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.base.Joiner;
@@ -75,18 +77,28 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private static final String PLATFORM_ID_KEY = "platform_id";
     private static final String CHANNEL_GENRES_KEY = "channel_genres";
     private static final SelectionBuilder SELECTION_BUILDER = Selection.builder().withMaxLimit(50).withDefaultLimit(10);
+
     private final ChannelGroupResolver channelGroupResolver;
     private final ChannelGroupFilterer filterer = new ChannelGroupFilterer();
     private final ChannelResolver channelResolver;
     private final NumberToShortStringCodec idCodec;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
+    private final ChannelGroupWriteController channelGroupWriteController;
    
 
-    public ChannelGroupController(ApplicationFetcher configFetcher, AdapterLog log, AtlasModelWriter<Iterable<ChannelGroup>> outputter,
-            ChannelGroupResolver channelGroupResolver, ChannelResolver channelResolver, NumberToShortStringCodec idCodec) {
+    public ChannelGroupController(
+            ApplicationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<Iterable<ChannelGroup>> outputter,
+            ChannelGroupResolver channelGroupResolver,
+            ChannelGroupWriteController channelGroupWriteController,
+            ChannelResolver channelResolver,
+            NumberToShortStringCodec idCodec
+    ) {
         super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.channelGroupResolver = channelGroupResolver;
         this.channelResolver = checkNotNull(channelResolver);
+        this.channelGroupWriteController = checkNotNull(channelGroupWriteController);
         this.idCodec = idCodec;
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
     }
@@ -180,6 +192,25 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
     }
+
+    @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.POST)
+    public WriteResponse createChannelGroup(HttpServletRequest request, HttpServletResponse response) {
+        return channelGroupWriteController.createPlatform(request, response);
+    }
+
+    @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.PUT)
+    public WriteResponse updateChannelGroup(HttpServletRequest request, HttpServletResponse response) {
+        return channelGroupWriteController.updatePlatform(request, response);
+    }
+
+//    @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)
+//    public WriteResponse deleteChannelGroup(
+//            @PathVariable("id") String id,
+//            HttpServletRequest request,
+//            HttpServletResponse response
+//    ) {
+//        return channelGroupWriteController.deletePlatform(id, request, response);
+//    }
     
     private ChannelGroup filterByChannelGenres(ChannelGroup channelGroup, final Set<String> genres) {
         Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(),

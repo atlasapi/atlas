@@ -1,21 +1,20 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Executors;
-
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Clip;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.persistence.content.people.QueuingPersonWriter;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.google.api.client.util.Lists;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.ListMultimap;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.util.concurrent.Futures;
+import com.google.common.util.concurrent.ListenableFuture;
+import com.google.common.util.concurrent.ListeningExecutorService;
+import com.google.common.util.concurrent.MoreExecutors;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -29,25 +28,26 @@ import com.metabroadcast.atlas.glycerin.queries.AvailabilityQuery;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.atlas.glycerin.queries.VersionsQuery;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.Clock;
-
-import com.google.api.client.util.Lists;
-import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.ListMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.persistence.content.people.QueuingPersonWriter;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -74,13 +74,17 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     private final int pageSize;
 
     private final ListeningExecutorService executor;
+    private final MetricRegistry metricRegistry;
+    private final String metricPrefix;
 
     public GlycerinNitroContentAdapter(
             Glycerin glycerin,
             GlycerinNitroClipsAdapter clipsAdapter,
             QueuingPersonWriter peopleWriter,
             Clock clock,
-            int pageSize
+            int pageSize,
+            MetricRegistry metricRegistry,
+            String metricPrefix
     ) {
         this.glycerin = checkNotNull(glycerin);
         this.pageSize = pageSize;
@@ -89,6 +93,8 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         this.seriesExtractor = new NitroSeriesExtractor(clock);
         this.itemExtractor = new NitroEpisodeExtractor(clock, peopleWriter);
         this.executor = MoreExecutors.listeningDecorator(Executors.newFixedThreadPool(60));
+        this.metricRegistry = metricRegistry;
+        this.metricPrefix = metricPrefix;
     }
 
     @Override
@@ -204,15 +210,11 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                  the PIDs in string form, the public interface only takes PidRef's, which aren't
                  available here. */
         Iterable<PidReference> episodeRefs = Iterables.transform(episodes,
-                new Function<Episode, PidReference>() {
-
-                    @Override
-                    public PidReference apply(Episode input) {
-                        PidReference pidReference = new PidReference();
-                        pidReference.setHref(input.getUri());
-                        pidReference.setPid(input.getPid());
-                        return pidReference;
-                    }
+                input -> {
+                    PidReference pidReference = new PidReference();
+                    pidReference.setHref(input.getUri());
+                    pidReference.setPid(input.getPid());
+                    return pidReference;
                 });
 
         Multimap<String, Clip> clips = clipsAdapter.clipsFor(episodeRefs);
@@ -243,17 +245,15 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     private ImmutableList<Episode> getAsEpisodes(ImmutableList<Programme> programmes) {
-        return ImmutableList.copyOf(Iterables.filter(Iterables.transform(programmes,
-                new Function<Programme, Episode>() {
-
-                    @Override
-                    public Episode apply(Programme input) {
-                        if (input.isEpisode()) {
-                            return input.getAsEpisode();
-                        }
-                        return null;
+        return programmes.stream()
+                .map(programme -> {
+                    if (programme.isEpisode()) {
+                        return programme.getAsEpisode();
                     }
-                }), Predicates.notNull()));
+                    return null;
+                })
+                .filter(Objects::nonNull)
+                .collect(MoreCollectors.toImmutableList());
     }
 
     private ImmutableList<Programme> fetchProgrammes(Iterable<ProgrammesQuery> queries)
@@ -288,13 +288,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     private Iterable<String> toStrings(Iterable<PidReference> refs) {
-        return Iterables.transform(refs, new Function<PidReference, String>() {
-
-            @Override
-            public String apply(PidReference input) {
-                return input.getPid();
-            }
-        });
+        return Iterables.transform(refs, PidReference::getPid);
     }
 
     private ListMultimap<String, Broadcast> broadcasts(ImmutableList<Episode> episodes)
@@ -310,14 +304,10 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
         ListenableFuture<List<ImmutableList<Broadcast>>> successful = Futures.allAsList(futures);
         try {
-            return Multimaps.index(Iterables.concat(successful.get()),
-                    new Function<Broadcast, String>() {
-
-                        @Override
-                        public String apply(Broadcast input) {
-                            return NitroUtil.programmePid(input).getPid();
-                        }
-                    });
+            return Multimaps.index(Iterables.concat(
+                    successful.get()),
+                    broadcast -> NitroUtil.programmePid(broadcast).getPid()
+            );
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof GlycerinException) {
                 throw (GlycerinException) e.getCause();
@@ -340,13 +330,10 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
         ListenableFuture<List<ImmutableList<Version>>> all = Futures.allAsList(futures);
         try {
-            return Multimaps.index(Iterables.concat(all.get()), new Function<Version, String>() {
-
-                @Override
-                public String apply(Version input) {
-                    return NitroUtil.programmePid(input).getPid();
-                }
-            });
+            return Multimaps.index(Iterables.concat(
+                    all.get()),
+                    version -> NitroUtil.programmePid(version).getPid()
+            );
         } catch (InterruptedException | ExecutionException e) {
             if (e.getCause() instanceof GlycerinException) {
                 throw (GlycerinException) e.getCause();
@@ -367,11 +354,13 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             AvailabilityQuery query = AvailabilityQuery.builder()
                     .withDescendantsOf(toPids(episode))
                     .withPageSize(pageSize)
-                    .withMediaSet("apple-iphone4-ipad-hls-3g",
+                    .withMediaSet(
+                            "apple-iphone4-ipad-hls-3g",
                             "apple-iphone4-hls",
                             "pc",
                             "iptv-all",
-                            "captions")
+                            "captions"
+                    )
                     .build();
 
             futures.add(executor.submit(exhaustingAvailabilityCallable(query)));
@@ -388,71 +377,59 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
             throw Throwables.propagate(e);
         }
 
-        return Multimaps.index(list,
-                new Function<Availability, String>() {
-
-                    @Override
-                    public String apply(Availability input) {
-                        return NitroUtil.programmePid(input);
-                    }
-                });
+        return Multimaps.index(list, NitroUtil::programmePid);
     }
 
     private Callable<ImmutableList<Availability>> exhaustingAvailabilityCallable(
-            final AvailabilityQuery query) {
+            final AvailabilityQuery query
+    ) {
 
-        return new Callable<ImmutableList<Availability>>() {
-
-            @Override
-            public ImmutableList<Availability> call() throws Exception {
-                return exhaust(glycerin.execute(query));
-            }
+        return () ->
+        {
+            Timer.Context timer = metricRegistry.timer(metricPrefix + "glycerin.availability").time();
+            ImmutableList availabilities = exhaust(glycerin.execute(query));
+            timer.stop();
+            return availabilities;
         };
     }
 
     private Callable<ImmutableList<Version>> exhaustingVersionsCallable(final VersionsQuery query) {
 
-        return new Callable<ImmutableList<Version>>() {
-
-            @Override
-            public ImmutableList<Version> call() throws Exception {
-                return exhaust(glycerin.execute(query));
-            }
+        return () ->
+        {
+            Timer.Context timer = metricRegistry.timer(metricPrefix + "glycerin.version").time();
+            ImmutableList availabilities = exhaust(glycerin.execute(query));
+            timer.stop();
+            return availabilities;
         };
     }
 
     private Callable<ImmutableList<Broadcast>> exhaustingBroadcastsCallable(
-            final BroadcastsQuery query) {
-
-        return new Callable<ImmutableList<Broadcast>>() {
-
-            @Override
-            public ImmutableList<Broadcast> call() throws Exception {
-                return exhaust(glycerin.execute(query));
-            }
+            final BroadcastsQuery query
+    ) {
+        return () ->
+        {
+            Timer.Context timer = metricRegistry.timer(metricPrefix + "glycerin.broadcast").time();
+            ImmutableList availabilities = exhaust(glycerin.execute(query));
+            timer.stop();
+            return availabilities;
         };
     }
 
     private Callable<ImmutableList<Programme>> exhaustingProgrammeCallable(
-            final ProgrammesQuery query) {
-
-        return new Callable<ImmutableList<Programme>>() {
-
-            @Override
-            public ImmutableList<Programme> call() throws Exception {
-                return exhaust(glycerin.execute(query));
-            }
+            final ProgrammesQuery query
+    ) {
+        return () ->
+        {
+            Timer.Context timer = metricRegistry.timer(metricPrefix + "glycerin.programme").time();
+            ImmutableList availabilities = exhaust(glycerin.execute(query));
+            timer.stop();
+            return availabilities;
         };
     }
 
     private Iterable<String> toPids(List<Episode> episodes) {
-        return Iterables.transform(episodes, new Function<Episode, String>() {
-
-            @Override
-            public String apply(Episode input) {
-                return input.getPid();
-            }
-        });
+        return Iterables.transform(episodes, Episode::getPid);
     }
 
 }

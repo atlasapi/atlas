@@ -3,7 +3,11 @@ package org.atlasapi.remotesite.bbc.nitro;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.Set;
+import java.util.stream.Collectors;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
@@ -41,21 +45,32 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
     private final ContentWriter contentWriter;
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;
     private final GroupLock<String> lock;
+    private final MetricRegistry metricRegistry;
+    private final String metricPrefix;
 
     public OffScheduleContentIngestTask(
-            NitroContentAdapter contentAdapter, int pageSize,
-            ContentWriter contentWriter, GroupLock<String> lock,
-            LocalOrRemoteNitroFetcher localOrRemoteFetcher
+            NitroContentAdapter contentAdapter,
+            int pageSize,
+            ContentWriter contentWriter,
+            GroupLock<String> lock,
+            LocalOrRemoteNitroFetcher localOrRemoteFetcher,
+            MetricRegistry metricRegistry,
+            String metricPrefix
     ) {
         this.localOrRemoteFetcher = checkNotNull(localOrRemoteFetcher);
         this.lock = checkNotNull(lock);
         this.contentWriter = checkNotNull(contentWriter);
         this.contentAdapter = checkNotNull(contentAdapter);
         this.pageSize = pageSize;
+        this.metricRegistry = metricRegistry;
+        this.metricPrefix = metricPrefix;
     }
 
     @Override
     protected void runTask() {
+
+        Timer.Context taskTimer = metricRegistry.timer(metricPrefix + "task.duration").time();
+
         ProgrammesQuery query = ProgrammesQuery
                 .builder()
                 .withMixins(ProgrammesMixin.ANCESTOR_TITLES, ProgrammesMixin.CONTRIBUTIONS,
@@ -77,13 +92,10 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
             reportStatus(String.format("Got %d items from discovery", fetched.size()));
 
-            episodeIds = ImmutableSet.copyOf(Iterables.transform(fetched,
-                    new Function<Item, String>() {
-                        @Override
-                        public String apply(Item input) {
-                            return BbcFeeds.pidFrom(input.getCanonicalUri());
-                        }
-                    }));
+            episodeIds = fetched.stream()
+                    .map(item -> BbcFeeds.pidFrom(item.getCanonicalUri()))
+                    .collect(MoreCollectors.toImmutableSet());
+
             containerIds = topLevelContainerIds(fetched);
 
             reportStatus("Locking item IDs");
@@ -102,12 +114,17 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
             Iterable<Brand> brands = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Brand.class);
 
             reportStatus("Writing items");
+
+            Timer.Context writeTimer = metricRegistry.timer(metricPrefix + "writeContent").time();
             writeContent(items, series, brands);
+            writeTimer.stop();
+
         } catch (NitroException e) {
             throw Throwables.propagate(e);
         } catch (InterruptedException e) {
             log.error("Could not lock item IDs", e);
         } finally {
+            taskTimer.stop();
             lock.unlock(episodeIds);
             lock.unlock(containerIds);
         }
@@ -167,14 +184,11 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
     private Set<String> topLevelContainerIds(ImmutableSet<Item> items) {
         return ImmutableSet.copyOf(Iterables.filter(Iterables.transform(items,
-                new Function<Item, String>() {
-                    @Override
-                    public String apply(Item input) {
-                        if (input.getContainer() != null) {
-                            return input.getContainer().getUri();
-                        }
-                        return null;
+                input -> {
+                    if (input.getContainer() != null) {
+                        return input.getContainer().getUri();
                     }
+                    return null;
                 }
         ), Predicates.notNull()));
     }

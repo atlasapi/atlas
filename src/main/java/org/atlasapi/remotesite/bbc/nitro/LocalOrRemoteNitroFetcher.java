@@ -1,8 +1,21 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.Map;
-import java.util.Set;
-
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
@@ -17,27 +30,17 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.time.Clock;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -50,9 +53,19 @@ public class LocalOrRemoteNitroFetcher {
     private final NitroContentAdapter contentAdapter;
     private final ContentMerger contentMerger;
     private final Predicate<Item> fullFetchPermitted;
+    private final MetricRegistry metricRegistry;
+    private final String metricPrefix;
 
-    public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, final Clock clock) {
-        this(resolver, contentAdapter,
+    public LocalOrRemoteNitroFetcher(
+            ContentResolver resolver,
+            NitroContentAdapter contentAdapter,
+            final Clock clock,
+            MetricRegistry metricRegistry,
+            String metricPrefix
+    ) {
+        this(
+                resolver,
+                contentAdapter,
                 new ContentMerger(
                         MergeStrategy.MERGE,
                         MergeStrategy.KEEP,
@@ -61,8 +74,8 @@ public class LocalOrRemoteNitroFetcher {
                 new Predicate<Item>() {
 
                     @Override
-                    public boolean apply(Item input) {
-                        if (hasVersionsWithNoDurations(input)) {
+                    public boolean apply(Item item) {
+                        if (hasVersionsWithNoDurations(item)) {
                             return true;
                         }
 
@@ -74,41 +87,34 @@ public class LocalOrRemoteNitroFetcher {
                         // tv has a longer forward interval, to ensure for repeated shows that we refetch everything, to make sure
                         // we pull in all changes on a given programme even for later repeats of something broadcast earlier.
                         final Interval fetchForBroadcastsWithin =
-                                MediaType.AUDIO.equals(input.getMediaType())
+                                MediaType.AUDIO.equals(item.getMediaType())
                                 ? broadcastInterval(today.minusDays(5), today.plusDays(1))
                                 : broadcastInterval(today.minusDays(3), today.plusDays(10));
 
-                        return Iterables.any(
-                                input.flattenBroadcasts(),
-                                new Predicate<org.atlasapi.media.entity.Broadcast>() {
-
-                                    @Override
-                                    public boolean apply(
-                                            org.atlasapi.media.entity.Broadcast input) {
-                                        return fetchForBroadcastsWithin.contains(input.getTransmissionTime());
-                                    }
-                                }
-                        );
+                        return StreamSupport.stream(
+                                item.flattenBroadcasts().spliterator(),
+                                false
+                        )
+                                .anyMatch(broadcast -> fetchForBroadcastsWithin.contains(
+                                        broadcast.getTransmissionTime()
+                                ));
                     }
 
                     /**
                      * Forces a full fetch from nitro if an item with no durations is
                      * encountered
                      *
-                     * @param input
+                     * @param item
                      * @return
                      */
-                    private boolean hasVersionsWithNoDurations(Item input) {
-                        return Iterables.any(input.getVersions(), new Predicate<Version>() {
-
-                            @Override
-                            public boolean apply(Version input) {
-                                return input.getDuration() == null;
-                            }
-                        });
+                    private boolean hasVersionsWithNoDurations(Item item) {
+                        return item.getVersions().stream()
+                                .anyMatch(version -> version.getDuration() == null);
                     }
 
-                }
+                },
+                metricRegistry,
+                metricPrefix
         );
     }
     
@@ -116,8 +122,13 @@ public class LocalOrRemoteNitroFetcher {
         return new Interval(start.toDateTimeAtStartOfDay(DateTimeZone.UTC), end.toDateTimeAtStartOfDay(DateTimeZone.UTC));
     }
     
-    public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, 
-            Predicate<Item> fullFetchPermitted) {
+    public LocalOrRemoteNitroFetcher(
+            ContentResolver resolver,
+            NitroContentAdapter contentAdapter,
+            Predicate<Item> fullFetchPermitted,
+            MetricRegistry metricRegistry,
+            String metricPrefix
+    ) {
         this(
                 resolver,
                 contentAdapter,
@@ -126,16 +137,26 @@ public class LocalOrRemoteNitroFetcher {
                         MergeStrategy.KEEP,
                         MergeStrategy.REPLACE
                 ),
-                fullFetchPermitted
+                fullFetchPermitted,
+                metricRegistry,
+                metricPrefix
         );
     }
     
-    public LocalOrRemoteNitroFetcher(ContentResolver resolver, NitroContentAdapter contentAdapter, 
-            ContentMerger contentMerger, Predicate<Item> fullFetchPermitted) {
+    public LocalOrRemoteNitroFetcher(
+            ContentResolver resolver,
+            NitroContentAdapter contentAdapter,
+            ContentMerger contentMerger,
+            Predicate<Item> fullFetchPermitted,
+            MetricRegistry metricRegistry,
+            String metricPrefix
+    ) {
         this.resolver = checkNotNull(resolver);
         this.contentAdapter = checkNotNull(contentAdapter);
         this.fullFetchPermitted = checkNotNull(fullFetchPermitted);
         this.contentMerger = checkNotNull(contentMerger);
+        this.metricRegistry = metricRegistry;
+        this.metricPrefix = metricPrefix;
     }
 
     public ResolveOrFetchResult<Item> resolveItems(Iterable<Item> items)
@@ -144,11 +165,18 @@ public class LocalOrRemoteNitroFetcher {
         for (Item item : items) {
             itemUris.add(item.getCanonicalUri());
         }
+
+        Timer.Context timer = metricRegistry.timer(metricPrefix + "resolve.items").time();
         ResolvedContent resolvedItems = resolve(itemUris.build());
+        timer.stop();
 
         return mergeItemsWithExisting(
                 ImmutableSet.copyOf(items),
-                ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
+                ImmutableSet.copyOf(Iterables.filter(
+                        resolvedItems.getAllResolvedResults(),
+                        Item.class
+                ))
+        );
     }
 
     public ResolveOrFetchResult<Item> resolveOrFetchItem(Iterable<Broadcast> broadcasts)
@@ -172,13 +200,20 @@ public class LocalOrRemoteNitroFetcher {
         }
 
         ImmutableSet<Item> fetched = contentAdapter.fetchEpisodes(toFetch);
-        return mergeItemsWithExisting(fetched, ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
+        return mergeItemsWithExisting(
+                fetched,
+                ImmutableSet.copyOf(Iterables.filter(
+                        resolvedItems.getAllResolvedResults(),
+                        Item.class
+                ))
+        );
     }
     
     private ResolveOrFetchResult<Item> mergeItemsWithExisting(ImmutableSet<Item> fetchedItems,
             Set<Item> existingItems) {
         Map<String, Item> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedItems, Identified.TO_URI));
         ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
+
         for (Item existing : existingItems) {
             Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
@@ -197,12 +232,9 @@ public class LocalOrRemoteNitroFetcher {
     }
 
     private ImmutableSet<String> toItemUris(Iterable<PidReference> pidRefs) {
-        return ImmutableSet.copyOf(Iterables.transform(pidRefs, new Function<PidReference, String>() {
-            @Override
-            public String apply(PidReference input) {
-                return toItemUri(input);
-            }
-        }));
+        return StreamSupport.stream(pidRefs.spliterator(), false)
+                .map(this::toItemUri)
+                .collect(MoreCollectors.toImmutableSet());
     }
     
     private String toItemUri(PidReference pidReference) {
@@ -210,28 +242,32 @@ public class LocalOrRemoteNitroFetcher {
     }
 
     private Iterable<PidReference> toEpisodeRefs(Iterable<Broadcast> broadcasts) {
-        return Iterables.filter(Iterables.transform(broadcasts, new Function<Broadcast, PidReference>() {
-            @Override
-            public PidReference apply(Broadcast input) {
-                final PidReference pidRef = NitroUtil.programmePid(input);
-                if (pidRef == null) {
-                    log.warn("No programme pid for broadcast {}", input.getPid());
-                    return null;
-                }
-                return pidRef;
-            }
-        }), Predicates.notNull());
+        return StreamSupport.stream(broadcasts.spliterator(), false)
+                .map(input -> {
+                    final PidReference pidRef = NitroUtil.programmePid(input);
+                    if (pidRef == null) {
+                        log.warn("No programme pid for broadcast {}", input.getPid());
+                        return null;
+                    }
+                    return pidRef;
+                })
+                .filter(Objects::nonNull)
+                .collect(Collectors.toList());
     }
     
     public ImmutableSet<Container> resolveOrFetchSeries(Iterable<Item> items) throws NitroException {
         if (Iterables.isEmpty(items)) {
             return ImmutableSet.of();
         }
+
         Iterable<Episode> episodes = Iterables.filter(items, Episode.class);
         Multimap<String, Episode> seriesUriMap = toSeriesUriMap(episodes);
         Set<String> seriesUris = seriesUriMap.keySet();
+
+        Timer.Context timer = metricRegistry.timer(metricPrefix + "resolve.series").time();
         ResolvedContent resolved = resolver.findByCanonicalUris(seriesUris);
-        
+        timer.stop();
+
         Set<String> toFetch = Sets.newHashSet();
         for (String seriesUri : seriesUris) {
             Maybe<Identified> maybeId = resolved.asMap().get(seriesUri);
@@ -247,13 +283,22 @@ public class LocalOrRemoteNitroFetcher {
         
         return mergeContainersWithExisting(
                     fetched, 
-                    ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Container.class))).getAll();
+                    ImmutableSet.copyOf(Iterables.filter(
+                            resolved.getAllResolvedResults(),
+                            Container.class
+                    ))
+        )
+                .getAll();
     }
     
-    private ResolveOrFetchResult<Container> mergeContainersWithExisting(ImmutableSet<? extends Container> fetchedContainers,
-            Set<? extends Container> existingContainers) {
+    private ResolveOrFetchResult<Container> mergeContainersWithExisting(
+            ImmutableSet<? extends Container> fetchedContainers,
+            Set<? extends Container> existingContainers
+    ) {
+
         Map<String, Container> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedContainers, Identified.TO_URI));
         ImmutableSet.Builder<Container> resolved = ImmutableSet.builder();
+
         for (Container existing : existingContainers) {
             Container fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
@@ -271,36 +316,23 @@ public class LocalOrRemoteNitroFetcher {
     }
 
     private Iterable<PidReference> asTypePidsRefs(Iterable<String> pids, final String type) {
-        return Iterables.transform(pids, new Function<String, PidReference>(){
-            @Override
-            public PidReference apply(String input) {
-                PidReference pidRef = new PidReference();
-                pidRef.setPid(BbcFeeds.pidFrom(input));
-                pidRef.setResultType(type);
-                return pidRef;
-            }});
+        return StreamSupport.stream(pids.spliterator(), false)
+                .map(pid -> {
+                    PidReference pidRef = new PidReference();
+                    pidRef.setPid(BbcFeeds.pidFrom(pid));
+                    pidRef.setResultType(type);
+                    return pidRef;
+                })
+                .collect(Collectors.toList());
     }
 
     private Multimap<String, Episode> toSeriesUriMap(Iterable<Episode> episodes) {
         return Multimaps.index(Iterables.filter(episodes, HAS_SERIES_REF), TO_SERIES_REF_URI); 
     };
     
-    private static Function<Episode, String> TO_SERIES_REF_URI = new Function<Episode, String>() {
-
-        @Override
-        public String apply(Episode input) {
-            return input.getSeriesRef().getUri();
-        }
-    };
+    private static Function<Episode, String> TO_SERIES_REF_URI = episode -> episode.getSeriesRef().getUri();
     
-    private static Predicate<Episode> HAS_SERIES_REF = new Predicate<Episode>() {
-
-        @Override
-        public boolean apply(Episode input) {
-            return input.getSeriesRef() != null;
-        }
-        
-    };
+    private static Predicate<Episode> HAS_SERIES_REF = episode -> episode.getSeriesRef() != null;
 
     public ImmutableSet<Container> resolveOrFetchBrand(Iterable<Item> items) throws NitroException {
         if (Iterables.isEmpty(items)) {
@@ -308,8 +340,11 @@ public class LocalOrRemoteNitroFetcher {
         }
         Multimap<String, Item> brandUriMap = toBrandUriMap(items);
         Set<String> brandUris = brandUriMap.keySet();
-        
+
+        Timer.Context timer = metricRegistry.timer(metricPrefix + "resolve.brands").time();
         ResolvedContent resolved = resolver.findByCanonicalUris(brandUris);
+        timer.stop();
+
         Set<String> toFetch = Sets.newHashSet();
         for (String brandUri : brandUris) {
             Maybe<Identified> maybeId = resolved.asMap().get(brandUri);
@@ -324,34 +359,33 @@ public class LocalOrRemoteNitroFetcher {
         ImmutableSet<Brand> fetched = contentAdapter.fetchBrands(asBrandPidRefs(toFetch));
         return mergeContainersWithExisting(
                     fetched, 
-                    ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Container.class))).getAll();
+                    ImmutableSet.copyOf(Iterables.filter(
+                            resolved.getAllResolvedResults(),
+                            Container.class))
+        )
+                .getAll();
     }
     
     
     private Multimap<String, Item> toBrandUriMap(Iterable<Item> items) {
-        return Multimaps.index(Iterables.filter(items, HAS_BRAND), TO_BRAND_REF_URI);
+        return Multimaps.index(
+                StreamSupport.stream(items.spliterator(), false)
+                        .filter(HAS_BRAND::apply)
+                        .collect(Collectors.toList()),
+                TO_BRAND_REF_URI
+        );
     }
     
-    private static Function<Item, String> TO_BRAND_REF_URI = new Function<Item, String>() {
-
-        @Override
-        public String apply(Item input) {
-            return input.getContainer() == null ? null : input.getContainer().getUri();
-        }
-    };
+    private static Function<Item, String> TO_BRAND_REF_URI = item ->
+            item.getContainer() == null ? null
+                                        : item.getContainer().getUri();
     
     private Iterable<PidReference> asBrandPidRefs(Iterable<String> uris) {
         return asTypePidsRefs(uris, "brand");
     }
 
-    private static Predicate<Item> HAS_BRAND = new Predicate<Item>() {
-
-        @Override
-        public boolean apply(Item input) {
-            return (!inTopLevelSeries(input)) && input.getContainer() != null;
-        }
-        
-    };
+    private static Predicate<Item> HAS_BRAND = item ->
+            !inTopLevelSeries(item) && item.getContainer() != null;
 
     private static boolean inTopLevelSeries(Item item) {
         if (item instanceof Episode) {

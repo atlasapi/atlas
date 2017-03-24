@@ -71,7 +71,7 @@ public class AtlasMain {
             System.getProperty("metrics.graphite.enabled", "true")
     );
 
-    public final MetricRegistry metrics = new MetricRegistry();
+    public static final MetricRegistry metrics = new MetricRegistry();
     private final GraphiteReporter reporter = startGraphiteReporter();
 
     public static void main(String[] args) throws Exception {
@@ -264,7 +264,7 @@ public class AtlasMain {
                     .filter(MetricFilter.ALL)
                     .build(new Graphite(GRAPHITE_ADDRESS));
 
-            if (!IS_PROCESSING && GRAPHITE_REPORTING_ENABLED) {
+            if (GRAPHITE_REPORTING_ENABLED) {
                 reporter.start(30, TimeUnit.SECONDS);
                 System.out.println("Started Graphite reporter");
             }

@@ -3,6 +3,8 @@ package org.atlasapi.remotesite.bbc.nitro;
 import java.util.List;
 import java.util.Map;
 
+import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.Timer;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
@@ -48,12 +50,23 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     private final NitroBroadcastHandler<? extends List<Optional<ItemRefAndBroadcast>>> broadcastHandler;
     private final BroadcastTrimmer trimmer;
     private final ScheduleWriter scheduleWriter;
+    private final MetricRegistry metricRegistry;
+    private final String metricPrefix;
 
-    public NitroScheduleDayUpdater(ScheduleWriter scheduleWriter, BroadcastTrimmer trimmer, NitroBroadcastHandler<? extends List<Optional<ItemRefAndBroadcast>>> handler, Glycerin glycerin) {
+    public NitroScheduleDayUpdater(
+            ScheduleWriter scheduleWriter,
+            BroadcastTrimmer trimmer,
+            NitroBroadcastHandler<? extends List<Optional<ItemRefAndBroadcast>>> handler,
+            Glycerin glycerin,
+            MetricRegistry metricRegistry,
+            String metricPrefix
+    ) {
         this.scheduleWriter = scheduleWriter;
         this.trimmer = trimmer;
         this.broadcastHandler = handler;
         this.glycerin = glycerin;
+        this.metricRegistry = metricRegistry;
+        this.metricPrefix = metricPrefix;
     }
     
     @Override
@@ -106,8 +119,11 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
                 .withStartTo(to)
                 .withPageSize(MAX_PAGE_SIZE)
                 .build();
-        
+
+        Timer.Context timer = metricRegistry.timer(metricPrefix + "glycerin.broadcasts").time();
         GlycerinResponse<Broadcast> resp = glycerin.execute(query);
+        timer.stop();
+
         if (!resp.hasNext()) {
             return resp.getResults();
         } else {

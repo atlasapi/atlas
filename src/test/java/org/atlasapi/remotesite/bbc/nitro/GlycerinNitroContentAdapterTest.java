@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import com.codahale.metrics.MetricRegistry;
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
@@ -55,7 +56,7 @@ public class GlycerinNitroContentAdapterTest {
     @Before
     public void setUp() {
         contentAdapter = new GlycerinNitroContentAdapter(
-                glycerin, clipsAdapter, personWriter, clock, pageSize);
+                glycerin, clipsAdapter, personWriter, clock, pageSize, new MetricRegistry(), "test");
     }
 
     @Test

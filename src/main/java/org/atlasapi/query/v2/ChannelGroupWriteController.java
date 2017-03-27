@@ -134,7 +134,7 @@ public class ChannelGroupWriteController {
         } catch (Exception e) {
             log.error(
                     String.format(
-                            "Error while creating/updating channel for request %s",
+                            "Error while creating/updating platform for request %s",
                             request.getRequestURL()
                     ),
                     e
@@ -196,7 +196,7 @@ public class ChannelGroupWriteController {
     //        } catch (Exception e) {
     //            log.error(
     //                    String.format(
-    //                            "Error while creating/updating channel for request %s",
+    //                            "Error while deleting platform for request %s",
     //                            request.getRequestURL()
     //                    ),
     //                    e

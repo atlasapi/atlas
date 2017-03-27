@@ -36,6 +36,8 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.Scheduler;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AtlasMain {
 
@@ -71,12 +73,15 @@ public class AtlasMain {
             System.getProperty("metrics.graphite.enabled", "true")
     );
 
+    private static final Logger log = LoggerFactory.getLogger(AtlasMain.class);
+
     public static final MetricRegistry metrics = new MetricRegistry();
     private final GraphiteReporter reporter = startGraphiteReporter();
 
     public static void main(String[] args) throws Exception {
         if (IS_PROCESSING) {
             System.out.println(">>> Launching processing configuration");
+            System.out.println(">>> Graphite reporting: " + GRAPHITE_REPORTING_ENABLED);
         }
         new AtlasMain().start();
     }
@@ -266,7 +271,9 @@ public class AtlasMain {
 
             if (GRAPHITE_REPORTING_ENABLED) {
                 reporter.start(30, TimeUnit.SECONDS);
-                System.out.println("Started Graphite reporter");
+                log.info("Graphite reporter started");
+            } else {
+                log.info("Graphite reporter not started");
             }
 
             return reporter;

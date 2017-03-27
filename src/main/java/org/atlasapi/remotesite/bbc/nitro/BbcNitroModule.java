@@ -82,7 +82,7 @@ public class BbcNitroModule {
     private final ThreadFactory nitroThreadFactory = new ThreadFactoryBuilder()
             .setNameFormat("nitro %s")
             .build();
-    private final GroupLock<String> pidLock = GroupLock.<String>natural();
+    private final GroupLock<String> pidLock = GroupLock.natural();
     private final MetricRegistry metricRegistry = AtlasMain.metrics;
 
     @PostConstruct
@@ -94,7 +94,7 @@ public class BbcNitroModule {
                             7,
                             nitroFortnightThreadCount,
                             nitroFortnightRateLimit,
-                            Optional.<Predicate<Item>>absent(),
+                            Optional.absent(),
                             "Nitro 15 day updater",
                             "nitro.15DayUpdater."
                     ),
@@ -106,7 +106,7 @@ public class BbcNitroModule {
                             0,
                             nitroTodayThreadCount,
                             nitroTodayRateLimit,
-                            Optional.<Predicate<Item>>absent(),
+                            Optional.absent(),
                             "Nitro today updater",
                             "nitro.todayUpdater."
                     ),
@@ -118,9 +118,9 @@ public class BbcNitroModule {
                             0,
                             nitroTodayThreadCount,
                             nitroTodayRateLimit,
-                            Optional.of(Predicates.<Item>alwaysTrue()),
+                            Optional.of(Predicates.alwaysTrue()),
                             "Nitro full fetch today updater",
-                            "nitro.nitro.fullFetchTodayUpdater"
+                            "nitro.fullFetchTodayUpdater"
                     ),
                     RepetitionRules.NEVER
             );
@@ -130,7 +130,7 @@ public class BbcNitroModule {
                             -8,
                             nitroThreeWeekThreadCount,
                             nitroThreeWeekRateLimit,
-                            Optional.of(Predicates.<Item>alwaysTrue()),
+                            Optional.of(Predicates.alwaysTrue()),
                             "Nitro full fetch -8 to -30 day updater",
                             "nitro.fullFetch-8To-30DayUpdater."),
                     RepetitionRules.every(Duration.standardHours(12))
@@ -141,7 +141,7 @@ public class BbcNitroModule {
                             3,
                             nitroAroundTodayThreadCount,
                             nitroAroundTodayRateLimit,
-                            Optional.of(Predicates.<Item>alwaysTrue()),
+                            Optional.of(Predicates.alwaysTrue()),
                             "Nitro full fetch -7 to +3 day updater",
                             "nitro.fullFetch-7To+3DayUpdater."
                     ),
@@ -189,7 +189,7 @@ public class BbcNitroModule {
                 pidLock,
                 localOrRemoteNitroFetcher(
                         glycerin,
-                        Optional.of(Predicates.<Item>alwaysTrue()),
+                        Optional.of(Predicates.alwaysTrue()),
                         "nitro.offSchedule."
                 ),
                 metricRegistry,
@@ -209,7 +209,7 @@ public class BbcNitroModule {
                 contentWriter(),
                 localOrRemoteNitroFetcher(
                         glycerin,
-                        Optional.of(Predicates.<Item>alwaysTrue()),
+                        Optional.of(Predicates.alwaysTrue()),
                         "nitro.pidUpdateController."
                 )
         );
@@ -221,7 +221,7 @@ public class BbcNitroModule {
                 channelResolver,
                 nitroChannelDayProcessor(
                         nitroTodayRateLimit,
-                        Optional.of(Predicates.<Item>alwaysTrue())
+                        Optional.of(Predicates.alwaysTrue())
                 )
         );
     }

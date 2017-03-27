@@ -200,18 +200,21 @@ public class TitleMatchingItemScorerTest extends TestCase {
     public void testForOutOfBoundsException() {
         DefaultDescription desc = new DefaultDescription();
         score(0, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle(":Storage Hunters: UK")), desc));
+        score(2, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle(":Storage Hunters:")), desc));
     }
 
     @Test
     public void testForMultipleColonsToStart() {
         DefaultDescription desc = new DefaultDescription();
         score(0, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle("::::Storage Hunters: UK")), desc));
+        score(2, scorer.score(itemWithTitle("Storage Hunters"), of(itemWithTitle("::::Storage Hunters")), desc));
     }
 
     @Test
     public void testForPrefixRemovalBug() {
         DefaultDescription desc = new DefaultDescription();
         score(0, scorer.score(itemWithTitle("Storage: Bunters"), of(itemWithTitle(" 5 : Storage Hunters")), desc));
+        score(2, scorer.score(itemWithTitle("Storage: Hunters"), of(itemWithTitle(" 5 : Storage Hunters")), desc));
     }
     
     private void score(double expected, ScoredCandidates<Item> scores) {

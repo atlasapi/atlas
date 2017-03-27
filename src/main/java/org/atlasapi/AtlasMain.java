@@ -269,7 +269,7 @@ public class AtlasMain {
                     .filter(MetricFilter.ALL)
                     .build(new Graphite(GRAPHITE_ADDRESS));
 
-            if (GRAPHITE_REPORTING_ENABLED) {
+            if (GRAPHITE_REPORTING_ENABLED || IS_PROCESSING) {
                 reporter.start(30, TimeUnit.SECONDS);
                 log.info("Graphite reporter started");
             } else {

@@ -99,6 +99,8 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
     
     @Override
     protected void runTask() {
+        log.info("Running task with metrics: {}", metricRegistry);
+
         Timer.Context timer = metricRegistry.timer(metricPrefix + "task.duration").time();
         
         Collection<ChannelDay> channels = channelDays.get();

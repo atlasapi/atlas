@@ -272,6 +272,7 @@ public class AtlasMain {
             if (GRAPHITE_REPORTING_ENABLED || IS_PROCESSING) {
                 reporter.start(30, TimeUnit.SECONDS);
                 log.info("Graphite reporter started");
+                log.info("Reporting metrics: {}", metrics);
             } else {
                 log.info("Graphite reporter not started");
             }

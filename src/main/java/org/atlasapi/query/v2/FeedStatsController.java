@@ -17,6 +17,9 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
+
+import com.google.common.base.Strings;
+import org.joda.time.Duration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -52,8 +55,24 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
     }
 
     @RequestMapping(value="/3.0/feeds/youview/{publisher}/statistics.json", method = RequestMethod.GET)
-    public void statistics(HttpServletRequest request, HttpServletResponse response,
-            @PathVariable("publisher") String publisherStr) throws IOException {
+    public void statistics(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @PathVariable("publisher") String publisherStr
+    ) throws IOException {
+        String isoDuration = request.getParameter("duration");
+
+        if (Strings.isNullOrEmpty(isoDuration)) {
+            errorViewFor(request,
+                    response,
+                    AtlasErrorSummary.forException(new IllegalArgumentException(
+                            "The fromTime request parameter must be specified"
+                    ))
+            );
+        }
+
+        Duration duration = Duration.parse(isoDuration);
+
         try {
             Application application;
             try {
@@ -69,7 +88,7 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
                 return;
             }
 
-            Optional<FeedStatistics> resolved = statsResolver.resolveFor(publisher);
+            Optional<FeedStatistics> resolved = statsResolver.resolveFor(publisher, duration);
             if (!resolved.isPresent()) {
                 errorViewFor(request, response, NOT_FOUND);
                 return;

@@ -273,6 +273,8 @@ public class AtlasMain {
                 reporter.start(30, TimeUnit.SECONDS);
                 log.info("Graphite reporter started");
                 log.info("Reporting metrics: {}", metrics);
+                log.info("Metric classloader: {}", metrics.getClass().getClassLoader());
+                log.info("AtlasMain classloader: {}", this.getClass().getClassLoader());
             } else {
                 log.info("Graphite reporter not started");
             }

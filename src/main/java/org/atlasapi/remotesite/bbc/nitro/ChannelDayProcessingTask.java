@@ -14,6 +14,7 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
+import org.atlasapi.AtlasMain;
 import org.atlasapi.media.channel.Channel;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -99,7 +100,9 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
     
     @Override
     protected void runTask() {
-        log.info("Running task with metrics: {}", metricRegistry);
+        log.info("Nitro: Running task with metrics: {}", metricRegistry);
+        log.info("Nitro: Metric classloader: {}", metricRegistry.getClass().getClassLoader());
+        log.info("Nitro: AtlasMain classloader: {}", AtlasMain.class.getClass().getClassLoader());
 
         Timer.Context timer = metricRegistry.timer(metricPrefix + "task.duration").time();
         

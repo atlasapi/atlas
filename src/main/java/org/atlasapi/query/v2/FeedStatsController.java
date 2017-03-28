@@ -19,7 +19,6 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 
 import com.google.common.base.Strings;
-import org.joda.time.Duration;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -71,7 +70,7 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
             );
         }
 
-        Duration duration = Duration.parse(isoDuration);
+        java.time.Duration duration = java.time.Duration.parse(isoDuration);
 
         try {
             Application application;

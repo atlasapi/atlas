@@ -570,7 +570,8 @@ public class UpdaterConfigurationRegistry {
     }
 
     private static UpdaterConfiguration makeAmazonUnboxConfiguration() {
-        ImmutableSet<Publisher> targetSources = ImmutableSet.of(AMAZON_UNBOX, PA);
+        ImmutableSet<Publisher> targetSources =
+                ImmutableSet.of(AMAZON_UNBOX, PA, RADIO_TIMES_UPCOMING);
 
         return UpdaterConfiguration.builder()
                 .withSource(AMAZON_UNBOX)
@@ -583,8 +584,8 @@ public class UpdaterConfigurationRegistry {
                         targetSources
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_SERIES,
+                        targetSources
                 )
                 .build();
     }

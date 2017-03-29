@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.five;
 
+import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Set;
@@ -26,10 +27,8 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
-import org.atlasapi.persistence.system.RemoteSiteClient;
 
 import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpResponse;
 import com.metabroadcast.common.intl.Countries;
 
 import com.google.common.base.Strings;
@@ -39,6 +38,15 @@ import com.google.common.collect.Multimap;
 import com.google.common.collect.Sets;
 import nu.xom.Element;
 import nu.xom.Elements;
+import org.apache.http.HttpHost;
+import org.apache.http.HttpResponse;
+import org.apache.http.HttpStatus;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpUriRequest;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.BasicHttpContext;
+import org.apache.http.protocol.ExecutionContext;
+import org.apache.http.protocol.HttpContext;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
@@ -58,13 +66,13 @@ public class FiveShowProcessor {
     private final Map<String, Series> seriesMap = Maps.newHashMap();
 
     private final String baseApiUrl;
-    private final RemoteSiteClient<HttpResponse> httpClient;
+    private final CloseableHttpClient httpClient;
     private final Multimap<String, Channel> channelMap;
     private final FiveLocationPolicyIds locationPolicyIds;
 
     protected FiveShowProcessor(
             String baseApiUrl,
-            RemoteSiteClient<HttpResponse> httpClient,
+            CloseableHttpClient httpClient,
             Multimap<String, Channel> channelMap,
             FiveLocationPolicyIds locationPolicyIds
     ) {
@@ -76,7 +84,7 @@ public class FiveShowProcessor {
 
     public static FiveShowProcessor create(
             String baseApiUrl,
-            RemoteSiteClient<HttpResponse> httpClient,
+            CloseableHttpClient httpClient,
             Multimap<String, Channel> channelMap,
             FiveLocationPolicyIds locationPolicyIds
     ) {
@@ -313,9 +321,24 @@ public class FiveShowProcessor {
     }
 
     private String getLocationUri(String originalUri) throws Exception {
-        HttpResponse httpResponse = httpClient.get(originalUri);
+        HttpGet request = new HttpGet(originalUri);
+        HttpContext context = new BasicHttpContext();
+        HttpResponse response = httpClient.execute(request, context);
 
-        return httpResponse.finalUrl();
+        if (response.getStatusLine().getStatusCode() != HttpStatus.SC_OK) {
+            throw new IOException(response.getStatusLine().toString());
+        }
+        HttpUriRequest currentReq = (HttpUriRequest) context.getAttribute(
+                ExecutionContext.HTTP_REQUEST);
+        HttpHost currentHost = (HttpHost)  context.getAttribute(
+                ExecutionContext.HTTP_TARGET_HOST);
+        if (currentReq != null) {
+            return (currentReq.getURI().isAbsolute())
+                   ? currentReq.getURI().toString()
+                   : (currentHost.toURI() + currentReq.getURI());
+        } else {
+            return "";
+        }
     }
 
     private Set<String> getGenres(Element element) {

@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.five;
 
+import java.io.InputStream;
 import java.io.StringReader;
 import java.util.Optional;
 
@@ -12,14 +13,15 @@ import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.persistence.system.RemoteSiteClient;
 
-import com.metabroadcast.common.http.HttpResponse;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import nu.xom.Element;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -67,8 +69,11 @@ public class FiveBrandWatchablesProcessor extends FiveBrandProcessor{
         );
 
         try {
-            String responseBody = httpClient.get(getShowUri(id) + WATCHABLES_URL_SUFFIX).body();
-            new nu.xom.Builder(nodeFactory).build(new StringReader(responseBody));
+            HttpGet request = new HttpGet(getShowUri(id) + WATCHABLES_URL_SUFFIX);
+            HttpResponse response = httpClient.execute(request);
+            InputStream responseBody = response.getEntity().getContent();
+
+            new nu.xom.Builder(nodeFactory).build(responseBody);
         } catch(Exception e) {
             log.error(
                     "Exception parsing episodes for brand " + brand.getTitle() + "with id " + id,
@@ -136,7 +141,7 @@ public class FiveBrandWatchablesProcessor extends FiveBrandProcessor{
         private ContentWriter writer;
         private ContentResolver contentResolver;
         private String baseApiUrl;
-        private RemoteSiteClient<HttpResponse> httpClient;
+        private CloseableHttpClient httpClient;
         private Multimap<String, Channel> channelMap;
         private FiveLocationPolicyIds locationPolicyIds;
 
@@ -158,7 +163,7 @@ public class FiveBrandWatchablesProcessor extends FiveBrandProcessor{
             return this;
         }
 
-        public Builder withHttpClient(RemoteSiteClient<HttpResponse> httpClient) {
+        public Builder withHttpClient(CloseableHttpClient httpClient) {
             this.httpClient = httpClient;
             return this;
         }

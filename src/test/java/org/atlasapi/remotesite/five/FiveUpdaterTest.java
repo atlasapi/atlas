@@ -8,6 +8,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.SimpleHttpClient;
 
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -25,7 +26,7 @@ public class FiveUpdaterTest {
 
     public FiveUpdaterTest() {
 
-        SimpleHttpClient mockedHttpClient = mock(SimpleHttpClient.class);
+        CloseableHttpClient mockedHttpClient = mock(CloseableHttpClient.class);
 
         ChannelResolver channelResolver = mock(ChannelResolver.class);
 

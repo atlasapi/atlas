@@ -1,24 +1,19 @@
 package org.atlasapi.remotesite.five;
 
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.concurrent.TimeUnit;
 
 import javax.annotation.Nullable;
 
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.HttpClients;
-import org.atlasapi.remotesite.channel4.pmlsd.RequestLimitingRemoteSiteClient;
 
-import com.metabroadcast.common.http.SimpleHttpClient;
-import com.metabroadcast.common.http.SimpleHttpClientBuilder;
-import com.metabroadcast.common.http.SimpleHttpRequest;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.time.SystemClock;
 import com.metabroadcast.common.time.Timestamp;
@@ -32,6 +27,10 @@ import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
 import org.apache.commons.httpclient.NoHttpResponseException;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.impl.client.HttpClients;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
@@ -49,7 +48,7 @@ public class FiveUpdater extends ScheduledTask {
     private final FiveBrandWatchablesProcessor watchablesProcessor;
     private final Timestamper timestamper = new SystemClock();
     private final nu.xom.Builder parser = new nu.xom.Builder();
-    private final SimpleHttpClient streamHttpClient;
+    private final CloseableHttpClient streamHttpClient;
 
     private int processedItems = 0;
     private int failedItems =  0;
@@ -61,10 +60,7 @@ public class FiveUpdater extends ScheduledTask {
                 builder.contentWriter,
                 builder.contentResolver,
                 BASE_API_URL,
-                new RequestLimitingRemoteSiteClient<>(
-                        new HttpRemoteSiteClient(builder.httpClient),
-                        20
-                ),
+                builder.httpClient,
                 new FiveChannelMap(builder.channelResolver),
                 builder.locationPolicyIds
         );
@@ -73,9 +69,7 @@ public class FiveUpdater extends ScheduledTask {
                 .withWriter(builder.contentWriter)
                 .withContentResolver(builder.contentResolver)
                 .withBaseApiUrl(BASE_API_URL)
-                .withHttpClient(new RequestLimitingRemoteSiteClient<>(
-                        new HttpRemoteSiteClient(builder.httpClient), 20)
-                )
+                .withHttpClient(builder.httpClient)
                 .withLocationPolicyIds(builder.locationPolicyIds)
                 .withChannelMap(new FiveChannelMap(builder.channelResolver))
                 .build();
@@ -139,7 +133,10 @@ public class FiveUpdater extends ScheduledTask {
         }
 
         List<Element> elementArrayList = Lists.newArrayList();
-        Elements channelIds = getChannelIdList()
+        Document channelIdList = getChannelIdList();
+        // TODO: check channelIdList isn't null, return optional empty if it is (RETRY?? SHOULD IT ALWAYS NOT BE NULL?)
+
+        Elements channelIds = channelIdList
                 .getRootElement()
                 .getFirstChildElement("channels")
                 .getChildElements("channel");
@@ -164,10 +161,9 @@ public class FiveUpdater extends ScheduledTask {
             return Optional.empty();
         }
 
-        Document document = streamHttpClient.get(new SimpleHttpRequest<>(
-                getApiCall(startingPoint, id, DateTime.now()),
-                (responsePrologue, inputStream) -> parseResponse(inputStream)
-        ));
+        HttpGet request = new HttpGet(getApiCall(startingPoint, id, DateTime.now()));
+        HttpResponse response = streamHttpClient.execute(request);
+        Document document = parser.build(new InputStreamReader(response.getEntity().getContent()));
 
         return Optional.of(document.getRootElement()
                 .getFirstChildElement("transmissions")
@@ -185,17 +181,16 @@ public class FiveUpdater extends ScheduledTask {
     }
 
     private Document getChannelIdList() throws Exception {
-        return streamHttpClient.get(new SimpleHttpRequest<>(
-                    "https://pdb.five.tv/internal/channels",
-                    (responsePrologue, inputStream) -> parseResponse(inputStream)
-            ));
+
+        HttpGet request = new HttpGet("https://pdb.five.tv/internal/channels");
+        HttpResponse response = streamHttpClient.execute(request);
+        return parser.build(new InputStreamReader(response.getEntity().getContent()));
     }
 
     private Elements getElements(int startingPoint) throws Exception{
-        Document document = streamHttpClient.get(new SimpleHttpRequest<>(
-                getApiCall(startingPoint, "", DateTime.now()),
-                (responsePrologue, inputStream) -> parseResponse(inputStream)
-        ));
+        HttpGet request = new HttpGet(getApiCall(startingPoint, "", DateTime.now()));
+        HttpResponse response = streamHttpClient.execute(request);
+        Document document = parser.build(new InputStreamReader(response.getEntity().getContent()));
 
         return document.getRootElement()
                 .getFirstChildElement("shows")
@@ -204,10 +199,10 @@ public class FiveUpdater extends ScheduledTask {
 
     public void updateBrand(String id) {
         try {
-            Document document = streamHttpClient.get(new SimpleHttpRequest<>(
-                    BASE_API_URL + "/shows/" + id,
-                    (responsePrologue, inputStream) -> parseResponse(inputStream)
-            ));
+            HttpGet request = new HttpGet(BASE_API_URL + "/shows/" + id);
+            HttpResponse response = streamHttpClient.execute(request);
+            Document document = parser.build(new InputStreamReader(response.getEntity().getContent()));
+
             ArrayList<Element> elementArrayList = Lists.newArrayList();
             Elements elements = document.getRootElement().getChildElements();
             for (int i = 0; i < elements.size(); i++) {
@@ -267,6 +262,10 @@ public class FiveUpdater extends ScheduledTask {
                     sevenDaysAhead + "&limit=100&offset=" + Integer.toString(startingPoint)
             );
 
+        } else if (timeFrame == TimeFrame.NEW_ALL) {
+            //TODO generate the api call for getting all shows
+            //TODO split this method up, it's huge
+            return null;
         } else {
             return String.format(
                     "%s/shows?offset=%d&limit=%d",
@@ -327,7 +326,8 @@ public class FiveUpdater extends ScheduledTask {
     public enum TimeFrame {
         TODAY,
         PLUS_MINUS_7_DAYS,
-        ALL
+        ALL,
+        NEW_ALL
 
     }
 
@@ -339,7 +339,7 @@ public class FiveUpdater extends ScheduledTask {
         private FiveLocationPolicyIds locationPolicyIds;
         private int socketTimeout;
         private TimeFrame timeFrame;
-        private SimpleHttpClient httpClient;
+        private CloseableHttpClient httpClient;
 
         private Builder() {
         }
@@ -374,18 +374,15 @@ public class FiveUpdater extends ScheduledTask {
             return this;
         }
 
-        public Builder withHttpClient(SimpleHttpClient httpClient) {
+        public Builder withHttpClient(CloseableHttpClient httpClient) {
             this.httpClient = httpClient;
             return this;
         }
 
-        private SimpleHttpClient buildDefaultFetcher() {
-            return new SimpleHttpClientBuilder()
-                    .withUserAgent(HttpClients.ATLAS_USER_AGENT)
-                    .withSocketTimeout(socketTimeout, TimeUnit.SECONDS)
-                    .withTrustUnverifiedCerts()
-                    .withRetries(3)
-                    .build();
+        private CloseableHttpClient buildDefaultFetcher() {
+            CloseableHttpClient httpClient = HttpClients.createDefault();
+            return httpClient;
+
         }
 
         public FiveUpdater build() {

@@ -22,12 +22,10 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.persistence.system.RemoteSiteClient;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 
 import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpResponse;
 
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
@@ -39,6 +37,9 @@ import nu.xom.Element;
 import nu.xom.Elements;
 import nu.xom.NodeFactory;
 import nu.xom.Nodes;
+import org.apache.http.HttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -56,7 +57,7 @@ public class FiveBrandProcessor {
     private final GenreMap genreMap = new FiveGenreMap();
     private final FiveShowProcessor episodeProcessor;
     private final String baseApiUrl;
-    protected final RemoteSiteClient<HttpResponse> httpClient;
+    protected final CloseableHttpClient httpClient;
     protected final ContentResolver contentResolver;
     private final ContentMerger contentMerger;
 
@@ -64,7 +65,7 @@ public class FiveBrandProcessor {
             ContentWriter writer,
             ContentResolver contentResolver,
             String baseApiUrl,
-            RemoteSiteClient<HttpResponse> httpClient,
+            CloseableHttpClient httpClient,
             Multimap<String, Channel> channelMap,
             FiveLocationPolicyIds locationPolicyIds
     ) {
@@ -89,7 +90,7 @@ public class FiveBrandProcessor {
             ContentWriter writer,
             ContentResolver contentResolver,
             String baseApiUrl,
-            RemoteSiteClient<HttpResponse> httpClient,
+            CloseableHttpClient httpClient,
             Multimap<String, Channel> channelMap,
             FiveLocationPolicyIds locationPolicyIds
     ) {
@@ -113,7 +114,9 @@ public class FiveBrandProcessor {
         );
 
         try {
-            String responseBody = httpClient.get(getShowUri(id) + WATCHABLES_URL_SUFFIX).body();
+            HttpGet request = new HttpGet(getShowUri(id) + WATCHABLES_URL_SUFFIX);
+            HttpResponse response = httpClient.execute(request);
+            String responseBody = response.getEntity().getContent().toString();
 
             log.info("responseBody: " + responseBody + "\n");
 

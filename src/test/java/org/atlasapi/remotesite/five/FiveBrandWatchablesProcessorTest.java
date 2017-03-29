@@ -1,10 +1,12 @@
 package org.atlasapi.remotesite.five;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 
 import org.atlasapi.media.channel.Channel;
@@ -16,16 +18,20 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.persistence.system.RemoteSiteClient;
 
 import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpResponse;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
+import org.apache.http.HttpEntity;
+import org.apache.http.StatusLine;
+import org.apache.http.client.methods.CloseableHttpResponse;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.CloseableHttpClient;
+import org.apache.http.protocol.HttpContext;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 
@@ -51,11 +57,40 @@ public class FiveBrandWatchablesProcessorTest {
         ChannelResolver channelResolver = mock(ChannelResolver.class);
         ContentResolver contentResolver = mock(ContentResolver.class);
         String baseApiUrl = "";
-        RemoteSiteClient<HttpResponse> httpClient = (RemoteSiteClient<HttpResponse>) mock(
-                RemoteSiteClient.class
-        );
+        CloseableHttpClient httpClient = mock(CloseableHttpClient.class);
 
         FiveLocationPolicyIds locationPolicyIds = mock(FiveLocationPolicyIds.class);
+
+        CloseableHttpResponse httpResponse = mock(CloseableHttpResponse.class);
+
+        HttpEntity httpEntity = mock(HttpEntity.class);
+        try {
+            when(httpEntity.getContent()).thenReturn(new ByteArrayInputStream(makeHttpBodyResponse()
+                                            .getBytes(StandardCharsets.UTF_8)));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        when(httpResponse.getEntity()).thenReturn(httpEntity);
+
+
+        StatusLine statusLine = mock(StatusLine.class);
+        when(statusLine.getStatusCode()).thenReturn(200);
+
+        when(httpResponse.getStatusLine()).thenReturn(statusLine);
+
+        try {
+            when(httpClient.execute(any(HttpGet.class)))
+                    .thenReturn(httpResponse);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        try {
+            when(httpClient.execute(any(HttpGet.class), any(HttpContext.class))).thenReturn(httpResponse);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
 
         when(contentResolver.findByCanonicalUris(
                 any( ImmutableSet.class)
@@ -75,14 +110,6 @@ public class FiveBrandWatchablesProcessorTest {
                 .thenReturn(Maybe.just(channel));
 
         Multimap<String, Channel> channelMap = new FiveChannelMap(channelResolver);
-
-        try {
-            when(httpClient.get(
-                    any(String.class)
-            )).thenReturn(HttpResponse.sucessfulResponse(makeHttpBodyResponse()));
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
 
         processor = FiveBrandWatchablesProcessor.builder()
                 .withWriter(writer)

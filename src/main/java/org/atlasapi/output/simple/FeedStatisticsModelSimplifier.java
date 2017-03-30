@@ -25,6 +25,8 @@ public class FeedStatisticsModelSimplifier implements ModelSimplifier<FeedStatis
         feedStats.setPublisher(model.publisher());
         feedStats.setQueueSize(model.queueSize());
         feedStats.setUpdateLatency(model.updateLatency());
+        feedStats.setSuccessfulTasks(model.successfulTasks());
+        feedStats.setUnsuccessfulTasks(model.unsuccessfulTasks());
         
         return feedStats;
     }

@@ -61,6 +61,12 @@ public class FiveModule {
                 RepetitionRules.NEVER
         );
         log.info("Installed FivePlusMinusSevenDays updater");
+        scheduler.schedule(
+                fiveUpdaterDelegate(FiveUpdater.TimeFrame.NEW_ALL)
+                        .withName("Five New All Updater"),
+                RepetitionRules.NEVER
+        );
+        log.info("Installed FiveNewAll updater");
     }
     
     @Bean
@@ -74,7 +80,6 @@ public class FiveModule {
                 .withChannelResolver(channelResolver)
                 .withContentResolver(contentResolver)
                 .withLocationPolicyIds(fiveLocationPolicyIds())
-                .withSocketTimeout(socketTimeout)
                 .withTimeFrame(timeFrame)
                 .build();
     }

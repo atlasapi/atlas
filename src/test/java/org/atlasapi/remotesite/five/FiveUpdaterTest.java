@@ -38,7 +38,6 @@ public class FiveUpdaterTest {
                 .withContentResolver(mock(ContentResolver.class))
                 .withContentWriter(mock(ContentWriter.class))
                 .withLocationPolicyIds(mock(FiveLocationPolicyIds.class))
-                .withSocketTimeout(0)
                 .withHttpClient(mockedHttpClient);
 
     }

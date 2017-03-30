@@ -1,14 +1,11 @@
 package org.atlasapi.remotesite.five;
 
-import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-
-import javax.annotation.Nullable;
 
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -28,9 +25,11 @@ import nu.xom.Element;
 import nu.xom.Elements;
 import org.apache.commons.httpclient.NoHttpResponseException;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
+import org.apache.http.impl.client.StandardHttpRequestRetryHandler;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormatter;
@@ -48,14 +47,14 @@ public class FiveUpdater extends ScheduledTask {
     private final FiveBrandWatchablesProcessor watchablesProcessor;
     private final Timestamper timestamper = new SystemClock();
     private final nu.xom.Builder parser = new nu.xom.Builder();
-    private final CloseableHttpClient streamHttpClient;
+    private final CloseableHttpClient httpClient;
 
     private int processedItems = 0;
     private int failedItems =  0;
     private TimeFrame timeFrame;
 
     private FiveUpdater(Builder builder) {
-        this.streamHttpClient = builder.httpClient;
+        this.httpClient = builder.httpClient;
         this.showProcessor = FiveBrandProcessor.create(
                 builder.contentWriter,
                 builder.contentResolver,
@@ -100,6 +99,8 @@ public class FiveUpdater extends ScheduledTask {
                 startingPoint += LIMIT;
                 exhausted = shows.size() == 0;
             }
+
+            httpClient.close();
 
             Timestamp end = timestamper.timestamp();
             log.info(
@@ -162,8 +163,14 @@ public class FiveUpdater extends ScheduledTask {
         }
 
         HttpGet request = new HttpGet(getApiCall(startingPoint, id, DateTime.now()));
-        HttpResponse response = streamHttpClient.execute(request);
+        HttpResponse response = httpClient.execute(request);
         Document document = parser.build(new InputStreamReader(response.getEntity().getContent()));
+
+        if (document.getRootElement()
+                .getFirstChildElement("transmissions")
+                .getChildElements("transmission").size() == 0) {
+            return Optional.empty();
+        }
 
         return Optional.of(document.getRootElement()
                 .getFirstChildElement("transmissions")
@@ -172,10 +179,14 @@ public class FiveUpdater extends ScheduledTask {
 
     private List<Element> getElementsForAll(int startingPoint) throws Exception {
         List<Element> elementArrayList = Lists.newArrayList();
-        Elements elements = getElements(startingPoint);
+        Optional<Elements> elementsOptional = getElements(startingPoint);
 
-        for (int i = 0; i < elements.size(); i++) {
-            elementArrayList.add(elements.get(i));
+        if (!elementsOptional.isPresent()) {
+            return ImmutableList.copyOf(elementArrayList);
+        }
+
+        for (int i = 0; i < elementsOptional.get().size(); i++) {
+            elementArrayList.add(elementsOptional.get().get(i));
         }
         return ImmutableList.copyOf(elementArrayList);
     }
@@ -183,24 +194,28 @@ public class FiveUpdater extends ScheduledTask {
     private Document getChannelIdList() throws Exception {
 
         HttpGet request = new HttpGet("https://pdb.five.tv/internal/channels");
-        HttpResponse response = streamHttpClient.execute(request);
+        HttpResponse response = httpClient.execute(request);
         return parser.build(new InputStreamReader(response.getEntity().getContent()));
     }
 
-    private Elements getElements(int startingPoint) throws Exception{
+    private Optional<Elements> getElements(int startingPoint) throws Exception{
         HttpGet request = new HttpGet(getApiCall(startingPoint, "", DateTime.now()));
-        HttpResponse response = streamHttpClient.execute(request);
+        HttpResponse response = httpClient.execute(request);
         Document document = parser.build(new InputStreamReader(response.getEntity().getContent()));
 
-        return document.getRootElement()
+        if ((document.getRootElement().getFirstChildElement("shows") == null)) {
+            return Optional.empty();
+        }
+
+        return Optional.of(document.getRootElement()
                 .getFirstChildElement("shows")
-                .getChildElements();
+                .getChildElements());
     }
 
     public void updateBrand(String id) {
         try {
             HttpGet request = new HttpGet(BASE_API_URL + "/shows/" + id);
-            HttpResponse response = streamHttpClient.execute(request);
+            HttpResponse response = httpClient.execute(request);
             Document document = parser.build(new InputStreamReader(response.getEntity().getContent()));
 
             ArrayList<Element> elementArrayList = Lists.newArrayList();
@@ -263,9 +278,12 @@ public class FiveUpdater extends ScheduledTask {
             );
 
         } else if (timeFrame == TimeFrame.NEW_ALL) {
-            //TODO generate the api call for getting all shows
             //TODO split this method up, it's huge
-            return null;
+            return String.format("https://pdb.five.tv/internal/channels/C6P1/transmissions?"
+                            + "expand=watchable&limit=%s&offset=%s",
+                    "100",
+                    Integer.toString(startingPoint)
+            );
         } else {
             return String.format(
                     "%s/shows?offset=%d&limit=%d",
@@ -312,17 +330,6 @@ public class FiveUpdater extends ScheduledTask {
         }
     }
 
-    @Nullable
-    private Document parseResponse(InputStream inputStream) {
-        try {
-            return parser.build(inputStream);
-        } catch (Exception e) {
-            log.error("Exception when processing shows document",e);
-            Throwables.propagate(e);
-        }
-        return null;
-    }
-
     public enum TimeFrame {
         TODAY,
         PLUS_MINUS_7_DAYS,
@@ -337,7 +344,6 @@ public class FiveUpdater extends ScheduledTask {
         private ChannelResolver channelResolver;
         private ContentResolver contentResolver;
         private FiveLocationPolicyIds locationPolicyIds;
-        private int socketTimeout;
         private TimeFrame timeFrame;
         private CloseableHttpClient httpClient;
 
@@ -364,11 +370,6 @@ public class FiveUpdater extends ScheduledTask {
             return this;
         }
 
-        public Builder withSocketTimeout(int socketTimeout) {
-            this.socketTimeout = socketTimeout;
-            return this;
-        }
-
         public Builder withTimeFrame(TimeFrame timeFrame) {
             this.timeFrame = timeFrame;
             return this;
@@ -380,9 +381,11 @@ public class FiveUpdater extends ScheduledTask {
         }
 
         private CloseableHttpClient buildDefaultFetcher() {
-            CloseableHttpClient httpClient = HttpClients.createDefault();
-            return httpClient;
-
+            HttpRequestRetryHandler retryHandler = new StandardHttpRequestRetryHandler();
+            return HttpClients
+                    .custom()
+                    .setRetryHandler(retryHandler)
+                    .build();
         }
 
         public FiveUpdater build() {

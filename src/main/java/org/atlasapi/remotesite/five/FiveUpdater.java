@@ -26,6 +26,7 @@ import nu.xom.Elements;
 import org.apache.commons.httpclient.NoHttpResponseException;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpRequestRetryHandler;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.impl.client.HttpClients;
@@ -382,9 +383,14 @@ public class FiveUpdater extends ScheduledTask {
 
         private CloseableHttpClient buildDefaultFetcher() {
             HttpRequestRetryHandler retryHandler = new StandardHttpRequestRetryHandler();
+            RequestConfig requestConfig = RequestConfig.custom()
+                    .setConnectTimeout(20000)
+                    .setSocketTimeout(20000)
+                    .build();
             return HttpClients
                     .custom()
                     .setRetryHandler(retryHandler)
+                    .setDefaultRequestConfig(requestConfig)
                     .build();
         }
 

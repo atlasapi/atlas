@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro.extract;
 
 import java.util.Map;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 import javax.xml.datatype.XMLGregorianCalendar;
@@ -17,6 +18,7 @@ import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
 import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.DateTimeZones;
 
 import com.google.common.base.Equivalence;
@@ -136,13 +138,26 @@ public class NitroAvailabilityExtractor {
         );
 
         for (AvailableVersions.Version.Availabilities.Availability availability : availabilities) {
-            ImmutableList<Wrapper<Location>> locations =
-                    FluentIterable.from(getLocationsFor(programmePid, availability, mediaType))
-                            .transform(TO_WRAPPED_LOCATION)
-                            .toList();
+            ImmutableList<Wrapper<Location>> locations = getLocationsFor(
+                    programmePid,
+                    availability,
+                    mediaType
+            )
+                    .stream()
+                    .map(TO_WRAPPED_LOCATION::apply)
+                    .collect(MoreCollectors.toImmutableList());
 
             if (MIXIN_IS_IPTV.apply(availability) && MIXIN_IS_HD.apply(availability)) {
                 hdLocations.addAll(locations);
+                // the mixin operates a bit differently and doesn't duplicate availabilities, so
+                // if we have an HD one, we need to copy it over to SD as well
+                sdLocations.addAll(
+                        locations.stream()
+                                .map(Wrapper::get)
+                                .filter(loc -> loc.getPolicy().getPlatform() == Platform.PC)
+                                .map(TO_WRAPPED_LOCATION::apply)
+                                .collect(Collectors.toList())
+                );
             } else {
                 sdLocations.addAll(locations);
             }

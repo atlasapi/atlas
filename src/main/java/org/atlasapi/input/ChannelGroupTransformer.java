@@ -9,6 +9,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.PublisherDetails;
 
 import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.intl.Countries;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
@@ -20,6 +21,7 @@ public class ChannelGroupTransformer implements
 
     @Override
     public ChannelGroup transform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
+        SubstitutionTableNumberCodec idCodec = new SubstitutionTableNumberCodec();
         Platform complex = new Platform();
 
         complex.setPublisher(getPublisher(simple.getPublisherDetails()));
@@ -29,11 +31,8 @@ public class ChannelGroupTransformer implements
         List<ChannelNumbering> channelNumberingList = Lists.newArrayList();
         simple.getChannels().forEach(channelNumbering -> channelNumberingList.add(
                 ChannelNumbering.builder()
-                        .withChannel(Long.valueOf(channelNumbering.getChannel().getId()))
-                        .withChannelGroup(Long.valueOf(channelNumbering.getChannelGroup().getId()))
-                        .withChannelNumber(channelNumbering.getChannelNumber())
-                        .withStartDate(LocalDate.fromDateFields(channelNumbering.getStartDate()))
-                        .withEndDate(LocalDate.fromDateFields(channelNumbering.getEndDate()))
+                        .withChannel(idCodec.decode(channelNumbering.getChannel().getId()).longValue())
+                        .withChannelGroup(idCodec.decode(simple.getId()).longValue())
                         .build()
         ));
         complex.setChannelNumberings(channelNumberingList);

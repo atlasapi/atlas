@@ -1,13 +1,10 @@
 package org.atlasapi.query.v2;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.io.IOException;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.application.v3.DefaultApplication;
@@ -17,19 +14,25 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
+
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.http.HttpStatusCode;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import org.joda.time.Period;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.http.HttpStatusCode;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 @Controller
 public class FeedStatsController extends BaseController<Iterable<FeedStatistics>> {
-    
+
     private static final AtlasErrorSummary NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
             .withMessage("No Feed exists for the specified Publisher")
             .withErrorCode("Feed not found")
@@ -38,9 +41,9 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
             .withMessage("You require an API key to view this data")
             .withErrorCode("Api Key required")
             .withStatusCode(HttpStatusCode.FORBIDDEN);
-    
+
     private final FeedStatisticsResolver statsResolver;
-    
+
     public FeedStatsController(
             ApplicationFetcher configFetcher,
             AdapterLog log,
@@ -52,8 +55,15 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
     }
 
     @RequestMapping(value="/3.0/feeds/youview/{publisher}/statistics.json", method = RequestMethod.GET)
-    public void statistics(HttpServletRequest request, HttpServletResponse response,
-            @PathVariable("publisher") String publisherStr) throws IOException {
+    public void statistics(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @PathVariable("publisher") String publisherStr,
+            @RequestParam("timespan") String timespan
+    ) throws IOException {
+        // we parse the ISO 8601 duration as a period because hours are inexact in terms of milliseconds
+        Period timeBeforeNow = Period.parse(timespan);
+
         try {
             Application application;
             try {
@@ -69,7 +79,7 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
                 return;
             }
 
-            Optional<FeedStatistics> resolved = statsResolver.resolveFor(publisher);
+            Optional<FeedStatistics> resolved = statsResolver.resolveFor(publisher, timeBeforeNow);
             if (!resolved.isPresent()) {
                 errorViewFor(request, response, NOT_FOUND);
                 return;

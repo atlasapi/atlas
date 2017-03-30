@@ -21,10 +21,7 @@ public class ChannelGroupTransformer implements
 
     @Override
     public ChannelGroup transform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
-        ChannelModelTransformer channelTransformer = ChannelModelTransformer.create(
-                SubstitutionTableNumberCodec.lowerCaseOnly(),
-                ImageModelTranslator.create()
-        );
+        SubstitutionTableNumberCodec idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
         Platform complex = new Platform();
 
         complex.setPublisher(getPublisher(simple.getPublisherDetails()));
@@ -34,7 +31,7 @@ public class ChannelGroupTransformer implements
         List<ChannelNumbering> channelNumberingList = Lists.newArrayList();
         simple.getChannels().forEach(channelNumbering -> channelNumberingList.add(
                 ChannelNumbering.builder()
-                        .withChannel(channelTransformer.transform(channelNumbering.getChannel()))
+                        .withChannel(idCodec.decode(channelNumbering.getChannel().getId()).longValue())
                         .build()
         ));
         complex.setChannelNumberings(channelNumberingList);

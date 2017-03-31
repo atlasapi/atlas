@@ -245,7 +245,7 @@ public class ChannelGroupWriteController {
         simple.getChannels().forEach(channelNumbering -> channelNumberingList.add(
                 ChannelNumbering.builder()
                         .withChannel(idCodec.decode(channelNumbering.getChannel().getId()).longValue())
-                        .withChannelGroup(idCodec.decode(simple.getId()).longValue())
+                        .withChannelGroup(channelGroupToBeUpdated.getId())
                         .build()
         ));
         channelGroupToBeUpdated.setChannelNumberings(channelNumberingList);

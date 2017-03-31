@@ -384,8 +384,8 @@ public class FiveUpdater extends ScheduledTask {
         private CloseableHttpClient buildDefaultFetcher() {
             HttpRequestRetryHandler retryHandler = new StandardHttpRequestRetryHandler();
             RequestConfig requestConfig = RequestConfig.custom()
-                    .setConnectTimeout(20000)
-                    .setSocketTimeout(20000)
+                    .setConnectTimeout(30000)
+                    .setSocketTimeout(30000)
                     .build();
             return HttpClients
                     .custom()

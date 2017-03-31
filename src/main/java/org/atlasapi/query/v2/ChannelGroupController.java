@@ -28,6 +28,8 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter;
 import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter.ChannelGroupFilterBuilder;
+
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -200,13 +202,23 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     }
 
     @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.POST)
-    public WriteResponse createChannelGroup(HttpServletRequest request, HttpServletResponse response) {
-        return channelGroupWriteController.createPlatform(request, response);
+    public WriteResponse createChannelGroup(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("newPlatform") String newPlatform
+            ) {
+        boolean createNewPlatform = Boolean.parseBoolean(newPlatform);
+        return channelGroupWriteController.createPlatform(request, response, createNewPlatform);
     }
 
     @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.PUT)
-    public WriteResponse updateChannelGroup(HttpServletRequest request, HttpServletResponse response) {
-        return channelGroupWriteController.updatePlatform(request, response);
+    public WriteResponse updateChannelGroup(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("newPlatform") String newPlatform
+    ) {
+        boolean createNewPlatform = Boolean.valueOf(newPlatform);
+        return channelGroupWriteController.updatePlatform(request, response, createNewPlatform);
     }
 
 //    @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)

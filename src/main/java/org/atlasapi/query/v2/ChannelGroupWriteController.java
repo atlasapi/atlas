@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
 import java.util.Optional;
 
 import javax.servlet.http.HttpServletRequest;
@@ -18,6 +19,7 @@ import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupStore;
+import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
@@ -26,9 +28,11 @@ import org.atlasapi.output.exceptions.UnauthorizedException;
 
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.api.client.util.Lists;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -38,7 +42,6 @@ public class ChannelGroupWriteController {
 
     private static final Logger log = LoggerFactory.getLogger(ChannelGroupWriteController.class);
     private static final String STRICT = "strict";
-
     private static final AtlasErrorSummary UNAUTHORIZED = AtlasErrorSummary.forException(new UnauthorizedException(
             "API key is unauthorised"
     ));
@@ -73,13 +76,26 @@ public class ChannelGroupWriteController {
         return new Builder();
     }
 
-    public WriteResponse createPlatform(HttpServletRequest request, HttpServletResponse response) {
-        return deserializeAndUpdateChannelGroup(request, response);
+    public WriteResponse createPlatform(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            boolean createNewPlatform
+    ) {
+        return deserializeAndUpdateChannelGroup(request, response, createNewPlatform);
+    }
+
+    public WriteResponse updatePlatform(
+            HttpServletRequest req,
+            HttpServletResponse resp,
+            boolean createNewPlatform
+    ) {
+        return deserializeAndUpdateChannelGroup(req, resp, createNewPlatform);
     }
 
     private WriteResponse deserializeAndUpdateChannelGroup(
             HttpServletRequest request,
-            HttpServletResponse response
+            HttpServletResponse response,
+            boolean createNewPlatform
     ) {
         Boolean strict = Boolean.valueOf(request.getParameter(STRICT));
 
@@ -96,14 +112,14 @@ public class ChannelGroupWriteController {
         }
 
         // deserialize JSON into a channelGroup & complexify it
-        ChannelGroup channelGroup;
+        ChannelGroup complexChannelGroup;
+        org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup;
         try {
-            channelGroup = complexify(
-                    deserialize(
-                            new InputStreamReader(request.getInputStream()),
-                            strict
-                    )
+            simpleChannelGroup = deserialize(
+                    new InputStreamReader(request.getInputStream()),
+                    strict
             );
+            complexChannelGroup = complexify(simpleChannelGroup);
         } catch (UnrecognizedPropertyException |
                 JsonParseException |
                 ConstraintViolationException e) {
@@ -123,14 +139,23 @@ public class ChannelGroupWriteController {
         //authorization
         if (!possibleApplication.get()
                 .getConfiguration()
-                .isWriteEnabled(channelGroup.getPublisher())) {
+                .isWriteEnabled(complexChannelGroup.getPublisher())) {
             response.setStatus(HttpServletResponse.SC_FORBIDDEN);
             return error(request, response, FORBIDDEN);
         }
 
         // write to DB
         try {
-            store.createOrUpdate(channelGroup);
+            long channelGroupId = store.createOrUpdate(complexChannelGroup).getId();
+            if (createNewPlatform) {
+                com.google.common.base.Optional<ChannelGroup> channelGroupToUpdate = store.channelGroupFor(
+                        channelGroupId
+                );
+                if (channelGroupToUpdate.isPresent()) {
+                    updateChannelGroupNumberings(channelGroupToUpdate.get(), simpleChannelGroup);
+                    store.createOrUpdate(complexChannelGroup);
+                }
+            }
         } catch (Exception e) {
             log.error(
                     String.format(
@@ -210,6 +235,24 @@ public class ChannelGroupWriteController {
     //        return null;
     //    }
 
+    private ChannelGroup updateChannelGroupNumberings(
+            ChannelGroup channelGroupToBeUpdated,
+            org.atlasapi.media.entity.simple.ChannelGroup simple
+    ) {
+        SubstitutionTableNumberCodec idCodec = new SubstitutionTableNumberCodec();
+        List<ChannelNumbering> channelNumberingList = Lists.newArrayList();
+
+        simple.getChannels().forEach(channelNumbering -> channelNumberingList.add(
+                ChannelNumbering.builder()
+                        .withChannel(idCodec.decode(channelNumbering.getChannel().getId()).longValue())
+                        .withChannelGroup(idCodec.decode(simple.getId()).longValue())
+                        .build()
+        ));
+        channelGroupToBeUpdated.setChannelNumberings(channelNumberingList);
+
+        return channelGroupToBeUpdated;
+    }
+
     private WriteResponse error(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -238,10 +281,6 @@ public class ChannelGroupWriteController {
         );
     }
 
-    public WriteResponse updatePlatform(HttpServletRequest req, HttpServletResponse resp) {
-        return deserializeAndUpdateChannelGroup(req, resp);
-    }
-
     public static class Builder {
 
         private ModelReader reader;
@@ -251,9 +290,7 @@ public class ChannelGroupWriteController {
         private AtlasModelWriter<Iterable<ChannelGroup>> outputWriter;
         private ChannelGroupTransformer transformer;
 
-        public Builder() {
-            //
-        }
+        public Builder() {}
 
         public Builder withReader(ModelReader reader) {
             this.reader = reader;

@@ -221,14 +221,14 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         return channelGroupWriteController.updatePlatform(request, response, createNewPlatform);
     }
 
-//    @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)
-//    public WriteResponse deleteChannelGroup(
-//            @PathVariable("id") String id,
-//            HttpServletRequest request,
-//            HttpServletResponse response
-//    ) {
-//        return channelGroupWriteController.deletePlatform(id, request, response);
-//    }
+    @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)
+    public WriteResponse deleteChannelGroup(
+            @PathVariable("id") String id,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        return channelGroupWriteController.deletePlatform(id, request, response);
+    }
     
     private ChannelGroup filterByChannelGenres(ChannelGroup channelGroup, final Set<String> genres) {
         Iterable<ChannelNumbering> filtered = channelGroup.getChannelNumberings()

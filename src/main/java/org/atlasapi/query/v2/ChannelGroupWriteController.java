@@ -33,6 +33,7 @@ import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.api.client.util.Lists;
+import com.google.common.base.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -48,6 +49,9 @@ public class ChannelGroupWriteController {
     private static final AtlasErrorSummary FORBIDDEN = AtlasErrorSummary.forException(new ForbiddenException(
             "API key does not have write permission"
     ));
+    private static final AtlasErrorSummary BAD_REQUEST = AtlasErrorSummary.forException(new IllegalArgumentException(
+            "The request sent couldn't be processed because it was syntactically incorrect."
+    ));
 
     private final ModelReader reader;
     private final ChannelGroupStore store;
@@ -56,20 +60,15 @@ public class ChannelGroupWriteController {
     private final AtlasModelWriter<Iterable<ChannelGroup>> outputWriter;
     private final ChannelGroupTransformer transformer;
 
-    private ChannelGroupWriteController(
-            ModelReader reader,
-            ChannelGroupStore store,
-            ApplicationFetcher applicationFetcher,
-            ChannelGroupResolver channelGroupResolver,
-            AtlasModelWriter<Iterable<ChannelGroup>> outputWriter,
-            ChannelGroupTransformer transformer
-    ) {
-        this.reader = checkNotNull(reader);
-        this.store = checkNotNull(store);
-        this.applicationFetcher = checkNotNull(applicationFetcher);
-        this.channelGroupResolver = checkNotNull(channelGroupResolver);
-        this.outputWriter = checkNotNull(outputWriter);
-        this.transformer = checkNotNull(transformer);
+    private SubstitutionTableNumberCodec idCodec = new SubstitutionTableNumberCodec();
+
+    private ChannelGroupWriteController(Builder builder) {
+        this.reader = checkNotNull(builder.reader);
+        this.store = checkNotNull(builder.store);
+        this.applicationFetcher = checkNotNull(builder.applicationFetcher);
+        this.channelGroupResolver = checkNotNull(builder.channelGroupResolver);
+        this.outputWriter = checkNotNull(builder.outputWriter);
+        this.transformer = checkNotNull(builder.transformer);
     }
 
     public static Builder builder() {
@@ -90,6 +89,14 @@ public class ChannelGroupWriteController {
             boolean createNewPlatform
     ) {
         return deserializeAndUpdateChannelGroup(req, resp, createNewPlatform);
+    }
+
+    public WriteResponse deletePlatform(
+            String id,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        return deletePlatformById(id, request, response);
     }
 
     private WriteResponse deserializeAndUpdateChannelGroup(
@@ -153,7 +160,11 @@ public class ChannelGroupWriteController {
                 );
                 if (channelGroupToUpdate.isPresent()) {
                     updateChannelGroupNumberings(channelGroupToUpdate.get(), simpleChannelGroup);
-                    store.createOrUpdate(complexChannelGroup);
+                    store.createOrUpdate(channelGroupToUpdate.get());
+                } else {
+                    log.error("Couldn't find a platform for requested ID {}", channelGroupId);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    return error(request, response, BAD_REQUEST);
                 }
             }
         } catch (Exception e) {
@@ -173,86 +184,6 @@ public class ChannelGroupWriteController {
         return null;
     }
 
-    //    public WriteResponse deletePlatform(
-    //            String id,
-    //            HttpServletRequest request,
-    //            HttpServletResponse response
-    //    ) {
-    //        Optional<Application> possibleApplication;
-    //        try {
-    //            possibleApplication = applicationFetcher.applicationFor(request);
-    //        } catch (InvalidApiKeyException ex) {
-    //            return error(request, response, AtlasErrorSummary.forException(ex));
-    //        }
-    //        if (!possibleApplication.isPresent()) {
-    //            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-    //            return error(request, response, UNAUTHORIZED);
-    //        }
-    //
-    //        if (Strings.isNullOrEmpty(id)) {
-    //            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    //            return error(
-    //                    request,
-    //                    response,
-    //                    AtlasErrorSummary.forException(new IllegalArgumentException(
-    //                            "You must specify a platform ID for this action."
-    //                    ))
-    //            );
-    //        }
-    //
-    //        Long channelGroupId = Long.valueOf(id);
-    //        com.google.common.base.Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(
-    //                channelGroupId);
-    //        if (!possibleChannelGroup.isPresent()) {
-    //            return error(request, response, AtlasErrorSummary.forException(new NullPointerException(
-    //                    String.format("No such platform exists with ID %s", id)
-    //            )));
-    //        }
-    //
-    //        if (!possibleApplication.get()
-    //                .getConfiguration()
-    //                .isWriteEnabled(possibleChannelGroup.get().getPublisher())) {
-    //            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
-    //            return error(request, response, FORBIDDEN);
-    //        }
-    //
-    //        try {
-    //            store.deleteChannelGroupById(channelGroupId);
-    //        } catch (Exception e) {
-    //            log.error(
-    //                    String.format(
-    //                            "Error while deleting platform for request %s",
-    //                            request.getRequestURL()
-    //                    ),
-    //                    e
-    //            );
-    //            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-    //            return error(request, response, AtlasErrorSummary.forException(e));
-    //        }
-    //
-    //        response.setStatus(HttpServletResponse.SC_OK);
-    //
-    //        return null;
-    //    }
-
-    private ChannelGroup updateChannelGroupNumberings(
-            ChannelGroup channelGroupToBeUpdated,
-            org.atlasapi.media.entity.simple.ChannelGroup simple
-    ) {
-        SubstitutionTableNumberCodec idCodec = new SubstitutionTableNumberCodec();
-        List<ChannelNumbering> channelNumberingList = Lists.newArrayList();
-
-        simple.getChannels().forEach(channelNumbering -> channelNumberingList.add(
-                ChannelNumbering.builder()
-                        .withChannel(idCodec.decode(channelNumbering.getChannel().getId()).longValue())
-                        .withChannelGroup(channelGroupToBeUpdated.getId())
-                        .build()
-        ));
-        channelGroupToBeUpdated.setChannelNumberings(channelNumberingList);
-
-        return channelGroupToBeUpdated;
-    }
-
     private WriteResponse error(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -266,12 +197,6 @@ public class ChannelGroupWriteController {
         return null;
     }
 
-    private ChannelGroup complexify(
-            org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup
-    ) {
-        return transformer.transform(simpleChannelGroup);
-    }
-
     private org.atlasapi.media.entity.simple.ChannelGroup deserialize(Reader input, Boolean strict)
             throws IOException, ReadException {
         return reader.read(
@@ -279,6 +204,93 @@ public class ChannelGroupWriteController {
                 org.atlasapi.media.entity.simple.ChannelGroup.class,
                 strict
         );
+    }
+
+    private ChannelGroup complexify(
+            org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup
+    ) {
+        return transformer.transform(simpleChannelGroup);
+    }
+
+    private ChannelGroup updateChannelGroupNumberings(
+            ChannelGroup channelGroupToBeUpdated,
+            org.atlasapi.media.entity.simple.ChannelGroup simple
+    ) {
+        List<ChannelNumbering> channelNumberingList = Lists.newArrayList();
+
+        simple.getChannels().forEach(channelNumbering -> channelNumberingList.add(
+                ChannelNumbering.builder()
+                        .withChannel(idCodec.decode(channelNumbering.getChannel().getId())
+                                .longValue())
+                        .withChannelGroup(channelGroupToBeUpdated.getId())
+                        .build()
+        ));
+        channelGroupToBeUpdated.setChannelNumberings(channelNumberingList);
+
+        return channelGroupToBeUpdated;
+    }
+
+    private WriteResponse deletePlatformById(
+            String id,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        Optional<Application> possibleApplication;
+        try {
+            possibleApplication = applicationFetcher.applicationFor(request);
+        } catch (InvalidApiKeyException ex) {
+            return error(request, response, AtlasErrorSummary.forException(ex));
+        }
+        if (!possibleApplication.isPresent()) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return error(request, response, UNAUTHORIZED);
+        }
+
+        if (Strings.isNullOrEmpty(id)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(new IllegalArgumentException(
+                            "You must specify a platform ID for this action."
+                    ))
+            );
+        }
+
+        long channelGroupId = idCodec.decode(id).longValue();
+        com.google.common.base.Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(
+                channelGroupId
+        );
+        if (!possibleChannelGroup.isPresent()) {
+            return error(request, response, AtlasErrorSummary.forException(new NullPointerException(
+                    String.format("No such platform exists with ID %s", id)
+            )));
+        }
+
+        if (!possibleApplication.get()
+                .getConfiguration()
+                .isWriteEnabled(possibleChannelGroup.get().getPublisher())) {
+            response.setStatus(HttpServletResponse.SC_FORBIDDEN);
+            return error(request, response, FORBIDDEN);
+        }
+
+        try {
+            store.deleteChannelGroupById(channelGroupId);
+        } catch (Exception e) {
+            log.error(
+                    String.format(
+                            "Error while deleting platform for request %s",
+                            request.getRequestURL()
+                    ),
+                    e
+            );
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return error(request, response, AtlasErrorSummary.forException(e));
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        return null;
     }
 
     public static class Builder {
@@ -290,7 +302,8 @@ public class ChannelGroupWriteController {
         private AtlasModelWriter<Iterable<ChannelGroup>> outputWriter;
         private ChannelGroupTransformer transformer;
 
-        public Builder() {}
+        public Builder() {
+        }
 
         public Builder withReader(ModelReader reader) {
             this.reader = reader;
@@ -323,14 +336,7 @@ public class ChannelGroupWriteController {
         }
 
         public ChannelGroupWriteController build() {
-            return new ChannelGroupWriteController(
-                    reader,
-                    store,
-                    applicationFetcher,
-                    channelGroupResolver,
-                    outputWriter,
-                    transformer
-            );
+            return new ChannelGroupWriteController(this);
         }
     }
 }

@@ -24,6 +24,8 @@ import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
 import org.apache.commons.httpclient.NoHttpResponseException;
+import org.apache.commons.httpclient.params.HttpConnectionParams;
+import org.apache.commons.httpclient.params.HttpParams;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpRequestRetryHandler;
 import org.apache.http.client.config.RequestConfig;
@@ -386,6 +388,7 @@ public class FiveUpdater extends ScheduledTask {
             RequestConfig requestConfig = RequestConfig.custom()
                     .setConnectTimeout(30000)
                     .setSocketTimeout(30000)
+                    .setConnectionRequestTimeout(30000)
                     .build();
             return HttpClients
                     .custom()

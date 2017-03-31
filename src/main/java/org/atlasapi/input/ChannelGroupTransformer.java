@@ -21,7 +21,7 @@ public class ChannelGroupTransformer implements
 
     @Override
     public ChannelGroup transform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
-        SubstitutionTableNumberCodec idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
+        SubstitutionTableNumberCodec idCodec = new SubstitutionTableNumberCodec();
         Platform complex = new Platform();
 
         complex.setPublisher(getPublisher(simple.getPublisherDetails()));

@@ -32,6 +32,7 @@ public class ChannelGroupTransformer implements
         simple.getChannels().forEach(channelNumbering -> channelNumberingList.add(
                 ChannelNumbering.builder()
                         .withChannel(idCodec.decode(channelNumbering.getChannel().getId()).longValue())
+                        .withChannelGroup(idCodec.decode(simple.getId()).longValue())
                         .build()
         ));
         complex.setChannelNumberings(channelNumberingList);

@@ -154,7 +154,8 @@ public class NitroAvailabilityExtractor {
                 sdLocations.addAll(
                         locations.stream()
                                 .map(Wrapper::get)
-                                .filter(loc -> loc.getPolicy().getPlatform() == Platform.PC)
+                                .filter(loc -> loc.getPolicy().getPlatform()
+                                        == Platform.YOUVIEW_IPLAYER)
                                 .map(TO_WRAPPED_LOCATION::apply)
                                 .collect(Collectors.toList())
                 );

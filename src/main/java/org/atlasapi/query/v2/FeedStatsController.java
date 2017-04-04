@@ -32,7 +32,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 @Controller
 public class FeedStatsController extends BaseController<Iterable<FeedStatistics>> {
-    
+
     private static final AtlasErrorSummary NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
             .withMessage("No Feed exists for the specified Publisher")
             .withErrorCode("Feed not found")
@@ -41,9 +41,9 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
             .withMessage("You require an API key to view this data")
             .withErrorCode("Api Key required")
             .withStatusCode(HttpStatusCode.FORBIDDEN);
-    
+
     private final FeedStatisticsResolver statsResolver;
-    
+
     public FeedStatsController(
             ApplicationFetcher configFetcher,
             AdapterLog log,

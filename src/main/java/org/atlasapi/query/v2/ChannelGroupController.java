@@ -5,6 +5,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import java.io.IOException;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -20,15 +21,19 @@ import org.atlasapi.media.channel.ChannelGroupType;
 import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.Platform;
+import org.atlasapi.media.entity.simple.response.WriteResponse;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter;
 import org.atlasapi.query.v2.ChannelGroupFilterer.ChannelGroupFilter.ChannelGroupFilterBuilder;
+
+import com.sun.org.apache.xpath.internal.operations.Bool;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
 import com.google.common.base.Joiner;
@@ -75,18 +80,28 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private static final String PLATFORM_ID_KEY = "platform_id";
     private static final String CHANNEL_GENRES_KEY = "channel_genres";
     private static final SelectionBuilder SELECTION_BUILDER = Selection.builder().withMaxLimit(50).withDefaultLimit(10);
+
     private final ChannelGroupResolver channelGroupResolver;
     private final ChannelGroupFilterer filterer = new ChannelGroupFilterer();
     private final ChannelResolver channelResolver;
     private final NumberToShortStringCodec idCodec;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
+    private final ChannelGroupWriteController channelGroupWriteController;
    
 
-    public ChannelGroupController(ApplicationFetcher configFetcher, AdapterLog log, AtlasModelWriter<Iterable<ChannelGroup>> outputter,
-            ChannelGroupResolver channelGroupResolver, ChannelResolver channelResolver, NumberToShortStringCodec idCodec) {
+    public ChannelGroupController(
+            ApplicationFetcher configFetcher,
+            AdapterLog log,
+            AtlasModelWriter<Iterable<ChannelGroup>> outputter,
+            ChannelGroupResolver channelGroupResolver,
+            ChannelGroupWriteController channelGroupWriteController,
+            ChannelResolver channelResolver,
+            NumberToShortStringCodec idCodec
+    ) {
         super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.channelGroupResolver = channelGroupResolver;
         this.channelResolver = checkNotNull(channelResolver);
+        this.channelGroupWriteController = checkNotNull(channelGroupWriteController);
         this.idCodec = idCodec;
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
     }
@@ -114,9 +129,14 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             List<ChannelGroup> channelGroups = ImmutableList.copyOf(channelGroupResolver.channelGroups());
 
             Selection selection = SELECTION_BUILDER.build(request);        
-            channelGroups = selection.applyTo(Iterables.filter(
-                filterer.filter(channelGroups, constructFilter(platformId, type, advertised)),
-                    input -> application.getConfiguration().isReadEnabled(input.getPublisher())));
+            channelGroups = selection.applyTo(filterer.filter(
+                    channelGroups,
+                    constructFilter(platformId, type, advertised)
+            )
+                    .stream()
+                    .filter(input -> application.getConfiguration()
+                            .isReadEnabled(input.getPublisher()))
+                    .collect(Collectors.toList()));
 
             if (!Strings.isNullOrEmpty(advertised)) {
                 ImmutableList.Builder filtered = ImmutableList.builder();
@@ -180,24 +200,59 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
         }
     }
+
+    @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.POST)
+    public WriteResponse createChannelGroup(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("newPlatform") String newPlatform
+            ) {
+        boolean createNewPlatform = Boolean.parseBoolean(newPlatform);
+        return channelGroupWriteController.createPlatform(request, response, createNewPlatform);
+    }
+
+    @RequestMapping(value = { "/3.0/channel_groups.*" }, method = RequestMethod.PUT)
+    public WriteResponse updateChannelGroup(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam("newPlatform") String newPlatform
+    ) {
+        boolean createNewPlatform = Boolean.valueOf(newPlatform);
+        return channelGroupWriteController.updatePlatform(request, response, createNewPlatform);
+    }
+
+    @RequestMapping(value = { "/3.0/channel_groups/{id}.*" }, method = RequestMethod.DELETE)
+    public WriteResponse deleteChannelGroup(
+            @PathVariable("id") String id,
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) {
+        return channelGroupWriteController.deletePlatform(id, request, response);
+    }
     
     private ChannelGroup filterByChannelGenres(ChannelGroup channelGroup, final Set<String> genres) {
-        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(),
-                input -> {
-                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
+        Iterable<ChannelNumbering> filtered = channelGroup.getChannelNumberings()
+                .stream()
+                .filter(input -> {
+                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(
+                            input.getChannel())));
                     return hasMatchingGenre(channel, genres);
-                });
+                })
+                .collect(Collectors.toList());
         ChannelGroup filteredGroup = channelGroup.copy();
         filteredGroup.setChannelNumberings(filtered);
         return filteredGroup;
     }
 
     private ChannelGroup filterByAdvertised(ChannelGroup channelGroup) {
-        Iterable<ChannelNumbering> filtered = Iterables.filter(channelGroup.getChannelNumberings(),
-                input -> {
-                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(input.getChannel())));
+        Iterable<ChannelNumbering> filtered = channelGroup.getChannelNumberings()
+                .stream()
+                .filter(input -> {
+                    Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(
+                            input.getChannel())));
                     return isAdvertised(channel);
-                });
+                })
+                .collect(Collectors.toList());
         ChannelGroup filteredGroup = channelGroup.copy();
         filteredGroup.setChannelNumberings(filtered);
         return filteredGroup;

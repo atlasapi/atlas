@@ -20,15 +20,22 @@ public class BroadcastModelTransformer {
 
     private final ChannelResolver channelResolver;
 
-    public BroadcastModelTransformer(ChannelResolver channelResolver) {
+    private BroadcastModelTransformer(ChannelResolver channelResolver) {
         this.channelResolver = checkNotNull(channelResolver);
+    }
+
+    public static BroadcastModelTransformer createBroadcastModelTransformer(
+            ChannelResolver channelResolver) {
+        return new BroadcastModelTransformer(channelResolver);
     }
 
     public Broadcast transform(org.atlasapi.media.entity.simple.Broadcast simple) {
 
-        Broadcast complex = new Broadcast(resolveChannel(simple),
+        Broadcast complex = new Broadcast(
+                resolveChannel(simple),
                 new DateTime(simple.getTransmissionTime()),
-                new DateTime(simple.getTransmissionEndTime()))
+                new DateTime(simple.getTransmissionEndTime())
+        )
                 .withId(simple.getId());
         
         if (simple.getActualTransmissionTime() != null) {
@@ -47,6 +54,8 @@ public class BroadcastModelTransformer {
         complex.setSurround(simple.getSurround());
         complex.setLive(simple.getLive());
         complex.setAliasUrls(simple.getAliases());
+        complex.setContinuation(simple.getContinuation());
+        complex.setNewOneOff(simple.getNewOneOff());
         if (simple.getBlackoutRestriction() != null) {
             complex.setBlackoutRestriction(new BlackoutRestriction(simple.getBlackoutRestriction().getAll()));
         }
@@ -66,7 +75,7 @@ public class BroadcastModelTransformer {
                     "Must not specify a channel ID and a channel URI. Supply only one.");
         }
 
-        String broadcastOn = null;
+        String broadcastOn;
         if (hasChannelId(simple)) {
 
             String channelId = simple.getChannel().getId();

@@ -777,7 +777,7 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
     }
 
     private void setDescription(ProgData progData, Item item, boolean isWelshChannel) {
-        if (progData.getBillings() != null) {
+        if (progData.getBillings() != null && progData.getAttr().getContinued().equals("no")) {
             for (Billing billing : progData.getBillings().getBilling()) {
 
                 if ((item.getDescription() == null || !isWelshChannel)
@@ -994,6 +994,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             broadcast.setLive(getBooleanValue(progData.getAttr().getLive()));
             broadcast.setSurround(getBooleanValue(progData.getAttr().getSurround()));
             broadcast.setPremiere(getBooleanValue(progData.getAttr().getPremiere()));
+            broadcast.setNewOneOff(getBooleanValue(progData.getAttr().getNewOneOff()));
+            broadcast.setContinuation(getBooleanValue(progData.getAttr().getContinued()));
 
             Boolean newSeries = getBooleanValue(progData.getAttr().getNewSeries());
             Boolean newEpisode = getBooleanValue(progData.getAttr().getNewEpisode());

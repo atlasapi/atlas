@@ -40,14 +40,12 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
 
     private static final int DEFAULT_FAILURE_THRESHOLD_PERCENTAGE = 100;
 
-    private final Logger log = LoggerFactory.getLogger(getClass());
+    private static final Logger log = LoggerFactory.getLogger(ChannelDayProcessingTask.class);
     
     private final ListeningExecutorService executor;
     private final Supplier<? extends Collection<ChannelDay>> channelDays;
     private final ChannelDayProcessor processor;
     private final ChannelDayProcessingTaskListener listener;
-    private final MetricRegistry metricRegistry;
-    private final String metricPrefix;
 
     private AtomicInteger processed;
     private int tasks;
@@ -58,11 +56,18 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
     public ChannelDayProcessingTask(
             ExecutorService executor,
             Supplier<? extends Collection<ChannelDay>> channelDays,
-            ChannelDayProcessor processor,
-            MetricRegistry metricRegistry,
-            String metricPrefix
+            ChannelDayProcessor processor
     ) {
-        this(executor, channelDays, processor, null, DEFAULT_FAILURE_THRESHOLD_PERCENTAGE, metricRegistry, metricPrefix);
+        this(executor, channelDays, processor, null, DEFAULT_FAILURE_THRESHOLD_PERCENTAGE);
+    }
+    
+    public ChannelDayProcessingTask(
+            ExecutorService executor,
+            Supplier<? extends Collection<ChannelDay>> channelDays,
+            ChannelDayProcessor processor,
+            ChannelDayProcessingTaskListener listener
+    ) {
+        this(executor, channelDays, processor, listener, DEFAULT_FAILURE_THRESHOLD_PERCENTAGE);
     }
     
     public ChannelDayProcessingTask(
@@ -70,28 +75,13 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
             Supplier<? extends Collection<ChannelDay>> channelDays,
             ChannelDayProcessor processor,
             ChannelDayProcessingTaskListener listener,
-            MetricRegistry metricRegistry,
-            String metricPrefix
-    ) {
-        this(executor, channelDays, processor, listener, DEFAULT_FAILURE_THRESHOLD_PERCENTAGE, metricRegistry, metricPrefix);
-    }
-    
-    public ChannelDayProcessingTask(
-            ExecutorService executor,
-            Supplier<? extends Collection<ChannelDay>> channelDays,
-            ChannelDayProcessor processor,
-            ChannelDayProcessingTaskListener listener,
-            int jobFailThresholdInPercent,
-            MetricRegistry metricRegistry,
-            String metricPrefix
+            int jobFailThresholdInPercent
     ) {
         this.listener = listener;
         this.executor = MoreExecutors.listeningDecorator(executor);
         this.channelDays = checkNotNull(channelDays);
         this.processor = checkNotNull(processor);
         this.jobFailThresholdInPercent = jobFailThresholdInPercent;
-        this.metricRegistry = metricRegistry;
-        this.metricPrefix = metricPrefix;
     }
 
     private void updateStatus() {
@@ -100,12 +90,6 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
     
     @Override
     protected void runTask() {
-        log.info("Nitro: Running task with metrics: {}", metricRegistry);
-        log.info("Nitro: Metric classloader: {}", metricRegistry.getClass().getClassLoader());
-        log.info("Nitro: AtlasMain classloader: {}", AtlasMain.class.getClass().getClassLoader());
-
-        Timer.Context timer = metricRegistry.timer(metricPrefix + "task.duration").time();
-        
         Collection<ChannelDay> channels = channelDays.get();
         Iterator<ChannelDay> channelsIter = channels.iterator();
 
@@ -125,8 +109,6 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
         if (listener != null) {
             listener.completed(progress.get());
         }
-
-        timer.stop();
 
         if (taskFailureRateExceedsJobFailThreshold()) {
             throw new RuntimeException(
@@ -212,7 +194,8 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
 
         @Override
         public UpdateProgress call() throws Exception {
-            System.out.println(Thread.currentThread().getName());
+            log.info("Channel day processing task {}", Thread.currentThread().getName());
+
             if (!shouldContinue()) {
                 return UpdateProgress.START;
             }

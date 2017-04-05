@@ -528,6 +528,7 @@ public class QueryWebModule {
                 tvaModelOutputter(),
                 feedGenerator,
                 contentResolver,
+                channelResolver,
                 hierarchyExpander
         );
     }

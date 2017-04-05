@@ -89,21 +89,17 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
     private final ChannelGroupWriteController channelGroupWriteController;
    
 
-    public ChannelGroupController(
-            ApplicationFetcher configFetcher,
-            AdapterLog log,
-            AtlasModelWriter<Iterable<ChannelGroup>> outputter,
-            ChannelGroupResolver channelGroupResolver,
-            ChannelGroupWriteController channelGroupWriteController,
-            ChannelResolver channelResolver,
-            NumberToShortStringCodec idCodec
-    ) {
-        super(configFetcher, log, outputter, DefaultApplication.createDefault());
-        this.channelGroupResolver = channelGroupResolver;
-        this.channelResolver = checkNotNull(channelResolver);
-        this.channelGroupWriteController = checkNotNull(channelGroupWriteController);
-        this.idCodec = idCodec;
+    private ChannelGroupController(Builder builder) {
+        super(builder.configFetcher, builder.log, builder.outputter, DefaultApplication.createDefault());
+        this.channelGroupResolver = builder.channelGroupResolver;
+        this.channelResolver = checkNotNull(builder.channelResolver);
+        this.channelGroupWriteController = checkNotNull(builder.channelGroupWriteController);
+        this.idCodec = builder.idCodec;
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
+    }
+
+    public static Builder builder() {
+        return new Builder();
     }
 
     @RequestMapping(value={"/3.0/channel_groups.*", "/channel_groups.*"})
@@ -297,5 +293,58 @@ public class ChannelGroupController extends BaseController<Iterable<ChannelGroup
         }
 
         return filter.build();
+    }
+
+    public static class Builder {
+
+        private ApplicationFetcher configFetcher;
+        private AdapterLog log;
+        private AtlasModelWriter<Iterable<ChannelGroup>> outputter;
+        private ChannelGroupResolver channelGroupResolver;
+        private ChannelGroupWriteController channelGroupWriteController;
+        private ChannelResolver channelResolver;
+        private NumberToShortStringCodec idCodec;
+
+        public Builder withConfigFetcher(ApplicationFetcher configFetcher) {
+            this.configFetcher = configFetcher;
+            return this;
+        }
+
+        public Builder withLog(AdapterLog log) {
+            this.log = log;
+            return this;
+        }
+
+        public Builder withOutputter(
+                AtlasModelWriter<Iterable<ChannelGroup>> outputter) {
+            this.outputter = outputter;
+            return this;
+        }
+
+        public Builder withChannelGroupResolver(
+                ChannelGroupResolver channelGroupResolver) {
+            this.channelGroupResolver = channelGroupResolver;
+            return this;
+        }
+
+        public Builder withChannelGroupWriteController(
+                ChannelGroupWriteController channelGroupWriteController) {
+            this.channelGroupWriteController = channelGroupWriteController;
+            return this;
+        }
+
+        public Builder withChannelResolver(ChannelResolver channelResolver) {
+            this.channelResolver = channelResolver;
+            return this;
+        }
+
+        public Builder withIdCodec(NumberToShortStringCodec idCodec) {
+            this.idCodec = idCodec;
+            return this;
+        }
+
+        public ChannelGroupController createChannelGroupController() {
+            return new ChannelGroupController(this);
+        }
     }
 }

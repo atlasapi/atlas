@@ -20,18 +20,18 @@ public class ChannelGroupTransformer implements
     public ChannelGroup transform(org.atlasapi.media.entity.simple.ChannelGroup simple) {
         Platform complex = new Platform();
 
-        if (Strings.isNullOrEmpty(simple.getId())) {
+        if (!Strings.isNullOrEmpty(simple.getId())) {
             complex.setId(idCodec.decode(simple.getId()).longValue());
         }
 
-        complex.setPublisher(getPublisher(simple.getPublisherDetails()));
+        complex.setPublisher(extractPublisher(simple.getPublisherDetails()));
         complex.addTitle(simple.getTitle());
         complex.setAvailableCountries(Countries.fromCodes(simple.getAvailableCountries()));
 
         return complex;
     }
 
-    private Publisher getPublisher(PublisherDetails publisherDetails) {
+    private Publisher extractPublisher(PublisherDetails publisherDetails) {
         if (Strings.isNullOrEmpty(publisherDetails.getKey())) {
             throw new IllegalArgumentException("Missing publisher key.");
         }

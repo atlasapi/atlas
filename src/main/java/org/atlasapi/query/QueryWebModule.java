@@ -322,15 +322,15 @@ public class QueryWebModule {
     @Bean
     ChannelGroupController channelGroupController() {
         NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
-        return new ChannelGroupController(
-                applicationFetcher,
-                log,
-                channelGroupModelWriter(),
-                cachingChannelGroupResolver(),
-                channelGroupWriteController(),
-                channelResolver,
-                idCodec
-        );
+        return ChannelGroupController.builder()
+                .withConfigFetcher(applicationFetcher)
+                .withLog(log)
+                .withOutputter(channelGroupModelWriter())
+                .withChannelGroupResolver(cachingChannelGroupResolver())
+                .withChannelGroupWriteController(channelGroupWriteController())
+                .withChannelResolver(channelResolver)
+                .withIdCodec(idCodec)
+                .createChannelGroupController();
     }
 
     private ChannelGroupWriteController channelGroupWriteController() {
@@ -338,7 +338,6 @@ public class QueryWebModule {
                 .withReader(new DefaultJacksonModelReader())
                 .withStore(channelGroupStore)
                 .withApplicationFetcher(applicationFetcher)
-                .withChannelGroupResolver(cachingChannelGroupResolver())
                 .withOutputWriter(channelGroupModelWriter())
                 .withTransformer(new ChannelGroupTransformer())
                 .build();

@@ -49,11 +49,13 @@ public class ChannelGroupWriteController {
     private static final AtlasErrorSummary FORBIDDEN = AtlasErrorSummary.forException(new ForbiddenException(
             "API key does not have write permission"
     ));
+    private static final AtlasErrorSummary BAD_REQUEST = AtlasErrorSummary.forException(new IllegalArgumentException(
+            "The request sent couldn't be processed because it was syntactically incorrect."
+    ));
 
     private final ModelReader reader;
     private final ChannelGroupStore store;
     private final ApplicationFetcher applicationFetcher;
-    private final ChannelGroupResolver channelGroupResolver;
     private final AtlasModelWriter<Iterable<ChannelGroup>> outputWriter;
     private final ChannelGroupTransformer transformer;
 
@@ -63,7 +65,6 @@ public class ChannelGroupWriteController {
         this.reader = checkNotNull(builder.reader);
         this.store = checkNotNull(builder.store);
         this.applicationFetcher = checkNotNull(builder.applicationFetcher);
-        this.channelGroupResolver = checkNotNull(builder.channelGroupResolver);
         this.outputWriter = checkNotNull(builder.outputWriter);
         this.transformer = checkNotNull(builder.transformer);
     }
@@ -103,7 +104,6 @@ public class ChannelGroupWriteController {
     ) {
         Boolean strict = Boolean.valueOf(request.getParameter(STRICT));
 
-        // authentication
         Optional<Application> possibleApplication;
         try {
             possibleApplication = applicationFetcher.applicationFor(request);
@@ -115,7 +115,6 @@ public class ChannelGroupWriteController {
             return error(request, response, UNAUTHORIZED);
         }
 
-        // deserialize JSON into a channelGroup & complexify it
         ChannelGroup complexChannelGroup;
         org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup;
         try {
@@ -140,7 +139,6 @@ public class ChannelGroupWriteController {
             return error(request, response, errorSummary);
         }
 
-        //authorization
         if (!possibleApplication.get()
                 .getConfiguration()
                 .isWriteEnabled(complexChannelGroup.getPublisher())) {
@@ -148,7 +146,29 @@ public class ChannelGroupWriteController {
             return error(request, response, FORBIDDEN);
         }
 
-        // write to DB
+        Optional<AtlasErrorSummary> errorSummary = createOrUpdateChannelGroup(
+                request,
+                response,
+                createNewPlatform,
+                complexChannelGroup,
+                simpleChannelGroup
+        );
+        if (errorSummary.isPresent()) {
+            return error(request, response, errorSummary.get());
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+
+        return null;
+    }
+
+    private Optional<AtlasErrorSummary> createOrUpdateChannelGroup(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            boolean createNewPlatform,
+            ChannelGroup complexChannelGroup,
+            org.atlasapi.media.entity.simple.ChannelGroup simpleChannelGroup
+    ) {
         try {
             long channelGroupId = store.createOrUpdate(complexChannelGroup).getId();
             if (createNewPlatform) {
@@ -157,7 +177,11 @@ public class ChannelGroupWriteController {
                 );
                 if (channelGroupToUpdate.isPresent()) {
                     updateChannelGroupNumberings(channelGroupToUpdate.get(), simpleChannelGroup);
-                    store.createOrUpdate(complexChannelGroup);
+                    store.createOrUpdate(channelGroupToUpdate.get());
+                } else {
+                    log.error("Couldn't find a platform for requested ID {}", channelGroupId);
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    return Optional.of(BAD_REQUEST);
                 }
             }
         } catch (Exception e) {
@@ -169,12 +193,9 @@ public class ChannelGroupWriteController {
                     e
             );
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return error(request, response, AtlasErrorSummary.forException(e));
+            return Optional.of(AtlasErrorSummary.forException(e));
         }
-
-        response.setStatus(HttpServletResponse.SC_OK);
-
-        return null;
+        return Optional.empty();
     }
 
     private WriteResponse error(
@@ -251,7 +272,7 @@ public class ChannelGroupWriteController {
         }
 
         long channelGroupId = idCodec.decode(id).longValue();
-        com.google.common.base.Optional<ChannelGroup> possibleChannelGroup = channelGroupResolver.channelGroupFor(
+        com.google.common.base.Optional<ChannelGroup> possibleChannelGroup = store.channelGroupFor(
                 channelGroupId
         );
         if (!possibleChannelGroup.isPresent()) {
@@ -291,7 +312,6 @@ public class ChannelGroupWriteController {
         private ModelReader reader;
         private ChannelGroupStore store;
         private ApplicationFetcher applicationFetcher;
-        private ChannelGroupResolver channelGroupResolver;
         private AtlasModelWriter<Iterable<ChannelGroup>> outputWriter;
         private ChannelGroupTransformer transformer;
 
@@ -310,11 +330,6 @@ public class ChannelGroupWriteController {
 
         public Builder withApplicationFetcher(ApplicationFetcher applicationFetcher) {
             this.applicationFetcher = applicationFetcher;
-            return this;
-        }
-
-        public Builder withChannelGroupResolver(ChannelGroupResolver channelGroupResolver) {
-            this.channelGroupResolver = channelGroupResolver;
             return this;
         }
 

@@ -31,6 +31,7 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.time.DayOfWeek;
 import com.metabroadcast.common.time.SystemClock;
 
 import com.google.common.base.Optional;
@@ -44,6 +45,7 @@ import com.google.common.util.concurrent.RateLimiter;
 import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
+import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -141,6 +143,11 @@ public class BbcNitroModule {
                             "Nitro full fetch -7 to +3 day updater"
                     ),
                     RepetitionRules.every(Duration.standardHours(2))
+            );
+            scheduler.schedule(
+                    channelIngestTask().withName("Nitro channel updater"),
+                    RepetitionRules.weekly(
+                            DayOfWeek.MONDAY, LocalTime.MIDNIGHT)
             );
         }
         if (offScheduleIngestEnabled) {

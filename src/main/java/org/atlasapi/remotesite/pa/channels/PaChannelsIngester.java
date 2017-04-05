@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.pa.channels;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
@@ -27,6 +28,7 @@ import org.atlasapi.remotesite.pa.channels.bindings.Station;
 import org.atlasapi.remotesite.pa.channels.bindings.Url;
 import org.atlasapi.remotesite.pa.channels.bindings.Variation;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
@@ -46,17 +48,21 @@ public class PaChannelsIngester {
 
     public static final String BT_SERVICE_ID_ALIAS_PREFIX = "http://bt.youview.com/service/";
     public static final String YOUVIEW_SERVICE_ID_ALIAS_PREFIX = "http://youview.com/service/";
+
+    @VisibleForTesting
+    static final String CHANNEL_URI_PREFIX =
+            "http://ref.atlasapi.org/channels/pressassociation.com/";
+    @VisibleForTesting
+    static final String STATION_URI_PREFIX =
+            "http://ref.atlasapi.org/channels/pressassociation.com/stations/";
+
     private static final Logger log = LoggerFactory.getLogger(PaChannelsIngester.class);
     private static final String GENRE_ADULT = "Adult";
     private static final String SIMULCAST_LINK_TYPE = "Web_Simulcast";
     private static final String REGIONAL_VARIATION = "regional";
     private static final String IMAGE_PREFIX =
             "http://images.atlas.metabroadcast.com/pressassociation.com/channels/";
-    private static final String CHANNEL_URI_PREFIX =
-            "http://ref.atlasapi.org/channels/pressassociation.com/";
     private static final String STATION_ALIAS_PREFIX = "http://pressassociation.com/stations/";
-    private static final String STATION_URI_PREFIX =
-            "http://ref.atlasapi.org/channels/pressassociation.com/stations/";
     private static final String GENRE_URI_PREFIX = "http://pressassociation.com/genres/";
     private static final String FORMAT_HD = "HD";
 
@@ -84,7 +90,7 @@ public class PaChannelsIngester {
 
     private static final Predicate<Variation> IS_REGIONAL =
             input -> REGIONAL_VARIATION.equals(input.getType());
-    public static final String PA_CHANNEL_ID_NAMESPACE = "pa:channel:id";
+    private static final String PA_CHANNEL_ID_NAMESPACE = "pa:channel:id";
 
     private final DateTimeFormatter formatter = ISODateTimeFormat.date();
 
@@ -344,7 +350,10 @@ public class PaChannelsIngester {
                 LocalDate titleEndDate = formatter.parseLocalDate(name.getEndDate());
                 channel.addTitle(name.getvalue(), titleStartDate, titleEndDate.plusDays(1));
             } else {
-                channel.addTitle(name.getvalue(), titleStartDate);
+                channel.addTitle(
+                        parseTitle(channel, name),
+                        titleStartDate
+                );
             }
         }
 
@@ -368,5 +377,21 @@ public class PaChannelsIngester {
                 channel.addImage(image, imageStartDate);
             }
         }
+    }
+
+    private String parseTitle(Channel channel, Name name) {
+        // PA is sending the parent station for all ITV channels with the name UTV. They
+        // have been asked to change it, but that will take too long for RT's needs. This is
+        // a workaround to name the station 'ITV'.
+        // What we do is hard.
+        // TODO MBST-18347
+        if (Objects.equals(
+                channel.getUri(),
+                "http://ref.atlasapi.org/channels/pressassociation.com/stations/7"
+        )) {
+            return "ITV";
+        }
+
+        return name.getvalue();
     }
 }

@@ -60,9 +60,7 @@ public class PicksModule {
                 Executors.newSingleThreadExecutor(),
                 picksDayRangeChannelDaySupplier(),
                 picksDayUpdater(),
-                picksScheduledTaskListener(),
-                metricRegistry,
-                "picks."
+                picksScheduledTaskListener()
         );
     }
     

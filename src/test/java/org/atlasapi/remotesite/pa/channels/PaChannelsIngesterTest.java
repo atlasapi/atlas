@@ -150,29 +150,25 @@ public class PaChannelsIngesterTest {
                 is(STATION_URI_PREFIX + station.getId())
         );
 
+        assertThat(
+                channelTree.getParent().getTitle(),
+                is("ITV")
+        );
+
         Iterable<TemporalField<String>> titles = channelTree.getParent().getAllTitles();
         assertThat(
                 Iterables.size(titles),
-                is(2)
+                is(1)
         );
 
-        TemporalField<String> overwrittenTitle = Iterables.get(titles, 0);
-        TemporalField<String> existingTitle = Iterables.get(titles, 1);
+        TemporalField<String> title = Iterables.get(titles, 0);
 
         assertThat(
-                overwrittenTitle.getValue(),
+                title.getValue(),
                 is("ITV")
         );
         assertThat(
-                overwrittenTitle.getStartDate(),
-                is(new LocalDate(2017, 4, 5))
-        );
-        assertThat(
-                existingTitle.getValue(),
-                is("Station")
-        );
-        assertThat(
-                existingTitle.getStartDate(),
+                title.getStartDate(),
                 is(new LocalDate(1970, 1, 1))
         );
     }

@@ -12,9 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import org.atlasapi.AtlasMain;
 import org.atlasapi.media.channel.Channel;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
@@ -53,30 +50,18 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
 
     private final int jobFailThresholdInPercent;
 
-    public ChannelDayProcessingTask(
-            ExecutorService executor,
-            Supplier<? extends Collection<ChannelDay>> channelDays,
-            ChannelDayProcessor processor
-    ) {
+    public ChannelDayProcessingTask(ExecutorService executor, Supplier<? extends Collection<ChannelDay>> channelDays, ChannelDayProcessor processor) {
         this(executor, channelDays, processor, null, DEFAULT_FAILURE_THRESHOLD_PERCENTAGE);
     }
     
-    public ChannelDayProcessingTask(
-            ExecutorService executor,
-            Supplier<? extends Collection<ChannelDay>> channelDays,
-            ChannelDayProcessor processor,
-            ChannelDayProcessingTaskListener listener
-    ) {
+    public ChannelDayProcessingTask(ExecutorService executor, 
+            Supplier<? extends Collection<ChannelDay>> channelDays, ChannelDayProcessor processor,
+            ChannelDayProcessingTaskListener listener) {
         this(executor, channelDays, processor, listener, DEFAULT_FAILURE_THRESHOLD_PERCENTAGE);
     }
     
-    public ChannelDayProcessingTask(
-            ExecutorService executor,
-            Supplier<? extends Collection<ChannelDay>> channelDays,
-            ChannelDayProcessor processor,
-            ChannelDayProcessingTaskListener listener,
-            int jobFailThresholdInPercent
-    ) {
+    public ChannelDayProcessingTask(ExecutorService executor, Supplier<? extends Collection<ChannelDay>> channelDays, ChannelDayProcessor processor,
+            ChannelDayProcessingTaskListener listener, int jobFailThresholdInPercent) {
         this.listener = listener;
         this.executor = MoreExecutors.listeningDecorator(executor);
         this.channelDays = checkNotNull(channelDays);
@@ -90,6 +75,7 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
     
     @Override
     protected void runTask() {
+        
         Collection<ChannelDay> channels = channelDays.get();
         Iterator<ChannelDay> channelsIter = channels.iterator();
 
@@ -97,8 +83,8 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
         tasks = channels.size();
         progress = new AtomicReference<UpdateProgress>(UpdateProgress.START);
         
-        ImmutableList.Builder<ListenableFuture<UpdateProgress>> results = ImmutableList.builder();
-
+        ImmutableList.Builder<ListenableFuture<UpdateProgress>> results
+            = ImmutableList.builder();
         while(channelsIter.hasNext() && shouldContinue()) {
             results.add(submitTask(channelsIter.next()));
             updateStatus();
@@ -109,7 +95,7 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
         if (listener != null) {
             listener.completed(progress.get());
         }
-
+        
         if (taskFailureRateExceedsJobFailThreshold()) {
             throw new RuntimeException(
                     String.format("Too many failures: %d failures of %d total exceeds threshold of %d%%", 

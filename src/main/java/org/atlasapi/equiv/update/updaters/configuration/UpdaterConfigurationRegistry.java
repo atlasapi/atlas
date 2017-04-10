@@ -196,15 +196,15 @@ public class UpdaterConfigurationRegistry {
                 .withSource(RADIO_TIMES_UPCOMING)
                 .withItemEquivalenceUpdater(
                         RT_UPCOMING_ITEM,
-                        ImmutableSet.of(AMAZON_UNBOX, PA)
+                        ImmutableSet.of(AMAZON_UNBOX)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         RT_UPCOMING_TOP_LEVEL_CONTAINER,
-                        ImmutableSet.of(AMAZON_UNBOX, PA)
+                        ImmutableSet.of(AMAZON_UNBOX)
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
-                        ImmutableSet.of(AMAZON_UNBOX, PA)
+                        ImmutableSet.of(AMAZON_UNBOX)
                 )
                 .build();
     }

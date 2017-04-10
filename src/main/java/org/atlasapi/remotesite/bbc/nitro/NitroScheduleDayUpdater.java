@@ -3,8 +3,6 @@ package org.atlasapi.remotesite.bbc.nitro;
 import java.util.List;
 import java.util.Map;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
@@ -53,12 +51,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     private final BroadcastTrimmer trimmer;
     private final ScheduleWriter scheduleWriter;
 
-    public NitroScheduleDayUpdater(
-            ScheduleWriter scheduleWriter,
-            BroadcastTrimmer trimmer,
-            NitroBroadcastHandler<? extends List<Optional<ItemRefAndBroadcast>>> handler,
-            Glycerin glycerin
-    ) {
+    public NitroScheduleDayUpdater(ScheduleWriter scheduleWriter, BroadcastTrimmer trimmer, NitroBroadcastHandler<? extends List<Optional<ItemRefAndBroadcast>>> handler, Glycerin glycerin) {
         this.scheduleWriter = scheduleWriter;
         this.trimmer = trimmer;
         this.broadcastHandler = handler;
@@ -123,9 +116,8 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
                 .withStartTo(to)
                 .withPageSize(MAX_PAGE_SIZE)
                 .build();
-
+        
         GlycerinResponse<Broadcast> resp = glycerin.execute(query);
-
         if (!resp.hasNext()) {
             return resp.getResults();
         } else {

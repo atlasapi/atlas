@@ -162,7 +162,7 @@ public class LocalOrRemoteNitroFetcher {
         ImmutableSet<String> itemUris = toItemUris(episodeRefs);
         ResolvedContent resolvedItems = resolve(itemUris);
         ImmutableListMultimap<String, Broadcast> broadcastIndex = buildBroadcastIndex(broadcasts);
-        
+
         Set<PidReference> toFetch = Sets.newHashSet();
         for (PidReference pidReference : episodeRefs) {
             Maybe<Identified> maybeId = resolvedItems.asMap().get(toItemUri(pidReference));
@@ -174,9 +174,8 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
 
-        Iterable<List<Item>> fetchedItems = contentAdapter.fetchEpisodes(toFetch, broadcastIndex);
-
-        ImmutableSet<Item> fetchedItemSet = ImmutableSet.copyOf(
+        Iterable<List<Item> > fetchedItems = contentAdapter.fetchEpisodes(toFetch, broadcastIndex);
+ImmutableSet<Item> fetchedItemSet = ImmutableSet.copyOf(
                 Iterables.concat(
                         fetchedItems
                 )

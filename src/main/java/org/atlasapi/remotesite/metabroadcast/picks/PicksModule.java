@@ -4,6 +4,8 @@ import java.util.concurrent.Executors;
 
 import javax.annotation.PostConstruct;
 
+import com.codahale.metrics.MetricRegistry;
+import org.atlasapi.AtlasMain;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.persistence.content.ContentGroupResolver;
@@ -49,11 +51,17 @@ public class PicksModule {
     private DatabasedMongo mongo;
     @Autowired
     private SimpleScheduler scheduler;
+
+    private final MetricRegistry metricRegistry = AtlasMain.metrics;
     
     @Bean
     public ChannelDayProcessingTask picksScheduledTask() {
-        return new ChannelDayProcessingTask(Executors.newSingleThreadExecutor(), 
-                picksDayRangeChannelDaySupplier(), picksDayUpdater(), picksScheduledTaskListener());
+        return new ChannelDayProcessingTask(
+                Executors.newSingleThreadExecutor(),
+                picksDayRangeChannelDaySupplier(),
+                picksDayUpdater(),
+                picksScheduledTaskListener()
+        );
     }
     
     @Bean

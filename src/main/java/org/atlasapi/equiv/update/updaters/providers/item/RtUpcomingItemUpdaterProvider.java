@@ -4,6 +4,8 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
+import org.atlasapi.equiv.generators.ExpandingTitleTransformer;
+import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -55,12 +57,11 @@ public class RtUpcomingItemUpdaterProvider implements EquivalenceUpdaterProvider
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
                         ImmutableSet.<EquivalenceGenerator<Item>>of(
-                                new BroadcastMatchingItemEquivalenceGenerator(
-                                        dependencies.getScheduleResolver(),
-                                        dependencies.getChannelResolver(),
+                                TitleSearchGenerator.create(
+                                        dependencies.getSearchResolver(),
+                                        Item.class,
                                         targetPublishers,
-                                        Duration.standardMinutes(5),
-                                        Predicates.alwaysTrue()
+                                        2.0
                                 )
                         )
                 )

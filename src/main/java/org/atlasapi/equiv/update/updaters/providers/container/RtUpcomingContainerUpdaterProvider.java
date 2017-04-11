@@ -34,14 +34,14 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class RtUpcomingTopLevelContainerUpdaterProvider
+public class RtUpcomingContainerUpdaterProvider
         implements EquivalenceUpdaterProvider<Container> {
 
-    private RtUpcomingTopLevelContainerUpdaterProvider() {
+    private RtUpcomingContainerUpdaterProvider() {
     }
 
-    public static RtUpcomingTopLevelContainerUpdaterProvider create() {
-        return new RtUpcomingTopLevelContainerUpdaterProvider();
+    public static RtUpcomingContainerUpdaterProvider create() {
+        return new RtUpcomingContainerUpdaterProvider();
     }
 
     @Override

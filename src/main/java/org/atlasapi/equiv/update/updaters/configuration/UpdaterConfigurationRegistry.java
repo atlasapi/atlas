@@ -28,7 +28,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
         .RTE_VOD_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
-        .RT_UPCOMING_TOP_LEVEL_CONTAINER;
+        .RT_UPCOMING_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
         .STANDARD_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
@@ -199,11 +199,11 @@ public class UpdaterConfigurationRegistry {
                         ImmutableSet.of(AMAZON_UNBOX, PA)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        RT_UPCOMING_TOP_LEVEL_CONTAINER,
+                        RT_UPCOMING_CONTAINER,
                         ImmutableSet.of(AMAZON_UNBOX, PA)
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        STANDARD_SERIES,
+                        RT_UPCOMING_CONTAINER,
                         ImmutableSet.of(AMAZON_UNBOX, PA)
                 )
                 .build();

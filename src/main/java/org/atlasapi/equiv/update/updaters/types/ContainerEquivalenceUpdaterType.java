@@ -5,8 +5,7 @@ import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemConta
 import org.atlasapi.equiv.update.updaters.providers.container.BtVodContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.FacebookContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.NopContainerUpdaterProvider;
-import org.atlasapi.equiv.update.updaters.providers.container
-        .RtUpcomingTopLevelContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.RtUpcomingContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.RteContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.StandardSeriesUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container
@@ -26,8 +25,8 @@ public enum ContainerEquivalenceUpdaterType {
     STANDARD_SERIES(
             StandardSeriesUpdaterProvider.create()
     ),
-    RT_UPCOMING_TOP_LEVEL_CONTAINER(
-            RtUpcomingTopLevelContainerUpdaterProvider.create()
+    RT_UPCOMING_CONTAINER(
+            RtUpcomingContainerUpdaterProvider.create()
     ),
     BROADCAST_ITEM_CONTAINER(
             BroadcastItemContainerUpdaterProvider.create()

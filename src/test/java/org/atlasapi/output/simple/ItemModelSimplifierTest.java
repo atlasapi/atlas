@@ -165,6 +165,8 @@ public class ItemModelSimplifierTest {
         Broadcast broadcast = ComplexBroadcastTestDataBuilder.broadcast()
                 .withChannel(channel.getCanonicalUri())
                 .build();
+        broadcast.setNewOneOff(true);
+        broadcast.setContinuation(false);
 
         LocalDate releaseDateDate = new LocalDate(DateTimeZone.UTC);
         ReleaseDate releaseDate = new ReleaseDate(
@@ -311,6 +313,10 @@ public class ItemModelSimplifierTest {
         assertThat(simpleAward.getDescription(), is("description"));
         assertThat(simpleAward.getOutcome(), is("won"));
         assertThat(simpleAward.getYear().intValue(), is(2009));
+
+        org.atlasapi.media.entity.simple.Broadcast simpleBroadcast = simpleItem.getBroadcasts().first();
+        assertThat(simpleBroadcast.getNewOneOff(), is(true));
+        assertThat(simpleBroadcast.getContinuation(), is(false));
     }
 
 }

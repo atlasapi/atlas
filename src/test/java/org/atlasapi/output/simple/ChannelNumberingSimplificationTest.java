@@ -403,5 +403,9 @@ public class ChannelNumberingSimplificationTest extends TestCase {
             throw new UnsupportedOperationException();
         }
 
+        @Override
+        public void deleteChannelGroupById(long id) {
+            throw new UnsupportedOperationException();
+        }
     }
 }

@@ -374,6 +374,30 @@ public class AmazonUnboxContentExtractorTest {
         assertNull(series.getParent());
     }
 
+    @Test
+    public void testImageExtractionHandlesNullImageUris() {
+        AmazonUnboxItem amazonUnboxItem =
+                createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
+                        .withLargeImageUrl(null)
+                        .build();
+
+        Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonUnboxItem));
+
+        assertEquals(0, series.getImages().size());
+    }
+
+    @Test
+    public void testImageExtractionHandlesEmptyImageUris() {
+        AmazonUnboxItem amazonUnboxItem =
+                createAmazonUnboxItem("seasonAsin", ContentType.TVSEASON)
+                        .withLargeImageUrl("")
+                        .build();
+
+        Series series = (Series) Iterables.getOnlyElement(extractor.extract(amazonUnboxItem));
+
+        assertEquals(0, series.getImages().size());
+    }
+
     /**
      * Creates a Builder object for an AmazonUnboxItem, defaulting enough fields to
      * ensure that content extraction will succeed. Any of these fields can be overridden,

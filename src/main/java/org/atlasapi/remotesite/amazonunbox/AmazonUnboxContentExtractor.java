@@ -384,7 +384,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private List<Image> generateImages(AmazonUnboxItem item) {
-        if (item.getLargeImageUrl() == null) {
+        if (Strings.isNullOrEmpty(item.getLargeImageUrl())) {
             return ImmutableList.of();
         }
         Image image = new Image(item.getLargeImageUrl());

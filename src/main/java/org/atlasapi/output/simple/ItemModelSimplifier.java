@@ -375,11 +375,8 @@ public class ItemModelSimplifier
         return Iterables.filter(broadcasts, Broadcast::isActivelyPublished);
     }
 
-    private org.atlasapi.media.entity.simple.Broadcast simplify(
-            Broadcast broadcast,
-            Set<Annotation> annotations,
-            Application application
-    ) {
+    private org.atlasapi.media.entity.simple.Broadcast simplify(Broadcast broadcast,
+            Set<Annotation> annotations, Application application) {
         org.atlasapi.media.entity.simple.Broadcast simpleModel = new org.atlasapi.media.entity.simple.Broadcast(
                 broadcast.getBroadcastOn(),
                 broadcast.getTransmissionTime(),
@@ -408,8 +405,6 @@ public class ItemModelSimplifier
         simpleModel.setNewEpisode(broadcast.getNewEpisode());
         simpleModel.setAliases(broadcast.getAliasUrls());
         simpleModel.setRevisedRepeat(broadcast.getRevisedRepeat());
-        simpleModel.setContinuation(broadcast.getContinuation());
-        simpleModel.setNewOneOff(broadcast.getNewOneOff());
         Maybe<org.atlasapi.media.channel.Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
         if (channel.hasValue()) {
             simpleModel.setChannel(simplify(channel.requireValue(), annotations,

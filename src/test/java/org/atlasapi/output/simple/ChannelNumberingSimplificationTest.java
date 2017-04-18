@@ -402,10 +402,6 @@ public class ChannelNumberingSimplificationTest extends TestCase {
         public Optional<ChannelGroup> channelGroupFor(String canonicalUri) {
             throw new UnsupportedOperationException();
         }
-
-        @Override
-        public void deleteChannelGroupById(long id) {
-            throw new UnsupportedOperationException();
-        }
+        
     }
 }

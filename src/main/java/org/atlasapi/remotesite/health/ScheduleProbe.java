@@ -49,7 +49,12 @@ public class ScheduleProbe implements HealthProbe {
         
         DateTime date = clock.now().withTime(0, 0, 0, 0);
 
-        Schedule schedule = scheduleResolver.unmergedSchedule(date.minusMillis(1), date.plusDays(1), ImmutableSet.of(channel), ImmutableSet.of(publisher));
+        Schedule schedule = scheduleResolver.unmergedSchedule(
+                date.minusMillis(1),
+                date.plusDays(1),
+                ImmutableSet.of(channel),
+                ImmutableSet.of(publisher)
+        );
         List<Item> items = Iterables.getOnlyElement(schedule.scheduleChannels()).items();
         result.addEntry(scheduleSize(items.size()));
 
@@ -68,7 +73,9 @@ public class ScheduleProbe implements HealthProbe {
     }
 
     private void addContiguityEntries(List<Item> items, ProbeResult result) {
-        int breaks = 0, overlaps = 0;
+        int breaks = 0;
+        int overlaps = 0;
+
         DateTime lastEnd = ScheduleEntry.BROADCAST.apply(items.get(0)).getTransmissionTime();
 
         for (Item item: items) {

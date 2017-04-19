@@ -11,6 +11,7 @@ import com.metabroadcast.common.health.probes.MongoProbe;
 import com.metabroadcast.common.health.probes.Probe;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
+import org.atlasapi.remotesite.health.RemoteSiteHealthModule;
 import org.atlasapi.system.health.K8HealthController;
 import org.atlasapi.system.health.probes.BroadcasterContentProbe;
 import org.atlasapi.system.health.probes.ScheduleProbe;
@@ -24,8 +25,10 @@ import com.metabroadcast.common.health.probes.DiskSpaceProbe;
 import com.metabroadcast.common.health.probes.MemoryInfoProbe;
 import com.metabroadcast.common.persistence.mongo.health.MongoConnectionPoolProbe;
 import com.metabroadcast.common.webapp.health.HealthController;
+import org.springframework.context.annotation.Import;
 
 @Configuration
+@Import({ RemoteSiteHealthModule.class })
 public class HealthModule {
 
     private final ImmutableList<HealthProbe> systemProbes = ImmutableList.of(

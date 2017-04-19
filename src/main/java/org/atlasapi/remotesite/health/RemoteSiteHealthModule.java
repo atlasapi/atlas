@@ -8,7 +8,6 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.system.health.K8HealthController;
 import org.atlasapi.system.health.probes.BroadcasterContentProbe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;

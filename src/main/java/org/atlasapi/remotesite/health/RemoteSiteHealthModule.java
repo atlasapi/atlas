@@ -54,7 +54,6 @@ public class RemoteSiteHealthModule {
         ), store);
     }
 
-    @Bean
     public BroadcasterContentProbe bbcContentProbe() {
         return BroadcasterContentProbe.create(
                 "bbc content",
@@ -75,7 +74,6 @@ public class RemoteSiteHealthModule {
         );
     }
 
-    @Bean
     public List<HttpProbe> scheduleLivenessProbes() {
         return ImmutableList.of(
                 HttpProbe.create(
@@ -116,7 +114,6 @@ public class RemoteSiteHealthModule {
         );
     }
 
-    @Bean
     public org.atlasapi.system.health.probes.ScheduleProbe bbcScheduleHealthProbe() {
         Optional<Channel> possibleChannel = channelResolver.fromUri("http://www.bbc.co.uk/services/bbcone/london").toOptional();
 

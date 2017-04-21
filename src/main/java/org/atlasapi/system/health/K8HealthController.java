@@ -35,18 +35,18 @@ public class K8HealthController {
         healthMap.put(name, health);
     }
 
-    @RequestMapping("3.0/system/healthcheck/alive")
+    @RequestMapping("/system/health/alive")
     public void isAlive(HttpServletResponse response) {
         response.setStatus(SC_OK);
     }
 
-    @RequestMapping("3.0/system/healthcheck/list")
+    @RequestMapping("/system/health/list")
     public void listProbes(HttpServletResponse response) throws IOException {
         response.setStatus(SC_OK);
         response.getWriter().print(healthMap.keySet());
     }
 
-    @RequestMapping("3.0/system/healthcheck/probes")
+    @RequestMapping("/system/health/probes")
     public void showHealthForProbes(HttpServletResponse response) throws IOException {
         response.setStatus(SC_OK);
 
@@ -58,7 +58,7 @@ public class K8HealthController {
         });
     }
 
-    @RequestMapping("3.0/system/healthcheck/probes/{slug}")
+    @RequestMapping("/system/health/probes/{slug}")
     public void showHealthForProbe(
             HttpServletResponse response,
             @PathVariable("slug") String slug

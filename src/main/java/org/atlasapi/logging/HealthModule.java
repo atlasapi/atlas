@@ -1,20 +1,16 @@
 package org.atlasapi.logging;
 
 import java.util.Collection;
-import java.util.List;
 
 import javax.annotation.PostConstruct;
 
 import com.metabroadcast.common.health.Health;
-import com.metabroadcast.common.health.probes.HttpProbe;
 import com.metabroadcast.common.health.probes.MongoProbe;
 import com.metabroadcast.common.health.probes.Probe;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import org.atlasapi.remotesite.health.RemoteSiteHealthModule;
 import org.atlasapi.system.health.K8HealthController;
-import org.atlasapi.system.health.probes.BroadcasterContentProbe;
-import org.atlasapi.system.health.probes.ScheduleProbe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,10 +21,8 @@ import com.metabroadcast.common.health.probes.DiskSpaceProbe;
 import com.metabroadcast.common.health.probes.MemoryInfoProbe;
 import com.metabroadcast.common.persistence.mongo.health.MongoConnectionPoolProbe;
 import com.metabroadcast.common.webapp.health.HealthController;
-import org.springframework.context.annotation.Import;
 
 @Configuration
-@Import({ RemoteSiteHealthModule.class })
 public class HealthModule {
 
     private final ImmutableList<HealthProbe> systemProbes = ImmutableList.of(
@@ -42,9 +36,7 @@ public class HealthModule {
 	@Autowired private HealthController healthController;
 
 	@Autowired private K8HealthController k8HealthController;
-	@Autowired private List<HttpProbe> httpProbes;
-	@Autowired private BroadcasterContentProbe broadcasterContentProbe;
-	@Autowired private ScheduleProbe scheduleProbe;
+	@Autowired private RemoteSiteHealthModule remoteSiteHealthModule;
 
     @Bean
 	public HealthController healthController() {
@@ -78,9 +70,9 @@ public class HealthModule {
 
     private Iterable<Probe> getRemoteSiteProbes() {
 		return ImmutableList.<Probe>builder()
-				.addAll(httpProbes)
-				.add(broadcasterContentProbe)
-	            .add(scheduleProbe)
+				.addAll(remoteSiteHealthModule.scheduleLivenessProbes())
+				.add(remoteSiteHealthModule.bbcContentProbe())
+	            .add(remoteSiteHealthModule.bbcScheduleHealthProbe())
 				.build();
     }
 

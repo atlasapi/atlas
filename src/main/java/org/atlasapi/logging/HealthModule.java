@@ -10,7 +10,7 @@ import com.metabroadcast.common.health.probes.Probe;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import org.atlasapi.remotesite.health.RemoteSiteHealthModule;
-import org.atlasapi.system.health.K8HealthController;
+import org.atlasapi.system.health.ApiHealthController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -25,6 +25,10 @@ import com.metabroadcast.common.webapp.health.HealthController;
 @Configuration
 public class HealthModule {
 
+    private static final boolean IS_PROCESSING = Boolean.parseBoolean(
+            System.getProperty("processing.config")
+    );
+
     private final ImmutableList<HealthProbe> systemProbes = ImmutableList.of(
 			new MemoryInfoProbe(),
 			new DiskSpaceProbe(),
@@ -35,7 +39,7 @@ public class HealthModule {
 	@Autowired private Mongo mongo;
 	@Autowired private HealthController healthController;
 
-	@Autowired private K8HealthController k8HealthController;
+	@Autowired private ApiHealthController apiHealthController;
 	@Autowired private RemoteSiteHealthModule remoteSiteHealthModule;
 
     @Bean
@@ -49,8 +53,8 @@ public class HealthModule {
 	}
 
     @Bean
-    public K8HealthController k8HealthController() {
-        return K8HealthController.create();
+    public ApiHealthController apiHealthController() {
+        return ApiHealthController.create(Health.create(getProbes()));
     }
 
 
@@ -58,9 +62,11 @@ public class HealthModule {
 	public void addProbes() {
 		healthController.addProbes(probes);
 
-		k8HealthController.registerHealth("owl-api", Health.create(getApiProbes()));
-		k8HealthController.registerHealth("remote-site", Health.create(getRemoteSiteProbes()));
 	}
+
+	private Iterable<Probe> getProbes() {
+        return IS_PROCESSING ? getRemoteSiteProbes() : getApiProbes();
+    }
 
     private Iterable<Probe> getApiProbes() {
         return ImmutableList.of(
@@ -70,6 +76,7 @@ public class HealthModule {
 
     private Iterable<Probe> getRemoteSiteProbes() {
 		return ImmutableList.<Probe>builder()
+                .addAll(getApiProbes())
 				.addAll(remoteSiteHealthModule.scheduleLivenessProbes())
 				.add(remoteSiteHealthModule.bbcContentProbe())
 	            .add(remoteSiteHealthModule.bbcScheduleHealthProbe())

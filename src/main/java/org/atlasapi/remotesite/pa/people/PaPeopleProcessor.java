@@ -38,7 +38,13 @@ public class PaPeopleProcessor {
     }
     
     public void process(org.atlasapi.remotesite.pa.profiles.bindings.Person paPerson) {
-        Person person = ingestPerson(paPerson);
+        Optional<Person> optionalPerson = ingestPerson(paPerson);
+        Person person;
+        if (!optionalPerson.isPresent()) {
+            return;
+        } else {
+            person = optionalPerson.get();
+        }
         Optional<Person> existing = personResolver.person(person.getCanonicalUri());
         if (!existing.isPresent()) {
             personWriter.createOrUpdatePerson(person);
@@ -62,7 +68,7 @@ public class PaPeopleProcessor {
         existing.setImage(newPerson.getImage());
     }
 
-    private Person ingestPerson(org.atlasapi.remotesite.pa.profiles.bindings.Person paPerson) {
+    private Optional<Person> ingestPerson(org.atlasapi.remotesite.pa.profiles.bindings.Person paPerson) {
         Person person = new Person();
         person.setCanonicalUri(PERSON_URI_PREFIX + paPerson.getId());
         
@@ -72,6 +78,8 @@ public class PaPeopleProcessor {
         if (!Strings.isNullOrEmpty(name.getFirstname()) 
             && !Strings.isNullOrEmpty(name.getLastname())) {
             person.withName(name.getFirstname() + " " + name.getLastname());
+        } else {
+            return Optional.absent();
         }
         person.setGivenName(name.getFirstname());
         person.setFamilyName(name.getLastname());
@@ -87,7 +95,7 @@ public class PaPeopleProcessor {
         person.setImages(extractImages(paPerson.getPictures()));
         person.setImage(getPrimary(person.getImages()));
         setDirectEquivalentToPAPerson(person, paPerson.getId());
-        return person;
+        return Optional.of(person);
     }
     
     private String getPrimary(Set<Image> images) {

@@ -1,14 +1,22 @@
 package org.atlasapi.logging;
 
 import java.util.Collection;
+import java.util.List;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.PostConstruct;
 
+import com.codahale.metrics.MetricRegistry;
 import com.metabroadcast.common.health.Health;
+import com.metabroadcast.common.health.probes.HttpProbe;
+import com.metabroadcast.common.health.probes.MetricsProbe;
 import com.metabroadcast.common.health.probes.MongoProbe;
 import com.metabroadcast.common.health.probes.Probe;
+import com.metabroadcast.common.health.probes.ProbeResult;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
+import org.atlasapi.persistence.CassandraPersistenceModule;
 import org.atlasapi.remotesite.health.RemoteSiteHealthModule;
 import org.atlasapi.system.health.ApiHealthController;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -39,8 +47,8 @@ public class HealthModule {
 	@Autowired private Mongo mongo;
 	@Autowired private HealthController healthController;
 
-	@Autowired private ApiHealthController apiHealthController;
 	@Autowired private RemoteSiteHealthModule remoteSiteHealthModule;
+	@Autowired private CassandraPersistenceModule cassandraPersistenceModule;
 
     @Bean
 	public HealthController healthController() {
@@ -76,11 +84,26 @@ public class HealthModule {
 
     private Iterable<Probe> getRemoteSiteProbes() {
 		return ImmutableList.<Probe>builder()
-                .addAll(getApiProbes())
-				.addAll(remoteSiteHealthModule.scheduleLivenessProbes())
-				.add(remoteSiteHealthModule.bbcContentProbe())
-	            .add(remoteSiteHealthModule.bbcScheduleHealthProbe())
+                .addAll(metricProbesFor(getApiProbes()))
+				.addAll(metricProbesFor(remoteSiteHealthModule.scheduleLivenessProbes()))
+				.add(metricProbeFor(remoteSiteHealthModule.bbcContentProbe()))
+	            .add(metricProbeFor(remoteSiteHealthModule.bbcScheduleHealthProbe()))
 				.build();
+    }
+
+    private List<MetricsProbe> metricProbesFor(Iterable<Probe> probes) {
+        return StreamSupport.stream(probes.spliterator(), false)
+                .map(this::metricProbeFor)
+                .collect(MoreCollectors.toImmutableList());
+    }
+
+    private MetricsProbe metricProbeFor(Probe probe) {
+        return MetricsProbe.builder()
+                .withIdentifier(probe.getIdentifier() + "Metrics")
+                .withDelegate(probe)
+                .withMetricRegistry(new MetricRegistry())
+                .withMetricPrefix("atlas-owl-" + (IS_PROCESSING ? "processing" : "api"))
+                .build();
     }
 
 }

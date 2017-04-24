@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.health;
 
 import com.metabroadcast.common.health.probes.HttpProbe;
+import com.metabroadcast.common.health.probes.Probe;
 import org.apache.http.client.HttpClient;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.atlasapi.media.channel.Channel;
@@ -54,7 +55,7 @@ public class RemoteSiteHealthModule {
         ), store);
     }
 
-    public BroadcasterContentProbe bbcContentProbe() {
+    public Probe bbcContentProbe() {
         return BroadcasterContentProbe.create(
                 "bbc content",
                 Publisher.BBC,
@@ -74,7 +75,7 @@ public class RemoteSiteHealthModule {
         );
     }
 
-    public List<HttpProbe> scheduleLivenessProbes() {
+    public List<Probe> scheduleLivenessProbes() {
         return ImmutableList.of(
                 HttpProbe.create(
                         "bbcOne_liveness",
@@ -114,7 +115,7 @@ public class RemoteSiteHealthModule {
         );
     }
 
-    public org.atlasapi.system.health.probes.ScheduleProbe bbcScheduleHealthProbe() {
+    public Probe bbcScheduleHealthProbe() {
         Optional<Channel> possibleChannel = channelResolver.fromUri("http://www.bbc.co.uk/services/bbcone/london").toOptional();
 
         return org.atlasapi.system.health.probes.ScheduleProbe.builder()

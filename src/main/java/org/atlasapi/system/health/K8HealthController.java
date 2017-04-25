@@ -1,6 +1,7 @@
 package org.atlasapi.system.health;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 import com.metabroadcast.common.health.Health;
 import com.metabroadcast.common.health.Result;
 import com.metabroadcast.common.health.Status;
@@ -16,17 +17,17 @@ import static javax.servlet.http.HttpServletResponse.SC_INTERNAL_SERVER_ERROR;
 
 
 @Controller
-public class ApiHealthController {
+public class K8HealthController {
 
-    private static final ObjectMapper MAPPER = new ObjectMapper();
+    private static final ObjectMapper MAPPER = new ObjectMapper().registerModule(new Jdk8Module());
     private Health health;
 
-    private ApiHealthController(Health health) {
+    private K8HealthController(Health health) {
         this.health = health;
     }
 
-    public static ApiHealthController create(Health health) {
-        return new ApiHealthController(health);
+    public static K8HealthController create(Health health) {
+        return new K8HealthController(health);
     }
 
     @RequestMapping("/system/health/alive")

@@ -14,9 +14,8 @@ import com.metabroadcast.common.health.probes.Probe;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
-import org.atlasapi.persistence.CassandraPersistenceModule;
 import org.atlasapi.remotesite.health.RemoteSiteHealthModule;
-import org.atlasapi.system.health.ApiHealthController;
+import org.atlasapi.system.health.K8HealthController;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -58,8 +57,8 @@ public class HealthModule {
 	}
 
     @Bean
-    public ApiHealthController apiHealthController() {
-        return ApiHealthController.create(Health.create(getProbes()));
+    public K8HealthController apiHealthController() {
+        return K8HealthController.create(Health.create(getProbes()));
     }
 
 

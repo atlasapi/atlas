@@ -30,8 +30,7 @@ public class ScheduleProbe extends Probe {
         publisher = checkNotNull(builder.publisher);
         scheduleResolver = checkNotNull(builder.scheduleResolver);
         clock = checkNotNull(builder.clock);
-
-        channel = builder.channel;
+        channel = checkNotNull(builder.channel);
     }
 
     public static Builder builder() {
@@ -45,12 +44,12 @@ public class ScheduleProbe extends Probe {
                 return ProbeResult.unhealthy(identifier, "Channel not found");
             }
 
-            DateTime dateFrom = clock.now().withTime(0, 0, 0, 0).minusMillis(1);
-            DateTime dateTo = clock.now().withTime(0, 0, 0, 0).plusDays(1);
+            DateTime todayStart = clock.now().withTime(0, 0, 0, 0).minusMillis(1);
+            DateTime todayEnd = clock.now().withTime(0, 0, 0, 0).plusDays(1);
 
             Schedule schedule = scheduleResolver.unmergedSchedule(
-                    dateFrom,
-                    dateTo,
+                    todayStart,
+                    todayEnd,
                     ImmutableSet.of(channel),
                     ImmutableSet.of(publisher)
             );
@@ -60,7 +59,7 @@ public class ScheduleProbe extends Probe {
             if (items.isEmpty()) {
                 return ProbeResult.unhealthy(
                         identifier,
-                        String.format("Schedule is empty: %s - %s", dateFrom, dateTo)
+                        String.format("Schedule is empty: %s - %s", todayStart, todayEnd)
                 );
             }
 

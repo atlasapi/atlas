@@ -64,7 +64,7 @@ public class RemoteSiteHealthModule {
                         "http://www.bbc.co.uk/programmes/b006mf4b", // Spooks
                         "http://www.bbc.co.uk/programmes/b006t1q9", // Question Time
                         "http://www.bbc.co.uk/programmes/b006qj9z", // Today
-                        "http://www.bbc.co.uk/programmes/b006md2v", // Blue Peter
+                        "http://www.bbc.co.uk/cbbc/shows/blue-peter", // Blue Peter
                         "http://www.bbc.co.uk/programmes/b0071b63", // The apprentice
                         "http://www.bbc.co.uk/programmes/b007t9yb", // Match of the Day 2
                         "http://www.bbc.co.uk/programmes/b0087g39", // Helicopter Heroes
@@ -79,12 +79,12 @@ public class RemoteSiteHealthModule {
         return ImmutableList.of(
                 HttpProbe.create(
                         "bbcOne_liveness",
-                        "http://www.bbc.co.uk/services/bbcone/london",
+                        "http://www.bbc.co.uk/bbcone/programmes/schedules/london",
                         httpClient
                 ),
                 HttpProbe.create(
                         "bbcTwo_liveness",
-                        "http://www.bbc.co.uk/services/bbctwo/england",
+                        "http://www.bbc.co.uk/bbctwo/programmes/schedules/england",
                         httpClient
                 ),
                 HttpProbe.create(
@@ -99,17 +99,7 @@ public class RemoteSiteHealthModule {
                 ),
                 HttpProbe.create(
                         "five_liveness",
-                        "http://www.five.tv",
-                        httpClient
-                ),
-                HttpProbe.create(
-                        "sky1_liveness",
-                        "http://ref.atlasapi.org/channels/sky1",
-                        httpClient
-                ),
-                HttpProbe.create(
-                        "skyAtlantic_liveness",
-                        "http://ref.atlasapi.org/channels/skyatlantic",
+                        "http://www.channel5.com",
                         httpClient
                 )
         );

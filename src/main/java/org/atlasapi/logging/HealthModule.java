@@ -69,7 +69,7 @@ public class HealthModule {
 	}
 
 	private Iterable<Probe> getProbes() {
-        return IS_PROCESSING ? getRemoteSiteProbes() : getApiProbes();
+        return IS_PROCESSING ? getProcessingProbes() : getApiProbes();
     }
 
     private Iterable<Probe> getApiProbes() {
@@ -78,12 +78,10 @@ public class HealthModule {
         );
     }
 
-    private Iterable<Probe> getRemoteSiteProbes() {
+    private Iterable<Probe> getProcessingProbes() {
 		return ImmutableList.<Probe>builder()
                 .addAll(metricProbesFor(getApiProbes()))
 				.add(metricProbeFor(remoteSiteHealthModule.scheduleLivenessProbe()))
-				.add(metricProbeFor(remoteSiteHealthModule.bbcContentProbe()))
-	            .add(metricProbeFor(remoteSiteHealthModule.bbcScheduleHealthProbe()))
 				.build();
     }
 

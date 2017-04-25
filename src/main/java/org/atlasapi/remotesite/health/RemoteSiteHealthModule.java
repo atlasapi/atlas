@@ -1,17 +1,12 @@
 package org.atlasapi.remotesite.health;
 
-import com.metabroadcast.common.health.probes.HttpProbe;
 import com.metabroadcast.common.health.probes.Probe;
 import com.metabroadcast.common.stream.MoreCollectors;
-import org.apache.http.client.HttpClient;
-import org.apache.http.client.config.RequestConfig;
-import org.apache.http.impl.client.HttpClientBuilder;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.system.health.probes.BroadcasterContentProbe;
 import org.atlasapi.system.health.probes.ScheduleLivenessProbe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -26,7 +21,6 @@ import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.SystemClock;
 import com.metabroadcast.common.webapp.health.HealthController;
 
-import java.util.List;
 import java.util.Optional;
 
 @Configuration
@@ -57,26 +51,6 @@ public class RemoteSiteHealthModule {
         ), store);
     }
 
-    public Probe bbcContentProbe() {
-        return BroadcasterContentProbe.create(
-                "bbc content",
-                Publisher.BBC,
-                ImmutableList.of(
-                        "http://www.bbc.co.uk/programmes/b006m86d", // Eastenders
-                        "http://www.bbc.co.uk/programmes/b006mf4b", // Spooks
-                        "http://www.bbc.co.uk/programmes/b006t1q9", // Question Time
-                        "http://www.bbc.co.uk/programmes/b006qj9z", // Today
-                        "http://www.bbc.co.uk/cbbc/shows/blue-peter", // Blue Peter
-                        "http://www.bbc.co.uk/programmes/b0071b63", // The apprentice
-                        "http://www.bbc.co.uk/programmes/b007t9yb", // Match of the Day 2
-                        "http://www.bbc.co.uk/programmes/b0087g39", // Helicopter Heroes
-                        "http://www.bbc.co.uk/programmes/b006mk1s", // Mastermind
-                        "http://www.bbc.co.uk/programmes/b006wknd" // Rob da Bank
-                ),
-                store
-        );
-    }
-
     public Probe scheduleLivenessProbe() {
         ImmutableList<Maybe<Channel>> channels = ImmutableList.of(
                 channelResolver.fromUri("http://www.bbc.co.uk/services/bbcone/london"),
@@ -97,18 +71,6 @@ public class RemoteSiteHealthModule {
                         .collect(MoreCollectors.toImmutableList()),
                 Publisher.PA
         );
-    }
-
-    public Probe bbcScheduleHealthProbe() {
-        Optional<Channel> possibleChannel = channelResolver.fromUri("http://www.bbc.co.uk/services/bbcone/london").toOptional();
-
-        return org.atlasapi.system.health.probes.ScheduleProbe.builder()
-                .withIdentifier("bbcOneSchedule")
-                .withPublisher(Publisher.BBC)
-                .withChannel(possibleChannel.orElse(null))
-                .withScheduleResolver(scheduleResolver)
-                .withClock(clock)
-                .build();
     }
 
     public @Bean HealthProbe bbcScheduleProbe() {

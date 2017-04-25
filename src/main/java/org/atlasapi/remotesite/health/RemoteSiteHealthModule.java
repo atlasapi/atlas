@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.health;
 
 import com.metabroadcast.common.health.probes.HttpProbe;
 import com.metabroadcast.common.health.probes.Probe;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
@@ -11,6 +12,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.system.health.probes.BroadcasterContentProbe;
+import org.atlasapi.system.health.probes.ScheduleLivenessProbe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -38,17 +40,8 @@ public class RemoteSiteHealthModule {
     
     private @Autowired HealthController health;
 
-    private static final int TIMEOUT_MS = 5000;
     private final Clock clock = new SystemClock();
-    private final HttpClient httpClient = HttpClientBuilder.create()
-            .setDefaultRequestConfig(
-                    RequestConfig.custom()
-                            .setConnectionRequestTimeout(TIMEOUT_MS)
-                            .setConnectTimeout(TIMEOUT_MS)
-                            .setSocketTimeout(TIMEOUT_MS)
-                            .build()
-            )
-            .build();
+
     public @Bean HealthProbe bbcProbe() {
         return new BroadcasterProbe(Publisher.BBC, ImmutableList.of(
                 "http://www.bbc.co.uk/programmes/b006m86d", // Eastenders
@@ -84,33 +77,25 @@ public class RemoteSiteHealthModule {
         );
     }
 
-    public List<Probe> scheduleLivenessProbes() {
-        return ImmutableList.of(
-                HttpProbe.create(
-                        "bbcOne_liveness",
-                        "http://www.bbc.co.uk/bbcone/programmes/schedules/london",
-                        httpClient
-                ),
-                HttpProbe.create(
-                        "bbcTwo_liveness",
-                        "http://www.bbc.co.uk/bbctwo/programmes/schedules/england",
-                        httpClient
-                ),
-                HttpProbe.create(
-                        "itv1_liveness",
-                        "http://www.itv.com/channels/itv1/london",
-                        httpClient
-                ),
-                HttpProbe.create(
-                        "channel4_liveness",
-                        "http://www.channel4.com",
-                        httpClient
-                ),
-                HttpProbe.create(
-                        "five_liveness",
-                        "http://www.channel5.com",
-                        httpClient
-                )
+    public Probe scheduleLivenessProbe() {
+        ImmutableList<Maybe<Channel>> channels = ImmutableList.of(
+                channelResolver.fromUri("http://www.bbc.co.uk/services/bbcone/london"),
+                channelResolver.fromUri("http://www.bbc.co.uk/services/bbctwo/england"),
+                channelResolver.fromUri("http://www.itv.com/channels/itv1/london"),
+                channelResolver.fromUri("http://www.channel4.com"),
+                channelResolver.fromUri("http://www.five.tv"),
+                channelResolver.fromUri("http://ref.atlasapi.org/channels/sky1"),
+                channelResolver.fromUri("http://ref.atlasapi.org/channels/skyatlantic")
+        );
+
+        return ScheduleLivenessProbe.create(
+                "scheduleLiveness",
+                scheduleResolver,
+                channels.stream()
+                        .filter(Maybe::hasValue)
+                        .map(Maybe::requireValue)
+                        .collect(MoreCollectors.toImmutableList()),
+                Publisher.PA
         );
     }
 

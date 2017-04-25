@@ -8,11 +8,9 @@ import javax.annotation.PostConstruct;
 
 import com.codahale.metrics.MetricRegistry;
 import com.metabroadcast.common.health.Health;
-import com.metabroadcast.common.health.probes.HttpProbe;
 import com.metabroadcast.common.health.probes.MetricsProbe;
 import com.metabroadcast.common.health.probes.MongoProbe;
 import com.metabroadcast.common.health.probes.Probe;
-import com.metabroadcast.common.health.probes.ProbeResult;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
@@ -48,7 +46,6 @@ public class HealthModule {
 	@Autowired private HealthController healthController;
 
 	@Autowired private RemoteSiteHealthModule remoteSiteHealthModule;
-	@Autowired private CassandraPersistenceModule cassandraPersistenceModule;
 
     @Bean
 	public HealthController healthController() {
@@ -85,7 +82,7 @@ public class HealthModule {
     private Iterable<Probe> getRemoteSiteProbes() {
 		return ImmutableList.<Probe>builder()
                 .addAll(metricProbesFor(getApiProbes()))
-				.addAll(metricProbesFor(remoteSiteHealthModule.scheduleLivenessProbes()))
+				.add(metricProbeFor(remoteSiteHealthModule.scheduleLivenessProbe()))
 				.add(metricProbeFor(remoteSiteHealthModule.bbcContentProbe()))
 	            .add(metricProbeFor(remoteSiteHealthModule.bbcScheduleHealthProbe()))
 				.build();

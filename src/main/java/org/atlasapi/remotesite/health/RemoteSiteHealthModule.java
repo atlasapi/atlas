@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.health;
 import com.metabroadcast.common.health.probes.HttpProbe;
 import com.metabroadcast.common.health.probes.Probe;
 import org.apache.http.client.HttpClient;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.impl.client.HttpClientBuilder;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -37,9 +38,17 @@ public class RemoteSiteHealthModule {
     
     private @Autowired HealthController health;
 
+    private static final int TIMEOUT_MS = 5000;
     private final Clock clock = new SystemClock();
-    private final HttpClient httpClient = HttpClientBuilder.create().build();
-
+    private final HttpClient httpClient = HttpClientBuilder.create()
+            .setDefaultRequestConfig(
+                    RequestConfig.custom()
+                            .setConnectionRequestTimeout(TIMEOUT_MS)
+                            .setConnectTimeout(TIMEOUT_MS)
+                            .setSocketTimeout(TIMEOUT_MS)
+                            .build()
+            )
+            .build();
     public @Bean HealthProbe bbcProbe() {
         return new BroadcasterProbe(Publisher.BBC, ImmutableList.of(
                 "http://www.bbc.co.uk/programmes/b006m86d", // Eastenders

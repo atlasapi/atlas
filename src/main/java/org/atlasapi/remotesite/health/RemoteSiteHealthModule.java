@@ -1,11 +1,13 @@
 package org.atlasapi.remotesite.health;
 
+import com.metabroadcast.common.health.probes.Probe;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.persistence.system.AToZUriSource;
+import org.atlasapi.system.health.probes.ScheduleLivenessProbe;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +21,8 @@ import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.SystemClock;
 import com.metabroadcast.common.webapp.health.HealthController;
 
+import java.util.Optional;
+
 @Configuration
 public class RemoteSiteHealthModule {
     
@@ -29,7 +33,7 @@ public class RemoteSiteHealthModule {
     private @Autowired ScheduleResolver scheduleResolver;
     
     private @Autowired HealthController health;
-    
+
     private final Clock clock = new SystemClock();
 
     public @Bean HealthProbe bbcProbe() {
@@ -47,10 +51,33 @@ public class RemoteSiteHealthModule {
         ), store);
     }
 
+    public Probe scheduleLivenessProbe() {
+        ImmutableList<Maybe<Channel>> channels = ImmutableList.of(
+                channelResolver.fromUri("http://www.bbc.co.uk/services/bbcone/london"),
+                channelResolver.fromUri("http://www.bbc.co.uk/services/bbctwo/england"),
+                channelResolver.fromUri("http://www.itv.com/channels/itv1/london"),
+                channelResolver.fromUri("http://www.channel4.com"),
+                channelResolver.fromUri("http://www.five.tv"),
+                channelResolver.fromUri("http://ref.atlasapi.org/channels/sky1"),
+                channelResolver.fromUri("http://ref.atlasapi.org/channels/skyatlantic")
+        );
+
+        return ScheduleLivenessProbe.create(
+                "scheduleLiveness",
+                scheduleResolver,
+                channels.stream()
+                        .filter(Maybe::hasValue)
+                        .map(Maybe::requireValue)
+                        .collect(MoreCollectors.toImmutableList()),
+                Publisher.PA
+        );
+    }
+
     public @Bean HealthProbe bbcScheduleProbe() {
         Maybe<Channel> possibleBbcOneLondon = channelResolver.fromUri("http://www.bbc.co.uk/services/bbcone/london");
         return new ScheduleProbe(Publisher.BBC, possibleBbcOneLondon.valueOrNull(), scheduleResolver, clock);
     }
+
     
     public @Bean HealthProbe scheduleLivenessHealthProbe() {
     	ImmutableList<Maybe<Channel>> channels = ImmutableList.of(
@@ -62,11 +89,22 @@ public class RemoteSiteHealthModule {
     			channelResolver.fromUri("http://ref.atlasapi.org/channels/sky1"),
     			channelResolver.fromUri("http://ref.atlasapi.org/channels/skyatlantic")
     	);
-        return new ScheduleLivenessHealthProbe(scheduleResolver, Iterables.transform(Iterables.filter(channels,Maybe.HAS_VALUE),Maybe.<Channel>requireValueFunction()), Publisher.PA);
+        return new ScheduleLivenessHealthProbe(
+                scheduleResolver,
+                Iterables.transform(
+                        Iterables.filter(channels,Maybe.HAS_VALUE),
+                        Maybe.<Channel>requireValueFunction()
+                ),
+                Publisher.PA
+        );
     }
     
     @Bean
     public ScheduleLivenessHealthController scheduleLivenessHealthController() {
-    	return new ScheduleLivenessHealthController(health, Configurer.get("pa.schedule.health.username", "").get(), Configurer.get("pa.schedule.health.password", "").get());
+    	return new ScheduleLivenessHealthController(
+    	        health,
+                Configurer.get("pa.schedule.health.username", "").get(),
+                Configurer.get("pa.schedule.health.password", "").get()
+        );
     } 
 }

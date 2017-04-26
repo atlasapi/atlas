@@ -24,8 +24,7 @@ public class BroadcastModelTransformer {
         this.channelResolver = checkNotNull(channelResolver);
     }
 
-    public static BroadcastModelTransformer createBroadcastModelTransformer(
-            ChannelResolver channelResolver) {
+    public static BroadcastModelTransformer create(ChannelResolver channelResolver) {
         return new BroadcastModelTransformer(channelResolver);
     }
 
@@ -54,12 +53,12 @@ public class BroadcastModelTransformer {
         complex.setSurround(simple.getSurround());
         complex.setLive(simple.getLive());
         complex.setAliasUrls(simple.getAliases());
-        complex.setContinuation(simple.getContinuation());
-        complex.setNewOneOff(simple.getNewOneOff());
         if (simple.getBlackoutRestriction() != null) {
             complex.setBlackoutRestriction(new BlackoutRestriction(simple.getBlackoutRestriction().getAll()));
         }
         complex.setRevisedRepeat(simple.getRevisedRepeat());
+        complex.setContinuation(simple.getContinuation());
+        complex.setNewOneOff(simple.getNewOneOff());
         return complex;
     }
 

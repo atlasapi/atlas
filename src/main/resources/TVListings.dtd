@@ -287,7 +287,7 @@ person_id: A unique id for this person
 	live (yes | no) "no"
 	as_live (yes | no) "no"
 	follow_on (yes | no) "no"
-	continued (yes | no) "no"
+    continued (yes | no) "no"
 	choice (yes | no) "no"
 	familychoice (yes | no) "no"
 	tv_movie (yes | no) "no"

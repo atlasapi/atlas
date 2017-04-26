@@ -14,29 +14,28 @@ permissions and limitations under the License. */
 
 package org.atlasapi;
 
-import java.util.List;
-
-import org.atlasapi.system.JettyHealthProbe;
-
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.health.HealthProbe;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.properties.Parameter;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.webapp.properties.ContextConfigurer;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicates;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
 import com.mongodb.Mongo;
-import com.mongodb.MongoOptions;
+import com.mongodb.MongoClient;
+import com.mongodb.MongoClientOptions;
 import com.mongodb.ReadPreference;
 import com.mongodb.ServerAddress;
 import com.mongodb.WriteConcern;
+import org.atlasapi.system.JettyHealthProbe;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.stream.StreamSupport;
 
 @Configuration
 public class AtlasModule {
@@ -55,11 +54,11 @@ public class AtlasModule {
 	}
 
     public @Bean Mongo mongo() {
-        MongoOptions options = new MongoOptions();
-        options.setConnectionsPerHost(mongoMaxConnections);
-        Mongo mongo = new Mongo(mongoHosts(), options);
-        mongo.setReadPreference(readPreference());
-        if(isProcessing() 
+        MongoClientOptions.Builder optionsBuilder = MongoClientOptions.builder()
+                .readPreference(readPreference())
+                .connectionsPerHost(mongoMaxConnections);
+
+        if(isProcessing()
                 && processingWriteConcern != null 
                 && !Strings.isNullOrEmpty(processingWriteConcern.get())) {
                 
@@ -68,9 +67,9 @@ public class AtlasModule {
                 throw new IllegalArgumentException("Could not parse write concern: " + 
                                 processingWriteConcern.get());
             }
-            mongo.setWriteConcern(writeConcern);
+            optionsBuilder.writeConcern(writeConcern);
         }
-        return mongo;
+        return new MongoClient(mongoHosts(), optionsBuilder.build());
     }
 
     public @Bean ReadPreference readPreference() {
@@ -97,13 +96,11 @@ public class AtlasModule {
     
     private List<ServerAddress> mongoHosts() {
         Splitter splitter = Splitter.on(",").omitEmptyStrings().trimResults();
-        return ImmutableList.copyOf(Iterables.filter(Iterables.transform(splitter.split(mongoHost), new Function<String, ServerAddress>() {
 
-            @Override
-            public ServerAddress apply(String input) {
-                return new ServerAddress(input, 27017);
-            }
-        }), Predicates.notNull()));
+        return StreamSupport.stream(splitter.split(mongoHost).spliterator(), false)
+                        .map(input -> new ServerAddress(input, 27017))
+                        .filter(Objects::nonNull)
+                        .collect(MoreCollectors.toImmutableList());
     }
     
     public @Bean HealthProbe jettyHealthProbe() {

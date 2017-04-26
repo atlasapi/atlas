@@ -1002,6 +1002,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
 
             broadcast.setNewSeries(newSeries);
             broadcast.setNewEpisode(newEpisode);
+            broadcast.setNewOneOff(getBooleanValue(progData.getAttr().getNewOneOff()));
+            broadcast.setContinuation(getBooleanValue(progData.getAttr().getContinued()));
         }
         broadcast.setLastUpdated(updateAt.toDateTimeUTC());
         return broadcast;

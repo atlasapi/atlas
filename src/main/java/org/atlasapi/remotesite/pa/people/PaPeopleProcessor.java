@@ -42,8 +42,9 @@ public class PaPeopleProcessor {
         Person person;
         if (!optionalPerson.isPresent()) {
             return;
+        } else {
+            person = optionalPerson.get();
         }
-        person = optionalPerson.get();
         Optional<Person> existing = personResolver.person(person.getCanonicalUri());
         if (!existing.isPresent()) {
             personWriter.createOrUpdatePerson(person);

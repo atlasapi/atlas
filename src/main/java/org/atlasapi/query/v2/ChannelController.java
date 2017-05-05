@@ -1,13 +1,18 @@
 package org.atlasapi.query.v2;
 
-import java.io.IOException;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.base.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.Ordering;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.base.MoreOrderings;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.query.Selection.SelectionBuilder;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.application.v3.DefaultApplication;
@@ -21,26 +26,6 @@ import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.logging.AdapterLog;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.base.MoreOrderings;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.query.Selection;
-import com.metabroadcast.common.query.Selection.SelectionBuilder;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.base.Function;
-import com.google.common.base.Joiner;
-import com.google.common.base.Optional;
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Ordering;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.springframework.stereotype.Controller;
@@ -49,8 +34,13 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.Set;
+import java.util.stream.StreamSupport;
+
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.collect.Iterables.transform;
 
 @Controller
 public class ChannelController extends BaseController<Iterable<Channel>> {
@@ -58,12 +48,12 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     private static final Splitter SPLIT_ON_COMMA = Splitter.on(',');
 
     private static final ImmutableSet<Annotation> validAnnotations = ImmutableSet.<Annotation>builder()
-        .add(Annotation.CHANNEL_GROUPS)
-        .add(Annotation.HISTORY)
-        .add(Annotation.PARENT)
-        .add(Annotation.VARIATIONS)
-        .add(Annotation.RELATED_LINKS)
-        .build();
+            .add(Annotation.CHANNEL_GROUPS)
+            .add(Annotation.HISTORY)
+            .add(Annotation.PARENT)
+            .add(Annotation.VARIATIONS)
+            .add(Annotation.RELATED_LINKS)
+            .build();
 
     private static final AtlasErrorSummary NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
             .withMessage("No such Channel exists")
@@ -121,8 +111,10 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         this.channelWriteController = checkNotNull(channelWriteController);
     }
 
-    @RequestMapping(value = { "/3.0/channels.*", "/channels.*" }, method = RequestMethod.GET)
-    public void listChannels(HttpServletRequest request, HttpServletResponse response,
+    @RequestMapping(value = {"/3.0/channels.*", "/channels.*"}, method = RequestMethod.GET)
+    public void listChannels(
+            HttpServletRequest request,
+            HttpServletResponse response,
             @RequestParam(value = "platforms", required = false) String platformKey,
             @RequestParam(value = "regions", required = false) String regionKeys,
             @RequestParam(value = "broadcaster", required = false) String broadcasterKey,
@@ -312,10 +304,13 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         return channelGroups.build();
     }
 
-    @RequestMapping(value = { "/3.0/channels/{id}.*", "/channels/{id}.*" },
+    @RequestMapping(value = {"/3.0/channels/{id}.*", "/channels/{id}.*"},
             method = RequestMethod.GET)
-    public void listChannel(HttpServletRequest request, HttpServletResponse response,
-            @PathVariable("id") String id) throws IOException {
+    public void listChannel(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @PathVariable("id") String id
+    ) throws IOException {
         try {
             Maybe<Channel> possibleChannel = channelResolver.fromId(codec.decode(id).longValue());
             if (possibleChannel.isNothing()) {
@@ -351,8 +346,21 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         }
     }
 
-    @RequestMapping(value = { "/3.0/channels.*", "/channels.*" }, method = RequestMethod.POST)
+    @RequestMapping(value = {"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
     public void postChannel(HttpServletRequest request, HttpServletResponse response) {
         channelWriteController.postChannel(request, response);
     }
+
+    @RequestMapping(value = {"/3.0/channels/update"}, method = RequestMethod.POST)
+    public void updateChannelLogo(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            @RequestParam(value = "id") String channelId,
+            @RequestParam(value = "uri") String imageUri,
+            @RequestParam(value = "theme") String imageTheme,
+            NumberToShortStringCodec codec
+    ) {
+        channelWriteController.updateChannelImage(request, response, channelId, imageUri, imageTheme, codec);
+    }
+
 }

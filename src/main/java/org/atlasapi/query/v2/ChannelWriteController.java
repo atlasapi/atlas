@@ -1,10 +1,7 @@
 package org.atlasapi.query.v2;
 
-import com.amazonaws.auth.BasicAWSCredentials;
-import com.amazonaws.services.s3.AmazonS3Client;
-import com.amazonaws.services.s3.model.ObjectListing;
-import com.amazonaws.services.s3.model.S3ObjectSummary;
 import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.base.Maybe;
@@ -39,8 +36,8 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
-import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -93,21 +90,22 @@ public class ChannelWriteController {
     public Void updateChannelImage(
             HttpServletRequest request,
             HttpServletResponse response,
-            String channelId,
-            String imageUri,
-            String imageTheme,
             NumberToShortStringCodec codec
-    ) {
-        if (Strings.isNullOrEmpty(channelId)
-                || Strings.isNullOrEmpty(imageUri)
-                || Strings.isNullOrEmpty(imageTheme)) {
+    ) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ImageDetails incomingJson = mapper.readValue(request.getInputStream(), ImageDetails.class);
+
+        if (Strings.isNullOrEmpty(incomingJson.getChannelId())
+                || Strings.isNullOrEmpty(incomingJson.getImageTheme())
+                || Strings.isNullOrEmpty(incomingJson.getImageHeight())
+                || Strings.isNullOrEmpty(incomingJson.getImageWidth())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return error(
                     request,
                     response,
                     AtlasErrorSummary.forException(
                             new IllegalArgumentException(
-                                    "You must specify a channel ID, image URI and a theme."
+                                    "You must specify a channel ID, theme, height and width."
                             )
                     )
             );
@@ -133,29 +131,28 @@ public class ChannelWriteController {
             );
         }
 
-        //link credentials somehow
-        BasicAWSCredentials awsCredentials = new BasicAWSCredentials("key", "secret");
-        AmazonS3Client s3Client = new AmazonS3Client(awsCredentials);
+        Maybe<Channel> potentialChannel = store.fromId(codec.decode(incomingJson.getChannelId()).longValue());
 
-        //create S3 bucket
-        ObjectListing imagesBucket = s3Client.listObjects("imagesBucket");
-        List<S3ObjectSummary> s3Images = imagesBucket.getObjectSummaries();
+        if (potentialChannel.hasValue()) {
+            Channel existingChannel = potentialChannel.requireValue();
 
-        for (S3ObjectSummary s3Image : s3Images) {
-            if (s3Image.getKey().startsWith(channelId)) {
-                Maybe<Channel> existingChannel = store.fromId(codec.decode(channelId).longValue());
-                if (existingChannel.hasValue()) {
-                    Channel channelWithoutLogo = existingChannel.requireValue();
+            if (Strings.isNullOrEmpty(incomingJson.getImageUri())) {
+                existingChannel.deleteImageByTheme(incomingJson.getImageTheme());
+            } else {
+                createOrUpdateImage(
+                        existingChannel,
+                        incomingJson.getImageUri(),
+                        incomingJson.getImageTheme(),
+                        incomingJson.getImageHeight(),
+                        incomingJson.getImageWidth()
+                );
+            }
 
-                    Image newLogo = createImage(s3Image.getKey(), imageUri, imageTheme);
-
-                    channelWithoutLogo.addImage(newLogo);
-
-                    try {
-                        store.createOrUpdate(channelWithoutLogo);
-                    } catch (Exception e) {
-                        log.error("Error while creating/updating channel for request {}", request.getRequestURL(), e);
-                        response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            try {
+                store.createOrUpdate(existingChannel);
+            } catch (Exception e) {
+                log.error("Error while creating/updating channel for request {}", request.getRequestURL(), e);
+                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
                         return error(request, response, AtlasErrorSummary.forException(e));
                     }
@@ -165,30 +162,56 @@ public class ChannelWriteController {
                             request,
                             response,
                             AtlasErrorSummary.forException(new NullPointerException(
-                                    String.format("No channel has been found for ID %s.", channelId)
+                                    String.format("No channel has been found for ID %s.", incomingJson.getChannelId())
                             ))
                     );
                 }
-            }
-        }
+
         response.setStatus(HttpServletResponse.SC_OK);
         return null;
     }
 
-    private Image createImage(String s3Image, String imageUri, String imageTheme) {
-        String logoWidth = s3Image.split("_")[1];
-        String logoHeight = s3Image.split("_")[2];
+    private void createOrUpdateImage(
+            Channel existingChannel,
+            String imageUri,
+            String imageTheme,
+            String imageHeight,
+            String imageWidth
+    ) {
+        Optional<Image> potentialImage = checkForExistingImage(existingChannel.getImages(), imageTheme);
 
-        Image newLogo = new Image(imageUri);
+        if (potentialImage.isPresent()) {
 
-        newLogo.setMimeType(MimeType.IMAGE_PNG);
-        newLogo.setType(ImageType.LOGO);
-        newLogo.setColor(ImageColor.valueOf("monochrome"));
-        newLogo.setTheme(ImageTheme.valueOf(imageTheme));
-        newLogo.setWidth(Integer.parseInt(logoWidth));
-        newLogo.setHeight(Integer.parseInt(logoHeight));
+            Image existingImage = potentialImage.get();
 
-        return newLogo;
+            existingImage.setCanonicalUri(imageUri);
+            setImageDetails(imageTheme, imageHeight, imageWidth, existingImage);
+
+        } else {
+            Image newImage = new Image(imageUri);
+
+            setImageDetails(imageTheme, imageHeight, imageWidth, newImage);
+
+            existingChannel.addImage(newImage);
+        }
+    }
+
+    private void setImageDetails(String imageTheme, String imageHeight, String imageWidth, Image existingImage) {
+        existingImage.setMimeType(MimeType.IMAGE_PNG);
+        existingImage.setType(ImageType.LOGO);
+        existingImage.setColor(ImageColor.COLOR);
+        existingImage.setTheme(ImageTheme.valueOf(imageTheme));
+        existingImage.setWidth(Integer.valueOf(imageWidth));
+        existingImage.setHeight(Integer.valueOf(imageHeight));
+    }
+
+    private Optional<Image> checkForExistingImage(Set<Image> images, String imageTheme) {
+        for (Image image : images) {
+            if (image.getTheme().getName().equals(imageTheme)) {
+                return Optional.of(image);
+            }
+        }
+        return Optional.empty();
     }
 
     private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
@@ -257,17 +280,72 @@ public class ChannelWriteController {
         return null;
     }
 
-    private org.atlasapi.media.entity.simple.Channel deserialize(Reader input, Boolean strict) throws IOException,
-            ReadException {
+    private org.atlasapi.media.entity.simple.Channel deserialize(Reader input, Boolean strict)
+            throws IOException, ReadException {
         return reader.read(new BufferedReader(input), org.atlasapi.media.entity.simple.Channel.class, strict);
     }
 
-    private Void error(HttpServletRequest request, HttpServletResponse response,
-                       AtlasErrorSummary summary) {
+    private Void error(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            AtlasErrorSummary summary
+    ) {
         try {
             outputter.writeError(request, response, summary);
         } catch (IOException e) {
         }
         return null;
+    }
+
+    public static class ImageDetails {
+
+        private String channelId;
+        private String imageUri;
+        private String imageTheme;
+        private String imageHeight;
+        private String imageWidth;
+
+        public ImageDetails() {}
+
+        public String getChannelId() {
+            return channelId;
+        }
+
+        public void setChannelId(String channelId) {
+            this.channelId = channelId;
+        }
+
+        public String getImageUri() {
+            return imageUri;
+        }
+
+        public void setImageUri(String imageUri) {
+            this.imageUri = imageUri;
+        }
+
+        public String getImageTheme() {
+            return imageTheme;
+        }
+
+        public void setImageTheme(String imageTheme) {
+            this.imageTheme = imageTheme;
+        }
+
+        public String getImageHeight() {
+            return imageHeight;
+        }
+
+        public void setImageHeight(String imageHeight) {
+            this.imageHeight = imageHeight;
+        }
+
+        public String getImageWidth() {
+            return imageWidth;
+        }
+
+        public void setImageWidth(String imageWidth) {
+            this.imageWidth = imageWidth;
+        }
+
     }
 }

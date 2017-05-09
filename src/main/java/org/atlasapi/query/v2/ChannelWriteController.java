@@ -3,6 +3,7 @@ package org.atlasapi.query.v2;
 import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.collect.Sets;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
@@ -16,6 +17,7 @@ import org.atlasapi.input.ModelReader;
 import org.atlasapi.input.ReadException;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelStore;
+import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageColor;
 import org.atlasapi.media.entity.ImageTheme;
@@ -36,8 +38,10 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.util.List;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -95,17 +99,18 @@ public class ChannelWriteController {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails incomingJson = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
-        if (Strings.isNullOrEmpty(incomingJson.getChannelId())
-                || Strings.isNullOrEmpty(incomingJson.getImageTheme())
-                || Strings.isNullOrEmpty(incomingJson.getImageHeight())
-                || Strings.isNullOrEmpty(incomingJson.getImageWidth())) {
+        String channelId = incomingJson.getChannelId();
+        String imageTheme = incomingJson.getImageTheme();
+
+        if (Strings.isNullOrEmpty(channelId)
+                || Strings.isNullOrEmpty(imageTheme)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return error(
                     request,
                     response,
                     AtlasErrorSummary.forException(
                             new IllegalArgumentException(
-                                    "You must specify a channel ID, theme, height and width."
+                                    "You must specify a channel ID and image theme to make a request."
                             )
                     )
             );
@@ -131,21 +136,50 @@ public class ChannelWriteController {
             );
         }
 
-        Maybe<Channel> potentialChannel = store.fromId(codec.decode(incomingJson.getChannelId()).longValue());
+        Maybe<Channel> possibleChannel = store.fromId(codec.decode(channelId).longValue());
 
-        if (potentialChannel.hasValue()) {
-            Channel existingChannel = potentialChannel.requireValue();
+        if (possibleChannel.hasValue()) {
+            Channel existingChannel = possibleChannel.requireValue();
 
-            if (Strings.isNullOrEmpty(incomingJson.getImageUri())) {
-                existingChannel.deleteImageByTheme(incomingJson.getImageTheme());
+            String imageUri = incomingJson.getImageUri();
+
+            if (Strings.isNullOrEmpty(imageUri)) {
+                Set<Image> channelImages = Sets.newHashSet(existingChannel.getImages());
+
+                Optional<Image> possibleImage = channelImages.stream()
+                        .filter(existingImage -> existingImage.getTheme().equals(ImageTheme.valueOf(imageTheme.toUpperCase())))
+                        .findFirst();
+
+                if (possibleImage.isPresent()) {
+                    channelImages.remove(possibleImage.get());
+                    existingChannel.setImages(channelImages.stream()
+                            .map(image -> new TemporalField<>(image, null, null))
+                            .collect(Collectors.toSet())
+                    );
+                } else {
+                    log.error("Image not found on channel {} for theme {}", existingChannel.getId(), imageTheme);
+                }
             } else {
-                createOrUpdateImage(
-                        existingChannel,
-                        incomingJson.getImageUri(),
-                        incomingJson.getImageTheme(),
-                        incomingJson.getImageHeight(),
-                        incomingJson.getImageWidth()
-                );
+                String imageHeight = incomingJson.getImageHeight();
+                String imageWidth = incomingJson.getImageWidth();
+                String imageMimeType = incomingJson.getImageMimeType();
+
+                if (Strings.isNullOrEmpty(imageHeight)
+                        || Strings.isNullOrEmpty(imageWidth)
+                        || Strings.isNullOrEmpty(imageMimeType)) {
+                    response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+                    return error(
+                            request,
+                            response,
+                            AtlasErrorSummary.forException(
+                                    new IllegalArgumentException(
+                                            "You must specify the height, width and mimeType in order to create/update an image."
+                                    )
+                            )
+                    );
+                } else {
+                    createOrUpdateImage(existingChannel, imageUri, imageTheme, imageMimeType, imageHeight, imageWidth);
+                }
             }
 
             try {
@@ -162,7 +196,7 @@ public class ChannelWriteController {
                             request,
                             response,
                             AtlasErrorSummary.forException(new NullPointerException(
-                                    String.format("No channel has been found for ID %s.", incomingJson.getChannelId())
+                                    String.format("No channel has been found for ID %s.", channelId)
                             ))
                     );
                 }
@@ -175,39 +209,43 @@ public class ChannelWriteController {
             Channel existingChannel,
             String imageUri,
             String imageTheme,
+            String imageMimeType,
             String imageHeight,
             String imageWidth
     ) {
-        Optional<Image> potentialImage = checkForExistingImage(existingChannel.getImages(), imageTheme);
+        Optional<Image> possibleImage = checkForExistingImage(existingChannel.getImages(), imageTheme);
 
-        if (potentialImage.isPresent()) {
+        if (possibleImage.isPresent()) {
 
-            Image existingImage = potentialImage.get();
+            Image existingImage = possibleImage.get();
 
             existingImage.setCanonicalUri(imageUri);
-            setImageDetails(imageTheme, imageHeight, imageWidth, existingImage);
+            setImageDetails(imageMimeType, imageTheme, imageHeight, imageWidth, existingImage);
+
+            existingChannel.deleteImageByTheme(imageTheme);
+            existingChannel.addImage(existingImage);
 
         } else {
             Image newImage = new Image(imageUri);
 
-            setImageDetails(imageTheme, imageHeight, imageWidth, newImage);
+            setImageDetails(imageMimeType, imageTheme, imageHeight, imageWidth, newImage);
 
             existingChannel.addImage(newImage);
         }
     }
 
-    private void setImageDetails(String imageTheme, String imageHeight, String imageWidth, Image existingImage) {
-        existingImage.setMimeType(MimeType.IMAGE_PNG);
+    private void setImageDetails(String mimeType, String imageTheme, String imageHeight, String imageWidth, Image existingImage) {
+        existingImage.setMimeType(MimeType.valueOf(mimeType.toUpperCase()));
         existingImage.setType(ImageType.LOGO);
-        existingImage.setColor(ImageColor.COLOR);
-        existingImage.setTheme(ImageTheme.valueOf(imageTheme));
+        existingImage.setColor(ImageColor.MONOCHROME);
+        existingImage.setTheme(ImageTheme.valueOf(imageTheme.toUpperCase()));
         existingImage.setWidth(Integer.valueOf(imageWidth));
         existingImage.setHeight(Integer.valueOf(imageHeight));
     }
 
     private Optional<Image> checkForExistingImage(Set<Image> images, String imageTheme) {
         for (Image image : images) {
-            if (image.getTheme().getName().equals(imageTheme)) {
+            if (image.getTheme().getName().equals(imageTheme.toLowerCase())) {
                 return Optional.of(image);
             }
         }
@@ -302,6 +340,7 @@ public class ChannelWriteController {
         private String channelId;
         private String imageUri;
         private String imageTheme;
+        private String imageMimeType;
         private String imageHeight;
         private String imageWidth;
 
@@ -329,6 +368,14 @@ public class ChannelWriteController {
 
         public void setImageTheme(String imageTheme) {
             this.imageTheme = imageTheme;
+        }
+
+        public String getImageMimeType() {
+            return imageMimeType;
+        }
+
+        public void setImageMimeType(String imageMimeType) {
+            this.imageMimeType = imageMimeType;
         }
 
         public String getImageHeight() {

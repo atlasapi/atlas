@@ -351,7 +351,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         channelWriteController.postChannel(request, response);
     }
 
-    @RequestMapping(value = {"/3.0/channels/updateLogo"}, method = RequestMethod.POST)
+    @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.POST)
     public void updateChannelLogo(HttpServletRequest request, HttpServletResponse response) throws IOException {
         channelWriteController.updateChannelImage(
                 request,

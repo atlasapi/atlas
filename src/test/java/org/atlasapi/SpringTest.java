@@ -15,23 +15,19 @@ permissions and limitations under the License. */
 
 package org.atlasapi;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import junit.framework.TestCase;
 
 import org.atlasapi.persistence.content.mongo.MongoPersonStore;
-import org.atlasapi.query.v2.ChannelWriteController;
 import org.atlasapi.query.v2.QueryController;
 import org.junit.Test;
 
 import com.metabroadcast.common.properties.Configurer;
 import org.junit.Ignore;
 
-import java.io.IOException;
-
 /**
  * Test that we can load beans from the Spring configuration - checks that the
  * config is wired correctly.
- * 
+ *
  * @author Robert Chatley (robert@metabroadcast.com)
  */
 @Ignore

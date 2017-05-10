@@ -1,6 +1,8 @@
 package org.atlasapi.query.v2;
 
 import com.google.common.base.*;
+import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSet.Builder;
@@ -37,7 +39,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -87,7 +89,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     private final NumberToShortStringCodec codec;
     private final QueryParameterAnnotationsExtractor annotationExtractor;
     private final ChannelResolver channelResolver;
-    private final ChannelWriteController channelWriteController;
+    private final ChannelWriteExecutor channelWriteExecutor;
     private final Function<String, Long> toDecodedId = new Function<String, Long>() {
 
         @Override
@@ -102,13 +104,13 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             AtlasModelWriter<Iterable<Channel>> outputter,
             ChannelResolver channelResolver,
             NumberToShortStringCodec codec,
-            ChannelWriteController channelWriteController
+            ChannelWriteExecutor channelWriteExecutor
     ) {
         super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.channelResolver = checkNotNull(channelResolver);
         this.codec = checkNotNull(codec);
         this.annotationExtractor = new QueryParameterAnnotationsExtractor();
-        this.channelWriteController = checkNotNull(channelWriteController);
+        this.channelWriteExecutor = checkNotNull(channelWriteExecutor);
     }
 
     @RequestMapping(value = {"/3.0/channels.*", "/channels.*"}, method = RequestMethod.GET)
@@ -348,12 +350,12 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
 
     @RequestMapping(value = {"/3.0/channels.*", "/channels.*"}, method = RequestMethod.POST)
     public void postChannel(HttpServletRequest request, HttpServletResponse response) {
-        channelWriteController.postChannel(request, response);
+        channelWriteExecutor.postChannel(request, response);
     }
 
     @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.POST)
-    public void updateChannelLogo(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        channelWriteController.updateChannelImage(
+    public void updateChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
+        channelWriteExecutor.updateChannelImage(
                 request,
                 response,
                 codec

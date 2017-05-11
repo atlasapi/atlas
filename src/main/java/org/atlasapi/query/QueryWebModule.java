@@ -126,8 +126,7 @@ import org.atlasapi.query.topic.PublisherFilteringTopicContentLister;
 import org.atlasapi.query.topic.PublisherFilteringTopicResolver;
 import org.atlasapi.query.v2.ChannelController;
 import org.atlasapi.query.v2.ChannelGroupController;
-import org.atlasapi.query.v2.ChannelGroupWriteController;
-import org.atlasapi.query.v2.ChannelWriteController;
+import org.atlasapi.query.v2.ChannelWriteExecutor;
 import org.atlasapi.query.v2.ContentFeedController;
 import org.atlasapi.query.v2.ContentGroupController;
 import org.atlasapi.query.v2.ContentWriteController;
@@ -221,17 +220,23 @@ public class QueryWebModule {
                 channelModelWriter(),
                 channelResolver,
                 new SubstitutionTableNumberCodec(),
-                ChannelWriteController.create(
-                        applicationFetcher,
-                        channelStore,
-                        new DefaultJacksonModelReader(),
+                channelWriteExecutor()
+        );
+    }
+
+    private ChannelWriteExecutor channelWriteExecutor() {
+        return ChannelWriteExecutor.builder()
+                .withAppConfigFetcher(applicationFetcher)
+                .withChannelStore(channelStore)
+                .withModelReader(new DefaultJacksonModelReader())
+                .withChannelTransformer(
                         ChannelModelTransformer.create(
                                 v4ChannelCodec(),
                                 ImageModelTranslator.create()
-                        ),
-                        channelModelWriter()
+                        )
                 )
-        );
+                .withOutputter(channelModelWriter())
+                .build();
     }
 
     @Bean

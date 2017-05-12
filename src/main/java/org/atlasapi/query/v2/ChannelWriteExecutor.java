@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.Sets;
+import com.hp.hpl.jena.sparql.algebra.Op;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
@@ -71,36 +72,21 @@ public class ChannelWriteExecutor {
         return deserializeAndUpdateChannel(req, resp);
     }
 
-    public Void updateChannelImage(
+    public Void createChannelImage(
             HttpServletRequest request,
             HttpServletResponse response,
             NumberToShortStringCodec codec
     ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
-        ImageDetails incomingJson = mapper.readValue(request.getInputStream(), ImageDetails.class);
+        ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
-        Optional<Application> possibleApplication;
-        try {
-            possibleApplication = appConfigFetcher.applicationFor(request);
-        } catch (InvalidApiKeyException ex) {
-            return error(request, response, AtlasErrorSummary.forException(ex));
+        Optional<Void> invalidApplication = validateApplication(request, response);
+        if (invalidApplication.isPresent()) {
+            return invalidApplication.get();
         }
 
-        if (!possibleApplication.isPresent()) {
-            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
-            return error(
-                    request,
-                    response,
-                    AtlasErrorSummary.forException(
-                            new UnauthorizedException(
-                                    "API key is unauthorised"
-                            )
-                    )
-            );
-        }
-
-        String channelId = incomingJson.getChannelId();
-        String imageTheme = incomingJson.getImageTheme();
+        String channelId = imageDetails.getChannelId();
+        String imageTheme = imageDetails.getImageTheme();
 
         if (Strings.isNullOrEmpty(channelId) || Strings.isNullOrEmpty(imageTheme)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -130,35 +116,189 @@ public class ChannelWriteExecutor {
 
         Channel existingChannel = possibleChannel.requireValue();
 
-        String imageUri = incomingJson.getImageUri();
-        if (Strings.isNullOrEmpty(imageUri)) {
-            deleteImage(imageTheme, existingChannel);
-        } else {
-            String imageHeight = incomingJson.getImageHeight();
-            String imageWidth = incomingJson.getImageWidth();
-            String imageMimeType = incomingJson.getImageMimeType();
-            if (Strings.isNullOrEmpty(imageHeight)
-                    || Strings.isNullOrEmpty(imageWidth)
-                    || Strings.isNullOrEmpty(imageMimeType)) {
-                response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-                return error(
-                        request,
-                        response,
-                        AtlasErrorSummary.forException(
-                                new IllegalArgumentException(
-                                        "You must specify the height, width and mimeType in order to create/update an image."
-                                )
-                        )
-                );
-            }
+        if (Strings.isNullOrEmpty(imageDetails.getImageHeight())
+                || Strings.isNullOrEmpty(imageDetails.getImageWidth())
+                || Strings.isNullOrEmpty(imageDetails.getImageMimeType())) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(
+                            new IllegalArgumentException(
+                                    "You must specify the height, width and mimeType in order to create/update an image."
+                            )
+                    )
+            );
+        }
 
-            createOrUpdateImage(existingChannel, imageUri, imageTheme, imageMimeType, imageHeight, imageWidth);
+        Image newImage = createImage(imageDetails);
+
+        existingChannel.addImage(newImage);
+
+        try {
+            store.createOrUpdate(existingChannel);
+        } catch (Exception e) {
+            log.error("Error while updating channel for request {}", request.getRequestURL(), e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+            return error(request, response, AtlasErrorSummary.forException(e));
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        return null;
+
+    }
+
+    private Optional<Void> validateApplication(HttpServletRequest request, HttpServletResponse response) {
+        Optional<Application> possibleApplication;
+        try {
+            possibleApplication = appConfigFetcher.applicationFor(request);
+        } catch (InvalidApiKeyException ex) {
+            return Optional.of(error(request, response, AtlasErrorSummary.forException(ex)));
+        }
+
+        if (!possibleApplication.isPresent()) {
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            return Optional.of(error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(
+                            new UnauthorizedException(
+                                    "API key is unauthorised"
+                            )
+                    )
+            ));
+        }
+        return Optional.empty();
+    }
+
+    public Void updateChannelImage(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            NumberToShortStringCodec codec
+    ) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
+
+        Optional<Void> invalidApplication = validateApplication(request, response);
+        if (invalidApplication.isPresent()) {
+            return invalidApplication.get();
+        }
+
+        String channelId = imageDetails.getChannelId();
+        String imageTheme = imageDetails.getImageTheme();
+
+        if (Strings.isNullOrEmpty(channelId) || Strings.isNullOrEmpty(imageTheme)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(
+                            new IllegalArgumentException(
+                                    "You must specify a channel ID and image theme to make a request."
+                            )
+                    )
+            );
+        }
+
+        Maybe<Channel> possibleChannel = store.fromId(codec.decode(channelId).longValue());
+
+        if (!possibleChannel.hasValue()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(new NullPointerException(
+                            String.format("No channel has been found for ID %s.", channelId)
+                    ))
+            );
+        }
+
+        Channel existingChannel = possibleChannel.requireValue();
+
+
+        if (Strings.isNullOrEmpty(imageDetails.getImageHeight())
+                || Strings.isNullOrEmpty(imageDetails.getImageWidth())
+                || Strings.isNullOrEmpty(imageDetails.getImageMimeType())) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(
+                            new IllegalArgumentException(
+                                    "You must specify the height, width and mimeType in order to create/update an image."
+                            )
+                    )
+            );
+        }
+
+        updateImage(existingChannel, imageDetails);
+
+        try {
+            store.createOrUpdate(existingChannel);
+        } catch (Exception e) {
+            log.error("Error while updating channel for request {}", request.getRequestURL(), e);
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+
+            return error(request, response, AtlasErrorSummary.forException(e));
+        }
+
+        response.setStatus(HttpServletResponse.SC_OK);
+        return null;
+    }
+
+    public Void deleteChannelImage(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            NumberToShortStringCodec codec
+    ) throws IOException {
+        ObjectMapper mapper = new ObjectMapper();
+        ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
+
+        Optional<Void> invalidApplication = validateApplication(request, response);
+        if (invalidApplication.isPresent()) {
+            return invalidApplication.get();
+        }
+
+        String channelId = imageDetails.getChannelId();
+        String imageTheme = imageDetails.getImageTheme();
+
+        if (Strings.isNullOrEmpty(channelId) || Strings.isNullOrEmpty(imageTheme)) {
+            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            return error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(
+                            new IllegalArgumentException(
+                                    "You must specify a channel ID and image theme to make a request."
+                            )
+                    )
+            );
+        }
+
+        Maybe<Channel> possibleChannel = store.fromId(codec.decode(channelId).longValue());
+
+        if (!possibleChannel.hasValue()) {
+            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
+            return error(
+                    request,
+                    response,
+                    AtlasErrorSummary.forException(new NullPointerException(
+                            String.format("No channel has been found for ID %s.", channelId)
+                    ))
+            );
+        }
+
+        Channel existingChannel = possibleChannel.requireValue();
+
+        if (Strings.isNullOrEmpty(imageDetails.getImageUri())) {
+            deleteImage(imageTheme, existingChannel);
         }
 
         try {
             store.createOrUpdate(existingChannel);
         } catch (Exception e) {
-            log.error("Error while creating/updating channel for request {}", request.getRequestURL(), e);
+            log.error("Error while updating channel for request {}", request.getRequestURL(), e);
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
 
             return error(request, response, AtlasErrorSummary.forException(e));
@@ -188,38 +328,20 @@ public class ChannelWriteExecutor {
                 .findFirst();
     }
 
-    private void createOrUpdateImage(
-            Channel existingChannel,
-            String imageUri,
-            String imageTheme,
-            String imageMimeType,
-            String imageHeight,
-            String imageWidth
-    ) {
+    private void updateImage(Channel existingChannel, ImageDetails imageDetailsWrapper) {
         Set<Image> channelImages = Sets.newHashSet(existingChannel.getImages());
-        Optional<Image> possibleImage = getPossibleImageByTheme(channelImages, imageTheme);
+        Optional<Image> possibleImage = getPossibleImageByTheme(channelImages, imageDetailsWrapper.getImageTheme());
 
         if (possibleImage.isPresent()) {
             Image imageToBeUpdated = possibleImage.get();
 
             channelImages.remove(imageToBeUpdated);
 
-            Image updatedImage = updateImage(
-                    imageUri,
-                    imageTheme,
-                    imageMimeType,
-                    imageHeight,
-                    imageWidth,
-                    imageToBeUpdated
-            );
+            Image updatedImage = updateImage(imageDetailsWrapper, imageToBeUpdated);
 
             channelImages.add(updatedImage);
 
             setImagesOnChannel(existingChannel, channelImages);
-        } else {
-            Image newImage = createImage(imageUri, imageTheme, imageMimeType, imageHeight, imageWidth);
-
-            existingChannel.addImage(newImage);
         }
     }
 
@@ -231,46 +353,27 @@ public class ChannelWriteExecutor {
         );
     }
 
-    private Image createImage(
-            String imageUri,
-            String imageTheme,
-            String imageMimeType,
-            String imageHeight,
-            String imageWidth
-    ) {
-        Image newImage = new Image(imageUri);
-        setImageDetails(imageMimeType, imageTheme, imageHeight, imageWidth, newImage);
+    private Image createImage(ImageDetails imageDetailsWrapper) {
+        Image newImage = new Image(imageDetailsWrapper.getImageUri());
+        setImageDetails(imageDetailsWrapper, newImage);
 
         return newImage;
     }
 
-    private Image updateImage(
-            String imageUri,
-            String imageTheme,
-            String imageMimeType,
-            String imageHeight,
-            String imageWidth,
-            Image imageToBeUpdated
-    ) {
-        imageToBeUpdated.setCanonicalUri(imageUri);
-        setImageDetails(imageMimeType, imageTheme, imageHeight, imageWidth, imageToBeUpdated);
+    private Image updateImage(ImageDetails imageDetailsWrapper, Image imageToBeUpdated) {
+        imageToBeUpdated.setCanonicalUri(imageDetailsWrapper.getImageUri());
+        setImageDetails(imageDetailsWrapper, imageToBeUpdated);
 
         return imageToBeUpdated;
     }
 
-    private void setImageDetails(
-            String mimeType,
-            String imageTheme,
-            String imageHeight,
-            String imageWidth,
-            Image existingImage
-    ) {
-        existingImage.setMimeType(MimeType.valueOf(mimeType.toUpperCase()));
+    private void setImageDetails(ImageDetails imageDetailsWrapper, Image existingImage) {
+        existingImage.setMimeType(MimeType.valueOf(imageDetailsWrapper.getImageMimeType().toUpperCase()));
         existingImage.setType(ImageType.LOGO);
         existingImage.setColor(ImageColor.MONOCHROME);
-        existingImage.setTheme(ImageTheme.valueOf(imageTheme.toUpperCase()));
-        existingImage.setWidth(Integer.valueOf(imageWidth));
-        existingImage.setHeight(Integer.valueOf(imageHeight));
+        existingImage.setTheme(ImageTheme.valueOf(imageDetailsWrapper.getImageTheme().toUpperCase()));
+        existingImage.setWidth(Integer.valueOf(imageDetailsWrapper.getImageWidth()));
+        existingImage.setHeight(Integer.valueOf(imageDetailsWrapper.getImageHeight()));
     }
 
     private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {

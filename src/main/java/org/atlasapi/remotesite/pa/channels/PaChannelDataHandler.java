@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
+import com.google.gdata.model.gd.Im;
 import org.atlasapi.media.channel.*;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
@@ -153,7 +154,11 @@ public class PaChannelDataHandler {
         if (existing.hasValue()) {
             Channel existingChannel = existing.requireValue();
 
-            updateExistingImages(newChannel, existingChannel);
+            if (Iterables.isEmpty(existingChannel.getAllImages())) {
+                existingChannel.setImages(newChannel.getAllImages());
+            } else {
+                updateExistingChannelImages(newChannel, existingChannel);
+            }
             existingChannel.setTitles(newChannel.getAllTitles());
             existingChannel.setAdult(newChannel.getAdult());
             existingChannel.setStartDate(newChannel.getStartDate());
@@ -191,18 +196,27 @@ public class PaChannelDataHandler {
         }
     }
 
-    private void updateExistingImages(Channel newChannel, Channel existingChannel) {
+    // We need to update the existing channel images to avoid overwriting all existing images every time we ingest PA channels.
+    // This should go away once we implement channel equivalence.
+    protected void updateExistingChannelImages(Channel newChannel, Channel existingChannel) {
         if (!Iterables.isEmpty(newChannel.getAllImages())) {
-            newChannel.getAllImages().forEach(newImage -> existingChannel.getAllImages().forEach(existingImage -> {
-                Image newImageValue = newImage.getValue();
-                Image existingImageValue = existingImage.getValue();
+            for (TemporalField<Image> newImage : newChannel.getAllImages()) {
+                boolean channelIsMissingImage = false;
+                for (TemporalField<Image> existingImage : existingChannel.getAllImages()) {
+                    Image newImageValue = newImage.getValue();
+                    Image existingImageValue = existingImage.getValue();
 
-                if (newImageValue.getTheme().equals(existingImageValue.getTheme())) {
-                    updateExistingImageDetails(newImageValue, existingImageValue);
-                } else {
+                    if (newImageValue.getTheme().equals(existingImageValue.getTheme())) {
+                        updateExistingImageDetails(newImageValue, existingImageValue);
+                        break;
+                    } else {
+                        channelIsMissingImage = true;
+                    }
+                }
+                if (channelIsMissingImage) {
                     existingChannel.addImage(newImage.getValue());
                 }
-            }));
+            }
         }
     }
 

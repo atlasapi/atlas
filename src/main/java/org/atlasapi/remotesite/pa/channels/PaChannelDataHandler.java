@@ -5,15 +5,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelGroup;
-import org.atlasapi.media.channel.ChannelGroupResolver;
-import org.atlasapi.media.channel.ChannelGroupWriter;
-import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.ChannelWriter;
-import org.atlasapi.media.channel.Platform;
-import org.atlasapi.media.channel.Region;
+import org.atlasapi.media.channel.*;
 import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.pa.channels.bindings.Station;
 import org.atlasapi.remotesite.pa.channels.bindings.TvChannelData;
@@ -159,9 +153,9 @@ public class PaChannelDataHandler {
         if (existing.hasValue()) {
             Channel existingChannel = existing.requireValue();
 
+            updateExistingImages(newChannel, existingChannel);
             existingChannel.setTitles(newChannel.getAllTitles());
             existingChannel.setAdult(newChannel.getAdult());
-            existingChannel.setImages(newChannel.getAllImages());
             existingChannel.setStartDate(newChannel.getStartDate());
             existingChannel.setEndDate(newChannel.getEndDate());
             existingChannel.setRelatedLinks(newChannel.getRelatedLinks());
@@ -195,6 +189,34 @@ public class PaChannelDataHandler {
         } else {
             return channelWriter.createOrUpdate(newChannel);
         }
+    }
+
+    private void updateExistingImages(Channel newChannel, Channel existingChannel) {
+        if (!Iterables.isEmpty(newChannel.getAllImages())) {
+            newChannel.getAllImages().forEach(newImage -> existingChannel.getAllImages().forEach(existingImage -> {
+                Image newImageValue = newImage.getValue();
+                Image existingImageValue = existingImage.getValue();
+
+                if (newImageValue.getTheme().equals(existingImageValue.getTheme())) {
+                    updateExistingImageDetails(newImageValue, existingImageValue);
+                } else {
+                    existingChannel.addImage(newImage.getValue());
+                }
+            }));
+        }
+    }
+
+    private void updateExistingImageDetails(Image newImageValue, Image existingImageValue) {
+        existingImageValue.setCanonicalUri(newImageValue.getCanonicalUri());
+        existingImageValue.setMimeType(newImageValue.getMimeType());
+        existingImageValue.setType(newImageValue.getType());
+        existingImageValue.setColor(newImageValue.getColor());
+        existingImageValue.setAspectRatio(newImageValue.getAspectRatio());
+        existingImageValue.setAvailabilityStart(newImageValue.getAvailabilityStart());
+        existingImageValue.setAvailabilityEnd(newImageValue.getAvailabilityEnd());
+        existingImageValue.setWidth(newImageValue.getWidth());
+        existingImageValue.setHeight(newImageValue.getHeight());
+        existingImageValue.setHasTitleArt(newImageValue.hasTitleArt());
     }
 
     private boolean isPaAlias(String alias) {

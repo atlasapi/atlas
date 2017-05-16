@@ -116,7 +116,8 @@ public class ChannelWriteExecutor {
 
         Channel existingChannel = possibleChannel.requireValue();
 
-        if (Strings.isNullOrEmpty(imageDetails.getImageHeight())
+        if (Strings.isNullOrEmpty(imageDetails.getImageUri())
+                || Strings.isNullOrEmpty(imageDetails.getImageHeight())
                 || Strings.isNullOrEmpty(imageDetails.getImageWidth())
                 || Strings.isNullOrEmpty(imageDetails.getImageMimeType())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -216,8 +217,8 @@ public class ChannelWriteExecutor {
 
         Channel existingChannel = possibleChannel.requireValue();
 
-
-        if (Strings.isNullOrEmpty(imageDetails.getImageHeight())
+        if (Strings.isNullOrEmpty(imageDetails.getImageUri())
+                || Strings.isNullOrEmpty(imageDetails.getImageHeight())
                 || Strings.isNullOrEmpty(imageDetails.getImageWidth())
                 || Strings.isNullOrEmpty(imageDetails.getImageMimeType())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -328,16 +329,16 @@ public class ChannelWriteExecutor {
                 .findFirst();
     }
 
-    private void updateImage(Channel existingChannel, ImageDetails imageDetailsWrapper) {
+    private void updateImage(Channel existingChannel, ImageDetails imageDetails) {
         Set<Image> channelImages = Sets.newHashSet(existingChannel.getImages());
-        Optional<Image> possibleImage = getPossibleImageByTheme(channelImages, imageDetailsWrapper.getImageTheme());
+        Optional<Image> possibleImage = getPossibleImageByTheme(channelImages, imageDetails.getImageTheme());
 
         if (possibleImage.isPresent()) {
             Image imageToBeUpdated = possibleImage.get();
 
             channelImages.remove(imageToBeUpdated);
 
-            Image updatedImage = updateImage(imageDetailsWrapper, imageToBeUpdated);
+            Image updatedImage = updateImage(imageDetails, imageToBeUpdated);
 
             channelImages.add(updatedImage);
 
@@ -353,27 +354,27 @@ public class ChannelWriteExecutor {
         );
     }
 
-    private Image createImage(ImageDetails imageDetailsWrapper) {
-        Image newImage = new Image(imageDetailsWrapper.getImageUri());
-        setImageDetails(imageDetailsWrapper, newImage);
+    private Image createImage(ImageDetails imageDetails) {
+        Image newImage = new Image(imageDetails.getImageUri());
+        setImageDetails(imageDetails, newImage);
 
         return newImage;
     }
 
-    private Image updateImage(ImageDetails imageDetailsWrapper, Image imageToBeUpdated) {
-        imageToBeUpdated.setCanonicalUri(imageDetailsWrapper.getImageUri());
-        setImageDetails(imageDetailsWrapper, imageToBeUpdated);
+    private Image updateImage(ImageDetails imageDetails, Image imageToBeUpdated) {
+        imageToBeUpdated.setCanonicalUri(imageDetails.getImageUri());
+        setImageDetails(imageDetails, imageToBeUpdated);
 
         return imageToBeUpdated;
     }
 
-    private void setImageDetails(ImageDetails imageDetailsWrapper, Image existingImage) {
-        existingImage.setMimeType(MimeType.valueOf(imageDetailsWrapper.getImageMimeType().toUpperCase()));
+    private void setImageDetails(ImageDetails imageDetails, Image existingImage) {
+        existingImage.setMimeType(MimeType.valueOf(imageDetails.getImageMimeType().toUpperCase()));
         existingImage.setType(ImageType.LOGO);
         existingImage.setColor(ImageColor.MONOCHROME);
-        existingImage.setTheme(ImageTheme.valueOf(imageDetailsWrapper.getImageTheme().toUpperCase()));
-        existingImage.setWidth(Integer.valueOf(imageDetailsWrapper.getImageWidth()));
-        existingImage.setHeight(Integer.valueOf(imageDetailsWrapper.getImageHeight()));
+        existingImage.setTheme(ImageTheme.valueOf(imageDetails.getImageTheme().toUpperCase()));
+        existingImage.setWidth(Integer.valueOf(imageDetails.getImageWidth()));
+        existingImage.setHeight(Integer.valueOf(imageDetails.getImageHeight()));
     }
 
     private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {

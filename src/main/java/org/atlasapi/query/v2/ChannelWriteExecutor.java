@@ -72,7 +72,7 @@ public class ChannelWriteExecutor {
         return deserializeAndUpdateChannel(req, resp);
     }
 
-    public Void createChannelImage(
+    public Void createOrUpdateChannelImage(
             HttpServletRequest request,
             HttpServletResponse response,
             NumberToShortStringCodec codec
@@ -132,9 +132,7 @@ public class ChannelWriteExecutor {
             );
         }
 
-        Image newImage = createImage(imageDetails);
-
-        existingChannel.addImage(newImage);
+        createOrUpdateImage(existingChannel, imageDetails);
 
         try {
             store.createOrUpdate(existingChannel);
@@ -171,82 +169,6 @@ public class ChannelWriteExecutor {
             ));
         }
         return Optional.empty();
-    }
-
-    public Void updateChannelImage(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            NumberToShortStringCodec codec
-    ) throws IOException {
-        ObjectMapper mapper = new ObjectMapper();
-        ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
-
-        Optional<Void> invalidApplication = validateApplication(request, response);
-        if (invalidApplication.isPresent()) {
-            return invalidApplication.get();
-        }
-
-        String channelId = imageDetails.getChannelId();
-        String imageTheme = imageDetails.getImageTheme();
-
-        if (Strings.isNullOrEmpty(channelId) || Strings.isNullOrEmpty(imageTheme)) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return error(
-                    request,
-                    response,
-                    AtlasErrorSummary.forException(
-                            new IllegalArgumentException(
-                                    "You must specify a channel ID and image theme to make a request."
-                            )
-                    )
-            );
-        }
-
-        Maybe<Channel> possibleChannel = store.fromId(codec.decode(channelId).longValue());
-
-        if (!possibleChannel.hasValue()) {
-            response.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            return error(
-                    request,
-                    response,
-                    AtlasErrorSummary.forException(new NullPointerException(
-                            String.format("No channel has been found for ID %s.", channelId)
-                    ))
-            );
-        }
-
-        Channel existingChannel = possibleChannel.requireValue();
-
-
-        if (Strings.isNullOrEmpty(imageDetails.getImageUri())
-                || Strings.isNullOrEmpty(imageDetails.getImageHeight())
-                || Strings.isNullOrEmpty(imageDetails.getImageWidth())
-                || Strings.isNullOrEmpty(imageDetails.getImageMimeType())) {
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            return error(
-                    request,
-                    response,
-                    AtlasErrorSummary.forException(
-                            new IllegalArgumentException(
-                                    "You must specify the height, width and mimeType in order to create/update an image."
-                            )
-                    )
-            );
-        }
-
-        updateImage(existingChannel, imageDetails);
-
-        try {
-            store.createOrUpdate(existingChannel);
-        } catch (Exception e) {
-            log.error("Error while updating channel for request {}", request.getRequestURL(), e);
-            response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-
-            return error(request, response, AtlasErrorSummary.forException(e));
-        }
-
-        response.setStatus(HttpServletResponse.SC_OK);
-        return null;
     }
 
     public Void deleteChannelImage(
@@ -330,7 +252,7 @@ public class ChannelWriteExecutor {
                 .findFirst();
     }
 
-    private void updateImage(Channel existingChannel, ImageDetails imageDetails) {
+    private void createOrUpdateImage(Channel existingChannel, ImageDetails imageDetails) {
         Set<Image> channelImages = Sets.newHashSet(existingChannel.getImages());
         Optional<Image> possibleImage = getPossibleImageByTheme(channelImages, imageDetails.getImageTheme());
 
@@ -344,6 +266,10 @@ public class ChannelWriteExecutor {
             channelImages.add(updatedImage);
 
             setImagesOnChannel(existingChannel, channelImages);
+        } else {
+            Image newImage = createImage(imageDetails);
+
+            existingChannel.addImage(newImage);
         }
     }
 

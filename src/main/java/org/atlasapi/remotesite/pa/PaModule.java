@@ -96,8 +96,7 @@ public class PaModule {
 
     private final static RepetitionRule PEOPLE_COMPLETE_INGEST = NEVER;
     private final static RepetitionRule PEOPLE_INGEST = daily(LocalTime.MIDNIGHT);
-    private final static RepetitionRule CHANNELS_INGEST = NEVER;
-//    private final static RepetitionRule CHANNELS_INGEST = every(Duration.standardHours(2));
+    private final static RepetitionRule CHANNELS_INGEST = every(Duration.standardHours(2));
     private final static RepetitionRule FEATURES_INGEST = daily(LocalTime.MIDNIGHT);
     private final static RepetitionRule RECENT_FILE_INGEST = every(Duration.standardMinutes(10))
             .withOffset(Duration.standardMinutes(15));

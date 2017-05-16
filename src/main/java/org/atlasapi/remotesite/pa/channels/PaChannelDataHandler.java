@@ -5,8 +5,15 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import com.google.gdata.model.gd.Im;
-import org.atlasapi.media.channel.*;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelGroup;
+import org.atlasapi.media.channel.ChannelGroupResolver;
+import org.atlasapi.media.channel.ChannelGroupWriter;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelWriter;
+import org.atlasapi.media.channel.Platform;
+import org.atlasapi.media.channel.Region;
+import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.Publisher;

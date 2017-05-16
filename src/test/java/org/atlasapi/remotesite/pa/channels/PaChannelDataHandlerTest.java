@@ -1,7 +1,12 @@
 package org.atlasapi.remotesite.pa.channels;
 
 import com.google.common.collect.Iterables;
-import org.atlasapi.media.channel.*;
+
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelGroupResolver;
+import org.atlasapi.media.channel.ChannelGroupWriter;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.junit.Assert;
@@ -37,10 +42,8 @@ public class PaChannelDataHandlerTest {
 
         Image existingImage = Image.builder("existing uri").withTheme(ImageTheme.DARK_MONOCHROME).build();
         existingChannel = Channel.builder().withImage(existingImage).build();
-
-        Image newImage = Image.builder("new uri").withTheme(ImageTheme.DARK_MONOCHROME).build();
-        newChannel = Channel.builder().withImage(newImage).build();
     }
+
     @Test
     public void dontUpdateImagesIfNewChannelDoesntHaveImages() {
         newChannel = Channel.builder().build();
@@ -52,6 +55,9 @@ public class PaChannelDataHandlerTest {
 
     @Test
     public void updateExistingImageDetailsIfImagesThemeMatch() {
+        Image newImage = Image.builder("new uri").withTheme(ImageTheme.DARK_MONOCHROME).build();
+        newChannel = Channel.builder().withImage(newImage).build();
+
         channelDataHandler.updateExistingChannelImages(newChannel, existingChannel);
 
         Assert.assertTrue(Iterables.size(existingChannel.getAllImages()) == 1);
@@ -60,7 +66,8 @@ public class PaChannelDataHandlerTest {
 
     @Test
     public void addNewImageIfItDoesntExist() {
-        newChannel = Channel.builder().withImage(Image.builder("new uri").withTheme(ImageTheme.LIGHT_MONOCHROME).build()).build();
+        Image newImage = Image.builder("new uri").withTheme(ImageTheme.LIGHT_MONOCHROME).build();
+        newChannel = Channel.builder().withImage(newImage).build();
 
         channelDataHandler.updateExistingChannelImages(newChannel, existingChannel);
 

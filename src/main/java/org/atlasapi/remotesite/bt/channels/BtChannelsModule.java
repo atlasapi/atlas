@@ -28,7 +28,10 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 @Import( PaModule.class )
 public class BtChannelsModule {
 
-    private static final String ALIAS_NAMESPACE_PREFIX = "bt";
+    private static final String PROD_ALIAS_NAMESPACE_PREFIX = "gb:bt:tv:mpx:prod:";
+    private static final String VOLD_ALIAS_NAMESPACE_PREFIX = "gb:bt:tv:mpx:vold:";
+    private static final String VOLE_ALIAS_NAMESPACE_PREFIX = "gb:bt:tv:mpx:vole:";
+    private static final String REF_ALIAS_NAMESPACE_PREFIX = "gb:bt:tv:mpx:ref:";
     private static final String URI_PREFIX_STRING_FORMAT = "http://%s/";
 
     private static final LocalTime NON_PROD_BASE_START_TIME = new LocalTime(16,0);
@@ -109,22 +112,22 @@ public class BtChannelsModule {
     
     @Bean 
     public BtMpxChannelDataIngester productionChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS, ALIAS_NAMESPACE_PREFIX, baseUri, Boolean.parseBoolean(productionIngestAdvertiseFrom), productionNamespace);
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS, PROD_ALIAS_NAMESPACE_PREFIX, baseUri, Boolean.parseBoolean(productionIngestAdvertiseFrom), productionNamespace);
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev1ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST1, ALIAS_NAMESPACE_PREFIX, test1BaseUri, Boolean.parseBoolean(test1IngestAdvertiseFrom), test1Namespace);
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST1, VOLD_ALIAS_NAMESPACE_PREFIX, test1BaseUri, Boolean.parseBoolean(test1IngestAdvertiseFrom), test1Namespace);
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev2ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST2, ALIAS_NAMESPACE_PREFIX, test2BaseUri, Boolean.parseBoolean(test2IngestAdvertiseFrom), test2Namespace);
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST2, VOLE_ALIAS_NAMESPACE_PREFIX, test2BaseUri, Boolean.parseBoolean(test2IngestAdvertiseFrom), test2Namespace);
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev3ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_REFERENCE, ALIAS_NAMESPACE_PREFIX, test3BaseUri, Boolean.parseBoolean(test3IngestAdvertiseFrom), test3Namespace);
+        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_REFERENCE, REF_ALIAS_NAMESPACE_PREFIX, test3BaseUri, Boolean.parseBoolean(test3IngestAdvertiseFrom), test3Namespace);
     }
     
     private BtMpxChannelDataIngester perEnvironmentChannelGroupUpdater(Publisher publisher,

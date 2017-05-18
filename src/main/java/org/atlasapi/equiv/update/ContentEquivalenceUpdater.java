@@ -23,6 +23,8 @@ import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -91,6 +93,14 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
 
         boolean handledWithStateChange = handler.handle(result);
+
+        ObjectMapper objectMapper = new ObjectMapper();
+        try {
+            String jsonResult = objectMapper.writeValueAsString(result);
+            System.out.println(jsonResult);
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
 
         if (handledWithStateChange) {
             messenger.sendMessage(result);

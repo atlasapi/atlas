@@ -1,41 +1,36 @@
-package org.atlasapi.equiv.update;
+package org.atlasapi.equiv.channel.updaters;
+
+import com.google.api.client.util.Maps;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.equiv.update.EquivalenceUpdater;
+import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
+import org.atlasapi.equiv.update.metadata.MultipleSourceEquivalenceUpdaterMetadata;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Publisher;
 
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
-import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
-import org.atlasapi.equiv.update.metadata.MultipleSourceEquivalenceUpdaterMetadata;
-import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Publisher;
+public class MultipleSourceChannelEquivalenceUpdater implements EquivalenceUpdater<Channel> {
 
-import com.metabroadcast.common.stream.MoreCollectors;
+    private Map<Publisher, EquivalenceUpdater<Channel>> updaters;
 
-import com.google.common.collect.Maps;
-
-public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Content> {
-
-    private Map<Publisher, EquivalenceUpdater<Content>> updaters;
-
-    private MultipleSourceEquivalenceUpdater() {
+    private MultipleSourceChannelEquivalenceUpdater() {
         this.updaters = Maps.newHashMap();
     }
 
-    public static MultipleSourceEquivalenceUpdater create() {
-        return new MultipleSourceEquivalenceUpdater();
+    public static MultipleSourceChannelEquivalenceUpdater create() {
+        return new MultipleSourceChannelEquivalenceUpdater();
     }
 
-    public MultipleSourceEquivalenceUpdater register(
-            Publisher publisher,
-            EquivalenceUpdater<Content> updater
-    ) {
+    public void register(Publisher publisher, EquivalenceUpdater<Channel> updater) {
         updaters.put(publisher, updater);
-        return this;
     }
 
     @Override
-    public boolean updateEquivalences(Content subject) {
-        return updaters.get(subject.getPublisher()).updateEquivalences(subject);
+    public boolean updateEquivalences(Channel channel) {
+        return updaters.get(channel.getSource()).updateEquivalences(channel);
     }
 
     @Override
@@ -50,5 +45,7 @@ public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Cont
                                 entry -> entry.getValue().getMetadata(sources)
                         ))
         );
+
+
     }
 }

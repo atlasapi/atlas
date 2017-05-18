@@ -5,10 +5,9 @@ import com.metabroadcast.common.scheduling.RepetitionRule;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
-import org.atlasapi.equiv.channel.matchers.BtChannelMatcher;
-import org.atlasapi.equiv.channel.matchers.ChannelMatcher;
+import org.atlasapi.equiv.update.EquivalenceUpdater;
+import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -24,12 +23,14 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 @Configuration
-@Import({ChannelEquivModule.class})
+@Import({ ChannelEquivModule.class })
 public class ChannelEquivTaskModule {
 
     private static final Logger log = LoggerFactory.getLogger(ChannelEquivTaskModule.class);
 
-    private static final String CHANNEL_EQUIV_TASK_NAME = " Channel Equiv Updater";
+    private static final int STARTUP_THREAD_COUNT = 2;
+
+    private static final String TASK_NAME = " Channel Equiv Updater";
 
     private static final RepetitionRule BT_CHANNEL_REPETITION_RULE =
             RepetitionRules.daily(new LocalTime(6, 0));
@@ -38,19 +39,19 @@ public class ChannelEquivTaskModule {
     @Value("$channel.equiv.enabled") private String channelEquivEnabled;
 
     @Autowired private SimpleScheduler taskScheduler;
-    @Autowired private BtChannelMatcher btChannelMatcher;
-    @Autowired private ChannelResolver channelResolver;
-    @Autowired private ChannelWriter channelWriter;
+    @Autowired private EquivalenceUpdater<Channel> equivalenceUpdater;
 
+    @Autowired private ChannelResolver channelResolver;
 
     @PostConstruct
     public void scheduleUpdater() {
 
-        ExecutorService executorService = Executors.newFixedThreadPool(3);
+        ExecutorService executorService = Executors.newFixedThreadPool(STARTUP_THREAD_COUNT);
 
         Set<ScheduledTask> jobsAtStartup = Sets.newHashSet();
 
         if (Boolean.parseBoolean(updaterEnabled) && Boolean.parseBoolean(channelEquivEnabled)) {
+            log.info("Channel equivalence enabled");
             addEquivalenceJobs(jobsAtStartup);
         }
 
@@ -61,22 +62,22 @@ public class ChannelEquivTaskModule {
 
     private void addEquivalenceJobs(Set<ScheduledTask> jobsAtStartup) {
         scheduleEquivalenceJob(
-                createUpdateTask(Publisher.BT_TV_CHANNELS, btChannelMatcher),
+                createUpdateTask(Publisher.BT_TV_CHANNELS, equivalenceUpdater),
                 BT_CHANNEL_REPETITION_RULE,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                createUpdateTask(Publisher.BT_TV_CHANNELS_TEST1, btChannelMatcher),
+                createUpdateTask(Publisher.BT_TV_CHANNELS_TEST1, equivalenceUpdater),
                 BT_CHANNEL_REPETITION_RULE,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                createUpdateTask(Publisher.BT_TV_CHANNELS_TEST2, btChannelMatcher),
+                createUpdateTask(Publisher.BT_TV_CHANNELS_TEST2, equivalenceUpdater),
                 BT_CHANNEL_REPETITION_RULE,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                createUpdateTask(Publisher.BT_TV_CHANNELS_REFERENCE, btChannelMatcher),
+                createUpdateTask(Publisher.BT_TV_CHANNELS_REFERENCE, equivalenceUpdater),
                 BT_CHANNEL_REPETITION_RULE,
                 jobsAtStartup
         );
@@ -97,13 +98,9 @@ public class ChannelEquivTaskModule {
 
     private ScheduledTask createUpdateTask(
             Publisher publisher,
-            ChannelMatcher channelMatcher
+            EquivalenceUpdater<Channel> updater
     ) {
-        return ChannelEquivalenceUpdateTask.builder(publisher.title() + CHANNEL_EQUIV_TASK_NAME)
-                .forPublisher(publisher)
-                .withChannelMatcher(channelMatcher)
-                .withChannelResolver(channelResolver)
-                .withChannelWriter(channelWriter)
-                .build();
+        return ChannelEquivalenceUpdateTask.create(channelResolver, publisher, updater)
+                .withName(publisher.title() + TASK_NAME);
     }
 }

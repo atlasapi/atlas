@@ -226,7 +226,8 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                 && Objects.equal(encoding.getVideoCoding(), prevEncoding.getVideoCoding())
                 && Objects.equal(encoding.getVideoFrameRate(), prevEncoding.getVideoFrameRate())
                 && Objects.equal(encoding.getVideoProgressiveScan(), prevEncoding.getVideoProgressiveScan())
-                && Objects.equal(encoding.getVideoVerticalSize(), prevEncoding.getVideoVerticalSize());
+                && Objects.equal(encoding.getVideoVerticalSize(), prevEncoding.getVideoVerticalSize())
+                && Objects.equal(encoding.getSubtitled(), prevEncoding.getSubtitled());
     }
 
     private void setLastUpdatedTime(Version version, Version prevVersion, DateTime now) {

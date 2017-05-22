@@ -349,16 +349,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
 
     @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.POST)
     public void createChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        channelWriteExecutor.createChannelImage(
-                request,
-                response,
-                codec
-        );
-    }
-
-    @RequestMapping(value = {"/3.0/channels/updateImage"}, method = RequestMethod.PUT)
-    public void updateChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
-        channelWriteExecutor.updateChannelImage(
+        channelWriteExecutor.createOrUpdateChannelImage(
                 request,
                 response,
                 codec

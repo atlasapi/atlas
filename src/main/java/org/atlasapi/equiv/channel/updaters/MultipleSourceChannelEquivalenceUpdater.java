@@ -7,12 +7,16 @@ import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.MultipleSourceEquivalenceUpdaterMetadata;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
 public class MultipleSourceChannelEquivalenceUpdater implements EquivalenceUpdater<Channel> {
+
+    private static final Logger log = LoggerFactory.getLogger(MultipleSourceChannelEquivalenceUpdater.class);
 
     private Map<Publisher, EquivalenceUpdater<Channel>> updaters;
 
@@ -30,7 +34,12 @@ public class MultipleSourceChannelEquivalenceUpdater implements EquivalenceUpdat
 
     @Override
     public boolean updateEquivalences(Channel channel) {
-        return updaters.get(channel.getSource()).updateEquivalences(channel);
+        EquivalenceUpdater<Channel> updater = updaters.get(channel.getSource());
+        if (updater != null) {
+            return updater.updateEquivalences(channel);
+        }
+        log.error("No updater found for publisher: {}", channel.getSource());
+        return false;
     }
 
     @Override

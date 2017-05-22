@@ -57,9 +57,7 @@ public class ChannelEquivTaskModule {
             addEquivalenceJobs(jobsAtStartup);
         }
 
-        for (ScheduledTask scheduledTask : jobsAtStartup) {
-            executorService.submit(scheduledTask);
-        }
+        jobsAtStartup.forEach(executorService::submit);
     }
 
     @Bean

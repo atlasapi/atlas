@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import java.util.Arrays;
 import java.util.Map;
 
 @SuppressWarnings("PublicConstructor")
@@ -30,10 +31,13 @@ public class ChannelEquivModule {
     public EquivalenceUpdater<Channel> channelUpdater() {
         MultipleSourceChannelEquivalenceUpdater updaters = MultipleSourceChannelEquivalenceUpdater.create();
 
-        register(Publisher.BT_TV_CHANNELS, updaters);
-        register(Publisher.BT_TV_CHANNELS_TEST1, updaters);
-        register(Publisher.BT_TV_CHANNELS_TEST2, updaters);
-        register(Publisher.BT_TV_CHANNELS_REFERENCE, updaters);
+        registerPublisherUpdaters(
+                updaters,
+                Publisher.BT_TV_CHANNELS,
+                Publisher.BT_TV_CHANNELS_TEST1,
+                Publisher.BT_TV_CHANNELS_TEST2,
+                Publisher.BT_TV_CHANNELS_REFERENCE
+        );
 
         return updaters;
     }
@@ -48,8 +52,13 @@ public class ChannelEquivModule {
                 .build();
     }
 
-    private void register(Publisher publisher, MultipleSourceChannelEquivalenceUpdater updater) {
-        updater.register(publisher, createUpdaterFor(publisher));
+    private void registerPublisherUpdaters(
+            MultipleSourceChannelEquivalenceUpdater updaters,
+            Publisher... publishers
+    ) {
+        Arrays.stream(publishers).forEach(
+                publisher -> updaters.register(publisher, createUpdaterFor(publisher))
+        );
     }
 
     private EquivalenceUpdater<Channel> createUpdaterFor(Publisher publisher) {

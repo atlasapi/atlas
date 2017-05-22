@@ -14,12 +14,10 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-import static com.google.common.base.Preconditions.checkNotNull;
 
 public class WatchableChannelGroupSaver extends AbstractBtChannelGroupSaver {
 
     private final String aliasUriPrefix;
-    private final String aliasNamespace;
 
     public WatchableChannelGroupSaver(Publisher publisher, String aliasUriPrefix, 
             String aliasNamespace, ChannelGroupResolver channelGroupResolver, 
@@ -29,7 +27,6 @@ public class WatchableChannelGroupSaver extends AbstractBtChannelGroupSaver {
                 channelWriter, LoggerFactory.getLogger(WatchableChannelGroupSaver.class));
         
         this.aliasUriPrefix = aliasUriPrefix;
-        this.aliasNamespace = checkNotNull(aliasNamespace) + ":watchables";
     }
 
     @Override
@@ -42,7 +39,7 @@ public class WatchableChannelGroupSaver extends AbstractBtChannelGroupSaver {
 
     @Override
     protected Optional<Alias> aliasFor(String key) {
-        return Optional.of(new Alias(aliasNamespace, key));
+        return Optional.absent();
     }
 
     @Override

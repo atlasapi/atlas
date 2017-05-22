@@ -5,27 +5,41 @@ import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
+import org.junit.Before;
 import org.junit.Test;
 
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
-public class ChannelsMatcherTest {
+public class BtChannelMatcherTest {
 
     private BtChannelMatcher btChannelMatcher = BtChannelMatcher.create();
+    private Channel masterChannel;
+
+    @Before
+    public void setUp() {
+        masterChannel = channelFor(Publisher.METABROADCAST, "123");
+    }
 
     @Test
     public void btChannelMatcherMatchesCorrectly() throws Exception {
-
-        Channel masterChannel = channelFor(Publisher.METABROADCAST, "123");
         Channel matchingAliasChannel = channelFor(Publisher.BT_TV_CHANNELS, "123");
-        Channel nonMatchingAliasChannel = channelFor(Publisher.BT_TV_CHANNELS, "321");
-        Channel missingAliasChannel = channelFor(Publisher.BT_TV_CHANNELS, "");
 
         assertTrue(btChannelMatcher.isAMatch(masterChannel, matchingAliasChannel));
-        assertFalse(btChannelMatcher.isAMatch(masterChannel, nonMatchingAliasChannel));
-        assertFalse(btChannelMatcher.isAMatch(masterChannel, missingAliasChannel));
+    }
 
+    @Test
+    public void btChannelMatcherDoesNotMatchOnNonMatchingPaIds() throws Exception {
+        Channel nonMatchingAliasChannel = channelFor(Publisher.BT_TV_CHANNELS, "321");
+
+        assertFalse(btChannelMatcher.isAMatch(masterChannel, nonMatchingAliasChannel));
+    }
+
+    @Test
+    public void setBtChannelMatcherDoesNotMatchOnMissingPaIds() throws Exception {
+        Channel missingAliasChannel = channelFor(Publisher.BT_TV_CHANNELS, "");
+
+        assertFalse(btChannelMatcher.isAMatch(masterChannel, missingAliasChannel));
     }
 
     private Channel channelFor(Publisher publisher, String paId) {

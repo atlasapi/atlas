@@ -64,7 +64,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
 
     private void verify(Channel channel, Publisher publisher) {
         if (!channel.getSource().equals(publisher)) {
-            throw new IllegalArgumentException();
+            throw new IllegalArgumentException("Channel source does not match updater source");
         }
     }
 

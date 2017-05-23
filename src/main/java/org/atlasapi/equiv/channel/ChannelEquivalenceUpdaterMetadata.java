@@ -23,4 +23,12 @@ public class ChannelEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         return new ChannelEquivalenceUpdaterMetadata(getClassName(matcher), publisher.key());
     }
 
+    public String getMatcher() {
+        return matcher;
+    }
+
+    public String getPublisher() {
+        return publisher;
+    }
+
 }

@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.update;
 
+import java.util.Comparator;
 import java.util.Map;
 import java.util.Set;
 
@@ -43,7 +44,7 @@ public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Cont
                 updaters.entrySet()
                         .stream()
                         .filter(entry -> sources.contains(entry.getKey()))
-                        .sorted((o1, o2) -> o1.getKey().compareTo(o2.getKey()))
+                        .sorted(Comparator.comparing(Map.Entry::getKey))
                         .collect(MoreCollectors.toImmutableMap(
                                 entry -> entry.getKey().key(),
                                 entry -> entry.getValue().getMetadata(sources)

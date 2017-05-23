@@ -5,6 +5,7 @@ import javax.xml.bind.JAXBElement;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.EquivalenceBreaker;
+import org.atlasapi.equiv.OutputChannelMerger;
 import org.atlasapi.feeds.tasks.Task;
 import org.atlasapi.feeds.tasks.persistence.TaskStore;
 import org.atlasapi.feeds.tasks.simple.TaskQueryResult;
@@ -52,6 +53,7 @@ import org.atlasapi.output.DispatchingAtlasModelWriter;
 import org.atlasapi.output.JaxbTVAnytimeModelWriter;
 import org.atlasapi.output.JaxbXmlTranslator;
 import org.atlasapi.output.JsonTranslator;
+import org.atlasapi.output.MergingChannelModelWriter;
 import org.atlasapi.output.QueryResult;
 import org.atlasapi.output.SimpleChannelGroupModelWriter;
 import org.atlasapi.output.SimpleChannelModelWriter;
@@ -64,6 +66,7 @@ import org.atlasapi.output.SimpleProductModelWriter;
 import org.atlasapi.output.SimpleScheduleModelWriter;
 import org.atlasapi.output.SimpleTaskModelWriter;
 import org.atlasapi.output.SimpleTopicModelWriter;
+import org.atlasapi.output.TransformingModelWriter;
 import org.atlasapi.output.rdf.RdfXmlTranslator;
 import org.atlasapi.output.simple.ChannelGroupModelSimplifier;
 import org.atlasapi.output.simple.ChannelGroupSimplifier;
@@ -243,16 +246,23 @@ public class QueryWebModule {
     @Bean
     AtlasModelWriter<Iterable<Channel>> channelModelWriter() {
         ChannelModelSimplifier channelModelSimplifier = channelModelSimplifier();
+
         return this.standardWriter(
-                new SimpleChannelModelWriter(
-                        new JsonTranslator<ChannelQueryResult>(),
-                        channelModelSimplifier
-                ),
-                new SimpleChannelModelWriter(
-                        new JaxbXmlTranslator<ChannelQueryResult>(),
-                        channelModelSimplifier
-                )
+                modelWriterFor(new JsonTranslator<>(), channelModelSimplifier),
+                modelWriterFor(new JaxbXmlTranslator<>(), channelModelSimplifier)
         );
+    }
+
+    private TransformingModelWriter<Iterable<Channel>, ChannelQueryResult> modelWriterFor(
+            AtlasModelWriter<ChannelQueryResult> modelWriter,
+            ChannelModelSimplifier simplifier
+    ) {
+        return MergingChannelModelWriter.builder()
+                .withChannelResolver(channelResolver)
+                .withMerger(OutputChannelMerger.create())
+                .withDelegate(new SimpleChannelModelWriter(modelWriter, simplifier))
+                .withQueryResultModelWriter(modelWriter)
+                .build();
     }
 
     @Bean

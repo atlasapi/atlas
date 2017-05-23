@@ -1,15 +1,20 @@
 package org.atlasapi.equiv.update.www;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
+import com.google.gdata.util.common.base.Nullable;
+import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
+import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,6 +39,7 @@ public class ChannelEquivalenceUpdateController {
     private final EquivalenceUpdater<Channel> channelUpdater;
     private final SubstitutionTableNumberCodec codec;
     private final ExecutorService executor;
+    private final ObjectMapper mapper;
 
     private ChannelEquivalenceUpdateController(
             EquivalenceUpdater<Channel> channelUpdater,
@@ -44,6 +50,7 @@ public class ChannelEquivalenceUpdateController {
 
         this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
         this.executor = Executors.newFixedThreadPool(5);
+        this.mapper = new ObjectMapper();
     }
 
     public static ChannelEquivalenceUpdateController create(
@@ -96,4 +103,28 @@ public class ChannelEquivalenceUpdateController {
             }
         };
     }
+
+    @RequestMapping(value = "/system/equivalence/channel/configuration", method = RequestMethod.POST)
+    public void getEquivalenceConfiguration (
+            HttpServletResponse response,
+            @Nullable @RequestParam(value = "sources", required = false) List<String> sources
+    ) throws IOException {
+
+        ImmutableSet<Publisher> requestedSources;
+
+        if (sources != null) {
+            requestedSources = sources.stream()
+                    .map(Publisher::fromKey)
+                    .map(Maybe::requireValue)
+                    .collect(MoreCollectors.toImmutableSet());
+        } else {
+            requestedSources  = Publisher.all();
+        }
+
+        EquivalenceUpdaterMetadata metadata = channelUpdater.getMetadata(requestedSources);
+
+        mapper.writeValue(response.getWriter(), metadata);
+        response.setStatus(HttpServletResponse.SC_OK);
+    }
+
 }

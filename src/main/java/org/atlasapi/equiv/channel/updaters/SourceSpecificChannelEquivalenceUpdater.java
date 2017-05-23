@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.channel.updaters;
 
 import org.atlasapi.equiv.ChannelRef;
+import org.atlasapi.equiv.channel.ChannelEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.channel.matchers.ChannelMatcher;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
@@ -22,12 +23,14 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     private final ChannelMatcher channelMatcher;
     private final ChannelWriter channelWriter;
     private final ChannelResolver channelResolver;
+    private final EquivalenceUpdaterMetadata metadata;
 
     private SourceSpecificChannelEquivalenceUpdater(Builder builder) {
         this.publisher = checkNotNull(builder.publisher);
         this.channelMatcher = checkNotNull(builder.channelMatcher);
         this.channelWriter = checkNotNull(builder.channelWriter);
         this.channelResolver = checkNotNull(builder.channelResolver);
+        this.metadata = checkNotNull(builder.metadata);
     }
 
     @Override
@@ -70,7 +73,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
 
     @Override
     public EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources) {
-        throw new UnsupportedOperationException();
+        return metadata;
     }
 
     public static Builder builder() {
@@ -82,6 +85,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
         private ChannelMatcher channelMatcher;
         private ChannelResolver channelResolver;
         private ChannelWriter channelWriter;
+        private ChannelEquivalenceUpdaterMetadata metadata;
 
         private Builder() {
 
@@ -104,6 +108,11 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
 
         public Builder withChannelWriter(ChannelWriter channelWriter) {
             this.channelWriter = channelWriter;
+            return this;
+        }
+
+        public Builder withMetadata(ChannelEquivalenceUpdaterMetadata metadata) {
+            this.metadata = metadata;
             return this;
         }
 

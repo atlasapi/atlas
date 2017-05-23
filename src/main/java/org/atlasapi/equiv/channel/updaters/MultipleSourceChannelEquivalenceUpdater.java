@@ -54,7 +54,5 @@ public class MultipleSourceChannelEquivalenceUpdater implements EquivalenceUpdat
                                 entry -> entry.getValue().getMetadata(sources)
                         ))
         );
-
-
     }
 }

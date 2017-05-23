@@ -67,6 +67,9 @@ public class ChannelEquivModule {
                 .withChannelMatcher(channelMatchers.get(publisher))
                 .withChannelResolver(channelResolver)
                 .withChannelWriter(channelWriter)
+                .withMetadata(
+                        ChannelEquivalenceUpdaterMetadata.create(btChannelMatcher, publisher)
+                )
                 .build();
     }
 }

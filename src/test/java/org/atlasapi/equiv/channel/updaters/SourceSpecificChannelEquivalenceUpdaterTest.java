@@ -4,6 +4,7 @@ import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.equiv.channel.ChannelEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.channel.matchers.BtChannelMatcher;
 import org.atlasapi.equiv.channel.matchers.ChannelMatcher;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -34,6 +35,7 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
 
     @Mock private ChannelWriter channelWriter = mock(ChannelWriter.class);
     @Mock private ChannelResolver channelResolver = mock(ChannelResolver.class);
+    @Mock private ChannelEquivalenceUpdaterMetadata metadata = mock(ChannelEquivalenceUpdaterMetadata.class);
 
     private ChannelMatcher btChannelMatcher = BtChannelMatcher.create();
     private Iterable<Channel> allChannels = generateAllChannels();
@@ -112,6 +114,7 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
                 .withChannelWriter(channelWriter)
                 .withChannelResolver(channelResolver)
                 .withChannelMatcher(channelMatcher)
+                .withMetadata(metadata)
                 .build();
     }
 

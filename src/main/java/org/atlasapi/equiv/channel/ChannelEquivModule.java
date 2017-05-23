@@ -22,8 +22,13 @@ import java.util.Map;
 public class ChannelEquivModule {
 
     private final ChannelMatcher btChannelMatcher = BtChannelMatcher.create();
+    private final Map<Publisher, ChannelMatcher> channelMatchers = ImmutableMap.of(
+            Publisher.BT_TV_CHANNELS, btChannelMatcher,
+            Publisher.BT_TV_CHANNELS_TEST1, btChannelMatcher,
+            Publisher.BT_TV_CHANNELS_TEST2, btChannelMatcher,
+            Publisher.BT_TV_CHANNELS_REFERENCE, btChannelMatcher
+    );
 
-    @Autowired private Map<Publisher, ChannelMatcher> channelMatchers;
     @Autowired private ChannelWriter channelWriter;
     @Autowired private ChannelResolver channelResolver;
 
@@ -40,16 +45,6 @@ public class ChannelEquivModule {
         );
 
         return updaters;
-    }
-
-    @Bean
-    public Map<Publisher, ChannelMatcher> channelMatchers() {
-        return ImmutableMap.<Publisher, ChannelMatcher>builder()
-                .put(Publisher.BT_TV_CHANNELS, btChannelMatcher)
-                .put(Publisher.BT_TV_CHANNELS_TEST1, btChannelMatcher)
-                .put(Publisher.BT_TV_CHANNELS_TEST2, btChannelMatcher)
-                .put(Publisher.BT_TV_CHANNELS_REFERENCE, btChannelMatcher)
-                .build();
     }
 
     private void registerPublisherUpdaters(

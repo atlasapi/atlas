@@ -17,6 +17,7 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -29,6 +30,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.StreamSupport;
 
+@Controller
 public class ChannelEquivalenceUpdateController {
 
     private static final Logger log = LoggerFactory.getLogger(ChannelEquivalenceUpdateController.class);
@@ -104,7 +106,7 @@ public class ChannelEquivalenceUpdateController {
         };
     }
 
-    @RequestMapping(value = "/system/equivalence/channel/configuration", method = RequestMethod.POST)
+    @RequestMapping(value = "/system/equivalence/channel/configuration", method = RequestMethod.GET)
     public void getEquivalenceConfiguration (
             HttpServletResponse response,
             @Nullable @RequestParam(value = "sources", required = false) List<String> sources

@@ -34,6 +34,7 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.time.Timestamp;
 
 import com.google.common.base.Optional;
+import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -407,7 +408,8 @@ public class PaProgrammeProcessorTest {
         assertThat(broadcast.getLive(), is(false));
         assertThat(broadcast.getSurround(), is(false));
         assertThat(broadcast.getPremiere(), is(false));
-
+        assertThat(broadcast.getNewOneOff(), is(false));
+        assertThat(broadcast.getContinuation(), is(false));
         assertThat(broadcast.getNewSeries(), is(false));
         assertThat(broadcast.getNewEpisode(), is(false));
 
@@ -476,6 +478,75 @@ public class PaProgrammeProcessorTest {
         );
 
         assertTrue(broadcast.getRevisedRepeat());
+    }
+
+    @Test
+    public void testBroadcastWithContinuedAndNewOneOffFlags(){
+        Episode episode = new Episode(
+                "http://pressassociation.com/episodes/1", "pa:f-5", Publisher.PA
+        );
+        Version version = new Version();
+        version.setProvider(Publisher.PA);
+        episode.addVersion(version);
+
+        Brand expectedItemBrand = new Brand(
+                "http://pressassociation.com/brands/5", "pa:b-5", Publisher.PA
+        );
+        Series expectedItemSeries= new Series(
+                "http://pressassociation.com/series/5-6", "pa:s-5-6", Publisher.PA)
+                ;
+        setupContentResolver(
+                ImmutableSet.of(episode, expectedItemBrand, expectedItemSeries)
+        );
+
+        ProgData progData = setupProgData();
+        progData.getAttr().setContinued("no");
+        progData.getAttr().setNewOneOff("yes");
+
+        ContentHierarchyAndSummaries hierarchy = progProcessor.process(
+                progData, channel, UTC, Timestamp.of(0)
+        ).get();
+
+        Broadcast broadcast = Iterables.getOnlyElement(
+                Iterables.getOnlyElement(hierarchy.getItem().getVersions()).getBroadcasts()
+        );
+
+        assertTrue(broadcast.getNewOneOff());
+        assertFalse(broadcast.getContinuation());
+    }
+
+    @Test
+    public void testDescriptionIsNotSetIfContinuedFlagIsSetToYes(){
+        Episode episode = new Episode(
+                "http://pressassociation.com/episodes/1", "pa:f-5", Publisher.PA
+        );
+        Version version = new Version();
+        version.setProvider(Publisher.PA);
+        episode.addVersion(version);
+
+        Brand expectedItemBrand = new Brand(
+                "http://pressassociation.com/brands/5", "pa:b-5", Publisher.PA
+        );
+        Series expectedItemSeries= new Series(
+                "http://pressassociation.com/series/5-6", "pa:s-5-6", Publisher.PA)
+                ;
+        setupContentResolver(
+                ImmutableSet.of(episode, expectedItemBrand, expectedItemSeries)
+        );
+
+        ProgData progData = setupProgFilm("ttl", "dsc");
+        progData.getAttr().setContinued("yes");
+
+        ContentHierarchyAndSummaries hierarchy = progProcessor.process(
+                progData, channel, UTC, Timestamp.of(0)
+        ).get();
+
+        Broadcast broadcast = Iterables.getOnlyElement(
+                Iterables.getOnlyElement(hierarchy.getItem().getVersions()).getBroadcasts()
+        );
+
+        assertTrue(broadcast.getContinuation());
+        assertTrue(Strings.isNullOrEmpty(hierarchy.getItem().getDescription()));
     }
 
     @Test

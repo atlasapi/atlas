@@ -27,7 +27,7 @@ import org.junit.Ignore;
 /**
  * Test that we can load beans from the Spring configuration - checks that the
  * config is wired correctly.
- * 
+ *
  * @author Robert Chatley (robert@metabroadcast.com)
  */
 @Ignore

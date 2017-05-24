@@ -167,12 +167,14 @@ public class PaChannelDataHandler {
         if (existing.hasValue()) {
             Channel existingChannel = existing.requireValue();
 
-            existingChannel.setImages(
-                    Iterables.isEmpty(existingChannel.getAllImages())
-                            ? newChannel.getAllImages()
-                            : updateImages(newChannel, existingChannel)
-            );
-            existingChannel.setImages(updateImages(newChannel, existingChannel));
+            if (!Iterables.isEmpty(newChannel.getAllImages())) {
+                if (!Iterables.isEmpty(existingChannel.getAllImages())) {
+                    existingChannel.setImages(updateImages(newChannel, existingChannel));
+                } else {
+                    existingChannel.setImages(newChannel.getAllImages());
+                }
+            }
+
             existingChannel.setTitles(newChannel.getAllTitles());
             existingChannel.setAdult(newChannel.getAdult());
             existingChannel.setStartDate(newChannel.getStartDate());
@@ -213,6 +215,7 @@ public class PaChannelDataHandler {
     // We need to update the existing channel images to avoid overwriting all existing images every
     // time we ingest PA channels. This should go away once we implement channel equivalence.
     Iterable<TemporalField<Image>> updateImages(Channel newChannel, Channel existingChannel) {
+
         Map<ImageTheme, TemporalField<Image>> newImageMap = StreamSupport.stream(
                 newChannel.getAllImages().spliterator(),
                 false
@@ -237,7 +240,7 @@ public class PaChannelDataHandler {
                 .addAll(existingImages.values())
                 .addAll(
                         newImageMap.entrySet().stream()
-                                .filter(entry -> !existingImages.keySet().contains(entry.getKey()))
+                                .filter(entry -> existingImages.containsKey(entry.getKey()))
                                 .map(Entry::getValue)
                                 .collect(Collectors.toSet()))
                 .build();

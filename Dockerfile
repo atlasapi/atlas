@@ -216,6 +216,7 @@ CMD java \
     -Dkm.contentdeals.aws.accessKey="$KM_CONTENTDEALS_AWS_ACCESSKEY" \
     -Dkm.contentdeals.aws.secretKey="$KM_CONTENTDEALS_AWS_SECRETKEY" \
     -Dlakeview.upload.account="$LAKEVIEW_UPLOAD_ACCOUNT" \
+    -Dlakeview.upload.container="$LAKEVIEW_UPLOAD_CONTAINER" \
     -Dlakeview.upload.enabled="$LAKEVIEW_UPLOAD_ENABLED" \
     -Dlakeview.upload.key="$LAKEVIEW_UPLOAD_KEY" \
     -Dlocal.host.name="$LOCAL_HOST_NAME" \

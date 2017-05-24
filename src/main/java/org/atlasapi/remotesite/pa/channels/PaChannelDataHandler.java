@@ -240,7 +240,7 @@ public class PaChannelDataHandler {
                 .addAll(existingImages.values())
                 .addAll(
                         newImageMap.entrySet().stream()
-                                .filter(entry -> existingImages.containsKey(entry.getKey()))
+                                .filter(entry -> !existingImages.containsKey(entry.getKey()))
                                 .map(Entry::getValue)
                                 .collect(Collectors.toSet()))
                 .build();

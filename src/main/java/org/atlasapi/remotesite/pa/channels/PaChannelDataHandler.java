@@ -167,14 +167,7 @@ public class PaChannelDataHandler {
         if (existing.hasValue()) {
             Channel existingChannel = existing.requireValue();
 
-            if (!Iterables.isEmpty(newChannel.getAllImages())) {
-                if (!Iterables.isEmpty(existingChannel.getAllImages())) {
-                    existingChannel.setImages(updateImages(newChannel, existingChannel));
-                } else {
-                    existingChannel.setImages(newChannel.getAllImages());
-                }
-            }
-
+            existingChannel.setImages(updateImages(newChannel, existingChannel));
             existingChannel.setTitles(newChannel.getAllTitles());
             existingChannel.setAdult(newChannel.getAdult());
             existingChannel.setStartDate(newChannel.getStartDate());
@@ -212,38 +205,47 @@ public class PaChannelDataHandler {
         }
     }
 
+    Iterable<TemporalField<Image>> updateImages(Channel newChannel, Channel existingChannel) {
+        if (!Iterables.isEmpty(newChannel.getAllImages())) {
+            if (!Iterables.isEmpty(existingChannel.getAllImages())) {
+                return updateImages(newChannel.getAllImages(), existingChannel.getAllImages());
+            } else {
+                return newChannel.getAllImages();
+            }
+        }
+
+        return existingChannel.getAllImages();
+    }
+
     // We need to update the existing channel images to avoid overwriting all existing images every
     // time we ingest PA channels. This should go away once we implement channel equivalence.
-    Iterable<TemporalField<Image>> updateImages(Channel newChannel, Channel existingChannel) {
+    private Iterable<TemporalField<Image>> updateImages(
+            Iterable<TemporalField<Image>> newImages,
+            Iterable<TemporalField<Image>> existingImages
+    ) {
+        Set<ImageTheme> newThemes = StreamSupport
+                .stream(newImages.spliterator(), false)
+                .map(image -> image.getValue().getTheme())
+                .collect(Collectors.toSet());
 
-        Map<ImageTheme, TemporalField<Image>> newImageMap = StreamSupport.stream(
-                newChannel.getAllImages().spliterator(),
-                false
-        )
-                .collect(MoreCollectors.toImmutableMap(
-                        temporalImage -> temporalImage.getValue().getTheme(),
-                        temporalImage -> temporalImage
-                ));
+        Set<ImageTheme> existingThemes = StreamSupport
+                .stream(existingImages.spliterator(), false)
+                .map(image -> image.getValue().getTheme())
+                .collect(Collectors.toSet());
 
-        Map<ImageTheme, TemporalField<Image>> existingImages =
-                StreamSupport.stream(existingChannel.getAllImages().spliterator(), false)
-                        .map(existingImage -> newImageMap.getOrDefault(
-                                existingImage.getValue().getTheme(),
-                                existingImage
-                        ))
-                        .collect(MoreCollectors.toImmutableMap(
-                                temporalImage -> temporalImage.getValue().getTheme(),
-                                temporalImage -> temporalImage
-                        ));
+        Set<ImageTheme> preservedThemes = Sets.difference(existingThemes, newThemes);
 
-        return ImmutableSet.<TemporalField<Image>>builder()
-                .addAll(existingImages.values())
-                .addAll(
-                        newImageMap.entrySet().stream()
-                                .filter(entry -> !existingImages.containsKey(entry.getKey()))
-                                .map(Entry::getValue)
-                                .collect(Collectors.toSet()))
-                .build();
+        if (preservedThemes.isEmpty()) {
+            return newImages;
+        }
+
+        Set<TemporalField<Image>> preservedImages = StreamSupport
+                .stream(existingImages.spliterator(), false)
+                .filter(image -> preservedThemes.contains(image.getValue().getTheme()))
+                .collect(Collectors.toSet());
+
+        return Sets.union(Sets.newHashSet(newImages), preservedImages);
+
     }
 
     private boolean isPaAlias(String alias) {

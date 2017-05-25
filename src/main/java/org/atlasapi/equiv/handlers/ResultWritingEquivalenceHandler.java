@@ -105,6 +105,8 @@ public class ResultWritingEquivalenceHandler<T extends Content>
             equivList.add(equivDbo);
         }
 
+        jsonObject.put("equiv", equivList);
+
         jsonObject.put("description", result.description().parts().toString());
 
         jsonObject.put("timestamp", new DateTime(DateTimeZones.UTC).toString());

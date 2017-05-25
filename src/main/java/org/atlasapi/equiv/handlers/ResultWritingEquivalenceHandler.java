@@ -2,6 +2,7 @@ package org.atlasapi.equiv.handlers;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.util.Base64;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -102,7 +103,9 @@ public class ResultWritingEquivalenceHandler<T extends Content>
             equivList.add(equivDbo);
         }
 
-        jsonObject.put("description", SerializationUtils.serialize(result.description()));
+        byte[] serializedDescriptionInBytes = SerializationUtils.serialize(result.description());
+
+        jsonObject.put("description", Base64.getEncoder().encodeToString(serializedDescriptionInBytes));
 
         jsonObject.put("timestamp", new DateTime(DateTimeZones.UTC));
 

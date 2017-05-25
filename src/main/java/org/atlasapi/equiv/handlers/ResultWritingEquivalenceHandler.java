@@ -105,7 +105,7 @@ public class ResultWritingEquivalenceHandler<T extends Content>
             equivList.add(equivDbo);
         }
 
-        jsonObject.put("equiv", equivList);
+        jsonObject.put("equivs", equivList);
 
         jsonObject.put("description", result.description().parts().toString());
 

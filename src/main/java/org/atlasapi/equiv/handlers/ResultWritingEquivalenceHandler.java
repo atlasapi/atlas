@@ -49,8 +49,6 @@ public class ResultWritingEquivalenceHandler<T extends Content>
     @Override
     public boolean handle(EquivalenceResult<T> result) {
 
-//        CloseableHttpClient client = HttpClients.createDefault();
-
         final Ordering<Map.Entry<T, Score>> equivalenceResultOrdering = Ordering.from(
                 (Comparator<Map.Entry<T, Score>>) (o1, o2) -> o1.getKey().getPublisher().compareTo(o2.getKey().getPublisher())
         )
@@ -110,18 +108,20 @@ public class ResultWritingEquivalenceHandler<T extends Content>
 
         System.out.println(jsonObject.toJSONString());
 
-//        try {
-//            HttpPost postRequest = new HttpPost(jsonObject.toJSONString());
-//
-//            StringEntity jsonEntity = new StringEntity(jsonObject.toJSONString());
-//            postRequest.addHeader("content-type", "application/json");
-//            postRequest.setEntity(jsonEntity);
-//
-//            client.execute(postRequest);
-//
-//        } catch (IOException e) {
-//            throw Throwables.propagate(e);
-//        }
+        try {
+            CloseableHttpClient client = HttpClients.createDefault();
+
+            HttpPost postRequest = new HttpPost(jsonObject.toJSONString());
+
+            StringEntity jsonEntity = new StringEntity(jsonObject.toJSONString());
+            postRequest.addHeader("content-type", "application/json");
+            postRequest.setEntity(jsonEntity);
+
+            client.execute(postRequest);
+
+        } catch (IOException e) {
+            throw Throwables.propagate(e);
+        }
 
         store.store(result);
         return false;

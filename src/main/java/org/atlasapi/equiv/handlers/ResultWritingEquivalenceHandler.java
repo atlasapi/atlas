@@ -114,7 +114,7 @@ public class ResultWritingEquivalenceHandler<T extends Content>
         try {
             CloseableHttpClient client = HttpClients.createDefault();
 
-            HttpPost postRequest = new HttpPost("http://equivalence-writer.stage.svc.cluster.local/equivalence/result");
+            HttpPost postRequest = new HttpPost("http://equivalence-writer-task-master.stage.svc.cluster.local/equivalence/result");
 
             StringEntity jsonEntity = new StringEntity(jsonObject.toJSONString());
             postRequest.addHeader("content-type", "application/json");
@@ -130,12 +130,4 @@ public class ResultWritingEquivalenceHandler<T extends Content>
         return false;
     }
 
-    public static byte[] serialize(Object obj) throws IOException {
-        try(ByteArrayOutputStream b = new ByteArrayOutputStream()){
-            try(ObjectOutputStream o = new ObjectOutputStream(b)){
-                o.writeObject(obj);
-            }
-            return b.toByteArray();
-        }
-    }
 }

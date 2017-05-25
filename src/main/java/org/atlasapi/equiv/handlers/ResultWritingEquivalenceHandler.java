@@ -105,14 +105,7 @@ public class ResultWritingEquivalenceHandler<T extends Content>
             equivList.add(equivDbo);
         }
 
-        byte[] serializedDescriptionInBytes;
-        try {
-            serializedDescriptionInBytes = serialize(result.description());
-
-            jsonObject.put("description", Base64.getEncoder().encodeToString(serializedDescriptionInBytes));
-        } catch (IOException e) {
-            throw Throwables.propagate(e);
-        }
+        jsonObject.put("description", result.description().parts().toString());
 
         jsonObject.put("timestamp", new DateTime(DateTimeZones.UTC));
 

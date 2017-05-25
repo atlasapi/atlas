@@ -167,14 +167,7 @@ public class PaChannelDataHandler {
         if (existing.hasValue()) {
             Channel existingChannel = existing.requireValue();
 
-            if (!Iterables.isEmpty(newChannel.getAllImages())) {
-                if (!Iterables.isEmpty(existingChannel.getAllImages())) {
-                    existingChannel.setImages(updateImages(newChannel, existingChannel));
-                } else {
-                    existingChannel.setImages(newChannel.getAllImages());
-                }
-            }
-
+            existingChannel.setImages(updateImages(newChannel, existingChannel));
             existingChannel.setTitles(newChannel.getAllTitles());
             existingChannel.setAdult(newChannel.getAdult());
             existingChannel.setStartDate(newChannel.getStartDate());

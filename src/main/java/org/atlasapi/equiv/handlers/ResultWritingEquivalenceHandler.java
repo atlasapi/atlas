@@ -107,7 +107,7 @@ public class ResultWritingEquivalenceHandler<T extends Content>
 
         jsonObject.put("description", result.description().parts().toString());
 
-        jsonObject.put("timestamp", new DateTime(DateTimeZones.UTC));
+        jsonObject.put("timestamp", new DateTime(DateTimeZones.UTC).toString());
 
         System.out.println(jsonObject.toJSONString());
 

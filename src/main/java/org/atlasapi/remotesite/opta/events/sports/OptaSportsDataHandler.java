@@ -1,9 +1,9 @@
 package org.atlasapi.remotesite.opta.events.sports;
 
-import static com.google.api.client.util.Preconditions.checkNotNull;
-
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.Organisation;
@@ -18,6 +18,12 @@ import org.atlasapi.remotesite.opta.events.sports.model.SportsMatchData;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsStats;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsTeam;
 import org.atlasapi.remotesite.opta.events.sports.model.SportsTeamData;
+
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.format.DateTimeFormat;
@@ -25,12 +31,7 @@ import org.joda.time.format.DateTimeFormatter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
+import static com.google.api.client.util.Preconditions.checkNotNull;
 
 
 public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMatchData> {
@@ -140,12 +141,9 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
     }
     
     private String getVenueData(List<SportsStats> stats) {
-        return Iterables.getOnlyElement(Iterables.filter(stats, new Predicate<SportsStats>() {
-            @Override
-            public boolean apply(SportsStats input) {
-                return VENUE_TYPE.equals(input.attributes().type());
-            }
-        })).value();
+        return Iterables.getOnlyElement(stats.stream()
+                .filter(input -> VENUE_TYPE.equals(input.attributes().type()))
+                .collect(Collectors.toList())).value();
     }
     
     private Iterable<Organisation> parseOrganisations(SportsMatchData match, final OptaSportType sportType) {
@@ -155,7 +153,9 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
                 return getTeamByUri(utility.createTeamUri(sportType, input.attributes().teamRef())).orNull();
             }
         });
-        return Iterables.filter(organisations, Predicates.notNull());
+        return StreamSupport.stream(organisations.spliterator(), false)
+                .filter(Predicates.notNull()::apply)
+                .collect(Collectors.toList());
     }
 
     private Iterable<Topic> parseEventGroups(OptaSportType sport) {

@@ -66,8 +66,12 @@ public class OptaEventsModule {
     private OptaEventsIngestTask<SportsTeam, SportsMatchData> soccerIngestTask() {
         Map<String, String> credentials = getCredentials(OPTA_HTTP_SOCCER_CONFIG_PREFIX);
         Map<OptaSportType, OptaSportConfiguration> sportConfig = sportConfig(OPTA_HTTP_SOCCER_CONFIG_PREFIX);
-        return new OptaEventsIngestTask<SportsTeam, SportsMatchData>(httpEventsFetcher(
-                sportConfig, soccerTransformer(), credentials),
+        return new OptaEventsIngestTask<>(
+                httpEventsFetcher(
+                        sportConfig,
+                        soccerTransformer(),
+                        credentials
+                ),
                 dataHandler(sportConfig)
         );
     }
@@ -95,10 +99,15 @@ public class OptaEventsModule {
     private OptaEventsFetcher<SportsTeam, SportsMatchData> httpEventsFetcher(
             Map<OptaSportType, OptaSportConfiguration> sportConfig, 
             OptaDataTransformer<SportsTeam, SportsMatchData> dataTransformer,
-            Map<String, String> credentials) {
-
-        return new HttpOptaEventsFetcher<>(sportConfig, HttpClients.webserviceClient(),
-                dataTransformer, baseUrl, credentials);
+            Map<String, String> credentials
+    ) {
+        return new HttpOptaEventsFetcher<>(
+                sportConfig,
+                HttpClients.webserviceClient(),
+                dataTransformer,
+                baseUrl,
+                credentials
+        );
     }
 
     private OptaSportsDataHandler dataHandler(Map<OptaSportType, OptaSportConfiguration> config) {

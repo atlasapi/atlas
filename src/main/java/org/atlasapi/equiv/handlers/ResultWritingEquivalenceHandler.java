@@ -14,6 +14,8 @@ import org.atlasapi.media.entity.Content;
 
 import com.metabroadcast.common.time.DateTimeZones;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Ordering;
 import org.apache.http.client.methods.HttpPost;
@@ -94,7 +96,13 @@ public class ResultWritingEquivalenceHandler<T extends Content>
 
         jsonObject.put("equivs", equivList);
 
-        jsonObject.put("description", result.description().parts().toString());
+        ObjectMapper objectMapper = new ObjectMapper();
+
+        try {
+            jsonObject.put("description", objectMapper.writeValueAsString(result.description().parts()));
+        } catch (JsonProcessingException e) {
+            throw Throwables.propagate(e);
+        }
 
         jsonObject.put("timestamp", new DateTime(DateTimeZones.UTC).toString());
 

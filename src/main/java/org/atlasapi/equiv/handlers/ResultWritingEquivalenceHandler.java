@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.handlers;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.Comparator;
 import java.util.Map;
 import java.util.stream.Collectors;
@@ -18,6 +19,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Throwables;
 import com.google.common.collect.Ordering;
+import org.apache.commons.lang3.SerializationUtils;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.entity.StringEntity;
 import org.apache.http.impl.client.CloseableHttpClient;
@@ -96,13 +98,7 @@ public class ResultWritingEquivalenceHandler<T extends Content>
 
         jsonObject.put("equivs", equivList);
 
-        ObjectMapper objectMapper = new ObjectMapper();
-
-        try {
-            jsonObject.put("description", objectMapper.writeValueAsString(result.description().parts()));
-        } catch (JsonProcessingException e) {
-            throw Throwables.propagate(e);
-        }
+        jsonObject.put("description", SerializationUtils.serialize((Serializable) result.description().parts()));
 
         jsonObject.put("timestamp", new DateTime(DateTimeZones.UTC).toString());
 

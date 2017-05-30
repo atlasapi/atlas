@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.bt.channels;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 
 import org.atlasapi.media.channel.Channel;
@@ -101,17 +102,35 @@ public abstract class AbstractBtChannelGroupSaver {
         return channelGroupUris.build();
     }
 
-    private Set<Long> updateChannelNumberingInChannels(Map.Entry<String, Collection<String>> entry, ChannelGroup channelGroup){
+    private Set<Long> updateChannelNumberingInChannels(
+            Map.Entry<String, Collection<String>> entry,
+            ChannelGroup channelGroup
+    ) throws Exception {
         Set<Long> currentChannels = Sets.newHashSet();
         for (String channelId : entry.getValue()) {
-            Long numericId = TO_NUMERIC_ID.apply(channelId);
-            currentChannels.add(numericId);
-            Channel channel = Iterables.getOnlyElement(channelResolver.forIds(ImmutableSet.of(numericId)), null);
-            if (channel != null) {
-                channel.addChannelNumber(ChannelNumbering.builder().withChannelGroup(channelGroup).build());
-                channelWriter.createOrUpdate(channel);
-            } else {
-                log.warn("Could not resolve channel with ID " + channelId);
+            try {
+                Long numericId = TO_NUMERIC_ID.apply(channelId);
+                currentChannels.add(numericId);
+                Channel channel = Iterables.getOnlyElement(
+                        channelResolver.forIds(ImmutableSet.of(numericId)),
+                        null
+                );
+                if (channel != null) {
+                    channel.addChannelNumber(ChannelNumbering.builder()
+                            .withChannelGroup(channelGroup)
+                            .build());
+                    channelWriter.createOrUpdate(channel);
+                } else {
+                    log.warn("Could not resolve channel with ID {}", channelId);
+                }
+            } catch (Exception e) {
+                log.error(
+                        "Error processing channel id {} with channel group {}",
+                        channelId,
+                        channelGroup.getId(),
+                        e
+                );
+                throw new RuntimeException(e);
             }
         }
 

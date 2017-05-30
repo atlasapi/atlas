@@ -98,7 +98,7 @@ public class ResultWritingEquivalenceHandler<T extends Content>
 
         jsonObject.put("equivs", equivList);
 
-        jsonObject.put("description", SerializationUtils.serialize((Serializable) result.description().parts()));
+        jsonObject.put("description", result.description().parts());
 
         jsonObject.put("timestamp", new DateTime(DateTimeZones.UTC).toString());
 

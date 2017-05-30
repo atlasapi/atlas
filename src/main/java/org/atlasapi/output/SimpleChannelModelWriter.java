@@ -4,6 +4,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
+import org.atlasapi.equiv.OutputChannelMerger;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.simple.ChannelQueryResult;
 import org.atlasapi.output.simple.ChannelModelSimplifier;

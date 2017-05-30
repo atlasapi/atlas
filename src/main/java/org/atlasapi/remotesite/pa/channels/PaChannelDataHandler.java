@@ -1,10 +1,15 @@
 package org.atlasapi.remotesite.pa.channels;
 
+import java.time.temporal.Temporal;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.ChannelGroupResolver;
@@ -16,6 +21,7 @@ import org.atlasapi.media.channel.Region;
 import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Image;
+import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.pa.channels.bindings.Station;
 import org.atlasapi.remotesite.pa.channels.bindings.TvChannelData;
@@ -161,11 +167,7 @@ public class PaChannelDataHandler {
         if (existing.hasValue()) {
             Channel existingChannel = existing.requireValue();
 
-            if (Iterables.isEmpty(existingChannel.getAllImages())) {
-                existingChannel.setImages(newChannel.getAllImages());
-            } else {
-                updateExistingChannelImages(newChannel, existingChannel);
-            }
+            existingChannel.setImages(updateImages(newChannel, existingChannel));
             existingChannel.setTitles(newChannel.getAllTitles());
             existingChannel.setAdult(newChannel.getAdult());
             existingChannel.setStartDate(newChannel.getStartDate());
@@ -203,41 +205,47 @@ public class PaChannelDataHandler {
         }
     }
 
-    // We need to update the existing channel images to avoid overwriting all existing images every time we ingest PA channels.
-    // This should go away once we implement channel equivalence.
-    protected void updateExistingChannelImages(Channel newChannel, Channel existingChannel) {
+    Iterable<TemporalField<Image>> updateImages(Channel newChannel, Channel existingChannel) {
         if (!Iterables.isEmpty(newChannel.getAllImages())) {
-            for (TemporalField<Image> newImage : newChannel.getAllImages()) {
-                boolean channelIsMissingImage = false;
-                for (TemporalField<Image> existingImage : existingChannel.getAllImages()) {
-                    Image newImageValue = newImage.getValue();
-                    Image existingImageValue = existingImage.getValue();
-
-                    if (newImageValue.getTheme().equals(existingImageValue.getTheme())) {
-                        updateExistingImageDetails(newImageValue, existingImageValue);
-                        break;
-                    } else {
-                        channelIsMissingImage = true;
-                    }
-                }
-                if (channelIsMissingImage) {
-                    existingChannel.addImage(newImage.getValue());
-                }
+            if (!Iterables.isEmpty(existingChannel.getAllImages())) {
+                return updateImages(newChannel.getAllImages(), existingChannel.getAllImages());
+            } else {
+                return newChannel.getAllImages();
             }
         }
+
+        return existingChannel.getAllImages();
     }
 
-    private void updateExistingImageDetails(Image newImageValue, Image existingImageValue) {
-        existingImageValue.setCanonicalUri(newImageValue.getCanonicalUri());
-        existingImageValue.setMimeType(newImageValue.getMimeType());
-        existingImageValue.setType(newImageValue.getType());
-        existingImageValue.setColor(newImageValue.getColor());
-        existingImageValue.setAspectRatio(newImageValue.getAspectRatio());
-        existingImageValue.setAvailabilityStart(newImageValue.getAvailabilityStart());
-        existingImageValue.setAvailabilityEnd(newImageValue.getAvailabilityEnd());
-        existingImageValue.setWidth(newImageValue.getWidth());
-        existingImageValue.setHeight(newImageValue.getHeight());
-        existingImageValue.setHasTitleArt(newImageValue.hasTitleArt());
+    // We need to update the existing channel images to avoid overwriting all existing images every
+    // time we ingest PA channels. This should go away once we implement channel equivalence.
+    private Iterable<TemporalField<Image>> updateImages(
+            Iterable<TemporalField<Image>> newImages,
+            Iterable<TemporalField<Image>> existingImages
+    ) {
+        Set<ImageTheme> newThemes = StreamSupport
+                .stream(newImages.spliterator(), false)
+                .map(image -> image.getValue().getTheme())
+                .collect(Collectors.toSet());
+
+        Set<ImageTheme> existingThemes = StreamSupport
+                .stream(existingImages.spliterator(), false)
+                .map(image -> image.getValue().getTheme())
+                .collect(Collectors.toSet());
+
+        Set<ImageTheme> preservedThemes = Sets.difference(existingThemes, newThemes);
+
+        if (preservedThemes.isEmpty()) {
+            return newImages;
+        }
+
+        Set<TemporalField<Image>> preservedImages = StreamSupport
+                .stream(existingImages.spliterator(), false)
+                .filter(image -> preservedThemes.contains(image.getValue().getTheme()))
+                .collect(Collectors.toSet());
+
+        return Sets.union(Sets.newHashSet(newImages), preservedImages);
+
     }
 
     private boolean isPaAlias(String alias) {

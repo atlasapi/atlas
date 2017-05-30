@@ -31,9 +31,13 @@ public final class HttpOptaEventsFetcher<T extends OptaTeam, M extends OptaMatch
     private final String username;
     private final String password;
     
-    public HttpOptaEventsFetcher(Map<OptaSportType, OptaSportConfiguration> sportConfig, 
-            SimpleHttpClient client, OptaDataTransformer<T, M> dataTransformer, String baseUrl,
-            Map<String, String> credentials) {
+    public HttpOptaEventsFetcher(
+            Map<OptaSportType, OptaSportConfiguration> sportConfig,
+            SimpleHttpClient client,
+            OptaDataTransformer<T, M> dataTransformer,
+            String baseUrl,
+            Map<String, String> credentials
+    ) {
         this.sportConfig = ImmutableMap.copyOf(sportConfig);
         this.client = checkNotNull(client);
         this.transformer = createTransformer(checkNotNull(dataTransformer));

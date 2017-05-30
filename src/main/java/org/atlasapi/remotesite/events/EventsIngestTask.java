@@ -16,7 +16,9 @@ public abstract class EventsIngestTask<S, T, M> extends ScheduledTask {
     private final EventsFetcher<S, T, M> fetcher;
     private final DataHandler<S, T, M> dataHandler;
     
-    public EventsIngestTask(Logger log, EventsFetcher<S, T, M> fetcher, 
+    public EventsIngestTask(
+            Logger log,
+            EventsFetcher<S, T, M> fetcher,
             DataHandler<S, T, M> dataHandler) {
         this.log = checkNotNull(log);
         this.fetcher = checkNotNull(fetcher);

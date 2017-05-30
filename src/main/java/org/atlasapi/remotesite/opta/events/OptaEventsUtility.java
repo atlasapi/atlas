@@ -285,6 +285,7 @@ public class OptaEventsUtility extends EventsUtility<OptaSportType> {
             .put("The Northern Gas and Power Stadium", new LocationTitleUri("Victoria Park", "http://dbpedia.org/resource/Victoria_Park_(Hartlepool)"))
             .put("Cambs Glass Stadium", new LocationTitleUri("Abbey Stadium", "http://dbpedia.org/resource/Abbey_Stadium"))
             .put("Checkatrade.com Stadium", new LocationTitleUri("Broadfield Stadium", "http://dbpedia.org/resource/Broadfield_Stadium"))
+            .put("Principality Stadium", new LocationTitleUri("Millennium Stadium", "http://dbpedia.org/resource/Millennium_Stadium"))
             .build();
     private static final Map<OptaSportType, List<EventGroup>> EVENT_GROUPS_LOOKUP = ImmutableMap.
             <OptaSportType, List<EventGroup>>builder()

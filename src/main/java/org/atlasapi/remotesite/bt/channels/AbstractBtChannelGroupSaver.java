@@ -19,6 +19,17 @@ import org.atlasapi.media.channel.Region;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
+
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 
 import java.util.Collection;
@@ -101,7 +112,7 @@ public abstract class AbstractBtChannelGroupSaver {
             setCurrentChannelsToChannelGroup(channelGroup, currentChannels);
             channelGroupWriter.createOrUpdate(channelGroup);
             channelGroupUris.add(channelGroup.getCanonicalUri());
-        };
+        }
         return channelGroupUris.build();
     }
 
@@ -133,7 +144,6 @@ public abstract class AbstractBtChannelGroupSaver {
                         channelGroup.getId(),
                         e
                 );
-                throw new RuntimeException(e);
             }
         }
 

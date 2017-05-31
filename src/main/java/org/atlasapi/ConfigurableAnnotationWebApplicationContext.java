@@ -4,6 +4,8 @@ import org.atlasapi.application.ApplicationModule;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.EquivTaskModule;
 import org.atlasapi.equiv.DataBackpopulationModule;
+import org.atlasapi.equiv.channel.ChannelEquivModule;
+import org.atlasapi.equiv.channel.ChannelEquivTaskModule;
 import org.atlasapi.feeds.AtlasFeedsModule;
 import org.atlasapi.feeds.interlinking.delta.InterlinkingDeltaModule;
 import org.atlasapi.feeds.radioplayer.RadioPlayerModule;
@@ -65,6 +67,7 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
             XmlTvModule.class, 
             RemoteSiteHealthModule.class, 
             EquivModule.class,
+            ChannelEquivModule.class,
             TVAnytimeFeedsModule.class,
             NitroYouViewResolutionModule.class
         );
@@ -74,6 +77,7 @@ public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfi
                 ManualScheduleRebuildModule.class, 
                 InterlinkingDeltaModule.class,
                 EquivTaskModule.class,
+                ChannelEquivTaskModule.class,
                 DataBackpopulationModule.class,
                 WikipediaModule.class,
                 BbcNitroModule.class,

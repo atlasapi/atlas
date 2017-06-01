@@ -32,7 +32,7 @@ ENV SERVER_PORT="8080" \
     UPDATERS_BBC_PRODUCTS_ENABLED="false" \
     UPDATERS_BBC_ENABLED="false" \
     UPDATERS_BBCNITRO_ENABLED="false" \
-    UPDATER_BBCNITRO_OFFSCHEDULE_ENABLED="false" \
+    UPDATERS_BBCNITRO_OFFSCHEDULE_ENABLED="false" \
     UPDATERS_BT_CHANNELS_ENABLED="false" \
     UPDATERS_BT_EVENTS_ENABLED="false" \
     UPDATERS_BT_ENABLED="false" \
@@ -323,7 +323,7 @@ CMD java \
     -Dupdaters.bbc-products.enabled="$UPDATERS_BBC_PRODUCTS_ENABLED" \
     -Dupdaters.bbc.enabled="$UPDATERS_BBC_ENABLED" \
     -Dupdaters.bbcnitro.enabled="$UPDATERS_BBCNITRO_ENABLED" \
-    -Dupdaters.bbcnitro.offschedule.enabled="$UPDATER_BBCNITRO_OFFSCHEDULE_ENABLED" \
+    -Dupdaters.bbcnitro.offschedule.enabled="$UPDATERS_BBCNITRO_OFFSCHEDULE_ENABLED" \
     -Dupdaters.bt-channels.enabled="$UPDATERS_BT_CHANNELS_ENABLED" \
     -Dupdaters.bt-events.enabled="$UPDATERS_BT_EVENTS_ENABLED" \
     -Dupdaters.bt.enabled="$UPDATERS_BT_ENABLED" \

@@ -84,6 +84,10 @@ public class BtChannelDataUpdater {
 
         Maybe<Channel> channelMaybe = channelFor(entry.getGuid());
 
+        if (channelMaybe.isNothing()) {
+            return Maybe.nothing();
+        }
+
         Channel channel = channelMaybe.requireValue();
 
         channel.setAliases(
@@ -106,6 +110,10 @@ public class BtChannelDataUpdater {
         DateTime advertiseAvailableDate = new DateTime(entry.getAvailableDate());
 
         Maybe<Channel> channelMaybe = channelFor(entry.getGuid());
+
+        if (channelMaybe.isNothing()) {
+            return Maybe.nothing();
+        }
 
         Channel channel = channelMaybe.requireValue();
 

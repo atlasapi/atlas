@@ -101,7 +101,7 @@ public abstract class AbstractBtChannelGroupSaver {
             setCurrentChannelsToChannelGroup(channelGroup, currentChannels);
             channelGroupWriter.createOrUpdate(channelGroup);
             channelGroupUris.add(channelGroup.getCanonicalUri());
-        };
+        }
         return channelGroupUris.build();
     }
 
@@ -133,7 +133,6 @@ public abstract class AbstractBtChannelGroupSaver {
                         channelGroup.getId(),
                         e
                 );
-                throw new RuntimeException(e);
             }
         }
 

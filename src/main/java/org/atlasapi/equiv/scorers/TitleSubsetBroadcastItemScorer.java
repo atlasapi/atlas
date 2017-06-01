@@ -114,7 +114,7 @@ public final class TitleSubsetBroadcastItemScorer extends BaseBroadcastItemScore
     }
 
     private boolean titlesEqual(String subjectTitle, String candidateTitle) {
-        return false && subjectTitle.equals(candidateTitle);
+        return subjectTitle.equals(candidateTitle);
     }
 
     private boolean subsetOfShorterInLonger(String subjectTitle, String candidateTitle) {

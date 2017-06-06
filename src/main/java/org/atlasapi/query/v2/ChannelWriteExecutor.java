@@ -9,6 +9,7 @@ import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
 import joptsimple.internal.Strings;
 import org.atlasapi.application.query.ApplicationFetcher;
@@ -47,13 +48,15 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ChannelWriteExecutor {
 
+    private static final Logger log = LoggerFactory.getLogger(ChannelWriteExecutor.class);
     private static final String STRICT = "strict";
-    private final Logger log = LoggerFactory.getLogger(ChannelWriteExecutor.class);
+
     private final ApplicationFetcher appConfigFetcher;
     private final ChannelStore store;
     private final ModelReader reader;
     private final ChannelModelTransformer channelTransformer;
     private final AtlasModelWriter<Iterable<Channel>> outputter;
+    private final NumberToShortStringCodec codec;
 
     private ChannelWriteExecutor(Builder builder) {
         this.appConfigFetcher = checkNotNull(builder.appConfigFetcher);
@@ -61,6 +64,7 @@ public class ChannelWriteExecutor {
         this.reader = checkNotNull(builder.reader);
         this.channelTransformer = checkNotNull(builder.channelTransformer);
         this.outputter = checkNotNull(builder.outputter);
+        this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
 
     public static Builder builder() {
@@ -72,11 +76,8 @@ public class ChannelWriteExecutor {
         return deserializeAndUpdateChannel(req, resp);
     }
 
-    public Void createOrUpdateChannelImage(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            NumberToShortStringCodec codec
-    ) throws IOException {
+    public Void createOrUpdateChannelImage(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
@@ -171,11 +172,8 @@ public class ChannelWriteExecutor {
         return Optional.empty();
     }
 
-    public Void deleteChannelImage(
-            HttpServletRequest request,
-            HttpServletResponse response,
-            NumberToShortStringCodec codec
-    ) throws IOException {
+    public Void deleteChannelImage(HttpServletRequest request, HttpServletResponse response)
+            throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 

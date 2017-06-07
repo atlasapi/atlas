@@ -1,8 +1,7 @@
 package org.atlasapi.equiv.channel.updaters;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.equiv.channel.ChannelEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.channel.matchers.BtChannelMatcher;
@@ -12,15 +11,13 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
-import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.math.BigInteger;
 import java.util.stream.StreamSupport;
 
 import static org.hamcrest.core.Is.is;
@@ -37,7 +34,8 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
     @Mock private ChannelResolver channelResolver = mock(ChannelResolver.class);
     @Mock private ChannelEquivalenceUpdaterMetadata metadata = mock(ChannelEquivalenceUpdaterMetadata.class);
 
-    private ChannelMatcher btChannelMatcher = BtChannelMatcher.create();
+    private ChannelMatcher btChannelMatcher = BtChannelMatcher.create(Publisher.BT_TV_CHANNELS);
+    private SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     private Iterable<Channel> allChannels = generateAllChannels();
 
     private EquivalenceUpdater<Channel> btChannelsUpdater = getUpdaterFor(
@@ -66,7 +64,7 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
 
         ArgumentCaptor<Channel> writtenChannelCaptor = ArgumentCaptor.forClass(Channel.class);
 
-        Channel subjectChannel = getChannel(10L, Publisher.BT_TV_CHANNELS, "100");
+        Channel subjectChannel = getChannel(10L, Publisher.BT_TV_CHANNELS, 30L);
 
         assertTrue(btChannelsUpdater.updateEquivalences(subjectChannel));
 
@@ -81,28 +79,19 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
     }
 
     private Channel getChannel(Publisher publisher) {
-        return getChannel(1234L, publisher, null);
+        return getChannel(1234L, publisher, 1234L);
     }
 
-    private Channel getChannel(long id, Publisher publisher, String aliasValue) {
+    private Channel getChannel(long channelId, Publisher publisher, long baseChannelId) {
 
-        Set<Alias> aliases = Strings.isNullOrEmpty(aliasValue)
-                ? ImmutableSet.of(new Alias("default", Long.toString(id)))
-                : ImmutableSet.of(new Alias("pa:channel:id", aliasValue));
+        Channel channel = Channel.builder()
+                .withUri(String.format("http://%s/%s", publisher.key(), codec.encode(BigInteger.valueOf(baseChannelId))))
+                .withSource(publisher)
+                .build();
 
-        Channel channel = getChannel(publisher, aliases);
-        channel.setId(id);
+        channel.setId(channelId);
 
         return channel;
-    }
-
-    private Channel getChannel(Publisher publisher, Set<Alias> aliases) {
-
-        return Channel.builder()
-                .withUri("uri:" + publisher.key() + aliases.iterator().next().getValue())
-                .withSource(publisher)
-                .withAliases(aliases)
-                .build();
     }
 
     private EquivalenceUpdater<Channel> getUpdaterFor(
@@ -120,14 +109,14 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
 
     private Iterable<Channel> generateAllChannels() {
         return ImmutableList.of(
-                getChannel(10L, Publisher.BT_TV_CHANNELS, "100"),
-                getChannel(11L, Publisher.BT_TV_CHANNELS, "120"),
-                getChannel(20L, Publisher.BT_TV_CHANNELS_TEST1, "100"),
-                getChannel(21L, Publisher.BT_TV_CHANNELS_TEST1,"130"),
-                getChannel(30L, Publisher.METABROADCAST, "100"),
-                getChannel(31L, Publisher.METABROADCAST, "120"),
-                getChannel(32L, Publisher.METABROADCAST, "130"),
-                getChannel(33L, Publisher.METABROADCAST, "140")
+                getChannel(10L, Publisher.BT_TV_CHANNELS, 30L),
+                getChannel(11L, Publisher.BT_TV_CHANNELS, 31L),
+                getChannel(20L, Publisher.BT_TV_CHANNELS_TEST1, 30L),
+                getChannel(21L, Publisher.BT_TV_CHANNELS_TEST1, 32L),
+                getChannel(30L, Publisher.METABROADCAST, 30L),
+                getChannel(31L, Publisher.METABROADCAST, 31L),
+                getChannel(32L, Publisher.METABROADCAST, 32L),
+                getChannel(33L, Publisher.METABROADCAST, 33L)
         );
     }
 

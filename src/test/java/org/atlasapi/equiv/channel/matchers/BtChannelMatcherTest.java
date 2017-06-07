@@ -1,58 +1,88 @@
 package org.atlasapi.equiv.channel.matchers;
 
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Before;
 import org.junit.Test;
 
+import static java.lang.String.format;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 public class BtChannelMatcherTest {
 
-    private BtChannelMatcher btChannelMatcher = BtChannelMatcher.create();
-    private Channel masterChannel;
+    private SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
+    private ChannelMatcher btChannelMatcher = BtChannelMatcher.create(Publisher.BT_TV_CHANNELS);
+
+    private Channel existingChannel;
 
     @Before
     public void setUp() {
-        masterChannel = channelFor(Publisher.METABROADCAST, "123");
+        existingChannel = channelFor(
+                Publisher.BT_TV_CHANNELS,
+                codec.decode("bbf").longValue(),
+                "dff"
+        );
     }
 
     @Test
     public void btChannelMatcherMatchesCorrectly() throws Exception {
-        Channel matchingAliasChannel = channelFor(Publisher.BT_TV_CHANNELS, "123");
+        Channel matchingCandidate = channelFor(
+                Publisher.METABROADCAST,
+                codec.decode("dff").longValue(),
+                "dff"
+        );
 
-        assertTrue(btChannelMatcher.isAMatch(masterChannel, matchingAliasChannel));
+        assertTrue(btChannelMatcher.isAMatch(existingChannel, matchingCandidate));
     }
 
     @Test
-    public void btChannelMatcherDoesNotMatchOnNonMatchingPaIds() throws Exception {
-        Channel nonMatchingAliasChannel = channelFor(Publisher.BT_TV_CHANNELS, "321");
+    public void btChannelMatcherDoesNotMatchOnNonMatchingAtlasId() throws Exception {
+        Channel nonMatchingCandidate = channelFor(
+                Publisher.METABROADCAST,
+                codec.decode("xzz").longValue(),
+                "xzz"
+        );
 
-        assertFalse(btChannelMatcher.isAMatch(masterChannel, nonMatchingAliasChannel));
+        assertFalse(btChannelMatcher.isAMatch(existingChannel, nonMatchingCandidate));
     }
 
-    @Test
-    public void setBtChannelMatcherDoesNotMatchOnMissingPaIds() throws Exception {
-        Channel missingAliasChannel = channelFor(Publisher.BT_TV_CHANNELS, "");
+    @Test (expected = IllegalArgumentException.class)
+    public void channelMatcherReturnsFalseWhenMismatchedSubjectPublishers() throws Exception {
+        Channel wrongPublisherChannel = channelFor(
+                Publisher.BT_TV_CHANNELS_TEST1,
+                123L,
+                "bbd"
+        );
 
-        assertFalse(btChannelMatcher.isAMatch(masterChannel, missingAliasChannel));
+        Channel correctCandidate = channelFor(
+                Publisher.METABROADCAST,
+                444L,
+                "xzx"
+        );
+
+        btChannelMatcher.verifyChannelsPublishers(wrongPublisherChannel, correctCandidate);
     }
 
-    private Channel channelFor(Publisher publisher, String paId) {
+    @Test (expected = IllegalArgumentException.class)
+    public void channelMatcherReturnsFalseWhenMismatchedCandidatePublishers() throws Exception {
+        Channel invalidCandidate = channelFor(
+                Publisher.BT,
+                123L,
+                "xzz"
+        );
+
+        btChannelMatcher.verifyChannelsPublishers(existingChannel, invalidCandidate);
+    }
+
+    private Channel channelFor(Publisher publisher, long thisChannelId, String baseChannelId) {
         Channel channel = Channel.builder()
+                .withUri(format("http://%s/%s", publisher, baseChannelId))
                 .withSource(publisher)
-                .withAliases(
-                        Strings.isNullOrEmpty(paId) ? ImmutableSet.of()
-                                                    : ImmutableSet.of(
-                                                            new Alias("pa:channel:id", paId))
-                )
                 .build();
-        channel.setId(Strings.isNullOrEmpty(paId) ? 888L : Long.parseLong(paId));
 
+        channel.setId(thisChannelId);
         return channel;
     }
 

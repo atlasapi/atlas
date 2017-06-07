@@ -15,7 +15,6 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.Content;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
 import org.joda.time.DateTime;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -41,7 +40,7 @@ public class BtChannelDataUpdaterTest {
 
     private BtChannelDataUpdater channelDataUpdater;
 
-    private final SubstitutionTableNumberCodec codec = new SubstitutionTableNumberCodec().lowerCaseOnly();
+    private final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
     private static final String ALIAS_NAMESPACE = "gb:bt:tv:mpx:vole:service";
     private static final String LINEAR_CHANNEL_ID = "urn:BT:linear:service:751764";
@@ -50,7 +49,12 @@ public class BtChannelDataUpdaterTest {
     public void testAliasesClearing() {
         PaginatedEntries paginatedEntries = mock(PaginatedEntries.class);
         ChannelResolver channelResolver = mock(ChannelResolver.class);
-        channelDataUpdater = new BtChannelDataUpdater(channelResolver, channelWriter, ALIAS_NAMESPACE);
+        channelDataUpdater = BtChannelDataUpdater.builder()
+                .withChannelResolver(channelResolver)
+                .withChannelWriter(channelWriter)
+                .withAliasNamespace(ALIAS_NAMESPACE)
+                .withPublisher(Publisher.BT_TV_CHANNELS_TEST1)
+                .build();
 
         List<Entry> entries = Lists.newArrayList();
         Entry entry2 = emptyEntryWithNoLinearChannelIdForTesting();
@@ -101,7 +105,12 @@ public class BtChannelDataUpdaterTest {
     public void testAddAliasesToChannel() throws Exception {
         PaginatedEntries paginatedEntries = mock(PaginatedEntries.class);
         ChannelResolver channelResolver = mock(ChannelResolver.class);
-        channelDataUpdater = new BtChannelDataUpdater(channelResolver, channelWriter, ALIAS_NAMESPACE);
+        channelDataUpdater = BtChannelDataUpdater.builder()
+                .withChannelResolver(channelResolver)
+                .withChannelWriter(channelWriter)
+                .withAliasNamespace(ALIAS_NAMESPACE)
+                .withPublisher(Publisher.BT_TV_CHANNELS_TEST1)
+                .build();
 
         List<Entry> entries = Lists.newArrayList();
         Entry entry1 = entryForTesting();
@@ -147,7 +156,12 @@ public class BtChannelDataUpdaterTest {
     public void testAddAvailableDateToChannel() {
         PaginatedEntries paginatedEntries = mock(PaginatedEntries.class);
         ChannelResolver channelResolver = mock(ChannelResolver.class);
-        channelDataUpdater = new BtChannelDataUpdater(channelResolver, channelWriter, ALIAS_NAMESPACE);
+        channelDataUpdater = BtChannelDataUpdater.builder()
+                .withChannelResolver(channelResolver)
+                .withChannelWriter(channelWriter)
+                .withAliasNamespace(ALIAS_NAMESPACE)
+                .withPublisher(Publisher.BT_TV_CHANNELS_TEST1)
+                .build();
 
         List<Entry> entries = Lists.newArrayList();
         Entry entry1 = entryForTesting();
@@ -172,7 +186,7 @@ public class BtChannelDataUpdaterTest {
         when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
         when(channelResolver.all()).thenReturn(channels);
 
-        channelDataUpdater.addAvailableDateToChannel(paginatedEntries);
+        channelDataUpdater.addAvailableDatesToChannel(paginatedEntries);
 
         verify(paginatedEntries).getEntries();
         verify(channelResolver).fromId(channelId);
@@ -185,11 +199,12 @@ public class BtChannelDataUpdaterTest {
     public Entry entryForTesting() {
         Category category = new Category("S0312140", "subscription", "BT Sport Service on Vision");
         long availableDate = Long.valueOf("1446556354000");
+        long availableToDate = Long.valueOf("1447556354000");
 
         return new Entry("hk4g", 0, "Nick Toons",
                 ImmutableList.of(category),
                 ImmutableList.<Content>of(),
-                true, null, null, false, true, availableDate,
+                true, null, null, false, true, availableDate, availableToDate,
                 LINEAR_CHANNEL_ID);
 
     }
@@ -200,7 +215,7 @@ public class BtChannelDataUpdaterTest {
         return new Entry("hpdr", 0, "AMC From BT",
                 ImmutableList.of(category),
                 ImmutableList.<Content>of(),
-                true, null, null, false, true, 0,
+                true, null, null, false, true, 0, 0,
                 null);
 
     }

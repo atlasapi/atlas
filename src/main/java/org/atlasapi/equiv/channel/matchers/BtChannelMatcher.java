@@ -1,40 +1,38 @@
 package org.atlasapi.equiv.channel.matchers;
 
+import com.google.common.base.Objects;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Alias;
-
-import java.util.Optional;
+import org.atlasapi.media.entity.Publisher;
 
 public class BtChannelMatcher implements ChannelMatcher {
 
-    private static final String PA_CHANNEL_ID_NAMESPACE = "pa:channel:id";
+    private static final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
+    private final String uriPrefix;
 
-    private BtChannelMatcher() {}
+    private BtChannelMatcher(Publisher publisher) {
+        uriPrefix = String.format("http://%s/", publisher);
+    }
 
-    public static BtChannelMatcher create() {
-        return new BtChannelMatcher();
+    public static BtChannelMatcher create(Publisher publisher) {
+        return new BtChannelMatcher(publisher);
     }
 
     @Override
     public boolean isAMatch(Channel existing, Channel candidate) {
-        Optional<Alias> existingPaAlias = findPaAlias(existing);
-        Optional<Alias> candidatePaAlias = findPaAlias(candidate);
 
-        if (existingPaAlias.isPresent() && candidatePaAlias.isPresent()) {
-            Alias existingAlias = existingPaAlias.get();
-            Alias candidateAlias = candidatePaAlias.get();
+        String baseChannelId = extractBaseIdFromUri(existing);
 
-            return existingAlias.getValue().equals(candidateAlias.getValue());
-        }
+        long extractedBaseChannelId = codec.decode(baseChannelId).longValue();
 
-        return false;
+        return Objects.equal(extractedBaseChannelId, candidate.getId());
     }
 
-    private Optional<Alias> findPaAlias(Channel channel) {
-        return channel.getAliases().stream()
-                .filter(alias -> PA_CHANNEL_ID_NAMESPACE.equals(alias.getNamespace()))
-                .findFirst();
+    private String extractBaseIdFromUri(Channel channel) {
 
+        return channel.getUri()
+                .replace(uriPrefix, "")
+                .trim();
     }
 
 }

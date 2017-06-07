@@ -131,11 +131,11 @@ public class BtChannelDataUpdater {
         Channel channel = channelOptional.get();
         updateChannelWithAdvertisedDates(findOrCreateSourceChannel(channel), advertiseFromDate, advertiseToDate);
 
-        return updateChannelWithAdvertisedDates(channel, advertiseFromDate, advertiseToDate);
+        return Optional.of(updateChannelWithAdvertisedDates(channel, advertiseFromDate, advertiseToDate));
 
     }
 
-    private Optional<Channel> updateChannelWithAdvertisedDates(
+    private Channel updateChannelWithAdvertisedDates(
             Channel channel,
             DateTime advertiseFromDate,
             DateTime advertiseToDate
@@ -153,7 +153,7 @@ public class BtChannelDataUpdater {
         }
 
         channelWriter.createOrUpdate(channel);
-        return Optional.of(channel);
+        return channel;
 
     }
 

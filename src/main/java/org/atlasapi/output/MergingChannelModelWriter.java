@@ -11,8 +11,6 @@ import org.atlasapi.media.entity.simple.ChannelQueryResult;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 public class MergingChannelModelWriter
         extends TransformingModelWriter<Iterable<Channel>, ChannelQueryResult> {
 
@@ -22,9 +20,9 @@ public class MergingChannelModelWriter
 
     private MergingChannelModelWriter(Builder builder) {
         super(builder.queryResultModelWriter);
-        this.delegate = checkNotNull(builder.delegate);
-        this.merger = checkNotNull(builder.merger);
-        this.channelResolver = checkNotNull(builder.channelResolver);
+        this.delegate = builder.delegate;
+        this.merger = builder.merger;
+        this.channelResolver = builder.channelResolver;
     }
 
     public static Builder builder() {
@@ -44,8 +42,7 @@ public class MergingChannelModelWriter
                         channel -> channelResolver.forIds(
                                 channel.getSameAs().stream()
                                         .map(ChannelRef::getId)
-                                        .collect(MoreCollectors.toImmutableSet())
-                        )
+                                        .collect(MoreCollectors.toImmutableSet()))
                 ))
                 .entrySet().stream()
                 .map(entry -> merger.merge(application, entry.getKey(), entry.getValue()))
@@ -61,7 +58,8 @@ public class MergingChannelModelWriter
         private OutputChannelMerger merger;
         private ChannelResolver channelResolver;
 
-        private Builder() {}
+        private Builder() {
+        }
 
         public Builder withQueryResultModelWriter(AtlasModelWriter<ChannelQueryResult> queryResultModelWriter) {
             this.queryResultModelWriter = queryResultModelWriter;

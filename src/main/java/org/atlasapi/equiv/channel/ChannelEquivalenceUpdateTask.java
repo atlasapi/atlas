@@ -6,14 +6,10 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ChannelEquivalenceUpdateTask extends ScheduledTask {
-
-    private static final Logger log = LoggerFactory.getLogger(ChannelEquivalenceUpdateTask.class);
 
     private final ChannelResolver channelResolver;
     private final Publisher publisher;
@@ -43,9 +39,7 @@ public class ChannelEquivalenceUpdateTask extends ScheduledTask {
                 ChannelQuery.builder().withPublisher(publisher).build()
         );
 
-        log.info("Started channel equiv update for {}", publisher);
         publishersChannels.forEach(updater::updateEquivalences);
-        log.info("Finished channel equiv update for {}", publisher);
 
     }
 

@@ -44,7 +44,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
                                 .build()).spliterator(),
                 false
         )
-                .filter(candidate -> channelMatcher.isAMatch(subject, candidate))
+                .filter(candidate -> channelMatcher.isAMatch(candidate, subject))
                 .findFirst();
 
         potentialCandidate.ifPresent(candidate ->

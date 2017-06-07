@@ -28,6 +28,7 @@ import java.util.Set;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertThat;
+import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -49,6 +50,8 @@ public class BtChannelDataUpdaterTest {
     public void testAliasesClearing() {
         PaginatedEntries paginatedEntries = mock(PaginatedEntries.class);
         ChannelResolver channelResolver = mock(ChannelResolver.class);
+        when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.nothing());
+
         channelDataUpdater = BtChannelDataUpdater.builder()
                 .withChannelResolver(channelResolver)
                 .withChannelWriter(channelWriter)
@@ -105,6 +108,9 @@ public class BtChannelDataUpdaterTest {
     public void testAddAliasesToChannel() throws Exception {
         PaginatedEntries paginatedEntries = mock(PaginatedEntries.class);
         ChannelResolver channelResolver = mock(ChannelResolver.class);
+
+        when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.nothing());
+
         channelDataUpdater = BtChannelDataUpdater.builder()
                 .withChannelResolver(channelResolver)
                 .withChannelWriter(channelWriter)
@@ -156,6 +162,8 @@ public class BtChannelDataUpdaterTest {
     public void testAddAvailableDateToChannel() {
         PaginatedEntries paginatedEntries = mock(PaginatedEntries.class);
         ChannelResolver channelResolver = mock(ChannelResolver.class);
+        when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.nothing());
+
         channelDataUpdater = BtChannelDataUpdater.builder()
                 .withChannelResolver(channelResolver)
                 .withChannelWriter(channelWriter)
@@ -179,6 +187,7 @@ public class BtChannelDataUpdaterTest {
         expectedChannelWithAvailableDate.setAdvertiseFrom(DateTime.now());
 
         long channelId = codec.decode(entry1.getGuid()).longValue();
+        testChannel.setId(channelId);
 
         Maybe<Channel> channelMaybe = Maybe.just(testChannel);
 

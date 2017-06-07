@@ -209,13 +209,11 @@ public class BtChannelDataUpdater {
                 codec.encode(BigInteger.valueOf(channel.getId()))
         );
 
-        return channelResolver.fromUri(baseChannelUri)
-                .toOptional()
-                .orElse(
-                        Channel.builder()
-                                .withUri(baseChannelUri)
-                                .build()
-                );
+        return channelResolver.fromUri(baseChannelUri).valueOrDefault(
+                Channel.builder()
+                        .withUri(baseChannelUri)
+                        .build()
+        );
     }
 
     public static final class Builder {

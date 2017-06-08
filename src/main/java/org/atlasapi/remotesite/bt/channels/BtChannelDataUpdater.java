@@ -5,8 +5,10 @@ import com.google.common.base.Strings;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
@@ -158,12 +160,18 @@ public class BtChannelDataUpdater {
     }
 
     private Optional<Channel> channelFor(String guid) {
-        long channelId = codec.decode(guid).longValue();
+        long channelId;
+        try {
+            channelId = codec.decode(guid).longValue();
+        } catch(IllegalArgumentException e) {
+            LOGGER.error("%s was not valid for decoding", guid, e);
+            return Optional.empty();
+        }
 
         Optional<Channel> channelMaybe = channelResolver.fromId(channelId).toOptional();
 
         if(!channelMaybe.isPresent()) {
-            LOGGER.error("There is missing channel for this channel id: " + guid);
+            LOGGER.error("There is missing channel for this channel id: %s", guid);
             return Optional.empty();
         }
 
@@ -212,6 +220,9 @@ public class BtChannelDataUpdater {
         return channelResolver.fromUri(baseChannelUri).valueOrDefault(
                 Channel.builder()
                         .withUri(baseChannelUri)
+                        .withMediaType(MediaType.VIDEO)
+                        .withChannelType(ChannelType.CHANNEL)
+                        .withSource(publisher)
                         .build()
         );
     }

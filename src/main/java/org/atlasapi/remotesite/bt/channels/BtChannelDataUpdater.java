@@ -164,14 +164,14 @@ public class BtChannelDataUpdater {
         try {
             channelId = codec.decode(guid).longValue();
         } catch(IllegalArgumentException e) {
-            LOGGER.error("%s was not valid for decoding", guid, e);
+            LOGGER.error("{} was not valid for decoding", guid, e);
             return Optional.empty();
         }
 
         Optional<Channel> channelMaybe = channelResolver.fromId(channelId).toOptional();
 
         if(!channelMaybe.isPresent()) {
-            LOGGER.error("There is missing channel for this channel id: %s", guid);
+            LOGGER.error("There is missing channel for this channel id: {}", guid);
             return Optional.empty();
         }
 

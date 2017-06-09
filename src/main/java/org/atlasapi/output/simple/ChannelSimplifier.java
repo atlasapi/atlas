@@ -107,6 +107,11 @@ public class ChannelSimplifier {
         if (input.getAdvertiseFrom() != null) {
             simple.setAdvertisedFrom(input.getAdvertiseFrom().toDate());
         }
+        if (input.getAdvertiseTo() != null) {
+            simple.setAdvertisedTo(input.getAdvertiseTo().toDate());
+        }
+
+        simple.setSameAs(input.getSameAs());
         simple.setGenres(input.getGenres());
 
         simple.setPublisherDetails(publisherSimplifier.simplify(input.getSource()));

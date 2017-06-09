@@ -36,6 +36,7 @@ public class ChannelSimplifier {
     private final NumberToShortStringCodec v4Codec;
     private final ImageSimplifier imageSimplifier;
     private final ChannelGroupSummarySimplifier channelGroupAliasSimplifier;
+    private final ChannelRefSimplifier channelRefSimplifier;
     private final ChannelGroupResolver channelGroupResolver;
 
     public ChannelSimplifier(
@@ -45,6 +46,7 @@ public class ChannelSimplifier {
             PublisherSimplifier publisherSimplifier,
             ImageSimplifier imageSimplifier,
             ChannelGroupSummarySimplifier channelGroupSummarySimplifier,
+            ChannelRefSimplifier channelRefSimplifier,
             ChannelGroupResolver channelGroupResolver
     ) {
         this.idCodec = checkNotNull(idCodec);
@@ -53,6 +55,7 @@ public class ChannelSimplifier {
         this.publisherSimplifier = checkNotNull(publisherSimplifier);
         this.imageSimplifier = checkNotNull(imageSimplifier);
         this.channelGroupAliasSimplifier = checkNotNull(channelGroupSummarySimplifier);
+        this.channelRefSimplifier = checkNotNull(channelRefSimplifier);
         this.channelGroupResolver = checkNotNull(channelGroupResolver);
     }
 
@@ -111,7 +114,7 @@ public class ChannelSimplifier {
             simple.setAdvertisedTo(input.getAdvertiseTo().toDate());
         }
 
-        simple.setSameAs(input.getSameAs());
+        simple.setSameAs(channelRefSimplifier.simplify(input.getSameAs()));
         simple.setGenres(input.getGenres());
 
         simple.setPublisherDetails(publisherSimplifier.simplify(input.getSource()));

@@ -147,7 +147,7 @@ public class BtChannelDataUpdaterTest {
 
         verify(paginatedEntries).getEntries();
         verify(channelResolver).fromId(channelId);
-        verify(channelWriter, times(2)).createOrUpdate(expectedChannelWithAlias);
+        verify(channelWriter).createOrUpdate(expectedChannelWithAlias);
         verify(channelResolver).all();
 
         Set<Alias> channelAliases = testChannel.getAliases();

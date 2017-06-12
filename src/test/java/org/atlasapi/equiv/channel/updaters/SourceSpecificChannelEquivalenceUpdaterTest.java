@@ -25,6 +25,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -65,16 +66,17 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
         ArgumentCaptor<Channel> writtenChannelCaptor = ArgumentCaptor.forClass(Channel.class);
 
         Channel subjectChannel = getChannel(10L, Publisher.BT_TV_CHANNELS, 30L);
+        Channel candidateChannel = getChannel(30L, Publisher.METABROADCAST, 30L);
 
         assertTrue(btChannelsUpdater.updateEquivalences(subjectChannel));
 
         verify(channelResolver).allChannels(any(ChannelQuery.class));
-        verify(channelWriter).createOrUpdate(writtenChannelCaptor.capture());
+        verify(channelWriter, times(2)).createOrUpdate(writtenChannelCaptor.capture());
 
 
         Channel writtenChannel = writtenChannelCaptor.getValue();
-        assertThat(writtenChannel.getId(), is(30L));
-        assertTrue(writtenChannel.getSameAs().contains(subjectChannel.toChannelRef()));
+        assertThat(writtenChannel.getId(), is(10L));
+        assertTrue(writtenChannel.getSameAs().contains(candidateChannel.toChannelRef()));
 
     }
 

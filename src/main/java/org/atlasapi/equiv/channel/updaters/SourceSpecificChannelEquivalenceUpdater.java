@@ -57,10 +57,16 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     private void setAndUpdateEquivalents(Channel candidate, Channel subject) {
 
         ChannelRef subjectRef = subject.toChannelRef();
+        ChannelRef candidateRef = candidate.toChannelRef();
 
         if (!candidate.getSameAs().contains(subjectRef)) {
-            candidate.addSameAs(subject.toChannelRef());
+            candidate.addSameAs(subjectRef);
             channelWriter.createOrUpdate(candidate);
+        }
+
+        if (!subject.getSameAs().contains(candidateRef)) {
+            subject.addSameAs(candidateRef);
+            channelWriter.createOrUpdate(subject);
         }
 
     }

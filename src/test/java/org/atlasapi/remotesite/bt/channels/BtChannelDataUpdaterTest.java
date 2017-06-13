@@ -5,6 +5,7 @@ import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Alias;
@@ -15,6 +16,7 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.Content;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
 import org.joda.time.DateTime;
+import org.joda.time.Instant;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
@@ -22,6 +24,7 @@ import org.mockito.Captor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Set;
 
@@ -84,13 +87,13 @@ public class BtChannelDataUpdaterTest {
         when(paginatedEntries.getEntries()).thenReturn(entries);
         when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
         when(channelWriter.createOrUpdate(channelBeingWrittenCaptor.capture())).thenReturn(testChannel2);
-        when(channelResolver.all()).thenReturn(channels);
+        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
 
         channelDataUpdater.addAliasesToChannel(paginatedEntries);
 
         verify(paginatedEntries).getEntries();
         verify(channelResolver).fromId(channelId);
-        verify(channelResolver).all();
+        verify(channelResolver).allChannels(any(ChannelQuery.class));
 
         Set<Alias> channelAliases = testChannel2.getAliases();
         assertThat(channelAliases.contains(shouldNotRemove1), is(true));
@@ -147,14 +150,14 @@ public class BtChannelDataUpdaterTest {
         when(paginatedEntries.getEntries()).thenReturn(entries);
         when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
         when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
-        when(channelResolver.all()).thenReturn(channels);
+        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
 
         channelDataUpdater.addAliasesToChannel(paginatedEntries);
 
         verify(paginatedEntries).getEntries();
         verify(channelResolver).fromId(channelId);
         verify(channelWriter).createOrUpdate(expectedChannelWithAlias);
-        verify(channelResolver).all();
+        verify(channelResolver).allChannels(any(ChannelQuery.class));
 
         Set<Alias> channelAliases = testChannel.getAliases();
         Set<Alias> environmentAliases = environmentChannel.getAliases();
@@ -185,10 +188,12 @@ public class BtChannelDataUpdaterTest {
         entries.add(entry1);
 
         Channel testChannel = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
+        Channel environmentChannel = new Channel(Publisher.BT_TV_CHANNELS_TEST1, "Channel 1", "b", true, MediaType.VIDEO, "http://dev1.tv-channels.bt.com/" + entry1.getGuid());
 
         List<Channel> channels = Lists.newArrayList();
 
         channels.add(testChannel);
+        channels.add(environmentChannel);
 
         Channel expectedChannelWithAvailableDate = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
 
@@ -201,15 +206,24 @@ public class BtChannelDataUpdaterTest {
 
         when(paginatedEntries.getEntries()).thenReturn(entries);
         when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
-        when(channelResolver.all()).thenReturn(channels);
+        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
+        when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
 
         channelDataUpdater.addAvailableDatesToChannel(paginatedEntries);
 
         verify(paginatedEntries).getEntries();
         verify(channelResolver).fromId(channelId);
-        verify(channelResolver).all();
+        verify(channelResolver).allChannels(any(ChannelQuery.class));
 
-        assertEquals(expectedChannelWithAvailableDate, testChannel);
+        assertEquals(
+                new DateTime(1446556354000L),
+                environmentChannel.getAdvertiseFrom()
+        );
+
+        assertEquals(
+                new DateTime(1447556354000L),
+                environmentChannel.getAdvertiseTo()
+        );
 
     }
 

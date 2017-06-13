@@ -37,12 +37,11 @@ public class ChannelEquivTaskModule {
     private static final RepetitionRule BT_CHANNEL_REPETITION_RULE =
             RepetitionRules.daily(new LocalTime(6, 0));
 
-    @Value("$equiv.updater.enabled") private String updaterEnabled;
-    @Value("$channel.equiv.enabled") private String channelEquivEnabled;
+    @Value("${equiv.updater.enabled}") private boolean updaterEnabled;
+    @Value("${channel.equiv.enabled}") private boolean channelEquivEnabled;
 
     @Autowired private SimpleScheduler taskScheduler;
     @Autowired private EquivalenceUpdater<Channel> equivalenceUpdater;
-
     @Autowired private ChannelResolver channelResolver;
 
     @PostConstruct
@@ -52,11 +51,11 @@ public class ChannelEquivTaskModule {
 
         Set<ScheduledTask> jobsAtStartup = Sets.newHashSet();
 
-        if (Boolean.parseBoolean(updaterEnabled) && Boolean.parseBoolean(channelEquivEnabled)) {
+        if (updaterEnabled && channelEquivEnabled) {
             log.info("Channel equivalence enabled");
             addEquivalenceJobs(jobsAtStartup);
         } else {
-            log.info("Channel equivalence disabled");
+            log.debug("Channel equivalence disabled");
         }
 
         jobsAtStartup.forEach(executorService::submit);

@@ -4,6 +4,7 @@ import com.google.api.client.util.Sets;
 import com.google.common.base.Strings;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelType;
 import org.atlasapi.media.channel.ChannelWriter;
@@ -22,6 +23,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -64,7 +66,14 @@ public class BtChannelDataUpdater {
 
         }
 
-        removeStaleAliasesFromChannel(updatedChannels, channelResolver.all());
+        removeStaleAliasesFromChannel(
+                updatedChannels,
+                channelResolver.allChannels(
+                        ChannelQuery.builder()
+                                .withPublisher(publisher)
+                                .build()
+                )
+        );
     }
 
     public void addAvailableDatesToChannel(PaginatedEntries paginatedEntries) {
@@ -72,19 +81,28 @@ public class BtChannelDataUpdater {
 
         Set<Long> updatedChannels = Sets.newHashSet();
 
-        for(Entry currentEntry : entries) {
+        for (Entry currentEntry : entries) {
             try {
                 Optional<Channel> channelOptional = processEntryForAdvertisedDates(currentEntry);
 
                 channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
 
             } catch (IllegalArgumentException e) {
-                LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
+                LOGGER.error(
+                        "Failure to process. Channel Id may contain illegal characters that are not accepted by the codec",
+                        e);
             }
 
         }
 
-        removeStaleAvailableDateFromChannel(updatedChannels, channelResolver.all());
+        removeStaleAvailableDateFromChannel(
+                updatedChannels,
+                channelResolver.allChannels(
+                        ChannelQuery.builder()
+                                .withPublisher(publisher)
+                                .build()
+                )
+        );
     }
 
     private Optional<Channel> processEntryForAliases(Entry entry) {
@@ -183,7 +201,6 @@ public class BtChannelDataUpdater {
             Set<Long> channelIdsThatHaveAvailableDateAdded,
             Iterable<Channel> channels
     ) {
-
         for(Channel channel : channels) {
             if(!channelIdsThatHaveAvailableDateAdded.contains(channel.getId())) {
                 channel.setAdvertiseFrom(null);

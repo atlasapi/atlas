@@ -55,6 +55,8 @@ public class ChannelEquivTaskModule {
         if (Boolean.parseBoolean(updaterEnabled) && Boolean.parseBoolean(channelEquivEnabled)) {
             log.info("Channel equivalence enabled");
             addEquivalenceJobs(jobsAtStartup);
+        } else {
+            log.info("Channel equivalence disabled");
         }
 
         jobsAtStartup.forEach(executorService::submit);

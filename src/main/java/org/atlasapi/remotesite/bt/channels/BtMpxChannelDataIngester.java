@@ -42,7 +42,6 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
     private final ChannelWriter channelWriter;
     private final Lock channelWriterLock;
     private final BtChannelDataUpdater channelDataUpdater;
-    private boolean ingestAdvertiseFromField;
 
     private BtMpxChannelDataIngester(Builder builder) {
         this.btMpxClient = checkNotNull(builder.btMpxClient);
@@ -53,7 +52,6 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
         this.channelWriter = checkNotNull(builder.channelWriter);
         this.channelWriterLock = checkNotNull(builder.channelWriterLock);
         this.channelDataUpdater = checkNotNull(builder.channelDataUpdater);
-        this.ingestAdvertiseFromField = checkNotNull(builder.ingestAdvertiseFromField);
 
         ChannelGroupWriter channelGroupWriter = checkNotNull(builder.channelGroupWriter);
         String aliasUriPrefix = checkNotNull(builder.aliasUriPrefix);
@@ -86,10 +84,7 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
             PaginatedEntries entries = btMpxClient.getChannels(Optional.absent());
 
             channelDataUpdater.addAliasesToChannel(entries);
-
-            if (ingestAdvertiseFromField) {
-                channelDataUpdater.addAvailableDatesToChannel(entries);
-            }
+            channelDataUpdater.addAvailableDatesToChannel(entries);
 
             ImmutableSet.Builder<String> allCurrentChannelGroups = ImmutableSet.builder();
             for (AbstractBtChannelGroupSaver saver : channelGroupSavers) {
@@ -195,11 +190,6 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
 
         public Builder withChannelDataUpdater(BtChannelDataUpdater channelDataUpdater) {
             this.channelDataUpdater = channelDataUpdater;
-            return this;
-        }
-
-        public Builder withIngestAdvertiseFromField(boolean ingestAdvertiseFromField) {
-            this.ingestAdvertiseFromField = ingestAdvertiseFromField;
             return this;
         }
 

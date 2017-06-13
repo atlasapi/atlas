@@ -56,15 +56,7 @@ public class BtChannelDataUpdater {
             try {
                 Optional<Channel> channelOptional = processEntryForAliases(currentEntry);
 
-                channelOptional.ifPresent(channel -> {
-                    updatedChannels.add(channel.getId());
-                    updatedChannels.add(
-                            updateChannelWithAliases(
-                                    findOrCreateSourceChannel(channel),
-                                    currentEntry.getLinearEpgChannelId()
-                            ).get().getId()
-                    );
-                });
+                channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
 
             } catch (IllegalArgumentException e) {
                 LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
@@ -84,16 +76,7 @@ public class BtChannelDataUpdater {
             try {
                 Optional<Channel> channelOptional = processEntryForAdvertisedDates(currentEntry);
 
-                channelOptional.ifPresent(channel -> {
-                    updatedChannels.add(channel.getId());
-                    updatedChannels.add(
-                            updateChannelWithAdvertisedDates(
-                                    findOrCreateSourceChannel(channel),
-                                    new DateTime(currentEntry.getAvailableDate()),
-                                    new DateTime(currentEntry.getAvailableToDate())
-                            ).getId()
-                    );
-                });
+                channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
 
             } catch (IllegalArgumentException e) {
                 LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
@@ -113,7 +96,10 @@ public class BtChannelDataUpdater {
             return Optional.empty();
         }
 
-        return updateChannelWithAliases(channelOptional.get(), linearEpgChannelId);
+        return updateChannelWithAliases(
+                findOrCreateSourceChannel(channelOptional.get()),
+                linearEpgChannelId
+        );
     }
 
     private Optional<Channel> updateChannelWithAliases(Channel channel, String linearEpgChannelId) {
@@ -136,18 +122,20 @@ public class BtChannelDataUpdater {
 
     private Optional<Channel> processEntryForAdvertisedDates(Entry entry) {
 
-        DateTime advertiseFromDate = new DateTime(entry.getAvailableDate());
-        DateTime advertiseToDate = new DateTime(entry.getAvailableToDate());
+        Optional<Channel> channel = channelFor(entry.getGuid());
 
-        Optional<Channel> channelOptional = channelFor(entry.getGuid());
-
-        if (!channelOptional.isPresent()) {
+        if (!channel.isPresent()) {
             return Optional.empty();
         }
 
-        Channel channel = channelOptional.get();
+        DateTime advertiseFromDate = new DateTime(entry.getAvailableDate());
+        DateTime advertiseToDate = new DateTime(entry.getAvailableToDate());
 
-        return Optional.of(updateChannelWithAdvertisedDates(channel, advertiseFromDate, advertiseToDate));
+        return Optional.of(updateChannelWithAdvertisedDates(
+                findOrCreateSourceChannel(channel.get()),
+                advertiseFromDate,
+                advertiseToDate
+        ));
 
     }
 

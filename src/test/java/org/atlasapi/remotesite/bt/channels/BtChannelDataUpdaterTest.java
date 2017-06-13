@@ -27,7 +27,9 @@ import java.util.Set;
 
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 import static org.mockito.Matchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
@@ -124,11 +126,14 @@ public class BtChannelDataUpdaterTest {
         entries.add(entry1);
 
         Channel testChannel = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
+        Channel environmentChannel = new Channel(Publisher.BT_TV_CHANNELS_TEST1, "Channel 1", "a", true, MediaType.VIDEO, "http://dev1.tv-channels.bt.com/" + codec.decode(entry1.getGuid()));
+
         Alias shouldNotRemove = new Alias("bbcone", "urn:BT:linear:service:710000");
         testChannel.addAlias(shouldNotRemove);
         List<Channel> channels = Lists.newArrayList();
 
         channels.add(testChannel);
+        channels.add(environmentChannel);
 
         Channel expectedChannelWithAlias = new Channel(Publisher.METABROADCAST, "Channel 1", "a", true, MediaType.VIDEO, "http://channel1.com");
 
@@ -141,6 +146,7 @@ public class BtChannelDataUpdaterTest {
 
         when(paginatedEntries.getEntries()).thenReturn(entries);
         when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
+        when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
         when(channelResolver.all()).thenReturn(channels);
 
         channelDataUpdater.addAliasesToChannel(paginatedEntries);
@@ -151,8 +157,10 @@ public class BtChannelDataUpdaterTest {
         verify(channelResolver).all();
 
         Set<Alias> channelAliases = testChannel.getAliases();
+        Set<Alias> environmentAliases = environmentChannel.getAliases();
 
-        assertThat(channelAliases.contains(alias), is(true));
+        assertFalse(channelAliases.contains(alias));
+        assertTrue(environmentAliases.contains(alias));
 
         //Make sure that we don't remove the old aliases after adding the new one.
         assertThat(channelAliases.contains(shouldNotRemove), is(true));

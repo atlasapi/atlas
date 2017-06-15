@@ -88,6 +88,7 @@ public class ItemModelSimplifierTest {
             new PublisherSimplifier(),
             new ImageSimplifier(),
             new ChannelGroupSummarySimplifier(codec, channelGroupResolver),
+            new ChannelRefSimplifier(codec),
             channelGroupResolver
     );
     private final ItemModelSimplifier itemSimplifier = new ItemModelSimplifier(

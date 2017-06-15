@@ -8,6 +8,7 @@ ENV SERVER_PORT="8080" \
     BT_VOD_MPX_VOLD_ENABLED="false" \
     BT_VOD_MPX_VOLE_ENABLED="false" \
     EQUIV_STREAM_UPDATER_ENABLED="false" \
+    CHANNEL_EQUIV_ENABLED="false" \
     EQUIV_UPDATER_ENABLED="false" \
     EQUIV_UPDATER_YOUVIEWSCHEDULE_ENABLED="false" \
     IDS_GENERATE="false" \
@@ -184,6 +185,7 @@ CMD java \
     -Dcassandra.port="$CASSANDRA_PORT" \
     -Dcassandra.requestTimeout="$CASSANDRA_REQUESTTIMEOUT" \
     -Dcassandra.seeds="$CASSANDRA_SEEDS" \
+    -Dchannel.equiv.enabled="$CHANNEL_EQUIV_ENABLED" \
     -Demipub.dataFile="$EMIPUB_DATAFILE" \
     -Dequiv.excludedUris="$EQUIV_EXCLUDEDURIS" \
     -Dequiv.excludedIds="$EQUIV_EXCLUDEDIDS" \

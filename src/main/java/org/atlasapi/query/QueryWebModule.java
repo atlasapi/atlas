@@ -75,6 +75,7 @@ import org.atlasapi.output.simple.ChannelNumberingChannelGroupModelSimplifier;
 import org.atlasapi.output.simple.ChannelNumberingChannelModelSimplifier;
 import org.atlasapi.output.simple.ChannelNumberingsChannelGroupToChannelModelSimplifier;
 import org.atlasapi.output.simple.ChannelNumberingsChannelToChannelGroupModelSimplifier;
+import org.atlasapi.output.simple.ChannelRefSimplifier;
 import org.atlasapi.output.simple.ChannelSimplifier;
 import org.atlasapi.output.simple.ContainerModelSimplifier;
 import org.atlasapi.output.simple.ContentGroupModelSimplifier;
@@ -279,8 +280,13 @@ public class QueryWebModule {
                 publisherSimplifier(),
                 imageSimplifier(),
                 channelGroupAliasSimplifier(),
+                channelRefSimplifier(),
                 new CachingChannelGroupStore(channelGroupStore)
         );
+    }
+
+    @Bean ChannelRefSimplifier channelRefSimplifier() {
+        return new ChannelRefSimplifier(v3ChannelCodec());
     }
 
     @Bean

@@ -42,7 +42,7 @@ public class ChannelNumberingSimplificationTest extends TestCase {
     
     private static final DummyChannelGroupStore channelGroupStore = new DummyChannelGroupStore();
     private static final ChannelSimplifier channelSimplifier = new ChannelSimplifier(mock(NumberToShortStringCodec.class), mock(NumberToShortStringCodec.class), mock(ChannelResolver.class), new PublisherSimplifier(), new ImageSimplifier(),
-            new ChannelGroupSummarySimplifier(mock(NumberToShortStringCodec.class), channelGroupStore), channelGroupStore);
+            new ChannelGroupSummarySimplifier(mock(NumberToShortStringCodec.class), channelGroupStore), mock(ChannelRefSimplifier.class), channelGroupStore);
     private static final ChannelGroupSimplifier channelGroupSimplifier = new ChannelGroupSimplifier(
             mock(NumberToShortStringCodec.class), channelGroupStore, new PublisherSimplifier());
     private static final ChannelNumberingChannelGroupModelSimplifier nestedChannelGroupSimplifier = new ChannelNumberingChannelGroupModelSimplifier(channelGroupSimplifier);

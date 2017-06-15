@@ -1,17 +1,15 @@
 package org.atlasapi.remotesite.bt.channels.mpxclient;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.apache.commons.httpclient.HttpStatus.SC_OK;
+import static java.lang.String.format;
 
-import java.io.InputStream;
 import java.io.InputStreamReader;
 
 import com.google.common.base.Optional;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.metabroadcast.common.http.HttpException;
-import com.metabroadcast.common.http.HttpResponsePrologue;
-import com.metabroadcast.common.http.HttpResponseTransformer;
-import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.http.SimpleHttpRequest;
 import com.metabroadcast.common.query.Selection;
@@ -21,8 +19,7 @@ public class GsonBtMpxClient implements BtMpxClient {
 
     private final SimpleHttpClient httpClient;
     private final String baseUri;
-    private final Gson gson = new GsonBuilder()
-                                    .create();
+    private final Gson gson = new GsonBuilder().create();
     
     public GsonBtMpxClient(SimpleHttpClient httpClient, String baseUri) {
         this.httpClient = checkNotNull(httpClient);
@@ -58,18 +55,21 @@ public class GsonBtMpxClient implements BtMpxClient {
     }
 
     private SimpleHttpRequest<PaginatedEntries> httpRequestFor(final String uri) {
-        return SimpleHttpRequest.httpRequestFrom(uri, 
-                new HttpResponseTransformer<PaginatedEntries>() {
-
-                    @Override
-                    public PaginatedEntries transform(HttpResponsePrologue prologue, InputStream body)
-                            throws HttpException, Exception {
-                        if(HttpStatusCode.OK.code() == prologue.statusCode()) {
-                            return gson.fromJson(new InputStreamReader(body), PaginatedEntries.class);
-                        }
-                        throw new HttpException(String.format("Request %s failed: %s %s", 
-                                uri, prologue.statusCode(), prologue.statusLine()), prologue);
+        return SimpleHttpRequest.httpRequestFrom(
+                uri,
+                (prologue, body) -> {
+                    if(SC_OK == prologue.statusCode()) {
+                        return gson.fromJson(new InputStreamReader(body), PaginatedEntries.class);
                     }
+                    throw new HttpException(
+                            format(
+                                "Request %s failed: %s %s",
+                                uri,
+                                prologue.statusCode(),
+                                prologue.statusLine()
+                            ),
+                            prologue
+                    );
                 });
     }
 

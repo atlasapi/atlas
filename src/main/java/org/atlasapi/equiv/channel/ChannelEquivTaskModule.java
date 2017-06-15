@@ -10,6 +10,7 @@ import org.atlasapi.equiv.update.www.ChannelEquivalenceUpdateController;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
+import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,15 +35,18 @@ public class ChannelEquivTaskModule {
 
     private static final String TASK_NAME = " Channel Equiv Updater";
 
-    private static final RepetitionRule BT_CHANNEL_REPETITION_RULE =
-            RepetitionRules.daily(new LocalTime(6, 0));
+    private static final LocalTime BT_NON_PROD_BASE_START_TIME = new LocalTime(16, 30);
 
-    @Value("$equiv.updater.enabled") private String updaterEnabled;
-    @Value("$channel.equiv.enabled") private String channelEquivEnabled;
+    private static final RepetitionRule BT_PROD_REPETITION = RepetitionRules.every(Duration.standardHours(2));
+    private static final RepetitionRule BT_DEV_1_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME);
+    private static final RepetitionRule BT_DEV_2_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME.plusHours(1));
+    private static final RepetitionRule BT_REF_REPETITION = RepetitionRules.daily(BT_NON_PROD_BASE_START_TIME.plusHours(2));
+
+    @Value("${equiv.updater.enabled}") private boolean updaterEnabled;
+    @Value("${channel.equiv.enabled}") private boolean channelEquivEnabled;
 
     @Autowired private SimpleScheduler taskScheduler;
     @Autowired private EquivalenceUpdater<Channel> equivalenceUpdater;
-
     @Autowired private ChannelResolver channelResolver;
 
     @PostConstruct
@@ -52,9 +56,11 @@ public class ChannelEquivTaskModule {
 
         Set<ScheduledTask> jobsAtStartup = Sets.newHashSet();
 
-        if (Boolean.parseBoolean(updaterEnabled) && Boolean.parseBoolean(channelEquivEnabled)) {
+        if (updaterEnabled && channelEquivEnabled) {
             log.info("Channel equivalence enabled");
             addEquivalenceJobs(jobsAtStartup);
+        } else {
+            log.debug("Channel equivalence disabled");
         }
 
         jobsAtStartup.forEach(executorService::submit);
@@ -68,22 +74,22 @@ public class ChannelEquivTaskModule {
     private void addEquivalenceJobs(Set<ScheduledTask> jobsAtStartup) {
         scheduleEquivalenceJob(
                 createUpdateTask(Publisher.BT_TV_CHANNELS, equivalenceUpdater),
-                BT_CHANNEL_REPETITION_RULE,
+                BT_PROD_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
                 createUpdateTask(Publisher.BT_TV_CHANNELS_TEST1, equivalenceUpdater),
-                BT_CHANNEL_REPETITION_RULE,
+                BT_DEV_1_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
                 createUpdateTask(Publisher.BT_TV_CHANNELS_TEST2, equivalenceUpdater),
-                BT_CHANNEL_REPETITION_RULE,
+                BT_DEV_2_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
                 createUpdateTask(Publisher.BT_TV_CHANNELS_REFERENCE, equivalenceUpdater),
-                BT_CHANNEL_REPETITION_RULE,
+                BT_REF_REPETITION,
                 jobsAtStartup
         );
     }

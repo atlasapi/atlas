@@ -4,12 +4,11 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.google.common.collect.Sets;
-
+import com.hp.hpl.jena.sparql.algebra.Op;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
 import joptsimple.internal.Strings;
 import org.atlasapi.application.query.ApplicationFetcher;
@@ -48,15 +47,13 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ChannelWriteExecutor {
 
-    private static final Logger log = LoggerFactory.getLogger(ChannelWriteExecutor.class);
     private static final String STRICT = "strict";
-
+    private final Logger log = LoggerFactory.getLogger(ChannelWriteExecutor.class);
     private final ApplicationFetcher appConfigFetcher;
     private final ChannelStore store;
     private final ModelReader reader;
     private final ChannelModelTransformer channelTransformer;
     private final AtlasModelWriter<Iterable<Channel>> outputter;
-    private final NumberToShortStringCodec codec;
 
     private ChannelWriteExecutor(Builder builder) {
         this.appConfigFetcher = checkNotNull(builder.appConfigFetcher);
@@ -64,7 +61,6 @@ public class ChannelWriteExecutor {
         this.reader = checkNotNull(builder.reader);
         this.channelTransformer = checkNotNull(builder.channelTransformer);
         this.outputter = checkNotNull(builder.outputter);
-        this.codec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
 
     public static Builder builder() {
@@ -76,8 +72,11 @@ public class ChannelWriteExecutor {
         return deserializeAndUpdateChannel(req, resp);
     }
 
-    public Void createOrUpdateChannelImage(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    public Void createOrUpdateChannelImage(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            NumberToShortStringCodec codec
+    ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
@@ -87,7 +86,7 @@ public class ChannelWriteExecutor {
         }
 
         String channelId = imageDetails.getChannelId();
-        String imageTheme = imageDetails.getTheme();
+        String imageTheme = imageDetails.getImageTheme();
 
         if (Strings.isNullOrEmpty(channelId) || Strings.isNullOrEmpty(imageTheme)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -117,10 +116,10 @@ public class ChannelWriteExecutor {
 
         Channel existingChannel = possibleChannel.requireValue();
 
-        if (Strings.isNullOrEmpty(imageDetails.getUri())
-                || Strings.isNullOrEmpty(imageDetails.getHeight())
-                || Strings.isNullOrEmpty(imageDetails.getWidth())
-                || Strings.isNullOrEmpty(imageDetails.getMimeType())) {
+        if (Strings.isNullOrEmpty(imageDetails.getImageUri())
+                || Strings.isNullOrEmpty(imageDetails.getImageHeight())
+                || Strings.isNullOrEmpty(imageDetails.getImageWidth())
+                || Strings.isNullOrEmpty(imageDetails.getImageMimeType())) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
             return error(
                     request,
@@ -172,8 +171,11 @@ public class ChannelWriteExecutor {
         return Optional.empty();
     }
 
-    public Void deleteChannelImage(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    public Void deleteChannelImage(
+            HttpServletRequest request,
+            HttpServletResponse response,
+            NumberToShortStringCodec codec
+    ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
@@ -183,7 +185,7 @@ public class ChannelWriteExecutor {
         }
 
         String channelId = imageDetails.getChannelId();
-        String imageTheme = imageDetails.getTheme();
+        String imageTheme = imageDetails.getImageTheme();
 
         if (Strings.isNullOrEmpty(channelId) || Strings.isNullOrEmpty(imageTheme)) {
             response.setStatus(HttpServletResponse.SC_BAD_REQUEST);
@@ -213,7 +215,7 @@ public class ChannelWriteExecutor {
 
         Channel existingChannel = possibleChannel.requireValue();
 
-        if (Strings.isNullOrEmpty(imageDetails.getUri())) {
+        if (Strings.isNullOrEmpty(imageDetails.getImageUri())) {
             deleteImage(imageTheme, existingChannel);
         }
 
@@ -252,7 +254,7 @@ public class ChannelWriteExecutor {
 
     private void createOrUpdateImage(Channel existingChannel, ImageDetails imageDetails) {
         Set<Image> channelImages = Sets.newHashSet(existingChannel.getImages());
-        Optional<Image> possibleImage = getPossibleImageByTheme(channelImages, imageDetails.getTheme());
+        Optional<Image> possibleImage = getPossibleImageByTheme(channelImages, imageDetails.getImageTheme());
 
         if (possibleImage.isPresent()) {
             Image imageToBeUpdated = possibleImage.get();
@@ -280,26 +282,26 @@ public class ChannelWriteExecutor {
     }
 
     private Image createImage(ImageDetails imageDetails) {
-        Image newImage = new Image(imageDetails.getUri());
+        Image newImage = new Image(imageDetails.getImageUri());
         setImageDetails(imageDetails, newImage);
 
         return newImage;
     }
 
     private Image updateImage(ImageDetails imageDetails, Image imageToBeUpdated) {
-        imageToBeUpdated.setCanonicalUri(imageDetails.getUri());
+        imageToBeUpdated.setCanonicalUri(imageDetails.getImageUri());
         setImageDetails(imageDetails, imageToBeUpdated);
 
         return imageToBeUpdated;
     }
 
     private void setImageDetails(ImageDetails imageDetails, Image existingImage) {
-        existingImage.setMimeType(MimeType.valueOf(imageDetails.getMimeType().toUpperCase()));
+        existingImage.setMimeType(MimeType.valueOf(imageDetails.getImageMimeType().toUpperCase()));
         existingImage.setType(ImageType.LOGO);
         existingImage.setColor(ImageColor.MONOCHROME);
-        existingImage.setTheme(ImageTheme.valueOf(imageDetails.getTheme().toUpperCase()));
-        existingImage.setWidth(Integer.valueOf(imageDetails.getWidth()));
-        existingImage.setHeight(Integer.valueOf(imageDetails.getHeight()));
+        existingImage.setTheme(ImageTheme.valueOf(imageDetails.getImageTheme().toUpperCase()));
+        existingImage.setWidth(Integer.valueOf(imageDetails.getImageWidth()));
+        existingImage.setHeight(Integer.valueOf(imageDetails.getImageHeight()));
     }
 
     private Void deserializeAndUpdateChannel(HttpServletRequest req, HttpServletResponse resp) {
@@ -388,11 +390,11 @@ public class ChannelWriteExecutor {
     public static class ImageDetails {
 
         private String channelId;
-        private String uri;
-        private String theme;
-        private String mimeType;
-        private String height;
-        private String width;
+        private String imageUri;
+        private String imageTheme;
+        private String imageMimeType;
+        private String imageHeight;
+        private String imageWidth;
 
         public ImageDetails() {
         }
@@ -405,44 +407,44 @@ public class ChannelWriteExecutor {
             this.channelId = channelId;
         }
 
-        public String getUri() {
-            return uri;
+        public String getImageUri() {
+            return imageUri;
         }
 
-        public void setUri(String uri) {
-            this.uri = uri;
+        public void setImageUri(String imageUri) {
+            this.imageUri = imageUri;
         }
 
-        public String getTheme() {
-            return theme;
+        public String getImageTheme() {
+            return imageTheme;
         }
 
-        public void setTheme(String theme) {
-            this.theme = theme;
+        public void setImageTheme(String imageTheme) {
+            this.imageTheme = imageTheme;
         }
 
-        public String getMimeType() {
-            return mimeType;
+        public String getImageMimeType() {
+            return imageMimeType;
         }
 
-        public void setMimeType(String mimeType) {
-            this.mimeType = mimeType;
+        public void setImageMimeType(String imageMimeType) {
+            this.imageMimeType = imageMimeType;
         }
 
-        public String getHeight() {
-            return height;
+        public String getImageHeight() {
+            return imageHeight;
         }
 
-        public void setHeight(String height) {
-            this.height = height;
+        public void setImageHeight(String imageHeight) {
+            this.imageHeight = imageHeight;
         }
 
-        public String getWidth() {
-            return width;
+        public String getImageWidth() {
+            return imageWidth;
         }
 
-        public void setWidth(String width) {
-            this.width = width;
+        public void setImageWidth(String imageWidth) {
+            this.imageWidth = imageWidth;
         }
 
     }

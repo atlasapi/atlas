@@ -58,15 +58,7 @@ public class BtChannelDataUpdater {
             try {
                 Optional<Channel> channelOptional = processEntryForAliases(currentEntry);
 
-                channelOptional.ifPresent(channel -> {
-                    updatedChannels.add(channel.getId());
-                    updatedChannels.add(
-                            updateChannelWithAliases(
-                                    findOrCreateSourceChannel(channel),
-                                    currentEntry.getLinearEpgChannelId()
-                            ).get().getId()
-                    );
-                });
+                channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
 
             } catch (IllegalArgumentException e) {
                 LOGGER.error("Failure to process. Channel Id may contain illegal characters that are not accepted by the codec", e);
@@ -76,7 +68,11 @@ public class BtChannelDataUpdater {
 
         removeStaleAliasesFromChannel(
                 updatedChannels,
-                channelResolver.all()
+                channelResolver.allChannels(
+                        ChannelQuery.builder()
+                                .withPublisher(publisher)
+                                .build()
+                )
         );
     }
 
@@ -89,18 +85,7 @@ public class BtChannelDataUpdater {
             try {
                 Optional<Channel> channelOptional = processEntryForAdvertisedDates(currentEntry);
 
-                channelOptional.ifPresent(
-                        channel ->  {
-                            updatedChannels.add(channel.getId());
-                            updatedChannels.add(
-                                    updateChannelWithAdvertisedDates(
-                                            findOrCreateSourceChannel(channel),
-                                            new DateTime(currentEntry.getAvailableDate()),
-                                            new DateTime(currentEntry.getAvailableToDate())
-                                    ).getId()
-                            );
-                        }
-                );
+                channelOptional.ifPresent(channel -> updatedChannels.add(channel.getId()));
 
             } catch (IllegalArgumentException e) {
                 LOGGER.error(
@@ -112,7 +97,11 @@ public class BtChannelDataUpdater {
 
         removeStaleAvailableDateFromChannel(
                 updatedChannels,
-                channelResolver.all()
+                channelResolver.allChannels(
+                        ChannelQuery.builder()
+                                .withPublisher(publisher)
+                                .build()
+                )
         );
     }
 
@@ -126,7 +115,7 @@ public class BtChannelDataUpdater {
         }
 
         return updateChannelWithAliases(
-                channelOptional.get(),
+                findOrCreateSourceChannel(channelOptional.get()),
                 linearEpgChannelId
         );
     }
@@ -161,7 +150,7 @@ public class BtChannelDataUpdater {
         DateTime advertiseToDate = new DateTime(entry.getAvailableToDate());
 
         return Optional.of(updateChannelWithAdvertisedDates(
-                channel.get(),
+                findOrCreateSourceChannel(channel.get()),
                 advertiseFromDate,
                 advertiseToDate
         ));

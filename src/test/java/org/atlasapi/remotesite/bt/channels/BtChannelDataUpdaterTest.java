@@ -87,13 +87,13 @@ public class BtChannelDataUpdaterTest {
         when(paginatedEntries.getEntries()).thenReturn(entries);
         when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
         when(channelWriter.createOrUpdate(channelBeingWrittenCaptor.capture())).thenReturn(testChannel2);
-        when(channelResolver.all()).thenReturn(channels);
+        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
 
         channelDataUpdater.addAliasesToChannel(paginatedEntries);
 
         verify(paginatedEntries).getEntries();
         verify(channelResolver).fromId(channelId);
-        verify(channelResolver).all();
+        verify(channelResolver).allChannels(any(ChannelQuery.class));
 
         Set<Alias> channelAliases = testChannel2.getAliases();
         assertThat(channelAliases.contains(shouldNotRemove1), is(true));
@@ -145,26 +145,24 @@ public class BtChannelDataUpdaterTest {
 
         long channelId = codec.decode(entry1.getGuid()).longValue();
         testChannel.setId(channelId);
-        environmentChannel.setId(123L);
-
         Maybe<Channel> channelMaybe = Maybe.just(testChannel);
 
         when(paginatedEntries.getEntries()).thenReturn(entries);
         when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
         when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
-        when(channelResolver.all()).thenReturn(channels);
+        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
 
         channelDataUpdater.addAliasesToChannel(paginatedEntries);
 
         verify(paginatedEntries).getEntries();
         verify(channelResolver).fromId(channelId);
         verify(channelWriter).createOrUpdate(expectedChannelWithAlias);
-        verify(channelResolver).all();
+        verify(channelResolver).allChannels(any(ChannelQuery.class));
 
         Set<Alias> channelAliases = testChannel.getAliases();
         Set<Alias> environmentAliases = environmentChannel.getAliases();
 
-        assertTrue(channelAliases.contains(alias));
+        assertFalse(channelAliases.contains(alias));
         assertTrue(environmentAliases.contains(alias));
 
         //Make sure that we don't remove the old aliases after adding the new one.
@@ -208,23 +206,23 @@ public class BtChannelDataUpdaterTest {
 
         when(paginatedEntries.getEntries()).thenReturn(entries);
         when(channelResolver.fromId(channelId)).thenReturn(channelMaybe);
-        when(channelResolver.all()).thenReturn(channels);
+        when(channelResolver.allChannels(any(ChannelQuery.class))).thenReturn(channels);
         when(channelResolver.fromUri(any(String.class))).thenReturn(Maybe.just(environmentChannel));
 
         channelDataUpdater.addAvailableDatesToChannel(paginatedEntries);
 
         verify(paginatedEntries).getEntries();
         verify(channelResolver).fromId(channelId);
-        verify(channelResolver).all();
+        verify(channelResolver).allChannels(any(ChannelQuery.class));
 
         assertEquals(
                 new DateTime(1446556354000L),
-                testChannel.getAdvertiseFrom()
+                environmentChannel.getAdvertiseFrom()
         );
 
         assertEquals(
                 new DateTime(1447556354000L),
-                testChannel.getAdvertiseTo()
+                environmentChannel.getAdvertiseTo()
         );
 
     }

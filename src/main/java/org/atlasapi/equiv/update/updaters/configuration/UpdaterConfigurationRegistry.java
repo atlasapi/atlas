@@ -51,6 +51,8 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.YOUVIEW_ITEM;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
+import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
@@ -114,7 +116,9 @@ public class UpdaterConfigurationRegistry {
                 makeAmazonUnboxConfiguration(),
                 makeTalkTalkConfiguration(),
                 makeRteConfiguration(),
-                makeFiveConfiguration()
+                makeFiveConfiguration(),
+                makeBarbMasterConfiguration(),
+                makeBarbTransmissionConfiguration()
         );
 
         configurations.add(
@@ -700,6 +704,36 @@ public class UpdaterConfigurationRegistry {
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
                         TARGET_SOURCES
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeBarbMasterConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(BARB_MASTER)
+                .withItemEquivalenceUpdater(
+
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeBarbTransmissionConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(BARB_TRANSMISSIONS)
+                .withItemEquivalenceUpdater(
+
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+
                 )
                 .build();
     }

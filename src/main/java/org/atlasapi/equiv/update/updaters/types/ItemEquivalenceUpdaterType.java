@@ -58,6 +58,9 @@ public enum ItemEquivalenceUpdaterType {
     MUSIC_ITEM(
             MusicItemUpdaterProvider.create()
     ),
+    BARB_ITEM(
+            BarbItemUpdateProvider.create()
+    )
     ;
 
     private final EquivalenceUpdaterProvider<Item> provider;

@@ -1,6 +1,8 @@
 package org.atlasapi.equiv.generators;
 
 
+import java.util.stream.StreamSupport;
+
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 
@@ -37,32 +39,30 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
 
     @Override
     public ScoredCandidates<T> generate(T subject, ResultDescription desc) {
-        // TODO: find out what fromSource means and what source needs to be set
         DefaultScoredCandidates.Builder<T> equivalents =
-                DefaultScoredCandidates.fromSource("");
+                DefaultScoredCandidates.fromSource("Barb Alias");
 
         desc.startStage("Resolving Barb Aliases:");
-        for (String alias : subject.getAliasUrls()) {
-            desc.appendText(alias);
-        }
+        subject.getAliasUrls().forEach(alias -> desc.appendText(alias));
         desc.finishStage();
 
-        // TODO find out what namespace is in entries for Aliases
-        // I think it's the alias namespace - depends which alias is used
         Iterable<LookupEntry> entries = lookupEntryStore.entriesForAliases(
                 Optional.of("aliases"),
                 subject.getAliasUrls()
         );
 
+        StreamSupport.stream(entries.spliterator(), false)
+                .forEach(
+                        entry -> {
+                            Identified identified = resolver.findByCanonicalUris(ImmutableSet.of(entry.uri())).getFirstValue().requireValue();
+                            if (identified.getAliasUrls().size() != 0 &&
+                                    subject.getAliasUrls().contains(identified.getAliasUrls())) {
+                                equivalents.addEquivalent((T) identified, Score.ONE);
+                                desc.appendText("Resolved %s", identified.getCanonicalUri());
+                            }
+                        }
+                );
 
-        for (LookupEntry entry : entries) {
-            Identified identified = resolver.findByCanonicalUris(ImmutableSet.of(entry.uri())).getFirstValue().requireValue();
-            if (identified.getAliasUrls().size() != 0 &&
-                    subject.getAliasUrls().contains(identified.getAliasUrls())) {
-                equivalents.addEquivalent((T) identified, Score.ONE);
-                desc.appendText("Resolved %s", identified.getCanonicalUri());
-            }
-        }
 
         return equivalents.build();
     }

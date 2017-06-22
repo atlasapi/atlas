@@ -35,6 +35,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
         .STANDARD_TOP_LEVEL_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
         .VOD_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BT_VOD_ITEM;
@@ -63,6 +64,7 @@ import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
+import static org.atlasapi.media.entity.Publisher.ITV_CPS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
@@ -118,7 +120,8 @@ public class UpdaterConfigurationRegistry {
                 makeRteConfiguration(),
                 makeFiveConfiguration(),
                 makeBarbMasterConfiguration(),
-                makeBarbTransmissionConfiguration()
+                makeBarbTransmissionConfiguration(),
+                makeItvCpsConfiguration()
         );
 
         configurations.add(
@@ -712,13 +715,16 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BARB_MASTER)
                 .withItemEquivalenceUpdater(
-
+                        BARB_ITEM,
+                        ImmutableSet.of(BBC, ITV_CPS, BARB_TRANSMISSIONS)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-
+                        NOP_CONTAINER,
+                        ImmutableSet.of()
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-
+                        NOP_CONTAINER,
+                        ImmutableSet.of()
                 )
                 .build();
     }
@@ -727,13 +733,34 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BARB_TRANSMISSIONS)
                 .withItemEquivalenceUpdater(
-
+                        BARB_ITEM,
+                        ImmutableSet.of(BBC, ITV_CPS, BARB_MASTER)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-
+                        NOP_CONTAINER,
+                        ImmutableSet.of()
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
+                        NOP_CONTAINER,
+                        ImmutableSet.of()
+                )
+                .build();
+    }
 
+    private static UpdaterConfiguration makeItvCpsConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(ITV_CPS)
+                .withItemEquivalenceUpdater(
+                        BARB_ITEM,
+                        ImmutableSet.of(BBC, BARB_TRANSMISSIONS, BARB_MASTER)
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        NOP_CONTAINER,
+                        ImmutableSet.of()
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        NOP_CONTAINER,
+                        ImmutableSet.of()
                 )
                 .build();
     }

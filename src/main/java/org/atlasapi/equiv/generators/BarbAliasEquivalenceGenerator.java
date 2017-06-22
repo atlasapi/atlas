@@ -16,27 +16,23 @@ import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 public class BarbAliasEquivalenceGenerator<T extends Content> implements EquivalenceGenerator<T> {
 
-    private final MongoLookupEntryStore lookupEntryStore,
-    private final ContentResolver resolver,
-    private final Class<T> cls;
+    private final MongoLookupEntryStore lookupEntryStore;
+    private final ContentResolver resolver;
     private static final String NAME = "Barb Alias Resolving Generator";
 
     public BarbAliasEquivalenceGenerator(
             MongoLookupEntryStore lookupEntryStore,
-            ContentResolver resolver,
-            Class<T> cls
+            ContentResolver resolver
     ) {
         this.lookupEntryStore = lookupEntryStore;
         this.resolver = resolver;
-        this.cls = cls;
     }
 
     public static <T extends Content> EquivalenceGenerator<T> barbAliasResolvingGenerator(
             MongoLookupEntryStore lookupEntryStore,
-            ContentResolver resolver,
-            Class<T> cls
+            ContentResolver resolver
     ) {
-        return new BarbAliasEquivalenceGenerator<T>(lookupEntryStore, resolver, cls);
+        return new BarbAliasEquivalenceGenerator<T>(lookupEntryStore, resolver);
     }
 
     @Override

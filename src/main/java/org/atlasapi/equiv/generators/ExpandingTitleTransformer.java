@@ -3,7 +3,6 @@ package org.atlasapi.equiv.generators;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Map;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -11,7 +10,6 @@ import com.metabroadcast.common.collect.ImmutableOptionalMap;
 import com.metabroadcast.common.collect.OptionalMap;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
@@ -57,54 +55,43 @@ public class ExpandingTitleTransformer {
         input = input.toLowerCase();
         List<String> words = Arrays.asList(input.split(" "));
 
-        //remove parts of the word we don't need
-        List<String> cleanWords = new ArrayList<>();
-        for (String word : words) {
-            String cleanWord = clean(word);
-            String britishWord = britisise(cleanWord);
-            cleanWords.add(britishWord);
-        }
+        List<String> cleanWords = words.stream()
+                .map(this::removePossesive)
+                .map(this::americanize)
+                .map(expander::apply).collect(Collectors.toList());
 
-        Iterable<String> transform = Iterables.transform(cleanWords, expander);
-        return String.join(" ", transform);
+        return String.join(" ", cleanWords);
     }
 
-    /**
-     * Removes bits of the words that we don't need on the expanded word
-     *
-     * @param word
-     * @return
-     */
-    private String clean(String word) {
-        if(word.endsWith("'s")) {
+    private String removePossesive(String word) {
+        if (word.endsWith("'s")) {
             return replaceLast(word, "'s", "");
         }
         return word;
     }
 
-    /**
-     * Convert the given word to british english.
-     * <strong>This function is a stub and more rules need to be added</strong>
-     * @return
-     */
-    private String britisise(String word){
-        if(word.endsWith("our")){
+
+    //This function is a stub and more rules need to be added
+    private String americanize(String word) {
+        if (word.endsWith("our")) {
             return replaceLast(word, "our", "or");
         }
         return word;
     }
 
     /**
-     * Replace the last occurrence in a string.
-     * @param text The string we are editing
-     * @param regex What to look for
-     * @param replacement what to replace with
+     * Replace only the last occurrence that the regex matches.
+     *
+     * @param text        The string we are editing
+     * @param regex       What to look for
+     * @param replacement what to replace it with
      * @return the text with the last occurrence of regex replaced with replacement
      */
     public static String replaceLast(String text, String regex, String replacement) {
         return text.replaceFirst("(?s)(.*)" + regex, "$1" + replacement);
     }
 
+    //This function now relies on receiving lowercase letters.
     private Function<String, String> expander = new Function<String, String>() {
         @Nullable
         @Override

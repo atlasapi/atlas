@@ -34,27 +34,27 @@ public class ExpandingTitleTransformerTest {
     }
 
     @Test
-    public void combined(){
-        assertThat(sanitizer.expand(""),
-                is("five for vendetta"));
-        assertThat(sanitizer.expand("Iron man III"),
-                is("iron man three"));
-        assertThat(sanitizer.expand("XXX"), //Vin Diesel film name
-                is("xxx")); //because we only translate up to 20.
+    public void testExpandCombinationOfRules() {
+        assertThat(sanitizer.expand("V's for Vendetta harbour"), //first remove the 's, then convert the roman
+                is("five for vendetta harbor"));
+        assertThat(sanitizer.expand("five V's give us a 5"),
+                is("five five give us a five"));
     }
 
     @Test
-    public void testRomans(){
+    public void testExpandRomans() {
         assertThat(sanitizer.expand("V for Vendetta"),
                 is("five for vendetta"));
         assertThat(sanitizer.expand("Iron man III"),
                 is("iron man three"));
+        assertThat(sanitizer.expand("Iron man IiI"), //testing it is irrelevant of case
+                is("iron man three"));
         assertThat(sanitizer.expand("XXX"), //Vin Diesel film name
                 is("xxx")); //because we only translate up to 20.
     }
 
     @Test
-    public void testPossesive(){
+    public void testExpandPossesive() {
         assertThat(sanitizer.expand("Noel Fielding's Luxury Comedy"),
                 is("noel fielding luxury comedy"));
         assertThat(sanitizer.expand("'s"), //replace standalone 's
@@ -64,7 +64,7 @@ public class ExpandingTitleTransformerTest {
     }
 
     @Test
-    public void testBritisise(){
+    public void testEpxandAmericanize() {
         assertThat(sanitizer.expand("Harbour of love"), //replace end of word
                 is("harbor of love"));
         assertThat(sanitizer.expand("Our love"), //replace whole word

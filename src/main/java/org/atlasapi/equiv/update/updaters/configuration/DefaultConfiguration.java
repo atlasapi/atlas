@@ -8,6 +8,8 @@ import com.google.common.collect.Sets;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UK;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
+import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
@@ -18,6 +20,7 @@ import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
+import static org.atlasapi.media.entity.Publisher.ITV_CPS;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
 import static org.atlasapi.media.entity.Publisher.PA;
@@ -100,7 +103,10 @@ public class DefaultConfiguration {
                             FIVE,
                             AMAZON_UNBOX,
                             YOUVIEW_SCOTLAND_RADIO,
-                            YOUVIEW_SCOTLAND_RADIO_STAGE
+                            YOUVIEW_SCOTLAND_RADIO_STAGE,
+                            BARB_MASTER,
+                            BARB_TRANSMISSIONS,
+                            ITV_CPS
                     )
             )
             .addAll(MUSIC_SOURCES)

@@ -109,6 +109,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         List<String> forceTargetUrisSix = new ArrayList<>();
         forceTargetUrisSix.add("http://txlogs.barb.co.uk/episode/ENIE813B82");
         forceTargetUrisSix.add("http://uktv.co.uk/ENIE813B");
+        forceTargetUrisSix.add("http://nitro.bbc.co.uk/programmes/b08w66kz");
 
         equivalents = findForcedEquivalents(
                 subject,

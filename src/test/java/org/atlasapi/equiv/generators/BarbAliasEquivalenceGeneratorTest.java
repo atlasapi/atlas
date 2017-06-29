@@ -51,7 +51,8 @@ public class BarbAliasEquivalenceGeneratorTest {
                 .put("nothing2", identified1)
                 .build();
 
-        resolvedContent.getAllResolvedResults().forEach(i -> equivalents.addEquivalent(i, Score.ONE));
+        resolvedContent.getAllResolvedResults().forEach(i ->
+                equivalents.addEquivalent(i, Score.ONE));
 
         when(resolver.findByCanonicalUris(Matchers.anyCollection())).thenReturn(resolvedContent);
 
@@ -61,7 +62,7 @@ public class BarbAliasEquivalenceGeneratorTest {
     @Test
     public void generatorFindsHardcodedContent() {
         Content subject = new Item();
-        subject.setCanonicalUri("http://cdmf.barb.co.uk/episode/754382");
+        subject.setCanonicalUri("http://cdmf.barb.co.uk/episode/219060");
 
         ResultDescription desc = new ResultDescription() {
 
@@ -96,7 +97,10 @@ public class BarbAliasEquivalenceGeneratorTest {
                 .put("nothing2", identified1)
                 .build();
 
-        resolvedContent.getAllResolvedResults().forEach(i -> equivalents.addEquivalent(i, Score.valueOf(2.0)));
+        resolvedContent.getAllResolvedResults().forEach(i -> equivalents.addEquivalent(
+                i,
+                Score.valueOf(1.0)
+        ));
 
         assertEquals(scoredCandidates, equivalents.build());
     }

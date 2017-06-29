@@ -55,6 +55,7 @@ import static org.atlasapi.media.entity.Publisher.AMC_EBS;
 import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
 import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BBC;
+import static org.atlasapi.media.entity.Publisher.BBC_NITRO;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
 import static org.atlasapi.media.entity.Publisher.BETTY;
 import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
@@ -716,7 +717,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BARB_MASTER)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC, ITV_CPS, BARB_TRANSMISSIONS)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,
@@ -734,7 +735,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BARB_TRANSMISSIONS)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC, ITV_CPS, BARB_MASTER)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,
@@ -752,7 +753,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(ITV_CPS)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC, BARB_TRANSMISSIONS, BARB_MASTER)
+                        ImmutableSet.of(BBC_NITRO, BARB_TRANSMISSIONS, BARB_MASTER)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,

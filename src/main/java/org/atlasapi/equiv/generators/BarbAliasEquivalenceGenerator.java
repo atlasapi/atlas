@@ -37,6 +37,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         return new BarbAliasEquivalenceGenerator<T>(lookupEntryStore, resolver);
     }
 
+    @SuppressWarnings("unchecked")
     @Override
     public ScoredCandidates<T> generate(T subject, ResultDescription desc) {
         DefaultScoredCandidates.Builder<T> equivalents =
@@ -54,11 +55,23 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         StreamSupport.stream(entries.spliterator(), false)
                 .forEach(
                         entry -> {
-                            Identified identified = resolver.findByCanonicalUris(ImmutableSet.of(entry.uri())).getFirstValue().requireValue();
-                            if (identified.getAliasUrls().size() != 0 &&
-                                    subject.getAliasUrls().contains(identified.getAliasUrls())) {
-                                equivalents.addEquivalent((T) identified, Score.ONE);
-                                desc.appendText("Resolved %s", identified.getCanonicalUri());
+                            Identified identified = resolver.findByCanonicalUris(
+                                    ImmutableSet.of(entry.uri())
+                            ).getFirstValue().requireValue();
+
+                            if (identified.getAliasUrls().size() != 0) {
+                                boolean match = false;
+
+                                for (String alias : identified.getAliasUrls()) {
+                                    if (subject.getAliasUrls().contains(alias)) {
+                                        match = true;
+                                    }
+                                }
+
+                                if (match) {
+                                    equivalents.addEquivalent((T) identified, Score.ONE);
+                                    desc.appendText("Resolved %s", identified.getCanonicalUri());
+                                }
                             }
                         }
                 );

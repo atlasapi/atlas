@@ -76,6 +76,7 @@ import static org.atlasapi.media.entity.Publisher.ROVI_EN_GB;
 import static org.atlasapi.media.entity.Publisher.ROVI_EN_US;
 import static org.atlasapi.media.entity.Publisher.RTE;
 import static org.atlasapi.media.entity.Publisher.TALK_TALK;
+import static org.atlasapi.media.entity.Publisher.UKTV;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT;
 import static org.atlasapi.media.entity.Publisher.YOUVIEW_BT_STAGE;
@@ -717,7 +718,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BARB_MASTER)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,
@@ -734,8 +735,8 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BARB_TRANSMISSIONS)
                 .withItemEquivalenceUpdater(
-                        BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER)
+                        NOP_ITEM,
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,
@@ -752,8 +753,8 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(ITV_CPS)
                 .withItemEquivalenceUpdater(
-                        BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, BARB_TRANSMISSIONS, BARB_MASTER)
+                        NOP_ITEM,
+                        ImmutableSet.of(BBC_NITRO, BARB_TRANSMISSIONS, BARB_MASTER, UKTV)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,

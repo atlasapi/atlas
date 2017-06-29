@@ -53,7 +53,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         equivalents = findForcedEquivalents(
                 subject,
                 equivalents,
-                "http://cdmf.barb.co.uk/episode/754382",
+                "http://cdmf.barb.co.uk/episode/219060",
                 forceTargetUrisOne,
                 desc
         );

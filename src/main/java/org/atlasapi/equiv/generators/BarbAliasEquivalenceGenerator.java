@@ -132,6 +132,9 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
 
             ResolvedContent resolvedContent = resolver.findByCanonicalUris(forceTargetUris);
 
+            if (resolvedContent.isEmpty()) {
+                return equivalents;
+            }
             resolvedContent.getAllResolvedResults().forEach(identified -> {
                 equivalents.addEquivalent((T) identified, Score.ONE);
                 desc.appendText("Resolved %s", identified.getCanonicalUri());

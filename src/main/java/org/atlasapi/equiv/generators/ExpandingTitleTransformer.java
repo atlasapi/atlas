@@ -1,8 +1,6 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
@@ -27,27 +25,6 @@ public class ExpandingTitleTransformer {
                     .put("7", "seven")
                     .put("8", "eight")
                     .put("9", "nine")
-                    //replace roman numerals
-                    .put("i", "one")
-                    .put("ii", "two")
-                    .put("iii", "three")
-                    .put("iv", "four")
-                    .put("v", "five")
-                    .put("vi", "six")
-                    .put("vii", "seven")
-                    .put("viii", "eight")
-                    .put("ix", "nine")
-                    .put("x", "ten")
-                    .put("xi", "eleven")
-                    .put("xii", "twelve")
-                    .put("xiii", "thirteen")
-                    .put("xiv", "fourteen")
-                    .put("xv", "fifteen")
-                    .put("xvi", "sixteen")
-                    .put("xvii", "seventeen")
-                    .put("xviii", "eighteen")
-                    .put("xix", "nineteen")
-                    .put("xx", "twenty")
                     .build());
 
 
@@ -55,21 +32,49 @@ public class ExpandingTitleTransformer {
         input = input.toLowerCase();
         List<String> words = Arrays.asList(input.split(" "));
 
+        //First expand the romans at the end, then do other stuff
+        //because we don't want V's to become V and then five.
+
+        String lastWord = words.get(words.size() - 1);
+        words.set(words.size() - 1, convertRomanNumerals(lastWord));
+
         List<String> cleanWords = words.stream()
-                .map(this::removePossesive)
                 .map(this::americanize)
                 .map(expander::apply).collect(Collectors.toList());
+
+
 
         return String.join(" ", cleanWords);
     }
 
-    private String removePossesive(String word) {
-        if (word.endsWith("'s")) {
-            return replaceLast(word, "'s", "");
+    private String convertRomanNumerals(String word) {
+        Map<String, String> romanNumerals = new HashMap<>();
+        romanNumerals.put("i", "one");
+        romanNumerals.put("ii", "two");
+        romanNumerals.put("iii", "three");
+        romanNumerals.put("iv", "four");
+        romanNumerals.put("v", "five");
+        romanNumerals.put("vi", "six");
+        romanNumerals.put("vii", "seven");
+        romanNumerals.put("viii", "eight");
+        romanNumerals.put("ix", "nine");
+        romanNumerals.put("x", "ten");
+        romanNumerals.put("xi", "eleven");
+        romanNumerals.put("xii", "twelve");
+        romanNumerals.put("xiii", "thirteen");
+        romanNumerals.put("xiv", "fourteen");
+        romanNumerals.put("xv", "fifteen");
+        romanNumerals.put("xvi", "sixteen");
+        romanNumerals.put("xvii", "seventeen");
+        romanNumerals.put("xviii", "eighteen");
+        romanNumerals.put("xix", "nineteen");
+        romanNumerals.put("xx", "twenty");
+
+        if (romanNumerals.containsKey(word)) {
+            return romanNumerals.get(word);
         }
         return word;
     }
-
 
     //This function is a stub and more rules need to be added
     private String americanize(String word) {
@@ -81,6 +86,7 @@ public class ExpandingTitleTransformer {
 
     /**
      * Replace only the last occurrence that the regex matches.
+     * TODO:If anyone knows a generic place to put this, move it.
      *
      * @param text        The string we are editing
      * @param regex       What to look for

@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update.updaters.types;
 
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.BarbItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BtVodItemUpdaterProvider;
@@ -57,6 +58,9 @@ public enum ItemEquivalenceUpdaterType {
     ),
     MUSIC_ITEM(
             MusicItemUpdaterProvider.create()
+    ),
+    BARB_ITEM(
+            BarbItemUpdaterProvider.create()
     ),
     ;
 

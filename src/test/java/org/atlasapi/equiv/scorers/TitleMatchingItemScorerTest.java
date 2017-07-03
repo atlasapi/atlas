@@ -136,8 +136,6 @@ public class TitleMatchingItemScorerTest extends TestCase {
 
     @Test
     public void testMatchingWithPunctuation() {
-        //This test case covers cases when non-abbrivating apostrophe is used in the end of the word
-        // like "Girls' Night In" with "Girls' Night In"
         DefaultDescription desc = new DefaultDescription();
         score(2, scorer.score(itemWithTitle("48 hrs"), of(itemWithTitle("48 HRS.")), desc));
         score(2, scorer.score(itemWithTitle("The 7:51"), of(itemWithTitle("The 7.51")), desc));
@@ -177,6 +175,23 @@ public class TitleMatchingItemScorerTest extends TestCase {
         score(2, scorer.score(itemWithTitle("HouseBusters"), of(itemWithTitle("House Busters")), desc));
         score(2, scorer.score(itemWithTitle("House  Busters  "), of(itemWithTitle("  House Busters")), desc));
         score(2, scorer.score(itemWithTitle("Iron Man 3"), of(itemWithTitle("IronMan 3")), desc));
+    }
+    
+    @Test
+    public void testMachingWithDifferentNumberingSystem(){
+        //do not change romans anywhere but the end of a sentence
+        DefaultDescription desc = new DefaultDescription();
+        score(2, scorer.score(itemWithTitle("Iron Man 3"), of(itemWithTitle("Iron Man III")), desc));
+        score(2, scorer.score(itemWithTitle("The world and I"), of(itemWithTitle("The world and one")), desc)); //sideeffect
+        score(0, scorer.score(itemWithTitle("V for vendetta"), of(itemWithTitle("Five for Vendetta")), desc));
+        score(0, scorer.score(itemWithTitle("Three v Five"), of(itemWithTitle("Three Five Five")), desc));
+    }
+    
+    @Test
+    public void testMachingWithDifferentEnglish(){
+        //american vs brisish english should match
+        DefaultDescription desc = new DefaultDescription();
+        score(2, scorer.score(itemWithTitle("British Harbor"), of(itemWithTitle("British Harbour")), desc));
     }
 
     @Test

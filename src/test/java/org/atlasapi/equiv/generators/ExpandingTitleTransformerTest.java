@@ -33,4 +33,25 @@ public class ExpandingTitleTransformerTest {
                 is("three musketeers"));
     }
 
+    @Test
+    public void testExpandRomans() {
+        assertThat(sanitizer.expand("V for Vendetta"), //dont change roman unless end of name
+                is("v for vendetta"));
+        assertThat(sanitizer.expand("Iron man III"),
+                is("iron man three"));
+        assertThat(sanitizer.expand("Iron man IiI"), //testing it is irrelevant of case
+                is("iron man three"));
+        assertThat(sanitizer.expand("XXX"), //Vin Diesel film name
+                is("xxx")); //because we only translate up to 20.
+    }
+
+    @Test
+    public void testEpxandAmericanize() {
+        assertThat(sanitizer.expand("Harbour of love"), //replace end of word
+                is("harbor of love"));
+        assertThat(sanitizer.expand("Our love"), //replace whole word
+                is("or love"));
+        assertThat(sanitizer.expand("Ourselves and us"), //dont replace start of word
+                is("ourselves and us"));
+    }
 }

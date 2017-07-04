@@ -735,7 +735,7 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BARB_TRANSMISSIONS)
                 .withItemEquivalenceUpdater(
-                        NOP_ITEM,
+                        BARB_ITEM,
                         ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
@@ -753,7 +753,7 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(ITV_CPS)
                 .withItemEquivalenceUpdater(
-                        NOP_ITEM,
+                        BARB_ITEM,
                         ImmutableSet.of(BBC_NITRO, BARB_TRANSMISSIONS, BARB_MASTER, UKTV)
                 )
                 .withTopLevelContainerEquivalenceUpdater(

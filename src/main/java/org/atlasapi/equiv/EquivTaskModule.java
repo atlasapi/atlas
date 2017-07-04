@@ -74,6 +74,8 @@ import org.springframework.context.annotation.Lazy;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.media.entity.Publisher.AMAZON_UNBOX;
 import static org.atlasapi.media.entity.Publisher.AMC_EBS;
+import static org.atlasapi.media.entity.Publisher.BARB_MASTER;
+import static org.atlasapi.media.entity.Publisher.BARB_TRANSMISSIONS;
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.atlasapi.media.entity.Publisher.BBC_MUSIC;
 import static org.atlasapi.media.entity.Publisher.BBC_REDUX;
@@ -90,6 +92,7 @@ import static org.atlasapi.media.entity.Publisher.EBMS_VF_UK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
 import static org.atlasapi.media.entity.Publisher.ITUNES;
 import static org.atlasapi.media.entity.Publisher.ITV;
+import static org.atlasapi.media.entity.Publisher.ITV_CPS;
 import static org.atlasapi.media.entity.Publisher.ITV_INTERLINKING;
 import static org.atlasapi.media.entity.Publisher.LOVEFILM;
 import static org.atlasapi.media.entity.Publisher.NETFLIX;
@@ -392,6 +395,21 @@ public class EquivTaskModule {
         scheduleEquivalenceJob(
                 publisherUpdateTask(C4_PRESS).withName("C4 Press Equivalence Updater"),
                 C4_PRESS_EQUIVALENCE_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(BARB_MASTER).withName("Barb CDMF Updater"),
+                RepetitionRules.NEVER,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
+                RepetitionRules.NEVER,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(ITV_CPS).withName("ITV CPS Updater"),
+                RepetitionRules.NEVER,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(

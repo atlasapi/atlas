@@ -3,7 +3,8 @@ package org.atlasapi.equiv.generators;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.StreamSupport;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
@@ -119,6 +120,10 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                 desc
         );
 
+        if (!(subject.getAliasUrls().isEmpty())) {
+            equivalents = findByCommonAlias(subject, equivalents, desc);
+        }
+
         return equivalents.build();
     }
 
@@ -142,6 +147,49 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
             });
 
         }
+        return equivalents;
+    }
+
+    private DefaultScoredCandidates.Builder findByCommonAlias(
+            T subject,
+            DefaultScoredCandidates.Builder equivalents,
+            ResultDescription desc
+    ) {
+
+        desc.startStage("Resolving Barb Aliases:");
+        subject.getAliasUrls().forEach(alias -> desc.appendText(alias));
+        desc.finishStage();
+
+        Set<Iterable<LookupEntry>> entriesSet = subject.getAliases().stream().map(alias ->
+            lookupEntryStore.entriesForAliases(
+                    Optional.of(alias.getNamespace()),
+                    ImmutableSet.of(alias.getValue())
+            )).collect(Collectors.toSet());
+
+        entriesSet.forEach(iterableLookupEntry -> {
+            iterableLookupEntry.forEach(entry -> {
+                Identified identified = resolver.findByCanonicalUris(
+                        ImmutableSet.of(entry.uri())
+                ).getFirstValue().requireValue();
+
+                if (identified.getAliasUrls().isEmpty()) {
+                    boolean match = false;
+
+                    for (String alias : identified.getAliasUrls()) {
+                        if (subject.getAliasUrls().contains(alias)) {
+                            match = true;
+                            break;
+                        }
+                    }
+
+                    if (match) {
+                        equivalents.addEquivalent((T) identified, Score.ONE);
+                        desc.appendText("Resolved %s", identified.getCanonicalUri());
+                    }
+                }
+            });
+        });
+
         return equivalents;
     }
 

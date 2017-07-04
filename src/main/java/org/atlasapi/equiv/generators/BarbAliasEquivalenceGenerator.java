@@ -120,7 +120,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                 desc
         );
 
-        if (!(subject.getAliasUrls().size() == 0)) {
+        if (!(subject.getAliasUrls().isEmpty())) {
             equivalents = findByCommonAlias(subject, equivalents, desc);
         }
 
@@ -160,13 +160,11 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         subject.getAliasUrls().forEach(alias -> desc.appendText(alias));
         desc.finishStage();
 
-        Set<Iterable<LookupEntry>> entriesSet = subject.getAliases().stream().map(alias -> {
-            Iterable<LookupEntry> entries = lookupEntryStore.entriesForAliases(
+        Set<Iterable<LookupEntry>> entriesSet = subject.getAliases().stream().map(alias ->
+            lookupEntryStore.entriesForAliases(
                     Optional.of(alias.getNamespace()),
                     ImmutableSet.of(alias.getValue())
-            );
-            return entries;
-        }).collect(Collectors.toSet());
+            )).collect(Collectors.toSet());
 
         entriesSet.forEach(iterableLookupEntry -> {
             iterableLookupEntry.forEach(entry -> {
@@ -174,12 +172,13 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                         ImmutableSet.of(entry.uri())
                 ).getFirstValue().requireValue();
 
-                if (identified.getAliasUrls().size() !=0) {
+                if (identified.getAliasUrls().isEmpty()) {
                     boolean match = false;
 
                     for (String alias : identified.getAliasUrls()) {
                         if (subject.getAliasUrls().contains(alias)) {
                             match = true;
+                            break;
                         }
                     }
 

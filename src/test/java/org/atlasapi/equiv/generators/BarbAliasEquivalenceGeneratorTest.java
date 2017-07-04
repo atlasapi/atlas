@@ -26,10 +26,12 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
+import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -49,7 +51,28 @@ public class BarbAliasEquivalenceGeneratorTest {
     Content aliasIdentified1;
     Content aliasIdentified2;
 
-    public BarbAliasEquivalenceGeneratorTest() {
+    ResultDescription desc;
+
+    @Before
+    public void setUp() {
+
+        desc = new ResultDescription() {
+
+            @Override
+            public ResultDescription appendText(String format, Object... args) {
+                return null;
+            }
+
+            @Override
+            public ResultDescription startStage(String stageName) {
+                return null;
+            }
+
+            @Override
+            public ResultDescription finishStage() {
+                return null;
+            }
+        };
 
         setupForceEquivalenceTests();
         setupAliasEquivalenceTests();
@@ -143,24 +166,6 @@ public class BarbAliasEquivalenceGeneratorTest {
         Content subject = new Item();
         subject.setCanonicalUri("http://cdmf.barb.co.uk/episode/219060");
 
-        ResultDescription desc = new ResultDescription() {
-
-            @Override
-            public ResultDescription appendText(String format, Object... args) {
-                return null;
-            }
-
-            @Override
-            public ResultDescription startStage(String stageName) {
-                return null;
-            }
-
-            @Override
-            public ResultDescription finishStage() {
-                return null;
-            }
-        };
-
         ScoredCandidates scoredCandidates = generator.generate(subject, desc);
 
         Content identified = new Item();
@@ -187,33 +192,15 @@ public class BarbAliasEquivalenceGeneratorTest {
     @Test
     public void aliasGeneratorFindsByAlias() {
 
-        ResultDescription desc = new ResultDescription() {
-
-            @Override
-            public ResultDescription appendText(String format, Object... args) {
-                return null;
-            }
-
-            @Override
-            public ResultDescription startStage(String stageName) {
-                return null;
-            }
-
-            @Override
-            public ResultDescription finishStage() {
-                return null;
-            }
-        };
-
         ScoredCandidates scoredCandidates = aliasGenerator.generate(aliasIdentified2, desc);
 
         for (Object scoredCandidate : scoredCandidates.candidates().keySet()) {
             Object content = scoredCandidates.candidates().get(scoredCandidate);
-            if (content instanceof Content) {
-                assertEquals(content, aliasIdentified1);
-            } else {
-                fail();
-            }
+
+            assertTrue(content instanceof  Content);
+
+            assertEquals(content, aliasIdentified1);
+
         }
 
     }

@@ -119,6 +119,8 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                 desc
         );
 
+        equivalents = findByCommonAlias(subject, equivalents, desc);
+
         return equivalents.build();
     }
 
@@ -142,6 +144,17 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
             });
 
         }
+        return equivalents;
+    }
+
+    private DefaultScoredCandidates.Builder findByCommonAlias(
+            T subject,
+            DefaultScoredCandidates.Builder equivalents,
+            ResultDescription desc
+    ) {
+
+
+
         return equivalents;
     }
 

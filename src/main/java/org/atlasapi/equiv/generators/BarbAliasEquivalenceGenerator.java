@@ -122,6 +122,39 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                 desc
         );
 
+        List<String> forceTargetUrisSeven = new ArrayList<>();
+        forceTargetUrisSeven.add("http://nitro.bbc.co.uk/programmes/b04gsjx3");
+
+        equivalents = findForcedEquivalents(
+                subject,
+                equivalents,
+                "http://cdmf.barb.co.uk/episode/739584",
+                forceTargetUrisSeven,
+                desc
+        );
+
+        List<String> forceTargetUrisEight = new ArrayList<>();
+        forceTargetUrisEight.add("http://uktv.co.uk/CTBF519P");
+
+        equivalents = findForcedEquivalents(
+                subject,
+                equivalents,
+                "http://cdmf.barb.co.uk/episode/76891",
+                forceTargetUrisEight,
+                desc
+        );
+
+        List<String> forceTargetUrisNine = new ArrayList<>();
+        forceTargetUrisNine.add("http://uktv.co.uk/CTAP124B");
+
+        equivalents = findForcedEquivalents(
+                subject,
+                equivalents,
+                "http://cdmf.barb.co.uk/episode/110710",
+                forceTargetUrisNine,
+                desc
+        );
+
         if (!(subject.getAliases().isEmpty())) {
             equivalents = findByCommonAlias(subject, equivalents, desc);
         }

@@ -3,6 +3,7 @@ package org.atlasapi.equiv.generators;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -163,7 +164,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                         alias.getNamespace() +
                         ", value: " +
                         alias.getValue()
-        );
+        ));
         desc.finishStage();
 
         Set<Iterable<LookupEntry>> entriesSet = subject.getAliases().stream().map(alias ->
@@ -172,7 +173,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                     ImmutableSet.of(alias.getValue())
             )).collect(Collectors.toSet());
 
-        entriesSet.forEach(iterableLookupEntry -> {
+        entriesSet.stream().filter(Objects::nonNull).forEach(iterableLookupEntry ->
             iterableLookupEntry.forEach(entry -> {
                 Identified identified = resolver.findByCanonicalUris(
                         ImmutableSet.of(entry.uri())
@@ -193,8 +194,8 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                         desc.appendText("Resolved %s", identified.getCanonicalUri());
                     }
                 }
-            });
-        });
+            })
+        );
 
         return equivalents;
     }

@@ -13,6 +13,7 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -120,7 +121,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                 desc
         );
 
-        if (!(subject.getAliasUrls().isEmpty())) {
+        if (!(subject.getAliases().isEmpty())) {
             equivalents = findByCommonAlias(subject, equivalents, desc);
         }
 
@@ -157,7 +158,12 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
     ) {
 
         desc.startStage("Resolving Barb Aliases:");
-        subject.getAliasUrls().forEach(alias -> desc.appendText(alias));
+        subject.getAliases().forEach(alias -> desc.appendText(
+                "namespace: " +
+                        alias.getNamespace() +
+                        ", value: " +
+                        alias.getValue()
+        );
         desc.finishStage();
 
         Set<Iterable<LookupEntry>> entriesSet = subject.getAliases().stream().map(alias ->
@@ -172,11 +178,11 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                         ImmutableSet.of(entry.uri())
                 ).getFirstValue().requireValue();
 
-                if (identified.getAliasUrls().isEmpty()) {
+                if (identified.getAliases().isEmpty()) {
                     boolean match = false;
 
-                    for (String alias : identified.getAliasUrls()) {
-                        if (subject.getAliasUrls().contains(alias)) {
+                    for (Alias alias : identified.getAliases()) {
+                        if (subject.getAliases().contains(alias)) {
                             match = true;
                             break;
                         }

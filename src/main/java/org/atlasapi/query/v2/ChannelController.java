@@ -351,8 +351,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     public void createChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         channelWriteExecutor.createOrUpdateChannelImage(
                 request,
-                response,
-                codec
+                response
         );
     }
 
@@ -360,8 +359,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
     public void deleteChannelImage(HttpServletRequest request, HttpServletResponse response) throws IOException {
         channelWriteExecutor.deleteChannelImage(
                 request,
-                response,
-                codec
+                response
         );
     }
 

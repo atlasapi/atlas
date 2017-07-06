@@ -82,7 +82,7 @@ public class BarbAliasEquivalenceGeneratorTest {
         ));
 
         ResolvedContent aliasResolvedContent = new ResolvedContent.ResolvedContentBuilder()
-                .put("q", aliasIdentified1)
+                .put("Uri for alias test", aliasIdentified1)
                 .build();
 
         DefaultScoredCandidates.Builder aliasEquivalents =
@@ -90,8 +90,8 @@ public class BarbAliasEquivalenceGeneratorTest {
 
         LookupEntry lookupEntry = new LookupEntry(
                 "Uri for alias test",
-                Long.valueOf("022"),
-                new LookupRef("Uri for alias test", Long.valueOf("323"), Publisher.PA, ContentCategory.CHILD_ITEM),
+                22L,
+                new LookupRef("Uri for alias test", 23L, Publisher.PA, ContentCategory.CHILD_ITEM),
                 ImmutableSet.of("Uri for alias test"),
                 aliasesForaliasIdentified1,
                 ImmutableSet.of(),
@@ -112,9 +112,9 @@ public class BarbAliasEquivalenceGeneratorTest {
         when(aliasLookupEntryStore.entriesForAliases(
                 Optional.of("namespaceOne"),
                 ImmutableSet.of("someBcid")
-        )).thenReturn(getIdentifiedImmutableSet(lookupEntry));
+        )).thenReturn(ImmutableSet.of(lookupEntry));
 
-        aliasGenerator = new BarbAliasEquivalenceGenerator(aliasLookupEntryStore, resolver);
+        aliasGenerator = new BarbAliasEquivalenceGenerator(aliasLookupEntryStore, aliasResolver);
     }
 
     private void setupForceEquivalenceTests() {
@@ -141,10 +141,6 @@ public class BarbAliasEquivalenceGeneratorTest {
         when(resolver.findByCanonicalUris(Matchers.anyCollection())).thenReturn(resolvedContent);
 
         generator = new BarbAliasEquivalenceGenerator(lookupEntryStore, resolver);
-    }
-
-    private ImmutableSet getIdentifiedImmutableSet(LookupEntry lookupEntry) {
-        return ImmutableSet.of(lookupEntry);
     }
 
     @Test
@@ -186,12 +182,7 @@ public class BarbAliasEquivalenceGeneratorTest {
         assertFalse(scoredCandidates.candidates().isEmpty());
 
         for (Object scoredCandidate : scoredCandidates.candidates().keySet()) {
-            Object content = scoredCandidates.candidates().get(scoredCandidate);
-
-            assertTrue(content instanceof  Content);
-
-            assertEquals(content, aliasIdentified1);
-
+            assertEquals(scoredCandidate, aliasIdentified1);
         }
 
     }

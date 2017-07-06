@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -31,6 +32,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -56,23 +58,7 @@ public class BarbAliasEquivalenceGeneratorTest {
     @Before
     public void setUp() {
 
-        desc = new ResultDescription() {
-
-            @Override
-            public ResultDescription appendText(String format, Object... args) {
-                return null;
-            }
-
-            @Override
-            public ResultDescription startStage(String stageName) {
-                return null;
-            }
-
-            @Override
-            public ResultDescription finishStage() {
-                return null;
-            }
-        };
+        desc = new DefaultDescription();
 
         setupForceEquivalenceTests();
         setupAliasEquivalenceTests();
@@ -96,7 +82,7 @@ public class BarbAliasEquivalenceGeneratorTest {
         ));
 
         ResolvedContent aliasResolvedContent = new ResolvedContent.ResolvedContentBuilder()
-                .put("q", aliasIdentified1)
+                .put("Uri for alias test", aliasIdentified1)
                 .build();
 
         DefaultScoredCandidates.Builder aliasEquivalents =
@@ -104,8 +90,8 @@ public class BarbAliasEquivalenceGeneratorTest {
 
         LookupEntry lookupEntry = new LookupEntry(
                 "Uri for alias test",
-                Long.valueOf("022"),
-                new LookupRef("Uri for alias test", Long.valueOf("323"), Publisher.PA, ContentCategory.CHILD_ITEM),
+                22L,
+                new LookupRef("Uri for alias test", 23L, Publisher.PA, ContentCategory.CHILD_ITEM),
                 ImmutableSet.of("Uri for alias test"),
                 aliasesForaliasIdentified1,
                 ImmutableSet.of(),
@@ -126,9 +112,9 @@ public class BarbAliasEquivalenceGeneratorTest {
         when(aliasLookupEntryStore.entriesForAliases(
                 Optional.of("namespaceOne"),
                 ImmutableSet.of("someBcid")
-        )).thenReturn(getIdentifiedImmutableSet(lookupEntry));
+        )).thenReturn(ImmutableSet.of(lookupEntry));
 
-        aliasGenerator = new BarbAliasEquivalenceGenerator(aliasLookupEntryStore, resolver);
+        aliasGenerator = new BarbAliasEquivalenceGenerator(aliasLookupEntryStore, aliasResolver);
     }
 
     private void setupForceEquivalenceTests() {
@@ -155,10 +141,6 @@ public class BarbAliasEquivalenceGeneratorTest {
         when(resolver.findByCanonicalUris(Matchers.anyCollection())).thenReturn(resolvedContent);
 
         generator = new BarbAliasEquivalenceGenerator(lookupEntryStore, resolver);
-    }
-
-    private ImmutableSet getIdentifiedImmutableSet(LookupEntry lookupEntry) {
-        return ImmutableSet.of(lookupEntry);
     }
 
     @Test
@@ -194,13 +176,13 @@ public class BarbAliasEquivalenceGeneratorTest {
 
         ScoredCandidates scoredCandidates = aliasGenerator.generate(aliasIdentified2, desc);
 
+        System.out.println(desc.toString());
+        System.out.println(scoredCandidates.toString());
+
+        assertFalse(scoredCandidates.candidates().isEmpty());
+
         for (Object scoredCandidate : scoredCandidates.candidates().keySet()) {
-            Object content = scoredCandidates.candidates().get(scoredCandidate);
-
-            assertTrue(content instanceof  Content);
-
-            assertEquals(content, aliasIdentified1);
-
+            assertEquals(scoredCandidate, aliasIdentified1);
         }
 
     }

@@ -212,7 +212,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                         ImmutableSet.of(entry.uri())
                 ).getFirstValue().requireValue();
 
-                if (identified.getAliases().isEmpty()) {
+                if (!identified.getAliases().isEmpty()) {
                     boolean match = false;
 
                     for (Alias alias : identified.getAliases()) {

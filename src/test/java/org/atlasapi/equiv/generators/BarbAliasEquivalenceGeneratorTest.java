@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
+import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
@@ -31,6 +32,7 @@ import org.junit.Test;
 import org.mockito.Matchers;
 
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
@@ -56,23 +58,7 @@ public class BarbAliasEquivalenceGeneratorTest {
     @Before
     public void setUp() {
 
-        desc = new ResultDescription() {
-
-            @Override
-            public ResultDescription appendText(String format, Object... args) {
-                return null;
-            }
-
-            @Override
-            public ResultDescription startStage(String stageName) {
-                return null;
-            }
-
-            @Override
-            public ResultDescription finishStage() {
-                return null;
-            }
-        };
+        desc = new DefaultDescription();
 
         setupForceEquivalenceTests();
         setupAliasEquivalenceTests();
@@ -193,6 +179,11 @@ public class BarbAliasEquivalenceGeneratorTest {
     public void aliasGeneratorFindsByAlias() {
 
         ScoredCandidates scoredCandidates = aliasGenerator.generate(aliasIdentified2, desc);
+
+        System.out.println(desc.toString());
+        System.out.println(scoredCandidates.toString());
+
+        assertFalse(scoredCandidates.candidates().isEmpty());
 
         for (Object scoredCandidate : scoredCandidates.candidates().keySet()) {
             Object content = scoredCandidates.candidates().get(scoredCandidate);

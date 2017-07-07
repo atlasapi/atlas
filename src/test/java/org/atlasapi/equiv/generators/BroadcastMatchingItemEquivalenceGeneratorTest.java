@@ -5,6 +5,8 @@ import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.joda.time.Duration.standardMinutes;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
@@ -24,9 +26,6 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.integration.junit4.JMock;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.junit.Before;
@@ -38,28 +37,24 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.time.DateTimeZones;
+import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(JMock.class)
+@RunWith(MockitoJUnitRunner.class)
 public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
 
     private static final Channel BBC_ONE = new Channel(Publisher.METABROADCAST, "BBC One", "bbcone", false, MediaType.AUDIO, "http://www.bbc.co.uk/bbcone");
     private static final Channel BBC_ONE_CAMBRIDGE = new Channel(Publisher.METABROADCAST, "BBC One Cambridgeshire", "bbcone-cambridge", false, MediaType.AUDIO, "http://www.bbc.co.uk/services/bbcone/cambridge");
 
-    private final Mockery context = new Mockery();
-    private final ScheduleResolver resolver = context.mock(ScheduleResolver.class);
+    private final ScheduleResolver resolver = mock(ScheduleResolver.class);
     private BroadcastMatchingItemEquivalenceGenerator generator;
     
     @Before
     public void setUp() {
-    	final ChannelResolver channelResolver = context.mock(ChannelResolver.class);
-    	context.checking(new Expectations() {
-			{
-				allowing(channelResolver).fromUri(BBC_ONE.getUri());
-				will(returnValue(Maybe.just(BBC_ONE)));
-				allowing(channelResolver).fromUri(BBC_ONE_CAMBRIDGE.getUri());
-				will(returnValue(Maybe.just(BBC_ONE_CAMBRIDGE)));
-			}
-		});
+    	final ChannelResolver channelResolver = mock(ChannelResolver.class);
+
+        when(channelResolver.fromUri(BBC_ONE.getUri())).thenReturn(Maybe.just(BBC_ONE));
+        when(channelResolver.fromUri(BBC_ONE_CAMBRIDGE.getUri())).thenReturn(Maybe.just(BBC_ONE_CAMBRIDGE));
+
     	generator = new BroadcastMatchingItemEquivalenceGenerator(resolver, channelResolver, ImmutableSet.of(BBC), standardMinutes(1));
     }
 
@@ -70,12 +65,10 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
                 new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(100000), utcTime(200000)));//ignored
         
         final Item item2 = episodeWithBroadcasts("equivItem", Publisher.BBC, new Broadcast(BBC_ONE.getUri(), utcTime(100000), utcTime(200000)));
-        
-        context.checking(new Expectations(){{
-            one(resolver).unmergedSchedule(utcTime(40000), utcTime(260000), ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC));
-                will(returnValue(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000))));
-        }});
-        
+
+        when(resolver.unmergedSchedule(utcTime(40000), utcTime(260000), ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC)))
+                .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000)));
+
         ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
         
         Map<Item, Score> scoreMap = equivalents.candidates();
@@ -96,11 +89,9 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
         
         final Item item2 = episodeWithBroadcasts("equivItem", Publisher.BBC, new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(100000), utcTime(200000)));
         
-        context.checking(new Expectations(){{
-            one(resolver).unmergedSchedule(utcTime(40000), utcTime(260000), ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(BBC));
-                will(returnValue(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE_CAMBRIDGE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000))));
-        }});
-        
+            when(resolver.unmergedSchedule(utcTime(40000), utcTime(260000), ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(BBC)))
+                    .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE_CAMBRIDGE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000)));
+
         ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
         
         Map<Item, Score> scoreMap = equivalents.candidates();
@@ -112,13 +103,10 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
     @Test
     public void testGenerateIsFlexibleAroundStartTimes() {
         
-        final ChannelResolver channelResolver = context.mock(ChannelResolver.class, "otherChannelResolver");
+        final ChannelResolver channelResolver = mock(ChannelResolver.class, "otherChannelResolver");
         
-        context.checking(new Expectations() {{
-            allowing(channelResolver).fromUri(BBC_ONE.getUri());
-                will(returnValue(Maybe.just(BBC_ONE)));
-        }});
-        
+        when(channelResolver.fromUri(BBC_ONE.getUri())).thenReturn(Maybe.just(BBC_ONE));
+
         BroadcastMatchingItemEquivalenceGenerator generator
             = new BroadcastMatchingItemEquivalenceGenerator(resolver, channelResolver, ImmutableSet.of(BBC), standardMinutes(10));
         
@@ -129,11 +117,8 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
         final Item item2 = episodeWithBroadcasts("equivItem", Publisher.BBC, 
                 new Broadcast(BBC_ONE.getUri(), time("2014-03-21T15:00:00Z"), time("2014-03-21T16:00:00Z")));
         
-        context.checking(new Expectations(){{
-            one(resolver).unmergedSchedule(time("2014-03-21T14:50:00Z"), time("2014-03-21T16:00:00Z"), ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC));
-                will(returnValue(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000))));
-        }});
-        
+        when(resolver.unmergedSchedule(time("2014-03-21T14:50:00Z"), time("2014-03-21T16:00:00Z"), ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC)))
+                .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000)));
 
         ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
         

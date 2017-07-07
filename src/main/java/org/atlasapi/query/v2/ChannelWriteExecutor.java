@@ -300,7 +300,7 @@ public class ChannelWriteExecutor {
     }
 
     private void setImageDetails(ImageDetails imageDetails, Image existingImage) {
-        existingImage.setMimeType(MimeType.valueOf(imageDetails.getMimeType().toUpperCase()));
+        existingImage.setMimeType(MimeType.fromString(imageDetails.getMimeType().toUpperCase()));
         existingImage.setType(ImageType.LOGO);
         existingImage.setColor(ImageColor.MONOCHROME);
         existingImage.setTheme(ImageTheme.valueOf(imageDetails.getTheme().toUpperCase()));

@@ -34,6 +34,7 @@ import org.atlasapi.media.segment.SegmentResolver;
 import org.atlasapi.output.Annotation;
 import org.atlasapi.persistence.content.ContentGroupResolver;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
+import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.output.AvailableItemsResolver;
 import org.atlasapi.persistence.output.ContainerSummaryResolver;
 import org.atlasapi.persistence.output.UpcomingItemsResolver;
@@ -51,15 +52,15 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
 import org.joda.time.DateTimeZone;
 import org.joda.time.LocalDate;
 import org.junit.Test;
+import org.mockito.Matchers;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.is;
 import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class ItemModelSimplifierTest {
 
@@ -69,18 +70,17 @@ public class ItemModelSimplifierTest {
     private static final long BBC_ONE_HD = 103828L;
 
     private final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
-    private final Mockery context = new Mockery();
-    private final ContentGroupResolver contentGroupResolver = context.mock(ContentGroupResolver.class);
-    private final TopicQueryResolver topicResolver = context.mock(TopicQueryResolver.class);
-    private final SegmentResolver segmentResolver = context.mock(SegmentResolver.class);
-    private final ProductResolver productResolver = context.mock(ProductResolver.class);
-    private final ContainerSummaryResolver containerSummaryResolver = context.mock(
+    private final ContentGroupResolver contentGroupResolver = mock(ContentGroupResolver.class);
+    private final TopicQueryResolver topicResolver = mock(TopicQueryResolver.class);
+    private final SegmentResolver segmentResolver = mock(SegmentResolver.class);
+    private final ProductResolver productResolver = mock(ProductResolver.class);
+    private final ContainerSummaryResolver containerSummaryResolver = mock(
             ContainerSummaryResolver.class);
-    private final ChannelResolver channelResolver = context.mock(ChannelResolver.class);
-    private final PeopleQueryResolver peopleQueryResolver = context.mock(PeopleQueryResolver.class);
-    private final UpcomingItemsResolver upcomingResolver = context.mock(UpcomingItemsResolver.class);
-    private final AvailableItemsResolver availableResolver = context.mock(AvailableItemsResolver.class);
-    private final ChannelGroupResolver channelGroupResolver = context.mock(ChannelGroupResolver.class);
+    private final ChannelResolver channelResolver = mock(ChannelResolver.class);
+    private final PeopleQueryResolver peopleQueryResolver = mock(PeopleQueryResolver.class);
+    private final UpcomingItemsResolver upcomingResolver = mock(UpcomingItemsResolver.class);
+    private final AvailableItemsResolver availableResolver = mock(AvailableItemsResolver.class);
+    private final ChannelGroupResolver channelGroupResolver = mock(ChannelGroupResolver.class);
     private final ChannelSimplifier channelSimplifier = new ChannelSimplifier(
             codec,
             codec,
@@ -147,20 +147,12 @@ public class ItemModelSimplifierTest {
         parent.setId(BBC_ONE_PARENT);
         channel.setParent(parent);
 
-        context.checking(new Expectations() {{
-            allowing(contentGroupResolver).findByIds(with(any(Iterable.class)));
-            will(returnValue(ImmutableList.of()));
-            allowing(topicResolver).topicsForIds(with(any(Iterable.class)));
-            will(returnValue(ImmutableList.of()));
-            allowing(segmentResolver).resolveById(with(any(Iterable.class)));
-            will(returnValue(ImmutableMap.of()));
-            allowing(channelResolver).fromUri(with(channel.getCanonicalUri()));
-            will(returnValue(Maybe.just(channel)));
-            allowing(channelResolver).fromId(with(105256L));
-            will(returnValue(Maybe.just(parent)));
-            allowing(channelResolver).fromId(with(103828L));
-            will(returnValue(Maybe.just(channel)));
-        }});
+        when(contentGroupResolver.findByIds(Matchers.anyCollection())).thenReturn(ResolvedContent.builder().build());
+        when(topicResolver.topicsForIds(Matchers.anyCollection())).thenReturn(ImmutableList.of());
+        when(segmentResolver.resolveById(Matchers.anyCollection())).thenReturn(ImmutableMap.of());
+        when(channelResolver.fromUri(channel.getCanonicalUri())).thenReturn(Maybe.just(channel));
+        when(channelResolver.fromId(105256L)).thenReturn(Maybe.just(parent));
+        when(channelResolver.fromId(103828L)).thenReturn(Maybe.just(channel));
 
         org.atlasapi.media.entity.Item fullItem = new org.atlasapi.media.entity.Item();
         Broadcast broadcast = ComplexBroadcastTestDataBuilder.broadcast()

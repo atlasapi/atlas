@@ -2,11 +2,15 @@ package org.atlasapi.remotesite.channel4.pmlsd.epg;
 
 import static com.google.common.collect.Iterables.getOnlyElement;
 import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
 import static org.hamcrest.Matchers.instanceOf;
 import static org.hamcrest.Matchers.is;
 import static org.hamcrest.Matchers.not;
 import static org.hamcrest.Matchers.nullValue;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.never;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Brand;
@@ -14,19 +18,14 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.testing.BrandTestDataBuilder;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.remotesite.channel4.pmlsd.C4BrandUpdater;
 import org.atlasapi.remotesite.channel4.pmlsd.C4LocationPolicyIds;
 import org.atlasapi.remotesite.channel4.pmlsd.ContentFactory;
-import org.atlasapi.remotesite.channel4.pmlsd.SourceSpecificContentFactory;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4EpgEntry;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4EpgMedia;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.model.TypedLink;
-import org.jmock.Expectations;
-import org.jmock.Mockery;
-import org.jmock.integration.junit4.JMock;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.junit.Test;
@@ -40,16 +39,16 @@ import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.DateTimeZones;
 import com.metabroadcast.common.time.TimeMachine;
+import org.mockito.runners.MockitoJUnitRunner;
 
-@RunWith(JMock.class)
+@RunWith(MockitoJUnitRunner.class)
 public class C4EpgEntryContentExtractorTest {
 
     private final C4LocationPolicyIds locationPolicyIds = C4LocationPolicyIds.builder().build();
-    private final Mockery context = new Mockery();
-    private final ContentResolver resolver = context.mock(ContentResolver.class);
-    private final C4BrandUpdater brandUpdater = context.mock(C4BrandUpdater.class);
+    private final ContentResolver resolver = mock(ContentResolver.class);
+    private final C4BrandUpdater brandUpdater = mock(C4BrandUpdater.class);
     private final ContentFactory<C4EpgEntry, C4EpgEntry, C4EpgEntry> contentFactory 
-        = context.mock(ContentFactory.class);
+        = mock(ContentFactory.class);
     
     private final DateTime now = new DateTime(DateTimeZones.UTC);
     private final Clock clock = new TimeMachine(now );
@@ -71,29 +70,12 @@ public class C4EpgEntryContentExtractorTest {
         final String idUri = "http://pmlsc.channel4.com/pmlsd/30630/003";
         final String seriesUri = "http://pmlsc.channel4.com/pmlsd/the-hoobs/episode-guide/series-1";
         final String brandUri = "http://pmlsc.channel4.com/pmlsd/the-hoobs";
-        
-        context.checking(new Expectations(){{
-            one(contentFactory).createBrand(with(entry));
-            will(returnValue(Optional.of(new Brand(brandUri, null, Publisher.C4_PMLSD))));
-            
-            one(contentFactory).createEpisode(with(entry));
-            will(returnValue(Optional.of(new Episode(idUri, null, Publisher.C4_PMLSD))));
-            
-            one(contentFactory).createSeries(with(entry));
-            will(returnValue(Optional.of(new Series(seriesUri, null, Publisher.C4_PMLSD))));
-            
-            one(resolver).findByCanonicalUris(with(hasItems(idUri)));
-            will(returnValue(ResolvedContent.builder().build()));
-            
-            one(resolver).findByCanonicalUris(with(hasItems(seriesUri)));
-            will(returnValue(ResolvedContent.builder().build()));
-            
-            one(resolver).findByCanonicalUris(with(hasItems(brandUri)));
-            will(returnValue(ResolvedContent.builder().build()));
-            
-            one(brandUpdater).createOrUpdateBrand(brandUri);
-            will(returnValue(null));
-        }});
+
+        when(contentFactory.createBrand(entry)).thenReturn(Optional.of(new Brand(brandUri, null, Publisher.C4_PMLSD)));
+        when(contentFactory.createEpisode(entry)).thenReturn(Optional.of(new Episode(idUri, null, Publisher.C4_PMLSD)));
+        when(contentFactory.createSeries(entry)).thenReturn(Optional.of(new Series(seriesUri, null, Publisher.C4_PMLSD)));
+        when(resolver.findByCanonicalUris(any())).thenReturn(ResolvedContent.builder().build());
+        when(brandUpdater.createOrUpdateBrand(brandUri)).thenReturn(null);
         
         ContentHierarchyAndBroadcast extracted = extractor.extract(source);
         
@@ -120,19 +102,11 @@ public class C4EpgEntryContentExtractorTest {
         C4EpgChannelEntry source = new C4EpgChannelEntry(entry, channel);
         
         final String idUri = "http://pmlsc.channel4.com/pmlsd/40635/014";
-        
-        context.checking(new Expectations(){{
-            one(resolver).findByCanonicalUris(with(hasItems(idUri)));
-                will(returnValue(ResolvedContent.builder().build()));
-            
-            one(contentFactory).createItem(with(entry));
-                will(returnValue(Optional.of(new Item(idUri, null, Publisher.C4_PMLSD))));
 
-            one(contentFactory).createSeries(with(entry));
-                will(returnValue(Optional.absent()));
-            
-            never(brandUpdater).createOrUpdateBrand(with(any(String.class)));
-        }});
+        when(resolver.findByCanonicalUris(any())).thenReturn(ResolvedContent.builder().build());
+        when(contentFactory.createItem(entry)).thenReturn(Optional.of(new Item(idUri, null, Publisher.C4_PMLSD)));
+        when(contentFactory.createSeries(entry)).thenReturn(Optional.absent());
+        verify(brandUpdater, never()).createOrUpdateBrand(any());
 
         ContentHierarchyAndBroadcast extracted = extractor.extract(source);
         
@@ -153,30 +127,12 @@ public class C4EpgEntryContentExtractorTest {
         final String idUri = "http://pmlsc.channel4.com/pmlsd/30630/003";
         final String seriesUri = "http://pmlsc.channel4.com/pmlsd/the-hoobs/episode-guide/series-1";
         final String brandUri = "http://pmlsc.channel4.com/pmlsd/the-hoobs";
-        
-        context.checking(new Expectations(){{
-            one(resolver).findByCanonicalUris(with(hasItems(idUri)));
-            will(returnValue(ResolvedContent.builder().build()));
-            
-            one(resolver).findByCanonicalUris(with(hasItems(seriesUri)));
-            will(returnValue(ResolvedContent.builder().build()));
-            
-            one(resolver).findByCanonicalUris(with(hasItems(brandUri)));
-            will(returnValue(ResolvedContent.builder().build()));
-            
-            one(brandUpdater).createOrUpdateBrand(brandUri);
-            will(returnValue(null));
-            
-            one(contentFactory).createBrand(with(entry));
-            will(returnValue(Optional.of(new Brand(brandUri, null, Publisher.C4_PMLSD))));
-            
-            one(contentFactory).createEpisode(with(entry));
-            will(returnValue(Optional.of(new Episode(idUri, null, Publisher.C4_PMLSD))));
-            
-            one(contentFactory).createSeries(with(entry));
-            will(returnValue(Optional.of(new Series(seriesUri, null, Publisher.C4_PMLSD))));
-            
-        }});
+
+        when(resolver.findByCanonicalUris(any())).thenReturn(ResolvedContent.builder().build());
+        when(brandUpdater.createOrUpdateBrand(brandUri)).thenReturn(null);
+        when(contentFactory.createBrand(entry)).thenReturn(Optional.of(new Brand(brandUri, null, Publisher.C4_PMLSD)));
+        when(contentFactory.createEpisode(entry)).thenReturn(Optional.of(new Episode(idUri, null, Publisher.C4_PMLSD)));
+        when(contentFactory.createSeries(entry)).thenReturn(Optional.of(new Series(seriesUri, null, Publisher.C4_PMLSD)));
 
         ContentHierarchyAndBroadcast extracted = extractor.extract(source);
         

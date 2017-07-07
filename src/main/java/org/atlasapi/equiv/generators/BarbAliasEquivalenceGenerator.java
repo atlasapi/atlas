@@ -3,7 +3,9 @@ package org.atlasapi.equiv.generators;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.StreamSupport;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
@@ -12,6 +14,7 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -119,6 +122,43 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                 desc
         );
 
+        List<String> forceTargetUrisSeven = new ArrayList<>();
+        forceTargetUrisSeven.add("http://nitro.bbc.co.uk/programmes/b04gsjx3");
+
+        equivalents = findForcedEquivalents(
+                subject,
+                equivalents,
+                "http://cdmf.barb.co.uk/episode/739584",
+                forceTargetUrisSeven,
+                desc
+        );
+
+        List<String> forceTargetUrisEight = new ArrayList<>();
+        forceTargetUrisEight.add("http://uktv.co.uk/CTBF519P");
+
+        equivalents = findForcedEquivalents(
+                subject,
+                equivalents,
+                "http://cdmf.barb.co.uk/episode/76891",
+                forceTargetUrisEight,
+                desc
+        );
+
+        List<String> forceTargetUrisNine = new ArrayList<>();
+        forceTargetUrisNine.add("http://uktv.co.uk/CTAP124B");
+
+        equivalents = findForcedEquivalents(
+                subject,
+                equivalents,
+                "http://cdmf.barb.co.uk/episode/110710",
+                forceTargetUrisNine,
+                desc
+        );
+
+        if (!(subject.getAliases().isEmpty())) {
+            equivalents = findByCommonAlias(subject, equivalents, desc);
+        }
+
         return equivalents.build();
     }
 
@@ -142,6 +182,54 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
             });
 
         }
+        return equivalents;
+    }
+
+    private DefaultScoredCandidates.Builder findByCommonAlias(
+            T subject,
+            DefaultScoredCandidates.Builder equivalents,
+            ResultDescription desc
+    ) {
+
+        desc.startStage("Resolving Barb Aliases:");
+        subject.getAliases().forEach(alias -> desc.appendText(
+                "namespace: " +
+                        alias.getNamespace() +
+                        ", value: " +
+                        alias.getValue()
+        ));
+        desc.finishStage();
+
+        Set<Iterable<LookupEntry>> entriesSet = subject.getAliases().stream().map(alias ->
+            lookupEntryStore.entriesForAliases(
+                    Optional.of(alias.getNamespace()),
+                    ImmutableSet.of(alias.getValue())
+            )).collect(Collectors.toSet());
+
+        entriesSet.stream().filter(Objects::nonNull).forEach(iterableLookupEntry ->
+            iterableLookupEntry.forEach(entry -> {
+                Identified identified = resolver.findByCanonicalUris(
+                        ImmutableSet.of(entry.uri())
+                ).getFirstValue().requireValue();
+
+                if (!identified.getAliases().isEmpty()) {
+                    boolean match = false;
+
+                    for (Alias alias : identified.getAliases()) {
+                        if (subject.getAliases().contains(alias)) {
+                            match = true;
+                            break;
+                        }
+                    }
+
+                    if (match) {
+                        equivalents.addEquivalent((T) identified, Score.ONE);
+                        desc.appendText("Resolved %s", identified.getCanonicalUri());
+                    }
+                }
+            })
+        );
+
         return equivalents;
     }
 

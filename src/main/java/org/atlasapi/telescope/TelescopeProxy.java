@@ -69,7 +69,7 @@ public class TelescopeProxy {
         if (task.getId().isPresent()) {
             taskId = task.getId().get();
             startedReporting = true;
-            log.info("Started to report to Telescope (taskId:" + taskId + ")");
+            log.info("Started reporting to Telescope (taskId:{})", taskId);
             return true;
         } else {
             //this log might be meaningless, because I might not be understanding under which circumstances this id
@@ -124,8 +124,10 @@ public class TelescopeProxy {
                     .withTimestamp(LocalDateTime.now())
                     .build();
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
+
+            log.info("Reported succeffully FAILED event with taskId {}", reportEvent.getTaskId().get());
         } catch (JsonProcessingException e) {
-            log.error("Couldn't convert RT items to a JSON string.", e);
+            log.error("Couldn't convert the given object to a JSON string.", e);
         }
     }
 
@@ -148,7 +150,7 @@ public class TelescopeProxy {
         if (startedReporting) {
             telescopeClient.endIngest(taskId);
             stoppedReporting = true;
-            log.info("Finished reporting to Telescope (taskId:" + taskId + ")");
+            log.info("Finished reporting to Telescope (taskId:)", taskId);
         } else {
             log.warn("Someone tried to stop a telescope report that has never started");
         }

@@ -22,8 +22,8 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.columbus.telescope.api.Environment;
-import com.metabroadcast.columbus.telescope.api.Process;
+import org.atlasapi.telescope.TelescopeFactory;
+import org.atlasapi.telescope.TelescopeProxy;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -65,16 +65,9 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     @Override
     public UpdateProgress process(ChannelDay channelDay) throws Exception {
 
-        //get a new telescope proxy
-        TelescopeProxy telescope = new TelescopeProxy();
-        //create a process for BBC Nitro
-        Process process = com.metabroadcast.columbus.telescope.api.Process.create(
-                TelescopeConfiguration.INGESTER_KEY,
-                TelescopeConfiguration.INGESTER_NAME,
-                Environment.valueOf(TelescopeConfiguration.ENVIROMENT));
-
-        //and start reporting
-        telescope.startReporting(process);
+        //get a new telescope proxy and start reporting
+        TelescopeProxy telescope = TelescopeFactory.make(TelescopeFactory.IngesterName.BBC_NITRO);
+        telescope.startReporting();
 
         String serviceId = BbcIonServices.services.inverse().get(channelDay.getChannel().getUri());
         DateTime from = channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZones.UTC);

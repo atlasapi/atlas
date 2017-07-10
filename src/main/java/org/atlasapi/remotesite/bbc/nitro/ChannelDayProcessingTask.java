@@ -12,9 +12,6 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import org.atlasapi.AtlasMain;
 import org.atlasapi.media.channel.Channel;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;

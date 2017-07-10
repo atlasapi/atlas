@@ -81,9 +81,10 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         for (Optional<ItemRefAndBroadcast> result : processingResults) {
             if (result.isPresent()) {
                 org.atlasapi.media.entity.Broadcast broadcast = result.get().getBroadcast();
+                log.info("attempting to map aliases");
                 ImmutableList<Alias> aliases = TelescopeHelperMethods.getAliases(broadcast.getAliases());
                 for (Alias aliase : aliases) {
-                    log.info("API ALIANCE = [{}] [{}]",aliase.getNamespace(),aliase.getValue());
+                    log.info("Alias map = [{}] [{}]",aliase.getNamespace(),aliase.getValue());
                 }
                 telescope.reportSuccessfulEvent(broadcast.getSourceId(), aliases, broadcast);
 

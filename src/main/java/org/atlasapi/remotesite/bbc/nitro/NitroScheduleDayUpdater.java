@@ -75,11 +75,17 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         log.debug("updating {}: {} -> {}", serviceId, from, to);
 
         ImmutableList<Broadcast> broadcasts = getBroadcasts(serviceId, from, to);
-        for (Broadcast broadcast : broadcasts) {
-            telescope.reportFailedEvent("DEMO FAILED REPORT", broadcast);
+        ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(broadcasts);
+        for (Optional<ItemRefAndBroadcast> result : processingResults) {
+            if (result.isPresent()) {
+                org.atlasapi.media.entity.Broadcast broadcast = result.get().getBroadcast();
+                telescope.reportSuccessfulEvent(broadcast.getSourceId(), broadcast.getAliases(), broadcast);
+
+            } else {
+                //TODO: No clue under which circumstances this would not be present.
+            }
         }
 
-        ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(broadcasts);
         updateSchedule(channelDay.getChannel(), from, to, Optional.presentInstances(processingResults));
 
         int processedCount = Iterables.size(Optional.presentInstances(processingResults));

@@ -6,6 +6,8 @@ import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.stream.MoreCollectors;
+import org.atlasapi.media.entity.Alias;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import telescope_api_shaded.com.fasterxml.jackson.core.JsonProcessingException;
@@ -13,6 +15,7 @@ import telescope_api_shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 /**
  * Author's comment for review:
@@ -79,7 +82,7 @@ public class TelescopeProxy {
         }
     }
 
-    public void reportSuccessfulEvent(String atlasItemId, List<Alias> aliases, Object objectToSerialise) {
+    public void reportSuccessfulEvent(String atlasItemId, Set<org.atlasapi.media.entity.Alias> aliases, Object objectToSerialise) {
         if (!allowedToReport()) {
             return;
         }
@@ -89,7 +92,7 @@ public class TelescopeProxy {
                     .withType(Event.Type.INGEST)
                     .withEntityState(EntityState.builder()
                             .withAtlasId(atlasItemId)
-                            .withRemoteIds(aliases)
+                            .withRemoteIds(getAliases(aliases))
                             .withRaw(objectMapper.writeValueAsString(objectToSerialise))
                             .withRawMime(MimeType.APPLICATION_JSON.toString())
                             .build()
@@ -141,6 +144,13 @@ public class TelescopeProxy {
             return false;
         }
         return true;
+    }
+    
+    private ImmutableList<Alias> getAliases(Description item) {
+        return item.getV4Aliases()
+                .stream()
+                .map(alias -> Alias.create(alias.getNamespace(), alias.getValue()))
+                .collect(MoreCollectors.toImmutableList());
     }
 
     /**

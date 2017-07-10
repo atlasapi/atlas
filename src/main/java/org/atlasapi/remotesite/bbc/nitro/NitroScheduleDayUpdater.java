@@ -22,7 +22,9 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.metabroadcast.columbus.telescope.api.Alias;
 import org.atlasapi.telescope.TelescopeFactory;
+import org.atlasapi.telescope.TelescopeHelperMethods;
 import org.atlasapi.telescope.TelescopeProxy;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
@@ -79,7 +81,11 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         for (Optional<ItemRefAndBroadcast> result : processingResults) {
             if (result.isPresent()) {
                 org.atlasapi.media.entity.Broadcast broadcast = result.get().getBroadcast();
-                telescope.reportSuccessfulEvent(broadcast.getSourceId(), broadcast.getAliases(), broadcast);
+                ImmutableList<Alias> aliases = TelescopeHelperMethods.getAliases(broadcast.getAliases());
+                for (Alias aliase : aliases) {
+                    log.info("API ALIANCE = [{}] [{}]",aliase.getNamespace(),aliase.getValue());
+                }
+                telescope.reportSuccessfulEvent(broadcast.getSourceId(), aliases, broadcast);
 
             } else {
                 //TODO: No clue under which circumstances this would not be present.

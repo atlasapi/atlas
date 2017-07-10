@@ -65,6 +65,8 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     @Override
     public UpdateProgress process(ChannelDay channelDay) throws Exception {
 
+        log.info("THIS LOG IS ACTUALLY RUNNING ASDFASDFASDF");
+        
         //get a new telescope proxy and start reporting
         TelescopeProxy telescope = TelescopeFactory.make(TelescopeFactory.IngesterName.BBC_NITRO);
         telescope.startReporting();

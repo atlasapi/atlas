@@ -7,7 +7,6 @@ import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.stream.MoreCollectors;
-import org.atlasapi.media.entity.Alias;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import telescope_api_shaded.com.fasterxml.jackson.core.JsonProcessingException;
@@ -146,9 +145,8 @@ public class TelescopeProxy {
         return true;
     }
     
-    private ImmutableList<Alias> getAliases(Description item) {
-        return item.getV4Aliases()
-                .stream()
+    private ImmutableList<Alias> getAliases(Set<org.atlasapi.media.entity.Alias> aliases) {
+        return aliases.stream()
                 .map(alias -> Alias.create(alias.getNamespace(), alias.getValue()))
                 .collect(MoreCollectors.toImmutableList());
     }

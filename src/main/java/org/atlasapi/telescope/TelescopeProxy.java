@@ -16,16 +16,6 @@ import java.util.List;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 
 /**
- * Author's comment for review:
- *
- * This class was largely constructed by copying code from RT ingester. It appears, and I might be wrong here, that
- * there is no requirement (or safeguard) for the order that things can happen. Eg one can get a telescope client object
- * and report that a process is done reporting without ever reporting it has started.
- *
- * To safeguard against this, we construct this Proxy to work with a single process, so that one cannot for example call
- * the startIngest method twice on the same client object. I think this also simplifies things quite a bit, but if
- * anyone understands things better please comment.
- *
  * In any case at the moment, the use of this class is to simply get a TelescopeProxy item, then startReporting, then
  * report various events, and finally endReporting. We print log warnings for the wrong order of things.
  *
@@ -45,11 +35,13 @@ public class TelescopeProxy {
     /**
      * The client always reports to {@link TelescopeConfiguration#TELESCOPE_HOST}
      */
-    protected TelescopeProxy(Process process) {
+    TelescopeProxy(Process process) {
         this.process = process;
         //get a client
         TelescopeClientImpl client = TelescopeClientImpl.create(TelescopeConfiguration.TELESCOPE_HOST);
-        //TODO: can this be null? Can it be a inexistent host?
+        if (client == null) {
+            throw new NullPointerException("Could now get a TelescopeClientImpl object with the given TELESCOPE_HOST:" + TelescopeConfiguration.TELESCOPE_HOST);
+        }
         this.telescopeClient = IngestTelescopeClientImpl.create(client);
 
         objectMapper = new ObjectMapper();

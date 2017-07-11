@@ -101,6 +101,9 @@ COPY log4j.properties /usr/local/jetty/log4j.properties
 WORKDIR /usr/local/jetty
 
 CMD java \
+    -
+    -Dtelescope.host="$TELESCOPE_HOST"\
+    -Dtelescope.environment="$TELESCOPE_ENVIRONMENT"\
     -Djetty.home="$JETTY_HOME" \
     -Dsun.net.inetaddr.ttl="$SUN_NET_INETADDR_TTL" \
     -DMBST_PLATFORM="$MBST_PLATFORM" \

@@ -4,9 +4,9 @@ import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Process;
 
 /**
- * Creates telescopeClients that can be used for reporting to telescope.
+ * Creates proxies to telescopeClients that can be used for reporting to telescope.
  * <p>
- * If you need to extend this class to accommodate more Processes (i.e. add more ingester names),
+ * If you need to extend this class to accommodate more Processes (i.e. add more owl ingesters),
  * extend the {@link IngesterName} enum accordingly.
  * <p>
  * Created by andreas on 07/07/2017.

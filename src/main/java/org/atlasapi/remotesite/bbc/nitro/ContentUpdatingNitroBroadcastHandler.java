@@ -132,20 +132,35 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
                 Brand brand = getBrand(item, brandIndex);
                 if (brand != null) {
                     writer.createOrUpdate(brand);
-                    String atlasId = idCodec.encode(BigInteger.valueOf(brand.getId()));
-                    telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(brand.getAliases()), nitroBroadcast);
+                    //report to telescope
+                    if (brand.getId() != null) {
+                        String atlasId = idCodec.encode(BigInteger.valueOf(brand.getId()));
+                        telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(brand.getAliases()), nitroBroadcast);
+                    } else {
+                        telescope.reportFailedEvent("BBC Nitro ingester failed to write brand in the DB", nitroBroadcast);
+                    }
                 }
 
                 Series sery = getSeries(item, seriesIndex);
                 if (sery != null) {
                     writer.createOrUpdate(sery);
-                    String atlasId = idCodec.encode(BigInteger.valueOf(sery.getId()));
-                    telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(sery.getAliases()), nitroBroadcast);
+                    //report to telescope
+                    if (sery.getId() != null) {
+                        String atlasId = idCodec.encode(BigInteger.valueOf(sery.getId()));
+                        telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(sery.getAliases()), nitroBroadcast);
+                    } else {
+                        telescope.reportFailedEvent("BBC Nitro ingester failed to write series in the DB", nitroBroadcast);
+                    }
                 }
 
                 writer.createOrUpdate(item);
-                String atlasId = idCodec.encode(BigInteger.valueOf(item.getId()));
-                telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(item.getAliases()), nitroBroadcast);
+                //report to telescope
+                if (item.getId() != null) {
+                    String atlasId = idCodec.encode(BigInteger.valueOf(item.getId()));
+                    telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(item.getAliases()), nitroBroadcast);
+                } else {
+                    telescope.reportFailedEvent("BBC Nitro ingester failed to write item in the DB", nitroBroadcast);
+                }
 
                 results.add(Optional.of(new ItemRefAndBroadcast(item, broadcast.get())));
             } catch (Exception e) {

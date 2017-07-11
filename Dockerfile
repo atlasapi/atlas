@@ -29,6 +29,8 @@ ENV SERVER_PORT="8080" \
     SCHEDULE_REPOPULATOR_FULL_SCHEDULED="false" \
     SCHEDULE_REPOPULATOR_REDUX_SCHEDULED="false" \
     TALKTALK_VALIDATE="false" \
+    TELESCOPE_ENVIRONMENT=""\
+    TELESCOPE_HOST=""\
     UPDATERS_BBC_AUDIENCE_DATA_ENABLED="false" \
     UPDATERS_BBC_PRODUCTS_ENABLED="false" \
     UPDATERS_BBC_ENABLED="false" \
@@ -102,8 +104,6 @@ WORKDIR /usr/local/jetty
 
 CMD java \
     -
-    -Dtelescope.host="$TELESCOPE_HOST"\
-    -Dtelescope.environment="$TELESCOPE_ENVIRONMENT"\
     -Djetty.home="$JETTY_HOME" \
     -Dsun.net.inetaddr.ttl="$SUN_NET_INETADDR_TTL" \
     -DMBST_PLATFORM="$MBST_PLATFORM" \
@@ -315,6 +315,8 @@ CMD java \
     -Dsitemaps.c4.flashplayerversion="$SITEMAPS_C4_FLASHPLAYERVERSION" \
     -Dtalktalk.host="$TALKTALK_HOST" \
     -Dtalktalk.validate="$TALKTALK_VALIDATE" \
+    -Dtelescope.host="$TELESCOPE_HOST"\
+    -Dtelescope.environment="$TELESCOPE_ENVIRONMENT"\
     -Dthespace.url="$THESPACE_URL" \
     -Dtwitter.auth.consumerKey="$TWITTER_AUTH_CONSUMERKEY" \
     -Dtwitter.auth.consumerSecret="$TWITTER_AUTH_CONSUMERSECRET" \

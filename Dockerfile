@@ -29,8 +29,6 @@ ENV SERVER_PORT="8080" \
     SCHEDULE_REPOPULATOR_FULL_SCHEDULED="false" \
     SCHEDULE_REPOPULATOR_REDUX_SCHEDULED="false" \
     TALKTALK_VALIDATE="false" \
-    TELESCOPE_ENVIRONMENT=""\
-    TELESCOPE_HOST=""\
     UPDATERS_BBC_AUDIENCE_DATA_ENABLED="false" \
     UPDATERS_BBC_PRODUCTS_ENABLED="false" \
     UPDATERS_BBC_ENABLED="false" \
@@ -103,7 +101,6 @@ COPY log4j.properties /usr/local/jetty/log4j.properties
 WORKDIR /usr/local/jetty
 
 CMD java \
-    -
     -Djetty.home="$JETTY_HOME" \
     -Dsun.net.inetaddr.ttl="$SUN_NET_INETADDR_TTL" \
     -DMBST_PLATFORM="$MBST_PLATFORM" \

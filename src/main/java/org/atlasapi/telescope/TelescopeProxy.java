@@ -6,7 +6,6 @@ import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.stream.MoreCollectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import telescope_api_shaded.com.fasterxml.jackson.core.JsonProcessingException;
@@ -14,7 +13,7 @@ import telescope_api_shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Set;
+import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 
 /**
  * Author's comment for review:

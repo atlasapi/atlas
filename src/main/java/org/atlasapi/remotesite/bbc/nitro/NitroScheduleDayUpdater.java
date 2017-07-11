@@ -22,6 +22,7 @@ import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
+import com.metabroadcast.atlas.glycerin.model.Ids;
 import com.metabroadcast.columbus.telescope.api.Alias;
 import org.atlasapi.telescope.TelescopeFactory;
 import org.atlasapi.telescope.TelescopeHelperMethods;
@@ -77,22 +78,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         log.debug("updating {}: {} -> {}", serviceId, from, to);
 
         ImmutableList<Broadcast> broadcasts = getBroadcasts(serviceId, from, to);
-        ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(broadcasts);
-        for (Optional<ItemRefAndBroadcast> result : processingResults) {
-            if (result.isPresent()) {
-                org.atlasapi.media.entity.Broadcast broadcast = result.get().getBroadcast();
-                log.info("attempting to map aliases");
-                ImmutableList<Alias> aliases = TelescopeHelperMethods.getAliases(broadcast.getAliases());
-                for (Alias aliase : aliases) {
-                    log.info("Alias map = [{}] [{}]",aliase.getNamespace(),aliase.getValue());
-                }
-                telescope.reportSuccessfulEvent(broadcast.getSourceId(), aliases, broadcast);
-
-            } else {
-                //TODO: No clue under which circumstances this would not be present.
-            }
-        }
-
+        ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(broadcasts, telescope);
         updateSchedule(channelDay.getChannel(), from, to, Optional.presentInstances(processingResults));
 
         int processedCount = Iterables.size(Optional.presentInstances(processingResults));
@@ -121,8 +107,8 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         scheduleWriter.replaceScheduleBlock(Publisher.BBC_NITRO, channel, processed);
     }
 
-    private ImmutableList<Optional<ItemRefAndBroadcast>> processBroadcasts(ImmutableList<Broadcast> broadcasts) throws NitroException {
-        return ImmutableList.copyOf(broadcastHandler.handle(broadcasts));
+    private ImmutableList<Optional<ItemRefAndBroadcast>> processBroadcasts(ImmutableList<Broadcast> broadcasts, TelescopeProxy telescope) throws NitroException {
+        return ImmutableList.copyOf(broadcastHandler.handle(broadcasts, telescope));
     }
 
     private Map<String, String> acceptableIds(Iterable<ItemRefAndBroadcast> processed) {

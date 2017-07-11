@@ -126,19 +126,24 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
 
                 addBroadcast(item, versionUri(nitroBroadcast), broadcast.get());
 
+                //To report to telescope, we need atlasIds (which are created with the below codec.
+                NumberToShortStringCodec idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
+
                 Brand brand = getBrand(item, brandIndex);
                 if (brand != null) {
                     writer.createOrUpdate(brand);
+                    String atlasId = idCodec.encode(BigInteger.valueOf(brand.getId()));
+                    telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(brand.getAliases()), nitroBroadcast);
                 }
 
                 Series sery = getSeries(item, seriesIndex);
                 if (sery != null) {
                     writer.createOrUpdate(sery);
+                    String atlasId = idCodec.encode(BigInteger.valueOf(sery.getId()));
+                    telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(sery.getAliases()), nitroBroadcast);
                 }
-                item  = writer.createOrUpdate(item);
 
-                //Report to telescope
-                NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
+                writer.createOrUpdate(item);
                 String atlasId = idCodec.encode(BigInteger.valueOf(item.getId()));
                 telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(item.getAliases()), nitroBroadcast);
 

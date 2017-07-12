@@ -278,6 +278,8 @@ CMD java \
     -Dredux.host="$REDUX_HOST" \
     -Dredux.password="$REDUX_PASSWORD" \
     -Dredux.username="$REDUX_USERNAME" \
+    -Dreporting.columbus-telescope.environment="$REPORTING_COLUMBUS_TELESCOPE_ENVIRONMENT" \
+    -Dreporting.columbus-telescope.host="$REPORTING_COLUMBUS_TELESCOPE_HOST" \
     -Drequest.threads="$REQUEST_THREADS" \
     -Drp.ftp.enabled="$RP_FTP_ENABLED" \
     -Drp.ftp.manualUpload.enabled="$RP_FTP_MANUALUPLOAD_ENABLED" \

@@ -2,6 +2,8 @@ package org.atlasapi.telescope;
 
 import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Process;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * Creates proxies to telescopeClients that can be used for reporting to telescope.
@@ -13,6 +15,7 @@ import com.metabroadcast.columbus.telescope.api.Process;
  */
 public class TelescopeFactory {
 
+    private static final Logger log = LoggerFactory.getLogger(TelescopeProxy.class);
 
     /**
      * Be advised that making multiple telescope clients with the same name and using them concurrently is likely to cause
@@ -28,11 +31,17 @@ public class TelescopeFactory {
 
     //create and return a telescope.api.Process.
     private static Process getProcess(IngesterName name) {
+        Environment environment;
+        try {
+            environment = Environment.valueOf(TelescopeConfiguration.ENVIRONMENT);
+        } catch (IllegalArgumentException e) {
+            //add stage as the default environment, which is better than crashing
+            log.error("Could not find a telescope environment with the given name, name={}. Falling back to STAGE.", TelescopeConfiguration.ENVIRONMENT);
+            e.printStackTrace();
+            environment = Environment.STAGE;
+        }
 
-        return com.metabroadcast.columbus.telescope.api.Process.create(
-                name.getIngesterKey(),
-                name.getIngesterName(),
-                Environment.valueOf(TelescopeConfiguration.ENVIRONMENT));
+        return Process.create(name.getIngesterKey(), name.getIngesterName(), environment);
     }
 
     /**

@@ -37,8 +37,7 @@ public class TelescopeFactory {
             environment = Environment.valueOf(TelescopeConfiguration.ENVIRONMENT);
         } catch (IllegalArgumentException e) {
             //add stage as the default environment, which is better than crashing
-            log.error("Could not find a telescope environment with the given name, name={}. Falling back to STAGE.", TelescopeConfiguration.ENVIRONMENT);
-            e.printStackTrace();
+            log.error("Could not find a telescope environment with the given name, name={}. Falling back to STAGE.", TelescopeConfiguration.ENVIRONMENT, e);
             environment = Environment.STAGE;
         }
 

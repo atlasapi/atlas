@@ -1,15 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-import java.util.Map;
-
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
-import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
-import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
-import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -17,27 +11,28 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.metabroadcast.common.time.DateTimeZones;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.atlas.glycerin.model.Ids;
-import com.metabroadcast.columbus.telescope.api.Alias;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 import org.atlasapi.telescope.TelescopeFactory;
-import org.atlasapi.telescope.TelescopeHelperMethods;
 import org.atlasapi.telescope.TelescopeProxy;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * <p>
  * {@link ChannelDayProcessor} which fetches a processes a day's worth of Nitro {@link Broadcast}s using a
  * {@link Glycerin} and {@link NitroBroadcastHandler} .
  * </p>
- *
+ * <p>
  * <p>
  * Performs the necessary management of the schedule via a {@link ScheduleWriter} and {@link BroadcastTrimmer}.
  * </p>
@@ -98,8 +93,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         return new UpdateProgress(processedCount, failedCount);
     }
 
-    private void updateSchedule(Channel channel, DateTime from, DateTime to,
-            Iterable<ItemRefAndBroadcast> processed) {
+    private void updateSchedule(Channel channel, DateTime from, DateTime to, Iterable<ItemRefAndBroadcast> processed) {
         if (Iterables.isEmpty(processed)) {
             return;
         }

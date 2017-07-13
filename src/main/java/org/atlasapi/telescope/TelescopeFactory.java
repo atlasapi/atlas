@@ -20,7 +20,7 @@ public class TelescopeFactory {
     /**
      * Be advised that making multiple telescope clients with the same name and using them concurrently is likely to cause
      * errors, unspecified bugs, losing your bananas and generally you are gonna have a bad day.
-     *
+     * <p>
      * This factory will always give you a telescope (never null). If there are initialization errors the telescope will
      * just be unable to report.
      */

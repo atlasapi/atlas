@@ -1,8 +1,11 @@
 package org.atlasapi.telescope;
 
 import com.google.common.collect.ImmutableList;
-import com.metabroadcast.columbus.telescope.api.*;
+import com.metabroadcast.columbus.telescope.api.Alias;
+import com.metabroadcast.columbus.telescope.api.EntityState;
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.api.Process;
+import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.media.MimeType;
@@ -62,7 +65,7 @@ public class TelescopeProxy {
      */
     public boolean startReporting() {
         //do we have a telescope client?
-        if(!initialized()){
+        if (!initialized()) {
             return false;
         }
         //make sure we have not already done that
@@ -141,7 +144,7 @@ public class TelescopeProxy {
      * Let telescope know we are finished reporting through this proxy. Once finished this object is useless.
      */
     public void endReporting() {
-        if(!initialized()){
+        if (!initialized()) {
             return;
         }
         if (startedReporting) {
@@ -154,7 +157,7 @@ public class TelescopeProxy {
     }
 
     private boolean allowedToReport() {
-        if(!initialized()){
+        if (!initialized()) {
             return false;
         }
         if (!startedReporting) {
@@ -168,7 +171,7 @@ public class TelescopeProxy {
         return true;
     }
 
-    private boolean initialized(){
+    private boolean initialized() {
         return (telescopeClient == null ? false : true);
     }
 

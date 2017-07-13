@@ -4,19 +4,32 @@ import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicates;
-import com.google.common.collect.*;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBroadcastExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.atlasapi.telescope.TelescopeHelperMethods;
 import org.atlasapi.telescope.TelescopeProxy;
+import org.atlasapi.telescope.TelescopeUtilityMethods;
 import org.atlasapi.util.GroupLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +37,9 @@ import org.slf4j.LoggerFactory;
 import java.math.BigInteger;
 import java.util.Set;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 /**
  * {@link NitroBroadcastHandler} which fetches, updates and writes relevant
@@ -38,8 +53,7 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;
     private final GroupLock<String> lock;
 
-    private final NitroBroadcastExtractor broadcastExtractor
-            = new NitroBroadcastExtractor();
+    private final NitroBroadcastExtractor broadcastExtractor = new NitroBroadcastExtractor();
 
 
     public ContentUpdatingNitroBroadcastHandler(ContentResolver resolver, ContentWriter writer,
@@ -135,7 +149,7 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
                     //report to telescope
                     if (brand.getId() != null) {
                         String atlasId = idCodec.encode(BigInteger.valueOf(brand.getId()));
-                        telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(brand.getAliases()), nitroBroadcast);
+                        telescope.reportSuccessfulEvent(atlasId, TelescopeUtilityMethods.getAliases(brand.getAliases()), nitroBroadcast);
                     } else {
                         telescope.reportFailedEvent("BBC Nitro ingester failed to write brand in the DB", nitroBroadcast);
                     }
@@ -146,20 +160,20 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
                     writer.createOrUpdate(sery);
                     //report to telescope
                     if (sery.getId() != null) {
-                        String atlasId = idCodec.encode(BigInteger.valueOf(sery.getId()));
-                        telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(sery.getAliases()), nitroBroadcast);
-                    } else {
                         telescope.reportFailedEvent("BBC Nitro ingester failed to write series in the DB", nitroBroadcast);
+                    } else {
+                        String atlasId = idCodec.encode(BigInteger.valueOf(sery.getId()));
+                        telescope.reportSuccessfulEvent(atlasId, TelescopeUtilityMethods.getAliases(sery.getAliases()), nitroBroadcast);
                     }
                 }
 
                 writer.createOrUpdate(item);
                 //report to telescope
                 if (item.getId() != null) {
-                    String atlasId = idCodec.encode(BigInteger.valueOf(item.getId()));
-                    telescope.reportSuccessfulEvent(atlasId, TelescopeHelperMethods.getAliases(item.getAliases()), nitroBroadcast);
-                } else {
                     telescope.reportFailedEvent("BBC Nitro ingester failed to write item in the DB", nitroBroadcast);
+                } else {
+                    String atlasId = idCodec.encode(BigInteger.valueOf(item.getId()));
+                    telescope.reportSuccessfulEvent(atlasId, TelescopeUtilityMethods.getAliases(item.getAliases()), nitroBroadcast);
                 }
 
                 results.add(Optional.of(new ItemRefAndBroadcast(item, broadcast.get())));

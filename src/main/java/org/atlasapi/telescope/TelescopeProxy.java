@@ -13,7 +13,6 @@ import telescope_api_shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 
 /**
  * In any case at the moment, the use of this class is to simply get a TelescopeProxy item, then startReporting, then
@@ -25,8 +24,10 @@ public class TelescopeProxy {
 
     private static final Logger log = LoggerFactory.getLogger(TelescopeProxy.class);
 
+    //check for null before use, as it might fail to initialize
     private IngestTelescopeClientImpl telescopeClient;
-    private String taskId = null;
+
+    private String taskId;
     private Process process;
     private ObjectMapper objectMapper;
     private boolean startedReporting = false; //safeguard flags
@@ -37,14 +38,21 @@ public class TelescopeProxy {
      */
     TelescopeProxy(Process process) {
         this.process = process;
-        //get a client
-        TelescopeClientImpl client = TelescopeClientImpl.create(TelescopeConfiguration.TELESCOPE_HOST);
-        if (client == null) {
-            throw new NullPointerException("Could now get a TelescopeClientImpl object with the given TELESCOPE_HOST:" + TelescopeConfiguration.TELESCOPE_HOST);
-        }
-        this.telescopeClient = IngestTelescopeClientImpl.create(client);
 
-        objectMapper = new ObjectMapper();
+        //get a client
+        try {
+            //might throw RuntimeException: java.net.UnknownHostException
+            TelescopeClientImpl client = TelescopeClientImpl.create(TelescopeConfiguration.TELESCOPE_HOST);
+            if (client == null) { //not sure if it happen, but precaution.
+                throw new NullPointerException("Cannot get an IngestTelescopeClientImpl from a null TelescopeClientImpl");
+            }
+            this.telescopeClient = IngestTelescopeClientImpl.create(client);
+            this.objectMapper = new ObjectMapper();
+        } catch (Exception e) {
+            log.error("Could not get a TelescopeClientImpl object with the given TELESCOPE_HOST="
+                    + TelescopeConfiguration.TELESCOPE_HOST, e);
+            //telescope client will remain null, and we'll check for that in further operations.
+        }
     }
 
     /**
@@ -53,9 +61,13 @@ public class TelescopeProxy {
      * @return Returns true on success, and false on failure.
      */
     public boolean startReporting() {
+        //do we have a telescope client?
+        if(!initialized()){
+            return false;
+        }
         //make sure we have not already done that
         if (startedReporting) {
-            log.warn("Someone tried to start a telescope report through a proxy that was already initiated.");
+            log.warn("Someone tried to start a telescope report through a proxy that had already started reporting.");
             return false;
         }
 
@@ -63,12 +75,12 @@ public class TelescopeProxy {
         if (task.getId().isPresent()) {
             taskId = task.getId().get();
             startedReporting = true;
-            log.info("Started reporting to Telescope (taskId:{})", taskId);
+            log.info("Started reporting to Telescope (taskId={})", taskId);
             return true;
         } else {
             //this log might be meaningless, because I might not be understanding under which circumstances this id
             //might be null.
-            log.warn("Reporting a Process to telescope did not respond with an ID");
+            log.warn("Reporting a Process to telescope did not respond with a taskId");
             return false;
         }
     }
@@ -94,9 +106,9 @@ public class TelescopeProxy {
 
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
 
-            log.info("Reported successfully event with taskId {}", reportEvent.getTaskId().get());
+            log.debug("Reported successfully event with taskId={}, eventId={}", taskId, reportEvent.getId().orElse("null"));
         } catch (JsonProcessingException e) {
-            log.error("Couldn't parse brand to a JSON string.", e);
+            log.error("Couldn't convert the given object to a JSON string.", e);
         }
     }
 
@@ -119,13 +131,32 @@ public class TelescopeProxy {
                     .build();
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
 
-            log.info("Reported succeffully FAILED event with taskId {}", reportEvent.getTaskId().get());
+            log.debug("Reported successfully FAILED event with taskId={}", taskId);
         } catch (JsonProcessingException e) {
             log.error("Couldn't convert the given object to a JSON string.", e);
         }
     }
 
+    /**
+     * Let telescope know we are finished reporting through this proxy. Once finished this object is useless.
+     */
+    public void endReporting() {
+        if(!initialized()){
+            return;
+        }
+        if (startedReporting) {
+            telescopeClient.endIngest(taskId);
+            stoppedReporting = true;
+            log.info("Finished reporting to Telescope (taskId:)", taskId);
+        } else {
+            log.warn("Someone tried to stop a telescope report that has never started");
+        }
+    }
+
     private boolean allowedToReport() {
+        if(!initialized()){
+            return false;
+        }
         if (!startedReporting) {
             log.warn("Someone tried to report a telescope event before the process has started reporting");
             return false;
@@ -137,17 +168,8 @@ public class TelescopeProxy {
         return true;
     }
 
-    /**
-     * Let telescope know we are finished reporting through this proxy. Once finished this object is useless.
-     */
-    public void endReporting() {
-        if (startedReporting) {
-            telescopeClient.endIngest(taskId);
-            stoppedReporting = true;
-            log.info("Finished reporting to Telescope (taskId:)", taskId);
-        } else {
-            log.warn("Someone tried to stop a telescope report that has never started");
-        }
+    private boolean initialized(){
+        return (telescopeClient == null ? false : true);
     }
 
 }

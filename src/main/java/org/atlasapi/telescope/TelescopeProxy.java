@@ -20,8 +20,6 @@ import java.util.List;
 /**
  * In any case at the moment, the use of this class is to simply get a TelescopeProxy item, then startReporting, then
  * report various events, and finally endReporting. We print log warnings for the wrong order of things.
- *
- * @author andreas
  */
 public class TelescopeProxy {
 

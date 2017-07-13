@@ -10,8 +10,6 @@ import org.slf4j.LoggerFactory;
  * <p>
  * If you need to extend this class to accommodate more Processes (i.e. add more owl ingesters),
  * extend the {@link IngesterName} enum accordingly.
- * <p>
- * Created by andreas on 07/07/2017.
  */
 public class TelescopeFactory {
 

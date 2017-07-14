@@ -16,11 +16,8 @@ public class TelescopeFactory {
     private static final Logger log = LoggerFactory.getLogger(TelescopeProxy.class);
 
     /**
-     * Be advised that making multiple telescope clients with the same name and using them concurrently is likely to cause
-     * errors, unspecified bugs, losing your bananas and generally you are gonna have a bad day.
-     * <p>
-     * This factory will always give you a telescope (never null). If there are initialization errors the telescope will
-     * just be unable to report.
+     * This factory will always give you a telescope (never null). If there are initialization errors the telescope you will
+     * get might be unable to report.
      */
     public static TelescopeProxy make(IngesterName ingesterName) {
         Process process = getProcess(ingesterName);
@@ -28,7 +25,6 @@ public class TelescopeFactory {
 
         return telescopeProxy;
     }
-
 
     //create and return a telescope.api.Process.
     private static Process getProcess(IngesterName name) {

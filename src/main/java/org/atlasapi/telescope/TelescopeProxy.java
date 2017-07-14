@@ -40,20 +40,18 @@ public class TelescopeProxy {
     TelescopeProxy(Process process) {
         this.process = process;
 
-        //get a client
-        try {
-            //might throw RuntimeException: java.net.UnknownHostException
-            TelescopeClientImpl client = TelescopeClientImpl.create(TelescopeConfiguration.TELESCOPE_HOST);
-            if (client == null) { //not sure if it happen, but precaution.
-                throw new NullPointerException("Cannot get an IngestTelescopeClientImpl from a null TelescopeClientImpl");
-            }
+        //the telescope client might fail to initialize, in which case it will remain null,
+        // and thus and we'll have to check for that in further operations.
+        TelescopeClientImpl client = TelescopeClientImpl.create(TelescopeConfiguration.TELESCOPE_HOST);
+        if (client == null) { //precaution, not sure if it can actually happen.
+            log.error("Could not get a TelescopeClientImpl object with the given TELESCOPE_HOST={}",
+                    TelescopeConfiguration.TELESCOPE_HOST);
+            log.error("This telescope proxy will not report to telescope, and will not print any further messages.");
+        } else {
             this.telescopeClient = IngestTelescopeClientImpl.create(client);
             this.objectMapper = new ObjectMapper();
-        } catch (Exception e) {
-            log.error("Could not get a TelescopeClientImpl object with the given TELESCOPE_HOST="
-                    + TelescopeConfiguration.TELESCOPE_HOST, e);
-            //telescope client will remain null, and we'll check for that in further operations.
         }
+
     }
 
     /**
@@ -170,7 +168,7 @@ public class TelescopeProxy {
     }
 
     private boolean initialized() {
-        return (telescopeClient == null ? false : true);
+        return (telescopeClient != null);
     }
 
 }

@@ -19,9 +19,10 @@ import telescope_api_shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import telescope_api_shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * In any case at the moment, the use of this class is to simply get a TelescopeProxy item, then
- * startReporting, then report various events, and finally endReporting. We print log warnings for
- * the wrong order of things.
+ * To use this class get a TelescopeProxy object, then startReporting, then report various events,
+ * and finally endReporting. If you do stuff in the wrong order they will silently fail (log errors
+ * only). If the proxy fails to connect to telescope it will silently fail (i.e. it will pretend to
+ * be reporting, but will report nothing).
  */
 public class TelescopeProxy {
 
@@ -37,18 +38,18 @@ public class TelescopeProxy {
     private boolean stoppedReporting = false;
 
     /**
-     * The client always reports to {@link TelescopeConfiguration#TELESCOPE_HOST}
+     * The client always reports to {@link TelescopeFactory#TELESCOPE_HOST}
      */
     TelescopeProxy(Process process) {
         this.process = process;
 
         //the telescope client might fail to initialize, in which case it will remain null,
         // and thus and we'll have to check for that in further operations.
-        TelescopeClientImpl client = TelescopeClientImpl.create(TelescopeConfiguration.TELESCOPE_HOST);
+        TelescopeClientImpl client = TelescopeClientImpl.create(TelescopeFactory.TELESCOPE_HOST);
         if (client == null) { //precaution, not sure if it can actually happen.
             log.error(
                     "Could not get a TelescopeClientImpl object with the given TELESCOPE_HOST={}",
-                    TelescopeConfiguration.TELESCOPE_HOST
+                    TelescopeFactory.TELESCOPE_HOST
             );
             log.error(
                     "This telescope proxy will not report to telescope, and will not print any further messages.");
@@ -80,12 +81,12 @@ public class TelescopeProxy {
         if (task.getId().isPresent()) {
             taskId = task.getId().get();
             startedReporting = true;
-            log.debug("Started reporting to Telescope (taskId={})", taskId);
+            log.debug("Started reporting to Telescope, taskId={}", taskId);
             return true;
         } else {
-            //this log might be meaningless, because I might not be understanding under which circumstances this id
-            //might be null.
-            log.warn("Reporting a Process to telescope did not respond with a taskId");
+            //this log might be meaningless, because I might not be understanding under
+            // which circumstances this id might be null.
+            log.error("Reporting a Process to telescope did not respond with a taskId");
             return false;
         }
     }
@@ -191,7 +192,7 @@ public class TelescopeProxy {
         if (startedReporting) {
             telescopeClient.endIngest(taskId);
             stoppedReporting = true;
-            log.debug("Finished reporting to Telescope (taskId:)", taskId);
+            log.debug("Finished reporting to Telescope, taskId={}", taskId);
         } else {
             log.warn("Someone tried to stop a telescope report that has never started");
         }

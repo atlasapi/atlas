@@ -2,6 +2,7 @@ package org.atlasapi.telescope;
 
 import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Process;
+import com.metabroadcast.common.properties.Configurer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +15,8 @@ import org.slf4j.LoggerFactory;
  */
 public class TelescopeFactory {
 
+    public static final String TELESCOPE_HOST = Configurer.get("telescope.host").get();
+    public static final String ENVIRONMENT = Configurer.get("telescope.environment").get();
     private static final Logger log = LoggerFactory.getLogger(TelescopeFactory.class);
 
     /**
@@ -31,13 +34,13 @@ public class TelescopeFactory {
     private static Process getProcess(IngesterName name) {
         Environment environment;
         try {
-            environment = Environment.valueOf(TelescopeConfiguration.ENVIRONMENT);
+            environment = Environment.valueOf(ENVIRONMENT);
         } catch (IllegalArgumentException e) {
             //add stage as the default environment, which is better than crashing
             environment = Environment.STAGE;
             log.error(
                     "Could not find a telescope environment with the given name, name={}. Falling back to STAGE.",
-                    TelescopeConfiguration.ENVIRONMENT,
+                    ENVIRONMENT,
                     e
             );
         }
@@ -49,7 +52,7 @@ public class TelescopeFactory {
      * Holds the pairs of Ingester Keys-Names used by atlas to report to telescope.
      */
     public enum IngesterName {
-        BBC_NITRO("bbc-nitro", "BBC Nitro Ingester (Owl)");
+        BBC_NITRO("bbc-nitro-ingester", "BBC Nitro Ingester (Owl)");
 
         String ingesterKey;
         String ingesterName;

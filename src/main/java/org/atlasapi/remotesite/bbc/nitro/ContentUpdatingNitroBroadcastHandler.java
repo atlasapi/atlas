@@ -55,6 +55,8 @@ public class ContentUpdatingNitroBroadcastHandler
     private final ContentWriter writer;
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;
     private final GroupLock<String> lock;
+    //To report to telescope, we need atlasIds (which are created with the codec below).
+    NumberToShortStringCodec idCodec;
 
     private final NitroBroadcastExtractor broadcastExtractor = new NitroBroadcastExtractor();
 
@@ -63,6 +65,7 @@ public class ContentUpdatingNitroBroadcastHandler
         this.writer = writer;
         this.localOrRemoteFetcher = localOrRemoteNitroFetcher;
         this.lock = lock;
+        this.idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
 
     @Override
@@ -164,17 +167,13 @@ public class ContentUpdatingNitroBroadcastHandler
 
                 addBroadcast(item, versionUri(nitroBroadcast), broadcast.get());
 
-                //To report to telescope, we need atlasIds (which are created with the codec below).
-                NumberToShortStringCodec idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
-
                 Brand brand = getBrand(item, brandIndex);
                 if (brand != null) {
                     writer.createOrUpdate(brand);
                     //report to telescope
                     if (brand.getId() != null) {
-                        String atlasId = idCodec.encode(BigInteger.valueOf(brand.getId()));
                         telescope.reportSuccessfulEvent(
-                                atlasId,
+                                idCodec.encode(BigInteger.valueOf(brand.getId())),
                                 TelescopeUtilityMethods.getAliases(brand.getAliases()),
                                 nitroBroadcast
                         );
@@ -191,9 +190,8 @@ public class ContentUpdatingNitroBroadcastHandler
                     writer.createOrUpdate(sery);
                     //report to telescope
                     if (sery.getId() != null) {
-                        String atlasId = idCodec.encode(BigInteger.valueOf(sery.getId()));
                         telescope.reportSuccessfulEvent(
-                                atlasId,
+                                idCodec.encode(BigInteger.valueOf(sery.getId())),
                                 TelescopeUtilityMethods.getAliases(sery.getAliases()),
                                 nitroBroadcast
                         );
@@ -208,9 +206,8 @@ public class ContentUpdatingNitroBroadcastHandler
                 writer.createOrUpdate(item);
                 //report to telescope
                 if (item.getId() != null) {
-                    String atlasId = idCodec.encode(BigInteger.valueOf(item.getId()));
                     telescope.reportSuccessfulEvent(
-                            atlasId,
+                            idCodec.encode(BigInteger.valueOf(item.getId())),
                             TelescopeUtilityMethods.getAliases(item.getAliases()),
                             nitroBroadcast
                     );

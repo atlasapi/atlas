@@ -111,7 +111,7 @@ public class TelescopeProxy {
         }
     }
 
-    public void reportFailedEvent(String errorMessage, Object objectToSerialise) {
+    public void reportFailedEventWithWarning(String warningMsg, Object objectToSerialise) {
         if (!allowedToReport()) {
             return;
         }
@@ -120,7 +120,7 @@ public class TelescopeProxy {
                     .withStatus(Event.Status.FAILURE)
                     .withType(Event.Type.INGEST)
                     .withEntityState(EntityState.builder()
-                            .withError(errorMessage)
+                            .withWarning(warningMsg)
                             .withRaw(objectMapper.writeValueAsString(objectToSerialise))
                             .withRawMime(MimeType.APPLICATION_JSON.toString())
                             .build()
@@ -130,7 +130,32 @@ public class TelescopeProxy {
                     .build();
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
 
-            log.debug("Reported successfully FAILED event with taskId={}", taskId);
+            log.debug("Reported successfully a FAILED event, taskId={}, warning={}", taskId, warningMsg);
+        } catch (JsonProcessingException e) {
+            log.error("Couldn't convert the given object to a JSON string.", e);
+        }
+    }
+
+    public void reportFailedEventWithError(String errorMsg, Object objectToSerialise) {
+        if (!allowedToReport()) {
+            return;
+        }
+        try {
+            Event reportEvent = Event.builder()
+                    .withStatus(Event.Status.FAILURE)
+                    .withType(Event.Type.INGEST)
+                    .withEntityState(EntityState.builder()
+                            .withError(errorMsg)
+                            .withRaw(objectMapper.writeValueAsString(objectToSerialise))
+                            .withRawMime(MimeType.APPLICATION_JSON.toString())
+                            .build()
+                    )
+                    .withTaskId(taskId)
+                    .withTimestamp(LocalDateTime.now())
+                    .build();
+            telescopeClient.createEvents(ImmutableList.of(reportEvent));
+
+            log.debug("Reported successfully a FAILED event with taskId={}, error={}", taskId, errorMsg);
         } catch (JsonProcessingException e) {
             log.error("Couldn't convert the given object to a JSON string.", e);
         }

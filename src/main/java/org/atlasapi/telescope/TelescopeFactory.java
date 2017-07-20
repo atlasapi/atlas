@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
  */
 public class TelescopeFactory {
 
-    private static final Logger log = LoggerFactory.getLogger(TelescopeProxy.class);
+    private static final Logger log = LoggerFactory.getLogger(TelescopeFactory.class);
 
     /**
      * This factory will always give you a telescope (never null). If there are initialization errors the telescope you will

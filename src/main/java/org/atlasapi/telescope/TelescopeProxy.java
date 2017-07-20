@@ -74,7 +74,7 @@ public class TelescopeProxy {
         if (task.getId().isPresent()) {
             taskId = task.getId().get();
             startedReporting = true;
-            log.info("Started reporting to Telescope (taskId={})", taskId);
+            log.debug("Started reporting to Telescope (taskId={})", taskId);
             return true;
         } else {
             //this log might be meaningless, because I might not be understanding under which circumstances this id
@@ -146,7 +146,7 @@ public class TelescopeProxy {
         if (startedReporting) {
             telescopeClient.endIngest(taskId);
             stoppedReporting = true;
-            log.info("Finished reporting to Telescope (taskId:)", taskId);
+            log.debug("Finished reporting to Telescope (taskId:)", taskId);
         } else {
             log.warn("Someone tried to stop a telescope report that has never started");
         }

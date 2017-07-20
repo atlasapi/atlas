@@ -1,18 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import com.google.common.base.Function;
-import com.google.common.base.Objects;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import java.math.BigInteger;
+import java.util.Set;
+
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
@@ -31,11 +21,23 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.atlasapi.telescope.TelescopeProxy;
 import org.atlasapi.telescope.TelescopeUtilityMethods;
 import org.atlasapi.util.GroupLock;
+
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
+import com.google.common.base.Function;
+import com.google.common.base.Objects;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.math.BigInteger;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -45,7 +47,8 @@ import static com.google.common.base.Preconditions.checkState;
  * {@link NitroBroadcastHandler} which fetches, updates and writes relevant
  * content for the {@link Broadcast}.
  */
-public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandler<ImmutableList<Optional<ItemRefAndBroadcast>>> {
+public class ContentUpdatingNitroBroadcastHandler
+        implements NitroBroadcastHandler<ImmutableList<Optional<ItemRefAndBroadcast>>> {
 
     private static final Logger log = LoggerFactory.getLogger(ContentUpdatingNitroBroadcastHandler.class);
 
@@ -55,32 +58,41 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
 
     private final NitroBroadcastExtractor broadcastExtractor = new NitroBroadcastExtractor();
 
-
     public ContentUpdatingNitroBroadcastHandler(ContentResolver resolver, ContentWriter writer,
-                                                LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher, GroupLock<String> lock) {
+            LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher, GroupLock<String> lock) {
         this.writer = writer;
         this.localOrRemoteFetcher = localOrRemoteNitroFetcher;
         this.lock = lock;
     }
 
     @Override
-    public ImmutableList<Optional<ItemRefAndBroadcast>> handle(Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts, TelescopeProxy telescope) throws NitroException {
+    public ImmutableList<Optional<ItemRefAndBroadcast>> handle(
+            Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
+            TelescopeProxy telescope) throws NitroException {
 
         Set<String> itemIds = itemIds(nitroBroadcasts);
         Set<String> containerIds = ImmutableSet.of();
 
         try {
             lock.lock(itemIds);
-            ResolveOrFetchResult<Item> items = localOrRemoteFetcher.resolveOrFetchItem(nitroBroadcasts);
+            ResolveOrFetchResult<Item> items = localOrRemoteFetcher.resolveOrFetchItem(
+                    nitroBroadcasts);
 
             containerIds = topLevelContainerIds(items.getAll());
             lock.lock(containerIds);
 
-            ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(items.getAll());
+            ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(items
+                    .getAll());
             ImmutableSet<Container> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(items.getAll());
 
-            Iterable<Series> series = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Series.class);
-            Iterable<Brand> brands = Iterables.filter(Iterables.concat(resolvedSeries, resolvedBrands), Brand.class);
+            Iterable<Series> series = Iterables.filter(Iterables.concat(
+                    resolvedSeries,
+                    resolvedBrands
+            ), Series.class);
+            Iterable<Brand> brands = Iterables.filter(Iterables.concat(
+                    resolvedSeries,
+                    resolvedBrands
+            ), Brand.class);
 
             return writeContent(nitroBroadcasts, items, series, brands, telescope);
         } catch (InterruptedException ie) {
@@ -93,8 +105,10 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
 
     private Set<String> itemIds(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts) {
-        return ImmutableSet.copyOf(Iterables.transform(nitroBroadcasts,
+        return ImmutableSet.copyOf(Iterables.transform(
+                nitroBroadcasts,
                 new Function<com.metabroadcast.atlas.glycerin.model.Broadcast, String>() {
+
                     @Override
                     public String apply(com.metabroadcast.atlas.glycerin.model.Broadcast input) {
                         return NitroUtil.programmePid(input).getPid();
@@ -104,8 +118,10 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
     }
 
     private Set<String> topLevelContainerIds(ImmutableSet<Item> items) {
-        return ImmutableSet.copyOf(Iterables.filter(Iterables.transform(items,
+        return ImmutableSet.copyOf(Iterables.filter(Iterables.transform(
+                items,
                 new Function<Item, String>() {
+
                     @Override
                     public String apply(Item input) {
                         if (input.getContainer() != null) {
@@ -116,7 +132,6 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
                 }
         ), Predicates.notNull()));
     }
-
 
     private ImmutableList<Optional<ItemRefAndBroadcast>> writeContent(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
@@ -131,16 +146,25 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
         for (com.metabroadcast.atlas.glycerin.model.Broadcast nitroBroadcast : nitroBroadcasts) {
             try {
                 Optional<Broadcast> broadcast = broadcastExtractor.extract(nitroBroadcast);
-                checkState(broadcast.isPresent(), "couldn't extract broadcast: %s", nitroBroadcast.getPid());
+                checkState(
+                        broadcast.isPresent(),
+                        "couldn't extract broadcast: %s",
+                        nitroBroadcast.getPid()
+                );
 
                 String itemPid = NitroUtil.programmePid(nitroBroadcast).getPid();
                 String itemUri = BbcFeeds.nitroUriForPid(itemPid);
                 Item item = items.get(itemUri);
-                checkNotNull(item, "No item for broadcast %s: %s", nitroBroadcast.getPid(), itemPid);
+                checkNotNull(
+                        item,
+                        "No item for broadcast %s: %s",
+                        nitroBroadcast.getPid(),
+                        itemPid
+                );
 
                 addBroadcast(item, versionUri(nitroBroadcast), broadcast.get());
 
-                //To report to telescope, we need atlasIds (which are created with the below codec.
+                //To report to telescope, we need atlasIds (which are created with the codec below).
                 NumberToShortStringCodec idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
 
                 Brand brand = getBrand(item, brandIndex);
@@ -149,9 +173,16 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
                     //report to telescope
                     if (brand.getId() != null) {
                         String atlasId = idCodec.encode(BigInteger.valueOf(brand.getId()));
-                        telescope.reportSuccessfulEvent(atlasId, TelescopeUtilityMethods.getAliases(brand.getAliases()), nitroBroadcast);
+                        telescope.reportSuccessfulEvent(
+                                atlasId,
+                                TelescopeUtilityMethods.getAliases(brand.getAliases()),
+                                nitroBroadcast
+                        );
                     } else {
-                        telescope.reportFailedEventWithWarning("BBC Nitro ingester failed to write brand in the DB", nitroBroadcast);
+                        telescope.reportFailedEventWithWarning(
+                                "Atlas did not return an id after attempting to create or update this Brand",
+                                nitroBroadcast
+                        );
                     }
                 }
 
@@ -161,9 +192,16 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
                     //report to telescope
                     if (sery.getId() != null) {
                         String atlasId = idCodec.encode(BigInteger.valueOf(sery.getId()));
-                        telescope.reportSuccessfulEvent(atlasId, TelescopeUtilityMethods.getAliases(sery.getAliases()), nitroBroadcast);
+                        telescope.reportSuccessfulEvent(
+                                atlasId,
+                                TelescopeUtilityMethods.getAliases(sery.getAliases()),
+                                nitroBroadcast
+                        );
                     } else {
-                        telescope.reportFailedEventWithWarning("BBC Nitro ingester failed to write series in the DB", nitroBroadcast);
+                        telescope.reportFailedEventWithWarning(
+                                "Atlas did not return an id after attempting to create or update these Series",
+                                nitroBroadcast
+                        );
                     }
                 }
 
@@ -171,15 +209,31 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
                 //report to telescope
                 if (item.getId() != null) {
                     String atlasId = idCodec.encode(BigInteger.valueOf(item.getId()));
-                    telescope.reportSuccessfulEvent(atlasId, TelescopeUtilityMethods.getAliases(item.getAliases()), nitroBroadcast);
+                    telescope.reportSuccessfulEvent(
+                            atlasId,
+                            TelescopeUtilityMethods.getAliases(item.getAliases()),
+                            nitroBroadcast
+                    );
                 } else {
-                    telescope.reportFailedEventWithWarning("BBC Nitro ingester failed to write item in the DB", nitroBroadcast);
+                    telescope.reportFailedEventWithWarning(
+                            "Atlas did not return an id after attempting to create or update this Item",
+                            nitroBroadcast
+                    );
                 }
 
                 results.add(Optional.of(new ItemRefAndBroadcast(item, broadcast.get())));
             } catch (Exception e) {
-                log.error(nitroBroadcast.getPid(), e);
-                telescope.reportFailedEventWithError("There was some kind of exception while the bbc Nitro ingester was writing to atlas. NitroBroadcast PID: " + nitroBroadcast.getPid(), nitroBroadcast);
+                log.error(
+                        "taskId={}, ingesterName={}, NitroBroadcastPid={}",
+                        telescope.getTaskId(),
+                        telescope.getIngesterName(),
+                        nitroBroadcast.getPid(),
+                        e
+                );
+                telescope.reportFailedEventWithError(
+                        "There was an exception while writing to atlas.",
+                        nitroBroadcast
+                );
                 results.add(Optional.<ItemRefAndBroadcast>absent());
             }
         }
@@ -205,7 +259,10 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
     }
 
     private void addBroadcast(Item item, String versionUri, Broadcast broadcast) {
-        Version version = Objects.firstNonNull(getVersion(item, versionUri), newVersion(versionUri));
+        Version version = Objects.firstNonNull(
+                getVersion(item, versionUri),
+                newVersion(versionUri)
+        );
         version.setBroadcasts(Sets.union(ImmutableSet.of(broadcast), version.getBroadcasts()));
         item.addVersion(version);
     }
@@ -230,6 +287,5 @@ public class ContentUpdatingNitroBroadcastHandler implements NitroBroadcastHandl
         checkArgument(pidRef != null, "Broadcast %s has no version ref", nitroBroadcast.getPid());
         return BbcFeeds.nitroUriForPid(pidRef.getPid());
     }
-
 
 }

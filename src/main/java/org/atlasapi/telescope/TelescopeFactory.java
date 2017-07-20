@@ -2,6 +2,7 @@ package org.atlasapi.telescope;
 
 import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Process;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,8 +17,8 @@ public class TelescopeFactory {
     private static final Logger log = LoggerFactory.getLogger(TelescopeFactory.class);
 
     /**
-     * This factory will always give you a telescope (never null). If there are initialization errors the telescope you will
-     * get might be unable to report.
+     * This factory will always give you a telescope (never null). If there are initialization
+     * errors the telescope you will get might be unable to report.
      */
     public static TelescopeProxy make(IngesterName ingesterName) {
         Process process = getProcess(ingesterName);
@@ -33,8 +34,12 @@ public class TelescopeFactory {
             environment = Environment.valueOf(TelescopeConfiguration.ENVIRONMENT);
         } catch (IllegalArgumentException e) {
             //add stage as the default environment, which is better than crashing
-            log.error("Could not find a telescope environment with the given name, name={}. Falling back to STAGE.", TelescopeConfiguration.ENVIRONMENT, e);
             environment = Environment.STAGE;
+            log.error(
+                    "Could not find a telescope environment with the given name, name={}. Falling back to STAGE.",
+                    TelescopeConfiguration.ENVIRONMENT,
+                    e
+            );
         }
 
         return Process.create(name.getIngesterKey(), name.getIngesterName(), environment);
@@ -62,6 +67,5 @@ public class TelescopeFactory {
             return ingesterName;
         }
     }
-
 
 }

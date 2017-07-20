@@ -1,6 +1,8 @@
 package org.atlasapi.telescope;
 
-import com.google.common.collect.ImmutableList;
+import java.time.LocalDateTime;
+import java.util.List;
+
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
 import com.metabroadcast.columbus.telescope.api.Event;
@@ -9,17 +11,17 @@ import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.common.media.MimeType;
+
+import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import telescope_api_shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import telescope_api_shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
-import java.time.LocalDateTime;
-import java.util.List;
-
 /**
- * In any case at the moment, the use of this class is to simply get a TelescopeProxy item, then startReporting, then
- * report various events, and finally endReporting. We print log warnings for the wrong order of things.
+ * In any case at the moment, the use of this class is to simply get a TelescopeProxy item, then
+ * startReporting, then report various events, and finally endReporting. We print log warnings for
+ * the wrong order of things.
  */
 public class TelescopeProxy {
 
@@ -44,9 +46,12 @@ public class TelescopeProxy {
         // and thus and we'll have to check for that in further operations.
         TelescopeClientImpl client = TelescopeClientImpl.create(TelescopeConfiguration.TELESCOPE_HOST);
         if (client == null) { //precaution, not sure if it can actually happen.
-            log.error("Could not get a TelescopeClientImpl object with the given TELESCOPE_HOST={}",
-                    TelescopeConfiguration.TELESCOPE_HOST);
-            log.error("This telescope proxy will not report to telescope, and will not print any further messages.");
+            log.error(
+                    "Could not get a TelescopeClientImpl object with the given TELESCOPE_HOST={}",
+                    TelescopeConfiguration.TELESCOPE_HOST
+            );
+            log.error(
+                    "This telescope proxy will not report to telescope, and will not print any further messages.");
         } else {
             this.telescopeClient = IngestTelescopeClientImpl.create(client);
             this.objectMapper = new ObjectMapper();
@@ -66,7 +71,8 @@ public class TelescopeProxy {
         }
         //make sure we have not already done that
         if (startedReporting) {
-            log.warn("Someone tried to start a telescope report through a proxy that had already started reporting.");
+            log.warn(
+                    "Someone tried to start a telescope report through a proxy that had already started reporting.");
             return false;
         }
 
@@ -84,7 +90,8 @@ public class TelescopeProxy {
         }
     }
 
-    public void reportSuccessfulEvent(String atlasItemId, List<Alias> aliases, Object objectToSerialise) {
+    public void reportSuccessfulEvent(String atlasItemId, List<Alias> aliases,
+            Object objectToSerialise) {
         if (!allowedToReport()) {
             return;
         }
@@ -105,7 +112,11 @@ public class TelescopeProxy {
 
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
 
-            log.debug("Reported successfully event with taskId={}, eventId={}", taskId, reportEvent.getId().orElse("null"));
+            log.debug(
+                    "Reported successfully event with taskId={}, eventId={}",
+                    taskId,
+                    reportEvent.getId().orElse("null")
+            );
         } catch (JsonProcessingException e) {
             log.error("Couldn't convert the given object to a JSON string.", e);
         }
@@ -130,7 +141,11 @@ public class TelescopeProxy {
                     .build();
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
 
-            log.debug("Reported successfully a FAILED event, taskId={}, warning={}", taskId, warningMsg);
+            log.debug(
+                    "Reported successfully a FAILED event, taskId={}, warning={}",
+                    taskId,
+                    warningMsg
+            );
         } catch (JsonProcessingException e) {
             log.error("Couldn't convert the given object to a JSON string.", e);
         }
@@ -155,14 +170,19 @@ public class TelescopeProxy {
                     .build();
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
 
-            log.debug("Reported successfully a FAILED event with taskId={}, error={}", taskId, errorMsg);
+            log.debug(
+                    "Reported successfully a FAILED event with taskId={}, error={}",
+                    taskId,
+                    errorMsg
+            );
         } catch (JsonProcessingException e) {
             log.error("Couldn't convert the given object to a JSON string.", e);
         }
     }
 
     /**
-     * Let telescope know we are finished reporting through this proxy. Once finished this object is useless.
+     * Let telescope know we are finished reporting through this proxy. Once finished this object is
+     * useless.
      */
     public void endReporting() {
         if (!initialized()) {
@@ -177,16 +197,28 @@ public class TelescopeProxy {
         }
     }
 
+    //To allow for better logging down the line
+    public String getTaskId() {
+        return taskId;
+    }
+
+    public String getIngesterName() {
+        return this.process.getKey();
+    }
+
+    //======= HELPER METHODS ========
     private boolean allowedToReport() {
         if (!initialized()) {
             return false;
         }
         if (!startedReporting) {
-            log.warn("Someone tried to report a telescope event before the process has started reporting");
+            log.warn(
+                    "Someone tried to report a telescope event before the process has started reporting");
             return false;
         }
         if (stoppedReporting) {
-            log.warn("Someone tried to report a telescope event after the process finished reporting");
+            log.warn(
+                    "Someone tried to report a telescope event after the process finished reporting");
             return false;
         }
         return true;

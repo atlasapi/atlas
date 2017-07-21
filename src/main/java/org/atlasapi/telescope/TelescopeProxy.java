@@ -1,7 +1,9 @@
 package org.atlasapi.telescope;
 
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Set;
 
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
@@ -10,6 +12,7 @@ import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.columbus.telescope.api.Task;
 import com.metabroadcast.columbus.telescope.client.IngestTelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.media.MimeType;
 
 import com.google.common.collect.ImmutableList;
@@ -19,10 +22,10 @@ import telescope_api_shaded.com.fasterxml.jackson.core.JsonProcessingException;
 import telescope_api_shaded.com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
- * To use this class get a TelescopeProxy object, then startReporting, then report various events,
- * and finally endReporting. If you do stuff in the wrong order they will silently fail (log errors
- * only). If the proxy fails to connect to telescope it will silently fail (i.e. it will pretend to
- * be reporting, but will report nothing).
+ * To use this class get a TelescopeProxy object through {@link TelescopeFactory}, then
+ * startReporting, then report various events, and finally endReporting. If you do stuff in the
+ * wrong order they will silently fail (log errors only). If the proxy fails to connect to telescope
+ * it will silently fail (i.e. it will pretend to be reporting, but will report nothing).
  */
 public class TelescopeProxy {
 
@@ -36,6 +39,7 @@ public class TelescopeProxy {
     private ObjectMapper objectMapper;
     private boolean startedReporting = false; //safeguard flags
     private boolean stoppedReporting = false;
+    private SubstitutionTableNumberCodec idCodec; //used to create atlasIDs
 
     /**
      * The client always reports to {@link TelescopeFactory#TELESCOPE_HOST}
@@ -57,7 +61,6 @@ public class TelescopeProxy {
             this.telescopeClient = IngestTelescopeClientImpl.create(client);
             this.objectMapper = new ObjectMapper();
         }
-
     }
 
     /**
@@ -121,6 +124,19 @@ public class TelescopeProxy {
         } catch (JsonProcessingException e) {
             log.error("Couldn't convert the given object to a JSON string.", e);
         }
+    }
+
+    //convenience method for the most common reporting Format
+    public void reportSuccessfulEvent(
+            long dbId,
+            Set<org.atlasapi.media.entity.Alias> aliases,
+            Object objectToSerialise) {
+
+        reportSuccessfulEvent(
+                encode(dbId),
+                TelescopeUtilityMethods.getAliases(aliases),
+                objectToSerialise
+        );
     }
 
     public void reportFailedEventWithWarning(String warningMsg, Object objectToSerialise) {
@@ -227,6 +243,18 @@ public class TelescopeProxy {
 
     private boolean initialized() {
         return (telescopeClient != null);
+    }
+
+    // This allows us to work with db id's instead of atlas ids,
+    // without forcing each caller to create his own encoder.
+    // This is here and not in the utility class so we dont recreate the codec object all the time.
+    private String encode(long id) {
+        //lazy initialize
+        if (this.idCodec == null) {
+            this.idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
+        }
+
+        return idCodec.encode(BigInteger.valueOf(id));
     }
 
 }

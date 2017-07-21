@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
  * Creates proxies to telescopeClients that can be used for reporting to telescope.
  * <p>
  * If you need to extend this class to accommodate more Processes (i.e. add more owl ingesters),
- * extend the {@link IngesterName} enum accordingly.
+ * extend the {@link ReporterName} enum accordingly.
  */
 public class TelescopeFactory {
 
@@ -23,15 +23,15 @@ public class TelescopeFactory {
      * This factory will always give you a telescope (never null). If there are initialization
      * errors the telescope you will get might be unable to report.
      */
-    public static TelescopeProxy make(IngesterName ingesterName) {
-        Process process = getProcess(ingesterName);
+    public static TelescopeProxy make(ReporterName reporterName) {
+        Process process = getProcess(reporterName);
         TelescopeProxy telescopeProxy = new TelescopeProxy(process);
 
         return telescopeProxy;
     }
 
     //create and return a telescope.api.Process.
-    private static Process getProcess(IngesterName name) {
+    private static Process getProcess(ReporterName name) {
         Environment environment;
         try {
             environment = Environment.valueOf(ENVIRONMENT);
@@ -45,31 +45,30 @@ public class TelescopeFactory {
             );
         }
 
-        return Process.create(name.getIngesterKey(), name.getIngesterName(), environment);
+        return Process.create(name.getReporterKey(), name.getReporterName(), environment);
     }
 
     /**
      * Holds the pairs of Ingester Keys-Names used by atlas to report to telescope.
      */
-    public enum IngesterName {
-        BBC_NITRO("bbc-nitro-ingester", "BBC Nitro Ingester (Owl)"),
-        YOU_VIEW("you-view-ingester","YouView Ingester (Owl)")
+    public enum ReporterName {
+        BBC_NITRO_INGEST("bbc-nitro-ingester", "BBC Nitro Ingester (Owl)"),
         ;
 
-        String ingesterKey;
-        String ingesterName;
+        String reporterKey;
+        String reporterName;
 
-        IngesterName(String ingesterKey, String ingesterName) {
-            this.ingesterKey = ingesterKey;
-            this.ingesterName = ingesterName;
+        ReporterName(String reporterKey, String reporterName) {
+            this.reporterKey = reporterKey;
+            this.reporterName = reporterName;
         }
 
-        public String getIngesterKey() {
-            return ingesterKey;
+        public String getReporterKey() {
+            return reporterKey;
         }
 
-        public String getIngesterName() {
-            return ingesterName;
+        public String getReporterName() {
+            return reporterName;
         }
     }
 

@@ -64,7 +64,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     public UpdateProgress process(ChannelDay channelDay) throws Exception {
 
         //get a new telescope proxy and start reporting
-        TelescopeProxy telescope = TelescopeFactory.make(TelescopeFactory.IngesterName.BBC_NITRO);
+        TelescopeProxy telescope = TelescopeFactory.make(TelescopeFactory.ReporterName.BBC_NITRO_INGEST);
         telescope.startReporting();
 
         String serviceId = BbcIonServices.services.inverse().get(channelDay.getChannel().getUri());

@@ -52,7 +52,9 @@ public class TelescopeFactory {
      * Holds the pairs of Ingester Keys-Names used by atlas to report to telescope.
      */
     public enum IngesterName {
-        BBC_NITRO("bbc-nitro-ingester", "BBC Nitro Ingester (Owl)");
+        BBC_NITRO("bbc-nitro-ingester", "BBC Nitro Ingester (Owl)"),
+        YOU_VIEW("you-view-ingester","YouView Ingester (Owl)")
+        ;
 
         String ingesterKey;
         String ingesterName;

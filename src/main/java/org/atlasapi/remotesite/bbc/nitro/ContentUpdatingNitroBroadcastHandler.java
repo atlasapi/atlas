@@ -1,6 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.math.BigInteger;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
@@ -19,12 +18,9 @@ import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBroadcastExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.atlasapi.telescope.TelescopeProxy;
-import org.atlasapi.telescope.TelescopeUtilityMethods;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -55,8 +51,6 @@ public class ContentUpdatingNitroBroadcastHandler
     private final ContentWriter writer;
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;
     private final GroupLock<String> lock;
-    //To report to telescope, we need atlasIds (which are created with the codec below).
-    NumberToShortStringCodec idCodec;
 
     private final NitroBroadcastExtractor broadcastExtractor = new NitroBroadcastExtractor();
 
@@ -65,7 +59,6 @@ public class ContentUpdatingNitroBroadcastHandler
         this.writer = writer;
         this.localOrRemoteFetcher = localOrRemoteNitroFetcher;
         this.lock = lock;
-        this.idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
 
     @Override
@@ -173,8 +166,8 @@ public class ContentUpdatingNitroBroadcastHandler
                     //report to telescope
                     if (brand.getId() != null) {
                         telescope.reportSuccessfulEvent(
-                                idCodec.encode(BigInteger.valueOf(brand.getId())),
-                                TelescopeUtilityMethods.getAliases(brand.getAliases()),
+                                brand.getId(),
+                                brand.getAliases(),
                                 nitroBroadcast
                         );
                     } else {
@@ -191,8 +184,8 @@ public class ContentUpdatingNitroBroadcastHandler
                     //report to telescope
                     if (sery.getId() != null) {
                         telescope.reportSuccessfulEvent(
-                                idCodec.encode(BigInteger.valueOf(sery.getId())),
-                                TelescopeUtilityMethods.getAliases(sery.getAliases()),
+                                sery.getId(),
+                                sery.getAliases(),
                                 nitroBroadcast
                         );
                     } else {
@@ -207,8 +200,8 @@ public class ContentUpdatingNitroBroadcastHandler
                 //report to telescope
                 if (item.getId() != null) {
                     telescope.reportSuccessfulEvent(
-                            idCodec.encode(BigInteger.valueOf(item.getId())),
-                            TelescopeUtilityMethods.getAliases(item.getAliases()),
+                            item.getId(),
+                            item.getAliases(),
                             nitroBroadcast
                     );
                 } else {

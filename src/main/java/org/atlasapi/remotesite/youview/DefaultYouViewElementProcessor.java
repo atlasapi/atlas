@@ -9,7 +9,6 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -54,7 +53,7 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
     }
     
     @Override
-    public ItemRefAndBroadcast process(Publisher targetPublisher, Element element) {
+    public Item process(Publisher targetPublisher, Element element) {
         Item item = extractor.extract(targetPublisher, element);
         removeStaleScheduleEventOnOldItems(item);
         Maybe<Identified> existing = resolve(item.getCanonicalUri());
@@ -64,12 +63,7 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
             Identified identified = existing.requireValue();
                 write(contentMerger.merge(ContentMerger.asItem(identified), item));
         }
-        return new ItemRefAndBroadcast(item, getBroadcastFromItem(item));
-    }
-
-    private Broadcast getBroadcastFromItem(Item item) {
-        Version version = Iterables.getOnlyElement(item.getVersions());
-        return Iterables.getOnlyElement(version.getBroadcasts());
+        return item;
     }
 
     private Maybe<Identified> resolve(String uri) {
@@ -96,4 +90,9 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
             }
         }
     }
+    public static Broadcast getBroadcastFromItem(Item item) {
+        Version version = Iterables.getOnlyElement(item.getVersions());
+        return Iterables.getOnlyElement(version.getBroadcasts());
+    }
+
 }

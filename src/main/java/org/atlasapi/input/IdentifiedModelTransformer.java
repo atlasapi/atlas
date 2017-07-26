@@ -1,22 +1,21 @@
 package org.atlasapi.input;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
-import java.util.HashSet;
 import java.util.Set;
 
-import com.google.common.base.Function;
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.simple.Alias;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.SameAs;
-import org.joda.time.DateTime;
 
 import com.metabroadcast.common.time.Clock;
+
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import org.joda.time.DateTime;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public abstract class IdentifiedModelTransformer<F extends Description, T extends Identified>
         implements ModelTransformer<F, T> {
@@ -55,15 +54,10 @@ public abstract class IdentifiedModelTransformer<F extends Description, T extend
         if (v4Aliases == null) {
             return ImmutableList.of();
         }
-        return Collections2.transform(v4Aliases, new Function<Alias, org.atlasapi.media.entity.Alias>() {
-            @Override
-            public org.atlasapi.media.entity.Alias apply(Alias input) {
-                return new org.atlasapi.media.entity.Alias(
-                        input.getNamespace(),
-                        input.getValue()
-                );
-            }
-        });
+        return Collections2.transform(v4Aliases, input -> new org.atlasapi.media.entity.Alias(
+                input.getNamespace(),
+                input.getValue()
+        ));
     }
 
     protected abstract Set<LookupRef> resolveSameAs(Set<SameAs> equivalents);

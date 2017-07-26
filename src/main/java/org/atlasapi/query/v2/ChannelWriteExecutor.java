@@ -1,17 +1,17 @@
 package org.atlasapi.query.v2;
 
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.common.collect.Sets;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.io.Reader;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.media.MimeType;
-import joptsimple.internal.Strings;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.validation.ConstraintViolationException;
+
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.input.ChannelModelTransformer;
@@ -28,29 +28,31 @@ import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.output.exceptions.UnauthorizedException;
+
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.media.MimeType;
+
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.collect.Sets;
+import joptsimple.internal.Strings;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-import javax.validation.ConstraintViolationException;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-
 import static com.google.common.base.Preconditions.checkNotNull;
 
 public class ChannelWriteExecutor {
 
-    private static final Logger log = LoggerFactory.getLogger(ChannelWriteExecutor.class);
     private static final String STRICT = "strict";
 
+    private final Logger log = LoggerFactory.getLogger(ChannelWriteExecutor.class);
     private final ApplicationFetcher appConfigFetcher;
     private final ChannelStore store;
     private final ModelReader reader;
@@ -76,8 +78,10 @@ public class ChannelWriteExecutor {
         return deserializeAndUpdateChannel(req, resp);
     }
 
-    public Void createOrUpdateChannelImage(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    public Void createOrUpdateChannelImage(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
@@ -172,8 +176,10 @@ public class ChannelWriteExecutor {
         return Optional.empty();
     }
 
-    public Void deleteChannelImage(HttpServletRequest request, HttpServletResponse response)
-            throws IOException {
+    public Void deleteChannelImage(
+            HttpServletRequest request,
+            HttpServletResponse response
+    ) throws IOException {
         ObjectMapper mapper = new ObjectMapper();
         ImageDetails imageDetails = mapper.readValue(request.getInputStream(), ImageDetails.class);
 
@@ -294,7 +300,7 @@ public class ChannelWriteExecutor {
     }
 
     private void setImageDetails(ImageDetails imageDetails, Image existingImage) {
-        existingImage.setMimeType(MimeType.valueOf(imageDetails.getMimeType().toUpperCase()));
+        existingImage.setMimeType(MimeType.fromString(imageDetails.getMimeType().toUpperCase()));
         existingImage.setType(ImageType.LOGO);
         existingImage.setColor(ImageColor.MONOCHROME);
         existingImage.setTheme(ImageTheme.valueOf(imageDetails.getTheme().toUpperCase()));
@@ -409,8 +415,8 @@ public class ChannelWriteExecutor {
             return uri;
         }
 
-        public void setUri(String uri) {
-            this.uri = uri;
+        public void setUri(String imageUri) {
+            this.uri = imageUri;
         }
 
         public String getTheme() {

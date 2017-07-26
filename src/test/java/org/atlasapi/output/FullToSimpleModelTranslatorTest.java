@@ -17,6 +17,7 @@ import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.product.ProductResolver;
 import org.atlasapi.media.segment.SegmentResolver;
 import org.atlasapi.output.simple.ChannelGroupSummarySimplifier;
+import org.atlasapi.output.simple.ChannelRefSimplifier;
 import org.atlasapi.output.simple.ChannelSimplifier;
 import org.atlasapi.output.simple.ContainerModelSimplifier;
 import org.atlasapi.output.simple.EventRefModelSimplifier;
@@ -39,6 +40,7 @@ import org.hamcrest.TypeSafeMatcher;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
@@ -74,7 +76,7 @@ public class FullToSimpleModelTranslatorTest {
     private EventRefModelSimplifier eventSimplifier = mock(EventRefModelSimplifier.class);
 
     private final SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
-    private final ChannelSimplifier channelSimplifier = new ChannelSimplifier(codec, codec, Mockito.mock(ChannelResolver.class), new PublisherSimplifier(), new ImageSimplifier(), new ChannelGroupSummarySimplifier(codec, Mockito.mock(ChannelGroupResolver.class)), Mockito.mock(ChannelGroupResolver.class));
+    private final ChannelSimplifier channelSimplifier = new ChannelSimplifier(codec, codec, Mockito.mock(ChannelResolver.class), new PublisherSimplifier(), new ImageSimplifier(), new ChannelGroupSummarySimplifier(codec, Mockito.mock(ChannelGroupResolver.class)), Mockito.mock(ChannelRefSimplifier.class), Mockito.mock(ChannelGroupResolver.class));
     
     private final ItemModelSimplifier itemSimplifier = new ItemModelSimplifier(
             "localhostName", 

@@ -52,19 +52,7 @@ public class BtChannelsModule {
 
     @Value("${bt.channels.baseUri.reference}")
     private String test3BaseUri;
-
-    @Value("${bt.channels.ingestAdvertiseFrom.production}")
-    private String productionIngestAdvertiseFrom;
-
-    @Value("${bt.channels.ingestAdvertiseFrom.test1}")
-    private String test1IngestAdvertiseFrom;
-
-    @Value("${bt.channels.ingestAdvertiseFrom.test2}")
-    private String test2IngestAdvertiseFrom;
-
-    @Value("${bt.channels.ingestAdvertiseFrom.reference}")
-    private String test3IngestAdvertiseFrom;
-
+    
     @Value("${bt.channels.namespace.production}")
     private String productionNamespace;
 
@@ -109,26 +97,50 @@ public class BtChannelsModule {
     
     @Bean 
     public BtMpxChannelDataIngester productionChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS, ALIAS_NAMESPACE_PREFIX, baseUri, Boolean.parseBoolean(productionIngestAdvertiseFrom), productionNamespace);
+        return perEnvironmentChannelGroupUpdater(
+                Publisher.BT_TV_CHANNELS,
+                ALIAS_NAMESPACE_PREFIX,
+                baseUri,
+                productionNamespace
+        );
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev1ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST1, ALIAS_NAMESPACE_PREFIX, test1BaseUri, Boolean.parseBoolean(test1IngestAdvertiseFrom), test1Namespace);
+        return perEnvironmentChannelGroupUpdater(
+                Publisher.BT_TV_CHANNELS_TEST1,
+                ALIAS_NAMESPACE_PREFIX,
+                test1BaseUri,
+                test1Namespace
+        );
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev2ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_TEST2, ALIAS_NAMESPACE_PREFIX, test2BaseUri, Boolean.parseBoolean(test2IngestAdvertiseFrom), test2Namespace);
+        return perEnvironmentChannelGroupUpdater(
+                Publisher.BT_TV_CHANNELS_TEST2,
+                ALIAS_NAMESPACE_PREFIX,
+                test2BaseUri,
+                test2Namespace
+        );
     }
     
     @Bean 
     public BtMpxChannelDataIngester dev3ChannelGroupUpdater() {
-        return perEnvironmentChannelGroupUpdater(Publisher.BT_TV_CHANNELS_REFERENCE, ALIAS_NAMESPACE_PREFIX, test3BaseUri, Boolean.parseBoolean(test3IngestAdvertiseFrom), test3Namespace);
+        return perEnvironmentChannelGroupUpdater(
+                Publisher.BT_TV_CHANNELS_REFERENCE,
+                ALIAS_NAMESPACE_PREFIX,
+                test3BaseUri,
+                test3Namespace
+        );
     }
     
-    private BtMpxChannelDataIngester perEnvironmentChannelGroupUpdater(Publisher publisher,
-                                                                       String aliasNamespacePrefix, String mpxUriBase, boolean ingestAdvertiseFrom, String namespace) {
+    private BtMpxChannelDataIngester perEnvironmentChannelGroupUpdater(
+            Publisher publisher,
+            String aliasNamespacePrefix,
+            String mpxUriBase,
+            String namespace
+    ) {
         GsonBtMpxClient mpxClient = new GsonBtMpxClient(httpClient(), mpxUriBase);
         
         BtAllChannelsChannelGroupUpdater btAllChannelsChannelGroupUpdater 
@@ -137,11 +149,26 @@ public class BtChannelsModule {
                 uriPrefixFromPublisher(publisher), publisher);
 
 
-        BtChannelDataUpdater channelDataUpdater = new BtChannelDataUpdater(channelResolver, channelWriter, namespace);
-        return new BtMpxChannelDataIngester(mpxClient, publisher, uriPrefixFromPublisher(publisher),
-                aliasNamespacePrefix, channelGroupResolver, channelGroupWriter, 
-                channelResolver, channelWriter, btAllChannelsChannelGroupUpdater, channelWriterLock, channelDataUpdater, ingestAdvertiseFrom);
-        
+        BtChannelDataUpdater channelDataUpdater = BtChannelDataUpdater.builder()
+                .withChannelResolver(channelResolver)
+                .withChannelWriter(channelWriter)
+                .withAliasNamespace(namespace)
+                .withPublisher(publisher)
+                .build();
+
+        return BtMpxChannelDataIngester.builder()
+                .withBtMpxClient(mpxClient)
+                .withPublisher(publisher)
+                .withAliasUriPrefix(uriPrefixFromPublisher(publisher))
+                .withAliasNamespacePrefix(aliasNamespacePrefix)
+                .withChannelGroupResolver(channelGroupResolver)
+                .withChannelGroupWriter(channelGroupWriter)
+                .withChannelResolver(channelResolver)
+                .withChannelWriter(channelWriter)
+                .withAllChannelsGroupUpdater(btAllChannelsChannelGroupUpdater)
+                .withChannelWriterLock(channelWriterLock)
+                .withChannelDataUpdater(channelDataUpdater)
+                .build();
     }
     
     public String uriPrefixFromPublisher(Publisher publisher) {
@@ -150,21 +177,25 @@ public class BtChannelsModule {
     
     @PostConstruct
     public void scheduleTasks() {
-        scheduler.schedule(productionChannelGroupUpdater()
-                .withName("BT Channel Group (PROD) Ingester"), 
-                PROD_INGEST_REPETITION);
+        scheduler.schedule(
+                productionChannelGroupUpdater().withName("BT Channel Group (PROD) Ingester"),
+                PROD_INGEST_REPETITION
+        );
         
-        scheduler.schedule(dev1ChannelGroupUpdater()
-                .withName("BT Channel Group (TEST1) Ingester"), 
-                TEST1_INGEST_REPETITION);
+        scheduler.schedule(
+                dev1ChannelGroupUpdater().withName("BT Channel Group (TEST1) Ingester"),
+                TEST1_INGEST_REPETITION
+        );
         
-        scheduler.schedule(dev2ChannelGroupUpdater()
-                .withName("BT Channel Group (TEST2) Ingester"), 
-                TEST2_INGEST_REPETITION);
+        scheduler.schedule(
+                dev2ChannelGroupUpdater().withName("BT Channel Group (TEST2) Ingester"),
+                TEST2_INGEST_REPETITION
+        );
         
-        scheduler.schedule(dev3ChannelGroupUpdater()
-                .withName("BT Channel Group (REFERENCE) Ingester"), 
-                REFERENCE_INGEST_REPETITION);
+        scheduler.schedule(
+                dev3ChannelGroupUpdater().withName("BT Channel Group (REFERENCE) Ingester"),
+                REFERENCE_INGEST_REPETITION
+        );
     }
     
 }

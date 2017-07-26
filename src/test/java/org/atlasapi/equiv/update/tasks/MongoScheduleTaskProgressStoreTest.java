@@ -8,7 +8,8 @@ import com.metabroadcast.common.persistence.MongoTestHelper;
 
 import junit.framework.TestCase;
 
-public class MongoScheduleTaskProgressStoreTest extends TestCase {
+public class
+MongoScheduleTaskProgressStoreTest extends TestCase {
 
     private String taskName = "iamatask";
     private final MongoScheduleTaskProgressStore store = new MongoScheduleTaskProgressStore(MongoTestHelper.anEmptyTestDatabase());

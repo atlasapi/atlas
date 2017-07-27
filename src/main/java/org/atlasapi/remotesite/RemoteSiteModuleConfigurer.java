@@ -14,7 +14,6 @@ import org.atlasapi.remotesite.bbc.products.BBCProductsModule;
 import org.atlasapi.remotesite.bt.channels.BtChannelsModule;
 import org.atlasapi.remotesite.bt.events.BtEventsModule;
 import org.atlasapi.remotesite.btfeatured.BtFeaturedContentModule;
-import org.atlasapi.remotesite.btvod.BtVodModule;
 import org.atlasapi.remotesite.channel4.pmlsd.C4PmlsdModule;
 import org.atlasapi.remotesite.five.FiveModule;
 import org.atlasapi.remotesite.getty.GettyModule;
@@ -88,7 +87,6 @@ public class RemoteSiteModuleConfigurer {
         .put("rte", RteModule.class)
         .put("bt-channels", BtChannelsModule.class)
         .put("bbc-audience-data", AudienceModule.class)
-        .put("btvod", BtVodModule.class)
         .put("knowledgemotion", KnowledgeMotionModule.class)
         .put("getty", GettyModule.class)
         .put("bt-events", BtEventsModule.class)

@@ -17,7 +17,8 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBroadcastExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.atlasapi.telescope.TelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.TelescopeProxy;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.PidReference;
@@ -64,7 +65,7 @@ public class ContentUpdatingNitroBroadcastHandler
     @Override
     public ImmutableList<Optional<ItemRefAndBroadcast>> handle(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
-            TelescopeProxy telescope) throws NitroException {
+            OwlTelescopeProxy telescope) throws NitroException {
 
         Set<String> itemIds = itemIds(nitroBroadcasts);
         Set<String> containerIds = ImmutableSet.of();
@@ -133,7 +134,7 @@ public class ContentUpdatingNitroBroadcastHandler
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
             ResolveOrFetchResult<Item> items, Iterable<Series> series,
             Iterable<Brand> brands,
-            TelescopeProxy telescope) {
+            OwlTelescopeProxy telescope) {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
         ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
 
@@ -171,7 +172,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                 nitroBroadcast
                         );
                     } else {
-                        telescope.reportFailedEventWithWarning(
+                        telescope.reportFailedEventWithError(
                                 "Atlas did not return an id after attempting to create or update this Brand",
                                 nitroBroadcast
                         );
@@ -189,7 +190,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                 nitroBroadcast
                         );
                     } else {
-                        telescope.reportFailedEventWithWarning(
+                        telescope.reportFailedEventWithError(
                                 "Atlas did not return an id after attempting to create or update these Series",
                                 nitroBroadcast
                         );
@@ -205,7 +206,7 @@ public class ContentUpdatingNitroBroadcastHandler
                             nitroBroadcast
                     );
                 } else {
-                    telescope.reportFailedEventWithWarning(
+                    telescope.reportFailedEventWithError(
                             "Atlas did not return an id after attempting to create or update this Item",
                             nitroBroadcast
                     );

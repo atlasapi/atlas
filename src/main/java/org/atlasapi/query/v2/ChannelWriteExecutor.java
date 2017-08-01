@@ -100,7 +100,7 @@ public class ChannelWriteExecutor {
                     response,
                     AtlasErrorSummary.forException(
                             new IllegalArgumentException(
-                                    "You must specify a channel ID and image theme to make a request."
+                                    "You must specify a channel ID and image theme to create a request."
                             )
                     )
             );
@@ -198,7 +198,7 @@ public class ChannelWriteExecutor {
                     response,
                     AtlasErrorSummary.forException(
                             new IllegalArgumentException(
-                                    "You must specify a channel ID and image theme to make a request."
+                                    "You must specify a channel ID and image theme to create a request."
                             )
                     )
             );

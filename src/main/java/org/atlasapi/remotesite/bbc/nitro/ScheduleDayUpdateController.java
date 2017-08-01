@@ -7,6 +7,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -60,9 +63,13 @@ public class ScheduleDayUpdateController {
             resp.sendError(HttpStatusCode.NOT_FOUND.code());
             return;
         }
-        
+
+        //get a new telescope proxy and start reporting
+        OwlTelescopeProxy telescope = OwlTelescopeProxy.create(OwlTelescopeReporters.BBC_NITRO_INGEST_API);
+        telescope.startReporting();
+
         try {
-            UpdateProgress progress = processor.process(new ChannelDay(possibleChannel.requireValue(), day));
+            UpdateProgress progress = processor.process(new ChannelDay(possibleChannel.requireValue(), day), telescope);
             resp.setStatus(HttpStatusCode.OK.code());
             String progressMsg = progress.toString();
             resp.setContentLength(progressMsg.length());
@@ -74,6 +81,8 @@ public class ScheduleDayUpdateController {
             resp.getWriter().write(stack);
             return;
         }
+
+        telescope.endReporting();
     }
     
 }

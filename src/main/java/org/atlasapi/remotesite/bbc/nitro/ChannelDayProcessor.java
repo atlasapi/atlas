@@ -1,5 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 /**
@@ -7,6 +9,6 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
  */
 public interface ChannelDayProcessor {
 
-    UpdateProgress process(ChannelDay channelDay) throws Exception;
+    UpdateProgress process(ChannelDay channelDay, OwlTelescopeProxy telescope) throws Exception;
 
 }

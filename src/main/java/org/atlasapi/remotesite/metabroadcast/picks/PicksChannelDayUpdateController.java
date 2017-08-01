@@ -7,6 +7,8 @@ import javax.servlet.http.HttpServletResponse;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxyMock;
+
 import org.joda.time.LocalDate;
 import org.joda.time.format.ISODateTimeFormat;
 import org.springframework.stereotype.Controller;
@@ -38,7 +40,7 @@ public class PicksChannelDayUpdateController {
         LocalDate date = ISODateTimeFormat.dateParser().parseLocalDate(dateString);
         ChannelDay channelDay = new ChannelDay(channel.requireValue(), date);
         
-        picksDayUpdater.process(channelDay);
+        picksDayUpdater.process(channelDay, OwlTelescopeProxyMock.create());
         response.setStatus(200);
     }
 }

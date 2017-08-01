@@ -21,6 +21,8 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessor;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
@@ -73,7 +75,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
     }
     
     @Override
-    public UpdateProgress process(ChannelDay channelDay) throws Exception {
+    public UpdateProgress process(ChannelDay channelDay, OwlTelescopeProxy telescope) throws Exception {
         try {
             Iterable<Item> picks = concat(transform(scheduleResolver.unmergedSchedule(
                     channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZone.UTC), 

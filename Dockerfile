@@ -181,6 +181,7 @@ CMD java \
     -Dequiv.excludedUris="$EQUIV_EXCLUDEDURIS" \
     -Dequiv.excludedIds="$EQUIV_EXCLUDEDIDS" \
     -Dequiv.results.directory="$EQUIV_RESULTS_DIRECTORY" \
+    -Dequiv.results.writer.endpoint="$EQUIV_RESULTS_WRITER_ENDPOINT" \
     -Dequiv.stream-updater.consumers.default="$EQUIV_STREAM_UPDATER_CONSUMERS_DEFAULT" \
     -Dequiv.stream-updater.consumers.max="$EQUIV_STREAM_UPDATER_CONSUMERS_MAX" \
     -Dequiv.stream-updater.enabled="$EQUIV_STREAM_UPDATER_ENABLED" \

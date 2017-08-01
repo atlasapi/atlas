@@ -79,6 +79,7 @@ public class ScheduleDayUpdateController {
             resp.setStatus(HttpStatusCode.SERVER_ERROR.code());
             resp.setContentLength(stack.length());
             resp.getWriter().write(stack);
+            telescope.endReporting(); //cant use finally, because this returns.
             return;
         }
 

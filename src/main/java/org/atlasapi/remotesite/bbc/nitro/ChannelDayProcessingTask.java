@@ -93,7 +93,7 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
         if (telescope != null) {
             this.telescope = telescope;
         } else {
-            //create a mock telescope that will report to log instead
+            //create a mock telescope that will report nowhere
             this.telescope = OwlTelescopeProxyMock.create();
         }
         this.jobFailThresholdInPercent = jobFailThresholdInPercent;

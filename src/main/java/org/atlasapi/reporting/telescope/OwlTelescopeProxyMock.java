@@ -20,7 +20,8 @@ import org.slf4j.LoggerFactory;
  * default.
  * <p>
  * Not the prettiest of solutions but if you think of telescope as a logging client it makes more
- * sense. This telescope will log to log files instead of telescope. Good enough.
+ * sense. This telescope will log to log files instead of telescope. Good enough, and good for
+ * debugging as well.
  */
 public class OwlTelescopeProxyMock extends OwlTelescopeProxy {
 

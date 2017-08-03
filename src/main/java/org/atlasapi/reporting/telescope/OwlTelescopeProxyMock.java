@@ -39,10 +39,9 @@ public class OwlTelescopeProxyMock extends OwlTelescopeProxy {
     }
 
     @Override
-    public boolean startReporting() {
+    public void startReporting() {
         //we dont want to swarm the debug log, uncomment if you need.
         // log.debug("An atlas report was started through a mock telescope");
-        return true;
     }
 
     @Override

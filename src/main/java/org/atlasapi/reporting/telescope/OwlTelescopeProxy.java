@@ -43,18 +43,18 @@ public class OwlTelescopeProxy extends TelescopeProxy {
     public void reportSuccessfulEvent(
             String atlasItemId, List<Alias> aliases, Object objectToSerialise) {
 
-        if (!startedReporting) {
+        if (!isStarted()) {
             log.error(
                     "It was attempted to report atlasItem={}, but the telescope client was not started.",
                     atlasItemId
             );
             return;
         }
-        if (stoppedReporting) {
+        if (isFinished()) {
             log.warn(
                     "atlasItem={} was reported to telescope client={} after it has finished reporting.",
                     atlasItemId,
-                    taskId
+                    getTaskId()
             );
         }
         try {
@@ -68,7 +68,7 @@ public class OwlTelescopeProxy extends TelescopeProxy {
                             .withRawMime(MimeType.APPLICATION_JSON.toString())
                             .build()
                     )
-                    .withTaskId(taskId)
+                    .withTaskId(getTaskId())
                     .withTimestamp(LocalDateTime.now())
                     .build();
 
@@ -76,7 +76,7 @@ public class OwlTelescopeProxy extends TelescopeProxy {
 
             log.debug(
                     "Reported successfully event with taskId={}, eventId={}",
-                    taskId,
+                    getTaskId(),
                     reportEvent.getId().orElse("null")
             );
         } catch (JsonProcessingException e) {
@@ -103,18 +103,18 @@ public class OwlTelescopeProxy extends TelescopeProxy {
     public void reportFailedEventWithWarning(
             String atlasItemId, String warningMsg, Object objectToSerialise) {
 
-        if (!startedReporting) {
+        if (!isStarted()) {
             log.error(
                     "It was attempted to report atlasItem={}, but the telescope client was not started.",
                     atlasItemId
             );
             return;
         }
-        if (stoppedReporting) {
+        if (isFinished()) {
             log.warn(
                     "atlasItem={} was reported to telescope client={} after it has finished reporting.",
                     atlasItemId,
-                    taskId
+                    getTaskId()
             );
         }
         try {
@@ -128,14 +128,14 @@ public class OwlTelescopeProxy extends TelescopeProxy {
                             .withRawMime(MimeType.APPLICATION_JSON.toString())
                             .build()
                     )
-                    .withTaskId(taskId)
+                    .withTaskId(getTaskId())
                     .withTimestamp(LocalDateTime.now())
                     .build();
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
 
             log.debug(
                     "Reported successfully a FAILED event, taskId={}, warning={}",
-                    taskId,
+                    getTaskId(),
                     warningMsg
             );
         } catch (JsonProcessingException e) {
@@ -144,16 +144,16 @@ public class OwlTelescopeProxy extends TelescopeProxy {
     }
 
     public void reportFailedEventWithError(String errorMsg, Object objectToSerialise) {
-            if (!startedReporting) {
+            if (!isStarted()) {
                 log.error(
                         "It was attempted to report an error to telescope, but the client was not started."
                 );
                 return;
             }
-            if (stoppedReporting) {
+            if (isFinished()) {
                 log.warn(
                         "An error was reported to telescope after the telescope client={} has finished reporting.",
-                        taskId
+                        getTaskId()
                 );
             }
         try {
@@ -166,14 +166,14 @@ public class OwlTelescopeProxy extends TelescopeProxy {
                             .withRawMime(MimeType.APPLICATION_JSON.toString())
                             .build()
                     )
-                    .withTaskId(taskId)
+                    .withTaskId(getTaskId())
                     .withTimestamp(LocalDateTime.now())
                     .build();
             telescopeClient.createEvents(ImmutableList.of(reportEvent));
 
             log.debug(
                     "Reported successfully a FAILED event with taskId={}, error={}",
-                    taskId,
+                    getTaskId(),
                     errorMsg
             );
         } catch (JsonProcessingException e) {

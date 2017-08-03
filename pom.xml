@@ -539,13 +539,13 @@
         <dependency>
             <groupId>com.metabroadcast.columbus.telescope</groupId>
             <artifactId>telescope-api</artifactId>
-            <version>1.0-SNAPSHOT-SHADED-0.3</version>
+            <version>1.0-SNAPSHOT-SHADED-0.9</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.columbus.telescope</groupId>
             <artifactId>telescope-client</artifactId>
-            <version>1.0-SNAPSHOT-SHADED-0.3</version>
+            <version>1.0-SNAPSHOT-SHADED-0.9</version>
             <type>jar</type>
         </dependency>
         <dependency>

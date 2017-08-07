@@ -3,8 +3,8 @@ package org.atlasapi.reporting.telescope;
 import java.util.List;
 import java.util.Set;
 
-import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Alias;
-import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Process;
+import com.metabroadcast.columbus.telescope.api.Alias;
+import com.metabroadcast.columbus.telescope.api.Process;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

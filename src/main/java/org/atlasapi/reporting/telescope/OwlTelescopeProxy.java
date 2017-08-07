@@ -4,13 +4,13 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Alias;
-import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.EntityState;
-import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Event;
-import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Process;
+import com.metabroadcast.columbus.telescope.api.Alias;
+import com.metabroadcast.columbus.telescope.api.EntityState;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.common.media.MimeType;
 
-import telescope_client_shaded.com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.fasterxml.jackson.core.JsonProcessingException;

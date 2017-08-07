@@ -4,7 +4,7 @@ import java.util.Set;
 
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.google.common.collect.ImmutableList;
-import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Alias;
+import com.metabroadcast.columbus.telescope.api.Alias;
 
 public class TelescopeUtilityMethodsAtlas extends  TelescopeUtilityMethods{
 

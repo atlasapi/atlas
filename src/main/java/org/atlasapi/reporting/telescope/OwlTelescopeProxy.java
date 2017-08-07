@@ -4,17 +4,17 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Set;
 
-import com.metabroadcast.columbus.telescope.api.Alias;
-import com.metabroadcast.columbus.telescope.api.EntityState;
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.api.Process;
+import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Alias;
+import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.EntityState;
+import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Event;
+import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Process;
 import com.metabroadcast.common.media.MimeType;
 
-import com.google.common.collect.ImmutableList;
+import telescope_client_shaded.com.google.common.collect.ImmutableList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import telescope_api_shaded.com.fasterxml.jackson.core.JsonProcessingException;
-import telescope_api_shaded.com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 /**
  * startReporting, then report various events, and finally endReporting. If you do stuff in the
@@ -34,7 +34,7 @@ public class OwlTelescopeProxy extends TelescopeProxy {
 
     public static OwlTelescopeProxy create(TelescopeReporter reporterName) {
 
-        Process process = TelescopeUtilityMethods.getProcess(reporterName);
+        Process process = TelescopeUtilityMethodsAtlas.getProcess(reporterName);
         OwlTelescopeProxy telescopeProxy = new OwlTelescopeProxy(process);
 
         return telescopeProxy;
@@ -95,7 +95,7 @@ public class OwlTelescopeProxy extends TelescopeProxy {
 
         reportSuccessfulEvent(
                 encode(dbId),
-                TelescopeUtilityMethods.getAliases(aliases),
+                TelescopeUtilityMethodsAtlas.getAliases(aliases),
                 objectToSerialise
         );
     }

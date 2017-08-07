@@ -3,8 +3,8 @@ package org.atlasapi.reporting.telescope;
 import java.util.List;
 import java.util.Set;
 
-import com.metabroadcast.columbus.telescope.api.Alias;
-import com.metabroadcast.columbus.telescope.api.Process;
+import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Alias;
+import telescope_client_shaded.com.metabroadcast.columbus.telescope.api.Process;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,7 +32,7 @@ public class OwlTelescopeProxyMock extends OwlTelescopeProxy {
     }
 
     public static OwlTelescopeProxy create() {
-        Process process = TelescopeUtilityMethods.getProcess(OwlTelescopeReporters.MOCK_REPORTER);
+        Process process = TelescopeUtilityMethodsAtlas.getProcess(OwlTelescopeReporters.MOCK_REPORTER);
         OwlTelescopeProxy telescopeProxy = new OwlTelescopeProxyMock(process);
 
         return telescopeProxy;
@@ -50,7 +50,6 @@ public class OwlTelescopeProxyMock extends OwlTelescopeProxy {
     }
 
     @Override
-
     public void reportSuccessfulEvent(
             String atlasItemId, List<Alias> aliases, Object objectToSerialise) {
         // log.trace("Someone reported a successful event through a mock telescope. AtlasId={}", atlasItemId);
@@ -63,7 +62,7 @@ public class OwlTelescopeProxyMock extends OwlTelescopeProxy {
             Object objectToSerialise) {
         reportSuccessfulEvent(
                 encode(dbId),
-                TelescopeUtilityMethods.getAliases(aliases),
+                TelescopeUtilityMethodsAtlas.getAliases(aliases),
                 objectToSerialise
         );
     }

@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Throwables;
+
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -65,7 +67,9 @@ public class ScheduleDayUpdateController {
         }
 
         //get a new telescope proxy and start reporting
-        OwlTelescopeProxy telescope = OwlTelescopeProxy.create(OwlTelescopeReporters.BBC_NITRO_INGEST_API);
+        OwlTelescopeProxy telescope = OwlTelescopeProxy.create(OwlTelescopeReporters.BBC_NITRO_INGEST_API,
+                Event.Type.INGEST
+        );
         telescope.startReporting();
 
         try {

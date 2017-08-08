@@ -27,15 +27,18 @@ public class OwlTelescopeProxy extends TelescopeProxy {
 
     private ObjectMapper objectMapper;
 
-    protected OwlTelescopeProxy(Process process) {
+    private Event.Type eventType ;
+
+    protected OwlTelescopeProxy(Process process, Event.Type eventType) {
         super(process);
         this.objectMapper = new ObjectMapper();
+        this.eventType = eventType;
     }
 
-    public static OwlTelescopeProxy create(TelescopeReporter reporterName) {
+    public static OwlTelescopeProxy create(TelescopeReporter reporterName, Event.Type eventType) {
 
         Process process = TelescopeUtilityMethodsAtlas.getProcess(reporterName);
-        OwlTelescopeProxy telescopeProxy = new OwlTelescopeProxy(process);
+        OwlTelescopeProxy telescopeProxy = new OwlTelescopeProxy(process, eventType);
 
         return telescopeProxy;
     }
@@ -58,9 +61,9 @@ public class OwlTelescopeProxy extends TelescopeProxy {
             );
         }
         try {
-            Event reportEvent = Event.builder()
+            Event event = Event.builder()
                     .withStatus(Event.Status.SUCCESS)
-                    .withType(Event.Type.INGEST)
+                    .withType(this.eventType)
                     .withEntityState(EntityState.builder()
                             .withAtlasId(atlasItemId)
                             .withRemoteIds(aliases)
@@ -72,12 +75,12 @@ public class OwlTelescopeProxy extends TelescopeProxy {
                     .withTimestamp(LocalDateTime.now())
                     .build();
 
-            telescopeClient.createEvents(ImmutableList.of(reportEvent));
+            reportEvent(event);
 
             log.debug(
                     "Reported successfully event with taskId={}, eventId={}",
                     getTaskId(),
-                    reportEvent.getId().orElse("null")
+                    event.getId().orElse("null")
             );
         } catch (JsonProcessingException e) {
             log.error(
@@ -118,9 +121,9 @@ public class OwlTelescopeProxy extends TelescopeProxy {
             );
         }
         try {
-            Event reportEvent = Event.builder()
+            Event event = Event.builder()
                     .withStatus(Event.Status.FAILURE)
-                    .withType(Event.Type.INGEST)
+                    .withType(this.eventType)
                     .withEntityState(EntityState.builder()
                             .withAtlasId(atlasItemId)
                             .withWarning(warningMsg)
@@ -131,7 +134,7 @@ public class OwlTelescopeProxy extends TelescopeProxy {
                     .withTaskId(getTaskId())
                     .withTimestamp(LocalDateTime.now())
                     .build();
-            telescopeClient.createEvents(ImmutableList.of(reportEvent));
+            reportEvent(event);
 
             log.debug(
                     "Reported successfully a FAILED event, taskId={}, warning={}",
@@ -157,9 +160,9 @@ public class OwlTelescopeProxy extends TelescopeProxy {
                 );
             }
         try {
-            Event reportEvent = Event.builder()
+            Event event = Event.builder()
                     .withStatus(Event.Status.FAILURE)
-                    .withType(Event.Type.INGEST)
+                    .withType(this.eventType)
                     .withEntityState(EntityState.builder()
                             .withError(errorMsg)
                             .withRaw(objectMapper.writeValueAsString(objectToSerialise))
@@ -169,7 +172,7 @@ public class OwlTelescopeProxy extends TelescopeProxy {
                     .withTaskId(getTaskId())
                     .withTimestamp(LocalDateTime.now())
                     .build();
-            telescopeClient.createEvents(ImmutableList.of(reportEvent));
+            reportEvent(event);
 
             log.debug(
                     "Reported successfully a FAILED event with taskId={}, error={}",

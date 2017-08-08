@@ -29,6 +29,7 @@ import org.atlasapi.util.GroupLock;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
@@ -171,7 +172,9 @@ public class BbcNitroModule {
         DayRangeChannelDaySupplier drcds = new DayRangeChannelDaySupplier(bbcChannelSupplier(), dayRangeSupplier(back, forward));
 
         ExecutorService executor = Executors.newFixedThreadPool(threadCount, nitroThreadFactory);
-        OwlTelescopeProxy telescope = OwlTelescopeProxy.create(OwlTelescopeReporters.BBC_NITRO_INGEST);
+        OwlTelescopeProxy telescope = OwlTelescopeProxy.create(OwlTelescopeReporters.BBC_NITRO_INGEST,
+                Event.Type.INGEST
+        );
         return new ChannelDayProcessingTask(
                 executor,
                 drcds,

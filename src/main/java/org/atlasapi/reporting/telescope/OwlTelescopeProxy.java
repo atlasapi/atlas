@@ -20,6 +20,10 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * startReporting, then report various events, and finally endReporting. If you do stuff in the
  * wrong order they will silently fail (log errors only). If the proxy fails to connect to telescope
  * it will silently fail (i.e. it will pretend to be reporting, but will report nothing).
+ *
+ *  =====================================================================================
+ * <b>IF YOU MAKE CHANGES TO THIS CLASS, MIRROR THEM IN {@link OwlTelescopeProxyMock}</b>
+ *  =====================================================================================
  */
 public class OwlTelescopeProxy extends TelescopeProxy {
 

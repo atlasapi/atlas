@@ -217,7 +217,7 @@ public class ContentUpdatingNitroBroadcastHandler
                 log.error(
                         "taskId={}, ingesterName={}, NitroBroadcastPid={}",
                         telescope.getTaskId(),
-                        telescope.getIngesterName(),
+                        telescope.getReporterName(),
                         nitroBroadcast.getPid(),
                         e
                 );

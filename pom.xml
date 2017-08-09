@@ -725,6 +725,16 @@
             <artifactId>javax.el-api</artifactId>
             <version>2.2.4</version>
         </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_servlet</artifactId>
+            <version>0.0.19</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_dropwizard</artifactId>
+            <version>0.0.19</version>
+        </dependency>
 
     </dependencies>
     <properties>

@@ -9,6 +9,7 @@ import java.security.ProtectionDomain;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -40,6 +41,7 @@ import org.eclipse.jetty.webapp.WebAppContext;
 public class AtlasMain {
 
     private static final String METRIC_METHOD_NAME = "getMetrics";
+    private static final String METRIC_REGISTRY_METHOD_NAME = "getMetricRegistry";
     private static final String SERVER_REQUEST_THREADS_OVERRIDE_PROPERTY_NAME = "request.threads";
     private static final int DEFAULT_SERVER_REQUEST_THREADS = 100;
     private static final String SERVER_REQUEST_THREAD_PREFIX = "api-request-thread";
@@ -229,8 +231,8 @@ public class AtlasMain {
             IllegalAccessException,
             InvocationTargetException {
 
-        Class<? extends Object> clazz = atlasMain.getClass();
-        if (clazz.getCanonicalName() != AtlasMain.class.getCanonicalName()) {
+        Class<?> clazz = atlasMain.getClass();
+        if (!Objects.equals(clazz.getCanonicalName(), AtlasMain.class.getCanonicalName())) {
             throw new IllegalArgumentException(
                     "Parameter must be instance of " + AtlasMain.class.getCanonicalName()
             );
@@ -242,6 +244,34 @@ public class AtlasMain {
             throw new IllegalArgumentException(
                     "Couldn't find method " +
                             METRIC_METHOD_NAME +
+                            ": Perhaps a mismatch between AtlasMain objects across classloaders?",
+                    e
+            );
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    public static MetricRegistry getMetricRegistry(
+            Object atlasMain
+    ) throws
+            IllegalArgumentException,
+            SecurityException,
+            IllegalAccessException,
+            InvocationTargetException {
+
+        Class<?> clazz = atlasMain.getClass();
+        if (!Objects.equals(clazz.getCanonicalName(), AtlasMain.class.getCanonicalName())) {
+            throw new IllegalArgumentException(
+                    "Parameter must be instance of " + AtlasMain.class.getCanonicalName()
+            );
+        }
+        try {
+            return (MetricRegistry) clazz.getDeclaredMethod(METRIC_REGISTRY_METHOD_NAME)
+                    .invoke(atlasMain);
+        } catch (NoSuchMethodException e) {
+            throw new IllegalArgumentException(
+                    "Couldn't find method " +
+                            METRIC_REGISTRY_METHOD_NAME +
                             ": Perhaps a mismatch between AtlasMain objects across classloaders?",
                     e
             );
@@ -286,5 +316,9 @@ public class AtlasMain {
         }
 
         return metricsResults.build();
+    }
+
+    public MetricRegistry getMetricRegistry() {
+        return metrics;
     }
 }

@@ -1,7 +1,11 @@
 package org.atlasapi.query;
 
+import java.lang.reflect.InvocationTargetException;
+
+import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBElement;
 
+import org.atlasapi.AtlasMain;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.EquivalenceBreaker;
@@ -137,6 +141,7 @@ import org.atlasapi.query.v2.ContentGroupController;
 import org.atlasapi.query.v2.ContentWriteController;
 import org.atlasapi.query.v2.EventsController;
 import org.atlasapi.query.v2.FeedStatsController;
+import org.atlasapi.query.v2.MetricsController;
 import org.atlasapi.query.v2.PeopleController;
 import org.atlasapi.query.v2.PeopleWriteController;
 import org.atlasapi.query.v2.ProductController;
@@ -156,20 +161,24 @@ import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.SystemClock;
 
+import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Splitter;
+import io.prometheus.client.CollectorRegistry;
+import io.prometheus.client.dropwizard.DropwizardExports;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.context.ServletContextAware;
 import tva.metadata._2010.TVAMainType;
 
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @Configuration
 @Import({ WatermarkModule.class, QueryExecutorModule.class })
-public class QueryWebModule {
+public class QueryWebModule implements ServletContextAware {
 
     @Value("${local.host.name}") private String localHostName;
     @Value("${ids.expose}") private String exposeIds;
@@ -216,6 +225,29 @@ public class QueryWebModule {
 
     @Autowired private ContentWriteExecutor contentWriteExecutor;
     @Autowired private MessageSender<ContentWriteMessage> contentWriteMessageSender;
+
+    private MetricRegistry metricRegistry;
+    private ServletContext servletContext;
+
+    @Override
+    public void setServletContext(ServletContext servletContext) {
+        this.servletContext = servletContext;
+    }
+
+    @Bean
+    MetricsController metricsController() throws InvocationTargetException, IllegalAccessException {
+        CollectorRegistry collectorRegistry = new CollectorRegistry();
+
+        this.metricRegistry = AtlasMain.getMetricRegistry(
+                servletContext.getAttribute(
+                        AtlasMain.CONTEXT_ATTRIBUTE
+                )
+        );
+
+        collectorRegistry.register(new DropwizardExports(metricRegistry));
+
+        return MetricsController.create(collectorRegistry);
+    }
 
     @Bean
     ChannelController channelController() {
@@ -551,7 +583,8 @@ public class QueryWebModule {
                 applicationFetcher,
                 log,
                 feedStatsModelOutputter(),
-                feedStatsResolver
+                feedStatsResolver,
+                metricRegistry
         );
     }
 

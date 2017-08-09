@@ -70,7 +70,7 @@ public class AtlasMain {
             2003
     );
     private static final boolean GRAPHITE_REPORTING_ENABLED = Boolean.getBoolean(
-            System.getProperty("metrics.graphite.enabled", "true")
+            System.getProperty("registerMetrics.graphite.enabled", "true")
     );
 
     public final MetricRegistry metrics = new MetricRegistry();

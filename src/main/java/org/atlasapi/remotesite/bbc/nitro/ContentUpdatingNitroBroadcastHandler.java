@@ -18,7 +18,6 @@ import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBroadcastExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
-import org.atlasapi.reporting.telescope.TelescopeProxy;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.PidReference;

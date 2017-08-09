@@ -7,7 +7,8 @@ import java.util.Set;
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
 import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.api.Process;
+import com.metabroadcast.columbus.telescope.client.TelescopeReporter;
+import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 import com.metabroadcast.common.media.MimeType;
 
 import org.slf4j.Logger;
@@ -20,11 +21,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
  * wrong order they will silently fail (log errors only). If the proxy fails to connect to telescope
  * it will silently fail (i.e. it will pretend to be reporting, but will report nothing).
  *
- *  =====================================================================================
- * <b>IF YOU MAKE CHANGES TO THIS CLASS, MIRROR THEM IN {@link OwlTelescopeProxyMock}</b>
- *  =====================================================================================
+ *  ===============================================================================
+ *  IF YOU MAKE CHANGES TO THIS CLASS, MIRROR THEM IN {@link OwlTelescopeProxyMock}
+ *  ===============================================================================
  */
-public class OwlTelescopeProxy extends TelescopeProxy {
+public class OwlTelescopeProxy extends TelescopeReporter {
 
     private static final Logger log = LoggerFactory.getLogger(OwlTelescopeProxy.class);
 
@@ -32,18 +33,14 @@ public class OwlTelescopeProxy extends TelescopeProxy {
 
     private Event.Type eventType ;
 
-    protected OwlTelescopeProxy(Process process, Event.Type eventType) {
-        super(process);
+    protected OwlTelescopeProxy(TelescopeReporterName reporterName, Event.Type eventType) {
+        super(reporterName, TelescopeConfiguration.ENVIRONMENT, TelescopeConfiguration.TELESCOPE_HOST);
         this.objectMapper = new ObjectMapper();
         this.eventType = eventType;
     }
 
-    public static OwlTelescopeProxy create(TelescopeReporter reporterName, Event.Type eventType) {
-
-        Process process = TelescopeUtilityMethodsAtlas.getProcess(reporterName);
-        OwlTelescopeProxy telescopeProxy = new OwlTelescopeProxy(process, eventType);
-
-        return telescopeProxy;
+    public static OwlTelescopeProxy create(TelescopeReporterName reporterName, Event.Type eventType) {
+       return new OwlTelescopeProxy(reporterName, eventType);
     }
 
     public void reportSuccessfulEvent(

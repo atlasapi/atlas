@@ -172,7 +172,8 @@ public class BbcNitroModule {
         DayRangeChannelDaySupplier drcds = new DayRangeChannelDaySupplier(bbcChannelSupplier(), dayRangeSupplier(back, forward));
 
         ExecutorService executor = Executors.newFixedThreadPool(threadCount, nitroThreadFactory);
-        OwlTelescopeProxy telescope = OwlTelescopeProxy.create(OwlTelescopeReporters.BBC_NITRO_INGEST,
+        OwlTelescopeProxy telescope = OwlTelescopeProxy.create(
+                OwlTelescopeReporters.BBC_NITRO_INGEST,
                 Event.Type.INGEST
         );
         return new ChannelDayProcessingTask(

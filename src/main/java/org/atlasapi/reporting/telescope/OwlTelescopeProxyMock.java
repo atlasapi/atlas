@@ -5,7 +5,7 @@ import java.util.Set;
 
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.api.Process;
+import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,15 +28,13 @@ public class OwlTelescopeProxyMock extends OwlTelescopeProxy {
 
     private static final Logger log = LoggerFactory.getLogger(OwlTelescopeProxy.class);
 
-    OwlTelescopeProxyMock(Process process) {
-        super(process, Event.Type.INGEST);
+    OwlTelescopeProxyMock() {
+        //use mock defaults.
+        super(OwlTelescopeReporters.MOCK_REPORTER, Event.Type.INGEST);
     }
 
     public static OwlTelescopeProxy create() {
-        Process process = TelescopeUtilityMethodsAtlas.getProcess(OwlTelescopeReporters.MOCK_REPORTER);
-        OwlTelescopeProxy telescopeProxy = new OwlTelescopeProxyMock(process);
-
-        return telescopeProxy;
+        return new OwlTelescopeProxyMock();
     }
 
     @Override

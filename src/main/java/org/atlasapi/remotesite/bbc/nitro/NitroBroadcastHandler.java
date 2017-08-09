@@ -3,7 +3,6 @@ package org.atlasapi.remotesite.bbc.nitro;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 
 import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
-import org.atlasapi.reporting.telescope.TelescopeProxy;
 
 /**
  * <p>

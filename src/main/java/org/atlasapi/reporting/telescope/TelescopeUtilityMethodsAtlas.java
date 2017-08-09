@@ -6,7 +6,7 @@ import com.metabroadcast.common.stream.MoreCollectors;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.columbus.telescope.api.Alias;
 
-public class TelescopeUtilityMethodsAtlas extends  TelescopeUtilityMethods{
+public class TelescopeUtilityMethodsAtlas {
 
     public static ImmutableList<Alias> getAliases(Set<org.atlasapi.media.entity.Alias> aliases) {
         return aliases.stream()

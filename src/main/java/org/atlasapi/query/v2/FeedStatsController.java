@@ -18,7 +18,7 @@ import org.atlasapi.persistence.logging.AdapterLog;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.http.HttpStatusCode;
 
-import com.codahale.metrics.Counter;
+import com.codahale.metrics.Gauge;
 import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
@@ -29,7 +29,6 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import static com.codahale.metrics.MetricRegistry.*;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 
@@ -68,9 +67,6 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
             @PathVariable("publisher") String publisherStr,
             @RequestParam("timespan") String timespan
     ) throws IOException {
-        Counter successfullTasks = metricRegistry.counter(name(FeedStatsController.class, "YouviewSuccessfullTasks"));
-        Counter unsuccessfullTasks= metricRegistry.counter(name(FeedStatsController.class, "YouviewUnsuccessfullTasks"));
-
         // we parse the ISO 8601 duration as a period because hours are inexact in terms of milliseconds
         Period timeBeforeNow = Period.parse(timespan);
 
@@ -95,8 +91,12 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
                 return;
             }
 
-            successfullTasks.inc(resolved.get().successfulTasks());
-            unsuccessfullTasks.inc(resolved.get().unsuccessfulTasks());
+            metricRegistry.register(MetricRegistry.name(FeedStatsController.class, "YouviewSuccessfullTasks", "size"),
+                    (Gauge) () -> resolved.get().successfulTasks()
+            );
+            metricRegistry.register(MetricRegistry.name(FeedStatsController.class, "YouviewUnsuccessfullTasks", "size"),
+                    (Gauge) () -> resolved.get().unsuccessfulTasks()
+            );
 
             modelAndViewFor(request, response, ImmutableSet.of(resolved.get()), application);
         } catch (Exception e) {

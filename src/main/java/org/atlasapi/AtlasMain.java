@@ -250,34 +250,6 @@ public class AtlasMain {
         }
     }
 
-    @SuppressWarnings("unchecked")
-    public static MetricRegistry getMetricRegistry(
-            Object atlasMain
-    ) throws
-            IllegalArgumentException,
-            SecurityException,
-            IllegalAccessException,
-            InvocationTargetException {
-
-        Class<?> clazz = atlasMain.getClass();
-        if (!Objects.equals(clazz.getCanonicalName(), AtlasMain.class.getCanonicalName())) {
-            throw new IllegalArgumentException(
-                    "Parameter must be instance of " + AtlasMain.class.getCanonicalName()
-            );
-        }
-        try {
-            return (MetricRegistry) clazz.getDeclaredMethod(METRIC_REGISTRY_METHOD_NAME)
-                    .invoke(atlasMain);
-        } catch (NoSuchMethodException e) {
-            throw new IllegalArgumentException(
-                    "Couldn't find method " +
-                            METRIC_REGISTRY_METHOD_NAME +
-                            ": Perhaps a mismatch between AtlasMain objects across classloaders?",
-                    e
-            );
-        }
-    }
-
     private GraphiteReporter startGraphiteReporter() {
         metrics.registerAll(
                 new GarbageCollectorMetricSet(ManagementFactory.getGarbageCollectorMXBeans())
@@ -316,9 +288,5 @@ public class AtlasMain {
         }
 
         return metricsResults.build();
-    }
-
-    public MetricRegistry getMetricRegistry() {
-        return metrics;
     }
 }

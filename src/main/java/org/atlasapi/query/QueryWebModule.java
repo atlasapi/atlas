@@ -183,7 +183,7 @@ import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETT
 
 @Configuration
 @Import({ WatermarkModule.class, QueryExecutorModule.class })
-public class QueryWebModule implements ServletContextAware {
+public class QueryWebModule {
 
     @Value("${local.host.name}") private String localHostName;
     @Value("${ids.expose}") private String exposeIds;

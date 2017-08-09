@@ -11,12 +11,17 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.queue.Worker;
@@ -60,7 +65,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
             log.debug("{} updating equivalence: {} {} {}", 
                 new Object[]{message.getMessageId(), 
                     message.getEntitySource(), message.getEntityType(), eid});
-            equivUpdater.updateEquivalences(content);
+            equivUpdater.updateEquivalences(content, message.getTelescopeProxy());
         } else {
             log.trace("{} skipping equiv update: {} {} {}", 
                 new Object[]{message.getMessageId(), 

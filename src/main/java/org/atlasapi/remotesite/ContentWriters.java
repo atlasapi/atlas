@@ -19,17 +19,31 @@ import java.util.Set;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
+import com.metabroadcast.columbus.telescope.api.Event;
 
 import com.google.common.collect.Sets;
 
 public class ContentWriters implements ContentWriter {
 
+	private final OwlTelescopeProxy telescopeProxy;
 	private Set<ContentWriter> writers = Sets.newHashSet();
+
+	public ContentWriters() {
+		telescopeProxy = OwlTelescopeProxy.create(
+				OwlTelescopeReporters.EQUIVALENCE,
+				Event.Type.EQUIVALENCE
+		);
+
+		telescopeProxy.startReporting();
+	}
 	
 	@Override
-	public Item createOrUpdate(Item item) {
+	public Item createOrUpdate(Item item, OwlTelescopeProxy telescopeProxy) {
 		for (ContentWriter writer : writers) {
-			writer.createOrUpdate(item);
+			writer.createOrUpdate(item, telescopeProxy);
 		}
         return item;
 	}
@@ -39,9 +53,9 @@ public class ContentWriters implements ContentWriter {
 	}
 
 	@Override
-	public void createOrUpdate(Container container) {
+	public void createOrUpdate(Container container, OwlTelescopeProxy telescopeProxy) {
 		for (ContentWriter writer : writers) {
-			writer.createOrUpdate(container);
+			writer.createOrUpdate(container, telescopeProxy);
 		}
 	}
 }

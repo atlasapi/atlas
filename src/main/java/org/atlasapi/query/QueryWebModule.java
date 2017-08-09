@@ -1,5 +1,6 @@
 package org.atlasapi.query;
 
+import java.lang.management.ManagementFactory;
 import java.lang.reflect.InvocationTargetException;
 
 import javax.servlet.ServletContext;
@@ -159,7 +160,11 @@ import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.SystemClock;
 
+import com.codahale.metrics.JvmAttributeGaugeSet;
 import com.codahale.metrics.MetricRegistry;
+import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
+import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
+import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.google.common.base.Splitter;
 import io.prometheus.client.CollectorRegistry;
 import io.prometheus.client.dropwizard.DropwizardExports;
@@ -224,28 +229,7 @@ public class QueryWebModule implements ServletContextAware {
     @Autowired private ContentWriteExecutor contentWriteExecutor;
     @Autowired private MessageSender<ContentWriteMessage> contentWriteMessageSender;
 
-    private MetricRegistry metricRegistry;
-    private ServletContext servletContext;
-
-    @Override
-    public void setServletContext(ServletContext servletContext) {
-        this.servletContext = servletContext;
-    }
-
-    @Bean
-    MetricsController metricsController() throws InvocationTargetException, IllegalAccessException {
-        CollectorRegistry collectorRegistry = new CollectorRegistry();
-
-        this.metricRegistry = AtlasMain.getMetricRegistry(
-                servletContext.getAttribute(
-                        AtlasMain.CONTEXT_ATTRIBUTE
-                )
-        );
-
-        collectorRegistry.register(new DropwizardExports(metricRegistry));
-
-        return MetricsController.create(collectorRegistry);
-    }
+    private MetricRegistry metrics = new MetricRegistry();
 
     @Bean
     ChannelController channelController() {
@@ -571,7 +555,7 @@ public class QueryWebModule implements ServletContextAware {
                 log,
                 feedStatsModelOutputter(),
                 feedStatsResolver,
-                metricRegistry
+                metrics
         );
     }
 
@@ -894,5 +878,21 @@ public class QueryWebModule implements ServletContextAware {
                 .register(jsonWriter, "json", MimeType.APPLICATION_JSON)
                 .register(xmlWriter, "xml", MimeType.APPLICATION_XML)
                 .build();
+    }
+
+    @Bean
+    MetricsController metricsController() throws InvocationTargetException, IllegalAccessException {
+        CollectorRegistry collectorRegistry = new CollectorRegistry();
+
+        metrics.registerAll(
+                new GarbageCollectorMetricSet(ManagementFactory.getGarbageCollectorMXBeans())
+        );
+        metrics.registerAll(new MemoryUsageGaugeSet());
+        metrics.registerAll(new ThreadStatesGaugeSet());
+        metrics.registerAll(new JvmAttributeGaugeSet());
+
+        collectorRegistry.register(new DropwizardExports(metrics));
+
+        return MetricsController.create(collectorRegistry);
     }
 }

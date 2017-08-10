@@ -7,6 +7,8 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.gdata.util.common.base.Nullable;
+
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -15,6 +17,9 @@ import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -90,18 +95,31 @@ public class ChannelEquivalenceUpdateController {
             return;
         }
 
-        channels.forEach(channel -> executor.submit(updateFor(channel)));
+        OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+                OwlTelescopeReporters.CHANNEL_EQUIVALENCE,
+                Event.Type.EQUIVALENCE
+        );
+
+        telescopeProxy.startReporting();
+
+        channels.forEach(channel -> executor.submit(updateFor(channel, telescopeProxy)));
+
+        telescopeProxy.endReporting();
 
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private Runnable updateFor(Channel channel) {
+    private Runnable updateFor(Channel channel, OwlTelescopeProxy telescopeProxy) {
         return () -> {
             try {
-                channelUpdater.updateEquivalences(channel);
+                channelUpdater.updateEquivalences(channel, telescopeProxy);
                 log.info("Finished updating {}", channel);
             } catch (Exception e) {
                 log.error("Error updating equivalence for channel: {}", channel, e);
+                telescopeProxy.reportFailedEventWithError(
+                        e.toString(),
+                        channel
+                );
             }
         };
     }

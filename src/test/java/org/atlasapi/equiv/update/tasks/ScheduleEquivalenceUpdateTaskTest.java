@@ -1,5 +1,7 @@
 package org.atlasapi.equiv.update.tasks;
 
+import static org.mockito.Matchers.any;
+import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 
@@ -17,6 +19,7 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
@@ -30,6 +33,7 @@ import static org.mockito.Mockito.when;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import org.junit.runner.RunWith;
+import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 @RunWith(MockitoJUnitRunner.class)
@@ -38,6 +42,7 @@ public class ScheduleEquivalenceUpdateTaskTest {
     @SuppressWarnings("unchecked") 
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
+    @Mock private OwlTelescopeProxy telescopeProxy = mock(OwlTelescopeProxy.class);
 
     // TODO make this take multiple schedules
     private final ScheduleResolver scheduleResolver(final Schedule schedule) {
@@ -103,8 +108,8 @@ public class ScheduleEquivalenceUpdateTaskTest {
             .build().run();
         
 
-        verify(updater).updateEquivalences(yvItemOne);
-        verify(updater).updateEquivalences(yvItemTwo);
+        verify(updater).updateEquivalences(eq(yvItemOne), any(OwlTelescopeProxy.class));
+        verify(updater).updateEquivalences(eq(yvItemTwo), any(OwlTelescopeProxy.class));
     }
 
 }

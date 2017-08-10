@@ -10,6 +10,8 @@ import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.TelescopeUtilityMethodsAtlas;
 
 import java.util.Optional;
 import java.util.Set;
@@ -34,7 +36,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     }
 
     @Override
-    public boolean updateEquivalences(Channel subject) {
+    public boolean updateEquivalences(Channel subject, OwlTelescopeProxy telescopeProxy) {
         verify(subject, publisher);
 
         Optional<Channel> potentialCandidate = StreamSupport.stream(
@@ -48,13 +50,17 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
                 .findFirst();
 
         potentialCandidate.ifPresent(candidate ->
-                setAndUpdateEquivalents(candidate, subject)
+                setAndUpdateEquivalents(candidate, subject, telescopeProxy)
         );
 
         return true;
     }
 
-    private void setAndUpdateEquivalents(Channel candidate, Channel subject) {
+    private void setAndUpdateEquivalents(
+            Channel candidate,
+            Channel subject,
+            OwlTelescopeProxy telescopeProxy
+    ) {
 
         ChannelRef subjectRef = subject.toChannelRef();
         ChannelRef candidateRef = candidate.toChannelRef();
@@ -68,6 +74,12 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
             subject.addSameAs(candidateRef);
             channelWriter.createOrUpdate(subject);
         }
+
+        telescopeProxy.reportSuccessfulEvent(
+                String.valueOf(subject.getId()),
+                TelescopeUtilityMethodsAtlas.getAliases(subject.getAliases()),
+                subject
+        );
 
     }
 

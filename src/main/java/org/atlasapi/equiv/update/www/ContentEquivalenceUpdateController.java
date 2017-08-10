@@ -19,7 +19,10 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -103,9 +106,19 @@ public class ContentEquivalenceUpdateController {
             return;
         }
 
+        OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+                OwlTelescopeReporters.MANUAL_EQUIVALENCE,
+                Event.Type.EQUIVALENCE
+        );
+
+        telescopeProxy.startReporting();
+
         for (Content content : Iterables.filter(resolved.getAllResolvedResults(), Content.class)) {
-            executor.submit(updateFor(content));
+            executor.submit(updateFor(content, telescopeProxy));
         }
+
+        telescopeProxy.endReporting();
+
         response.setStatus(OK.code());
 
     }
@@ -123,13 +136,17 @@ public class ContentEquivalenceUpdateController {
                 .collect(Collectors.toList());
     }
 
-    private Runnable updateFor(final Content content) {
+    private Runnable updateFor(final Content content, OwlTelescopeProxy telescopeProxy) {
         return () -> {
             try {
-                contentUpdater.updateEquivalences(content);
+                contentUpdater.updateEquivalences(content, telescopeProxy);
                 log.info("Finished updating {}", content);
             } catch (Exception e) {
                 log.error(content.toString(), e);
+                telescopeProxy.reportFailedEventWithError(
+                        e.toString(),
+                        content
+                );
             }
         };
     }

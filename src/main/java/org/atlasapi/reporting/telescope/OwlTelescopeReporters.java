@@ -11,6 +11,10 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
     BBC_NITRO_INGEST_PICKS("bbc-nitro-ingester-picks","Mbst Picks Content Group Updater"),
     BBC_NITRO_INGEST_API("bbc-nitro-ingester-api", "BBC Nitro API Ingester"),
     BBC_NITRO_INGEST_CHANNELS("bbc-nitro-ingester-channels", "BBC Nitro Channel Ingester"),
+    MOCK_REPORTER("mock-reporter", "Mock reporter"), //used by OwlTelescopeProxyMock
+    CHANNEL_EQUIVALENCE("channel-equivalence", "Channel Equivalence"),
+    EQUIVALENCE("equivalence", "Equivalence"),
+    MANUAL_EQUIVALENCE("manual-equivalence", "Manual Equivalence")
     ;
 
     final String reporterKey;

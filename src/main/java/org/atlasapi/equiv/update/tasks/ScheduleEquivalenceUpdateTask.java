@@ -23,6 +23,8 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.google.common.base.Supplier;
 import com.google.common.collect.HashMultimap;
@@ -38,6 +40,7 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.collect.ImmutableList;
 
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -130,6 +133,13 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 }
                 ScheduleChannel scheduleChannel = channelItr.next();
 
+                OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+                        OwlTelescopeReporters.CHANNEL_EQUIVALENCE,
+                        Event.Type.EQUIVALENCE
+                );
+
+                telescopeProxy.startReporting();
+
                 Iterator<Item> channelItems = scheduleChannel.items().iterator();
                 while (channelItems.hasNext() && shouldContinue()) {
                     Item scheduleItem = channelItems.next();
@@ -138,10 +148,12 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     Maybe<Identified> identified = resolvedContent.get(scheduleItem.getCanonicalUri());
                     if (identified.hasValue()) {
                         Item value = (Item) identified.requireValue();
-                        progress = progress.reduce(process(value));
+                        progress = progress.reduce(process(value, telescopeProxy));
                         reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                     }
                 }
+
+                telescopeProxy.endReporting();
             }   
         }
         return progress;
@@ -160,9 +172,9 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         );
     }
 
-    private UpdateProgress process(Item item) {
+    private UpdateProgress process(Item item, OwlTelescopeProxy telescopeProxy) {
         try {
-            updater.updateEquivalences(item);
+            updater.updateEquivalences(item, telescopeProxy);
             log.info("successfully updated equivalences on " + item.getCanonicalUri());
             return SUCCESS;
         } catch (Exception e) {

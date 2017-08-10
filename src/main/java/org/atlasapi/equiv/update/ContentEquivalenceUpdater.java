@@ -22,6 +22,8 @@ import org.atlasapi.equiv.update.metadata.ContentEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.TelescopeUtilityMethodsAtlas;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -77,7 +79,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     @Override
-    public boolean updateEquivalences(T content) {
+    public boolean updateEquivalences(T content, OwlTelescopeProxy telescopeProxy) {
         ReadableDescription desc = new DefaultDescription();
 
         List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
@@ -95,6 +97,12 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         if (handledWithStateChange) {
             messenger.sendMessage(result);
         }
+
+        telescopeProxy.reportSuccessfulEvent(
+                String.valueOf(content.getId()),
+                TelescopeUtilityMethodsAtlas.getAliases(content.getAliases()),
+                content
+        );
 
         return !result.combinedEquivalences().candidates().isEmpty();
     }

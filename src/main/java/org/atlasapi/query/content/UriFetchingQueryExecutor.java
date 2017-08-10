@@ -29,6 +29,10 @@ import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.system.Fetcher;
+import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
+import com.metabroadcast.columbus.telescope.api.Event;
 
 import com.google.common.base.Function;
 import com.google.common.base.Optional;
@@ -122,20 +126,29 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
 		if (fetched.isEmpty()) {
             return results;
 		}
+
+		OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+				OwlTelescopeReporters.EQUIVALENCE,
+				Event.Type.EQUIVALENCE
+		);
+
+		telescopeProxy.startReporting();
 		
-		updateEquivalences(fetched);
+		updateEquivalences(fetched, telescopeProxy);
+
+		telescopeProxy.endReporting();
 		
 		// re-attempt the query now the missing uris have been fetched
 		results.putAll(delegate.executeUriQuery(fetched.keySet(), query));
 		return results;
 	}
 
-    private void updateEquivalences(Map<String, Identified> fetched) {
+    private void updateEquivalences(Map<String, Identified> fetched, OwlTelescopeProxy telescopeProxy) {
         for (Identified fetchedEntity : fetched.values()) {
 		    if (fetchedEntity instanceof Content) {
 		        Content fetchedContent = (Content) fetchedEntity;
                 if (equivalablePublishers.contains(fetchedContent.getPublisher())) {
-                    equivUpdater.updateEquivalences(fetchedContent);
+                    equivUpdater.updateEquivalences(fetchedContent, telescopeProxy);
                 }
             }
         }

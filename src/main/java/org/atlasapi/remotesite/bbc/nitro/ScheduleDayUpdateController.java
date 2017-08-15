@@ -28,7 +28,7 @@ import com.metabroadcast.common.time.DateTimeZones;
  * </p>
  * 
  * <p>
- * <strong>POST</strong> to {@code /system/bbc/nitro/update/:service/:yyyyMMdd}
+ * <strong>POST</strong> to {@code /system/bbc/nitro/update/service/:service/date/:yyyyMMdd}
  * </p>
  */
 @Controller
@@ -43,13 +43,13 @@ public class ScheduleDayUpdateController {
         this.processor = processor;
     }
 
-    @RequestMapping(value="/system/bbc/nitro/update/{service}/{date}", method=RequestMethod.POST)
+    @RequestMapping(value="/system/bbc/nitro/update/service/{service}/date/{date}", method=RequestMethod.POST)
     public void updateScheduleDay(HttpServletResponse resp,
             @PathVariable("service") String service, @PathVariable("date") String date) throws IOException {
         
         Maybe<Channel> possibleChannel = resolver.fromUri(BbcIonServices.get(service));
         if (possibleChannel.isNothing()) {
-            resp.sendError(HttpStatusCode.NOT_FOUND.code());
+            resp.sendError(HttpStatusCode.NOT_FOUND.code(),"Service "+service+" does not exist");
             return;
         }
         
@@ -57,10 +57,10 @@ public class ScheduleDayUpdateController {
         try {
             day = dateFormat.parseLocalDate(date);
         } catch (IllegalArgumentException iae) {
-            resp.sendError(HttpStatusCode.NOT_FOUND.code());
+            resp.sendError(HttpStatusCode.BAD_REQUEST.code(), "Bad Date format. Date should be in the format yyyyMMdd (" + iae.getMessage()+")");
             return;
         }
-        
+
         try {
             UpdateProgress progress = processor.process(new ChannelDay(possibleChannel.requireValue(), day));
             resp.setStatus(HttpStatusCode.OK.code());

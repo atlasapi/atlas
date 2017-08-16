@@ -7,6 +7,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -16,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
 import com.google.common.base.Throwables;
+
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -61,8 +66,11 @@ public class ScheduleDayUpdateController {
             return;
         }
 
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(OwlTelescopeReporters.BBC_NITRO_INGEST_API, Event.Type.INGEST);
+        telescope.startReporting();
+
         try {
-            UpdateProgress progress = processor.process(new ChannelDay(possibleChannel.requireValue(), day));
+            UpdateProgress progress = processor.process(new ChannelDay(possibleChannel.requireValue(), day), telescope);
             resp.setStatus(HttpStatusCode.OK.code());
             String progressMsg = progress.toString();
             resp.setContentLength(progressMsg.length());
@@ -72,7 +80,9 @@ public class ScheduleDayUpdateController {
             resp.setStatus(HttpStatusCode.SERVER_ERROR.code());
             resp.setContentLength(stack.length());
             resp.getWriter().write(stack);
-            return;
+        }
+        finally{
+            telescope.endReporting();
         }
     }
     

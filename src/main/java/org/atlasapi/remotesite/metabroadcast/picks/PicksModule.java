@@ -14,6 +14,8 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessingTask;
 import org.atlasapi.remotesite.bbc.nitro.DayRangeChannelDaySupplier;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -60,7 +62,8 @@ public class PicksModule {
                 Executors.newSingleThreadExecutor(),
                 picksDayRangeChannelDaySupplier(),
                 picksDayUpdater(),
-                picksScheduledTaskListener()
+                picksScheduledTaskListener(),
+                OwlTelescopeReporters.BBC_NITRO_INGEST_PICKS
         );
     }
     

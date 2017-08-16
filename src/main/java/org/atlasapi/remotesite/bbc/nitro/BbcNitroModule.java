@@ -22,6 +22,7 @@ import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
 import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHydrator;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
@@ -169,11 +170,13 @@ public class BbcNitroModule {
         DayRangeChannelDaySupplier drcds = new DayRangeChannelDaySupplier(bbcChannelSupplier(), dayRangeSupplier(back, forward));
 
         ExecutorService executor = Executors.newFixedThreadPool(threadCount, nitroThreadFactory);
+
         return new ChannelDayProcessingTask(
                 executor,
                 drcds,
                 nitroChannelDayProcessor(rateLimit, fullFetchPermittedPredicate),
                 null,
+                OwlTelescopeReporters.BBC_NITRO_INGEST,
                 jobFailureThresholdPercent
         )
                 .withName(taskName);

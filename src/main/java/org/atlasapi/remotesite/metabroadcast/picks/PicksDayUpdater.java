@@ -21,6 +21,8 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessor;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
@@ -73,7 +75,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
     }
     
     @Override
-    public UpdateProgress process(ChannelDay channelDay) throws Exception {
+    public UpdateProgress process(ChannelDay channelDay, OwlTelescopeReporter telescope) throws Exception {
         try {
             Iterable<Item> picks = concat(transform(scheduleResolver.unmergedSchedule(
                     channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZone.UTC), 
@@ -99,7 +101,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
                 
             });
             
-            addPicksToContentGroup(findPicks(itemsAndBroadcasts));
+            addPicksToContentGroup(findPicks(itemsAndBroadcasts), telescope);
             
             return UpdateProgress.SUCCESS;
         } catch (Exception e) {
@@ -114,7 +116,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
         return transform(filter(itemsAndBroadcasts, picksPredicate), TO_ITEM);
     }
     
-    private void addPicksToContentGroup(Iterable<Item> items) {
+    private void addPicksToContentGroup(Iterable<Item> items, OwlTelescopeReporter telescope) {
         ContentGroup contentGroup = resolveOrCreateContentGroup();
         Iterable<ChildRef> childRefs = transform(items, Item.TO_CHILD_REF);
         pruneContents(contentGroup);
@@ -128,6 +130,18 @@ public class PicksDayUpdater implements ChannelDayProcessor {
         }
         if (changed) {
             contentGroupWriter.createOrUpdate(contentGroup);
+            if (contentGroup.getId() != null) {
+                telescope.reportSuccessfulEvent(
+                        contentGroup.getId(),
+                        contentGroup.getAliases(),
+                        contentGroup
+                );
+            } else {
+                telescope.reportFailedEvent(
+                        "Atlas did not return an id after attempting to create or update this Brand",
+                        contentGroup
+                );
+            }
         }
     }
     

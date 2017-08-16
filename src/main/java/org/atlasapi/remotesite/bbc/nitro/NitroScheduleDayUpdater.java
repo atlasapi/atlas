@@ -1,18 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-import java.util.Map;
-
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.Timer;
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
-import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
-import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
-import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
@@ -20,30 +11,33 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.metabroadcast.common.time.DateTimeZones;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.List;
+import java.util.Map;
+
 /**
  * <p>
- * {@link ChannelDayProcessor} which fetches a processes a day's worth of Nitro
- * {@link Broadcast}s using a {@link Glycerin} and {@link NitroBroadcastHandler}
- * .
+ * {@link ChannelDayProcessor} which fetches a processes a day's worth of Nitro {@link Broadcast}s using a
+ * {@link Glycerin} and {@link NitroBroadcastHandler} .
  * </p>
- * 
  * <p>
- * Performs the necessary management of the schedule via a
- * {@link ScheduleWriter} and {@link BroadcastTrimmer}.
+ * <p>
+ * Performs the necessary management of the schedule via a {@link ScheduleWriter} and {@link BroadcastTrimmer}.
  * </p>
  */
 public class NitroScheduleDayUpdater implements ChannelDayProcessor {
-    
+
     private static final Integer MAX_PAGE_SIZE = 300;
 
     private static final Logger log = LoggerFactory.getLogger(NitroScheduleDayUpdater.class);
@@ -64,19 +58,19 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         this.broadcastHandler = handler;
         this.glycerin = glycerin;
     }
-    
+
     @Override
-    public UpdateProgress process(ChannelDay channelDay) throws Exception {
+    public UpdateProgress process(ChannelDay channelDay, OwlTelescopeReporter telescope) throws Exception {
 
         String serviceId = BbcIonServices.services.inverse().get(channelDay.getChannel().getUri());
         DateTime from = channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZones.UTC);
         DateTime to = from.plusDays(1);
         log.debug("updating {}: {} -> {}", serviceId, from, to);
-        
+
         ImmutableList<Broadcast> broadcasts = getBroadcasts(serviceId, from, to);
-        ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(broadcasts);
+        ImmutableList<Optional<ItemRefAndBroadcast>> processingResults = processBroadcasts(broadcasts, telescope);
         updateSchedule(channelDay.getChannel(), from, to, Optional.presentInstances(processingResults));
-        
+
         int processedCount = Iterables.size(Optional.presentInstances(processingResults));
         int failedCount = processingResults.size() - processedCount;
 
@@ -92,8 +86,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         return new UpdateProgress(processedCount, failedCount);
     }
 
-    private void updateSchedule(Channel channel, DateTime from, DateTime to,
-            Iterable<ItemRefAndBroadcast> processed) {
+    private void updateSchedule(Channel channel, DateTime from, DateTime to, Iterable<ItemRefAndBroadcast> processed) {
         if (Iterables.isEmpty(processed)) {
             return;
         }
@@ -101,11 +94,10 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         scheduleWriter.replaceScheduleBlock(Publisher.BBC_NITRO, channel, processed);
     }
 
-    private ImmutableList<Optional<ItemRefAndBroadcast>> processBroadcasts(ImmutableList<Broadcast> broadcasts) throws NitroException {
-        return ImmutableList.copyOf(broadcastHandler.handle(broadcasts));
+    private ImmutableList<Optional<ItemRefAndBroadcast>> processBroadcasts(ImmutableList<Broadcast> broadcasts, OwlTelescopeReporter telescope) throws NitroException {
+        return ImmutableList.copyOf(broadcastHandler.handle(broadcasts, telescope));
     }
 
-    
     private Map<String, String> acceptableIds(Iterable<ItemRefAndBroadcast> processed) {
         ImmutableMap.Builder<String, String> ids = ImmutableMap.builder();
         for (ItemRefAndBroadcast itemRefAndBroadcast : processed) {
@@ -137,7 +129,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
             }
             return broadcasts.build();
         }
-        
+
     }
 
 }

@@ -37,7 +37,7 @@ public class OwlTelescopeReporter extends TelescopeReporter {
        return new OwlTelescopeReporter(reporterName, eventType);
     }
 
-    public void reportSuccessfulEvent(String atlasItemId, List<Alias> aliases, Object objectToSerialise){
+    private void reportSuccessfulEventGeneric(String atlasItemId, List<Alias> aliases, String warningMsg, Object objectToSerialise){
         if (!isStarted()) {
             log.error("It was attempted to report atlasItem={}, but the telescope client was not started.", atlasItemId);
             return;
@@ -48,20 +48,24 @@ public class OwlTelescopeReporter extends TelescopeReporter {
         try {
             serialized = objectMapper.writeValueAsString(objectToSerialise);
         } catch (JsonProcessingException e) {
-            reportFailedEventWithWarning(atlasItemId, "Object could not be serialized", objectToSerialise);
-            return;
+            warningMsg = "Object could not be serialized";
+        }
+
+        EntityState.Builder entityState = EntityState.builder()
+                .withAtlasId(atlasItemId)
+                .withRaw(serialized)
+                .withRawMime(MimeType.APPLICATION_JSON.toString());
+        if (aliases != null) {
+            entityState.withRemoteIds(aliases);
+        }
+        if (warningMsg != null) {
+            entityState.withWarning(warningMsg);
         }
 
         Event event = super.getEventBuilder()
                 .withType(this.eventType)
                 .withStatus(Event.Status.SUCCESS)
-                .withEntityState(EntityState.builder()
-                        .withAtlasId(atlasItemId)
-                        .withRemoteIds(aliases)
-                        .withRaw(serialized)
-                        .withRawMime(MimeType.APPLICATION_JSON.toString())
-                        .build()
-                )
+                .withEntityState(entityState.build())
                 .build();
 
         reportEvent(event);
@@ -72,46 +76,21 @@ public class OwlTelescopeReporter extends TelescopeReporter {
         }
     }
 
-    //convenience method for the most common reporting Format
-    public void reportSuccessfulEvent(
-            long dbId,
-            Set<org.atlasapi.media.entity.Alias> aliases,
-            Object objectToSerialise) {
+    //convenience methods for the most common reporting Formats
 
-        reportSuccessfulEvent(
-                encode(dbId),
-                TelescopeUtilityMethodsAtlas.getAliases(aliases),
-                objectToSerialise
-        );
+    public void reportSuccessfulEvent(String atlasItemId, List<Alias> aliases, Object objectToSerialise){
+        reportSuccessfulEventGeneric(atlasItemId, aliases, null, objectToSerialise);
     }
 
-    public void reportFailedEventWithWarning(String atlasItemId, String warningMsg, Object objectToSerialise) {
-
-        if (!isStarted()) {
-            log.error("It was attempted to report atlasItem={}, but the telescope client was not started.", atlasItemId);
-            return;
-        }
-
-        Event event = super.getEventBuilder()
-                .withType(this.eventType)
-                .withStatus(Event.Status.FAILURE)
-                .withEntityState(EntityState.builder()
-                        .withAtlasId(atlasItemId)
-                        .withWarning(warningMsg)
-                        .withRaw(serialize(objectToSerialise))
-                        .withRawMime(MimeType.APPLICATION_JSON.toString())
-                        .build()
-                )
-                .build();
-        reportEvent(event);
-
-        log.debug("Reported successfully a FAILED event, taskId={}, warning={}", getTaskId(), warningMsg);
-        if (isFinished()) {
-            log.warn("atlasItem={} was reported to telescope client={} after it has finished reporting.", atlasItemId, getTaskId() );
-        }
+    public void reportSuccessfulEvent(long dbId,Set<org.atlasapi.media.entity.Alias> aliases,Object objectToSerialise) {
+        reportSuccessfulEvent(encode(dbId), TelescopeUtilityMethodsAtlas.getAliases(aliases), objectToSerialise);
     }
 
-    public void reportFailedEventWithError(String errorMsg, Object objectToSerialise) {
+    public void reportSuccessfulEventWithWarning(String atlasItemId, String warningMsg, Object objectToSerialise) {
+        reportSuccessfulEventGeneric(atlasItemId, null, warningMsg, objectToSerialise);
+    }
+
+    public void reportFailedEvent(String errorMsg, Object objectToSerialise) {
         if (!isStarted()) {
             log.error("It was attempted to report an error to telescope, but the client was not started.");
              return;

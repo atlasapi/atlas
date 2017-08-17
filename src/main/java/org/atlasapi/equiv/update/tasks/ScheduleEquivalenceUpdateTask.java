@@ -127,7 +127,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 ScheduleChannel scheduleChannel = channelItr.next();
 
                 OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
-                        OwlTelescopeReporters.CHANNEL_EQUIVALENCE,
+                        OwlTelescopeReporters.CHANNEL_SCHEDULE_EQUIVALENCE,
                         Event.Type.EQUIVALENCE
                 );
 

@@ -51,7 +51,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
         this.equivUpdater = checkNotNull(equivUpdater);
         this.filter = checkNotNull(filter);
         this.telescopeProxy = OwlTelescopeReporter.create(
-                OwlTelescopeReporters.EQUIVALENCE,
+                OwlTelescopeReporters.EQUIVALENCE_UPDATING_WORKER,
                 Event.Type.EQUIVALENCE
         );
     }

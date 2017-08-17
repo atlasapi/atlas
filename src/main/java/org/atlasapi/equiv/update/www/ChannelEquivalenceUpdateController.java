@@ -96,7 +96,7 @@ public class ChannelEquivalenceUpdateController {
         }
 
         OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
-                OwlTelescopeReporters.CHANNEL_EQUIVALENCE,
+                OwlTelescopeReporters.MANUAL_CHANNEL_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );
 

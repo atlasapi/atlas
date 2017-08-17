@@ -128,7 +128,7 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
 		}
 
 		OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
-				OwlTelescopeReporters.EQUIVALENCE,
+				OwlTelescopeReporters.QUERY_EXECUTOR_EQUIVALENCE,
 				Event.Type.EQUIVALENCE
 		);
 

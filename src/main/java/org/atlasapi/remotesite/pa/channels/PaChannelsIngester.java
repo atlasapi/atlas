@@ -59,7 +59,11 @@ public class PaChannelsIngester {
     private static final Logger log = LoggerFactory.getLogger(PaChannelsIngester.class);
     private static final String GENRE_ADULT = "Adult";
     private static final String SIMULCAST_LINK_TYPE = "Web_Simulcast";
+
     private static final String REGIONAL_VARIATION = "regional";
+    private static final String TIMESHIFT_VARIATION = "timeshift";
+    private static final String HD_VARIATION = "HD";
+
     private static final String IMAGE_PREFIX =
             "http://images.atlas.metabroadcast.com/pressassociation.com/channels/";
     private static final String STATION_ALIAS_PREFIX = "http://pressassociation.com/stations/";
@@ -260,7 +264,11 @@ public class PaChannelsIngester {
 
         List<Variation> variations = paChannel.getVariation();
         channel.setRegional(variations.stream().anyMatch(IS_REGIONAL));
-        channel.setTimeshift(getTimeshift(variations).orElse(null));
+
+        getTimeshift(variations).ifPresent(duration -> {
+            channel.setTimeshift(duration);
+            channel.setIsTimeshifted(true);
+        });
 
         List<Logo> logos;
         if (paChannel.getLogos() != null) {

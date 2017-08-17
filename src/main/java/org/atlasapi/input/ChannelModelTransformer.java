@@ -56,6 +56,7 @@ public class ChannelModelTransformer implements ModelTransformer<Channel, org.at
         complex.withUri(simple.getUri());
         complex.withKey(simple.getUri());
         complex.withHighDefinition(simple.getHighDefinition());
+        complex.withTimeshifted(simple.isTimeshifted());
         complex.withRegional(simple.getRegional());
         complex.withRegion(simple.getRegion());
         complex.withAdult(simple.getAdult());

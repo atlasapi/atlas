@@ -27,7 +27,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -48,7 +48,7 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ScheduleTaskProgressStore progressStore = mock(ScheduleTaskProgressStore.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
-    @Mock private OwlTelescopeProxy telescopeProxy = mock(OwlTelescopeProxy.class);
+    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
 
     private final ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
         return new ContentLister() {
@@ -94,13 +94,13 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
         
         new ContentEquivalenceUpdateTask(contentLister, contentResolver, progressStore, updater, ImmutableSet.<String>of()).forPublishers(PA, BBC, C4).run();
         
-        verify(updater).updateEquivalences(eq(paItemOne), any(OwlTelescopeProxy.class));
-        verify(updater, times(2)).updateEquivalences(eq(paBrand), any(OwlTelescopeProxy.class));
-        verify(updater).updateEquivalences(eq(paEp), any(OwlTelescopeProxy.class));
-        verify(updater).updateEquivalences(eq(bbcItemOne), any(OwlTelescopeProxy.class));
-        verify(updater).updateEquivalences(eq(bbcItemTwo), any(OwlTelescopeProxy.class));
-        verify(updater).updateEquivalences(eq(bbcItemThree), any(OwlTelescopeProxy.class));
-        verify(updater).updateEquivalences(eq(c4ItemOne), any(OwlTelescopeProxy.class));
+        verify(updater).updateEquivalences(eq(paItemOne), any(OwlTelescopeReporter.class));
+        verify(updater, times(2)).updateEquivalences(eq(paBrand), any(OwlTelescopeReporter.class));
+        verify(updater).updateEquivalences(eq(paEp), any(OwlTelescopeReporter.class));
+        verify(updater).updateEquivalences(eq(bbcItemOne), any(OwlTelescopeReporter.class));
+        verify(updater).updateEquivalences(eq(bbcItemTwo), any(OwlTelescopeReporter.class));
+        verify(updater).updateEquivalences(eq(bbcItemThree), any(OwlTelescopeReporter.class));
+        verify(updater).updateEquivalences(eq(c4ItemOne), any(OwlTelescopeReporter.class));
         verify(progressStore).storeProgress(taskName, ContentListingProgress.START);
     }
 }

@@ -17,7 +17,7 @@ import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import org.slf4j.Logger;
@@ -95,7 +95,7 @@ public class ChannelEquivalenceUpdateController {
             return;
         }
 
-        OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+        OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.CHANNEL_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );
@@ -109,14 +109,14 @@ public class ChannelEquivalenceUpdateController {
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private Runnable updateFor(Channel channel, OwlTelescopeProxy telescopeProxy) {
+    private Runnable updateFor(Channel channel, OwlTelescopeReporter telescopeProxy) {
         return () -> {
             try {
                 channelUpdater.updateEquivalences(channel, telescopeProxy);
                 log.info("Finished updating {}", channel);
             } catch (Exception e) {
                 log.error("Error updating equivalence for channel: {}", channel, e);
-                telescopeProxy.reportFailedEventWithError(
+                telescopeProxy.reportFailedEvent(
                         e.toString(),
                         channel
                 );

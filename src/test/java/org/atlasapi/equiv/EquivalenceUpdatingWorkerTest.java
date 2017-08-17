@@ -21,7 +21,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import org.joda.time.DateTime;
 import org.junit.Ignore;
@@ -53,7 +53,7 @@ public class EquivalenceUpdatingWorkerTest {
     private final EquivalenceUpdatingWorker workerThatOnlyUpdatesItems
         = new EquivalenceUpdatingWorker(resolver, 
                 entryStore, resultStore, updater, Predicates.<Content>and(filter));
-    @Mock private OwlTelescopeProxy telescopeProxy = mock(OwlTelescopeProxy.class);
+    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
     
     @Test
     public void testWorkerThatOnlyUpdatesItemsUpdatesAnItem() {
@@ -69,7 +69,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater).updateEquivalences(eq(item), any(OwlTelescopeProxy.class));
+        verify(updater).updateEquivalences(eq(item), any(OwlTelescopeReporter.class));
     }
 
     @Test
@@ -137,7 +137,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater).updateEquivalences(eq(item), any(OwlTelescopeProxy.class));
+        verify(updater).updateEquivalences(eq(item), any(OwlTelescopeReporter.class));
         
     }
     
@@ -163,7 +163,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(any(Content.class), any(OwlTelescopeProxy.class));
+        verify(updater, never()).updateEquivalences(any(Content.class), any(OwlTelescopeReporter.class));
         
     }
     

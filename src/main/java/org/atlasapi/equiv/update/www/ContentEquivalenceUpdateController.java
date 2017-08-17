@@ -19,7 +19,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
@@ -106,7 +106,7 @@ public class ContentEquivalenceUpdateController {
             return;
         }
 
-        OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+        OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.MANUAL_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );
@@ -136,14 +136,14 @@ public class ContentEquivalenceUpdateController {
                 .collect(Collectors.toList());
     }
 
-    private Runnable updateFor(final Content content, OwlTelescopeProxy telescopeProxy) {
+    private Runnable updateFor(final Content content, OwlTelescopeReporter telescopeProxy) {
         return () -> {
             try {
                 contentUpdater.updateEquivalences(content, telescopeProxy);
                 log.info("Finished updating {}", content);
             } catch (Exception e) {
                 log.error(content.toString(), e);
-                telescopeProxy.reportFailedEventWithError(
+                telescopeProxy.reportFailedEvent(
                         e.toString(),
                         content
                 );

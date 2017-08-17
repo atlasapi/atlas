@@ -3,7 +3,7 @@ package org.atlasapi.equiv.channel.updaters;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -28,13 +28,13 @@ public class MultipleSourceChannelEquivalenceUpdaterTest {
     @Mock
     private EquivalenceUpdater<Channel> equivUpdater3 = mock(EquivalenceUpdater.class);
     @Mock
-    private OwlTelescopeProxy telescopeProxy = mock(OwlTelescopeProxy.class);
+    private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
 
     @Before
     public void setUp() {
-        when(equivUpdater1.updateEquivalences(any(Channel.class), any(OwlTelescopeProxy.class))).thenReturn(true);
-        when(equivUpdater2.updateEquivalences(any(Channel.class), any(OwlTelescopeProxy.class))).thenReturn(true);
-        when(equivUpdater3.updateEquivalences(any(Channel.class), any(OwlTelescopeProxy.class))).thenReturn(true);
+        when(equivUpdater1.updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class))).thenReturn(true);
+        when(equivUpdater2.updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class))).thenReturn(true);
+        when(equivUpdater3.updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class))).thenReturn(true);
     }
 
     @Test
@@ -45,9 +45,9 @@ public class MultipleSourceChannelEquivalenceUpdaterTest {
 
         multipleUpdater.updateEquivalences(channelForSource(Publisher.BT_TV_CHANNELS), telescopeProxy);
         multipleUpdater.updateEquivalences(channelForSource(Publisher.BT_TV_CHANNELS_REFERENCE), telescopeProxy);
-        verify(equivUpdater1, atMost(1)).updateEquivalences(any(Channel.class), any(OwlTelescopeProxy.class));
-        verify(equivUpdater2, never()).updateEquivalences(any(Channel.class), any(OwlTelescopeProxy.class));
-        verify(equivUpdater3, atMost(1)).updateEquivalences(any(Channel.class), any(OwlTelescopeProxy.class));
+        verify(equivUpdater1, atMost(1)).updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class));
+        verify(equivUpdater2, never()).updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class));
+        verify(equivUpdater3, atMost(1)).updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class));
 
     }
 

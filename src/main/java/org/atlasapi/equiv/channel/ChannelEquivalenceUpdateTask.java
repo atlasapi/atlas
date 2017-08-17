@@ -8,7 +8,7 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class ChannelEquivalenceUpdateTask extends ScheduledTask {
                 ChannelQuery.builder().withPublisher(publisher).build()
         );
 
-        OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+        OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.CHANNEL_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );

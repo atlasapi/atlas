@@ -12,7 +12,7 @@ import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -36,7 +36,7 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
     @Mock private ChannelWriter channelWriter = mock(ChannelWriter.class);
     @Mock private ChannelResolver channelResolver = mock(ChannelResolver.class);
     @Mock private ChannelEquivalenceUpdaterMetadata metadata = mock(ChannelEquivalenceUpdaterMetadata.class);
-    @Mock private OwlTelescopeProxy telescopeProxy = mock(OwlTelescopeProxy.class);
+    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
 
     private ChannelMatcher btChannelMatcher = BtChannelMatcher.create(Publisher.BT_TV_CHANNELS);
     private SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();

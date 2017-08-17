@@ -10,7 +10,7 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -40,7 +40,7 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public boolean updateEquivalences(Content content, OwlTelescopeProxy telescopeProxy) {
+    public boolean updateEquivalences(Content content, OwlTelescopeReporter telescopeProxy) {
         checkArgument(
                 content.getPublisher().equals(source),
                 "%s can't update data for %s", source,
@@ -86,7 +86,7 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     private <T> boolean update(EquivalenceUpdater<T> updater,
-            T content, OwlTelescopeProxy telescopeProxy) {
+            T content, OwlTelescopeReporter telescopeProxy) {
         checkNotNull(updater, "No updater for %s %s", source, content);
         return updater.updateEquivalences(content, telescopeProxy);
     }

@@ -22,7 +22,7 @@ import org.atlasapi.equiv.update.metadata.ContentEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.TelescopeUtilityMethodsAtlas;
 
 import com.google.common.base.Function;
@@ -79,7 +79,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     @Override
-    public boolean updateEquivalences(T content, OwlTelescopeProxy telescopeProxy) {
+    public boolean updateEquivalences(T content, OwlTelescopeReporter telescopeProxy) {
         ReadableDescription desc = new DefaultDescription();
 
         List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);

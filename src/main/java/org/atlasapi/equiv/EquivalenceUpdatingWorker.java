@@ -11,7 +11,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import org.slf4j.Logger;
@@ -38,7 +38,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
     
     private final SubstitutionTableNumberCodec idCodec
         = SubstitutionTableNumberCodec.lowerCaseOnly();
-    private final OwlTelescopeProxy telescopeProxy;
+    private final OwlTelescopeReporter telescopeProxy;
 
     public EquivalenceUpdatingWorker(ContentResolver contentResolver,
             LookupEntryStore entryStore,
@@ -50,7 +50,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
         this.resultStore = checkNotNull(resultStore);
         this.equivUpdater = checkNotNull(equivUpdater);
         this.filter = checkNotNull(filter);
-        this.telescopeProxy = OwlTelescopeProxy.create(
+        this.telescopeProxy = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );

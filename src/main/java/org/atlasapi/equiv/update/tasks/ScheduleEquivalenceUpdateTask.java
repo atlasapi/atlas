@@ -3,37 +3,26 @@ package org.atlasapi.equiv.update.tasks;
 import static com.metabroadcast.common.scheduling.UpdateProgress.FAILURE;
 import static com.metabroadcast.common.scheduling.UpdateProgress.SUCCESS;
 
-import java.util.Collection;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
-import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Schedule;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.google.common.base.Supplier;
-import com.google.common.collect.HashMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import org.apache.commons.collections.bag.SynchronizedBag;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -103,7 +92,11 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
             progress = progress.reduce(equivalateSchedule(start, end));
         }
         
-        reportStatus(String.format("Finished. %d Items processed, %d failed", progress.getProcessed(), progress.getFailures()));
+        reportStatus(String.format(
+                "Finished. %d Items processed, %d failed",
+                progress.getProcessed(),
+                progress.getFailures()
+        ));
     }
 
     public UpdateProgress equivalateSchedule(LocalDate start, LocalDate end) {
@@ -133,7 +126,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 }
                 ScheduleChannel scheduleChannel = channelItr.next();
 
-                OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+                OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
                         OwlTelescopeReporters.CHANNEL_EQUIVALENCE,
                         Event.Type.EQUIVALENCE
                 );
@@ -172,7 +165,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         );
     }
 
-    private UpdateProgress process(Item item, OwlTelescopeProxy telescopeProxy) {
+    private UpdateProgress process(Item item, OwlTelescopeReporter telescopeProxy) {
         try {
             updater.updateEquivalences(item, telescopeProxy);
             log.info("successfully updated equivalences on " + item.getCanonicalUri());

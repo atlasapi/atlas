@@ -14,7 +14,7 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
@@ -47,7 +47,7 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     }
 
     @Override
-    public boolean updateEquivalences(Content content, OwlTelescopeProxy telescopeProxy) {
+    public boolean updateEquivalences(Content content, OwlTelescopeReporter telescopeProxy) {
         if (content instanceof Container) {
             return updateContainer((Container) content, telescopeProxy);
         } else if (content instanceof Item){
@@ -63,12 +63,12 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
         );
     }
 
-    private boolean updateContentEquivalence(Content content, OwlTelescopeProxy telescopeProxy) {
+    private boolean updateContentEquivalence(Content content, OwlTelescopeReporter telescopeProxy) {
         log.trace("equiv update {}", content);
         return updater.updateEquivalences(content, telescopeProxy);
     }
 
-    private boolean updateContainer(Container container, OwlTelescopeProxy telescopeProxy) {
+    private boolean updateContainer(Container container, OwlTelescopeReporter telescopeProxy) {
         updateContentEquivalence(container, telescopeProxy);
         for (Item child : childrenOf(container)) {
             updateContentEquivalence(child, telescopeProxy);

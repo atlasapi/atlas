@@ -29,7 +29,7 @@ import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.system.Fetcher;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
@@ -127,7 +127,7 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
             return results;
 		}
 
-		OwlTelescopeProxy telescopeProxy = OwlTelescopeProxy.create(
+		OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
 				OwlTelescopeReporters.EQUIVALENCE,
 				Event.Type.EQUIVALENCE
 		);
@@ -143,7 +143,7 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
 		return results;
 	}
 
-    private void updateEquivalences(Map<String, Identified> fetched, OwlTelescopeProxy telescopeProxy) {
+    private void updateEquivalences(Map<String, Identified> fetched, OwlTelescopeReporter telescopeProxy) {
         for (Identified fetchedEntity : fetched.values()) {
 		    if (fetchedEntity instanceof Content) {
 		        Content fetchedContent = (Content) fetchedEntity;

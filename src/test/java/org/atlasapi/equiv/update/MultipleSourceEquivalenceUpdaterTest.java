@@ -4,7 +4,7 @@ import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class MultipleSourceEquivalenceUpdaterTest {
 
-    @Mock private OwlTelescopeProxy telescopeProxy = mock(OwlTelescopeProxy.class);
+    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
 
     @Test
     public void test() {

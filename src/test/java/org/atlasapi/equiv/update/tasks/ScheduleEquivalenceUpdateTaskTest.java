@@ -19,7 +19,7 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import com.google.common.base.Suppliers;
 import com.google.common.collect.ImmutableSet;
@@ -42,7 +42,7 @@ public class ScheduleEquivalenceUpdateTaskTest {
     @SuppressWarnings("unchecked") 
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
-    @Mock private OwlTelescopeProxy telescopeProxy = mock(OwlTelescopeProxy.class);
+    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
 
     // TODO make this take multiple schedules
     private final ScheduleResolver scheduleResolver(final Schedule schedule) {
@@ -108,8 +108,8 @@ public class ScheduleEquivalenceUpdateTaskTest {
             .build().run();
         
 
-        verify(updater).updateEquivalences(eq(yvItemOne), any(OwlTelescopeProxy.class));
-        verify(updater).updateEquivalences(eq(yvItemTwo), any(OwlTelescopeProxy.class));
+        verify(updater).updateEquivalences(eq(yvItemOne), any(OwlTelescopeReporter.class));
+        verify(updater).updateEquivalences(eq(yvItemTwo), any(OwlTelescopeReporter.class));
     }
 
 }

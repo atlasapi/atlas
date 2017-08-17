@@ -10,7 +10,7 @@ import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.TelescopeUtilityMethodsAtlas;
 
 import java.util.Optional;
@@ -36,7 +36,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     }
 
     @Override
-    public boolean updateEquivalences(Channel subject, OwlTelescopeProxy telescopeProxy) {
+    public boolean updateEquivalences(Channel subject, OwlTelescopeReporter telescopeProxy) {
         verify(subject, publisher);
 
         Optional<Channel> potentialCandidate = StreamSupport.stream(
@@ -59,7 +59,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     private void setAndUpdateEquivalents(
             Channel candidate,
             Channel subject,
-            OwlTelescopeProxy telescopeProxy
+            OwlTelescopeReporter telescopeProxy
     ) {
 
         ChannelRef subjectRef = subject.toChannelRef();

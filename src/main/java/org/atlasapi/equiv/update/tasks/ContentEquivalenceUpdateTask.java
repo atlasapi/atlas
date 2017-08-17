@@ -14,7 +14,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
-import org.atlasapi.reporting.telescope.OwlTelescopeProxy;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
@@ -36,7 +36,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
     private final ScheduleTaskProgressStore progressStore;
     private final EquivalenceUpdater<Content> updater;    
     private final Set<String> ignored;
-    private final OwlTelescopeProxy telescopeProxy;
+    private final OwlTelescopeReporter telescopeProxy;
 
     private String schedulingKey = "equivalence";
     private List<Publisher> publishers;
@@ -48,7 +48,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
         this.progressStore = progressStore;
         this.updater = RootEquivalenceUpdater.create(contentResolver, updater);
         this.ignored = ignored;
-        this.telescopeProxy = OwlTelescopeProxy.create(
+        this.telescopeProxy = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );

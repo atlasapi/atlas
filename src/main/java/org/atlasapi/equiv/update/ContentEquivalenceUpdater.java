@@ -99,8 +99,8 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         }
 
         telescopeProxy.reportSuccessfulEvent(
-                String.valueOf(content.getId()),
-                TelescopeUtilityMethodsAtlas.getAliases(content.getAliases()),
+                content.getId(),
+                content.getAliases(),
                 content
         );
 

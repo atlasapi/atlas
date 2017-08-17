@@ -76,8 +76,8 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
         }
 
         telescopeProxy.reportSuccessfulEvent(
-                String.valueOf(subject.getId()),
-                TelescopeUtilityMethodsAtlas.getAliases(subject.getAliases()),
+                subject.getId(),
+                subject.getAliases(),
                 subject
         );
 

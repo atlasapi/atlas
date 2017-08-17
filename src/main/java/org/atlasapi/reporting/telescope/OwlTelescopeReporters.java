@@ -11,7 +11,8 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
     MOCK_REPORTER("mock-reporter", "Mock reporter"), //used by OwlTelescopeProxyMock
     CHANNEL_EQUIVALENCE("channel-equivalence", "Channel Equivalence"),
     EQUIVALENCE("equivalence", "Equivalence"),
-    MANUAL_EQUIVALENCE("manual-equivalence", "Manual Equivalence")
+    MANUAL_EQUIVALENCE("manual-equivalence", "Manual Equivalence"),
+    PUBLISHER_SPECIFIC_EQUIVALENCE("publisher-specific-equivalence", "Publisher Specific Equivalence")
     ;
 
     String reporterKey;

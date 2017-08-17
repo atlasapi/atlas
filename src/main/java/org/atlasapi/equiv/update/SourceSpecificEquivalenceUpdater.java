@@ -85,8 +85,11 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
             && ((Series)content).getParent() == null;
     }
 
-    private <T> boolean update(EquivalenceUpdater<T> updater,
-            T content, OwlTelescopeProxy telescopeProxy) {
+    private <T> boolean update(
+            EquivalenceUpdater<T> updater,
+            T content,
+            OwlTelescopeProxy telescopeProxy
+    ) {
         checkNotNull(updater, "No updater for %s %s", source, content);
         return updater.updateEquivalences(content, telescopeProxy);
     }

@@ -28,7 +28,7 @@ public class NopContainerUpdaterProvider implements EquivalenceUpdaterProvider<C
         return new EquivalenceUpdater<Container>() {
 
             @Override
-            public boolean updateEquivalences(Container subject, OwlTelescopeReporter telescopeProxy) {
+            public boolean updateEquivalences(Container subject, OwlTelescopeReporter telescope) {
                 return false;
             }
 

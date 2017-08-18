@@ -127,28 +127,28 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
             return results;
 		}
 
-		OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
+		OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
 				OwlTelescopeReporters.QUERY_EXECUTOR_EQUIVALENCE,
 				Event.Type.EQUIVALENCE
 		);
 
-		telescopeProxy.startReporting();
+		telescope.startReporting();
 		
-		updateEquivalences(fetched, telescopeProxy);
+		updateEquivalences(fetched, telescope);
 
-		telescopeProxy.endReporting();
+		telescope.endReporting();
 		
 		// re-attempt the query now the missing uris have been fetched
 		results.putAll(delegate.executeUriQuery(fetched.keySet(), query));
 		return results;
 	}
 
-    private void updateEquivalences(Map<String, Identified> fetched, OwlTelescopeReporter telescopeProxy) {
+    private void updateEquivalences(Map<String, Identified> fetched, OwlTelescopeReporter telescope) {
         for (Identified fetchedEntity : fetched.values()) {
 		    if (fetchedEntity instanceof Content) {
 		        Content fetchedContent = (Content) fetchedEntity;
                 if (equivalablePublishers.contains(fetchedContent.getPublisher())) {
-                    equivUpdater.updateEquivalences(fetchedContent, telescopeProxy);
+                    equivUpdater.updateEquivalences(fetchedContent, telescope);
                 }
             }
         }

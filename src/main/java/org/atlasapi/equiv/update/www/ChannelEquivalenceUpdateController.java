@@ -95,28 +95,28 @@ public class ChannelEquivalenceUpdateController {
             return;
         }
 
-        OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.MANUAL_CHANNEL_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );
 
-        telescopeProxy.startReporting();
+        telescope.startReporting();
 
-        channels.forEach(channel -> executor.submit(updateFor(channel, telescopeProxy)));
+        channels.forEach(channel -> executor.submit(updateFor(channel, telescope)));
 
-        telescopeProxy.endReporting();
+        telescope.endReporting();
 
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private Runnable updateFor(Channel channel, OwlTelescopeReporter telescopeProxy) {
+    private Runnable updateFor(Channel channel, OwlTelescopeReporter telescope) {
         return () -> {
             try {
-                channelUpdater.updateEquivalences(channel, telescopeProxy);
+                channelUpdater.updateEquivalences(channel, telescope);
                 log.info("Finished updating {}", channel);
             } catch (Exception e) {
                 log.error("Error updating equivalence for channel: {}", channel, e);
-                telescopeProxy.reportFailedEvent(
+                telescope.reportFailedEvent(
                         e.toString(),
                         channel
                 );

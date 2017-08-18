@@ -53,7 +53,7 @@ public class EquivalenceUpdatingWorkerTest {
     private final EquivalenceUpdatingWorker workerThatOnlyUpdatesItems
         = new EquivalenceUpdatingWorker(resolver, 
                 entryStore, resultStore, updater, Predicates.<Content>and(filter));
-    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
+    @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
     
     @Test
     public void testWorkerThatOnlyUpdatesItemsUpdatesAnItem() {
@@ -86,7 +86,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(brand, telescopeProxy);
+        verify(updater, never()).updateEquivalences(brand, telescope);
     }
     
     @Test
@@ -103,7 +103,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(null, telescopeProxy);
+        verify(updater, never()).updateEquivalences(null, telescope);
     }
 
     @Test
@@ -120,7 +120,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(any(Content.class), eq(telescopeProxy));
+        verify(updater, never()).updateEquivalences(any(Content.class), eq(telescope));
     }
     
     @Test

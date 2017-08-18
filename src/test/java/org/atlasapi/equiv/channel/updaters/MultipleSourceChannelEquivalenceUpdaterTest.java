@@ -28,7 +28,7 @@ public class MultipleSourceChannelEquivalenceUpdaterTest {
     @Mock
     private EquivalenceUpdater<Channel> equivUpdater3 = mock(EquivalenceUpdater.class);
     @Mock
-    private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
+    private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
 
     @Before
     public void setUp() {
@@ -43,8 +43,8 @@ public class MultipleSourceChannelEquivalenceUpdaterTest {
         multipleUpdater.register(Publisher.BT_TV_CHANNELS_TEST1, equivUpdater2);
         multipleUpdater.register(Publisher.BT_TV_CHANNELS_REFERENCE, equivUpdater3);
 
-        multipleUpdater.updateEquivalences(channelForSource(Publisher.BT_TV_CHANNELS), telescopeProxy);
-        multipleUpdater.updateEquivalences(channelForSource(Publisher.BT_TV_CHANNELS_REFERENCE), telescopeProxy);
+        multipleUpdater.updateEquivalences(channelForSource(Publisher.BT_TV_CHANNELS), telescope);
+        multipleUpdater.updateEquivalences(channelForSource(Publisher.BT_TV_CHANNELS_REFERENCE), telescope);
         verify(equivUpdater1, atMost(1)).updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class));
         verify(equivUpdater2, never()).updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class));
         verify(equivUpdater3, atMost(1)).updateEquivalences(any(Channel.class), any(OwlTelescopeReporter.class));

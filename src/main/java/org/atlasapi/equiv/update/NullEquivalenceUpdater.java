@@ -12,7 +12,7 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     private enum NullUpdater implements EquivalenceUpdater<Object> {
         INSTANCE {
             @Override
-            public boolean updateEquivalences(Object content, OwlTelescopeReporter telescopeProxy) {
+            public boolean updateEquivalences(Object content, OwlTelescopeReporter telescope) {
                 return false;
             }
 
@@ -36,7 +36,7 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     }
 
     @Override
-    public boolean updateEquivalences(T content, OwlTelescopeReporter telescopeProxy) {
+    public boolean updateEquivalences(T content, OwlTelescopeReporter telescope) {
         return false;
     }
 

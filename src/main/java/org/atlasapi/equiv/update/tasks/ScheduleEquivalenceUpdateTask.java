@@ -101,6 +101,14 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
     public UpdateProgress equivalateSchedule(LocalDate start, LocalDate end) {
         UpdateProgress progress = UpdateProgress.START;
+
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+                OwlTelescopeReporters.CHANNEL_SCHEDULE_EQUIVALENCE,
+                Event.Type.EQUIVALENCE
+        );
+
+        telescope.startReporting();
+
         for (Publisher publisher : publishers) {
             for (Channel channel : channelsSupplier.get()) {
 
@@ -126,13 +134,6 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 }
                 ScheduleChannel scheduleChannel = channelItr.next();
 
-                OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
-                        OwlTelescopeReporters.CHANNEL_SCHEDULE_EQUIVALENCE,
-                        Event.Type.EQUIVALENCE
-                );
-
-                telescopeProxy.startReporting();
-
                 Iterator<Item> channelItems = scheduleChannel.items().iterator();
                 while (channelItems.hasNext() && shouldContinue()) {
                     Item scheduleItem = channelItems.next();
@@ -141,14 +142,17 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                     Maybe<Identified> identified = resolvedContent.get(scheduleItem.getCanonicalUri());
                     if (identified.hasValue()) {
                         Item value = (Item) identified.requireValue();
-                        progress = progress.reduce(process(value, telescopeProxy));
+                        progress = progress.reduce(process(value, telescope));
                         reportStatus(generateStatus(start, end, progress, publisher, scheduleItem, channel));
                     }
                 }
 
-                telescopeProxy.endReporting();
+
             }   
         }
+
+        telescope.endReporting();
+
         return progress;
     }
 
@@ -165,9 +169,9 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         );
     }
 
-    private UpdateProgress process(Item item, OwlTelescopeReporter telescopeProxy) {
+    private UpdateProgress process(Item item, OwlTelescopeReporter telescope) {
         try {
-            updater.updateEquivalences(item, telescopeProxy);
+            updater.updateEquivalences(item, telescope);
             log.info("successfully updated equivalences on " + item.getCanonicalUri());
             return SUCCESS;
         } catch (Exception e) {

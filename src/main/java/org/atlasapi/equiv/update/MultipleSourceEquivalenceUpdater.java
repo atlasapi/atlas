@@ -35,8 +35,8 @@ public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public boolean updateEquivalences(Content subject, OwlTelescopeReporter telescopeProxy) {
-        return updaters.get(subject.getPublisher()).updateEquivalences(subject, telescopeProxy);
+    public boolean updateEquivalences(Content subject, OwlTelescopeReporter telescope) {
+        return updaters.get(subject.getPublisher()).updateEquivalences(subject, telescope);
     }
 
     @Override

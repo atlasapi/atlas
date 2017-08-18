@@ -48,17 +48,17 @@ public class ChannelEquivalenceUpdateTask extends ScheduledTask {
                 ChannelQuery.builder().withPublisher(publisher).build()
         );
 
-        OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.CHANNEL_EQUIVALENCE_UPDATE_TASK,
                 Event.Type.EQUIVALENCE
         );
 
-        telescopeProxy.startReporting();
+        telescope.startReporting();
 
         log.info("Started channel equiv update for {}", publisher);
-        publishersChannels.forEach(channel -> updater.updateEquivalences(channel, telescopeProxy));
+        publishersChannels.forEach(channel -> updater.updateEquivalences(channel, telescope));
         log.info("Finished channel equiv update for {}", publisher);
 
-        telescopeProxy.endReporting();
+        telescope.endReporting();
     }
 }

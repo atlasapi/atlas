@@ -35,10 +35,10 @@ public class MultipleSourceChannelEquivalenceUpdater implements EquivalenceUpdat
     }
 
     @Override
-    public boolean updateEquivalences(Channel channel, OwlTelescopeReporter telescopeProxy) {
+    public boolean updateEquivalences(Channel channel, OwlTelescopeReporter telescope) {
         EquivalenceUpdater<Channel> updater = updaters.get(channel.getSource());
         if (updater != null) {
-            return updater.updateEquivalences(channel, telescopeProxy);
+            return updater.updateEquivalences(channel, telescope);
         }
         log.error("No updater found for publisher: {}", channel.getSource());
         return false;

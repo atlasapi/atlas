@@ -28,7 +28,7 @@ public class NopItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> 
         return new EquivalenceUpdater<Item>() {
 
             @Override
-            public boolean updateEquivalences(Item subject, OwlTelescopeReporter telescopeProxy) {
+            public boolean updateEquivalences(Item subject, OwlTelescopeReporter telescope) {
                 return false;
             }
 

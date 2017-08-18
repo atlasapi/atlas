@@ -79,7 +79,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     @Override
-    public boolean updateEquivalences(T content, OwlTelescopeReporter telescopeProxy) {
+    public boolean updateEquivalences(T content, OwlTelescopeReporter telescope) {
         ReadableDescription desc = new DefaultDescription();
 
         List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
@@ -98,7 +98,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             messenger.sendMessage(result);
         }
 
-        telescopeProxy.reportSuccessfulEvent(
+        telescope.reportSuccessfulEvent(
                 content.getId(),
                 content.getAliases(),
                 content

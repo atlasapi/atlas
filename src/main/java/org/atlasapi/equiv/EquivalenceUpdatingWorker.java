@@ -14,6 +14,7 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
+import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -35,10 +36,11 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
     private final EquivalenceResultStore resultStore;
     private final EquivalenceUpdater<Content> equivUpdater;
     private final Predicate<Content> filter;
+    private DateTime timeSinceTelescopeRotated;
     
     private final SubstitutionTableNumberCodec idCodec
         = SubstitutionTableNumberCodec.lowerCaseOnly();
-    private final OwlTelescopeReporter telescopeProxy;
+    private OwlTelescopeReporter telescope;
 
     public EquivalenceUpdatingWorker(ContentResolver contentResolver,
             LookupEntryStore entryStore,
@@ -50,14 +52,12 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
         this.resultStore = checkNotNull(resultStore);
         this.equivUpdater = checkNotNull(equivUpdater);
         this.filter = checkNotNull(filter);
-        this.telescopeProxy = OwlTelescopeReporter.create(
-                OwlTelescopeReporters.EQUIVALENCE_UPDATING_WORKER,
-                Event.Type.EQUIVALENCE
-        );
     }
 
     @Override
     public void process(EntityUpdatedMessage message) {
+        rotateTelescope();
+
         String eid = message.getEntityId();
         Content content = resolveId(idCodec.decode(eid).longValue());
         if (content == null) {
@@ -70,7 +70,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
             log.debug("{} updating equivalence: {} {} {}", 
                 new Object[]{message.getMessageId(), 
                     message.getEntitySource(), message.getEntityType(), eid});
-            equivUpdater.updateEquivalences(content, telescopeProxy);
+            equivUpdater.updateEquivalences(content, telescope);
         } else {
             log.trace("{} skipping equiv update: {} {} {}", 
                 new Object[]{message.getMessageId(), 
@@ -96,5 +96,18 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
     private boolean isContent(Maybe<Identified> possibleContent) {
         return possibleContent.valueOrNull() instanceof Content;
     }
-    
+
+    private void rotateTelescope() {
+        if (telescope == null) {
+            telescope = OwlTelescopeReporter.create(
+                    OwlTelescopeReporters.EQUIVALENCE_UPDATING_WORKER,
+                    Event.Type.EQUIVALENCE
+            );
+            telescope.startReporting();
+            timeSinceTelescopeRotated = DateTime.now();
+        } else if (timeSinceTelescopeRotated.plusHours(1).isBeforeNow()) {
+            telescope.endReporting();
+            telescope.startReporting();
+        }
+    }
 }

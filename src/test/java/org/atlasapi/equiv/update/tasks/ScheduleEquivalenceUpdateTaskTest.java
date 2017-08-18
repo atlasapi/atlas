@@ -42,7 +42,7 @@ public class ScheduleEquivalenceUpdateTaskTest {
     @SuppressWarnings("unchecked") 
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
-    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
+    @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
 
     // TODO make this take multiple schedules
     private final ScheduleResolver scheduleResolver(final Schedule schedule) {

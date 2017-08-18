@@ -106,18 +106,18 @@ public class ContentEquivalenceUpdateController {
             return;
         }
 
-        OwlTelescopeReporter telescopeProxy = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.MANUAL_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );
 
-        telescopeProxy.startReporting();
+        telescope.startReporting();
 
         for (Content content : Iterables.filter(resolved.getAllResolvedResults(), Content.class)) {
-            executor.submit(updateFor(content, telescopeProxy));
+            executor.submit(updateFor(content, telescope));
         }
 
-        telescopeProxy.endReporting();
+        telescope.endReporting();
 
         response.setStatus(OK.code());
 
@@ -136,14 +136,14 @@ public class ContentEquivalenceUpdateController {
                 .collect(Collectors.toList());
     }
 
-    private Runnable updateFor(final Content content, OwlTelescopeReporter telescopeProxy) {
+    private Runnable updateFor(final Content content, OwlTelescopeReporter telescope) {
         return () -> {
             try {
-                contentUpdater.updateEquivalences(content, telescopeProxy);
+                contentUpdater.updateEquivalences(content, telescope);
                 log.info("Finished updating {}", content);
             } catch (Exception e) {
                 log.error(content.toString(), e);
-                telescopeProxy.reportFailedEvent(
+                telescope.reportFailedEvent(
                         e.toString(),
                         content
                 );

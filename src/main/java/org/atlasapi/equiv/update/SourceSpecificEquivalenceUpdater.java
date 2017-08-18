@@ -40,7 +40,7 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public boolean updateEquivalences(Content content, OwlTelescopeReporter telescopeProxy) {
+    public boolean updateEquivalences(Content content, OwlTelescopeReporter telescope) {
         checkArgument(
                 content.getPublisher().equals(source),
                 "%s can't update data for %s", source,
@@ -48,13 +48,13 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
         );
 
         if (content instanceof Item) {
-            return update(itemUpdater, (Item) content, telescopeProxy);
+            return update(itemUpdater, (Item) content, telescope);
         } else if (content instanceof Brand) {
-            return update(topLevelContainerUpdater, (Container) content, telescopeProxy);
+            return update(topLevelContainerUpdater, (Container) content, telescope);
         } else if (topLevelSeries(content)) {
-            return update(topLevelContainerUpdater, (Container) content, telescopeProxy);
+            return update(topLevelContainerUpdater, (Container) content, telescope);
         } else if (!topLevelSeries(content)) {
-            return update(nonTopLevelContainerUpdater, (Container) content, telescopeProxy);
+            return update(nonTopLevelContainerUpdater, (Container) content, telescope);
         } else {
             throw new IllegalStateException(String.format(
                     "No updater for %s for %s",
@@ -86,9 +86,9 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     private <T> boolean update(EquivalenceUpdater<T> updater,
-            T content, OwlTelescopeReporter telescopeProxy) {
+            T content, OwlTelescopeReporter telescope) {
         checkNotNull(updater, "No updater for %s %s", source, content);
-        return updater.updateEquivalences(content, telescopeProxy);
+        return updater.updateEquivalences(content, telescope);
     }
 
     public static final class Builder {

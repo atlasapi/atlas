@@ -9,7 +9,7 @@ import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 public interface EquivalenceUpdater<T> {
 
-    boolean updateEquivalences(T subject, OwlTelescopeReporter telescopeProxy);
+    boolean updateEquivalences(T subject, OwlTelescopeReporter telescope);
 
     EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources);
 }

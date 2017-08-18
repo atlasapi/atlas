@@ -47,11 +47,11 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
     }
 
     @Override
-    public boolean updateEquivalences(Content content, OwlTelescopeReporter telescopeProxy) {
+    public boolean updateEquivalences(Content content, OwlTelescopeReporter telescope) {
         if (content instanceof Container) {
-            return updateContainer((Container) content, telescopeProxy);
+            return updateContainer((Container) content, telescope);
         } else if (content instanceof Item){
-            return updateContentEquivalence(content, telescopeProxy);
+            return updateContentEquivalence(content, telescope);
         }
         return false;
     }
@@ -63,22 +63,22 @@ public class RootEquivalenceUpdater implements EquivalenceUpdater<Content> {
         );
     }
 
-    private boolean updateContentEquivalence(Content content, OwlTelescopeReporter telescopeProxy) {
+    private boolean updateContentEquivalence(Content content, OwlTelescopeReporter telescope) {
         log.trace("equiv update {}", content);
-        return updater.updateEquivalences(content, telescopeProxy);
+        return updater.updateEquivalences(content, telescope);
     }
 
-    private boolean updateContainer(Container container, OwlTelescopeReporter telescopeProxy) {
-        updateContentEquivalence(container, telescopeProxy);
+    private boolean updateContainer(Container container, OwlTelescopeReporter telescope) {
+        updateContentEquivalence(container, telescope);
         for (Item child : childrenOf(container)) {
-            updateContentEquivalence(child, telescopeProxy);
+            updateContentEquivalence(child, telescope);
         }
         if (container instanceof Brand) {
             for (Series series : seriesOf((Brand) container)) {
-               updateContentEquivalence(series, telescopeProxy);
+               updateContentEquivalence(series, telescope);
             }
         }
-        return updateContentEquivalence(container, telescopeProxy);
+        return updateContentEquivalence(container, telescope);
     }
 
     private Iterable<Series> seriesOf(Brand brand) {

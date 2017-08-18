@@ -17,7 +17,7 @@ import static org.mockito.Mockito.verify;
 @RunWith(MockitoJUnitRunner.class)
 public class MultipleSourceEquivalenceUpdaterTest {
 
-    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
+    @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
 
     @Test
     public void test() {
@@ -34,8 +34,8 @@ public class MultipleSourceEquivalenceUpdaterTest {
                 .withTopLevelContainerUpdater(containerUpdater)
                 .build());
         
-        updaters.updateEquivalences(ep, telescopeProxy);
-        verify(itemUpdater).updateEquivalences(ep, telescopeProxy);
+        updaters.updateEquivalences(ep, telescope);
+        verify(itemUpdater).updateEquivalences(ep, telescope);
         
     }
 

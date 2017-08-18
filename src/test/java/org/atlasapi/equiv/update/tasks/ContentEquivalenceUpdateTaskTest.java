@@ -48,7 +48,7 @@ public class ContentEquivalenceUpdateTaskTest extends TestCase {
     private final EquivalenceUpdater<Content> updater = mock(EquivalenceUpdater.class);
     private final ScheduleTaskProgressStore progressStore = mock(ScheduleTaskProgressStore.class);
     private final ContentResolver contentResolver = mock(ContentResolver.class);
-    @Mock private OwlTelescopeReporter telescopeProxy = mock(OwlTelescopeReporter.class);
+    @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
 
     private final ContentLister listerForContent(final Multimap<Publisher, Content> contents) {
         return new ContentLister() {

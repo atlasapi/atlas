@@ -36,7 +36,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     }
 
     @Override
-    public boolean updateEquivalences(Channel subject, OwlTelescopeReporter telescopeProxy) {
+    public boolean updateEquivalences(Channel subject, OwlTelescopeReporter telescope) {
         verify(subject, publisher);
 
         Optional<Channel> potentialCandidate = StreamSupport.stream(
@@ -50,7 +50,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
                 .findFirst();
 
         potentialCandidate.ifPresent(candidate ->
-                setAndUpdateEquivalents(candidate, subject, telescopeProxy)
+                setAndUpdateEquivalents(candidate, subject, telescope)
         );
 
         return true;
@@ -59,7 +59,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     private void setAndUpdateEquivalents(
             Channel candidate,
             Channel subject,
-            OwlTelescopeReporter telescopeProxy
+            OwlTelescopeReporter telescope
     ) {
 
         ChannelRef subjectRef = subject.toChannelRef();
@@ -75,7 +75,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
             channelWriter.createOrUpdate(subject);
         }
 
-        telescopeProxy.reportSuccessfulEvent(
+        telescope.reportSuccessfulEvent(
                 subject.getId(),
                 subject.getAliases(),
                 subject

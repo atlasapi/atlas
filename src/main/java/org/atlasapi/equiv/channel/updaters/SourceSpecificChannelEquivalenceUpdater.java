@@ -81,6 +81,11 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
                 subject
         );
 
+        telescope.reportSuccessfulEvent(
+                candidate.getId(),
+                candidate.getAliases(),
+                candidate
+        );
     }
 
     private void verify(Channel channel, Publisher publisher) {

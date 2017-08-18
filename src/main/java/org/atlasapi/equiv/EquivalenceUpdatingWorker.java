@@ -107,7 +107,12 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
             timeSinceTelescopeRotated = DateTime.now();
         } else if (timeSinceTelescopeRotated.plusHours(1).isBeforeNow()) {
             telescope.endReporting();
+            telescope = OwlTelescopeReporter.create(
+                    OwlTelescopeReporters.EQUIVALENCE_UPDATING_WORKER,
+                    Event.Type.EQUIVALENCE
+            );
             telescope.startReporting();
+            timeSinceTelescopeRotated = DateTime.now();
         }
     }
 }

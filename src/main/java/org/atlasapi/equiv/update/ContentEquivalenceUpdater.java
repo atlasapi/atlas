@@ -14,6 +14,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredEquivalentsMerger;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
@@ -102,6 +103,18 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 content.getId(),
                 content.getAliases(),
                 content
+        );
+
+        result.strongEquivalences().values().forEach(
+                strong -> {
+                        Content candidate = strong.candidate();
+                        telescope.reportSuccessfulEvent(
+                                candidate.getId(),
+                                candidate.getAliases(),
+                                candidate
+
+                        );
+                }
         );
 
         return !result.combinedEquivalences().candidates().isEmpty();

@@ -61,8 +61,6 @@ public class PaChannelsIngester {
     private static final String SIMULCAST_LINK_TYPE = "Web_Simulcast";
 
     private static final String REGIONAL_VARIATION = "regional";
-    private static final String TIMESHIFT_VARIATION = "timeshift";
-    private static final String HD_VARIATION = "HD";
 
     private static final String IMAGE_PREFIX =
             "http://images.atlas.metabroadcast.com/pressassociation.com/channels/";
@@ -297,10 +295,7 @@ public class PaChannelsIngester {
     }
 
     private Boolean getHighDefinition(@Nullable String format) {
-        if (format != null) {
-            return format.equals(FORMAT_HD);
-        }
-        return false;
+        return format != null && format.equals(FORMAT_HD);
     }
 
     private Optional<String> lookupAlias(

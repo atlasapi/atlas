@@ -218,10 +218,10 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 if (sery != null) {
                     contentWriter.createOrUpdate(sery);
                     //report to telescope
-                    if (brand.getId() != null) {
+                    if (sery.getId() != null) {
                         telescope.reportSuccessfulEvent(
-                                brand.getId(),
-                                brand.getAliases(),
+                                sery.getId(),
+                                sery.getAliases(),
                                 item
                         );
                     } else {
@@ -248,7 +248,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 written++;
             } catch (Exception e) {
                 telescope.reportFailedEvent(
-                        "There was an exception while writing to atlas.",
+                        "This item could not be written to Atlas. id=" + item.getId() + " (" + e.getMessage() + ")",
                         item
                 );
                 log.error(item.getCanonicalUri(), e);

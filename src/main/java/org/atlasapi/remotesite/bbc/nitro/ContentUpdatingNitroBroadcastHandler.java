@@ -190,7 +190,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         );
                     } else {
                         telescope.reportFailedEvent(
-                                "Atlas did not return an id after attempting to create or update these Series",
+                                "Atlas did not return an id after attempting to create or update this Series",
                                 nitroBroadcast
                         );
                     }
@@ -215,7 +215,7 @@ public class ContentUpdatingNitroBroadcastHandler
             } catch (Exception e) {
                 log.error(nitroBroadcast.getPid(), e);
                 telescope.reportFailedEvent(
-                        "There was a " + e.getClass().getSimpleName() + " while writing to atlas. (" + e.getMessage() + ")",
+                        e.getClass().getSimpleName() + " was thrown while writing to atlas. (" + e.getMessage() + ")",
                         nitroBroadcast
                 );
                 results.add(Optional.<ItemRefAndBroadcast>absent());

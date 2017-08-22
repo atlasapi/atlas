@@ -1,9 +1,5 @@
 package org.atlasapi.remotesite.metabroadcast.picks;
 
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.transform;
-
 import java.util.List;
 import java.util.Map;
 
@@ -23,10 +19,8 @@ import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessor;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -34,8 +28,14 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
 
 
 public class PicksDayUpdater implements ChannelDayProcessor {
@@ -105,9 +105,11 @@ public class PicksDayUpdater implements ChannelDayProcessor {
             
             return UpdateProgress.SUCCESS;
         } catch (Exception e) {
-            log.error("Processing " + channelDay.getChannel().getCanonicalUri() 
-                    + " [" + channelDay.getChannel().getTitle() + "] Day " 
-                    + channelDay.getDay().toString(), e);
+            String errorMessage = "Processing " + channelDay.getChannel().getCanonicalUri()
+                                  + " [" + channelDay.getChannel().getTitle() + "] Day "
+                                  + channelDay.getDay().toString();
+            log.error(errorMessage, e);
+            telescope.reportFailedEvent(errorMessage + " (" + e.getMessage() + ")", channelDay);
             return UpdateProgress.FAILURE;
         }
     }
@@ -134,12 +136,12 @@ public class PicksDayUpdater implements ChannelDayProcessor {
                 telescope.reportSuccessfulEvent(
                         contentGroup.getId(),
                         contentGroup.getAliases(),
-                        contentGroup
+                        contentGroup, items
                 );
             } else {
                 telescope.reportFailedEvent(
-                        "Atlas did not return an id after attempting to create or update this Brand",
-                        contentGroup
+                        "There was an error while trying to write this ContentGroup to Atlas.",
+                        contentGroup, items
                 );
             }
         }

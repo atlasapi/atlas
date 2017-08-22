@@ -56,10 +56,14 @@ public class ChannelIngestTask extends ScheduledTask {
 
     @Override
     protected void runTask() {
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+                OwlTelescopeReporters.BBC_NITRO_INGEST_CHANNELS,
+                Event.Type.INGEST
+        );
+        telescope.startReporting();
+
         try {
             progress = UpdateProgress.START;
-            OwlTelescopeReporter telescope = OwlTelescopeReporter.create(OwlTelescopeReporters.BBC_NITRO_INGEST_CHANNELS, Event.Type.INGEST);
-            telescope.startReporting();
 
             ImmutableSet<Channel> masterbrands = channelAdapter.fetchMasterbrands();
             Iterable<Channel> filteredMasterBrands = hydrator.hydrateMasterbrands(masterbrands);
@@ -91,9 +95,10 @@ public class ChannelIngestTask extends ScheduledTask {
             writeAndMergeChannels(withUris.build(), telescope);
 
             reportStatus(progress.toString());
-            telescope.endReporting();
         } catch (GlycerinException e) {
             throw Throwables.propagate(e);
+        } finally {
+            telescope.endReporting();
         }
     }
 

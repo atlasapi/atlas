@@ -11,7 +11,10 @@ import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.properties.Configurer;
 
+import com.fasterxml.jackson.annotation.JsonAutoDetect;
+import com.fasterxml.jackson.annotation.PropertyAccessor;
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.MapperFeature;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -24,7 +27,13 @@ import org.slf4j.LoggerFactory;
 public class OwlTelescopeReporter extends TelescopeReporter {
 
     private static final Logger log = LoggerFactory.getLogger(OwlTelescopeReporter.class);
-    private static final ObjectMapper objectMapper = new ObjectMapper();
+
+    private static final ObjectMapper objectMapper = new ObjectMapper()
+            .configure(MapperFeature.AUTO_DETECT_GETTERS, false)
+            .setVisibility(PropertyAccessor.FIELD, JsonAutoDetect.Visibility.ANY)
+            .setVisibility(PropertyAccessor.CREATOR, JsonAutoDetect.Visibility.NONE)
+            .setVisibility(PropertyAccessor.GETTER, JsonAutoDetect.Visibility.NONE)
+            .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE);
 
     private final Event.Type eventType ;
 
@@ -37,23 +46,20 @@ public class OwlTelescopeReporter extends TelescopeReporter {
        return new OwlTelescopeReporter(reporterName, eventType);
     }
 
-    private void reportSuccessfulEventGeneric(String atlasItemId, List<Alias> aliases, String warningMsg, Object objectToSerialise){
+    private void reportSuccessfulEventGeneric(
+            String atlasItemId,
+            List<Alias> aliases,
+            String warningMsg,
+            String payload
+    ) {
         if (!isStarted()) {
             log.error("It was attempted to report atlasItem={}, but the telescope client was not started.", atlasItemId);
             return;
         }
 
-        //if this cannot be serialized, convert it to warning.
-        String serialized = "";
-        try {
-            serialized = objectMapper.writeValueAsString(objectToSerialise);
-        } catch (JsonProcessingException e) {
-            warningMsg = "Object could not be serialized";
-        }
-
         EntityState.Builder entityState = EntityState.builder()
                 .withAtlasId(atlasItemId)
-                .withRaw(serialized)
+                .withRaw(payload)
                 .withRawMime(MimeType.APPLICATION_JSON.toString());
         if (aliases != null) {
             entityState.withRemoteIds(aliases);
@@ -78,21 +84,46 @@ public class OwlTelescopeReporter extends TelescopeReporter {
 
     //convenience methods for the most common reporting Formats
 
-    public void reportSuccessfulEvent(String atlasItemId, List<Alias> aliases, Object objectToSerialise){
-        reportSuccessfulEventGeneric(atlasItemId, aliases, null, objectToSerialise);
+    public void reportSuccessfulEvent(
+            String atlasItemId,
+            List<Alias> aliases,
+            Object... objectToSerialise
+    ){
+        reportSuccessfulEventGeneric(
+                atlasItemId,
+                aliases,
+                null,
+                serialize(objectToSerialise)
+        );
     }
 
-    public void reportSuccessfulEvent(long dbId,Set<org.atlasapi.media.entity.Alias> aliases,Object objectToSerialise) {
-        reportSuccessfulEvent(encode(dbId), TelescopeUtilityMethodsAtlas.getAliases(aliases), objectToSerialise);
+    public void reportSuccessfulEvent(
+            long dbId,Set<org.atlasapi.media.entity.Alias> aliases,
+            Object... objectToSerialise
+    ) {
+        reportSuccessfulEvent(
+                encode(dbId),
+                TelescopeUtilityMethodsAtlas.getAliases(aliases),
+                objectToSerialise
+        );
     }
 
-    public void reportSuccessfulEventWithWarning(String atlasItemId, String warningMsg, Object objectToSerialise) {
-        reportSuccessfulEventGeneric(atlasItemId, null, warningMsg, objectToSerialise);
+    public void reportSuccessfulEventWithWarning(
+            String atlasItemId,
+            String warningMsg,
+            Object... objectToSerialise
+    ) {
+        reportSuccessfulEventGeneric(
+                atlasItemId,
+                null,
+                warningMsg,
+                serialize(objectToSerialise)
+        );
     }
 
-    public void reportFailedEvent(String errorMsg, Object objectToSerialise) {
+    public void reportFailedEvent(String errorMsg, Object... objectToSerialise) {
         if (!isStarted()) {
-            log.error("It was attempted to report an error to telescope, but the client was not started.");
+            log.error("It was attempted to report an error to telescope, but the client has not been started.");
              return;
         }
         Event event = super.getEventBuilder()
@@ -109,16 +140,28 @@ public class OwlTelescopeReporter extends TelescopeReporter {
 
         log.debug("Reported successfully a FAILED event with taskId={}, error={}", getTaskId(), errorMsg);
         if (isFinished()) {
-            log.warn("An error was reported to telescope after the telescope client={} has finished reporting.", getTaskId());
+            log.warn("An error was reported to telescope after the telescope client (taskId={}) has finished reporting.", getTaskId());
         }
     }
 
-    public String serialize(Object objectToSerialise) {
-        try {
-            return objectMapper.writeValueAsString(objectToSerialise);
-        } catch (JsonProcessingException e) {
-            return "Couldn't convert the given object to a JSON string. " + e.getMessage();
+    public static String serialize(Object... objectsToSerialise) {
+
+        StringBuilder sb = new StringBuilder().append("{");
+        int i = 1; //to differentiate different objects of the same class.
+        for (Object o : objectsToSerialise) { //one by one, so what can be serialized will be serialized.
+            if (i != 1) {
+                sb.append(',');
+            }
+            sb.append("\"Payload-").append(i).append("-").append(o.getClass().getSimpleName()).append("\":");
+            try {
+                sb.append(objectMapper.writeValueAsString(o));
+            } catch (JsonProcessingException e) {
+                sb.append( "{\"objectMapper\": \"Couldn't convert the given object to a JSON string. (" + e.getMessage() + ")\"}" );
+            }
+            i++;
         }
+        sb.append("}");
+        return sb.toString();
     }
 
 }

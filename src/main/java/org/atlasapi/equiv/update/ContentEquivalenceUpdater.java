@@ -111,8 +111,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                         telescope.reportSuccessfulEvent(
                                 candidate.getId(),
                                 candidate.getAliases(),
-                                candidate
-
+                                desc
                         );
                 }
         );

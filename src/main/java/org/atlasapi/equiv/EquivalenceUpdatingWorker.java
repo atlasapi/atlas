@@ -97,7 +97,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
         return possibleContent.valueOrNull() instanceof Content;
     }
 
-    private void rotateTelescope() {
+    private synchronized void rotateTelescope() {
         if (telescope == null) {
             telescope = OwlTelescopeReporter.create(
                     OwlTelescopeReporters.EQUIVALENCE_UPDATING_WORKER,

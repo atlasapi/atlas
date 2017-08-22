@@ -1,9 +1,5 @@
 package org.atlasapi.remotesite.metabroadcast.picks;
 
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.transform;
-
 import java.util.List;
 import java.util.Map;
 
@@ -21,10 +17,10 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessor;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -32,8 +28,14 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
 
 
 public class PicksDayUpdater implements ChannelDayProcessor {
@@ -73,7 +75,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
     }
     
     @Override
-    public UpdateProgress process(ChannelDay channelDay) throws Exception {
+    public UpdateProgress process(ChannelDay channelDay, OwlTelescopeReporter telescope) throws Exception {
         try {
             Iterable<Item> picks = concat(transform(scheduleResolver.unmergedSchedule(
                     channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZone.UTC), 
@@ -99,13 +101,15 @@ public class PicksDayUpdater implements ChannelDayProcessor {
                 
             });
             
-            addPicksToContentGroup(findPicks(itemsAndBroadcasts));
+            addPicksToContentGroup(findPicks(itemsAndBroadcasts), telescope);
             
             return UpdateProgress.SUCCESS;
         } catch (Exception e) {
-            log.error("Processing " + channelDay.getChannel().getCanonicalUri() 
-                    + " [" + channelDay.getChannel().getTitle() + "] Day " 
-                    + channelDay.getDay().toString(), e);
+            String errorMessage = "Processing " + channelDay.getChannel().getCanonicalUri()
+                                  + " [" + channelDay.getChannel().getTitle() + "] Day "
+                                  + channelDay.getDay().toString();
+            log.error(errorMessage, e);
+            telescope.reportFailedEvent(errorMessage + " (" + e.getMessage() + ")", channelDay);
             return UpdateProgress.FAILURE;
         }
     }
@@ -114,7 +118,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
         return transform(filter(itemsAndBroadcasts, picksPredicate), TO_ITEM);
     }
     
-    private void addPicksToContentGroup(Iterable<Item> items) {
+    private void addPicksToContentGroup(Iterable<Item> items, OwlTelescopeReporter telescope) {
         ContentGroup contentGroup = resolveOrCreateContentGroup();
         Iterable<ChildRef> childRefs = transform(items, Item.TO_CHILD_REF);
         pruneContents(contentGroup);
@@ -128,6 +132,18 @@ public class PicksDayUpdater implements ChannelDayProcessor {
         }
         if (changed) {
             contentGroupWriter.createOrUpdate(contentGroup);
+            if (contentGroup.getId() != null) {
+                telescope.reportSuccessfulEvent(
+                        contentGroup.getId(),
+                        contentGroup.getAliases(),
+                        contentGroup, items
+                );
+            } else {
+                telescope.reportFailedEvent(
+                        "There was an error while trying to write this ContentGroup to Atlas.",
+                        contentGroup, items
+                );
+            }
         }
     }
     

@@ -86,7 +86,7 @@ public class NitroEpisodeExtractorTest {
         brandEpisode.setTitle("01/01/2004");
         brandEpisode.setEpisodeOf(pidRef("brand", "b006m86d"));
         brandEpisode.setAncestorTitles(ancestorTitles("b006m86d", "EastEnders"));
-        
+
         Item extracted = extractor.extract(NitroItemSource.valueOf(brandEpisode));
         
         org.atlasapi.media.entity.Episode episode

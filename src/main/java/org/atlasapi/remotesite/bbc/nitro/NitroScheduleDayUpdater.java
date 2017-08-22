@@ -15,10 +15,9 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
 import org.atlasapi.persistence.content.schedule.mongo.ScheduleWriter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
-import org.atlasapi.telescope.TelescopeFactory;
-import org.atlasapi.telescope.TelescopeProxy;
 import org.joda.time.DateTime;
 import org.joda.time.Interval;
 import org.slf4j.Logger;
@@ -61,11 +60,7 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
     }
 
     @Override
-    public UpdateProgress process(ChannelDay channelDay) throws Exception {
-
-        //get a new telescope proxy and start reporting
-        TelescopeProxy telescope = TelescopeFactory.make(TelescopeFactory.IngesterName.BBC_NITRO);
-        telescope.startReporting();
+    public UpdateProgress process(ChannelDay channelDay, OwlTelescopeReporter telescope) throws Exception {
 
         String serviceId = BbcIonServices.services.inverse().get(channelDay.getChannel().getUri());
         DateTime from = channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZones.UTC);
@@ -88,8 +83,6 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
                 failedCount
         );
 
-        telescope.endReporting();
-
         return new UpdateProgress(processedCount, failedCount);
     }
 
@@ -101,11 +94,10 @@ public class NitroScheduleDayUpdater implements ChannelDayProcessor {
         scheduleWriter.replaceScheduleBlock(Publisher.BBC_NITRO, channel, processed);
     }
 
-    private ImmutableList<Optional<ItemRefAndBroadcast>> processBroadcasts(ImmutableList<Broadcast> broadcasts, TelescopeProxy telescope) throws NitroException {
+    private ImmutableList<Optional<ItemRefAndBroadcast>> processBroadcasts(ImmutableList<Broadcast> broadcasts, OwlTelescopeReporter telescope) throws NitroException {
         return ImmutableList.copyOf(broadcastHandler.handle(broadcasts, telescope));
     }
 
-    
     private Map<String, String> acceptableIds(Iterable<ItemRefAndBroadcast> processed) {
         ImmutableMap.Builder<String, String> ids = ImmutableMap.builder();
         for (ItemRefAndBroadcast itemRefAndBroadcast : processed) {

@@ -9,6 +9,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 public class NopItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
@@ -27,7 +28,7 @@ public class NopItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> 
         return new EquivalenceUpdater<Item>() {
 
             @Override
-            public boolean updateEquivalences(Item subject) {
+            public boolean updateEquivalences(Item subject, OwlTelescopeReporter telescope) {
                 return false;
             }
 

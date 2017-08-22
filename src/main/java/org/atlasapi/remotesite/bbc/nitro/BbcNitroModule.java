@@ -22,6 +22,7 @@ import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.remotesite.bbc.nitro.channels.ChannelIngestTask;
 import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelHydrator;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.ScheduleResolverBroadcastTrimmer;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.Glycerin;
@@ -81,39 +82,104 @@ public class BbcNitroModule {
     private @Autowired ChannelResolver channelResolver;
     private @Autowired ChannelWriter channelWriter;
     private @Autowired QueuingPersonWriter peopleWriter;
-
+    
     private final ThreadFactory nitroThreadFactory
         = new ThreadFactoryBuilder().setNameFormat("nitro %s").build();
-    private final GroupLock<String> pidLock = GroupLock.<String>natural();
+    private final GroupLock<String> pidLock = GroupLock.natural();
 
     @PostConstruct
     public void configure() {
         if (tasksEnabled) {
-            scheduler.schedule(nitroScheduleUpdateTask(7, 7, nitroFortnightThreadCount, nitroFortnightRateLimit, Optional.<Predicate<Item>>absent())
-                .withName("Nitro 15 day updater"), RepetitionRules.every(Duration.standardHours(2)));
-            scheduler.schedule(nitroScheduleUpdateTask(0, 0, nitroTodayThreadCount, nitroTodayRateLimit, Optional.<Predicate<Item>>absent())
-                .withName("Nitro today updater"), RepetitionRules.every(Duration.standardMinutes(30)));
-            scheduler.schedule(nitroScheduleUpdateTask(0, 0, nitroTodayThreadCount, nitroTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
-                    .withName("Nitro full fetch today updater"), RepetitionRules.NEVER);
-            scheduler.schedule(nitroScheduleUpdateTask(30, -8, nitroThreeWeekThreadCount, nitroThreeWeekRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
-                    .withName("Nitro full fetch -8 to -30 day updater"), RepetitionRules.every(Duration.standardHours(12)));
-            scheduler.schedule(nitroScheduleUpdateTask(7, 3, nitroAroundTodayThreadCount, nitroAroundTodayRateLimit, Optional.of(Predicates.<Item>alwaysTrue()))
-                    .withName("Nitro full fetch -7 to +3 day updater"), RepetitionRules.every(Duration.standardHours(2)));
-            scheduler.schedule(channelIngestTask().withName("Nitro channel updater"), RepetitionRules.weekly(
-                    DayOfWeek.MONDAY, LocalTime.MIDNIGHT));
+            scheduler.schedule(
+                    nitroScheduleUpdateTask(
+                            7,
+                            7,
+                            nitroFortnightThreadCount,
+                            nitroFortnightRateLimit,
+                            Optional.absent(),
+                            "Nitro 15 day updater"
+                    ),
+                    RepetitionRules.every(Duration.standardHours(2))
+            );
+            scheduler.schedule(
+                    nitroScheduleUpdateTask(
+                            0,
+                            0,
+                            nitroTodayThreadCount,
+                            nitroTodayRateLimit,
+                            Optional.absent(),
+                            "Nitro today updater"
+                    ),
+                    RepetitionRules.every(Duration.standardMinutes(30))
+            );
+            scheduler.schedule(
+                    nitroScheduleUpdateTask(
+                            0,
+                            0,
+                            nitroTodayThreadCount,
+                            nitroTodayRateLimit,
+                            Optional.of(Predicates.alwaysTrue()),
+                            "Nitro full fetch today updater"
+                    ),
+                    RepetitionRules.NEVER
+            );
+            scheduler.schedule(
+                    nitroScheduleUpdateTask(
+                            30,
+                            -8,
+                            nitroThreeWeekThreadCount,
+                            nitroThreeWeekRateLimit,
+                            Optional.of(Predicates.alwaysTrue()),
+                            "Nitro full fetch -8 to -30 day updater"
+                    ),
+                    RepetitionRules.every(Duration.standardHours(12))
+            );
+            scheduler.schedule(
+                    nitroScheduleUpdateTask(
+                            7,
+                            3,
+                            nitroAroundTodayThreadCount,
+                            nitroAroundTodayRateLimit,
+                            Optional.of(Predicates.alwaysTrue()),
+                            "Nitro full fetch -7 to +3 day updater"
+                    ),
+                    RepetitionRules.every(Duration.standardHours(2))
+            );
+            scheduler.schedule(
+                    channelIngestTask().withName("Nitro channel updater"),
+                    RepetitionRules.weekly(
+                            DayOfWeek.MONDAY, LocalTime.MIDNIGHT)
+            );
         }
         if (offScheduleIngestEnabled) {
             scheduler.schedule(
                     nitroOffScheduleIngestTask().withName("Nitro off-schedule content updater"),
-                    RepetitionRules.every(Duration.standardHours(3)));
+                    RepetitionRules.every(Duration.standardHours(3))
+            );
         }
     }
 
-    private ScheduledTask nitroScheduleUpdateTask(int back, int forward, Integer threadCount, Integer rateLimit, Optional<Predicate<Item>> fullFetchPermittedPredicate) {
+    private ScheduledTask nitroScheduleUpdateTask(
+            int back,
+            int forward,
+            Integer threadCount,
+            Integer rateLimit,
+            Optional<Predicate<Item>> fullFetchPermittedPredicate,
+            String taskName
+    ) {
         DayRangeChannelDaySupplier drcds = new DayRangeChannelDaySupplier(bbcChannelSupplier(), dayRangeSupplier(back, forward));
+
         ExecutorService executor = Executors.newFixedThreadPool(threadCount, nitroThreadFactory);
-        return new ChannelDayProcessingTask(executor, drcds, nitroChannelDayProcessor(rateLimit, fullFetchPermittedPredicate),
-                null, jobFailureThresholdPercent);
+
+        return new ChannelDayProcessingTask(
+                executor,
+                drcds,
+                nitroChannelDayProcessor(rateLimit, fullFetchPermittedPredicate),
+                null,
+                OwlTelescopeReporters.BBC_NITRO_INGEST,
+                jobFailureThresholdPercent
+        )
+                .withName(taskName);
     }
 
     private ScheduledTask nitroOffScheduleIngestTask() {
@@ -149,25 +215,40 @@ public class BbcNitroModule {
                 channelWriter,
                 localOrRemoteNitroFetcher(
                         glycerin,
-                        Optional.of(Predicates.<Item>alwaysTrue())
+                        Optional.of(Predicates.alwaysTrue())
                 )
         );
     }
 
     @Bean
     ScheduleDayUpdateController nitroScheduleUpdateController() {
-        return new ScheduleDayUpdateController(channelResolver,
-                            nitroChannelDayProcessor(nitroTodayRateLimit,
-                            Optional.of(Predicates.<Item>alwaysTrue())));
+        return new ScheduleDayUpdateController(
+                channelResolver,
+                nitroChannelDayProcessor(
+                        nitroTodayRateLimit,
+                        Optional.of(Predicates.alwaysTrue())
+                )
+        );
     }
 
-    ChannelDayProcessor nitroChannelDayProcessor(Integer rateLimit, Optional<Predicate<Item>> fullFetchPermitted) {
+    ChannelDayProcessor nitroChannelDayProcessor(
+            Integer rateLimit,
+            Optional<Predicate<Item>> fullFetchPermitted
+    ) {
         ContentWriter contentWriter = contentWriter();
-        ScheduleResolverBroadcastTrimmer scheduleTrimmer
-            = new ScheduleResolverBroadcastTrimmer(Publisher.BBC_NITRO, scheduleResolver, contentResolver, contentWriter);
+        ScheduleResolverBroadcastTrimmer scheduleTrimmer = new ScheduleResolverBroadcastTrimmer(
+                Publisher.BBC_NITRO,
+                scheduleResolver,
+                contentResolver,
+                contentWriter
+        );
         Glycerin glycerin = glycerin(rateLimit);
-        return new NitroScheduleDayUpdater(scheduleWriter, scheduleTrimmer,
-                nitroBroadcastHandler(glycerin, fullFetchPermitted, contentWriter), glycerin);
+        return new NitroScheduleDayUpdater(
+                scheduleWriter,
+                scheduleTrimmer,
+                nitroBroadcastHandler(glycerin, fullFetchPermitted, contentWriter),
+                glycerin
+        );
     }
 
     Glycerin glycerin(Integer rateLimit) {
@@ -182,14 +263,23 @@ public class BbcNitroModule {
         return glycerin.build();
     }
 
-    NitroBroadcastHandler<ImmutableList<Optional<ItemRefAndBroadcast>>> nitroBroadcastHandler(Glycerin glycerin,
-            Optional<Predicate<Item>> fullFetchPermitted, ContentWriter contentWriter) {
-        return new ContentUpdatingNitroBroadcastHandler(contentResolver, contentWriter,
-                        localOrRemoteNitroFetcher(glycerin, fullFetchPermitted), pidLock);
+    NitroBroadcastHandler<ImmutableList<Optional<ItemRefAndBroadcast>>> nitroBroadcastHandler(
+            Glycerin glycerin,
+            Optional<Predicate<Item>> fullFetchPermitted,
+            ContentWriter contentWriter
+    ) {
+        return new ContentUpdatingNitroBroadcastHandler(
+                contentResolver,
+                contentWriter,
+                localOrRemoteNitroFetcher(glycerin, fullFetchPermitted),
+                pidLock
+        );
     }
 
-    LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher(Glycerin glycerin,
-            Optional<Predicate<Item>> fullFetchPermitted) {
+    LocalOrRemoteNitroFetcher localOrRemoteNitroFetcher(
+            Glycerin glycerin,
+            Optional<Predicate<Item>> fullFetchPermitted
+    ) {
         if (fullFetchPermitted.isPresent()) {
             return new LocalOrRemoteNitroFetcher(contentResolver, nitroContentAdapter(glycerin), fullFetchPermitted.get());
         } else {

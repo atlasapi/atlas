@@ -4,8 +4,11 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -53,6 +56,12 @@ public class ChannelIngestTask extends ScheduledTask {
 
     @Override
     protected void runTask() {
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+                OwlTelescopeReporters.BBC_NITRO_INGEST_CHANNELS,
+                Event.Type.INGEST
+        );
+        telescope.startReporting();
+
         try {
             progress = UpdateProgress.START;
 
@@ -60,7 +69,7 @@ public class ChannelIngestTask extends ScheduledTask {
             Iterable<Channel> filteredMasterBrands = hydrator.hydrateMasterbrands(masterbrands);
 
             ImmutableMap.Builder<String, Channel> uriToId = ImmutableMap.builder();
-            for (Channel channel : writeAndMergeChannels(filteredMasterBrands)) {
+            for (Channel channel : writeAndMergeChannels(filteredMasterBrands, telescope)) {
                 uriToId.put(channel.getUri(), channel);
             }
 
@@ -83,15 +92,17 @@ public class ChannelIngestTask extends ScheduledTask {
                 }
             }
 
-            writeAndMergeChannels(withUris.build());
+            writeAndMergeChannels(withUris.build(), telescope);
 
             reportStatus(progress.toString());
         } catch (GlycerinException e) {
             throw Throwables.propagate(e);
+        } finally {
+            telescope.endReporting();
         }
     }
 
-    private Iterable<Channel> writeAndMergeChannels(Iterable<Channel> channels) {
+    private Iterable<Channel> writeAndMergeChannels(Iterable<Channel> channels, OwlTelescopeReporter telescope) {
         ImmutableList.Builder<Channel> written = ImmutableList.builder();
         for (Channel channel : channels) {
             Maybe<Channel> existing = channelResolver.fromUri(channel.getCanonicalUri());
@@ -131,14 +142,17 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setAliases(channel.getAliases());
 
                     written.add(channelWriter.createOrUpdate(existingChannel));
+                    telescope.reportSuccessfulEvent(existingChannel.getId(), existingChannel.getAliases(), channel);
 
                     log.debug("Writing merged channel {}", existingChannel);
                 } else {
                     written.add(channelWriter.createOrUpdate(channel));
+                    telescope.reportSuccessfulEvent(channel.getId(), channel.getAliases(), channel);
                 }
                 progress = progress.reduce(UpdateProgress.SUCCESS);
             } catch (Exception e) {
                 log.error("Failed to write channel {} - {}", channel.getCanonicalUri(), e);
+                telescope.reportFailedEvent("Failed to write channel (" + e.getMessage() + ")", channel);
                 progress = progress.reduce(UpdateProgress.FAILURE);
             }
         }

@@ -102,7 +102,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         telescope.reportSuccessfulEvent(
                 content.getId(),
                 content.getAliases(),
-                content
+                desc
         );
 
         result.strongEquivalences().values().forEach(

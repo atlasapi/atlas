@@ -85,12 +85,21 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         Iterator<LocalDate> dayIterator = Lists.reverse(Lists.newArrayList(range.iterator()))
                 .iterator();
         LocalDate start, end;
+
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+                OwlTelescopeReporters.CHANNEL_SCHEDULE_EQUIVALENCE,
+                Event.Type.EQUIVALENCE
+        );
+
+        telescope.startReporting();
         
         while(dayIterator.hasNext()) {
             start = dayIterator.next();
             end = start.plusDays(1);
-            progress = progress.reduce(equivalateSchedule(start, end));
+            progress = progress.reduce(equivalateSchedule(start, end, telescope));
         }
+
+        telescope.endReporting();
         
         reportStatus(String.format(
                 "Finished. %d Items processed, %d failed",
@@ -99,15 +108,12 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
         ));
     }
 
-    public UpdateProgress equivalateSchedule(LocalDate start, LocalDate end) {
+    public UpdateProgress equivalateSchedule(
+            LocalDate start,
+            LocalDate end,
+            OwlTelescopeReporter telescope
+    ) {
         UpdateProgress progress = UpdateProgress.START;
-
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
-                OwlTelescopeReporters.CHANNEL_SCHEDULE_EQUIVALENCE,
-                Event.Type.EQUIVALENCE
-        );
-
-        telescope.startReporting();
 
         for (Publisher publisher : publishers) {
             for (Channel channel : channelsSupplier.get()) {
@@ -150,8 +156,6 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
 
             }   
         }
-
-        telescope.endReporting();
 
         return progress;
     }

@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.math.BigInteger;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Brand;
@@ -17,10 +18,13 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroBroadcastExtractor;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.telescope.TelescopeProxy;
+import org.atlasapi.telescope.TelescopeUtilityMethods;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
@@ -51,6 +55,8 @@ public class ContentUpdatingNitroBroadcastHandler
     private final ContentWriter writer;
     private final LocalOrRemoteNitroFetcher localOrRemoteFetcher;
     private final GroupLock<String> lock;
+    //To report to telescope, we need atlasIds (which are created with the codec below).
+    NumberToShortStringCodec idCodec;
 
     private final NitroBroadcastExtractor broadcastExtractor = new NitroBroadcastExtractor();
 
@@ -59,12 +65,13 @@ public class ContentUpdatingNitroBroadcastHandler
         this.writer = writer;
         this.localOrRemoteFetcher = localOrRemoteNitroFetcher;
         this.lock = lock;
+        this.idCodec = SubstitutionTableNumberCodec.lowerCaseOnly();
     }
 
     @Override
     public ImmutableList<Optional<ItemRefAndBroadcast>> handle(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
-            OwlTelescopeReporter telescope) throws NitroException {
+            TelescopeProxy telescope) throws NitroException {
 
         Set<String> itemIds = itemIds(nitroBroadcasts);
         Set<String> containerIds = ImmutableSet.of();
@@ -133,7 +140,7 @@ public class ContentUpdatingNitroBroadcastHandler
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
             ResolveOrFetchResult<Item> items, Iterable<Series> series,
             Iterable<Brand> brands,
-            OwlTelescopeReporter telescope) {
+            TelescopeProxy telescope) {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
         ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
 
@@ -166,12 +173,12 @@ public class ContentUpdatingNitroBroadcastHandler
                     //report to telescope
                     if (brand.getId() != null) {
                         telescope.reportSuccessfulEvent(
-                                brand.getId(),
-                                brand.getAliases(),
+                                idCodec.encode(BigInteger.valueOf(brand.getId())),
+                                TelescopeUtilityMethods.getAliases(brand.getAliases()),
                                 nitroBroadcast
                         );
                     } else {
-                        telescope.reportFailedEvent(
+                        telescope.reportFailedEventWithWarning(
                                 "Atlas did not return an id after attempting to create or update this Brand",
                                 nitroBroadcast
                         );
@@ -184,13 +191,13 @@ public class ContentUpdatingNitroBroadcastHandler
                     //report to telescope
                     if (sery.getId() != null) {
                         telescope.reportSuccessfulEvent(
-                                sery.getId(),
-                                sery.getAliases(),
+                                idCodec.encode(BigInteger.valueOf(sery.getId())),
+                                TelescopeUtilityMethods.getAliases(sery.getAliases()),
                                 nitroBroadcast
                         );
                     } else {
-                        telescope.reportFailedEvent(
-                                "Atlas did not return an id after attempting to create or update this Series",
+                        telescope.reportFailedEventWithWarning(
+                                "Atlas did not return an id after attempting to create or update these Series",
                                 nitroBroadcast
                         );
                     }
@@ -200,12 +207,12 @@ public class ContentUpdatingNitroBroadcastHandler
                 //report to telescope
                 if (item.getId() != null) {
                     telescope.reportSuccessfulEvent(
-                            item.getId(),
-                            item.getAliases(),
+                            idCodec.encode(BigInteger.valueOf(item.getId())),
+                            TelescopeUtilityMethods.getAliases(item.getAliases()),
                             nitroBroadcast
                     );
                 } else {
-                    telescope.reportFailedEvent(
+                    telescope.reportFailedEventWithWarning(
                             "Atlas did not return an id after attempting to create or update this Item",
                             nitroBroadcast
                     );
@@ -213,9 +220,15 @@ public class ContentUpdatingNitroBroadcastHandler
 
                 results.add(Optional.of(new ItemRefAndBroadcast(item, broadcast.get())));
             } catch (Exception e) {
-                log.error(nitroBroadcast.getPid(), e);
-                telescope.reportFailedEvent(
-                        e.getClass().getSimpleName() + " was thrown while writing to atlas. (" + e.getMessage() + ")",
+                log.error(
+                        "taskId={}, ingesterName={}, NitroBroadcastPid={}",
+                        telescope.getTaskId(),
+                        telescope.getIngesterName(),
+                        nitroBroadcast.getPid(),
+                        e
+                );
+                telescope.reportFailedEventWithError(
+                        "There was an exception while writing to atlas.",
                         nitroBroadcast
                 );
                 results.add(Optional.<ItemRefAndBroadcast>absent());

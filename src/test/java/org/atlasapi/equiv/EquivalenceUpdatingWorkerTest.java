@@ -2,7 +2,6 @@ package org.atlasapi.equiv;
 
 import static org.atlasapi.media.entity.Publisher.BBC;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
@@ -21,13 +20,10 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
 import org.joda.time.DateTime;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
 import com.google.common.base.Predicate;
@@ -53,7 +49,6 @@ public class EquivalenceUpdatingWorkerTest {
     private final EquivalenceUpdatingWorker workerThatOnlyUpdatesItems
         = new EquivalenceUpdatingWorker(resolver, 
                 entryStore, resultStore, updater, Predicates.<Content>and(filter));
-    @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
     
     @Test
     public void testWorkerThatOnlyUpdatesItemsUpdatesAnItem() {
@@ -69,7 +64,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater).updateEquivalences(eq(item), any(OwlTelescopeReporter.class));
+        verify(updater).updateEquivalences(item);
     }
 
     @Test
@@ -86,7 +81,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(brand, telescope);
+        verify(updater, never()).updateEquivalences(brand);
     }
     
     @Test
@@ -103,7 +98,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(null, telescope);
+        verify(updater, never()).updateEquivalences(null);
     }
 
     @Test
@@ -120,7 +115,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "brand", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(any(Content.class), eq(telescope));
+        verify(updater, never()).updateEquivalences(any(Content.class));
     }
     
     @Test
@@ -137,7 +132,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater).updateEquivalences(eq(item), any(OwlTelescopeReporter.class));
+        verify(updater).updateEquivalences(item);
         
     }
     
@@ -163,7 +158,7 @@ public class EquivalenceUpdatingWorkerTest {
         EntityUpdatedMessage msg = new EntityUpdatedMessage("1", Timestamp.of(1L), eid, "item", "bbc.co.uk");
         workerThatOnlyUpdatesItems.process(msg);
         
-        verify(updater, never()).updateEquivalences(any(Content.class), any(OwlTelescopeReporter.class));
+        verify(updater, never()).updateEquivalences(any(Content.class));
         
     }
     

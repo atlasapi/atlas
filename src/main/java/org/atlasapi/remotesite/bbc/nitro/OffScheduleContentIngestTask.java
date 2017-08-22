@@ -14,8 +14,6 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
@@ -24,7 +22,6 @@ import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
@@ -125,12 +122,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
         reportStatus("Writing items");
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
-                OwlTelescopeReporters.BBC_NITRO_INGEST_OFFSCHEDULE,
-                Event.Type.INGEST
-        );
-        telescope.startReporting();
-
         for (List<Item> items : fetched) {
             reportStatus("Locking item IDs");
             Set<String> episodeIds = ImmutableSet.of();
@@ -164,7 +155,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 );
 
                 reportStatus("Writing items");
-                writeContent(resolvedItems, series, brands, telescope);
+                writeContent(resolvedItems, series, brands);
             } catch (NitroException e) {
                 log.error("Item fetching failed", e);
                 throw Throwables.propagate(e);
@@ -181,14 +172,12 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 ));
             }
         }
-        telescope.endReporting();
     }
 
     private void writeContent(
             ResolveOrFetchResult<Item> items,
             @Nullable Iterable<Series> series,
-            @Nullable Iterable<Brand> brands,
-            OwlTelescopeReporter telescope
+            @Nullable Iterable<Brand> brands
     ) {
         ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
         ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
@@ -199,58 +188,15 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 Brand brand = getBrand(item, brandIndex);
                 if (brand != null) {
                     contentWriter.createOrUpdate(brand);
-                    //report to telescope
-                    if (brand.getId() != null) {
-                        telescope.reportSuccessfulEvent(
-                                brand.getId(),
-                                brand.getAliases(),
-                                item
-                        );
-                    } else {
-                        telescope.reportFailedEvent(
-                                "Atlas did not return an id after attempting to create or update this Brand",
-                                item
-                        );
-                    }
                 }
 
                 Series sery = getSeries(item, seriesIndex);
                 if (sery != null) {
                     contentWriter.createOrUpdate(sery);
-                    //report to telescope
-                    if (sery.getId() != null) {
-                        telescope.reportSuccessfulEvent(
-                                sery.getId(),
-                                sery.getAliases(),
-                                item
-                        );
-                    } else {
-                        telescope.reportFailedEvent(
-                                "Atlas did not return an id after attempting to create or update this Series",
-                                item
-                        );
-                    }
                 }
                 contentWriter.createOrUpdate(item);
-                //report to telescope
-                if (item.getId() != null) {
-                    telescope.reportSuccessfulEvent(
-                            item.getId(),
-                            item.getAliases(),
-                            item
-                    );
-                } else {
-                    telescope.reportFailedEvent(
-                            "Atlas did not return an id after attempting to create or update this Item",
-                            item
-                    );
-                }
                 written++;
             } catch (Exception e) {
-                telescope.reportFailedEvent(
-                        "This item could not be written to Atlas. id=" + item.getId() + " (" + e.getMessage() + ")",
-                        item
-                );
                 log.error(item.getCanonicalUri(), e);
                 failed++;
             }

@@ -54,9 +54,9 @@ public class TheSpacePlaylistProcessor {
 
     public void process(JsonNode item) throws Exception {
         ObjectMapper mapper = new ObjectMapper();
-
+        //
         String pid = item.get("pid").asText();
-        
+        //
         ContentGroup playlist = (ContentGroup) groupResolver.findByCanonicalUris(ImmutableSet.of(getItemsUri(pid))).getFirstValue().valueOrNull();
         if (playlist == null) {
             playlist = new ContentGroup(getItemsUri(pid));

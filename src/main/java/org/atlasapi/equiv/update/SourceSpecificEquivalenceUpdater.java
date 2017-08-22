@@ -10,7 +10,6 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -40,7 +39,7 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public boolean updateEquivalences(Content content, OwlTelescopeReporter telescope) {
+    public boolean updateEquivalences(Content content) {
         checkArgument(
                 content.getPublisher().equals(source),
                 "%s can't update data for %s", source,
@@ -48,13 +47,13 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
         );
 
         if (content instanceof Item) {
-            return update(itemUpdater, (Item) content, telescope);
+            return update(itemUpdater, (Item) content);
         } else if (content instanceof Brand) {
-            return update(topLevelContainerUpdater, (Container) content, telescope);
+            return update(topLevelContainerUpdater, (Container) content);
         } else if (topLevelSeries(content)) {
-            return update(topLevelContainerUpdater, (Container) content, telescope);
+            return update(topLevelContainerUpdater, (Container) content);
         } else if (!topLevelSeries(content)) {
-            return update(nonTopLevelContainerUpdater, (Container) content, telescope);
+            return update(nonTopLevelContainerUpdater, (Container) content);
         } else {
             throw new IllegalStateException(String.format(
                     "No updater for %s for %s",
@@ -86,9 +85,9 @@ public class SourceSpecificEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     private <T> boolean update(EquivalenceUpdater<T> updater,
-            T content, OwlTelescopeReporter telescope) {
+            T content) {
         checkNotNull(updater, "No updater for %s %s", source, content);
-        return updater.updateEquivalences(content, telescope);
+        return updater.updateEquivalences(content);
     }
 
     public static final class Builder {

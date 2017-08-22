@@ -12,8 +12,6 @@ import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.ArgumentCaptor;
@@ -36,7 +34,6 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
     @Mock private ChannelWriter channelWriter = mock(ChannelWriter.class);
     @Mock private ChannelResolver channelResolver = mock(ChannelResolver.class);
     @Mock private ChannelEquivalenceUpdaterMetadata metadata = mock(ChannelEquivalenceUpdaterMetadata.class);
-    @Mock private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
 
     private ChannelMatcher btChannelMatcher = BtChannelMatcher.create(Publisher.BT_TV_CHANNELS);
     private SubstitutionTableNumberCodec codec = SubstitutionTableNumberCodec.lowerCaseOnly();
@@ -60,7 +57,7 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
 
     @Test (expected = IllegalArgumentException.class)
     public void throwsExceptionWhenWrongSourcedChannel() throws Exception {
-        btChannelsUpdater.updateEquivalences(getChannel(Publisher.BT_TV_CHANNELS_TEST1), telescope);
+        btChannelsUpdater.updateEquivalences(getChannel(Publisher.BT_TV_CHANNELS_TEST1));
     }
 
     @Test
@@ -71,7 +68,7 @@ public class SourceSpecificChannelEquivalenceUpdaterTest {
         Channel subjectChannel = getChannel(10L, Publisher.BT_TV_CHANNELS, 30L);
         Channel candidateChannel = getChannel(30L, Publisher.METABROADCAST, 30L);
 
-        assertTrue(btChannelsUpdater.updateEquivalences(subjectChannel, telescope));
+        assertTrue(btChannelsUpdater.updateEquivalences(subjectChannel));
 
         verify(channelResolver).allChannels(any(ChannelQuery.class));
         verify(channelWriter, times(2)).createOrUpdate(writtenChannelCaptor.capture());

@@ -10,8 +10,6 @@ import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.TelescopeUtilityMethodsAtlas;
 
 import java.util.Optional;
 import java.util.Set;
@@ -36,7 +34,7 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
     }
 
     @Override
-    public boolean updateEquivalences(Channel subject, OwlTelescopeReporter telescope) {
+    public boolean updateEquivalences(Channel subject) {
         verify(subject, publisher);
 
         Optional<Channel> potentialCandidate = StreamSupport.stream(
@@ -50,17 +48,13 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
                 .findFirst();
 
         potentialCandidate.ifPresent(candidate ->
-                setAndUpdateEquivalents(candidate, subject, telescope)
+                setAndUpdateEquivalents(candidate, subject)
         );
 
         return true;
     }
 
-    private void setAndUpdateEquivalents(
-            Channel candidate,
-            Channel subject,
-            OwlTelescopeReporter telescope
-    ) {
+    private void setAndUpdateEquivalents(Channel candidate, Channel subject) {
 
         ChannelRef subjectRef = subject.toChannelRef();
         ChannelRef candidateRef = candidate.toChannelRef();
@@ -75,17 +69,6 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
             channelWriter.createOrUpdate(subject);
         }
 
-        telescope.reportSuccessfulEvent(
-                subject.getId(),
-                subject.getAliases(),
-                subject
-        );
-
-        telescope.reportSuccessfulEvent(
-                candidate.getId(),
-                candidate.getAliases(),
-                candidate
-        );
     }
 
     private void verify(Channel channel, Publisher publisher) {

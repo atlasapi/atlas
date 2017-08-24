@@ -26,6 +26,8 @@ end_time: the endtime of the channel in xsd:dateTime format. The last prog_data 
 	channel_id CDATA #REQUIRED
 	start_time CDATA #REQUIRED
 	end_time CDATA #REQUIRED
+	time_shifted (yes | no) "no"
+	hd (yes | no) "no"
 >
 
 <!-- channel logo -->
@@ -239,11 +241,12 @@ person_id: A unique id for this person
 	stereo: the programme in stereo.
 	subtitles: the programme carries Teletext or Ceefax subtitles.
 	repeat: the programme a repeat.
-	revised repeat: the programme a revised repeat.
+	revised repeat: the programme is a revised repeat.
 	bw: the programme broadcast in Black and White.
 	premiere: this a broadcast premiere.
-    new_episode: this is the first showing of this programme on this channel.
-    new_series: this is the first episode of a news series of this programme.
+    	new_episode: this is the first showing of this programme on this channel.
+    	new_series: this is the first episode of a news series of this programme.
+    	new_one_off: one off special of this programme.
 	last_in_series: this is the last in a series of showings of this programme.
 	surround: the programme is being broadcast in surround sound.
 	widescreen: the programme being shown in widescreen format.
@@ -256,12 +259,12 @@ person_id: A unique id for this person
 	live: this is a live broadcast
 	as_live: this programme is being shown as-live
 	follow_on: this is a follow_on programme. (The programme follows the previous 
-	programme but doesn't have an exact broadcast time). In the xml, the time
-	field will contain the time of the previous programme. 
+	continued: this is a flag for a programme that is split on a schedule 
 	tv_movie: this programme is a made-for-tv movie
 	web_choice: RT web choice
 	special: this programme is part of a series but should generally be referred to by the episode title rather than the series title. E.g. "The X-Factor Live Final", "Never Mind the Buzzcocks Christmas Special". E.g. if displaying these programmes on a schedule list, the episode titles should be prominent. 
 	three_d: the programme employs techniques of 3D presentation.
+
 	 
 -->
 <!ELEMENT attr EMPTY>
@@ -287,7 +290,7 @@ person_id: A unique id for this person
 	live (yes | no) "no"
 	as_live (yes | no) "no"
 	follow_on (yes | no) "no"
-    continued (yes | no) "no"
+	continued (yes | no) "no"
 	choice (yes | no) "no"
 	familychoice (yes | no) "no"
 	tv_movie (yes | no) "no"

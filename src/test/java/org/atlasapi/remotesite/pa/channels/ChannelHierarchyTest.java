@@ -92,6 +92,7 @@ public class ChannelHierarchyTest {
         assertTrue(createdChannel.getHighDefinition());
         assertTrue(createdChannel.getRegional());
         assertEquals(Duration.standardSeconds(3600), createdChannel.getTimeshift());
+        assertTrue(createdChannel.isTimeshifted());
     }
     
     @Test
@@ -220,6 +221,7 @@ public class ChannelHierarchyTest {
                 && Objects.equal(a.getHighDefinition(), b.getHighDefinition())
                 && Objects.equal(a.getRegional(), b.getRegional())
                 && Objects.equal(a.getTimeshift(), b.getTimeshift())
+                && Objects.equal(a.isTimeshifted(), b.isTimeshifted())
                 && Objects.equal(a.getVariations(), b.getVariations())
                 && Objects.equal(a.getParent(), b.getParent())
                 && Objects.equal(a.getStartDate(), b.getStartDate());

@@ -115,6 +115,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setHighDefinition(channel.getHighDefinition());
                     existingChannel.setRegional(channel.getRegional());
                     existingChannel.setTimeshift(channel.getTimeshift());
+                    existingChannel.setIsTimeshifted(channel.isTimeshifted());
                     existingChannel.setGenres(channel.getGenres());
                     existingChannel.setAvailableFrom(
                             Sets.union(

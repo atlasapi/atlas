@@ -91,6 +91,7 @@ public class ChannelSimplifier {
         if (input.getTimeshift() != null) {
             simple.setTimeshift(input.getTimeshift().getStandardSeconds());
         }
+        simple.setIsTimeshifted(input.isTimeshifted());
         simple.setTitle(input.getTitle());
         Image image = input.getImage();
         if (image != null) {

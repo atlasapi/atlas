@@ -179,6 +179,7 @@ public class PaChannelDataHandler {
             existingChannel.setHighDefinition(newChannel.getHighDefinition());
             existingChannel.setRegional(newChannel.getRegional());
             existingChannel.setTimeshift(newChannel.getTimeshift());
+            existingChannel.setIsTimeshifted(newChannel.isTimeshifted());
             existingChannel.setGenres(newChannel.getGenres());
             existingChannel.setAvailableFrom(Sets.union(
                     existingChannel.getAvailableFrom(),

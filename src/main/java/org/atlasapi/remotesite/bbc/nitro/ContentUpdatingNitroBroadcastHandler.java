@@ -70,7 +70,7 @@ public class ContentUpdatingNitroBroadcastHandler
         try {
             lock.lock(itemIds);
             ImmutableSet<ModelWithPayload<Item>> items =
-                    localOrRemoteFetcher.resolveOrFetchItem( nitroBroadcasts , telescope);
+                    localOrRemoteFetcher.resolveOrFetchItem( nitroBroadcasts );
 
             containerIds = topLevelContainerIds(items);
             lock.lock(containerIds);
@@ -99,6 +99,11 @@ public class ContentUpdatingNitroBroadcastHandler
 
             return writeContent(nitroBroadcasts, items, series, brands, telescope);
         } catch (InterruptedException ie) {
+            return ImmutableList.of();
+        } catch (Exception e) {
+            telescope.reportFailedEvent(
+                    "An exception has prevented handling of Nitro Broadcasts (" + e.toString() + ")",
+                    nitroBroadcasts);
             return ImmutableList.of();
         } finally {
             lock.unlock(itemIds);

@@ -165,25 +165,21 @@ public class LocalOrRemoteNitroFetcher {
     }
 
     public ImmutableSet<ModelWithPayload<Item>> resolveOrFetchItem(
-            Iterable<Broadcast> broadcasts,
-            OwlTelescopeReporter telescope)
+            Iterable<Broadcast> broadcasts)
             throws NitroException {
 
         if (Iterables.isEmpty(broadcasts)) {
             return ImmutableSet.of();
         }
         Iterable<PidReference> episodeRefs = toEpisodeRefs(broadcasts);
-        ImmutableSet<String> itemUris = toItemUris(episodeRefs, telescope);
+        ImmutableSet<String> itemUris = toItemUris(episodeRefs);
         ResolvedContent resolvedContent = resolve(itemUris);
         ImmutableListMultimap<String, Broadcast> broadcastIndex = buildBroadcastIndex(broadcasts);
 
         Set<PidReference> toFetch = Sets.newHashSet();
         for (PidReference pidReference : episodeRefs) {
-            Optional<String> uri = toItemUri(pidReference, telescope);
-            if(!uri.isPresent()){
-                continue; //no reason to log to telescope, toItemUri has already done that.
-            }
-            Optional<Identified> id = resolvedContent.asMap().get(uri.get()).toOptional();
+            String uri = toItemUri(pidReference);
+            Optional<Identified> id = resolvedContent.asMap().get(uri).toOptional();
 
             if (!id.isPresent() || fullFetchPermitted.apply((Item) id.get())) {
                 log.trace("Will fetch item with PID reference {} Nitro", pidReference.getPid());
@@ -252,27 +248,15 @@ public class LocalOrRemoteNitroFetcher {
     }
 
     private ImmutableSet<String> toItemUris(
-            Iterable<PidReference> pidRefs,
-            OwlTelescopeReporter telescope) {
+            Iterable<PidReference> pidRefs) {
 
         return StreamSupport.stream(pidRefs.spliterator(), false)
-                .map(input-> toItemUri(input, telescope))
-                .filter(Optional::isPresent)
-                .map(Optional::get)
+                .map(this::toItemUri)
                 .collect(MoreCollectors.toImmutableSet());
     }
 
-    private Optional<String> toItemUri(PidReference pidReference, OwlTelescopeReporter telescope) {
-        try {
-            return Optional.of(BbcFeeds.nitroUriForPid(pidReference.getPid()));
-        } catch (IllegalArgumentException e) {
-            //this is definitely not the right place to be reporting to telescope
-            //but it caused the less trouble doing so. If you need to use this method for anything
-            //different, consider propagating the proper information to report when the pid is
-            //actually used, rather than where it is converted to a uri.
-            telescope.reportFailedEvent("Pid is invalid (" + e.toString() + ")", pidReference);
-            return Optional.empty();
-        }
+    private String toItemUri(PidReference pidReference) {
+      return BbcFeeds.nitroUriForPid(pidReference.getPid());
     }
 
     private Iterable<PidReference> toEpisodeRefs(Iterable<Broadcast> broadcasts) {

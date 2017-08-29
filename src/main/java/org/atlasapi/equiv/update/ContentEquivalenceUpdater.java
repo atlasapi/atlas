@@ -14,6 +14,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredEquivalentsMerger;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
@@ -22,6 +23,8 @@ import org.atlasapi.equiv.update.metadata.ContentEquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.TelescopeUtilityMethodsAtlas;
 
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -77,7 +80,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     @Override
-    public boolean updateEquivalences(T content) {
+    public boolean updateEquivalences(T content, OwlTelescopeReporter telescope) {
         ReadableDescription desc = new DefaultDescription();
 
         List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
@@ -95,6 +98,23 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         if (handledWithStateChange) {
             messenger.sendMessage(result);
         }
+
+        telescope.reportSuccessfulEvent(
+                content.getId(),
+                content.getAliases(),
+                desc
+        );
+
+        result.strongEquivalences().values().forEach(
+                strong -> {
+                        Content candidate = strong.candidate();
+                        telescope.reportSuccessfulEvent(
+                                candidate.getId(),
+                                candidate.getAliases(),
+                                desc
+                        );
+                }
+        );
 
         return !result.combinedEquivalences().candidates().isEmpty();
     }

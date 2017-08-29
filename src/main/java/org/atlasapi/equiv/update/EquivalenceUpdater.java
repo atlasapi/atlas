@@ -4,10 +4,12 @@ import java.util.Set;
 
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+
 
 public interface EquivalenceUpdater<T> {
 
-    boolean updateEquivalences(T subject);
+    boolean updateEquivalences(T subject, OwlTelescopeReporter telescope);
 
     EquivalenceUpdaterMetadata getMetadata(Set<Publisher> sources);
 }

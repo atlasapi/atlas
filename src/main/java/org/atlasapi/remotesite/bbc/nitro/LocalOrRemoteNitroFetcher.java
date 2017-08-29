@@ -4,6 +4,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
+import java.util.stream.Collectors;
 import java.util.stream.StreamSupport;
 
 import org.atlasapi.media.entity.Brand;
@@ -464,10 +465,14 @@ public class LocalOrRemoteNitroFetcher {
 
     /**
      * Get a Map using the {@link Container#TO_URI} as key, and the ModelWithPayload itself as value.
+     * The map is mutable, so items can be removed.
       */
-    public static final <T extends Identified>
-    Map<String, ModelWithPayload<T>> getIndex(Iterable<ModelWithPayload<T>> iter) {
-        return Maps.uniqueIndex(iter, item -> item.getModel().getCanonicalUri());
+    public static final <T extends Identified> Map<String, ModelWithPayload<T>> getIndex(
+            Iterable<ModelWithPayload<T>> iter) {
+
+        return StreamSupport.stream(iter.spliterator(), false)
+                .collect(Collectors.toMap( mwp -> mwp.getModel().getCanonicalUri() , mwp -> mwp));
+
     }
     
 }

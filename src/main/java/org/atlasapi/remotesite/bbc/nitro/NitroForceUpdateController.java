@@ -75,48 +75,81 @@ public class NitroForceUpdateController {
             HttpServletResponse response,
             @PathVariable("pid") String pid
     ) throws IOException {
-        Item item;
         OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
                 OwlTelescopeReporters.BBC_NITRO_INGEST_API,
                 Event.Type.INGEST
         );
         telescope.startReporting();
-        try {
-            Iterable<List<Item>> itemListIterable = contentAdapter
-                    .fetchEpisodes(
-                            ProgrammesQuery.builder()
-                                    .withPid(pid)
-                                    .withMixins(
-                                            ANCESTOR_TITLES,
-                                            CONTRIBUTIONS,
-                                            IMAGES,
-                                            GENRE_GROUPINGS,
-                                            AVAILABLE_VERSIONS
-                                    )
-                                    .withPageSize(1)
-                                    .build(),
-                            null
-                    );
 
-            Iterable<Item> allItems = Iterables.concat(itemListIterable);
-            item = Iterables.getOnlyElement(localOrRemoteNitroFetcher.resolveItems(allItems).getAll());
-        } catch (NoSuchElementException e) {
-            log.error("No items found in Nitro for pid {}", pid);
-            response.setStatus(HttpStatusCode.NOT_FOUND.code());
-            response.setContentLength(0);
-            telescope.reportFailedEvent("No items found in Nitro for pid=" + pid, "");
-            telescope.endReporting();
-            return;
-        } catch (NitroException e) {
-            log.error("Failed to get Nitro item {}", pid, e);
-            writeServerErrorWithStack(response, e);
+        Iterable<List<ModelWithPayload<Item>>> itemListIterable = null;
+        ModelWithPayload<Item> itemWithPayload;
+        try { //to catch generic exceptions, and properly close telescope.
+            ImmutableSet<ModelWithPayload<Item>> resolvedItems;
+            try {
+                itemListIterable = contentAdapter
+                        .fetchEpisodes(
+                                ProgrammesQuery.builder()
+                                        .withPid(pid)
+                                        .withMixins(
+                                                ANCESTOR_TITLES,
+                                                CONTRIBUTIONS,
+                                                IMAGES,
+                                                GENRE_GROUPINGS,
+                                                AVAILABLE_VERSIONS
+                                        )
+                                        .withPageSize(1)
+                                        .build(),
+                                null
+                        );
+
+                Iterable<ModelWithPayload<Item>> allItems = Iterables.concat(itemListIterable);
+                ModelWithPayload<Item> tmpItemWithPayload = Iterables.getOnlyElement(allItems);
+                resolvedItems = localOrRemoteNitroFetcher.resolveItems(ImmutableList.of(
+                        tmpItemWithPayload));
+                itemWithPayload = Iterables.getOnlyElement(resolvedItems);
+
+            } catch (NitroException e) {
+                log.error("Failed to get Nitro item {}", pid, e);
+                writeServerErrorWithStack(response, e);
+                telescope.reportFailedEvent(
+                        "The request at 'bbc/nitro/merge/content/"+pid+"' failed. "+
+                        " (" + e.getMessage() + ")");
+                telescope.endReporting();
+                return;
+            } catch (NoSuchElementException e) {
+                log.error("No items found in Nitro for pid {}", pid);
+                response.setStatus(HttpStatusCode.NOT_FOUND.code());
+                response.setContentLength(0);
+                telescope.reportFailedEvent(
+                        "The request at 'bbc/nitro/merge/content/"+pid+"' failed. "+
+                        "No items found in Nitro for pid=" + pid);
+                telescope.endReporting();
+                return;
+            } catch (IllegalArgumentException e) {
+                //this might also be caused if resolved items dont merge properly
+                String message = String.format(
+                        "The request at 'bbc/nitro/merge/content/"+pid+"' failed. "+
+                        "Got more than 1 item from Nitro for pid %s", pid);
+                log.error(message, e);
+                telescope.reportFailedEvent(message, itemListIterable);
+                response.setStatus(HttpStatusCode.SERVER_ERROR.code());
+                response.setContentLength(message.length());
+                response.getWriter().write(message);
+                telescope.endReporting();
+                return;
+            }
+
+        } catch (Exception e) {
+            log.error("Exception while getting item for pid={}", pid, e);
             telescope.reportFailedEvent(
-                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")", "");
+                    "The request at 'bbc/nitro/merge/content/"+pid+"' failed. "+
+                    " (" + e.toString() + ")");
+            writeServerErrorWithStack(response, e);
             telescope.endReporting();
             return;
         }
 
-        createOrUpdateItem(response, pid, item, telescope);
+        createOrUpdateItem(response, pid, itemWithPayload, telescope);
         telescope.endReporting();
     }
 
@@ -146,52 +179,61 @@ public class NitroForceUpdateController {
             default:
                 throw new IllegalArgumentException(String.format("Bad type %s", type));
             }
-        }
-        catch (IOException e) {
+        } catch (IOException e) {
             log.error("Failed to get Nitro thing {}", pid, e);
             telescope.reportFailedEvent(
-                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")", "");
+                    "The request at 'bbc/nitro/update/"+type+"/"+pid+"' failed. "+
+                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")");
             writeServerErrorWithStack(response, e);
-        }
-        finally{
+        } catch (Exception e) {
+            log.error("Exception while getting item for pid={}", pid, e);
+            telescope.reportFailedEvent(
+                    "The request at 'bbc/nitro/update/" + type + "/" + pid + "' failed. " +
+                    " (" + e.toString() + ")");
+            writeServerErrorWithStack(response, e);
+        } finally {
             telescope.endReporting();
         }
     }
 
     private void forceUpdateChannel(
             HttpServletResponse response,
-            Function<String, Optional<Channel>> channelResolve,
+            Function<String, Optional<ModelWithPayload<Channel>>> channelResolve,
             String pid,
             OwlTelescopeReporter telescope
     ) throws IOException {
-        Optional<Channel> channel = channelResolve.apply(pid);
-        if (!channel.isPresent()) {
+        Optional<ModelWithPayload<Channel>> channelWithPayload = channelResolve.apply(pid);
+        if (!channelWithPayload.isPresent()) {
             log.error("No items found in Nitro for id {}", pid);
-            telescope.reportFailedEvent("No items found in Nitro for pid=" + pid, "");
+            telescope.reportFailedEvent("No items found in Nitro for pid=" + pid);
             response.setStatus(HttpStatusCode.NOT_FOUND.code());
             response.setContentLength(0);
         } else {
-            channelWriter.createOrUpdate(channel.get());
+            Channel channel = channelWithPayload.get().getModel();
+            channelWriter.createOrUpdate(channel);
             response.setStatus(HttpStatusCode.ACCEPTED.code());
-            if(channel.get().getId() != null) {
+            if(channel.getId() != null) {
                 telescope.reportSuccessfulEvent(
-                        channel.get().getId(),
-                        channel.get().getAliases(),
-                        channel.get());
+                        channel.getId(),
+                        channel.getAliases(),
+                        channelWithPayload.get().getPayload());
             } else {
                 telescope.reportFailedEvent(
                         "There was an error while trying to write this Channel to Atlas. Channel pid=" + pid,
-                        channel.get()
+                        channelWithPayload.get().getPayload()
                 );
             }
         }
     }
 
-    private void forceUpdateContent(HttpServletResponse response, String pid, OwlTelescopeReporter telescope)
+    private void forceUpdateContent(
+            HttpServletResponse response, String pid,
+            OwlTelescopeReporter telescope)
             throws IOException {
-        Item item;
+        Iterable<List<ModelWithPayload<Item>>> itemsWithPayload = null;
+        ModelWithPayload<Item> itemWithPayload = null;
         try {
-            Iterable<List<Item>> items = contentAdapter
+            itemsWithPayload = contentAdapter
                     .fetchEpisodes(
                             ProgrammesQuery.builder()
                                     .withPid(pid)
@@ -206,31 +248,43 @@ public class NitroForceUpdateController {
                                     .build(),
                             null
                     );
-            item = Iterables.getOnlyElement(items).get(0);
-        } catch (NoSuchElementException | IndexOutOfBoundsException e ) {
-            log.error("No items found in Nitro for pid {}", pid);
-            telescope.reportFailedEvent("No items found in Nitro for pid=" + pid, "");
-            response.setStatus(HttpStatusCode.NOT_FOUND.code());
-            response.setContentLength(0);
-            return;
-        } catch (NitroException e) {
+        }catch (NitroException e) {
             log.error("Failed to get Nitro item {}", pid, e);
             telescope.reportFailedEvent(
-                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")", "");
+                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")",
+                    itemsWithPayload);
             writeServerErrorWithStack(response, e);
             return;
         }
 
-        createOrUpdateItem(response, pid, item, telescope);
+        try {
+            itemWithPayload = Iterables.getOnlyElement(itemsWithPayload).get(0);
+        } catch (NoSuchElementException | IndexOutOfBoundsException e ) {
+            log.error("No items found in Nitro for pid {}", pid);
+            telescope.reportFailedEvent("No items found in Nitro for pid=" + pid);
+            response.setStatus(HttpStatusCode.NOT_FOUND.code());
+            response.setContentLength(0);
+            return;
+        } catch (IllegalArgumentException e) {
+            String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
+            log.error(message, e);
+            telescope.reportFailedEvent(message, itemsWithPayload);
+            response.setStatus(HttpStatusCode.SERVER_ERROR.code());
+            response.setContentLength(message.length());
+            response.getWriter().write(message);
+            return;
+        }
+
+        createOrUpdateItem(response, pid, itemWithPayload, telescope);
     }
 
-    private Optional<Channel> fetchService(String sid) {
+    private Optional<ModelWithPayload<Channel>> fetchService(String sid) {
         try {
-            for (Channel candidate : channelAdapter.fetchServices()) {
-                for (Alias alias : candidate.getAliases()) {
+            for (ModelWithPayload<Channel> candidateWithPayload : channelAdapter.fetchServices()) {
+                for (Alias alias : candidateWithPayload.getModel().getAliases()) {
                     if ("bbc:service:sid".equals(alias.getNamespace())
                             && sid.equals(alias.getValue())) {
-                        return Optional.of(candidate);
+                        return Optional.of(candidateWithPayload);
                     }
                 }
             }
@@ -240,13 +294,13 @@ public class NitroForceUpdateController {
         }
     }
 
-    private Optional<Channel> fetchMasterbrand(String mid) {
+    private Optional<ModelWithPayload<Channel>> fetchMasterbrand(String mid) {
         try {
-            for (Channel candidate : channelAdapter.fetchMasterbrands()) {
-                for (Alias alias : candidate.getAliases()) {
+            for (ModelWithPayload<Channel> candidateWithPayload : channelAdapter.fetchMasterbrands()) {
+                for (Alias alias : candidateWithPayload.getModel().getAliases()) {
                     if ("bbc:masterbrand:mid".equals(alias.getNamespace())
                             && mid.equals(alias.getValue())) {
-                        return Optional.of(candidate);
+                        return Optional.of(candidateWithPayload);
                     }
                 }
             }
@@ -259,41 +313,39 @@ public class NitroForceUpdateController {
     private void createOrUpdateItem(
             HttpServletResponse response,
             String pid,
-            Item item,
+            ModelWithPayload<Item> itemWithPayload,
             OwlTelescopeReporter telescope
     ) throws IOException {
 
-        updateBrand(response, pid, item, telescope);
-        updateSeries(response, pid, item, telescope);
+        updateBrand(response, pid, itemWithPayload, telescope);
+        updateSeries(response, pid, itemWithPayload, telescope);
 
-        try {
-            contentWriter.createOrUpdate(item);
-            if (item.getId() != null) {
-                telescope.reportSuccessfulEvent(item.getId(), item.getAliases(), item);
-            } else {
-                telescope.reportFailedEvent(
-                        "There was an error while trying to write this Item to Atlas. Item pid=" + pid,
-                        item);
-            }
-            response.setStatus(HttpStatusCode.ACCEPTED.code());
-        } catch (IllegalArgumentException e) {
-            String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
-            log.error(message);
+        Item item = itemWithPayload.getModel();
+
+        contentWriter.createOrUpdate(item);
+        if (item.getId() != null) {
+            telescope.reportSuccessfulEvent(
+                    item.getId(),
+                    item.getAliases(),
+                    itemWithPayload.getPayload()
+            );
+        } else {
             telescope.reportFailedEvent(
-                    "Got more than 1 item from Nitro for pid=" + pid,
-                    item);
-            response.setStatus(HttpStatusCode.SERVER_ERROR.code());
-            response.setContentLength(message.length());
-            response.getWriter().write(message);
+                    "There was an error while trying to write this Item to Atlas. Item pid=" + pid,
+                    itemWithPayload.getPayload()
+            );
         }
+        response.setStatus(HttpStatusCode.ACCEPTED.code());
+
     }
 
     private void updateSeries(
             HttpServletResponse response,
             String pid,
-            Item item,
+            ModelWithPayload<Item> itemWithPayload,
             OwlTelescopeReporter telescope
     ) throws IOException {
+        Item item = itemWithPayload.getModel();
         if (!(item instanceof Episode)) {
             return;
         }
@@ -314,29 +366,39 @@ public class NitroForceUpdateController {
         seriesPidRef.setResultType("series");
 
         try {
-            ImmutableSet<Series> series;
-            series = contentAdapter.fetchSeries(ImmutableList.of(seriesPidRef));
-            Series onlySeries = Iterables.getOnlyElement(series);
-            contentWriter.createOrUpdate(onlySeries);
-            if (onlySeries.getId() != null) {
-                telescope.reportSuccessfulEvent(onlySeries.getId(), onlySeries.getAliases(), item, onlySeries);
+            ImmutableSet<ModelWithPayload<Series>> seriesWithPayload;
+            seriesWithPayload = contentAdapter.fetchSeries(ImmutableList.of(seriesPidRef));
+            ModelWithPayload<Series> seryWithPayload = Iterables.getOnlyElement(seriesWithPayload);
+            Series series = seryWithPayload.getModel();
+            contentWriter.createOrUpdate(series);
+            if (series.getId() != null) {
+                telescope.reportSuccessfulEvent(
+                        series.getId(),
+                        series.getAliases(),
+                        seryWithPayload.getPayload(), itemWithPayload.getPayload());
             } else {
                 telescope.reportFailedEvent(
-                        "There was an error while trying to write this Series to Atlas. Series pid=" + seriesPid,
-                        item, onlySeries);
+                        "There was an error while trying to write this Series to Atlas. "
+                        + " seriesPid=" + seriesPid + " itemPid=" + pid,
+                        itemWithPayload.getPayload(), seryWithPayload.getPayload());
             }
         } catch (NitroException e) {
             log.error("Failed to get Nitro parent item {}", pid, e);
             writeServerErrorWithStack(response, e);
+            telescope.reportFailedEvent(
+                    "There was an error while trying to write this Series to Atlas. "
+                    + " seriesPid=" + seriesPid + " itemPid=" + pid,
+                    itemWithPayload.getPayload());
         }
     }
 
     private void updateBrand(
             HttpServletResponse response,
             String pid,
-            Item item,
+            ModelWithPayload<Item> itemWithPayload,
             OwlTelescopeReporter telescope
     ) throws IOException {
+        Item item = itemWithPayload.getModel();
         if (item.getContainer() == null) {
             return;
         }
@@ -349,35 +411,40 @@ public class NitroForceUpdateController {
         parentPidRef.setResultType("brand");
 
         try {
-            ImmutableSet<Brand> brand = contentAdapter.fetchBrands(
-                    ImmutableList.of(parentPidRef)
-            );
-
+            ImmutableSet<ModelWithPayload<Brand>> brandsWithPayload =
+                    contentAdapter.fetchBrands(ImmutableList.of(parentPidRef));
             /* handle The Curious Case of Top Level Series (In The Night). The container can
                be a Series, not just a brand, in which case it won't hit the early return
                guard, but it will also obviously not return any brands for the above query.
                That's by design, as Nitro's data model is pretty flexible and allows cases like
                these.
             */
-            if (!brand.isEmpty()) {
-                Brand onlyBrand = Iterables.getOnlyElement(brand);
-                contentWriter.createOrUpdate(onlyBrand);
-                if (onlyBrand.getId() != null) {
+            if (!brandsWithPayload.isEmpty()) {
+                ModelWithPayload<Brand> brandWithPayload = Iterables.getOnlyElement(brandsWithPayload);
+                Brand brand = brandWithPayload.getModel();
+                contentWriter.createOrUpdate(brand);
+                if (brand.getId() != null) {
                     telescope.reportSuccessfulEvent(
-                            onlyBrand.getId(),
-                            onlyBrand.getAliases(),
-                            item, onlyBrand
+                            brand.getId(),
+                            brand.getAliases(),
+                            brandWithPayload.getPayload(), itemWithPayload.getPayload()
                     );
                 } else {
                     telescope.reportFailedEvent(
-                            "There was an error while trying to write this Brand to Atlas. Brand pid=" + parentPid,
-                            item, onlyBrand
+                            "There was an error while trying to write this Brand to Atlas."
+                            + " brandPid=" + parentPid + " itemPid=" + pid,
+                            brandWithPayload.getPayload(), itemWithPayload.getPayload()
                     );
                 }
             }
 
         } catch (NitroException e) {
             log.error("Failed to get Nitro parent item {}", pid, e);
+            telescope.reportFailedEvent(
+                    "There was an error while trying to write this Brand to Atlas. "
+                    + " brandPid=" + parentPid + " itemPid=" + pid,
+                    itemWithPayload.getPayload()
+            );
             writeServerErrorWithStack(response, e);
         }
     }

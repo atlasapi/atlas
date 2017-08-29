@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.bbc.nitro.channels;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
+import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
@@ -65,8 +66,8 @@ public class ChannelIngestTask extends ScheduledTask {
         try {
             progress = UpdateProgress.START;
 
-            ImmutableSet<Channel> masterbrands = channelAdapter.fetchMasterbrands();
-            Iterable<Channel> filteredMasterBrands = hydrator.hydrateMasterbrands(masterbrands);
+            ImmutableSet<ModelWithPayload<Channel>> masterbrands = channelAdapter.fetchMasterbrands();
+            Iterable<ModelWithPayload<Channel>> filteredMasterBrands = hydrator.hydrateMasterbrands(masterbrands);
 
             ImmutableMap.Builder<String, Channel> uriToId = ImmutableMap.builder();
             for (Channel channel : writeAndMergeChannels(filteredMasterBrands, telescope)) {
@@ -75,19 +76,19 @@ public class ChannelIngestTask extends ScheduledTask {
 
             log.info("Wrote masterbrands, moving onto channels");
 
-            ImmutableList<Channel> services = channelAdapter.fetchServices(uriToId.build());
-            Iterable<Channel> filteredServices = hydrator.hydrateServices(services);
+            ImmutableList<ModelWithPayload<Channel>> services = channelAdapter.fetchServices(uriToId.build());
+            Iterable<ModelWithPayload<Channel>> filteredServices = hydrator.hydrateServices(services);
 
-            ImmutableList.Builder<Channel> withUris = ImmutableList.builder();
-            for (Channel channel : filteredServices) {
-                if (channel.getCanonicalUri() != null) {
+            ImmutableList.Builder<ModelWithPayload<Channel>> withUris = ImmutableList.builder();
+            for (ModelWithPayload<Channel> channel : filteredServices) {
+                if (channel.getModel().getCanonicalUri() != null) {
                     withUris.add(channel);
                 } else {
                     log.warn(
                             "Got channel without URI; this generally means it has no DVB locator "
                                     + "in Nitro and no hard-coded override. Ask the BBC for the "
                                     + "corresponding DVB locator. {}",
-                            channel.getAliases()
+                            channel.getModel().getAliases()
                     );
                 }
             }
@@ -96,15 +97,22 @@ public class ChannelIngestTask extends ScheduledTask {
 
             reportStatus(progress.toString());
         } catch (GlycerinException e) {
+            telescope.reportFailedEvent(
+                    "A Glycerin exception prevented this channel ingest task from running properly."
+                    + " (" + e.toString() + ")");
             throw Throwables.propagate(e);
         } finally {
             telescope.endReporting();
         }
     }
 
-    private Iterable<Channel> writeAndMergeChannels(Iterable<Channel> channels, OwlTelescopeReporter telescope) {
+    private Iterable<Channel> writeAndMergeChannels(
+            Iterable<ModelWithPayload<Channel>> channels,
+            OwlTelescopeReporter telescope) {
+
         ImmutableList.Builder<Channel> written = ImmutableList.builder();
-        for (Channel channel : channels) {
+        for (ModelWithPayload<Channel> channelWithPayload : channels) {
+            Channel channel = channelWithPayload.getModel();
             Maybe<Channel> existing = channelResolver.fromUri(channel.getCanonicalUri());
             try {
                 if (existing.hasValue()) {
@@ -143,17 +151,25 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setAliases(channel.getAliases());
 
                     written.add(channelWriter.createOrUpdate(existingChannel));
-                    telescope.reportSuccessfulEvent(existingChannel.getId(), existingChannel.getAliases(), channel);
+                    telescope.reportSuccessfulEvent(
+                            existingChannel.getId(),
+                            existingChannel.getAliases(),
+                            channelWithPayload.getPayload());
 
                     log.debug("Writing merged channel {}", existingChannel);
                 } else {
                     written.add(channelWriter.createOrUpdate(channel));
-                    telescope.reportSuccessfulEvent(channel.getId(), channel.getAliases(), channel);
+                    telescope.reportSuccessfulEvent(
+                            channel.getId(),
+                            channel.getAliases(),
+                            channelWithPayload.getPayload());
                 }
                 progress = progress.reduce(UpdateProgress.SUCCESS);
             } catch (Exception e) {
                 log.error("Failed to write channel {} - {}", channel.getCanonicalUri(), e);
-                telescope.reportFailedEvent("Failed to write channel (" + e.getMessage() + ")", channel);
+                telescope.reportFailedEvent(
+                        "Failed to write channel (" + e.toString() + ")",
+                        channelWithPayload.getPayload());
                 progress = progress.reduce(UpdateProgress.FAILURE);
             }
         }

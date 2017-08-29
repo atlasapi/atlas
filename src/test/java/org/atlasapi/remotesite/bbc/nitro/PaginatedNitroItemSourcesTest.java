@@ -104,7 +104,7 @@ public class PaginatedNitroItemSourcesTest {
     @Test
     public void itemHasCorrectVersions()
             throws GlycerinException, ExecutionException, InterruptedException {
-        Iterator<List<Item>> episodesIterator = paginatedNitroItemSources.iterator();
+        Iterator<List<ModelWithPayload<Item>>> episodesIterator = paginatedNitroItemSources.iterator();
 
         // Setting availabilities
         when(glycerin.execute(any(AvailabilityQuery.class))).thenReturn(availabilityResponse);
@@ -138,9 +138,9 @@ public class PaginatedNitroItemSourcesTest {
         when(version.getVersionOf()).thenReturn(correctPidRef);
         when(version.getPid()).thenReturn(versionPid);
 
-        List<Item> episodes = episodesIterator.next();
+        List<ModelWithPayload<Item>> episodes = episodesIterator.next();
         assertTrue(episodes.size() == 3);
-        assertTrue(episodes.get(0).getVersions().iterator().next().getCanonicalUri()
+        assertTrue(episodes.get(0).getModel().getVersions().iterator().next().getCanonicalUri()
                 .equals(String.format("http://nitro.bbc.co.uk/programmes/%s", versionPid))
         );
     }

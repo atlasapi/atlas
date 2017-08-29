@@ -126,7 +126,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
 
 
     @Override
-    public ImmutableSet<Brand> fetchBrands(Iterable<PidReference> refs) throws NitroException {
+    public ImmutableSet<ModelWithPayload<Brand>> fetchBrands(Iterable<PidReference> refs) throws NitroException {
         if (Iterables.isEmpty(refs)) {
             return ImmutableSet.of();
         }
@@ -136,13 +136,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                     makeProgrammeQueries(refs)
             );
             Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
-            ImmutableSet.Builder<Brand> fetched = ImmutableSet.builder();
+            ImmutableSet.Builder<ModelWithPayload<Brand>> fetched = ImmutableSet.builder();
             for (List<Programme> programmes : currentProgrammes) {
                 for (Programme programme : programmes) {
                     if (programme.isBrand()) {
                         Brand brand = brandExtractor.extract(programme.getAsBrand());
                         brand.setClips(clips.get(brand.getCanonicalUri()));
-                        fetched.add(brand);
+                        ModelWithPayload brandWithPayload = new ModelWithPayload(brand, programme);
+                        fetched.add(brandWithPayload);
                     }
                 }
             }
@@ -159,7 +160,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public ImmutableSet<Series> fetchSeries(Iterable<PidReference> refs) throws NitroException {
+    public ImmutableSet<ModelWithPayload<Series>> fetchSeries(Iterable<PidReference> refs) throws NitroException {
         if (Iterables.isEmpty(refs)) {
             return ImmutableSet.of();
         }
@@ -169,13 +170,14 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
                     makeProgrammeQueries(refs)
             );
             Multimap<String, Clip> clips = clipsAdapter.clipsFor(refs);
-            ImmutableSet.Builder<Series> fetched = ImmutableSet.builder();
+            ImmutableSet.Builder<ModelWithPayload<Series>> fetched = ImmutableSet.builder();
             for (List<Programme> programmes : currentProgrammes) {
                 for (Programme programme : programmes) {
                     if (programme.isSeries()) {
                         Series series = seriesExtractor.extract(programme.getAsSeries());
                         series.setClips(clips.get(series.getCanonicalUri()));
-                        fetched.add(series);
+                        ModelWithPayload<Series> seriesWithPayload = new ModelWithPayload<>(series, programme);
+                        fetched.add(seriesWithPayload);
                     }
                 }
             }
@@ -208,7 +210,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<List<Item>> fetchEpisodes(
+    public Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(
             ProgrammesQuery programmesQuery,
             ImmutableListMultimap<String, Broadcast> broadcasts
     ) throws NitroException {
@@ -225,7 +227,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<List<Item>> fetchEpisodes(Iterable<PidReference> refs)
+    public Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(Iterable<PidReference> refs)
             throws NitroException {
         try {
             Iterable<ProgrammesQuery> programmesQueries = makeProgrammeQueries(refs);
@@ -237,7 +239,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
     }
 
     @Override
-    public Iterable<List<Item>> fetchEpisodes(
+    public Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(
             Iterable<PidReference> refs,
             ImmutableListMultimap<String, Broadcast> broadcasts
     ) throws NitroException {
@@ -250,7 +252,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         }
     }
 
-    private Iterable<List<Item>> fetchEpisodesFromProgrammes(
+    private Iterable<List<ModelWithPayload<Item>>> fetchEpisodesFromProgrammes(
             Iterable<List<Programme>> currentProgrammes,
             @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
     ) throws NitroException, GlycerinException {
@@ -258,7 +260,7 @@ public class GlycerinNitroContentAdapter implements NitroContentAdapter {
         return toItemsListIterable(programmesAsEpisodes, broadcasts);
     }
 
-    private Iterable<List<Item>> toItemsListIterable(
+    private Iterable<List<ModelWithPayload<Item>>> toItemsListIterable(
             Iterable<List<Episode>> episodes,
             @Nullable ImmutableListMultimap<String, Broadcast> broadcasts
     ) throws GlycerinException, NitroException {

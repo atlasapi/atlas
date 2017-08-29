@@ -77,11 +77,15 @@ public class PicksDayUpdater implements ChannelDayProcessor {
     @Override
     public UpdateProgress process(ChannelDay channelDay, OwlTelescopeReporter telescope) throws Exception {
         try {
-            Iterable<Item> picks = concat(transform(scheduleResolver.unmergedSchedule(
-                    channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZone.UTC), 
-                    channelDay.getDay().plusDays(1).toDateTimeAtStartOfDay(DateTimeZone.UTC), 
-                    ImmutableSet.of(channelDay.getChannel()), 
-                    ImmutableSet.of(Publisher.PA)).scheduleChannels(), TO_ITEMS));
+            Iterable<Item> picks = concat(transform(
+                    scheduleResolver.unmergedSchedule(
+                            channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZone.UTC),
+                            channelDay.getDay().plusDays(1).toDateTimeAtStartOfDay(DateTimeZone.UTC),
+                            ImmutableSet.of(channelDay.getChannel()),
+                            ImmutableSet.of(Publisher.PA)
+                    ).scheduleChannels(),
+                    TO_ITEMS
+            ));
             
             // We need to resolve the content to get all broadcasts, since items returned
             // from a schedule request only have a single broadcast corresponding to the
@@ -91,23 +95,20 @@ public class PicksDayUpdater implements ChannelDayProcessor {
                             ImmutableSet.copyOf(Iterables.transform(picks, Identified.TO_URI))
                     ).asMap();
             
-            Iterable<ItemAndBroadcast> itemsAndBroadcasts = Iterables.transform(picks, new Function<Item, ItemAndBroadcast>() {
-
-                @Override
-                public ItemAndBroadcast apply(Item item) {
-                    return new ItemAndBroadcast((Item) resolved.get(item.getCanonicalUri()).requireValue(), 
-                            Maybe.just(Iterables.getOnlyElement(Item.FLATTEN_BROADCASTS.apply(item))));
-                }
-                
-            });
+            Iterable<ItemAndBroadcast> itemsAndBroadcasts = Iterables.transform(
+                    picks,
+                    item -> new ItemAndBroadcast((Item) resolved.get(item.getCanonicalUri()).requireValue(),
+                            Maybe.just(Iterables.getOnlyElement(Item.FLATTEN_BROADCASTS.apply(item)))
+                    )
+            );
             
             addPicksToContentGroup(findPicks(itemsAndBroadcasts), telescope);
             
             return UpdateProgress.SUCCESS;
         } catch (Exception e) {
-            String errorMessage = "Processing " + channelDay.getChannel().getCanonicalUri()
-                                  + " [" + channelDay.getChannel().getTitle() + "] Day "
-                                  + channelDay.getDay().toString();
+            String errorMessage = "Processing '" + channelDay.getChannel().getCanonicalUri() + "' failed. "
+                                  + "Channel title=" + channelDay.getChannel().getTitle() + ". "
+                                  + "Day=" + channelDay.getDay().toString() + ". ";
             log.error(errorMessage, e);
             telescope.reportFailedEvent(errorMessage + " (" + e.getMessage() + ")", channelDay);
             return UpdateProgress.FAILURE;

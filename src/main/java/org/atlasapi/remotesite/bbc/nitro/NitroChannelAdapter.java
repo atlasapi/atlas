@@ -10,10 +10,10 @@ import com.google.common.collect.ImmutableSet;
 
 public interface NitroChannelAdapter {
 
-    ImmutableList<Channel> fetchServices(ImmutableMap<String, Channel> build) throws GlycerinException;
+    ImmutableList<ModelWithPayload<Channel>> fetchServices(ImmutableMap<String, Channel> build) throws GlycerinException;
 
-    ImmutableList<Channel> fetchServices() throws GlycerinException;
+    ImmutableList<ModelWithPayload<Channel>> fetchServices() throws GlycerinException;
 
-    ImmutableSet<Channel> fetchMasterbrands() throws GlycerinException;
+    ImmutableSet<ModelWithPayload<Channel>> fetchMasterbrands() throws GlycerinException;
 
 }

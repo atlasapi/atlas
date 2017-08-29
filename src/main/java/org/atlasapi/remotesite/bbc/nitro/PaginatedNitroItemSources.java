@@ -34,7 +34,7 @@ import com.google.common.util.concurrent.ListeningExecutorService;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-public class PaginatedNitroItemSources implements Iterable<List<Item>> {
+public class PaginatedNitroItemSources implements Iterable<List<ModelWithPayload<Item>>> {
 
     private final Iterable<List<Episode>> episodes;
     private final ListeningExecutorService executor;
@@ -63,7 +63,7 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
     }
 
     @Override
-    public Iterator<List<Item>> iterator() {
+    public Iterator<List<ModelWithPayload<Item>>> iterator() {
         return new NitroItemSourceIterator(
                 episodes,
                 executor,
@@ -75,7 +75,7 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         );
     }
 
-    private static class NitroItemSourceIterator implements Iterator<List<Item>> {
+    private static class NitroItemSourceIterator implements Iterator<List<ModelWithPayload<Item>>> {
 
         private final ListeningExecutorService executor;
         private final Glycerin glycerin;
@@ -109,9 +109,9 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
         }
 
         @Override
-        public List<Item> next() {
+        public List<ModelWithPayload<Item>> next() {
             List<Episode> episodes = episodesIterator.next();
-            ImmutableList.Builder<Item> items = ImmutableList.builder();
+            ImmutableList.Builder<ModelWithPayload<Item>> items = ImmutableList.builder();
 
             ImmutableListMultimap<String, Broadcast> broadcasts =
                     this.broadcasts != null ? this.broadcasts : getBroadcasts(episodes);
@@ -125,7 +125,8 @@ public class PaginatedNitroItemSources implements Iterable<List<Item>> {
                 Item item = itemExtractor.extract(nitroItemSource);
                 List<Clip> clips = getClips(nitroItemSource);
                 item.setClips(clips);
-                items.add(item);
+                ModelWithPayload<Item> itemWithPayload = new ModelWithPayload(item, glycerinEpisode);
+                items.add(itemWithPayload);
             }
 
             return items.build();

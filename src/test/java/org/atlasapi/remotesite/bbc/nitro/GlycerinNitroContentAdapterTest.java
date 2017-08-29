@@ -104,8 +104,8 @@ public class GlycerinNitroContentAdapterTest {
         when(glycerin.execute(any(BroadcastsQuery.class))).thenReturn(broadcastResponse);
         when(glycerin.execute(any(VersionsQuery.class))).thenReturn(versionResponse);
 
-        Iterable<List<Item>> items = contentAdapter.fetchEpisodes(query, null);
-        Item item = Iterables.getFirst(items, null).get(0);
+        Iterable<List<ModelWithPayload<Item>>> items = contentAdapter.fetchEpisodes(query, null);
+        Item item = Iterables.getFirst(items, null).get(0).getModel();
         assertEquals(title, item.getTitle());
     }
 }

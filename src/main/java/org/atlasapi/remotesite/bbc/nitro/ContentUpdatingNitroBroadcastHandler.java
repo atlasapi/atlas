@@ -1,12 +1,13 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import java.util.Map;
 import java.util.Set;
+import java.util.stream.Stream;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
@@ -21,16 +22,13 @@ import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.common.stream.MoreCollectors;
 
-import com.google.common.base.Function;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
-import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -71,24 +69,33 @@ public class ContentUpdatingNitroBroadcastHandler
 
         try {
             lock.lock(itemIds);
-            ResolveOrFetchResult<Item> items = localOrRemoteFetcher.resolveOrFetchItem(
-                    nitroBroadcasts);
+            ImmutableSet<ModelWithPayload<Item>> items =
+                    localOrRemoteFetcher.resolveOrFetchItem( nitroBroadcasts , telescope);
 
-            containerIds = topLevelContainerIds(items.getAll());
+            containerIds = topLevelContainerIds(items);
             lock.lock(containerIds);
 
-            ImmutableSet<Container> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(items
-                    .getAll());
-            ImmutableSet<Container> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(items.getAll());
+            ImmutableSet<ModelWithPayload<Container>> resolvedSeries = localOrRemoteFetcher.resolveOrFetchSeries(items);
+            ImmutableSet<ModelWithPayload<Container>> resolvedBrands = localOrRemoteFetcher.resolveOrFetchBrand(items);
 
-            Iterable<Series> series = Iterables.filter(Iterables.concat(
-                    resolvedSeries,
-                    resolvedBrands
-            ), Series.class);
-            Iterable<Brand> brands = Iterables.filter(Iterables.concat(
-                    resolvedSeries,
-                    resolvedBrands
-            ), Brand.class);
+            Iterable<ModelWithPayload<Container>> seriesAndBrands =
+                    Iterables.concat(resolvedSeries,resolvedBrands);
+
+
+            ImmutableSet<ModelWithPayload<Series>> series =
+                    Stream.concat(resolvedSeries.stream(), resolvedBrands.stream())
+                            .filter(modelAndPayload -> modelAndPayload.getModel() instanceof Series)
+                            //this throws class cast exceptions, but we just checked.
+                            .map(modelAndPayload -> modelAndPayload.asModelType(Series.class))
+                            .collect(MoreCollectors.toImmutableSet());
+
+
+            ImmutableSet<ModelWithPayload<Brand>> brands =
+                    Stream.concat(resolvedSeries.stream(), resolvedBrands.stream())
+                            .filter(modelAndPayload -> modelAndPayload.getModel() instanceof Brand)
+                            //this throws class cast exceptions, but we just checked.
+                            .map(modelAndPayload -> modelAndPayload.asModelType(Brand.class))
+                            .collect(MoreCollectors.toImmutableSet());
 
             return writeContent(nitroBroadcasts, items, series, brands, telescope);
         } catch (InterruptedException ie) {
@@ -103,39 +110,29 @@ public class ContentUpdatingNitroBroadcastHandler
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts) {
         return ImmutableSet.copyOf(Iterables.transform(
                 nitroBroadcasts,
-                new Function<com.metabroadcast.atlas.glycerin.model.Broadcast, String>() {
-
-                    @Override
-                    public String apply(com.metabroadcast.atlas.glycerin.model.Broadcast input) {
-                        return NitroUtil.programmePid(input).getPid();
-                    }
-                }
+                input -> NitroUtil.programmePid(input).getPid()
         ));
     }
 
-    private Set<String> topLevelContainerIds(ImmutableSet<Item> items) {
-        return ImmutableSet.copyOf(Iterables.filter(Iterables.transform(
-                items,
-                new Function<Item, String>() {
-
-                    @Override
-                    public String apply(Item input) {
-                        if (input.getContainer() != null) {
-                            return input.getContainer().getUri();
-                        }
-                        return null;
-                    }
-                }
-        ), Predicates.notNull()));
+     private ImmutableSet<String> topLevelContainerIds(ImmutableSet<ModelWithPayload<Item>> items) {
+        return items.stream().map(ModelWithPayload::getModel)
+                .map(Item::getContainer)
+                .filter(java.util.Objects::nonNull)
+                .map(ParentRef::getUri)
+                .filter(java.util.Objects::nonNull)
+                .collect(MoreCollectors.toImmutableSet());
     }
 
     private ImmutableList<Optional<ItemRefAndBroadcast>> writeContent(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
-            ResolveOrFetchResult<Item> items, Iterable<Series> series,
-            Iterable<Brand> brands,
+            Iterable<ModelWithPayload<Item>> items,
+            Iterable<ModelWithPayload<Series>> series,
+            Iterable<ModelWithPayload<Brand>> brands,
             OwlTelescopeReporter telescope) {
-        ImmutableMap<String, Series> seriesIndex = Maps.uniqueIndex(series, Identified.TO_URI);
-        ImmutableMap<String, Brand> brandIndex = Maps.uniqueIndex(brands, Identified.TO_URI);
+
+        Map<String, ModelWithPayload<Item>> itemIndex = LocalOrRemoteNitroFetcher.getIndex(items);
+        Map<String, ModelWithPayload<Brand>> brandIndex = LocalOrRemoteNitroFetcher.getIndex(brands);
+        Map<String, ModelWithPayload<Series>> seriesIndex = LocalOrRemoteNitroFetcher.getIndex(series);
 
         ImmutableList.Builder<Optional<ItemRefAndBroadcast>> results = ImmutableList.builder();
 
@@ -150,7 +147,7 @@ public class ContentUpdatingNitroBroadcastHandler
 
                 String itemPid = NitroUtil.programmePid(nitroBroadcast).getPid();
                 String itemUri = BbcFeeds.nitroUriForPid(itemPid);
-                Item item = items.get(itemUri);
+                ModelWithPayload<Item> item = itemIndex.get(itemUri);
                 checkNotNull(
                         item,
                         "No item for broadcast %s: %s",
@@ -158,17 +155,17 @@ public class ContentUpdatingNitroBroadcastHandler
                         itemPid
                 );
 
-                addBroadcast(item, versionUri(nitroBroadcast), broadcast.get());
+                addBroadcast(item.getModel(), versionUri(nitroBroadcast), broadcast.get());
 
-                Brand brand = getBrand(item, brandIndex);
+                ModelWithPayload<Brand> brand = getBrand(item.getModel(), brandIndex);
                 if (brand != null) {
-                    writer.createOrUpdate(brand);
+                    writer.createOrUpdate(brand.getModel());
                     //report to telescope
-                    if (brand.getId() != null) {
+                    if (brand.getModel().getId() != null) {
                         telescope.reportSuccessfulEvent(
-                                brand.getId(),
-                                brand.getAliases(),
-                                nitroBroadcast
+                                brand.getModel().getId(),
+                                brand.getModel().getAliases(),
+                                nitroBroadcast, item.getPayload(), brand.getPayload() //this might be an overkill
                         );
                     } else {
                         telescope.reportFailedEvent(
@@ -178,15 +175,15 @@ public class ContentUpdatingNitroBroadcastHandler
                     }
                 }
 
-                Series sery = getSeries(item, seriesIndex);
+                ModelWithPayload<Series> sery = getSeries(item.getModel(), seriesIndex);
                 if (sery != null) {
-                    writer.createOrUpdate(sery);
+                    writer.createOrUpdate(sery.getModel());
                     //report to telescope
-                    if (sery.getId() != null) {
+                    if (sery.getModel().getId() != null) {
                         telescope.reportSuccessfulEvent(
-                                sery.getId(),
-                                sery.getAliases(),
-                                nitroBroadcast
+                                sery.getModel().getId(),
+                                sery.getModel().getAliases(),
+                                nitroBroadcast, item.getPayload(), sery.getPayload()
                         );
                     } else {
                         telescope.reportFailedEvent(
@@ -196,26 +193,26 @@ public class ContentUpdatingNitroBroadcastHandler
                     }
                 }
 
-                writer.createOrUpdate(item);
+                writer.createOrUpdate(item.getModel());
                 //report to telescope
-                if (item.getId() != null) {
+                if (item.getModel().getId() != null) {
                     telescope.reportSuccessfulEvent(
-                            item.getId(),
-                            item.getAliases(),
-                            nitroBroadcast
+                            item.getModel().getId(),
+                            item.getModel().getAliases(),
+                            nitroBroadcast,  item.getPayload()
                     );
                 } else {
                     telescope.reportFailedEvent(
                             "Atlas did not return an id after attempting to create or update this Item",
-                            nitroBroadcast
+                            nitroBroadcast, item.getPayload()
                     );
                 }
 
-                results.add(Optional.of(new ItemRefAndBroadcast(item, broadcast.get())));
+                results.add(Optional.of(new ItemRefAndBroadcast(item.getModel(), broadcast.get())));
             } catch (Exception e) {
                 log.error(nitroBroadcast.getPid(), e);
                 telescope.reportFailedEvent(
-                        e.getClass().getSimpleName() + " was thrown while writing to atlas. (" + e.getMessage() + ")",
+                        "An internal error has prevent content from being written to Atlas. (" + e.toString() + ")",
                         nitroBroadcast
                 );
                 results.add(Optional.<ItemRefAndBroadcast>absent());
@@ -224,7 +221,7 @@ public class ContentUpdatingNitroBroadcastHandler
         return results.build();
     }
 
-    private Series getSeries(Item item, ImmutableMap<String, Series> seriesIndex) {
+    private ModelWithPayload<Series> getSeries(Item item, Map<String, ModelWithPayload<Series>> seriesIndex) {
         if (item instanceof Episode) {
             ParentRef container = ((Episode) item).getSeriesRef();
             if (container != null) {
@@ -234,7 +231,7 @@ public class ContentUpdatingNitroBroadcastHandler
         return null;
     }
 
-    private Brand getBrand(Item item, ImmutableMap<String, Brand> brandIndex) {
+    private ModelWithPayload<Brand> getBrand(Item item, Map<String, ModelWithPayload<Brand>> brandIndex) {
         ParentRef container = item.getContainer();
         if (container != null) {
             return brandIndex.get(container.getUri());

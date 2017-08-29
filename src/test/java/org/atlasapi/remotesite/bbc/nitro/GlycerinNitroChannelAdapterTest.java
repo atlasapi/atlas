@@ -63,7 +63,7 @@ public class GlycerinNitroChannelAdapterTest {
         Image image = new Image("uri");
         image.setAliases(ImmutableList.of(new Alias("bbc:service:name:short", "name")));
 
-        ImmutableList<Channel> services = channelAdapter.fetchServices(
+        ImmutableList<ModelWithPayload<Channel>> servicesWithPayloads = channelAdapter.fetchServices(
                 ImmutableMap.of(
                         "http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw",
                         Channel.builder()
@@ -74,10 +74,12 @@ public class GlycerinNitroChannelAdapterTest {
                 )
         );
 
-        Channel channel = services.stream()
-                .filter(chan -> chan.getCanonicalUri() != null)
+        ModelWithPayload<Channel> channelWithPayload = servicesWithPayloads.stream()
+                .filter(chan -> chan.getModel().getCanonicalUri() != null)
                 .findFirst()
                 .get();
+
+        Channel channel = channelWithPayload.getModel();
 
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
@@ -108,8 +110,9 @@ public class GlycerinNitroChannelAdapterTest {
         masterBrand.setTitle("name");
 
         when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
-        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
-        Channel channel = Iterables.getOnlyElement(services);
+        ImmutableSet<ModelWithPayload<Channel>> services = channelAdapter.fetchMasterbrands();
+        ModelWithPayload<Channel> channelWithPayload = Iterables.getOnlyElement(services);
+        Channel channel = channelWithPayload.getModel();
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
         assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw"));
         assertThat(channel.getTitle(), is("name"));
@@ -125,8 +128,9 @@ public class GlycerinNitroChannelAdapterTest {
         masterBrand.setTitle("title");
 
         when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
-        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
-        Channel channel = Iterables.getOnlyElement(services);
+        ImmutableSet<ModelWithPayload<Channel>> services = channelAdapter.fetchMasterbrands();
+        ModelWithPayload<Channel> channelWithPayload = Iterables.getOnlyElement(services);
+        Channel channel = channelWithPayload.getModel();
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
         assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw"));
         assertThat(channel.getTitle(), is("title"));
@@ -141,8 +145,9 @@ public class GlycerinNitroChannelAdapterTest {
         masterBrand.setName("name");
 
         when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
-        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
-        Channel channel = Iterables.getOnlyElement(services);
+        ImmutableSet<ModelWithPayload<Channel>> services = channelAdapter.fetchMasterbrands();
+        ModelWithPayload<Channel> channelWithPayload = Iterables.getOnlyElement(services);
+        Channel channel = channelWithPayload.getModel();
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
         assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw"));
         assertThat(channel.getTitle(), is("name"));
@@ -157,8 +162,9 @@ public class GlycerinNitroChannelAdapterTest {
         masterBrand.setTitle("BBC Radio Four");
 
         when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
-        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
-        Channel channel = Iterables.getOnlyElement(services);
+        ImmutableSet<ModelWithPayload<Channel>> services = channelAdapter.fetchMasterbrands();
+        ModelWithPayload<Channel> channelWithPayload = Iterables.getOnlyElement(services);
+        Channel channel = channelWithPayload.getModel();
 
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
         assertThat(channel.getMediaType(), is(MediaType.AUDIO));
@@ -171,8 +177,9 @@ public class GlycerinNitroChannelAdapterTest {
         masterBrand.setTitle("BBC Non Latin Name");
 
         when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
-        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
-        Channel channel = Iterables.getOnlyElement(services);
+        ImmutableSet<ModelWithPayload<Channel>> services = channelAdapter.fetchMasterbrands();
+        ModelWithPayload<Channel> channelWithPayload = Iterables.getOnlyElement(services);
+        Channel channel = channelWithPayload.getModel();
 
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
         assertThat(channel.getMediaType(), is(MediaType.AUDIO));
@@ -188,8 +195,10 @@ public class GlycerinNitroChannelAdapterTest {
         setImages(masterBrand);
         setSynopses(masterBrand);
         when(response.getResults()).thenReturn(ImmutableList.of(masterBrand));
-        ImmutableSet<Channel> services = channelAdapter.fetchMasterbrands();
-        Channel channel = Iterables.getOnlyElement(services);
+        ImmutableSet<ModelWithPayload<Channel>> services = channelAdapter.fetchMasterbrands();
+        ModelWithPayload<Channel> channelWithPayload = Iterables.getOnlyElement(services);
+        Channel channel = channelWithPayload.getModel();
+
         assertThat(channel.getChannelType(), is(ChannelType.MASTERBRAND));
         assertThat(channel.getUri(), is("http://nitro.bbc.co.uk/masterbrands/bbc_radio_fourlw"));
         assertThat(channel.getTitle(), is("name"));
@@ -209,11 +218,12 @@ public class GlycerinNitroChannelAdapterTest {
 
         when(response.getResults()).thenReturn(ImmutableList.of(service));
 
-        ImmutableList<Channel> services = channelAdapter.fetchServices();
-        Channel channel = services.stream()
-                .filter(chan -> chan.getCanonicalUri() != null)
+        ImmutableList<ModelWithPayload<Channel>> services = channelAdapter.fetchServices();
+        ModelWithPayload<Channel> channelWithPayload = services.stream()
+                .filter(chan -> chan.getModel().getCanonicalUri() != null)
                 .findFirst()
                 .get();
+        Channel channel = channelWithPayload.getModel();
 
         assertThat(channel.getChannelType(), is(ChannelType.CHANNEL));
         assertThat(channel.getRegion(), is("ALL"));
@@ -235,12 +245,13 @@ public class GlycerinNitroChannelAdapterTest {
 
         when(response.getResults()).thenReturn(ImmutableList.of(service));
 
-        ImmutableList<Channel> services = channelAdapter.fetchServices();
-        Channel channel = services.stream()
-                .filter(chan -> chan.getCanonicalUri() != null)
+        ImmutableList<ModelWithPayload<Channel>> services = channelAdapter.fetchServices();
+        ModelWithPayload<Channel> channelWithPayload = services.stream()
+                .filter(chan -> chan.getModel().getCanonicalUri() != null)
                 .findFirst()
                 .get();
 
+        Channel channel = channelWithPayload.getModel();
         assertThat(
                 channel.getUri(),
                 is("http://nitro.bbc.co.uk/services/bbc_radio_fourlw_233a_1700")

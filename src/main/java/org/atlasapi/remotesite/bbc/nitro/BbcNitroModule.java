@@ -28,6 +28,7 @@ import org.atlasapi.util.GroupLock;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin;
 import com.metabroadcast.atlas.glycerin.XmlGlycerin.Builder;
+import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.ScheduledTask;
@@ -97,7 +98,8 @@ public class BbcNitroModule {
                             nitroFortnightThreadCount,
                             nitroFortnightRateLimit,
                             Optional.absent(),
-                            "Nitro 15 day updater"
+                            "Nitro 15 day updater",
+                            OwlTelescopeReporters.BBC_NITRO_INGEST_M7_7_DAY
                     ),
                     RepetitionRules.every(Duration.standardHours(2))
             );
@@ -108,7 +110,8 @@ public class BbcNitroModule {
                             nitroTodayThreadCount,
                             nitroTodayRateLimit,
                             Optional.absent(),
-                            "Nitro today updater"
+                            "Nitro today updater",
+                            OwlTelescopeReporters.BBC_NITRO_INGEST_TODAY
                     ),
                     RepetitionRules.every(Duration.standardMinutes(30))
             );
@@ -119,7 +122,8 @@ public class BbcNitroModule {
                             nitroTodayThreadCount,
                             nitroTodayRateLimit,
                             Optional.of(Predicates.alwaysTrue()),
-                            "Nitro full fetch today updater"
+                            "Nitro full fetch today updater",
+                            OwlTelescopeReporters.BBC_NITRO_INGEST_TODAY_FULL_FETCH
                     ),
                     RepetitionRules.NEVER
             );
@@ -130,7 +134,8 @@ public class BbcNitroModule {
                             nitroThreeWeekThreadCount,
                             nitroThreeWeekRateLimit,
                             Optional.of(Predicates.alwaysTrue()),
-                            "Nitro full fetch -8 to -30 day updater"
+                            "Nitro full fetch -8 to -30 day updater",
+                            OwlTelescopeReporters.BBC_NITRO_INGEST_M8_M30_FULL_FETCH
                     ),
                     RepetitionRules.every(Duration.standardHours(12))
             );
@@ -141,7 +146,8 @@ public class BbcNitroModule {
                             nitroAroundTodayThreadCount,
                             nitroAroundTodayRateLimit,
                             Optional.of(Predicates.alwaysTrue()),
-                            "Nitro full fetch -7 to +3 day updater"
+                            "Nitro full fetch -7 to +3 day updater",
+                            OwlTelescopeReporters.BBC_NITRO_INGEST_M7_3_FULL_FETCH
                     ),
                     RepetitionRules.every(Duration.standardHours(2))
             );
@@ -165,7 +171,8 @@ public class BbcNitroModule {
             Integer threadCount,
             Integer rateLimit,
             Optional<Predicate<Item>> fullFetchPermittedPredicate,
-            String taskName
+            String taskName,
+            TelescopeReporterName telescopeReporterName
     ) {
         DayRangeChannelDaySupplier drcds = new DayRangeChannelDaySupplier(bbcChannelSupplier(), dayRangeSupplier(back, forward));
 
@@ -176,7 +183,7 @@ public class BbcNitroModule {
                 drcds,
                 nitroChannelDayProcessor(rateLimit, fullFetchPermittedPredicate),
                 null,
-                OwlTelescopeReporters.BBC_NITRO_INGEST,
+                telescopeReporterName,
                 jobFailureThresholdPercent
         )
                 .withName(taskName);

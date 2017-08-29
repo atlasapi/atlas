@@ -29,7 +29,7 @@ public interface NitroContentAdapter {
      * @throws IllegalArgumentException
      *             - if any of the {@code refs} is not for a brand.
      */
-    ImmutableSet<Brand> fetchBrands(Iterable<PidReference> ref) throws NitroException;
+    ImmutableSet<ModelWithPayload<Brand>> fetchBrands(Iterable<PidReference> ref) throws NitroException;
 
     /**
      * Fetch and transform data for the given ref into a {@link Series}.
@@ -42,7 +42,7 @@ public interface NitroContentAdapter {
      * @throws IllegalArgumentException
      *             - if any of the {@code refs} is not for a series.
      */
-    ImmutableSet<Series> fetchSeries(Iterable<PidReference> refs) throws NitroException;
+    ImmutableSet<ModelWithPayload<Series>> fetchSeries(Iterable<PidReference> refs) throws NitroException;
 
     /**
      * Fetch and transform data for the given ref into a {@link Item}.
@@ -56,10 +56,10 @@ public interface NitroContentAdapter {
      * @throws IllegalArgumentException
      *             - if any of the {@code refs} is not for an episode.
      */
-    Iterable<List<Item>> fetchEpisodes(Iterable<PidReference> refs) throws NitroException;
+    Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(Iterable<PidReference> refs) throws NitroException;
 
     // TODO: MBST-15521
-    Iterable<List<Item>> fetchEpisodes(
+    Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(
             Iterable<PidReference> refs,
             ImmutableListMultimap<String, Broadcast> broadcasts
     ) throws NitroException;
@@ -73,7 +73,7 @@ public interface NitroContentAdapter {
      * @throws NitroException           - if there was an error fetching data from Nitro.
      * @throws IllegalArgumentException - if any of the {@code refs} is not for an episode.
      */
-    Iterable<List<Item>> fetchEpisodes(
+    Iterable<List<ModelWithPayload<Item>>> fetchEpisodes(
             ProgrammesQuery query,
             ImmutableListMultimap<String, Broadcast> broadcasts
     ) throws NitroException;

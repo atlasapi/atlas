@@ -67,13 +67,16 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     }
 
     @Override
-    public ImmutableList<Channel> fetchServices() throws GlycerinException {
+    public ImmutableList<ModelWithPayload<Channel>> fetchServices() throws GlycerinException {
         return fetchServices(ImmutableMap.of());
     }
 
     @Override
-    public ImmutableList<Channel> fetchServices(ImmutableMap<String, Channel> uriToParentChannels) throws GlycerinException {
-        ImmutableList.Builder<Channel> channels = ImmutableList.builder();
+    public ImmutableList<ModelWithPayload<Channel>> fetchServices(
+            ImmutableMap<String, Channel> uriToParentChannels)
+            throws GlycerinException {
+
+        ImmutableList.Builder<ModelWithPayload<Channel>> channels = ImmutableList.builder();
 
         ServicesQuery servicesQuery = ServicesQuery.builder()
                 .withPageSize(MAXIMUM_PAGE_SIZE)
@@ -101,7 +104,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return channels.build();
     }
 
-    private ImmutableList<Channel> extractChannels(
+    private ImmutableList<ModelWithPayload<Channel>> extractChannels(
             ImmutableMap<String, Channel> uriToParentChannels,
             List<Service> results
     ) {
@@ -132,7 +135,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return endJoda.isAfter(DateTime.now());
     }
 
-    private ImmutableList<Channel> generateChannelsFromIds(
+    private ImmutableList<ModelWithPayload<Channel>> generateChannelsFromIds(
             Service result,
             ImmutableMap<String, Channel> uriToParentChannels
     ) {
@@ -155,8 +158,8 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
     }
 
     @Override
-    public ImmutableSet<Channel> fetchMasterbrands() throws GlycerinException {
-        ImmutableSet.Builder<Channel> masterBrands = ImmutableSet.builder();
+    public ImmutableSet<ModelWithPayload<Channel>> fetchMasterbrands() throws GlycerinException {
+        ImmutableSet.Builder<ModelWithPayload<Channel>> masterBrands = ImmutableSet.builder();
 
         boolean exhausted = false;
         int startingPoint = 1;
@@ -165,7 +168,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
             for (MasterBrand result : results) {
                 Channel channel = getMasterBrand(result);
                 channel.setAliases(ImmutableSet.of(new Alias(BBC_MASTERBRAND_MID, result.getMid())));
-                masterBrands.add(channel);
+                masterBrands.add(new ModelWithPayload<Channel>(channel, result));
             }
             startingPoint ++;
             exhausted = results.size() != MAXIMUM_PAGE_SIZE;
@@ -310,7 +313,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
         return images;
     }
 
-    private Channel makeChannelFromId(
+    private ModelWithPayload<Channel> makeChannelFromId(
             Service result,
             Id id,
             ImmutableMap<String, Channel> uriToParentChannels
@@ -341,7 +344,7 @@ public class GlycerinNitroChannelAdapter implements NitroChannelAdapter {
 
         log.debug("Extracted and totally using Nitro SID {}", result.getSid());
 
-        return channel;
+        return new ModelWithPayload<Channel>(channel, result);
     }
 
     private Optional<LocalDate> getStartDate(Service result) {

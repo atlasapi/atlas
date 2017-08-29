@@ -11,6 +11,7 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageTheme;
 import org.atlasapi.remotesite.bbc.nitro.GlycerinNitroChannelAdapter;
+import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.LocatorWithRegions;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewMasterbrand;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewService;
@@ -67,27 +68,24 @@ public class NitroChannelHydrator {
         populateTables();
     }
 
-    public Iterable<Channel> hydrateServices(Iterable<Channel> services) {
-        ImmutableList.Builder<Channel> channels = ImmutableList.builder();
+    public Iterable<ModelWithPayload<Channel>> hydrateServices(Iterable<ModelWithPayload<Channel>> services) {
+        ImmutableList.Builder<ModelWithPayload<Channel>> channels = ImmutableList.builder();
 
-        for (Channel channel : services) {
+        for (ModelWithPayload<Channel> channelWithPayload : services) {
             try {
-                channels.addAll(hydrateService(channel));
+                channels.addAll(hydrateService(channelWithPayload));
             } catch (Exception e) {
-                log.error(
-                        "Failed to hydrate service {} - {}",
-                        channel.getUri(),
-                        Throwables.getStackTraceAsString(e)
-                );
+                log.error("Failed to hydrate service " + channelWithPayload.getModel().getUri(), e);
             }
         }
 
         return channels.build();
     }
 
-    private Iterable<Channel> hydrateService(Channel channel) {
-        ImmutableList.Builder<Channel> result = ImmutableList.builder();
+    private Iterable<ModelWithPayload<Channel>> hydrateService(ModelWithPayload<Channel> channelWithPayload) {
+        ImmutableList.Builder<ModelWithPayload<Channel>> result = ImmutableList.builder();
 
+        Channel channel = channelWithPayload.getModel();
         String sid = getSid(channel).get();
 
         if (sidsToValues.contains(sid, SHORT_NAME)) {
@@ -156,7 +154,7 @@ public class NitroChannelHydrator {
                             regions
                     );
 
-                    result.add(copy);
+                    result.add(new ModelWithPayload<>(copy, channelWithPayload.getPayload()));
                 }
             } else {
                 // they actually added the DVB, but we still need the regions
@@ -167,7 +165,7 @@ public class NitroChannelHydrator {
                         .findFirst();
 
                 if (!channelDvbAlias.isPresent()) {
-                    log.warn("Channel with a canonical URI but no DVB? wat? {}", channel);
+                    log.warn("Channel with a canonical URI but no DVB? wat? {}", channelWithPayload);
                 } else {
                     Optional<LocatorWithRegions> override = locatorsWithRegions.stream()
                             .filter(lwr -> lwr.getLocator().equals(channelDvbAlias.get().getValue()))
@@ -176,14 +174,14 @@ public class NitroChannelHydrator {
                         log.warn("Found no regions override for DVB {}", channelDvbAlias.get());
                     } else {
                         channel.setTargetRegions(ImmutableSet.copyOf(override.get().getRegions()));
-                        result.add(channel);
+                        result.add(channelWithPayload);
                     }
                 }
             }
         } else {
             if (sidsToValues.contains(sid, DVB_LOCATOR)) {
                 String dvb = sidsToValues.get(sid, DVB_LOCATOR).toLowerCase();
-                setChannelDvbData(sid, channel, dvb);
+                setChannelDvbData(sid, channelWithPayload.getModel(), dvb);
 
                 log.debug(
                         "Overriding DVB for {} to {}",
@@ -192,10 +190,10 @@ public class NitroChannelHydrator {
                 );
             }
 
-            result.add(channel);
+            result.add(channelWithPayload);
         }
 
-        ImmutableList<Channel> channels = result.build();
+        ImmutableList<ModelWithPayload<Channel>> channels = result.build();
 
         log.debug("Hydrated channels {}", channels);
 
@@ -216,18 +214,16 @@ public class NitroChannelHydrator {
         channel.setAliasUrls(ImmutableSet.of(dvb));
     }
 
-    public Iterable<Channel> hydrateMasterbrands(Iterable<Channel> masterbrands) {
-        ImmutableList.Builder<Channel> result = ImmutableList.builder();
+    public Iterable<ModelWithPayload<Channel>> hydrateMasterbrands(Iterable<ModelWithPayload<Channel>> masterbrands) {
 
-        for (Channel channel : masterbrands) {
+        ImmutableList.Builder<ModelWithPayload<Channel>> result = ImmutableList.builder();
+        for (ModelWithPayload<Channel> channelWithPayload : masterbrands) {
             try {
-                result.add(hydrateMasterbrand(channel));
+                Channel hydrated = hydrateMasterbrand(channelWithPayload.getModel());
+                result.add(new ModelWithPayload<>(hydrated, channelWithPayload.getPayload()));
             } catch (Exception e) {
                 log.error(
-                        "Failed to hydrate masterbrand {} - {}",
-                        channel.getUri(),
-                        Throwables.getStackTraceAsString(e)
-                );
+                        "Failed to hydrate masterbrand " + channelWithPayload.getModel().getUri(), e);
             }
         }
 

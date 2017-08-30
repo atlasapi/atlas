@@ -111,6 +111,7 @@ public class ContainerCandidatesContainerEquivalenceGenerator
         return "Container's candidates generator";
     }
     
-    private static final Function<ContentRef, String> TO_CANONICAL_URI = input -> input.getCanonicalUri();
+    private static final Function<ContentRef, String> TO_CANONICAL_URI =  input-> input.getCanonicalUri();
+
     
 }

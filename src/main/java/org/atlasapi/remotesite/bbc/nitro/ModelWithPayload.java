@@ -26,7 +26,7 @@ public class ModelWithPayload<T> {
 
     @SuppressWarnings("unchecked")
     public <U> ModelWithPayload<U> asModelType(Class<U> type) throws ClassCastException {
-        type.cast(this.model);
+        type.cast(this.model); // use it to check - will throw a ClassCastException if not valid
         return (ModelWithPayload<U>) this;
     }
 

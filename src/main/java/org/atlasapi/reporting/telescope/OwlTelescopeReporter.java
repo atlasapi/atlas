@@ -43,6 +43,7 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             .addMixIn(Iterable.class, PreventCircularReferences.class);
 
     private final Event.Type eventType ;
+    private int reportedTimingError = 0;
 
     protected OwlTelescopeReporter(TelescopeReporterName reporterName, Event.Type eventType) {
         super(reporterName, Configurer.get("telescope.environment").get(), Configurer.get("telescope.host").get());
@@ -60,8 +61,23 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             String payload
     ) {
         if (!isStarted()) {
-            log.error("It was attempted to report atlasItem={}, but the telescope client was not started.", atlasItemId);
-            return;
+            try {
+                throw new IllegalStateException(
+                        "It was attempted to report to telescope, but the reporter has not been started.");
+            } catch (IllegalStateException e) {
+                if (reportedTimingError == 0) {
+                    log.error(
+                            "TimingError. This exception might occur multiple times, but further messages from reporter=" + this + " will be hidden.",
+                            e
+                    );
+                }
+                reportedTimingError++;
+                if (reportedTimingError % 100 == 0) {
+                    log.error("TimingError has now been repeated " + reportedTimingError + " times through reporter=" + this);
+                }
+
+                return;
+            }
         }
 
         EntityState.Builder entityState = EntityState.builder()

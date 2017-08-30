@@ -102,7 +102,7 @@ public class ContentUpdatingNitroBroadcastHandler
             return ImmutableList.of();
         } catch (Exception e) {
             telescope.reportFailedEvent(
-                    "An exception has prevented handling of Nitro Broadcasts (" + e.toString() + ")",
+                    "An exception has prevented handling Nitro Broadcasts (" + e.toString() + ")",
                     nitroBroadcasts);
             return ImmutableList.of();
         } finally {
@@ -130,9 +130,9 @@ public class ContentUpdatingNitroBroadcastHandler
 
     private ImmutableList<Optional<ItemRefAndBroadcast>> writeContent(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
-            Iterable<ModelWithPayload<Item>> items,
-            Iterable<ModelWithPayload<Series>> series,
-            Iterable<ModelWithPayload<Brand>> brands,
+            Set<ModelWithPayload<Item>> items,
+            Set<ModelWithPayload<Series>> series,
+            Set<ModelWithPayload<Brand>> brands,
             OwlTelescopeReporter telescope) {
 
         Map<String, ModelWithPayload<Item>> itemIndex = LocalOrRemoteNitroFetcher.getIndex(items);

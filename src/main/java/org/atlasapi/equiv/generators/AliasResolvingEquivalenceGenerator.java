@@ -1,13 +1,20 @@
 package org.atlasapi.equiv.generators;
 
+import java.math.BigInteger;
+
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
+
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
 import com.google.common.collect.Iterables;
 
@@ -26,9 +33,17 @@ public class AliasResolvingEquivalenceGenerator<T extends Content> implements Eq
     }
 
     @Override
-    public ScoredCandidates<T> generate(T content, ResultDescription desc) {
+    public ScoredCandidates<T> generate(
+            T content,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         Builder<T> equivalents = DefaultScoredCandidates.fromSource("Alias");
         desc.startStage("Resolving aliases:");
+
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Alias Resolving Equivalence Generator");
+
         // TODO new aliases
         for (String alias : content.getAliasUrls()) {
             desc.appendText(alias);
@@ -42,11 +57,15 @@ public class AliasResolvingEquivalenceGenerator<T extends Content> implements Eq
            if (identified.isActivelyPublished()) {
                equivalents.addEquivalent(identified, Score.ONE);
                desc.appendText("Resolved %s", identified.getCanonicalUri());
+
+               generatorComponent.addComponentResult(identified.getId(), "1.0");
            }
        }
        desc.appendText("Missed %s", resolved.getUnresolved().size());
-        
-        return equivalents.build();
+
+       equivToTelescopeResults.addGeneratorResult(generatorComponent);
+
+       return equivalents.build();
     }
     
     @Override

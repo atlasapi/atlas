@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -41,7 +42,11 @@ public class EquivalenceGenerators<T extends Content> {
         return new EquivalenceGenerators<T>(generators, excludedUris, excludedIds);
     }
 
-    public List<ScoredCandidates<T>> generate(T content, ResultDescription desc) {
+    public List<ScoredCandidates<T>> generate(
+            T content,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         desc.startStage("Generating equivalences");
         Builder<ScoredCandidates<T>> generatedScores = ImmutableList.builder();
 
@@ -63,7 +68,7 @@ public class EquivalenceGenerators<T extends Content> {
         for (EquivalenceGenerator<T> generator : generators) {
             try {
                 desc.startStage(generator.toString());
-                generatedScores.add(generator.generate(content, desc));
+                generatedScores.add(generator.generate(content, desc, equivToTelescopeResults));
                 desc.finishStage();
             } catch (Exception e) {
                 throw new RuntimeException(String.format("Exception running %s for %s", generator, content), e);

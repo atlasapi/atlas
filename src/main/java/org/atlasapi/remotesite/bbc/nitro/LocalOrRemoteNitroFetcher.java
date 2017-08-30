@@ -21,7 +21,6 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
@@ -36,7 +35,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
@@ -220,7 +218,7 @@ public class LocalOrRemoteNitroFetcher {
     }
 
     private ImmutableSet<ModelWithPayload<Item>> mergeItemsWithExisting(
-            ImmutableSet<ModelWithPayload<Item>> fetchedItems,
+            Set<ModelWithPayload<Item>> fetchedItems,
             Set<ModelWithPayload<Item>> existingItems) {
 
         //create an index of the fetched items
@@ -449,13 +447,22 @@ public class LocalOrRemoteNitroFetcher {
 
     /**
      * Get a Map using the {@link Container#TO_URI} as key, and the ModelWithPayload itself as value.
-     * The map is mutable, so items can be removed.
+     * The map is mutable, so items can be removed. If duplicate entries are found the later is used.
       */
     public static final <T extends Identified> Map<String, ModelWithPayload<T>> getIndex(
-            Iterable<ModelWithPayload<T>> iter) {
+            Set<ModelWithPayload<T>> iter) {
 
         return StreamSupport.stream(iter.spliterator(), false)
-                .collect(Collectors.toMap( mwp -> mwp.getModel().getCanonicalUri() , mwp -> mwp));
+                .collect(Collectors.toMap(
+                        mwp -> mwp.getModel().getCanonicalUri() ,
+                        mwp -> mwp,
+                        (mwp1, mwp2) -> {
+                            log.warn(
+                                    "Duplicate keys where found while trying to create an index of " + iter + ". "
+                                    + mwp1 + " was discarded and " + mwp2 + " was retained.");
+                            return mwp2;
+                        }
+                ));
 
     }
     

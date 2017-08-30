@@ -128,13 +128,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 ImmutableSet<ModelWithPayload<Item>> resolvedItems = localOrRemoteFetcher.resolveItems(itemsWithPayload);
 
 
-                Iterable<ModelWithPayload<Series>> series =
+                ImmutableSet<ModelWithPayload<Series>> series =
                         localOrRemoteFetcher.resolveOrFetchSeries(resolvedItems).stream()
                                 .filter(input -> input.getModel() instanceof Series)
                                 .map(input -> input.asModelType(Series.class))
                                 .collect(MoreCollectors.toImmutableSet());
 
-                Iterable<ModelWithPayload<Brand>> brands =
+                ImmutableSet<ModelWithPayload<Brand>> brands =
                         localOrRemoteFetcher.resolveOrFetchSeries(resolvedItems).stream()
                                 .filter(input -> input.getModel() instanceof Brand)
                                 .map(input -> input.asModelType(Brand.class))
@@ -163,8 +163,8 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
     private void writeContent(
             ImmutableSet<ModelWithPayload<Item>> itemsWithPayload,
-            @Nullable Iterable<ModelWithPayload<Series>> series,
-            @Nullable Iterable<ModelWithPayload<Brand>> brands,
+            @Nullable Set<ModelWithPayload<Series>> series,
+            @Nullable Set<ModelWithPayload<Brand>> brands,
             OwlTelescopeReporter telescope
     ) {
         Map<String, ModelWithPayload<Series>> seriesIndex = LocalOrRemoteNitroFetcher.getIndex(series);

@@ -60,26 +60,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             String warningMsg,
             String payload
     ) {
-        if (!isStarted()) {
-            try {
-                throw new IllegalStateException(
-                        "It was attempted to report to telescope, but the reporter has not been started.");
-            } catch (IllegalStateException e) {
-                if (reportedTimingError == 0) {
-                    log.error(
-                            "TimingError. This exception might occur multiple times, but further messages from reporter=" + this + " will be hidden.",
-                            e
-                    );
-                }
-                reportedTimingError++;
-                if (reportedTimingError % 100 == 0) {
-                    log.error("TimingError has now been repeated " + reportedTimingError + " times through reporter=" + this);
-                }
-
-                return;
-            }
-        }
-
         EntityState.Builder entityState = EntityState.builder()
                 .withAtlasId(atlasItemId)
                 .withRaw(payload)
@@ -100,9 +80,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
         reportEvent(event);
 
         log.debug("Reported successfully event with taskId={}, eventId={}", getTaskId(), event.getId().orElse("null"));
-        if (isFinished()) {
-            log.warn("atlasItem={} was reported to telescope client={} after it has finished reporting.", atlasItemId, getTaskId());
-        }
     }
 
     //convenience methods for the most common reporting Formats
@@ -145,10 +122,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
     }
 
     public void reportFailedEvent(String errorMsg, Object... objectToSerialise) {
-        if (!isStarted()) {
-            log.error("It was attempted to report an error to telescope, but the client has not been started.");
-             return;
-        }
         Event event = super.getEventBuilder()
                 .withType(this.eventType)
                 .withStatus(Event.Status.FAILURE)
@@ -162,9 +135,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
         reportEvent(event);
 
         log.debug("Reported successfully a FAILED event with taskId={}, error={}", getTaskId(), errorMsg);
-        if (isFinished()) {
-            log.warn("An error was reported to telescope after the telescope client (taskId={}) has finished reporting.", getTaskId());
-        }
     }
 
     public static String serialize(Object... objectsToSerialise) {

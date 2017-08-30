@@ -12,6 +12,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
@@ -31,7 +33,8 @@ import com.metabroadcast.common.collect.OptionalMap;
  * Generates equivalences for an non-top-level Container based on the children of the equivalences
  * of the Container's container.
  */
-public class ContainerCandidatesContainerEquivalenceGenerator implements EquivalenceGenerator<Container> {
+public class ContainerCandidatesContainerEquivalenceGenerator
+        implements EquivalenceGenerator<Container> {
 
     private final ContentResolver contentResolver;
     private final EquivalenceSummaryStore equivSummaryStore;
@@ -44,14 +47,24 @@ public class ContainerCandidatesContainerEquivalenceGenerator implements Equival
         }
     };
 
-    public ContainerCandidatesContainerEquivalenceGenerator(ContentResolver contentResolver, EquivalenceSummaryStore equivSummaryStore) {
+    public ContainerCandidatesContainerEquivalenceGenerator(
+            ContentResolver contentResolver,
+            EquivalenceSummaryStore equivSummaryStore
+    ) {
         this.contentResolver = contentResolver;
         this.equivSummaryStore = equivSummaryStore;
     }
 
     @Override
-    public ScoredCandidates<Container> generate(Container subject, ResultDescription desc) {
+    public ScoredCandidates<Container> generate(
+            Container subject,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         Builder<Container> result = DefaultScoredCandidates.fromSource("Container");
+
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Container Candidates Container Equivalence Generator");
         
         if (subject instanceof Series) {
             Series series = (Series) subject;
@@ -62,22 +75,29 @@ public class ContainerCandidatesContainerEquivalenceGenerator implements Equival
                 Optional<EquivalenceSummary> optional = containerSummary.get(parentUri);
                 if (optional.isPresent()) {
                     EquivalenceSummary summary = optional.get();
-                    for (Series candidateSeries : seriesOf(Iterables.transform(summary.getEquivalents().values(), TO_CANONICAL_URI))) {
+                    for (Series candidateSeries : seriesOf(
+                            Iterables.transform(summary.getEquivalents().values(), TO_CANONICAL_URI)
+                    )) {
                         if (candidateSeries.isActivelyPublished()) {
                             result.addEquivalent(candidateSeries, Score.NULL_SCORE);
+
+                            generatorComponent.addComponentResult(candidateSeries.getId(), "");
                         }
                     }
                 }
             }
-            
         }
+
+        equivToTelescopeResults.addGeneratorResult(generatorComponent);
 
         return result.build();
     }
 
     private Iterable<Series> seriesOf(Iterable<String> equivalents) {
         
-        List<Identified> resolvedContent = contentResolver.findByCanonicalUris(equivalents).getAllResolvedResults();
+        List<Identified> resolvedContent = contentResolver
+                .findByCanonicalUris(equivalents)
+                .getAllResolvedResults();
         Iterable<Brand> resolvedContainers = Iterables.filter(resolvedContent, Brand.class);
         return Iterables.concat(Iterables.transform(resolvedContainers, TO_SERIES));
     }
@@ -91,7 +111,8 @@ public class ContainerCandidatesContainerEquivalenceGenerator implements Equival
         return "Container's candidates generator";
     }
     
-    private static final Function<ContentRef, String> TO_CANONICAL_URI = new Function<ContentRef, String>() {
+    private static final Function<ContentRef, String> TO_CANONICAL_URI =
+            new Function<ContentRef, String>() {
 
         @Override
         public String apply(ContentRef input) {

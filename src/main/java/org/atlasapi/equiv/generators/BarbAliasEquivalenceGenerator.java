@@ -14,6 +14,8 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
@@ -45,7 +47,11 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
 
     @SuppressWarnings("unchecked")
     @Override
-    public ScoredCandidates<T> generate(T subject, ResultDescription desc) {
+    public ScoredCandidates<T> generate(
+            T subject,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         DefaultScoredCandidates.Builder<T> equivalents =
                 DefaultScoredCandidates.fromSource("Barb Alias");
 
@@ -156,7 +162,7 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         );
 
         if (!(subject.getAliases().isEmpty())) {
-            equivalents = findByCommonAlias(subject, equivalents, desc);
+            equivalents = findByCommonAlias(subject, equivalents, desc, equivToTelescopeResults);
         }
 
         return equivalents.build();
@@ -188,10 +194,15 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
     private DefaultScoredCandidates.Builder findByCommonAlias(
             T subject,
             DefaultScoredCandidates.Builder equivalents,
-            ResultDescription desc
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
     ) {
 
         desc.startStage("Resolving Barb Aliases:");
+
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Barb Alias Equivalence Generator");
+
         subject.getAliases().forEach(alias -> desc.appendText(
                 "namespace: " +
                         alias.getNamespace() +
@@ -225,10 +236,14 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                     if (match) {
                         equivalents.addEquivalent((T) identified, Score.ONE);
                         desc.appendText("Resolved %s", identified.getCanonicalUri());
+
+                        generatorComponent.addComponentResult(identified.getId(), "1.0");
                     }
                 }
             })
         );
+
+        equivToTelescopeResults.addGeneratorResult(generatorComponent);
 
         return equivalents;
     }

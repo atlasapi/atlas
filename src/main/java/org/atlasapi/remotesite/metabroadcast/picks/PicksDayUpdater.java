@@ -76,6 +76,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
     
     @Override
     public UpdateProgress process(ChannelDay channelDay, OwlTelescopeReporter telescope) throws Exception {
+        //yes. We don't use telescope here yet.
         try {
             Iterable<Item> picks = concat(transform(
                     scheduleResolver.unmergedSchedule(
@@ -102,7 +103,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
                     )
             );
             
-            addPicksToContentGroup(findPicks(itemsAndBroadcasts), telescope);
+            addPicksToContentGroup(findPicks(itemsAndBroadcasts));
             
             return UpdateProgress.SUCCESS;
         } catch (Exception e) {
@@ -110,7 +111,6 @@ public class PicksDayUpdater implements ChannelDayProcessor {
                                   + "Channel title=" + channelDay.getChannel().getTitle() + ". "
                                   + "Day=" + channelDay.getDay().toString() + ". ";
             log.error(errorMessage, e);
-            telescope.reportFailedEvent(errorMessage + " (" + e.getMessage() + ")", channelDay);
             return UpdateProgress.FAILURE;
         }
     }
@@ -119,7 +119,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
         return transform(filter(itemsAndBroadcasts, picksPredicate), TO_ITEM);
     }
     
-    private void addPicksToContentGroup(Iterable<Item> items, OwlTelescopeReporter telescope) {
+    private void addPicksToContentGroup(Iterable<Item> items) {
         ContentGroup contentGroup = resolveOrCreateContentGroup();
         Iterable<ChildRef> childRefs = transform(items, Item.TO_CHILD_REF);
         pruneContents(contentGroup);
@@ -133,18 +133,8 @@ public class PicksDayUpdater implements ChannelDayProcessor {
         }
         if (changed) {
             contentGroupWriter.createOrUpdate(contentGroup);
-            if (contentGroup.getId() != null) {
-                telescope.reportSuccessfulEvent(
-                        contentGroup.getId(),
-                        contentGroup.getAliases(),
-                        contentGroup, items
-                );
-            } else {
-                telescope.reportFailedEvent(
-                        "There was an error while trying to write this ContentGroup to Atlas.",
-                        contentGroup, items
-                );
-            }
+            //If you decide to report to telescope here, dont report contentGroup as the payload,
+            //because it is about 2.5MB worth of text.
         }
     }
     

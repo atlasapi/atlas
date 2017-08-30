@@ -38,23 +38,28 @@ public class PicksChannelDayUpdateController {
     public void updatePicks(@PathVariable String dateString, @PathVariable String channelId, 
             HttpServletResponse response) throws Exception {
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(OwlTelescopeReporters.BBC_NITRO_INGEST_PICKS, Event.Type.INGEST);
-        telescope.startReporting();
-        try {
+        //There was an attempt to use telescope here, but it turned out it was not needed.
+        //The code is left here in case someone picks it up.
+        //Consequently, this is telescope is created because it is needed as an argument, but never used.
+        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(OwlTelescopeReporters.PICKS_CONTENT_GROUP_UPDATER, Event.Type.INGEST);
+
+
+//        telescope.startReporting();
+//        try {
             Maybe<Channel> channel = channelResolver.fromId(channelIdCodec.decode(channelId).longValue());
             LocalDate date = ISODateTimeFormat.dateParser().parseLocalDate(dateString);
             ChannelDay channelDay = new ChannelDay(channel.requireValue(), date);
 
             picksDayUpdater.process(channelDay, telescope);
             response.setStatus(200);
-        } catch (Exception e) {
-            telescope.reportFailedEvent("The request at '/update/picks/"+ dateString+"/"+ channelId+
-                                        "' failed. One of the arguments was not properly formatted.");
-                            //we assume that, because .process has its own try/catch internally,
-                            //so the error must come before that.
-            response.setStatus(500);
-        } finally {
-            telescope.endReporting();
-        }
+//        } catch (Exception e) {
+//            telescope.reportFailedEvent("The request at '/update/picks/"+ dateString+"/"+ channelId+
+//                                        "' failed. One of the arguments was not properly formatted.");
+//                            //we assume that, because .process has its own try/catch internally,
+//                            //so the error must come before that.
+//            response.setStatus(500);
+//        } finally {
+//            telescope.endReporting();
+//        }
     }
 }

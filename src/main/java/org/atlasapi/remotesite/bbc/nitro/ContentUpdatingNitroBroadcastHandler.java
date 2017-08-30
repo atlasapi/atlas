@@ -102,7 +102,7 @@ public class ContentUpdatingNitroBroadcastHandler
             return ImmutableList.of();
         } catch (Exception e) {
             telescope.reportFailedEvent(
-                    "An exception has prevented handling of Nitro Broadcasts (" + e.toString() + ")",
+                    "An exception has prevented handling Nitro Broadcasts (" + e.toString() + ")",
                     nitroBroadcasts);
             return ImmutableList.of();
         } finally {

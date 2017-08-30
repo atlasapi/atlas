@@ -12,9 +12,10 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
     BBC_NITRO_INGEST_M8_M30_FULL_FETCH("bbc-nitro-ingester-m8-m30-ff", "Nitro -8 to -30 full fetch "),
     BBC_NITRO_INGEST_M7_3_FULL_FETCH("bbc-nitro-ingester-m7-3-ff", "Nitro -7 to +3 day full fetch"),
     BBC_NITRO_INGEST_OFFSCHEDULE("bbc-nitro-ingester-offschedule", "Nitro off-schedule Ingester"),
-    BBC_NITRO_INGEST_PICKS("bbc-nitro-ingester-picks","Mbst Picks Content Group Updater (Nitro)"),
     BBC_NITRO_INGEST_API("bbc-nitro-ingester-api", "Nitro API Ingester"),
     BBC_NITRO_INGEST_CHANNELS("bbc-nitro-ingester-channels", "Nitro Channel Ingester"),
+
+    PICKS_CONTENT_GROUP_UPDATER("picks-content-group-updater","Mbst Picks Content Group Updater"),
     
     CHANNEL_EQUIVALENCE("channel-equivalence", "Channel Equivalence"),
     CHANNEL_SCHEDULE_EQUIVALENCE("channel-schedule-equivalence", "Channel Schedule Equivalence"),

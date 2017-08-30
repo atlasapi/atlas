@@ -63,7 +63,7 @@ public class PicksModule {
                 picksDayRangeChannelDaySupplier(),
                 picksDayUpdater(),
                 picksScheduledTaskListener(),
-                OwlTelescopeReporters.BBC_NITRO_INGEST_PICKS
+                OwlTelescopeReporters.PICKS_CONTENT_GROUP_UPDATER //not used atm, but required as an argument
         );
     }
     

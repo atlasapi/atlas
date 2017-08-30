@@ -43,7 +43,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             .addMixIn(Iterable.class, PreventCircularReferences.class);
 
     private final Event.Type eventType ;
-    private int reportedTimingError = 0;
 
     protected OwlTelescopeReporter(TelescopeReporterName reporterName, Event.Type eventType) {
         super(reporterName, Configurer.get("telescope.environment").get(), Configurer.get("telescope.host").get());

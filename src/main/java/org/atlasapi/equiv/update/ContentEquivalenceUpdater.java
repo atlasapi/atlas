@@ -19,6 +19,7 @@ import org.atlasapi.equiv.results.scores.ScoredEquivalentsMerger;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
 import org.atlasapi.equiv.scorers.EquivalenceScorers;
 import org.atlasapi.equiv.update.metadata.ContentEquivalenceUpdaterMetadata;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
@@ -81,15 +82,38 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     public boolean updateEquivalences(T content, OwlTelescopeReporter telescope) {
         ReadableDescription desc = new DefaultDescription();
 
-        List<ScoredCandidates<T>> generatedScores = generators.generate(content, desc);
+        EquivToTelescopeResults resultsForTelescope = EquivToTelescopeResults.create(
+                String.valueOf(content.getId()),
+                content.getPublisher().toString()
+        );
+
+        List<ScoredCandidates<T>> generatedScores = generators.generate(
+                content,
+                desc,
+                resultsForTelescope
+        );
         
         Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
         
-        List<ScoredCandidates<T>> scoredScores = scorers.score(content, candidates, desc);
+        List<ScoredCandidates<T>> scoredScores = scorers.score(
+                content,
+                candidates,
+                desc,
+                resultsForTelescope
+        );
         
-        List<ScoredCandidates<T>> mergedScores = merger.merge(generatedScores, scoredScores);
+        List<ScoredCandidates<T>> mergedScores = merger.merge(
+                generatedScores,
+                scoredScores,
+                resultsForTelescope
+        );
         
-        EquivalenceResult<T> result = resultBuilder.resultFor(content, mergedScores, desc);
+        EquivalenceResult<T> result = resultBuilder.resultFor(
+                content,
+                mergedScores,
+                desc,
+                resultsForTelescope
+        );
 
         boolean handledWithStateChange = handler.handle(result);
 
@@ -101,7 +125,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 content.getId(),
                 content.getAliases(),
                 content,
-                desc
+                resultsForTelescope
         );
 
         result.strongEquivalences().values().forEach(
@@ -111,7 +135,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                                 candidate.getId(),
                                 candidate.getAliases(),
                                 content,
-                                desc
+                                resultsForTelescope
                         );
                 }
         );

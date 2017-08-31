@@ -59,6 +59,16 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             String warningMsg,
             String payload
     ) {
+        try { //fail graciously by reporting nothing, but print a full stack so we know who caused this
+            if (atlasItemId == null) {
+                throw new IllegalArgumentException("No atlasId was given");
+            }
+        }
+        catch(IllegalArgumentException e){
+            log.error( "Cannot report a successful event to telescope, without an atlasId", e);
+            return;
+        }
+
         EntityState.Builder entityState = EntityState.builder()
                 .withAtlasId(atlasItemId)
                 .withRaw(payload)
@@ -77,8 +87,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
                 .build();
 
         reportEvent(event);
-
-        log.debug("Reported successfully event with taskId={}, eventId={}", getTaskId(), event.getId().orElse("null"));
     }
 
     //convenience methods for the most common reporting Formats
@@ -132,8 +140,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
                 )
                 .build();
         reportEvent(event);
-
-        log.debug("Reported successfully a FAILED event with taskId={}, error={}", getTaskId(), errorMsg);
     }
 
     public static String serialize(Object... objectsToSerialise) {

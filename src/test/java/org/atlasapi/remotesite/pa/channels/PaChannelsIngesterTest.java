@@ -125,7 +125,7 @@ public class PaChannelsIngesterTest {
         // This is to enforce an end of life for the workaround described in MBST-18347 by failing
         // this test.
         DateTime endOfLifeDateTime = new DateTime(
-                2017, 9, 1, 10, 0, UTC
+                2017, 10, 1, 10, 0, UTC
         );
 
         if (DateTime.now().isAfter(endOfLifeDateTime)) {

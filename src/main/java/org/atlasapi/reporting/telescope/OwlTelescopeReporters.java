@@ -6,14 +6,17 @@ import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
  * Add more elements as needed if more ingesters need to report to telescope.
  */
 public enum OwlTelescopeReporters implements TelescopeReporterName {
-    BBC_NITRO_INGEST_TODAY("bbc-nitro-ingester-today", "Nitro today"),
-    BBC_NITRO_INGEST_TODAY_FULL_FETCH("bbc-nitro-ingester-today-ff", "Nitro today full fetch"),
-    BBC_NITRO_INGEST_M7_7_DAY("bbc-nitro-ingester-m7-7", "Nitro -7 to +7 day"),
-    BBC_NITRO_INGEST_M8_M30_FULL_FETCH("bbc-nitro-ingester-m8-m30-ff", "Nitro -8 to -30 full fetch "),
-    BBC_NITRO_INGEST_M7_3_FULL_FETCH("bbc-nitro-ingester-m7-3-ff", "Nitro -7 to +3 day full fetch"),
-    BBC_NITRO_INGEST_OFFSCHEDULE("bbc-nitro-ingester-offschedule", "Nitro off-schedule Ingester"),
-    BBC_NITRO_INGEST_API("bbc-nitro-ingester-api", "Nitro API Ingester"),
-    BBC_NITRO_INGEST_CHANNELS("bbc-nitro-ingester-channels", "Nitro Channel Ingester"),
+    // naming the key with dot namespacing allows for grouping permissions when it comes to
+    // viewing events, so be mindful of your names.
+    // Other names might exist in different projects so make some effort to avoid collisions.
+    BBC_NITRO_INGEST_TODAY("bbc.nitro.ingester.today", "Nitro today"),
+    BBC_NITRO_INGEST_TODAY_FULL_FETCH("bbc.nitro.ingester.today-ff", "Nitro today full fetch"),
+    BBC_NITRO_INGEST_M7_7_DAY("bbc.nitro.ingester.m7-7", "Nitro -7 to +7 day"),
+    BBC_NITRO_INGEST_M8_M30_FULL_FETCH("bbc.nitro.ingester.m8-m30-ff", "Nitro -8 to -30 full fetch "),
+    BBC_NITRO_INGEST_M7_3_FULL_FETCH("bbc.nitro.ingester.m7-3-ff", "Nitro -7 to +3 day full fetch"),
+    BBC_NITRO_INGEST_OFFSCHEDULE("bbc.nitro.ingester.offschedule", "Nitro off-schedule Ingester"),
+    BBC_NITRO_INGEST_API("bbc.nitro.ingester.api", "Nitro API Ingester"),
+    BBC_NITRO_INGEST_CHANNELS("bbc.nitro.ingester.channels", "Nitro Channel Ingester"),
 
     PICKS_CONTENT_GROUP_UPDATER("picks-content-group-updater","Mbst Picks Content Group Updater"),
     

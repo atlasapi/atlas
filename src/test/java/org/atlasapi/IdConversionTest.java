@@ -1,16 +1,13 @@
 package org.atlasapi;
 
-import static org.junit.Assert.*;
-
 import java.math.BigInteger;
 import java.util.Set;
 
-import org.junit.Test;
-
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.ids.IdGenerator;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+
+import com.google.common.collect.ImmutableSet;
+import org.junit.Test;
 
 
 public class IdConversionTest {

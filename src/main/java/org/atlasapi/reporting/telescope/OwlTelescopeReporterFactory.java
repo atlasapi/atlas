@@ -26,12 +26,12 @@ public class OwlTelescopeReporterFactory extends TelescopeReporterFactory {
     public static synchronized OwlTelescopeReporterFactory getInstance() {
         if (INSTANCE == null) {
             ThreadPoolExecutor executor = new ThreadPoolExecutor(
-                    5,  //If fewer than this threads are running, a new thread is created. Else things are queued.
-                    10, //If the queue is full, spawn a new thread up to this number.
+                    1,  //If fewer than this threads are running, a new thread is created. Else things are queued.
+                    1, //If the queue is full, spawn a new thread up to this number.
                     10, //time to put idle threads to sleep.
                     TimeUnit.SECONDS,
                     //Max queue size, after which things go to the RejectedExecutionHandler
-                    new ArrayBlockingQueue<Runnable>(5000),
+                    new ArrayBlockingQueue<>(5),
                     new RejectedExecutionHandlerImpl()
             );
 
@@ -68,8 +68,7 @@ public class OwlTelescopeReporterFactory extends TelescopeReporterFactory {
             @Nonnull String env,
             @Nonnull String host,
             @Nonnull ThreadPoolExecutor executor,
-            @Nullable MetricRegistry metricsRegistry)
-            throws IllegalArgumentException {
+            @Nullable MetricRegistry metricsRegistry) {
         super(env, host, executor, metricsRegistry);
     }
 

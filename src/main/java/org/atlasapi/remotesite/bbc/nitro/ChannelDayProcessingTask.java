@@ -113,7 +113,7 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
 
         //create a new telescope task, every time this task runs.
         OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
-                telescopeReporterName,
+                OwlTelescopeReporters.BBC_NITRO_INGEST_API,
                 Event.Type.INGEST
         );
         telescope.startReporting();

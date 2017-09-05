@@ -12,6 +12,8 @@ import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 
@@ -24,7 +26,8 @@ import com.google.common.collect.Ordering;
 import com.google.common.collect.SortedSetMultimap;
 import com.google.common.collect.TreeMultimap;
 
-public class DefaultEquivalenceResultBuilder<T extends Content> implements EquivalenceResultBuilder<T> {
+public class DefaultEquivalenceResultBuilder<T extends Content>
+        implements EquivalenceResultBuilder<T> {
 
     private final ScoreCombiner<T> combiner;
     private final EquivalenceExtractor<T> extractor;
@@ -53,14 +56,33 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
     }
 
     @Override
-    public EquivalenceResult<T> resultFor(T target, List<ScoredCandidates<T>> equivalents, ReadableDescription desc) {
-        ScoredCandidates<T> combined = combine(equivalents, desc);
-        List<ScoredCandidate<T>> filteredCandidates = filter(target, desc, combined);
-        Multimap<Publisher, ScoredCandidate<T>> extractedScores = extract(target, filteredCandidates, desc);
+    public EquivalenceResult<T> resultFor(
+            T target,
+            List<ScoredCandidates<T>> equivalents,
+            ReadableDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        ScoredCandidates<T> combined = combine(equivalents, desc, equivToTelescopeResults);
+        List<ScoredCandidate<T>> filteredCandidates = filter(
+                target,
+                desc,
+                combined,
+                equivToTelescopeResults
+        );
+        Multimap<Publisher, ScoredCandidate<T>> extractedScores = extract(
+                target,
+                filteredCandidates,
+                desc,
+                equivToTelescopeResults
+        );
         return new EquivalenceResult<T>(target, equivalents, combined, extractedScores, desc);
     }
     
-    private ScoredCandidates<T> combine(List<ScoredCandidates<T>> equivalents, ResultDescription desc) {
+    private ScoredCandidates<T> combine(
+            List<ScoredCandidates<T>> equivalents,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         desc.startStage("Combining scores");
         ScoredCandidates<T> combination;
         if (!equivalents.isEmpty()) {
@@ -72,10 +94,20 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return combination;
     }
 
-    private List<ScoredCandidate<T>> filter(T target, ReadableDescription desc, ScoredCandidates<T> combined) {
+    private List<ScoredCandidate<T>> filter(
+            T target,
+            ReadableDescription desc,
+            ScoredCandidates<T> combined,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         desc.startStage("Filtering candidates");
         List<ScoredCandidate<T>> filteredCandidates = ImmutableList.copyOf(
-            filter.apply(combined.orderedCandidates(Ordering.usingToString()), target, desc)
+            filter.apply(
+                    combined.orderedCandidates(Ordering.usingToString()),
+                    target,
+                    desc,
+                    equivToTelescopeResults
+            )
         );
         desc.finishStage();
         return filteredCandidates;
@@ -84,7 +116,8 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
     private Multimap<Publisher, ScoredCandidate<T>> extract(
             T target,
             List<ScoredCandidate<T>> filteredCandidates,
-            ResultDescription desc
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
     ) {
         desc.startStage("Extracting strong equivalents");
         SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins =
@@ -101,7 +134,9 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
 
             Optional<Set<ScoredCandidate<T>>> multipleExtractedCandidates =
                     multipleCandidateExtractor.extract(
-                            copyOfSorted.asList().reverse(), target
+                            copyOfSorted.asList().reverse(),
+                            target,
+                            equivToTelescopeResults
                     );
 
             if (multipleExtractedCandidates.isPresent()) {
@@ -111,7 +146,10 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
                 );
             } else {
                 Optional<ScoredCandidate<T>> extracted = extractor.extract(
-                        copyOfSorted.asList().reverse(), target, desc
+                        copyOfSorted.asList().reverse(),
+                        target,
+                        desc,
+                        equivToTelescopeResults
                 );
                 if (extracted.isPresent()) {
                     builder.put(publisher, extracted.get());
@@ -125,9 +163,14 @@ public class DefaultEquivalenceResultBuilder<T extends Content> implements Equiv
         return builder.build();
     }
 
-    private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(List<ScoredCandidate<T>> filteredCandidates) {
+    private SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBin(
+            List<ScoredCandidate<T>> filteredCandidates
+    ) {
         SortedSetMultimap<Publisher, ScoredCandidate<T>> publisherBins =
-                TreeMultimap.create(Ordering.natural(), ScoredCandidate.SCORE_ORDERING.compound(Ordering.usingToString()));
+                TreeMultimap.create(
+                        Ordering.natural(),
+                        ScoredCandidate.SCORE_ORDERING.compound(Ordering.usingToString())
+                );
         
         for (ScoredCandidate<T> candidate : filteredCandidates) {
             publisherBins.put(candidate.candidate().getPublisher(), candidate);

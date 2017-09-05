@@ -12,6 +12,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
@@ -179,15 +181,30 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
      * @inheritDoc
      */
     @Override
-    public final ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates,
-            ResultDescription desc) {
+    public final ScoredCandidates<Item> score(
+            Item subject,
+            Set<? extends Item> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName(getName());
+
         Builder<Item> equivalents = DefaultScoredCandidates.fromSource(getName());
 
         Optional<Container> subjectContainer = getContainerIfHasTitle(subject);
         
         for (Item candidate : candidates) {
-            equivalents.addEquivalent(candidate, score(subject, subjectContainer, candidate, desc));
+            Score equivScore = score(subject, subjectContainer, candidate, desc);
+            equivalents.addEquivalent(candidate, equivScore);
+
+            scorerComponent.addComponentResult(
+                    subject.getId(),
+                    String.valueOf(equivScore.asDouble())
+            );
         }
+
+        equivToTelescopeResults.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

@@ -5,6 +5,9 @@ import java.util.List;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.media.entity.Content;
 
 import com.google.common.base.Optional;
 
@@ -26,7 +29,15 @@ public class PercentThresholdEquivalenceExtractor<T> implements EquivalenceExtra
     private static final String NAME = "Percent Extractor";
     
     @Override
-    public Optional<ScoredCandidate<T>> extract(List<ScoredCandidate<T>> candidates, T subject, ResultDescription desc) {
+    public Optional<ScoredCandidate<T>> extract(
+            List<ScoredCandidate<T>> candidates,
+            T subject,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent extractorCompoenent = EquivToTelescopeComponent.create();
+        extractorCompoenent.setComponentName("Percent Threshold Equivalence Extractor");
+
         desc.startStage(NAME);
         
         if (candidates.isEmpty()) {
@@ -39,6 +50,11 @@ public class PercentThresholdEquivalenceExtractor<T> implements EquivalenceExtra
         ScoredCandidate<T> strongest = candidates.get(0);
         if (strongest.score().isRealScore() && strongest.score().asDouble() / total > threshold) {
             desc.appendText("%s extracted. %s / %s > %s", strongest.candidate(), strongest.score(), total, threshold).finishStage();
+            extractorCompoenent.addComponentResult(
+                    ((Content) strongest.candidate()).getId(),
+                    String.valueOf(strongest.score().asDouble())
+            );
+            equivToTelescopeResults.addExtractorResult(extractorCompoenent);
             return Optional.of(strongest);
         }
         

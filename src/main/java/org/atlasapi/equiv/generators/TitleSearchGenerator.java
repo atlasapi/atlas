@@ -10,6 +10,8 @@ import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorM
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
@@ -72,13 +74,20 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     @Override
-    public ScoredCandidates<T> generate(T content, ResultDescription desc) {
+    public ScoredCandidates<T> generate(
+            T content,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Title Search Generator");
+
         if (Strings.isNullOrEmpty(content.getTitle())) {
             desc.appendText("subject has no title");
             return DefaultScoredCandidates.<T>fromSource(NAME).build();
         }
         Iterable<? extends T> candidates = searchForCandidates(content, desc);
-        return titleScorer.scoreCandidates(content, candidates, desc);
+        return titleScorer.scoreCandidates(content, candidates, desc, generatorComponent);
     }
 
     @Override
@@ -90,7 +99,9 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     private Iterable<? extends T> searchForCandidates(T content, ResultDescription desc) {
-        Set<Publisher> publishers = Sets.difference(searchPublishers, ImmutableSet.of(content.getPublisher()));
+        Set<Publisher> publishers = Sets.difference(
+                searchPublishers, ImmutableSet.of(content.getPublisher())
+        );
         Application application = DefaultApplication.createWithReads(Lists.newArrayList(publishers));
 
         String title = titleTransform.apply(content.getTitle());

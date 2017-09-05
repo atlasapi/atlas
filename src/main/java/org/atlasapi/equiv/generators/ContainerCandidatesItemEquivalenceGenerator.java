@@ -11,6 +11,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
@@ -43,14 +45,24 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
         }
     };
 
-    public ContainerCandidatesItemEquivalenceGenerator(ContentResolver contentResolver, EquivalenceSummaryStore equivSummaryStore) {
+    public ContainerCandidatesItemEquivalenceGenerator(
+            ContentResolver contentResolver,
+            EquivalenceSummaryStore equivSummaryStore
+    ) {
         this.contentResolver = contentResolver;
         this.equivSummaryStore = equivSummaryStore;
     }
 
     @Override
-    public ScoredCandidates<Item> generate(Item subject, ResultDescription desc) {
+    public ScoredCandidates<Item> generate(
+            Item subject,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         Builder<Item> result = DefaultScoredCandidates.fromSource("Container");
+
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Container Candidates Item Equivalence Generator");
 
         ParentRef parent = subject.getContainer();
         if (parent != null) {
@@ -62,10 +74,16 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
                 for (Item child : childrenOf(summary.getCandidates())) {
                     if (child.isActivelyPublished()) {
                         result.addEquivalent(child, Score.NULL_SCORE);
+                        generatorComponent.addComponentResult(
+                                child.getId(),
+                                ""
+                        );
                     }
                 }
             }
         }
+
+        equivToTelescopeResults.addGeneratorResult(generatorComponent);
 
         return result.build();
     }

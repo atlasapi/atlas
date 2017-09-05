@@ -5,6 +5,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 
 import com.google.common.collect.ImmutableSet;
@@ -23,12 +25,21 @@ public final class ContentTitleScorer<T extends Content> {
         this.exactMatchScore = exactMatchScore;
     }
 
-    public ScoredCandidates<T> scoreCandidates(T content, Iterable<? extends T> candidates, ResultDescription desc) {
+    public ScoredCandidates<T> scoreCandidates(
+            T content, Iterable<? extends T> candidates,
+            ResultDescription desc,
+            EquivToTelescopeComponent generatorComponent
+    ) {
         Builder<T> equivalents = DefaultScoredCandidates.fromSource(name);
         desc.appendText("Scoring %s candidates", Iterables.size(candidates));
         
         for (T found : ImmutableSet.copyOf(candidates)) {
-            equivalents.addEquivalent(found, score(content, found, desc));
+            Score equivScore = score(content, found, desc);
+            equivalents.addEquivalent(found, equivScore);
+            generatorComponent.addComponentResult(
+                    found.getId(),
+                    String.valueOf(equivScore.asDouble())
+            );
         }
 
         return equivalents.build();

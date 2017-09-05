@@ -8,6 +8,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
@@ -37,22 +39,49 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
     private final EquivalenceSummaryStore summaryStore;
     private final ContentResolver resolver;
     
-    public ContainerChildEquivalenceGenerator(ContentResolver resolver, EquivalenceSummaryStore summaryStore) {
+    public ContainerChildEquivalenceGenerator(
+            ContentResolver resolver,
+            EquivalenceSummaryStore summaryStore
+    ) {
         this.resolver = resolver;
         this.summaryStore = summaryStore;
     }
     
     @Override
-    public ScoredCandidates<Container> generate(Container content, ResultDescription desc) {
-        OptionalMap<String,EquivalenceSummary> childSummaries = summaryStore.summariesForUris(Iterables.transform(content.getChildRefs(), ChildRef.TO_URI));
+    public ScoredCandidates<Container> generate(
+            Container content,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Container Child Equivalence Generator");
+
+        OptionalMap<String,EquivalenceSummary> childSummaries = summaryStore.summariesForUris(
+                Iterables.transform(content.getChildRefs(), ChildRef.TO_URI)
+        );
         Multiset<String> parents = HashMultiset.create();
         for (EquivalenceSummary summary : Optional.presentInstances(childSummaries.values())) {
-            Iterables.addAll(parents, Iterables.filter(Iterables.transform(summary.getEquivalents().values(), TO_PARENT), Predicates.notNull()));
+            Iterables.addAll(parents, Iterables.filter(Iterables.transform(
+                    summary.getEquivalents().values(), TO_PARENT
+            ), Predicates.notNull()));
         }
-        return scoreContainers(parents, childSummaries.size(), desc);
+        return scoreContainers(
+                parents,
+                childSummaries.size(),
+                desc,
+                equivToTelescopeResults,
+                generatorComponent
+        );
     }
 
-    private ScoredCandidates<Container> scoreContainers(Multiset<String> parents, int children, ResultDescription desc) {
+    private ScoredCandidates<Container> scoreContainers(
+            Multiset<String> parents,
+            int children,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults,
+            EquivToTelescopeComponent generatorComponent
+    ) {
         Builder<Container> candidates = DefaultScoredCandidates.fromSource(NAME);
 
         ResolvedContent containers = resolver.findByCanonicalUris(parents.elementSet());
@@ -66,6 +95,12 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
                     if (container.isActivelyPublished()) {
                         Score score = score(parent.getCount(), children);
                         candidates.addEquivalent(container, score);
+
+                        generatorComponent.addComponentResult(
+                                container.getId(),
+                                String.valueOf(score.asDouble())
+                        );
+
                         desc.appendText(
                                 "%s: scored %s (%s)",
                                 container.getCanonicalUri(),
@@ -80,6 +115,8 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
                 desc.appendText("%s: missing", parent);
             }
         }
+
+        equivToTelescopeResults.addGeneratorResult(generatorComponent);
         
         return candidates.build();
     }

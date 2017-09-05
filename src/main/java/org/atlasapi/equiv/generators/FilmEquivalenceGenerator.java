@@ -12,6 +12,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -65,8 +67,15 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
     }
 
     @Override
-    public ScoredCandidates<Item> generate(Item item, ResultDescription desc) {
+    public ScoredCandidates<Item> generate(
+            Item item,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         Builder<Item> scores = DefaultScoredCandidates.fromSource("Film");
+
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Film Equivalence Generator");
 
         if (!(item instanceof Film)
                 || !item.isActivelyPublished()) {
@@ -118,16 +127,30 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             if(imdbRef.hasValue() && equivImdbRef.hasValue() && Objects.equal(imdbRef.requireValue(), equivImdbRef.requireValue())) {
                 desc.appendText("%s (%s) scored 1.0 (IMDB match)", equivFilm.getTitle(), equivFilm.getCanonicalUri());
                 scores.addEquivalent(equivFilm, Score.valueOf(1.0));
+                generatorComponent.addComponentResult(
+                        equivFilm.getId(),
+                        "1.0"
+                );
                 
             } else if ((film.getYear() != null && tolerableYearDifference(film, equivFilm)) || (film.getYear() == null && acceptNullYears)) {
                 Score score = Score.valueOf(titleMatcher.titleMatch(film, equivFilm));
                 desc.appendText("%s (%s) scored %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), score);
                 scores.addEquivalent(equivFilm, score);
+                generatorComponent.addComponentResult(
+                        equivFilm.getId(),
+                        String.valueOf(score.asDouble())
+                );
             } else {
                 desc.appendText("%s (%s) ignored. Wrong year %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), equivFilm.getYear());
                 scores.addEquivalent(equivFilm, Score.negativeOne());
+                generatorComponent.addComponentResult(
+                        equivFilm.getId(),
+                        "-1.0"
+                );
             }
         }
+
+        equivToTelescopeResults.addGeneratorResult(generatorComponent);
         
         return scores.build();
     }

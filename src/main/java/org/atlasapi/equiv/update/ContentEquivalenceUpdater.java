@@ -30,6 +30,7 @@ import org.atlasapi.reporting.telescope.TelescopeUtilityMethodsAtlas;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.gson.Gson;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -106,8 +107,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         
         List<ScoredCandidates<T>> mergedScores = merger.merge(
                 generatedScores,
-                scoredScores,
-                resultsForTelescope
+                scoredScores
         );
         
         EquivalenceResult<T> result = resultBuilder.resultFor(
@@ -123,10 +123,13 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             messenger.sendMessage(result);
         }
 
+        Gson gson = new Gson();
+        String equivResultsJson = gson.toJson(resultsForTelescope);
+
         telescope.reportSuccessfulEvent(
                 content.getId(),
                 content.getAliases(),
-                resultsForTelescope
+                equivResultsJson
         );
 
         result.strongEquivalences().values().forEach(
@@ -135,7 +138,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                         telescope.reportSuccessfulEvent(
                                 candidate.getId(),
                                 candidate.getAliases(),
-                                resultsForTelescope
+                                equivResultsJson
                         );
                 }
         );

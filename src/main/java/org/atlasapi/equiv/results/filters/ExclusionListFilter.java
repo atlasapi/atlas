@@ -4,6 +4,8 @@ import java.util.Set;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Identified;
 
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
@@ -33,7 +35,14 @@ public class ExclusionListFilter<T extends Identified> extends AbstractEquivalen
     }
 
     @Override
-    protected boolean doFilter(ScoredCandidate<T> candidate, T subject, ResultDescription desc) {
+    protected boolean doFilter(
+            ScoredCandidate<T> candidate,
+            T subject,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
+        filterComponent.setComponentName("Exclusion List Filter");
 
         ImmutableList<Long> excludedDecodedIds = excludedIds.stream()
                 .map(id -> codec.decode(id).longValue())
@@ -45,7 +54,13 @@ public class ExclusionListFilter<T extends Identified> extends AbstractEquivalen
         if (!result) {
             desc.appendText("%s removed as contained in exclusion list", 
                 candidate.candidate().getCanonicalUri());
+            filterComponent.addComponentResult(
+                    candidate.candidate().getId(),
+                    "Removed as it is present in the exclusion list"
+            );
         }
+
+        equivToTelescopeResults.addFilterResult(filterComponent);
 
         return result;
     }

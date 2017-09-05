@@ -4,6 +4,8 @@ import java.util.List;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
 
 import com.google.common.base.Optional;
@@ -15,7 +17,15 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
     private static final double MULTI_THRESHOLD = 0.7;
 
     @Override
-    public Optional<ScoredCandidate<Item>> extract(List<ScoredCandidate<Item>> candidates, Item subject, ResultDescription desc) {
+    public Optional<ScoredCandidate<Item>> extract(
+            List<ScoredCandidate<Item>> candidates,
+            Item subject,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
+        extractorComponent.setComponentName("Music Equivalence Extractor");
+
         if (candidates.isEmpty()) {
             return Optional.absent();
         }
@@ -33,6 +43,11 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
             ScoredCandidate<Item> only = positiveScores.get(0);
             result = candidateIfOverThreshold(only, MULTI_THRESHOLD, desc);
         }
+
+        extractorComponent.addComponentResult(
+                result.get().candidate().getId(),
+                String.valueOf(result.get().score())
+        );
         
         desc.finishStage();
         return result; 

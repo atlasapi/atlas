@@ -6,6 +6,8 @@ import java.util.Set;
 
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
@@ -44,8 +46,12 @@ public class MultipleCandidateExtractor<T extends Content> {
 
     public Optional<Set<ScoredCandidate<T>>> extract(
             List<ScoredCandidate<T>> candidates,
-            T target
+            T target,
+            EquivToTelescopeResults equivToTelescopeResults
     ) {
+        EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
+        extractorComponent.setComponentName("Multiple Candidate Extractor");
+
         if (isSeriesOrBrand(target) || candidates.isEmpty()) {
             return Optional.absent();
         }
@@ -73,6 +79,16 @@ public class MultipleCandidateExtractor<T extends Content> {
                 .collect(MoreCollectors.toImmutableSet());
 
         allowedCandidates.addAll(matchedCandidates);
+
+        allowedCandidates.forEach(candidate -> {
+                    extractorComponent.addComponentResult(
+                            candidate.candidate().getId(),
+                            String.valueOf(candidate.score().asDouble())
+                    );
+                }
+        );
+
+        equivToTelescopeResults.addExtractorResult(extractorComponent);
 
         // If we have found a group of candidates return it otherwise return absent and let
         // the configured extractor decide instead

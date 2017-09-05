@@ -13,6 +13,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.CrewMember.Role;
 import org.atlasapi.media.entity.Item;
@@ -39,7 +41,15 @@ public class CrewMemberScorer implements EquivalenceScorer<Item> {
     
     
     @Override
-    public ScoredCandidates<Item> score(Item content, Set<? extends Item> candidates, ResultDescription desc) {
+    public ScoredCandidates<Item> score(
+            Item content,
+            Set<? extends Item> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName("Crew Member Scorer");
+
         Builder<Item> scored = DefaultScoredCandidates.fromSource("crew");
 
         List<CrewMember> contentCrew = peopleExtractor.apply(content);
@@ -48,6 +58,10 @@ public class CrewMemberScorer implements EquivalenceScorer<Item> {
             desc.appendText("Subject has no crew");
             for (Item candidate : candidates) {
                 scored.addEquivalent(candidate, Score.NULL_SCORE);
+                scorerComponent.addComponentResult(
+                        candidate.getId(),
+                        ""
+                );
             }
             return scored.build();
         }
@@ -64,6 +78,10 @@ public class CrewMemberScorer implements EquivalenceScorer<Item> {
                 desc.finishStage();
             }
             scored.addEquivalent(candidate, score);
+            scorerComponent.addComponentResult(
+                    candidate.getId(),
+                    String.valueOf(score.asDouble())
+            );
         }
         return scored.build();
     }

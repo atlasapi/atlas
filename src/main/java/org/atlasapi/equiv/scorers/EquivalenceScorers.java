@@ -5,6 +5,7 @@ import java.util.Set;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
@@ -22,14 +23,19 @@ public class EquivalenceScorers<T> {
         this.scorers = ImmutableList.copyOf(scorers);
     }
 
-    public List<ScoredCandidates<T>> score(T content, Set<? extends T> candidates, ResultDescription desc) {
+    public List<ScoredCandidates<T>> score(
+            T content,
+            Set<? extends T> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         desc.startStage("Scoring equivalences");
         Builder<ScoredCandidates<T>> scoredScores = ImmutableList.builder();
 
         for (EquivalenceScorer<T> scorer : scorers) {
             try {
                 desc.startStage(scorer.toString());
-                scoredScores.add(scorer.score(content, candidates, desc));
+                scoredScores.add(scorer.score(content, candidates, desc, equivToTelescopeResults));
                 desc.finishStage();
             } catch (Exception e) {
                 throw new RuntimeException(String.format("{} - {}", scorer, content), e);

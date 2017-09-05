@@ -6,6 +6,7 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
@@ -41,7 +42,10 @@ public class PicksChannelDayUpdateController {
             HttpServletResponse response) throws Exception {
 
         //this telescope is created because it is needed as an argument, but never used.
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(OwlTelescopeReporters.PICKS_CONTENT_GROUP_UPDATER, Event.Type.INGEST);
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
+                        OwlTelescopeReporters.PICKS_CONTENT_GROUP_UPDATER,
+                        Event.Type.INGEST
+        );
 
         try {
             Maybe<Channel> channel = channelResolver.fromId(channelIdCodec.decode(channelId).longValue());

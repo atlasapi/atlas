@@ -8,6 +8,7 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import org.joda.time.LocalDate;
@@ -52,7 +53,10 @@ public class ScheduleDayUpdateController {
     public void updateScheduleDay(HttpServletResponse resp,
             @PathVariable("service") String service, @PathVariable("date") String date) throws IOException {
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(OwlTelescopeReporters.BBC_NITRO_INGEST_API, Event.Type.INGEST);
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
+                OwlTelescopeReporters.BBC_NITRO_INGEST_API,
+                Event.Type.INGEST
+        );
         telescope.startReporting();
         
         Maybe<Channel> possibleChannel = resolver.fromUri(BbcIonServices.get(service));

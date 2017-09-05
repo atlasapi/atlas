@@ -577,7 +577,7 @@
         <dependency>
             <groupId>com.metabroadcast.columbus.telescope</groupId>
             <artifactId>telescope-client-shaded</artifactId>
-            <version>1.0-20170815.120924-16</version>
+            <version>1.0-SNAPSHOT</version>
         </dependency>
         <dependency>
             <groupId>jaxen</groupId>

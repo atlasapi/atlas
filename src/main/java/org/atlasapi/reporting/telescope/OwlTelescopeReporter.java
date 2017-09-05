@@ -5,7 +5,9 @@ import java.util.Set;
 
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
+import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporter;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 import com.metabroadcast.common.media.MimeType;
@@ -44,13 +46,13 @@ public class OwlTelescopeReporter extends TelescopeReporter {
 
     private final Event.Type eventType ;
 
-    protected OwlTelescopeReporter(TelescopeReporterName reporterName, Event.Type eventType) {
-        super(reporterName, Configurer.get("telescope.environment").get(), Configurer.get("telescope.host").get());
+    public OwlTelescopeReporter(
+            TelescopeReporterName reporterName,
+            Event.Type eventType,
+            Environment environment,
+            TelescopeClientImpl client) {
+        super(reporterName, environment, client);
         this.eventType = eventType;
-    }
-
-    public static OwlTelescopeReporter create(TelescopeReporterName reporterName, Event.Type eventType) {
-       return new OwlTelescopeReporter(reporterName, eventType);
     }
 
     private void reportSuccessfulEventGeneric(

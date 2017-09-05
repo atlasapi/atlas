@@ -18,6 +18,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.google.common.base.Supplier;
@@ -86,7 +87,7 @@ public class ScheduleEquivalenceUpdateTask extends ScheduledTask {
                 .iterator();
         LocalDate start, end;
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.CHANNEL_SCHEDULE_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );

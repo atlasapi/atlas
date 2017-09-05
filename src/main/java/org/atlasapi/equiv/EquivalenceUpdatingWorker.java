@@ -12,6 +12,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import org.joda.time.DateTime;
@@ -99,7 +100,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
 
     private synchronized void rotateTelescope() {
         if (telescope == null) {
-            telescope = OwlTelescopeReporter.create(
+            telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                     OwlTelescopeReporters.EQUIVALENCE_UPDATING_WORKER,
                     Event.Type.EQUIVALENCE
             );
@@ -107,7 +108,7 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
             timeSinceTelescopeRotated = DateTime.now();
         } else if (timeSinceTelescopeRotated.plusHours(1).isBeforeNow()) {
             telescope.endReporting();
-            telescope = OwlTelescopeReporter.create(
+            telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                     OwlTelescopeReporters.EQUIVALENCE_UPDATING_WORKER,
                     Event.Type.EQUIVALENCE
             );

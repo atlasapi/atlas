@@ -105,8 +105,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         
         List<ScoredCandidates<T>> mergedScores = merger.merge(
                 generatedScores,
-                scoredScores,
-                resultsForTelescope
+                scoredScores
         );
         
         EquivalenceResult<T> result = resultBuilder.resultFor(

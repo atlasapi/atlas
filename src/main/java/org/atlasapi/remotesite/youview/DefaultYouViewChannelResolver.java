@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.youview;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
@@ -111,22 +112,23 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
     }
 
     private ResolvedChannels resolveChannels() {
-        Builder<Integer, Channel> channelMapBuilder = ImmutableMap.builder();
-        Builder<Integer, String> aliasMapBuilder = ImmutableMap.builder();
+        Map<Integer, Channel> channelMap = new LinkedHashMap<>();
+        Map<Integer, String> aliasMap = new LinkedHashMap<>();
 
         for (String prefix : aliasPrefixes) {
-            buildEntriesForPrefix(prefix, channelMapBuilder, aliasMapBuilder);
+            buildEntriesForPrefix(prefix, channelMap, aliasMap);
         }
 
         return ResolvedChannels.create(
-                channelMapBuilder.build(),
-                aliasMapBuilder.build()
+                ImmutableMap.copyOf(channelMap),
+                ImmutableMap.copyOf(aliasMap)
         );
     }
 
     private void buildEntriesForPrefix(
-            String prefix, Builder<Integer, Channel> channelMapBuilder,
-            Builder<Integer, String> aliasMapBuilder
+            String prefix,
+            Map<Integer, Channel> channelMap,
+            Map<Integer, String> aliasMap
     ) {
         Pattern pattern = Pattern.compile("^" + prefix + "(\\d+)$");
         Multimap<Channel, String> overrides = overrideAliasesForPrefix(channelResolver, prefix);
@@ -146,13 +148,13 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
                 alias = overrideFor(channel, overrides).or(channelAlias);
             }
 
-            addService(pattern, alias, channel, channelMapBuilder, aliasMapBuilder);
+            addService(pattern, alias, channel, channelMap, aliasMap);
             foundMappings.add(channel);
         }
 
         // ensure that where there's _only_ an override on a channel that's taken into account
         addOverridesWhereNoPrimaryAliasExists(
-                pattern, foundMappings, overrides, channelMapBuilder, aliasMapBuilder
+                pattern, foundMappings, overrides, channelMap, aliasMap
         );
     }
 
@@ -166,8 +168,13 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
         return overrideAliases.build();
     }
 
-    private void addService(Pattern pattern, String alias, Channel channel,
-            Builder<Integer, Channel> channelMapBuilder, Builder<Integer, String> aliasMapBuilder) {
+    private void addService(
+            Pattern pattern,
+            String alias,
+            Channel channel,
+            Map<Integer, Channel> channelMap,
+            Map<Integer, String> aliasMap
+    ) {
         Matcher m = pattern.matcher(alias);
         if (!m.matches()) {
             log.error("Could not parse YouView alias " + alias);
@@ -175,20 +182,41 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
         }
         Integer serviceId = Integer.decode(m.group(1));
 
-        channelMapBuilder.put(serviceId, channel);
-        aliasMapBuilder.put(serviceId, alias);
+        checkAdd(channelMap, serviceId, channel);
+        checkAdd(aliasMap, serviceId, alias);
     }
 
-    private void addOverridesWhereNoPrimaryAliasExists(Pattern pattern, Set<Channel> foundMappings,
-            Multimap<Channel, String> overrides, Builder<Integer, Channel> channelMapBuilder,
-            Builder<Integer, String> aliasMapBuilder) {
+    private <T> void checkAdd(Map<Integer, T> map, Integer serviceId, T obj) {
+        T old = map.put(serviceId, obj);
+        if (old != null) {
+            if (old.equals(obj)) {
+                log.warn("{} added twice for serviceId={}: {}",
+                        old.getClass().getSimpleName(), serviceId, old);
+            } else {
+                log.error("Multiple {}s with the same serviceId={}: {}, {}",
+                        old.getClass().getSimpleName(), serviceId, old, obj);
+            }
+        }
+    }
 
+    private void addOverridesWhereNoPrimaryAliasExists(
+            Pattern pattern,
+            Set<Channel> foundMappings,
+            Multimap<Channel, String> overrides,
+            Map<Integer, Channel> channelMap,
+            Map<Integer, String> aliasMap
+    ) {
         for (Entry<Channel, String> override : overrides.entries()) {
             if (foundMappings.contains(override.getKey())) {
                 continue;
             }
-            addService(pattern, normaliseOverrideAlias(override.getValue()), override.getKey(),
-                    channelMapBuilder, aliasMapBuilder);
+            addService(
+                    pattern,
+                    normaliseOverrideAlias(override.getValue()),
+                    override.getKey(),
+                    channelMap,
+                    aliasMap
+            );
         }
     }
 

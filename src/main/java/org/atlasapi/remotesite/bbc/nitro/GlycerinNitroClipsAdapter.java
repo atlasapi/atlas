@@ -6,6 +6,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import javax.annotation.Nullable;
 
@@ -91,14 +93,12 @@ public class GlycerinNitroClipsAdapter {
                 = Iterables.transform(Iterables.filter(getNitroClips(refs), isClip), toClip);
             
             if (Iterables.isEmpty(nitroClips)) {
-                log.warn("No programmes found for clipRefs {}", Iterables.transform(refs, new Function<PidReference, String>() {
-
-                    @Override
-                    public String apply(@Nullable PidReference pidRef) {
-                        return pidRef.getPid();
-                    }
-                    
-                }));
+                //this log line spams the log and we generally ignore it anyway.
+//                log.warn("No programmes found for clipRefs {}",
+//                        StreamSupport.stream(refs.spliterator(), false)
+//                                .map(pidRef -> pidRef.getPid())
+//                                .collect(Collectors.toList())
+//                );
                 return ImmutableMultimap.of();
             }
             
@@ -120,15 +120,12 @@ public class GlycerinNitroClipsAdapter {
             Iterable<com.metabroadcast.atlas.glycerin.model.Clip> nitroClips = Iterables
                     .transform(Iterables.filter(getNitroClips(ref), isClip), toClip);
 
-            if (Iterables.isEmpty(nitroClips)) {
-                log.warn("No programmes found for clipRefs {}", ref, new Function<PidReference, String>() {
-
-                    @Override
-                    public String apply(PidReference pidRef) {
-                        return pidRef.getPid();
-                    }
-                });
-            }
+            //this log line spams the log and we generally ignore it anyway
+//            if (Iterables.isEmpty(nitroClips)) {
+//                log.warn("No programmes found for clipRefs {}", ref,
+//                        (Function<PidReference, String>) pidRef -> pidRef.getPid()
+//                );
+//            }
 
             ImmutableList.Builder<org.atlasapi.media.entity.Clip> extractedClips = ImmutableList.builder();
             for (Clip clip : nitroClips) {

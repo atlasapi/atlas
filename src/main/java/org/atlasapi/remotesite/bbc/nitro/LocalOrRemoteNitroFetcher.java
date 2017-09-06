@@ -452,17 +452,23 @@ public class LocalOrRemoteNitroFetcher {
     public static final <T extends Identified> Map<String, ModelWithPayload<T>> getIndex(
             Set<ModelWithPayload<T>> iter) {
 
-        return StreamSupport.stream(iter.spliterator(), false)
+        final boolean[] warning = new boolean[1];
+        Map<String, ModelWithPayload<T>> collected
+                = StreamSupport.stream(iter.spliterator(), false)
                 .collect(Collectors.toMap(
-                        mwp -> mwp.getModel().getCanonicalUri() ,
+                        mwp -> mwp.getModel().getCanonicalUri(),
                         mwp -> mwp,
                         (mwp1, mwp2) -> {
-                            log.warn(
-                                    "Duplicate keys where found while trying to create an index of " + iter + ". "
-                                    + mwp1 + " was discarded and " + mwp2 + " was retained.");
+                            warning[0] = true;
                             return mwp2;
                         }
                 ));
+        if (warning[0]) {
+            log.warn( "Duplicate keys where found while trying to create an index of Iterables. "
+                    + "Only the latest instance was retained.");
+        }
+
+        return collected;
     }
     
 }

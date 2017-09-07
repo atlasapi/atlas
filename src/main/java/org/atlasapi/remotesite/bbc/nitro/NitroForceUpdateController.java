@@ -231,8 +231,8 @@ public class NitroForceUpdateController {
             HttpServletResponse response, String pid,
             OwlTelescopeReporter telescope)
             throws IOException {
-        Iterable<List<ModelWithPayload<Item>>> itemsWithPayload = null;
-        ModelWithPayload<Item> itemWithPayload = null;
+        Iterable<List<ModelWithPayload<Item>>> itemsWithPayload;
+        ModelWithPayload<Item> itemWithPayload;
         try {
             itemsWithPayload = contentAdapter
                     .fetchEpisodes(
@@ -252,8 +252,7 @@ public class NitroForceUpdateController {
         }catch (NitroException e) {
             log.error("Failed to get Nitro item {}", pid, e);
             telescope.reportFailedEvent(
-                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")",
-                    itemsWithPayload);
+                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")");
             writeServerErrorWithStack(response, e);
             return;
         }

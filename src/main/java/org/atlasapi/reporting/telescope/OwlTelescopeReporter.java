@@ -11,7 +11,6 @@ import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporter;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.properties.Configurer;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -154,7 +153,11 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             }
             sb.append("\"Payload-").append(i).append("-").append(o.getClass().getSimpleName()).append("\":");
             try {
-                sb.append(objectMapper.writeValueAsString(o));
+                if(o instanceof CharSequence){ //if it a string, don't convert it.
+                    sb.append(o);
+                } else {
+                    sb.append(objectMapper.writeValueAsString(o));
+                }
             } catch (JsonProcessingException e) {
                 sb.append("{\"objectMapper\": \"Couldn't convert the given object to a JSON string. (" +
                           StringEscapeUtils.escapeJava(e.getMessage()) + ")\"}" );

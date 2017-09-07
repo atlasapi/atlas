@@ -1,8 +1,6 @@
 package org.atlasapi.reporting.telescope;
 
 import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.RejectedExecutionHandler;
-import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
@@ -11,7 +9,6 @@ import javax.annotation.Nullable;
 
 import org.atlasapi.AtlasMain;
 
-import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterFactory;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
@@ -25,6 +22,15 @@ import org.slf4j.LoggerFactory;
 public class OwlTelescopeReporterFactory extends TelescopeReporterFactory {
     private static final Logger log = LoggerFactory.getLogger(OwlTelescopeReporterFactory.class);
 
+    private OwlTelescopeReporterFactory(
+            @Nonnull String env,
+            @Nonnull String host,
+            @Nonnull ThreadPoolExecutor executor,
+            @Nullable MetricRegistry metricsRegistry,
+            @Nullable String metricsPrefix) {
+        super(env, host, executor, metricsRegistry, metricsPrefix);
+    }
+
     //If fewer than this threads are running, a new thread is created. Else things are queued.
     private static final int CORE_THREADS = 5;
     //If the queue is full, spawn a new thread up to this number.
@@ -35,6 +41,7 @@ public class OwlTelescopeReporterFactory extends TelescopeReporterFactory {
     private static final String METRICS_PREFIX = "atlas-owl-main";
 
 
+    //Implement this as a Singleton
     private static OwlTelescopeReporterFactory INSTANCE;
     public static synchronized OwlTelescopeReporterFactory getInstance() {
         if (INSTANCE == null) {
@@ -58,24 +65,6 @@ public class OwlTelescopeReporterFactory extends TelescopeReporterFactory {
         }
 
         return INSTANCE;
-    }
-
-
-    /**
-     * @param env             Accepts a String that should match {@link Environment}.
-     * @param host            the url of the telescope server we are reporting to.
-     * @param executor        The executor will be shared between all Reporters produced by this
-     *                        factory
-     * @param metricsRegistry Can be null if you don't wish metrics to be registered.
-     * @throws IllegalArgumentException if it dislikes any of the passed arguments.
-     */
-    private OwlTelescopeReporterFactory(
-            @Nonnull String env,
-            @Nonnull String host,
-            @Nonnull ThreadPoolExecutor executor,
-            @Nullable MetricRegistry metricsRegistry,
-            @Nullable String metricsPrefix) {
-        super(env, host, executor, metricsRegistry, metricsPrefix);
     }
 
     public OwlTelescopeReporter getTelescopeReporter(TelescopeReporterName reporterName, Event.Type eventType){

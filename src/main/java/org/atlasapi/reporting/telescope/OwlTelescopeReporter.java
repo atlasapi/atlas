@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.event.Level;
 
 /**
  * startReporting, then report various events, and finally endReporting. If you do stuff in the
@@ -43,7 +44,7 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             //add the same mixin to every class that suffers from circular references
             .addMixIn(Iterable.class, PreventCircularReferences.class);
 
-    private final Event.Type eventType ;
+    private final Event.Type eventType;
 
     public OwlTelescopeReporter(
             TelescopeReporterName reporterName,
@@ -129,6 +130,7 @@ public class OwlTelescopeReporter extends TelescopeReporter {
     }
 
     public void reportFailedEvent(String errorMsg, Object... objectToSerialise) {
+
         Event event = super.getEventBuilder()
                 .withType(this.eventType)
                 .withStatus(Event.Status.FAILURE)
@@ -166,5 +168,16 @@ public class OwlTelescopeReporter extends TelescopeReporter {
     //this is used as mixin to object mapper. It appends the following field to be used as an identifying id for objects.
     @JsonIdentityInfo(generator=ObjectIdGenerators.IntSequenceGenerator.class, property="@PreventCircularReferencesId")
     interface PreventCircularReferences { }
+
+    // helper method so the log doesn't get spammed if telescope reporting has failed
+    private transient boolean errorLogged = false;
+    private void logError(String msg, Object... o) {
+        if (errorLogged) {
+            log.debug(msg, o);
+        } else {
+            log.error(msg, o);
+            errorLogged = true;
+        }
+    }
 
 }

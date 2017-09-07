@@ -46,7 +46,7 @@ public class OwlTelescopeReporter extends TelescopeReporter {
 
     private final Event.Type eventType;
 
-    public OwlTelescopeReporter(
+    protected OwlTelescopeReporter(
             TelescopeReporterName reporterName,
             Event.Type eventType,
             Environment environment,

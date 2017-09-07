@@ -60,13 +60,12 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             String warningMsg,
             String payload
     ) {
-        try { //fail graciously by reporting nothing, but print a full stack so we know who caused this
-            if (atlasItemId == null) {
-                throw new IllegalArgumentException("No atlasId was given");
-            }
-        }
-        catch(IllegalArgumentException e){
-            log.error( "Cannot report a successful event to telescope, without an atlasId", e);
+        //fail graciously by reporting nothing, but print a full stack so we know who caused this
+        if (atlasItemId == null) {
+            log.error(
+                    "Cannot report a successful event to telescope",
+                    new IllegalArgumentException("No atlasId was given")
+            );
             return;
         }
 
@@ -153,11 +152,7 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             }
             sb.append("\"Payload-").append(i).append("-").append(o.getClass().getSimpleName()).append("\":");
             try {
-                if(o instanceof CharSequence){ //if it a string, don't convert it.
-                    sb.append(o);
-                } else {
-                    sb.append(objectMapper.writeValueAsString(o));
-                }
+                sb.append(objectMapper.writeValueAsString(o));
             } catch (JsonProcessingException e) {
                 sb.append("{\"objectMapper\": \"Couldn't convert the given object to a JSON string. (" +
                           StringEscapeUtils.escapeJava(e.getMessage()) + ")\"}" );

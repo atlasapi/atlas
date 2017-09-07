@@ -18,17 +18,17 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
     BBC_NITRO_INGEST_API("bbc.nitro.ingester.api", "Nitro API Ingester"),
     BBC_NITRO_INGEST_CHANNELS("bbc.nitro.ingester.channels", "Nitro Channel Ingester"),
 
-    PICKS_CONTENT_GROUP_UPDATER("picks-content-group-updater","Mbst Picks Content Group Updater"),
+    PICKS_CONTENT_GROUP_UPDATER("mbst-picks-content-group-updater","Mbst Picks Content Group Updater"),
     
-    CHANNEL_EQUIVALENCE("channel-equivalence", "Channel Equivalence"),
-    CHANNEL_SCHEDULE_EQUIVALENCE("channel-schedule-equivalence", "Channel Schedule Equivalence"),
-    CHANNEL_EQUIVALENCE_UPDATE_TASK("channel-equivalence-update-task", "Channel Equivalence Update Task"),
-    EQUIVALENCE("equivalence", "Equivalence"),
-    EQUIVALENCE_UPDATING_WORKER("equivalence-updating-worker", "Equivalence Updating Worker"),
-    CONTENT_EQUIVALENCE_UPDATE_TASK("content-equivalence-update-task", "Content Equivalence Update Task"),
-    MANUAL_EQUIVALENCE("manual-equivalence", "Manual Equivalence"),
-    MANUAL_CHANNEL_EQUIVALENCE("manual-channel-equivalence", "Manual Channel Equivalence"),
-    QUERY_EXECUTOR_EQUIVALENCE("query-executor-equivalence", "Query Executor Equivalence")
+    CHANNEL_EQUIVALENCE("equivalence.channel.auto", "Channel Equivalence"),
+    CHANNEL_SCHEDULE_EQUIVALENCE("equivalence.channel-schedule", "Channel Schedule Equivalence"),
+    CHANNEL_EQUIVALENCE_UPDATE_TASK("equivalence.channel-update-task", "Channel Equivalence Update Task"),
+    EQUIVALENCE("equivalence.generic", "Equivalence"),
+    EQUIVALENCE_UPDATING_WORKER("equivalence.updating-worker", "Equivalence Updating Worker"),
+    CONTENT_EQUIVALENCE_UPDATE_TASK("equivalence.content-update-task", "Content Equivalence Update Task"),
+    MANUAL_EQUIVALENCE("equivalence.manual", "Manual Equivalence"),
+    MANUAL_CHANNEL_EQUIVALENCE("equivalence.channel.manual", "Manual Channel Equivalence"),
+    QUERY_EXECUTOR_EQUIVALENCE("equivalence.query-executor", "Query Executor Equivalence")
     ;
 
     final String reporterKey;

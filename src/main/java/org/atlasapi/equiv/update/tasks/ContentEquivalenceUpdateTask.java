@@ -15,6 +15,7 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
@@ -48,7 +49,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
         this.progressStore = progressStore;
         this.updater = RootEquivalenceUpdater.create(contentResolver, updater);
         this.ignored = ignored;
-        this.telescope = OwlTelescopeReporter.create(
+        telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );

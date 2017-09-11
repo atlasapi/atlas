@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.channel;
 
 import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.channel.Channel;
@@ -9,6 +8,7 @@ import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import org.slf4j.Logger;
@@ -48,7 +48,7 @@ public class ChannelEquivalenceUpdateTask extends ScheduledTask {
                 ChannelQuery.builder().withPublisher(publisher).build()
         );
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.CHANNEL_EQUIVALENCE_UPDATE_TASK,
                 Event.Type.EQUIVALENCE
         );

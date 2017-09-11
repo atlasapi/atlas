@@ -18,6 +18,7 @@ import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import org.slf4j.Logger;
@@ -95,7 +96,7 @@ public class ChannelEquivalenceUpdateController {
             return;
         }
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.MANUAL_CHANNEL_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );

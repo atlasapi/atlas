@@ -9,7 +9,6 @@ import java.util.stream.Collectors;
 import javax.annotation.Nullable;
 
 import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
@@ -17,6 +16,7 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 import org.atlasapi.util.GroupLock;
 
@@ -31,10 +31,8 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -103,7 +101,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
 
         reportStatus("Writing items");
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.BBC_NITRO_INGEST_OFFSCHEDULE,
                 Event.Type.INGEST
         );

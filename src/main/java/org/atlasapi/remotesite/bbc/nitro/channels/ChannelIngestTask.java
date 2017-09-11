@@ -6,6 +6,7 @@ import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.atlas.glycerin.GlycerinException;
@@ -57,7 +58,7 @@ public class ChannelIngestTask extends ScheduledTask {
 
     @Override
     protected void runTask() {
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.BBC_NITRO_INGEST_CHANNELS,
                 Event.Type.INGEST
         );

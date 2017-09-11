@@ -26,6 +26,7 @@ import com.google.common.collect.Iterables;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.properties.Configurer;
 import com.metabroadcast.common.queue.Worker;
 
 public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {

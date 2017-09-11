@@ -12,6 +12,7 @@ import org.atlasapi.AtlasMain;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterFactory;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
+import com.metabroadcast.common.ingest.monitorclient.model.Ingester;
 import com.metabroadcast.common.properties.Configurer;
 
 import com.codahale.metrics.MetricRegistry;
@@ -32,13 +33,13 @@ public class OwlTelescopeReporterFactory extends TelescopeReporterFactory {
     }
 
     //If fewer than this threads are running, a new thread is created. Else things are queued.
-    private static final int CORE_THREADS = 5;
+    private static final int CORE_THREADS = Integer.parseInt(Configurer.get("telescope.coreReportingThreads").get());
     //If the queue is full, spawn a new thread up to this number.
-    private static final int MAX_THREADS = 10;
+    private static final int MAX_THREADS = Integer.parseInt(Configurer.get("telescope.maxReportingThreads").get());
     //If new threads cant be spawned. Things that don't fit go to the RejectedExecutionHandler
-    private static final int QUEUE_SIZE = 5000;
-    private static final String THREAD_NAME = "atlas-owl-to-telescope";
-    private static final String METRICS_PREFIX = "atlas-owl-main";
+    private static final int QUEUE_SIZE = Integer.parseInt(Configurer.get("telescope.queueSize").get());
+    private static final String THREAD_NAME = Configurer.get("telescope.reportingThreadName").get();
+    private static final String METRICS_PREFIX = Configurer.get("telescope.metricsPrefix").get();
 
 
     //Implement this as a Singleton

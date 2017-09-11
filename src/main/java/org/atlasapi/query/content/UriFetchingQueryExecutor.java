@@ -30,6 +30,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.system.Fetcher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
@@ -127,7 +128,7 @@ public class UriFetchingQueryExecutor implements KnownTypeQueryExecutor {
             return results;
 		}
 
-		OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+		OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
 				OwlTelescopeReporters.QUERY_EXECUTOR_EQUIVALENCE,
 				Event.Type.EQUIVALENCE
 		);

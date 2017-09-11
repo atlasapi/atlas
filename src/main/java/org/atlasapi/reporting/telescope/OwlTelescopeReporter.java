@@ -5,11 +5,12 @@ import java.util.Set;
 
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
+import com.metabroadcast.columbus.telescope.api.Environment;
 import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporter;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
 import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.properties.Configurer;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -22,7 +23,6 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.event.Level;
 
 /**
  * startReporting, then report various events, and finally endReporting. If you do stuff in the
@@ -45,13 +45,13 @@ public class OwlTelescopeReporter extends TelescopeReporter {
 
     private final Event.Type eventType;
 
-    protected OwlTelescopeReporter(TelescopeReporterName reporterName, Event.Type eventType) {
-        super(reporterName, Configurer.get("telescope.environment").get(), Configurer.get("telescope.host").get());
+    protected OwlTelescopeReporter(
+            TelescopeReporterName reporterName,
+            Event.Type eventType,
+            Environment environment,
+            TelescopeClientImpl client) {
+        super(reporterName, environment, client);
         this.eventType = eventType;
-    }
-
-    public static OwlTelescopeReporter create(TelescopeReporterName reporterName, Event.Type eventType) {
-       return new OwlTelescopeReporter(reporterName, eventType);
     }
 
     private void reportSuccessfulEventGeneric(
@@ -60,8 +60,12 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             String warningMsg,
             String payload
     ) {
-        if (!isStarted()) {
-            logError("It was attempted to report atlasItem={}, but the telescope client was not started.", atlasItemId);
+        //fail graciously by reporting nothing, but print a full stack so we know who caused this
+        if (atlasItemId == null) {
+            log.error(
+                    "Cannot report a successful event to telescope",
+                    new IllegalArgumentException("No atlasId was given")
+            );
             return;
         }
 
@@ -83,11 +87,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
                 .build();
 
         reportEvent(event);
-
-        log.debug("Reported successfully event with taskId={}, eventId={}", getTaskId(), event.getId().orElse("null"));
-        if (isFinished()) {
-            log.warn("atlasItem={} was reported to telescope client={} after it has finished reporting.", atlasItemId, getTaskId());
-        }
     }
 
     //convenience methods for the most common reporting Formats
@@ -130,10 +129,7 @@ public class OwlTelescopeReporter extends TelescopeReporter {
     }
 
     public void reportFailedEvent(String errorMsg, Object... objectToSerialise) {
-        if (!isStarted()) {
-            logError("It was attempted to report an error to telescope, but the client has not been started.");
-            return;
-        }
+
         Event event = super.getEventBuilder()
                 .withType(this.eventType)
                 .withStatus(Event.Status.FAILURE)
@@ -145,11 +141,6 @@ public class OwlTelescopeReporter extends TelescopeReporter {
                 )
                 .build();
         reportEvent(event);
-
-        log.debug("Reported successfully a FAILED event with taskId={}, error={}", getTaskId(), errorMsg);
-        if (isFinished()) {
-            log.warn("An error was reported to telescope after the telescope client (taskId={}) has finished reporting.", getTaskId());
-        }
     }
 
     public static String serialize(Object... objectsToSerialise) {

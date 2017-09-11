@@ -19,6 +19,7 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.atlas.glycerin.GlycerinException;
@@ -75,7 +76,7 @@ public class NitroForceUpdateController {
             HttpServletResponse response,
             @PathVariable("pid") String pid
     ) throws IOException {
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.BBC_NITRO_INGEST_API,
                 Event.Type.INGEST
         );
@@ -159,7 +160,7 @@ public class NitroForceUpdateController {
             @PathVariable("type") String type,
             @PathVariable("pid") String pid
     ) throws IOException {
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.BBC_NITRO_INGEST_API,
                 Event.Type.INGEST
         );
@@ -230,8 +231,8 @@ public class NitroForceUpdateController {
             HttpServletResponse response, String pid,
             OwlTelescopeReporter telescope)
             throws IOException {
-        Iterable<List<ModelWithPayload<Item>>> itemsWithPayload = null;
-        ModelWithPayload<Item> itemWithPayload = null;
+        Iterable<List<ModelWithPayload<Item>>> itemsWithPayload;
+        ModelWithPayload<Item> itemWithPayload;
         try {
             itemsWithPayload = contentAdapter
                     .fetchEpisodes(
@@ -251,8 +252,7 @@ public class NitroForceUpdateController {
         }catch (NitroException e) {
             log.error("Failed to get Nitro item {}", pid, e);
             telescope.reportFailedEvent(
-                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")",
-                    itemsWithPayload);
+                    "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")");
             writeServerErrorWithStack(response, e);
             return;
         }

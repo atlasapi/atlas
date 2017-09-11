@@ -20,6 +20,7 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
@@ -106,7 +107,7 @@ public class ContentEquivalenceUpdateController {
             return;
         }
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
                 OwlTelescopeReporters.MANUAL_EQUIVALENCE,
                 Event.Type.EQUIVALENCE
         );

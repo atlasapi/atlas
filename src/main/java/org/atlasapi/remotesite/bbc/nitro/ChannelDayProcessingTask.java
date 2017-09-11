@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicReference;
 
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
@@ -110,7 +112,10 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
         progress = new AtomicReference<UpdateProgress>(UpdateProgress.START);
 
         //create a new telescope task, every time this task runs.
-        OwlTelescopeReporter telescope = OwlTelescopeReporter.create(telescopeReporterName, Event.Type.INGEST);
+        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
+                telescopeReporterName,
+                Event.Type.INGEST
+        );
         telescope.startReporting();
 
         ImmutableList.Builder<ListenableFuture<UpdateProgress>> results = ImmutableList.builder();

@@ -691,7 +691,8 @@ public class EquivTaskModule {
                                 YOUVIEW_BT_STAGE,
                                 BETTY,
                                 BT_TVE_VOD,
-                                BT_VOD
+                                BT_VOD,
+                                BBC_NITRO
                         ),
                         Predicates.and(
                                 Predicates.instanceOf(Container.class),

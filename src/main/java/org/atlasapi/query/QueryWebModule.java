@@ -1,12 +1,7 @@
 package org.atlasapi.query;
 
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
-
-import javax.servlet.ServletContext;
 import javax.xml.bind.JAXBElement;
 
-import org.atlasapi.AtlasMain;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.EquivalenceBreaker;
@@ -21,7 +16,6 @@ import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
-import org.atlasapi.input.ChannelGroupTransformer;
 import org.atlasapi.input.ChannelModelTransformer;
 import org.atlasapi.input.DefaultJacksonModelReader;
 import org.atlasapi.input.ImageModelTranslator;
@@ -135,14 +129,12 @@ import org.atlasapi.query.topic.PublisherFilteringTopicContentLister;
 import org.atlasapi.query.topic.PublisherFilteringTopicResolver;
 import org.atlasapi.query.v2.ChannelController;
 import org.atlasapi.query.v2.ChannelGroupController;
-import org.atlasapi.query.v2.ChannelGroupWriteController;
 import org.atlasapi.query.v2.ChannelWriteExecutor;
 import org.atlasapi.query.v2.ContentFeedController;
 import org.atlasapi.query.v2.ContentGroupController;
 import org.atlasapi.query.v2.ContentWriteController;
 import org.atlasapi.query.v2.EventsController;
 import org.atlasapi.query.v2.FeedStatsController;
-import org.atlasapi.query.v2.MetricsController;
 import org.atlasapi.query.v2.PeopleController;
 import org.atlasapi.query.v2.PeopleWriteController;
 import org.atlasapi.query.v2.ProductController;
@@ -162,21 +154,13 @@ import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.queue.MessageSender;
 import com.metabroadcast.common.time.SystemClock;
 
-import com.codahale.metrics.JvmAttributeGaugeSet;
-import com.codahale.metrics.MetricRegistry;
-import com.codahale.metrics.jvm.GarbageCollectorMetricSet;
-import com.codahale.metrics.jvm.MemoryUsageGaugeSet;
-import com.codahale.metrics.jvm.ThreadStatesGaugeSet;
 import com.google.common.base.Splitter;
-import io.prometheus.client.CollectorRegistry;
-import io.prometheus.client.dropwizard.DropwizardExports;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-import org.springframework.web.context.ServletContextAware;
 import tva.metadata._2010.TVAMainType;
 
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
@@ -230,8 +214,6 @@ public class QueryWebModule {
 
     @Autowired private ContentWriteExecutor contentWriteExecutor;
     @Autowired private MessageSender<ContentWriteMessage> contentWriteMessageSender;
-
-    private MetricRegistry metrics = new MetricRegistry();
 
     @Bean
     ChannelController channelController() {
@@ -360,25 +342,14 @@ public class QueryWebModule {
     @Bean
     ChannelGroupController channelGroupController() {
         NumberToShortStringCodec idCodec = new SubstitutionTableNumberCodec();
-        return ChannelGroupController.builder()
-                .withConfigFetcher(applicationFetcher)
-                .withLog(log)
-                .withOutputter(channelGroupModelWriter())
-                .withChannelGroupResolver(cachingChannelGroupResolver())
-                .withChannelGroupWriteController(channelGroupWriteController())
-                .withChannelResolver(channelResolver)
-                .withIdCodec(idCodec)
-                .createChannelGroupController();
-    }
-
-    private ChannelGroupWriteController channelGroupWriteController() {
-        return ChannelGroupWriteController.builder()
-                .withReader(new DefaultJacksonModelReader())
-                .withStore(channelGroupStore)
-                .withApplicationFetcher(applicationFetcher)
-                .withOutputWriter(channelGroupModelWriter())
-                .withTransformer(new ChannelGroupTransformer())
-                .build();
+        return new ChannelGroupController(
+                applicationFetcher,
+                log,
+                channelGroupModelWriter(),
+                cachingChannelGroupResolver(),
+                channelResolver,
+                idCodec
+        );
     }
 
     @Bean
@@ -567,8 +538,7 @@ public class QueryWebModule {
                 applicationFetcher,
                 log,
                 feedStatsModelOutputter(),
-                feedStatsResolver,
-                metrics
+                feedStatsResolver
         );
     }
 
@@ -891,21 +861,5 @@ public class QueryWebModule {
                 .register(jsonWriter, "json", MimeType.APPLICATION_JSON)
                 .register(xmlWriter, "xml", MimeType.APPLICATION_XML)
                 .build();
-    }
-
-    @Bean
-    MetricsController metricsController() throws InvocationTargetException, IllegalAccessException {
-        CollectorRegistry collectorRegistry = new CollectorRegistry();
-
-        metrics.registerAll(
-                new GarbageCollectorMetricSet(ManagementFactory.getGarbageCollectorMXBeans())
-        );
-        metrics.registerAll(new MemoryUsageGaugeSet());
-        metrics.registerAll(new ThreadStatesGaugeSet());
-        metrics.registerAll(new JvmAttributeGaugeSet());
-
-        collectorRegistry.register(new DropwizardExports(metrics));
-
-        return MetricsController.create(collectorRegistry);
     }
 }

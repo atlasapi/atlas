@@ -26,6 +26,7 @@ import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
+import com.hp.hpl.jena.sparql.function.library.now;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -94,9 +95,10 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         if (masterBrand != null) {
             String masterBrandChannel = BbcIonServices.getMasterBrand(masterBrand.getMid());
             content.setPresentationChannel(masterBrandChannel);
-            if (masterBrandChannel == null) {
-                log.warn("No master brand mapping found for " + pid);
-            }
+            //this log line spams the log and we generally ignore it anyway.
+//            if (masterBrandChannel == null) {
+//                log.warn("No master brand mapping found for pid={}, uri={}", pid , content.getCanonicalUri());
+//            }
         }
         //TODO: genres from v2 API
         extractAdditionalFields(source, content, now);

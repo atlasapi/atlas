@@ -9,7 +9,6 @@ import java.security.ProtectionDomain;
 import java.text.DecimalFormat;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Objects;
 import java.util.concurrent.Executor;
 import java.util.concurrent.TimeUnit;
 
@@ -37,11 +36,12 @@ import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.Scheduler;
 import org.eclipse.jetty.webapp.WebAppContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AtlasMain {
 
     private static final String METRIC_METHOD_NAME = "getMetrics";
-    private static final String METRIC_REGISTRY_METHOD_NAME = "getMetricRegistry";
     private static final String SERVER_REQUEST_THREADS_OVERRIDE_PROPERTY_NAME = "request.threads";
     private static final int DEFAULT_SERVER_REQUEST_THREADS = 100;
     private static final String SERVER_REQUEST_THREAD_PREFIX = "api-request-thread";
@@ -70,15 +70,18 @@ public class AtlasMain {
             2003
     );
     private static final boolean GRAPHITE_REPORTING_ENABLED = Boolean.getBoolean(
-            System.getProperty("registerMetrics.graphite.enabled", "true")
+            System.getProperty("metrics.graphite.enabled", "true")
     );
 
-    public final MetricRegistry metrics = new MetricRegistry();
+    private static final Logger log = LoggerFactory.getLogger(AtlasMain.class);
+
+    public static final MetricRegistry metrics = new MetricRegistry();
     private final GraphiteReporter reporter = startGraphiteReporter();
 
     public static void main(String[] args) throws Exception {
         if (IS_PROCESSING) {
             System.out.println(">>> Launching processing configuration");
+            System.out.println(">>> Graphite reporting: " + GRAPHITE_REPORTING_ENABLED);
         }
         new AtlasMain().start();
     }
@@ -231,8 +234,8 @@ public class AtlasMain {
             IllegalAccessException,
             InvocationTargetException {
 
-        Class<?> clazz = atlasMain.getClass();
-        if (!Objects.equals(clazz.getCanonicalName(), AtlasMain.class.getCanonicalName())) {
+        Class<? extends Object> clazz = atlasMain.getClass();
+        if (clazz.getCanonicalName() != AtlasMain.class.getCanonicalName()) {
             throw new IllegalArgumentException(
                     "Parameter must be instance of " + AtlasMain.class.getCanonicalName()
             );
@@ -266,9 +269,14 @@ public class AtlasMain {
                     .filter(MetricFilter.ALL)
                     .build(new Graphite(GRAPHITE_ADDRESS));
 
-            if (!IS_PROCESSING && GRAPHITE_REPORTING_ENABLED) {
+            if (GRAPHITE_REPORTING_ENABLED || IS_PROCESSING) {
                 reporter.start(30, TimeUnit.SECONDS);
-                System.out.println("Started Graphite reporter");
+                log.info("Graphite reporter started");
+                log.info("Reporting metrics: {}", metrics);
+                log.info("Metric classloader: {}", metrics.getClass().getClassLoader());
+                log.info("AtlasMain classloader: {}", this.getClass().getClassLoader());
+            } else {
+                log.info("Graphite reporter not started");
             }
 
             return reporter;

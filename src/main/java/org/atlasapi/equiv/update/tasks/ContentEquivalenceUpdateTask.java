@@ -14,7 +14,11 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.listing.ContentListingCriteria;
 import org.atlasapi.persistence.content.listing.ContentListingProgress;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
+import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
 import com.google.common.base.Joiner;
@@ -33,6 +37,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
     private final ScheduleTaskProgressStore progressStore;
     private final EquivalenceUpdater<Content> updater;    
     private final Set<String> ignored;
+    private final OwlTelescopeReporter telescope;
 
     private String schedulingKey = "equivalence";
     private List<Publisher> publishers;
@@ -44,6 +49,10 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
         this.progressStore = progressStore;
         this.updater = RootEquivalenceUpdater.create(contentResolver, updater);
         this.ignored = ignored;
+        telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
+                OwlTelescopeReporters.EQUIVALENCE,
+                Event.Type.EQUIVALENCE
+        );
     }
 
     public ContentEquivalenceUpdateTask forPublishers(Publisher... publishers) {
@@ -69,6 +78,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
     
     @Override
     protected void onStart(ContentListingProgress progress) {
+        telescope.startReporting();
         log.info("Started: {} from {}", schedulingKey, describe(progress));
         processed  = 0;
         this.progress = UpdateProgress.START;
@@ -86,7 +96,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
         if (!ignored.contains(content.getCanonicalUri())) {
             reportStatus(String.format("%s. Processing %s.", progress, content));
             try {
-                updater.updateEquivalences(content);
+                updater.updateEquivalences(content, telescope);
                 progress = progress.reduce(SUCCESS);
             } catch (Exception e) {
                 log.error(content.toString(), e);
@@ -101,6 +111,7 @@ public final class ContentEquivalenceUpdateTask extends AbstractContentListingTa
 
     @Override
     protected void onFinish(boolean finished, @Nullable Content lastProcessed) {
+        telescope.endReporting();
         persistProgress(finished, lastProcessed);
     }
 

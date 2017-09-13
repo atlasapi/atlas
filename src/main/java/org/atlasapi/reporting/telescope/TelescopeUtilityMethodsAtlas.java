@@ -1,12 +1,13 @@
-package org.atlasapi.telescope;
-
-import com.google.common.collect.ImmutableList;
-import com.metabroadcast.columbus.telescope.api.Alias;
-import com.metabroadcast.common.stream.MoreCollectors;
+package org.atlasapi.reporting.telescope;
 
 import java.util.Set;
 
-public class TelescopeUtilityMethods {
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.columbus.telescope.api.Alias;
+
+public class TelescopeUtilityMethodsAtlas {
+
     public static ImmutableList<Alias> getAliases(Set<org.atlasapi.media.entity.Alias> aliases) {
         return aliases.stream()
                 .map(alias -> Alias.create(alias.getNamespace(), alias.getValue()))

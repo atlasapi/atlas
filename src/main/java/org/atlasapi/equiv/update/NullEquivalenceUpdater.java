@@ -5,13 +5,14 @@ import java.util.Set;
 import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.NopEquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
 
     private enum NullUpdater implements EquivalenceUpdater<Object> {
         INSTANCE {
             @Override
-            public boolean updateEquivalences(Object content) {
+            public boolean updateEquivalences(Object content, OwlTelescopeReporter telescope) {
                 return false;
             }
 
@@ -35,7 +36,7 @@ public class NullEquivalenceUpdater<T> implements EquivalenceUpdater<T> {
     }
 
     @Override
-    public boolean updateEquivalences(T content) {
+    public boolean updateEquivalences(T content, OwlTelescopeReporter telescope) {
         return false;
     }
 

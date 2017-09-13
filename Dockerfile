@@ -286,8 +286,6 @@ CMD java \
     -Dsitemaps.c4.flashplayerversion="$SITEMAPS_C4_FLASHPLAYERVERSION" \
     -Dtalktalk.host="$TALKTALK_HOST" \
     -Dtalktalk.validate="$TALKTALK_VALIDATE" \
-    -Dtelescope.host="$TELESCOPE_HOST"\
-    -Dtelescope.environment="$TELESCOPE_ENVIRONMENT"\
     -Dthespace.url="$THESPACE_URL" \
     -Dtwitter.auth.consumerKey="$TWITTER_AUTH_CONSUMERKEY" \
     -Dtwitter.auth.consumerSecret="$TWITTER_AUTH_CONSUMERSECRET" \

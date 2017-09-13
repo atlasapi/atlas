@@ -45,17 +45,9 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
 
     private static final Logger log = LoggerFactory.getLogger(LastUpdatedSettingContentWriter.class);
 
-    private static final Predicate<Identified> HAS_CANONICAL_URI = new Predicate<Identified>() {
-        @Override public boolean apply(Identified input) {
-            return !Strings.isNullOrEmpty(input.getCanonicalUri());
-        }
-    };
+    private static final Predicate<Identified> HAS_CANONICAL_URI = input -> !Strings.isNullOrEmpty(input.getCanonicalUri());
 
-    private static final Function<Identified, String> TO_CANONICAL_URI = new Function<Identified, String>() {
-        @Override public String apply(Identified input) {
-            return input.getCanonicalUri();
-        }
-    };
+    private static final Function<Identified, String> TO_CANONICAL_URI = Identified::getCanonicalUri;
 
     private final ContentResolver resolver;
     private final ContentWriter writer;

@@ -7,6 +7,8 @@ import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.MultipleSourceEquivalenceUpdaterMetadata;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -33,10 +35,10 @@ public class MultipleSourceChannelEquivalenceUpdater implements EquivalenceUpdat
     }
 
     @Override
-    public boolean updateEquivalences(Channel channel) {
+    public boolean updateEquivalences(Channel channel, OwlTelescopeReporter telescope) {
         EquivalenceUpdater<Channel> updater = updaters.get(channel.getSource());
         if (updater != null) {
-            return updater.updateEquivalences(channel);
+            return updater.updateEquivalences(channel, telescope);
         }
         log.error("No updater found for publisher: {}", channel.getSource());
         return false;

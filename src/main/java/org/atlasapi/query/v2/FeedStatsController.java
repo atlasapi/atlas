@@ -18,9 +18,6 @@ import org.atlasapi.persistence.logging.AdapterLog;
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.http.HttpStatusCode;
 
-import com.codahale.metrics.Gauge;
-import com.codahale.metrics.Metric;
-import com.codahale.metrics.MetricRegistry;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableSet;
 import org.joda.time.Period;
@@ -30,13 +27,12 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import static com.codahale.metrics.MetricRegistry.*;
-import static com.codahale.metrics.MetricRegistry.name;
 import static com.google.common.base.Preconditions.checkNotNull;
+
 
 @Controller
 public class FeedStatsController extends BaseController<Iterable<FeedStatistics>> {
-
+    
     private static final AtlasErrorSummary NOT_FOUND = new AtlasErrorSummary(new NullPointerException())
             .withMessage("No Feed exists for the specified Publisher")
             .withErrorCode("Feed not found")
@@ -45,43 +41,20 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
             .withMessage("You require an API key to view this data")
             .withErrorCode("Api Key required")
             .withStatusCode(HttpStatusCode.FORBIDDEN);
-
+    
     private final FeedStatisticsResolver statsResolver;
-
-    private SettableLongGauge successfullGauge;
-    private SettableLongGauge unsuccessfullGauge;
-
+    
     public FeedStatsController(
             ApplicationFetcher configFetcher,
             AdapterLog log,
             AtlasModelWriter<Iterable<FeedStatistics>> outputter,
-            FeedStatisticsResolver statsResolver,
-            MetricRegistry metricRegistry
+            FeedStatisticsResolver statsResolver
     ) {
         super(configFetcher, log, outputter, DefaultApplication.createDefault());
-
         this.statsResolver = checkNotNull(statsResolver);
-
-        successfullGauge = metricRegistry.register(
-                name(
-                        FeedStatsController.class,
-                        "YouviewSuccessfullTasks",
-                        "size"
-                ),
-                new SettableLongGauge()
-        );
-        unsuccessfullGauge = metricRegistry.register(
-                name(
-                        FeedStatsController.class,
-                        "YouviewUnsuccessfullTasks",
-                        "size"
-                ),
-                new SettableLongGauge()
-        );
     }
 
-    @RequestMapping(value = "/3.0/feeds/youview/{publisher}/statistics.json",
-            method = RequestMethod.GET)
+    @RequestMapping(value="/3.0/feeds/youview/{publisher}/statistics.json", method = RequestMethod.GET)
     public void statistics(
             HttpServletRequest request,
             HttpServletResponse response,
@@ -112,26 +85,9 @@ public class FeedStatsController extends BaseController<Iterable<FeedStatistics>
                 return;
             }
 
-            successfullGauge.setValue(resolved.get().successfulTasks());
-            unsuccessfullGauge.setValue(resolved.get().unsuccessfulTasks());
-
             modelAndViewFor(request, response, ImmutableSet.of(resolved.get()), application);
         } catch (Exception e) {
             errorViewFor(request, response, AtlasErrorSummary.forException(e));
-        }
-    }
-
-    private final static class SettableLongGauge implements Metric, Gauge<Integer> {
-
-        private volatile int value = 0;
-
-        public Integer getValue() {
-            return value;
-        }
-
-        public SettableLongGauge setValue(int value) {
-            this.value = value;
-            return this;
         }
     }
 }

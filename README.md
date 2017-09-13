@@ -57,5 +57,3 @@ Enjoy!
 ## Contributions
 
 We welcome contributions to Atlas! If you'd like to get your hands dirty, please [fork the repositories](https://help.github.com/articles/fork-a-repo) and submit [pull requests](https://help.github.com/articles/using-pull-requests) with your changes. 
-
-

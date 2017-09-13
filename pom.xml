@@ -1,12 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<project xmlns="http://maven.apache.org/POM/4.0.0"
-         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     <groupId>org.atlasapi</groupId>
     <artifactId>atlas</artifactId>
     <packaging>war</packaging>
-    <version>5.0-SNAPSHOT</version>
+    <version>5.1-SNAPSHOT</version>
     <description>Atlas 3.0 API</description>
     <build>
         <finalName>atlas</finalName>
@@ -71,17 +69,13 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatePackage>org.atlasapi.remotesite.pa.listings.bindings
-                            </generatePackage>
+                            <generatePackage>org.atlasapi.remotesite.pa.listings.bindings</generatePackage>
                             <schemaIncludes>
                                 <schemaInclude>TVListings.dtd</schemaInclude>
                             </schemaIncludes>
                             <forceRegenerate>true</forceRegenerate>
-                            <generateDirectory>${project.build.directory}/generated-sources
-                            </generateDirectory>
-                            <staleFile>
-                                ${project.build.directory}/generated-sources/.paListingsStaleFlag
-                            </staleFile>
+                            <generateDirectory>${project.build.directory}/generated-sources</generateDirectory>
+                            <staleFile>${project.build.directory}/generated-sources/.paListingsStaleFlag</staleFile>
                         </configuration>
                     </execution>
                     <execution>
@@ -90,17 +84,13 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatePackage>org.atlasapi.remotesite.pa.features.bindings
-                            </generatePackage>
+                            <generatePackage>org.atlasapi.remotesite.pa.features.bindings</generatePackage>
                             <schemaIncludes>
                                 <schemaInclude>feature_sets.dtd</schemaInclude>
                             </schemaIncludes>
                             <forceRegenerate>true</forceRegenerate>
-                            <generateDirectory>${project.build.directory}/generated-sources
-                            </generateDirectory>
-                            <staleFile>
-                                ${project.build.directory}/generated-sources/.paFeaturesStaleFlag
-                            </staleFile>
+                            <generateDirectory>${project.build.directory}/generated-sources</generateDirectory>
+                            <staleFile>${project.build.directory}/generated-sources/.paFeaturesStaleFlag</staleFile>
                             <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
@@ -110,17 +100,13 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatePackage>org.atlasapi.remotesite.pa.profiles.bindings
-                            </generatePackage>
+                            <generatePackage>org.atlasapi.remotesite.pa.profiles.bindings</generatePackage>
                             <schemaIncludes>
                                 <schemaInclude>profiles.dtd</schemaInclude>
                             </schemaIncludes>
                             <forceRegenerate>true</forceRegenerate>
-                            <generateDirectory>${project.build.directory}/generated-sources
-                            </generateDirectory>
-                            <staleFile>
-                                ${project.build.directory}/generated-sources/.paProfilesStaleFlag
-                            </staleFile>
+                            <generateDirectory>${project.build.directory}/generated-sources</generateDirectory>
+                            <staleFile>${project.build.directory}/generated-sources/.paProfilesStaleFlag</staleFile>
                             <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
@@ -130,17 +116,13 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatePackage>org.atlasapi.remotesite.pa.channels.bindings
-                            </generatePackage>
+                            <generatePackage>org.atlasapi.remotesite.pa.channels.bindings</generatePackage>
                             <schemaIncludes>
                                 <schemaInclude>tv_channel_data.dtd</schemaInclude>
                             </schemaIncludes>
                             <forceRegenerate>true</forceRegenerate>
-                            <generateDirectory>${project.build.directory}/generated-sources
-                            </generateDirectory>
-                            <staleFile>
-                                ${project.build.directory}/generated-sources/.paChannelsStaleFlag
-                            </staleFile>
+                            <generateDirectory>${project.build.directory}/generated-sources</generateDirectory>
+                            <staleFile>${project.build.directory}/generated-sources/.paChannelsStaleFlag</staleFile>
                             <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
@@ -150,17 +132,13 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatePackage>org.atlasapi.remotesite.pa.archives.bindings
-                            </generatePackage>
+                            <generatePackage>org.atlasapi.remotesite.pa.archives.bindings</generatePackage>
                             <schemaIncludes>
                                 <schemaInclude>TVArchive.dtd</schemaInclude>
                             </schemaIncludes>
                             <forceRegenerate>true</forceRegenerate>
-                            <generateDirectory>${project.build.directory}/generated-sources
-                            </generateDirectory>
-                            <staleFile>
-                                ${project.build.directory}/generated-sources/.paArchivesStaleFlag
-                            </staleFile>
+                            <generateDirectory>${project.build.directory}/generated-sources</generateDirectory>
+                            <staleFile>${project.build.directory}/generated-sources/.paArchivesStaleFlag</staleFile>
                         </configuration>
                     </execution>
                     <execution>
@@ -169,17 +147,13 @@
                             <goal>generate</goal>
                         </goals>
                         <configuration>
-                            <generatePackage>org.atlasapi.remotesite.talktalk.vod.bindings
-                            </generatePackage>
+                            <generatePackage>org.atlasapi.remotesite.talktalk.vod.bindings</generatePackage>
                             <schemaIncludes>
                                 <schemaInclude>TVDataInterfaceModel.xsd</schemaInclude>
                             </schemaIncludes>
                             <forceRegenerate>true</forceRegenerate>
-                            <generateDirectory>${project.build.directory}/generated-sources
-                            </generateDirectory>
-                            <staleFile>
-                                ${project.build.directory}/generated-sources/.talktalkVodStaleFlag
-                            </staleFile>
+                            <generateDirectory>${project.build.directory}/generated-sources</generateDirectory>
+                            <staleFile>${project.build.directory}/generated-sources/.talktalkVodStaleFlag</staleFile>
                             <clearOutputDir>false</clearOutputDir>
                         </configuration>
                     </execution>
@@ -196,9 +170,7 @@
                             <goal>unpack-dependencies</goal>
                         </goals>
                         <configuration>
-                            <includeGroupIds>
-                                org.eclipse.jetty,com.codahale.metrics,io.dropwizard.metrics,com.google.guava,org.slf4j,log4j
-                            </includeGroupIds>
+                            <includeGroupIds>org.eclipse.jetty,com.codahale.metrics,io.dropwizard.metrics,com.google.guava,org.slf4j,log4j</includeGroupIds>
                             <outputDirectory>target/atlas</outputDirectory>
                             <!-- See https://bugs.eclipse.org/bugs/show_bug.cgi?id=371954 and https://bugs.eclipse.org/bugs/show_bug.cgi?id=406753 for why we exclude some files -->
                             <excludes>META-INF/*.RSA,META-INF/*.DSA,META-INF/*.SF</excludes>
@@ -226,11 +198,9 @@
                         <phase>compile</phase>
                         <configuration>
                             <tasks>
-                                <copy file="${project.build.directory}/classes/org/atlasapi/AtlasMain.class"
-                                      todir="${project.build.directory}/${project.artifactId}/org/atlasapi/"/>
+                                <copy file="${project.build.directory}/classes/org/atlasapi/AtlasMain.class" todir="${project.build.directory}/${project.artifactId}/org/atlasapi/" />
                                 <copy todir="${project.build.directory}/${project.artifactId}/org/atlasapi/util/jetty">
-                                    <fileset
-                                            dir="${project.build.directory}/classes/org/atlasapi/util/jetty/"/>
+                                    <fileset dir="${project.build.directory}/classes/org/atlasapi/util/jetty/"/>
                                 </copy>
                             </tasks>
                         </configuration>
@@ -298,15 +268,12 @@
                         <configuration>
                             <includeProjectDependencies>true</includeProjectDependencies>
                             <includePluginDependencies>true</includePluginDependencies>
-                            <mainClass>com.metabroadcast.common.webapp.soy.SoyTemplateCompiler
-                            </mainClass>
+                            <mainClass>com.metabroadcast.common.webapp.soy.SoyTemplateCompiler</mainClass>
                             <arguments>
                                 <argument>--shouldProvideRequireSoyNamespaces</argument>
                                 <argument>--shouldGenerateJsdoc</argument>
                                 <argument>--outputPathFormat</argument>
-                                <argument>
-                                    src/main/webapp/static/js/generated/{INPUT_FILE_NAME_NO_EXT}_templates.js
-                                </argument>
+                                <argument>src/main/webapp/static/js/generated/{INPUT_FILE_NAME_NO_EXT}_templates.js</argument>
                                 <argument>src/main/webapp/WEB-INF/templates/*</argument>
                             </arguments>
                         </configuration>
@@ -570,14 +537,21 @@
             <version>2.5.4</version>
         </dependency>
         <dependency>
-            <groupId>com.fasterxml.jackson.datatype</groupId>
-            <artifactId>jackson-datatype-jdk8</artifactId>
-            <version>2.5.4</version>
+            <groupId>com.metabroadcast.columbus.telescope</groupId>
+            <artifactId>telescope-api</artifactId>
+            <version>1.0-SNAPSHOT-SHADED-0.3</version>
+            <type>jar</type>
         </dependency>
         <dependency>
             <groupId>com.metabroadcast.columbus.telescope</groupId>
-            <artifactId>telescope-client-shaded</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <artifactId>telescope-client</artifactId>
+            <version>1.0-SNAPSHOT-SHADED-0.3</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>com.fasterxml.jackson.datatype</groupId>
+            <artifactId>jackson-datatype-jdk8</artifactId>
+            <version>2.5.4</version>
         </dependency>
         <dependency>
             <groupId>jaxen</groupId>
@@ -618,16 +592,6 @@
             <groupId>com.metabroadcast.common.ingest</groupId>
             <artifactId>common-ingest</artifactId>
             <version>${common.version}</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>com.metabroadcast.columbus.telescope</groupId>
-                    <artifactId>telescope-client</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.metabroadcast.columbus.telescope</groupId>
-                    <artifactId>telescope-api</artifactId>
-                </exclusion>
-            </exclusions>
         </dependency>
         <dependency>
             <groupId>commons-net</groupId>
@@ -761,6 +725,16 @@
             <artifactId>javax.el-api</artifactId>
             <version>2.2.4</version>
         </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_servlet</artifactId>
+            <version>0.0.19</version>
+        </dependency>
+        <dependency>
+            <groupId>io.prometheus</groupId>
+            <artifactId>simpleclient_dropwizard</artifactId>
+            <version>0.0.19</version>
+        </dependency>
 
     </dependencies>
     <properties>
@@ -771,11 +745,9 @@
         <jacoco.version>0.7.5.201505241946</jacoco.version>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-        <sonar.jacoco.itReportPath>${project.basedir}/target/jacoco-it.exec
-        </sonar.jacoco.itReportPath>
+        <sonar.jacoco.itReportPath>${project.basedir}/target/jacoco-it.exec</sonar.jacoco.itReportPath>
         <sonar.jacoco.reportPath>${project.basedir}/target/jacoco.exec</sonar.jacoco.reportPath>
-        <sonar.junit.reportsPath>${project.basedir}/target/surefire-reports
-        </sonar.junit.reportsPath>
+        <sonar.junit.reportsPath>${project.basedir}/target/surefire-reports</sonar.junit.reportsPath>
         <sonar.branch>owl</sonar.branch>
         <sonar.language>java</sonar.language>
         <sonar.exclusions>**/target/**/*,**/src/main/java/**/generated/**/*</sonar.exclusions>

@@ -994,6 +994,8 @@ public class PaProgrammeProcessor implements PaProgDataProcessor, PaProgDataUpda
             broadcast.setLive(getBooleanValue(progData.getAttr().getLive()));
             broadcast.setSurround(getBooleanValue(progData.getAttr().getSurround()));
             broadcast.setPremiere(getBooleanValue(progData.getAttr().getPremiere()));
+            broadcast.setNewOneOff(getBooleanValue(progData.getAttr().getNewOneOff()));
+            broadcast.setContinuation(getBooleanValue(progData.getAttr().getContinued()));
 
             Boolean newSeries = getBooleanValue(progData.getAttr().getNewSeries());
             Boolean newEpisode = getBooleanValue(progData.getAttr().getNewEpisode());

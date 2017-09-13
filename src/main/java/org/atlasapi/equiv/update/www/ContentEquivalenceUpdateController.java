@@ -19,11 +19,7 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
-import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -107,19 +103,9 @@ public class ContentEquivalenceUpdateController {
             return;
         }
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
-                OwlTelescopeReporters.MANUAL_EQUIVALENCE,
-                Event.Type.EQUIVALENCE
-        );
-
-        telescope.startReporting();
-
         for (Content content : Iterables.filter(resolved.getAllResolvedResults(), Content.class)) {
-            executor.submit(updateFor(content, telescope));
+            executor.submit(updateFor(content));
         }
-
-        telescope.endReporting();
-
         response.setStatus(OK.code());
 
     }
@@ -137,17 +123,13 @@ public class ContentEquivalenceUpdateController {
                 .collect(Collectors.toList());
     }
 
-    private Runnable updateFor(final Content content, OwlTelescopeReporter telescope) {
+    private Runnable updateFor(final Content content) {
         return () -> {
             try {
-                contentUpdater.updateEquivalences(content, telescope);
+                contentUpdater.updateEquivalences(content);
                 log.info("Finished updating {}", content);
             } catch (Exception e) {
                 log.error(content.toString(), e);
-                telescope.reportFailedEvent(
-                        e.toString(),
-                        content
-                );
             }
         };
     }

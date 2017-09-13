@@ -2,10 +2,7 @@ package org.atlasapi.remotesite.bbc.nitro;
 
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
 
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -25,7 +22,6 @@ import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.common.time.Clock;
 
 import com.google.common.base.Function;
@@ -35,6 +31,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import com.google.common.collect.Multimaps;
 import com.google.common.collect.Sets;
@@ -143,64 +140,54 @@ public class LocalOrRemoteNitroFetcher {
         this.contentMerger = checkNotNull(contentMerger);
     }
 
-    public ImmutableSet<ModelWithPayload<Item>> resolveItems(Iterable<ModelWithPayload<Item>> items)
+    public ResolveOrFetchResult<Item> resolveItems(Iterable<Item> items)
             throws NitroException {
-        ImmutableSet<String> itemUris = StreamSupport
-                .stream(items.spliterator(), false)
-                .map(ModelWithPayload::getModel)
-                .map(Item::getCanonicalUri)
-                .collect(MoreCollectors.toImmutableSet());
+        ImmutableList.Builder<String> itemUris = ImmutableList.builder();
+        for (Item item : items) {
+            itemUris.add(item.getCanonicalUri());
+        }
+        ResolvedContent resolvedItems = resolve(itemUris.build());
 
-        ResolvedContent resolvedItems = resolve(itemUris);
-
-        ImmutableSet<ModelWithPayload<Item>> wrappedItems = resolvedItems.getAllResolvedResults().stream()
-                .filter(Item.class::isInstance)
-                .map(Item.class::cast)
-                .map(this::wrapResolvedContentWithEmptyPayload)
-                .collect(MoreCollectors.toImmutableSet());
-
-        return mergeItemsWithExisting(ImmutableSet.copyOf(items), wrappedItems);
+        return mergeItemsWithExisting(
+                ImmutableSet.copyOf(items),
+                ImmutableSet.copyOf(Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)));
     }
 
-    public ImmutableSet<ModelWithPayload<Item>> resolveOrFetchItem(
-            Iterable<Broadcast> broadcasts)
+    public ResolveOrFetchResult<Item> resolveOrFetchItem(Iterable<Broadcast> broadcasts)
             throws NitroException {
-
         if (Iterables.isEmpty(broadcasts)) {
-            return ImmutableSet.of();
+            return ResolveOrFetchResult.empty();
         }
         Iterable<PidReference> episodeRefs = toEpisodeRefs(broadcasts);
         ImmutableSet<String> itemUris = toItemUris(episodeRefs);
-        ResolvedContent resolvedContent = resolve(itemUris);
+        ResolvedContent resolvedItems = resolve(itemUris);
         ImmutableListMultimap<String, Broadcast> broadcastIndex = buildBroadcastIndex(broadcasts);
-
+        
         Set<PidReference> toFetch = Sets.newHashSet();
         for (PidReference pidReference : episodeRefs) {
-            String uri = toItemUri(pidReference);
-            Optional<Identified> id = resolvedContent.asMap().get(uri).toOptional();
-
-            if (!id.isPresent() || fullFetchPermitted.apply((Item) id.get())) {
+            Maybe<Identified> maybeId = resolvedItems.asMap().get(toItemUri(pidReference));
+            
+            if (!maybeId.hasValue()
+                    || fullFetchPermitted.apply((Item)maybeId.requireValue())) {
                 log.trace("Will fetch item with PID reference {} Nitro", pidReference.getPid());
                 toFetch.add(pidReference);
             }
         }
 
-        Iterable<List<ModelWithPayload<Item>>> fetchedItems =
-                contentAdapter.fetchEpisodes(toFetch,broadcastIndex);
-        ImmutableSet<ModelWithPayload<Item>> fetchedItemSet =
-                ImmutableSet.copyOf(Iterables.concat(fetchedItems));
+        Iterable<List<Item>> fetchedItems = contentAdapter.fetchEpisodes(toFetch, broadcastIndex);
 
-        ImmutableSet<ModelWithPayload<Item>> wrappedItems = resolvedContent.getAllResolvedResults().stream()
-                .filter(Item.class::isInstance)
-                .map(Item.class::cast)
-                .map(this::wrapResolvedContentWithEmptyPayload)
-                .collect(MoreCollectors.toImmutableSet());
+        ImmutableSet<Item> fetchedItemSet = ImmutableSet.copyOf(
+                Iterables.concat(
+                        fetchedItems
+                )
+        );
 
-        return mergeItemsWithExisting(fetchedItemSet, wrappedItems);
-    }
-
-    private <T> ModelWithPayload<T> wrapResolvedContentWithEmptyPayload(T item){
-        return new ModelWithPayload<T>(item, "Resolved content. Payload is unavailable");
+        return mergeItemsWithExisting(
+                fetchedItemSet,
+                ImmutableSet.copyOf(
+                        Iterables.filter(resolvedItems.getAllResolvedResults(), Item.class)
+                )
+        );
     }
 
     private ImmutableListMultimap<String, Broadcast> buildBroadcastIndex(
@@ -217,27 +204,23 @@ public class LocalOrRemoteNitroFetcher {
         );
     }
 
-    private ImmutableSet<ModelWithPayload<Item>> mergeItemsWithExisting(
-            Set<ModelWithPayload<Item>> fetchedItems,
-            Set<ModelWithPayload<Item>> existingItems) {
+    private ResolveOrFetchResult<Item> mergeItemsWithExisting(ImmutableSet<Item> fetchedItems,
+            Set<Item> existingItems) {
+        Map<String, Item> fetchedIndex = Maps.newHashMap(
+                Maps.uniqueIndex(fetchedItems, Identified.TO_URI)
+        );
 
-        //create an index of the fetched items
-        Map<String, ModelWithPayload<Item>> fetchedIndex = LocalOrRemoteNitroFetcher.getIndex(fetchedItems);
-
-        //then iterate the existing items and merge what you can with the fetched
-        ImmutableSet.Builder<ModelWithPayload<Item>> merged = ImmutableSet.builder();
-        for (ModelWithPayload<Item> existing : existingItems) {
-            ModelWithPayload<Item> fetched = fetchedIndex.remove(existing.getModel().getCanonicalUri());
+        ImmutableSet.Builder<Item> resolved = ImmutableSet.builder();
+        for (Item existing : existingItems) {
+            Item fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
-                //unwrap for the merger, then rewrap it with the original payload
-                Item mergedItem = contentMerger.merge(existing.getModel(), fetched.getModel());
-                merged.add(new ModelWithPayload(mergedItem, fetched.getPayload()));
+                resolved.add(contentMerger.merge(existing, fetched));
             } else {
-                merged.add(existing);
+                resolved.add(existing);
             }
+            
         }
-
-        return ImmutableSet.copyOf(Iterables.concat(merged.build(), fetchedIndex.values()));
+        return new ResolveOrFetchResult<>(resolved.build(), fetchedIndex.values());
     }
 
 
@@ -245,16 +228,17 @@ public class LocalOrRemoteNitroFetcher {
         return resolver.findByCanonicalUris(itemUris);
     }
 
-    private ImmutableSet<String> toItemUris(
-            Iterable<PidReference> pidRefs) {
-
-        return StreamSupport.stream(pidRefs.spliterator(), false)
-                .map(this::toItemUri)
-                .collect(MoreCollectors.toImmutableSet());
+    private ImmutableSet<String> toItemUris(Iterable<PidReference> pidRefs) {
+        return ImmutableSet.copyOf(Iterables.transform(pidRefs, new Function<PidReference, String>() {
+            @Override
+            public String apply(PidReference input) {
+                return toItemUri(input);
+            }
+        }));
     }
-
+    
     private String toItemUri(PidReference pidReference) {
-      return BbcFeeds.nitroUriForPid(pidReference.getPid());
+        return BbcFeeds.nitroUriForPid(pidReference.getPid());
     }
 
     private Iterable<PidReference> toEpisodeRefs(Iterable<Broadcast> broadcasts) {
@@ -270,21 +254,12 @@ public class LocalOrRemoteNitroFetcher {
             }
         }), Predicates.notNull());
     }
-
-    public ImmutableSet<ModelWithPayload<Container>> resolveOrFetchSeries(
-            Iterable<ModelWithPayload<Item>> itemsWithPayload)
-            throws NitroException {
-
-        if (Iterables.isEmpty(itemsWithPayload)) {
+    
+    public ImmutableSet<Container> resolveOrFetchSeries(Iterable<Item> items) throws NitroException {
+        if (Iterables.isEmpty(items)) {
             return ImmutableSet.of();
         }
-
-        Iterable<Episode> episodes = StreamSupport.stream(itemsWithPayload.spliterator(), false)
-                .map(ModelWithPayload::getModel)
-                .filter(Episode.class::isInstance)
-                .map(Episode.class::cast)
-                .collect(MoreCollectors.toImmutableList());
-
+        Iterable<Episode> episodes = Iterables.filter(items, Episode.class);
         Multimap<String, Episode> seriesUriMap = toSeriesUriMap(episodes);
         Set<String> seriesUris = seriesUriMap.keySet();
         ResolvedContent resolved = resolver.findByCanonicalUris(seriesUris);
@@ -299,40 +274,28 @@ public class LocalOrRemoteNitroFetcher {
                 toFetch.add(seriesUri);
             }
         }
-
-        ImmutableSet<ModelWithPayload<Series>> fetched = contentAdapter.fetchSeries(asSeriesPidRefs(toFetch));
-
-        ImmutableSet<ModelWithPayload<Container>> wrappedContainers = resolved.getAllResolvedResults().stream()
-                .filter(Container.class::isInstance)
-                .map(Container.class::cast)
-                .map(this::wrapResolvedContentWithEmptyPayload)
-                .collect(MoreCollectors.toImmutableSet());
-
-        return mergeContainersWithExisting(wrappedContainers, fetched);
+        
+        ImmutableSet<Series> fetched = contentAdapter.fetchSeries(asSeriesPidRefs(toFetch));
+        
+        return mergeContainersWithExisting(
+                    fetched, 
+                    ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Container.class))).getAll();
     }
-
-    private <C extends Container> ImmutableSet<ModelWithPayload<Container>> mergeContainersWithExisting(
-            Set<ModelWithPayload<Container>> fetchedContainers,
-            Set<ModelWithPayload<C>> existingContainers) {
-
-        //create an index of the fetched items
-        Map<String, ModelWithPayload<Container>> fetchedIndex = getIndex(fetchedContainers);
-
-        //then iterate the existing items and merge what you can with the fetched
-        ImmutableSet.Builder<ModelWithPayload<Container>> merged = ImmutableSet.builder();
-        for (ModelWithPayload<C> existing : existingContainers) {
-            ModelWithPayload<Container> fetched = fetchedIndex.remove(existing.getModel().getCanonicalUri());
+    
+    private ResolveOrFetchResult<Container> mergeContainersWithExisting(ImmutableSet<? extends Container> fetchedContainers,
+            Set<? extends Container> existingContainers) {
+        Map<String, Container> fetchedIndex = Maps.newHashMap(Maps.uniqueIndex(fetchedContainers, Identified.TO_URI));
+        ImmutableSet.Builder<Container> resolved = ImmutableSet.builder();
+        for (Container existing : existingContainers) {
+            Container fetched = fetchedIndex.remove(existing.getCanonicalUri());
             if (fetched != null) {
-                //unwrap for the merger, then rewrap it with the original payload
-                Container mergedContainer = contentMerger.merge(existing.getModel(), fetched.getModel());
-                merged.add(new ModelWithPayload(mergedContainer, fetched.getPayload()));
+                resolved.add(contentMerger.merge((Container) existing, (Container) fetched));
             } else {
-                merged.add((ModelWithPayload<Container>)existing);
+                resolved.add(existing);
             }
+            
         }
-
-        return ImmutableSet.copyOf(Iterables.concat(merged.build(), fetchedIndex.values()));
-
+        return new ResolveOrFetchResult<>(resolved.build(), fetchedIndex.values());
     }
 
     private Iterable<PidReference> asSeriesPidRefs(Iterable<String> pids) {
@@ -371,20 +334,11 @@ public class LocalOrRemoteNitroFetcher {
         
     };
 
-    public ImmutableSet<ModelWithPayload<Container>> resolveOrFetchBrand(
-            Iterable<ModelWithPayload<Item>> itemsWithPayload)
-            throws NitroException {
-
-        if (Iterables.isEmpty(itemsWithPayload)) {
+    public ImmutableSet<Container> resolveOrFetchBrand(Iterable<Item> items) throws NitroException {
+        if (Iterables.isEmpty(items)) {
             return ImmutableSet.of();
         }
-
-        ImmutableList.Builder items = ImmutableList.builder();
-        for (ModelWithPayload<Item> itemWithPayload : itemsWithPayload) {
-            items.add(itemWithPayload.getModel());
-        }
-
-        Multimap<String, Item> brandUriMap = toBrandUriMap(items.build());
+        Multimap<String, Item> brandUriMap = toBrandUriMap(items);
         Set<String> brandUris = brandUriMap.keySet();
         
         ResolvedContent resolved = resolver.findByCanonicalUris(brandUris);
@@ -399,15 +353,10 @@ public class LocalOrRemoteNitroFetcher {
             }
         }
         
-        ImmutableSet<ModelWithPayload<Brand>> fetched = contentAdapter.fetchBrands(asBrandPidRefs(toFetch));
-
-        ImmutableSet<ModelWithPayload<Container>> wrappedContainers = resolved.getAllResolvedResults().stream()
-                .filter(Container.class::isInstance)
-                .map(Container.class::cast)
-                .map(this::wrapResolvedContentWithEmptyPayload)
-                .collect(MoreCollectors.toImmutableSet());
-
-        return mergeContainersWithExisting(wrappedContainers, fetched);
+        ImmutableSet<Brand> fetched = contentAdapter.fetchBrands(asBrandPidRefs(toFetch));
+        return mergeContainersWithExisting(
+                    fetched, 
+                    ImmutableSet.copyOf(Iterables.filter(resolved.getAllResolvedResults(), Container.class))).getAll();
     }
     
     
@@ -443,32 +392,6 @@ public class LocalOrRemoteNitroFetcher {
                 && ep.getSeriesRef().equals(ep.getContainer());
         }
         return false;
-    }
-
-    /**
-     * Get a Map using the {@link Container#TO_URI} as key, and the ModelWithPayload itself as value.
-     * The map is mutable, so items can be removed. If duplicate entries are found the later is used.
-      */
-    public static final <T extends Identified> Map<String, ModelWithPayload<T>> getIndex(
-            Set<ModelWithPayload<T>> iter) {
-
-        final boolean[] warning = new boolean[1];
-        Map<String, ModelWithPayload<T>> collected
-                = StreamSupport.stream(iter.spliterator(), false)
-                .collect(Collectors.toMap(
-                        mwp -> mwp.getModel().getCanonicalUri(),
-                        mwp -> mwp,
-                        (mwpExisting, mwpNew) -> {
-                            warning[0] = true;
-                            return mwpNew;
-                        }
-                ));
-        if (warning[0]) {
-            log.warn( "Duplicate keys where found while trying to create an index of Iterables. "
-                    + "Only the latest instance was retained.");
-        }
-
-        return collected;
     }
     
 }

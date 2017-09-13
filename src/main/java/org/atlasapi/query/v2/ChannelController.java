@@ -128,8 +128,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             @RequestParam(value = "publisher", required = false) String publisherKey,
             @RequestParam(value = "uri", required = false) String uriKey,
             @RequestParam(value = "aliases.namespace", required = false) String aliasNamespace,
-            @RequestParam(value = "aliases.value", required = false) String aliasValue,
-            @RequestParam(value = "type", required = false) String channelType
+            @RequestParam(value = "aliases.value", required = false) String aliasValue
     ) throws IOException {
         try {
             final Application application;
@@ -152,7 +151,6 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                     advertiseFromKey,
                     publisherKey,
                     uriKey,
-                    channelType,
                     aliasNamespace,
                     aliasValue
             );
@@ -213,8 +211,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             String publisherKey,
             String uri,
             String aliasNamespace,
-            String aliasValue,
-            String channelType
+            String aliasValue
     ) {
         ChannelQuery.Builder query = ChannelQuery.builder();
 
@@ -252,10 +249,6 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
             query.withUri(uri);
         }
 
-        if (!Strings.isNullOrEmpty(channelType)) {
-            query.withChannelType(ChannelType.fromKey(channelType).get());
-        }
-
         if (!Strings.isNullOrEmpty(aliasNamespace)) {
             query.withAliasNamespace(aliasNamespace);
         }
@@ -263,6 +256,7 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
         if (!Strings.isNullOrEmpty(aliasValue)) {
             query.withAliasValue(aliasValue);
         }
+
         return query.build();
     }
 

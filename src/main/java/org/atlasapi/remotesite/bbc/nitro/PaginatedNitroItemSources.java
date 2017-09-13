@@ -156,12 +156,6 @@ public class PaginatedNitroItemSources implements Iterable<List<ModelWithPayload
         private ImmutableListMultimap<String, Broadcast> broadcasts(List<Episode> episodes) throws GlycerinException {
             List<ListenableFuture<ImmutableList<Broadcast>>> futures = Lists.newArrayList();
 
-            if(episodes.isEmpty()){
-                //this is here because elsewise, no episodes will create just a paging query with no
-                //other arguments, that will try to fetch every single broadcast.
-                return ImmutableListMultimap.of();
-            }
-            
             BroadcastsQuery query = BroadcastsQuery.builder()
                     .withDescendantsOf(toPids(episodes))
                     .withPageSize(pageSize)

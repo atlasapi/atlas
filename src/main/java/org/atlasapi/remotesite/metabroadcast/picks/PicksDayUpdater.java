@@ -1,5 +1,9 @@
 package org.atlasapi.remotesite.metabroadcast.picks;
 
+import static com.google.common.collect.Iterables.concat;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
+
 import java.util.List;
 import java.util.Map;
 
@@ -17,10 +21,10 @@ import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
 import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessor;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.joda.time.DateTimeZone;
+import org.joda.time.Duration;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
@@ -28,14 +32,8 @@ import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import org.joda.time.DateTimeZone;
-import org.joda.time.Duration;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.transform;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 
 
 public class PicksDayUpdater implements ChannelDayProcessor {
@@ -75,18 +73,13 @@ public class PicksDayUpdater implements ChannelDayProcessor {
     }
     
     @Override
-    public UpdateProgress process(ChannelDay channelDay, OwlTelescopeReporter telescope) throws Exception {
-        //yes. We don't use telescope here yet.
+    public UpdateProgress process(ChannelDay channelDay) throws Exception {
         try {
-            Iterable<Item> picks = concat(transform(
-                    scheduleResolver.unmergedSchedule(
-                            channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZone.UTC),
-                            channelDay.getDay().plusDays(1).toDateTimeAtStartOfDay(DateTimeZone.UTC),
-                            ImmutableSet.of(channelDay.getChannel()),
-                            ImmutableSet.of(Publisher.PA)
-                    ).scheduleChannels(),
-                    TO_ITEMS
-            ));
+            Iterable<Item> picks = concat(transform(scheduleResolver.unmergedSchedule(
+                    channelDay.getDay().toDateTimeAtStartOfDay(DateTimeZone.UTC), 
+                    channelDay.getDay().plusDays(1).toDateTimeAtStartOfDay(DateTimeZone.UTC), 
+                    ImmutableSet.of(channelDay.getChannel()), 
+                    ImmutableSet.of(Publisher.PA)).scheduleChannels(), TO_ITEMS));
             
             // We need to resolve the content to get all broadcasts, since items returned
             // from a schedule request only have a single broadcast corresponding to the
@@ -96,21 +89,23 @@ public class PicksDayUpdater implements ChannelDayProcessor {
                             ImmutableSet.copyOf(Iterables.transform(picks, Identified.TO_URI))
                     ).asMap();
             
-            Iterable<ItemAndBroadcast> itemsAndBroadcasts = Iterables.transform(
-                    picks,
-                    item -> new ItemAndBroadcast((Item) resolved.get(item.getCanonicalUri()).requireValue(),
-                            Maybe.just(Iterables.getOnlyElement(Item.FLATTEN_BROADCASTS.apply(item)))
-                    )
-            );
+            Iterable<ItemAndBroadcast> itemsAndBroadcasts = Iterables.transform(picks, new Function<Item, ItemAndBroadcast>() {
+
+                @Override
+                public ItemAndBroadcast apply(Item item) {
+                    return new ItemAndBroadcast((Item) resolved.get(item.getCanonicalUri()).requireValue(), 
+                            Maybe.just(Iterables.getOnlyElement(Item.FLATTEN_BROADCASTS.apply(item))));
+                }
+                
+            });
             
             addPicksToContentGroup(findPicks(itemsAndBroadcasts));
             
             return UpdateProgress.SUCCESS;
         } catch (Exception e) {
-            String errorMessage = "Processing '" + channelDay.getChannel().getCanonicalUri() + "' failed. "
-                                  + "Channel title=" + channelDay.getChannel().getTitle() + ". "
-                                  + "Day=" + channelDay.getDay().toString() + ". ";
-            log.error(errorMessage, e);
+            log.error("Processing " + channelDay.getChannel().getCanonicalUri() 
+                    + " [" + channelDay.getChannel().getTitle() + "] Day " 
+                    + channelDay.getDay().toString(), e);
             return UpdateProgress.FAILURE;
         }
     }
@@ -133,8 +128,6 @@ public class PicksDayUpdater implements ChannelDayProcessor {
         }
         if (changed) {
             contentGroupWriter.createOrUpdate(contentGroup);
-            //If you decide to report to telescope here, dont report contentGroup as the payload,
-            //because it is about 2.5MB worth of text.
         }
     }
     

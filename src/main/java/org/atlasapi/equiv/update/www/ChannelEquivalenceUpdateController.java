@@ -7,8 +7,6 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.gdata.util.common.base.Nullable;
-
-import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -17,10 +15,6 @@ import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -96,31 +90,18 @@ public class ChannelEquivalenceUpdateController {
             return;
         }
 
-        OwlTelescopeReporter telescope = OwlTelescopeReporterFactory.getInstance().getTelescopeReporter(
-                OwlTelescopeReporters.MANUAL_CHANNEL_EQUIVALENCE,
-                Event.Type.EQUIVALENCE
-        );
-
-        telescope.startReporting();
-
-        channels.forEach(channel -> executor.submit(updateFor(channel, telescope)));
-
-        telescope.endReporting();
+        channels.forEach(channel -> executor.submit(updateFor(channel)));
 
         response.setStatus(HttpServletResponse.SC_OK);
     }
 
-    private Runnable updateFor(Channel channel, OwlTelescopeReporter telescope) {
+    private Runnable updateFor(Channel channel) {
         return () -> {
             try {
-                channelUpdater.updateEquivalences(channel, telescope);
+                channelUpdater.updateEquivalences(channel);
                 log.info("Finished updating {}", channel);
             } catch (Exception e) {
                 log.error("Error updating equivalence for channel: {}", channel, e);
-                telescope.reportFailedEvent(
-                        e.toString(),
-                        channel
-                );
             }
         };
     }

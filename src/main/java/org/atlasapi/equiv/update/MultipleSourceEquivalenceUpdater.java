@@ -8,7 +8,6 @@ import org.atlasapi.equiv.update.metadata.EquivalenceUpdaterMetadata;
 import org.atlasapi.equiv.update.metadata.MultipleSourceEquivalenceUpdaterMetadata;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import com.metabroadcast.common.stream.MoreCollectors;
 
@@ -35,8 +34,8 @@ public class MultipleSourceEquivalenceUpdater implements EquivalenceUpdater<Cont
     }
 
     @Override
-    public boolean updateEquivalences(Content subject, OwlTelescopeReporter telescope) {
-        return updaters.get(subject.getPublisher()).updateEquivalences(subject, telescope);
+    public boolean updateEquivalences(Content subject) {
+        return updaters.get(subject.getPublisher()).updateEquivalences(subject);
     }
 
     @Override

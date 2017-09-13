@@ -417,11 +417,6 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(BBC_NITRO).withName("BBC Nitro Updater"),
-                RepetitionRules.NEVER,
-                jobsAtStartup
-        );
-        scheduleEquivalenceJob(
                 taskBuilder(0, 7)
                         .withPublishers(BBC_NITRO)
                         .withChannelsSupplier(nitroChannelsSupplier())

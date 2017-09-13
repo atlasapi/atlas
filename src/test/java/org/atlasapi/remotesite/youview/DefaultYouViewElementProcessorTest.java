@@ -1,15 +1,12 @@
 package org.atlasapi.remotesite.youview;
 
-import static org.junit.Assert.assertEquals;
-import static org.mockito.Matchers.any;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
-import static org.mockito.Mockito.when;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 import nu.xom.Element;
-
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.testing.ComplexBroadcastTestDataBuilder;
 import org.atlasapi.media.entity.testing.ComplexItemTestDataBuilder;
 import org.atlasapi.media.entity.testing.VersionTestDataBuilder;
@@ -25,8 +22,12 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
+import static org.atlasapi.remotesite.youview.DefaultYouViewChannelResolverTest.BBC_ONE;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.Matchers.any;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 @RunWith( MockitoJUnitRunner.class )
 public class DefaultYouViewElementProcessorTest {
@@ -79,7 +80,7 @@ public class DefaultYouViewElementProcessorTest {
                 .withAliases(new Alias(ALIAS_NAMESPACE, ALIAS_VALUE))
                 .build();
         
-        when(extractor.extract(any(Publisher.class), any(Element.class)))
+        when(extractor.extract(any(Channel.class), any(Publisher.class), any(Element.class)))
             .thenReturn(extractedItem);
         
         when(contentResolver.findByCanonicalUris(ImmutableSet.of(resolvedItem.getCanonicalUri())))
@@ -93,7 +94,7 @@ public class DefaultYouViewElementProcessorTest {
         
         ArgumentCaptor<Item> itemCaptor = ArgumentCaptor.forClass(Item.class);
         
-        elementProcessor.process(Publisher.METABROADCAST, new Element("test"));
+        elementProcessor.process(BBC_ONE, Publisher.METABROADCAST, new Element("test"));
         
         verify(contentWriter, times(2)).createOrUpdate(itemCaptor.capture());
         

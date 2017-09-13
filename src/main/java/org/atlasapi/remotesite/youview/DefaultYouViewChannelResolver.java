@@ -1,29 +1,27 @@
 package org.atlasapi.remotesite.youview;
 
+import com.google.common.cache.CacheBuilder;
+import com.google.common.cache.CacheLoader;
+import com.google.common.cache.LoadingCache;
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.LinkedHashMultimap;
+import com.google.common.collect.Multimap;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 import java.util.Collection;
-import java.util.LinkedHashMap;
-import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelResolver;
-
-import com.google.common.base.Optional;
-import com.google.common.cache.CacheBuilder;
-import com.google.common.cache.CacheLoader;
-import com.google.common.cache.LoadingCache;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Sets;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -71,39 +69,36 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
     }
 
     @Override
-    @Nullable
-    public String getChannelUri(int serviceId) {
-        Map<Integer, Channel> channelMap = getResolvedChannels().getChannelMap();
-
-        if (channelMap.containsKey(serviceId)) {
-            return channelMap.get(serviceId).getUri();
-        }
-        return null;
+    public Collection<String> getChannelUris(int serviceId) {
+        return Collections2.transform(
+                getChannels(serviceId),
+                Channel::getUri
+        );
     }
     
     @Override
-    public String getChannelServiceAlias(int serviceId) {
-        return getResolvedChannels().getAliasMap().get(serviceId);
+    public Collection<String> getServiceAliases(Channel channel) {
+        return getResolvedChannels().getAliases(channel);
     }
 
     @Override
-    public Optional<Channel> getChannel(int serviceId) {
-        Map<Integer, Channel> channelMap = getResolvedChannels().getChannelMap();
-
-        if (channelMap.containsKey(serviceId)) {
-            return Optional.fromNullable(channelMap.get(serviceId));
-        }
-        return Optional.absent();
+    public Collection<Channel> getChannels(int serviceId) {
+        return getResolvedChannels().getChannels(serviceId);
     }
 
     @Override
-    public Iterable<Channel> getAllChannels() {
-        return getResolvedChannels().getChannelMap().values();
+    public Collection<Channel> getAllChannels() {
+        return getResolvedChannels().getAllChannels();
     }
 
     @Override
-    public Map<Integer, Channel> getAllChannelsByServiceId() {
-        return getResolvedChannels().getChannelMap();
+    public Multimap<Integer, Channel> getAllServiceIdsToChannels() {
+        return getResolvedChannels().getAllServiceIdsToChannels();
+    }
+
+    @Override
+    public Collection<Integer> getServiceIds(Channel channel) {
+        return getResolvedChannels().getServiceIds(channel);
     }
 
     private ResolvedChannels getResolvedChannels() {
@@ -111,111 +106,88 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
     }
 
     private ResolvedChannels resolveChannels() {
-        Map<Integer, Channel> channelMap = new LinkedHashMap<>();
-        Map<Integer, String> aliasMap = new LinkedHashMap<>();
-
+        ResolvedChannels.Builder resolvedChannels = ResolvedChannels.builder();
         for (String prefix : aliasPrefixes) {
-            buildEntriesForPrefix(prefix, channelMap, aliasMap);
+            buildEntriesForPrefix(prefix, resolvedChannels);
         }
-
-        return ResolvedChannels.create(
-                ImmutableMap.copyOf(channelMap),
-                ImmutableMap.copyOf(aliasMap)
-        );
+        return resolvedChannels.build();
     }
 
     private void buildEntriesForPrefix(
             String prefix,
-            Map<Integer, Channel> channelMap,
-            Map<Integer, String> aliasMap
+            ResolvedChannels.Builder resolvedChannels
     ) {
+        // match the alias followed by the serviceId as the first group, e.g.:
+        // ^http://youview.com/services/(12345)$
         Pattern pattern = Pattern.compile("^" + prefix + "(\\d+)$");
-        Multimap<Channel, String> overrides = overrideAliasesForPrefix(channelResolver, prefix);
-        Map<String, Channel> overridesByAlias = inverseMultimap(overrides);
+        ImmutableMultimap<Channel, String> overrides = overrideAliasesForPrefix(prefix);
 
-        Set<Channel> foundMappings = Sets.newHashSet();
-        for (Entry<String, Channel> entry : channelResolver.forAliases(prefix).entrySet()) {
+        for (Entry<String, Channel> entry : channelResolver.allForAliases(prefix).entries()) {
             String channelAlias = entry.getKey();
-            Channel channel = overridesByAlias.get(channelAlias.replace(
-                    HTTP_PREFIX,
-                    OVERRIDES_PREFIX
-            ));
+            Channel channel = Iterables.getFirst(
+                    overrides.inverse().get(
+                            channelAlias.replace(HTTP_PREFIX, OVERRIDES_PREFIX)
+                    ),
+                    null
+            );
 
             String alias = channelAlias;
             if (channel == null) {
                 channel = entry.getValue();
-                alias = overrideFor(channel, overrides).or(channelAlias);
+                alias = overrideFor(channel, overrides).orElse(channelAlias);
             }
 
-            addService(pattern, alias, channel, channelMap, aliasMap);
-            foundMappings.add(channel);
+            boolean added = resolvedChannels.addService(
+                    extractServiceId(pattern, alias),
+                    alias,
+                    channel
+            );
+            if (!added) {
+                log.warn("Service not added: serviceId={} alias={} channel={}",
+                        extractServiceId(pattern, alias),
+                        alias,
+                        channel);
+            }
         }
 
         // ensure that where there's _only_ an override on a channel that's taken into account
         addOverridesWhereNoPrimaryAliasExists(
-                pattern, foundMappings, overrides, channelMap, aliasMap
+                pattern, overrides, resolvedChannels
         );
     }
 
-    private Map<String, Channel> inverseMultimap(Multimap<Channel, String> overrides) {
-        ImmutableMap.Builder<String, Channel> overrideAliases = ImmutableMap.builder();
-
-        for (Entry<Channel, String> entry : overrides.entries()) {
-            overrideAliases.put(entry.getValue(), entry.getKey());
-        }
-
-        return overrideAliases.build();
-    }
-
-    private void addService(
-            Pattern pattern,
-            String alias,
-            Channel channel,
-            Map<Integer, Channel> channelMap,
-            Map<Integer, String> aliasMap
-    ) {
+    @Nullable
+    private Integer extractServiceId(Pattern pattern, String alias) {
         Matcher m = pattern.matcher(alias);
-        if (!m.matches()) {
+        if (m.matches()) {
+            return Integer.decode(m.group(1));
+        } else {
             log.error("Could not parse YouView alias " + alias);
-            return;
-        }
-        Integer serviceId = Integer.decode(m.group(1));
-
-        checkAdd(channelMap, serviceId, channel);
-        checkAdd(aliasMap, serviceId, alias);
-    }
-
-    private <T> void checkAdd(Map<Integer, T> map, Integer serviceId, T obj) {
-        T old = map.put(serviceId, obj);
-        if (old != null) {
-            if (old.equals(obj)) {
-                log.warn("{} added twice for serviceId={}: {}",
-                        old.getClass().getSimpleName(), serviceId, old);
-            } else {
-                log.error("Multiple {}s with the same serviceId={}: {}, {}",
-                        old.getClass().getSimpleName(), serviceId, old, obj);
-            }
+            return null;
         }
     }
 
     private void addOverridesWhereNoPrimaryAliasExists(
             Pattern pattern,
-            Set<Channel> foundMappings,
             Multimap<Channel, String> overrides,
-            Map<Integer, Channel> channelMap,
-            Map<Integer, String> aliasMap
+            ResolvedChannels.Builder resolvedChannels
     ) {
         for (Entry<Channel, String> override : overrides.entries()) {
-            if (foundMappings.contains(override.getKey())) {
+            if (resolvedChannels.contains(override.getKey())) {
                 continue;
             }
-            addService(
-                    pattern,
-                    normaliseOverrideAlias(override.getValue()),
-                    override.getKey(),
-                    channelMap,
-                    aliasMap
+            String normalisedAlias = normaliseOverrideAlias(override.getValue());
+            boolean added = resolvedChannels.addService(
+                    extractServiceId(pattern, normalisedAlias),
+                    normalisedAlias,
+                    override.getKey()
             );
+            if (!added) {
+                log.warn("Service not added: serviceId={} alias={} channel={}",
+                        extractServiceId(pattern, normalisedAlias),
+                        normalisedAlias,
+                        override.getKey());
+            }
         }
     }
 
@@ -233,53 +205,123 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
             }
             return Optional.of(normaliseOverrideAlias(overrideAliases.iterator().next()));
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     private String normaliseOverrideAlias(String alias) {
         return alias.replace(OVERRIDES_PREFIX, HTTP_PREFIX);
     }
 
-    private Multimap<Channel, String> overrideAliasesForPrefix(
-            ChannelResolver channelResolver,
-            String prefix
-    ) {
-        ImmutableMultimap.Builder<Channel, String> channelToAlias = ImmutableMultimap.builder();
-        Map<String, Channel> channelMap = channelResolver
-                .forAliases(prefix.replace(HTTP_PREFIX, OVERRIDES_PREFIX));
+    private ImmutableMultimap<Channel, String> overrideAliasesForPrefix(String prefix) {
+        Multimap<String, Channel> channelMap = channelResolver
+                .allForAliases(prefix.replace(HTTP_PREFIX, OVERRIDES_PREFIX));
 
-        for (Entry<String, Channel> entry:  channelMap.entrySet()) {
-            channelToAlias.put(entry.getValue(), entry.getKey());
-        }
-        return channelToAlias.build();
+        return ImmutableMultimap.copyOf(channelMap).inverse();
     }
 
+    /* So something has gone weird with YouView serviceIDs/aliases recently,
+     * so the mapping can be something like:
+     * <pre>
+     *                                                      Channel (abc1)
+     *                                              ,-----'
+     *                       Alias (bt.yv.com/12345)
+     *                ,-----'                       `-----.
+     *   S ID (12345)                                       Channel (abc2)
+     *                `-----.                     ,-------'
+     *                       Alias (yv.com/12345)
+     *                                            `-------.
+     *                                                      Channel (abc3)
+     *                                              ,-----'
+     *                       Alias (yv.com/67890)
+     *                ,-----'                       `-----.
+     *   S ID (67890)                                       Channel (abc2)
+     * </pre>
+     */
     private static class ResolvedChannels {
 
-        private final Map<Integer, Channel> channelMap;
-        private final Map<Integer, String> aliasMap;
+        private final ImmutableSetMultimap<Integer, Channel> serviceId2channel;
+        private final ImmutableSetMultimap<Channel, String> channel2alias;
+        private final ImmutableSetMultimap<String, Integer> alias2serviceId;
 
-        private ResolvedChannels(
-                Map<Integer, Channel> channelMap,
-                Map<Integer, String> aliasMap
-        ) {
-            this.channelMap = checkNotNull(channelMap);
-            this.aliasMap = checkNotNull(aliasMap);
+        private ResolvedChannels(Builder builder) {
+            this.serviceId2channel = ImmutableSetMultimap.copyOf(builder.serviceId2channel);
+            this.channel2alias = ImmutableSetMultimap.copyOf(builder.channel2alias);
+            this.alias2serviceId = ImmutableSetMultimap.copyOf(builder.alias2serviceId);
         }
 
-        public static ResolvedChannels create(
-                Map<Integer, Channel> channelMap,
-                Map<Integer, String> aliasMap
-        ) {
-            return new ResolvedChannels(channelMap, aliasMap);
+        public boolean contains(Channel channel) {
+            return channel2alias.containsKey(channel);
+        }
+        public boolean contains(Integer serviceId) {
+            return serviceId2channel.containsKey(serviceId);
+        }
+        public boolean contains(String alias) {
+            return alias2serviceId.containsKey(alias);
         }
 
-        public Map<Integer, Channel> getChannelMap() {
-            return channelMap;
+        public Set<Channel> getAllChannels() {
+            return channel2alias.keySet();
         }
 
-        public Map<Integer, String> getAliasMap() {
-            return aliasMap;
+        public Multimap<Integer, Channel> getAllServiceIdsToChannels() {
+            return serviceId2channel;
+        }
+
+        public Set<Channel> getChannels(int serviceId) {
+            return serviceId2channel.get(serviceId);
+        }
+
+        public Set<String> getAliases(Channel channel) {
+            return channel2alias.get(channel);
+        }
+
+        public Set<Integer> getServiceIds(Channel channel) {
+            return serviceId2channel.inverse().get(channel);
+        }
+
+        public static Builder builder() {
+            return new Builder();
+        }
+
+        public static class Builder {
+            private Multimap<Integer, Channel> serviceId2channel;
+            private Multimap<Channel, String> channel2alias;
+            private Multimap<String, Integer> alias2serviceId;
+
+            public Builder() {
+                serviceId2channel = LinkedHashMultimap.create();
+                channel2alias = LinkedHashMultimap.create();
+                alias2serviceId = LinkedHashMultimap.create();
+            }
+
+            public boolean addService(
+                    @Nullable Integer serviceId,
+                    @Nullable String alias,
+                    @Nullable Channel channel
+            ) {
+                if (serviceId == null || alias == null || channel == null) {
+                    return false;
+                }
+                boolean added = true;
+                added &= serviceId2channel.put(serviceId, channel);
+                added &= channel2alias.put(channel, alias);
+                added &= alias2serviceId.put(alias, serviceId);
+                return added;
+            }
+
+            public boolean contains(Channel channel) {
+                return channel2alias.containsKey(channel);
+            }
+            public boolean contains(Integer serviceId) {
+                return serviceId2channel.containsKey(serviceId);
+            }
+            public boolean contains(String alias) {
+                return alias2serviceId.containsKey(alias);
+            }
+
+            public ResolvedChannels build() {
+                return new ResolvedChannels(this);
+            }
         }
     }
 }

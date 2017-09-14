@@ -2,6 +2,7 @@ package org.atlasapi.equiv;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import org.atlasapi.equiv.handlers.ContainerSummaryRequiredException;
 import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
@@ -72,7 +73,11 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
             log.debug("{} updating equivalence: {} {} {}", 
                 new Object[]{message.getMessageId(), 
                     message.getEntitySource(), message.getEntityType(), eid});
-            equivUpdater.updateEquivalences(content, telescope);
+            try {
+                equivUpdater.updateEquivalences(content, telescope);
+            } catch (ContainerSummaryRequiredException e) {
+                log.error(e.getMessage());
+            }
         } else {
             log.trace("{} skipping equiv update: {} {} {}", 
                 new Object[]{message.getMessageId(), 

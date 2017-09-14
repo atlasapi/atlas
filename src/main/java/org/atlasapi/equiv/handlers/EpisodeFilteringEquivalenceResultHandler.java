@@ -76,7 +76,7 @@ public class EpisodeFilteringEquivalenceResultHandler implements EquivalenceResu
         
         if (!possibleSummary.isPresent()) {
             desc.appendText("Item Container summary not found").finishStage();
-            return false;
+            throw new ContainerSummaryRequiredException(result.subject());
         }
 
         EquivalenceSummary summary = possibleSummary.get();

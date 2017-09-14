@@ -123,7 +123,8 @@ public class UpdaterConfigurationRegistry {
                 makeFiveConfiguration(),
                 makeBarbMasterConfiguration(),
                 makeBarbTransmissionConfiguration(),
-                makeItvCpsConfiguration()
+                makeItvCpsConfiguration(),
+                makeNitroConfiguration()
         );
 
         configurations.add(
@@ -763,6 +764,24 @@ public class UpdaterConfigurationRegistry {
                 .withNonTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,
                         ImmutableSet.of()
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeNitroConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(BBC_NITRO)
+                .withItemEquivalenceUpdater(
+                        STANDARD_ITEM,
+                        ImmutableSet.of(PA)
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of(PA)
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        ImmutableSet.of(PA)
                 )
                 .build();
     }

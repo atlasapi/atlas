@@ -76,7 +76,20 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
             try {
                 equivUpdater.updateEquivalences(content, telescope);
             } catch (ContainerSummaryRequiredException e) {
-                log.error(e.getMessage());
+                log.trace(e.getMessage());
+                Maybe<Identified> maybeContainer = contentResolver.findByCanonicalUris(
+                        ImmutableSet.of(e.getItem()
+                                .getContainer()
+                                .getUri())).getFirstValue();
+                if (maybeContainer.hasValue()) {
+                    Identified container = maybeContainer.requireValue();
+                    equivUpdater.updateEquivalences((Content) container, telescope);
+                    equivUpdater.updateEquivalences(e.getItem(), telescope);
+                } else {
+                    log.error("Container summary missing AND container not resolved. Unable to "
+                            + "run equivalence on item with ID: " + content.getId());
+                }
+
             }
         } else {
             log.trace("{} skipping equiv update: {} {} {}", 

@@ -323,30 +323,6 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
     }
 
     @Test
-    public void whenThereIsNotContainerSummaryReturnFalse() {
-        when(summaryStore.summariesForUris(argThat(hasItem(subject.getContainer().getUri()))))
-                .thenReturn(ImmutableOptionalMap.of());
-
-        EquivalenceResult<Item> result = new EquivalenceResult<Item>(
-                subject,
-                noScores,
-                emptyCombined,
-                ImmutableMultimap.of(Publisher.PA, ScoredCandidate.valueOf(new Item(), Score.ONE)),
-                new DefaultDescription()
-        );
-
-        EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
-                delegate,
-                summaryStore
-        );
-
-        assertThat(
-                handler.handle(result),
-                is(false)
-        );
-    }
-
-    @Test
     public void returnTrueWhenTheDelegateReturnsTrue() {
         //noinspection unchecked
         when(delegate.handle(Matchers.any(EquivalenceResult.class)))

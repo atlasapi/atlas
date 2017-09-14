@@ -1,17 +1,14 @@
 package org.atlasapi.remotesite.youview;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Map;
-import java.util.Map.Entry;
-
+import com.google.common.base.Throwables;
+import com.google.common.collect.Multimap;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.Elements;
-
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
-
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
@@ -19,10 +16,11 @@ import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Throwables;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import javax.annotation.Nullable;
+import java.util.Collection;
+import java.util.Map.Entry;
 
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class YouViewUpdater extends ScheduledTask {
 
@@ -58,31 +56,46 @@ public class YouViewUpdater extends ScheduledTask {
             LocalDate start = today.minusDays(minusDays);
             LocalDate finish = today.plusDays(plusDays);
             
-            Map<Integer, Channel> youViewChannels = channelResolver.getAllChannelsByServiceId();
+            Multimap<Integer, Channel> youViewChannels = channelResolver.getAllServiceIdsToChannels();
             
             UpdateProgress progress = UpdateProgress.START;
             
             while (!start.isAfter(finish)) {
                 LocalDate end = start.plusDays(1);
-                for (Entry<Integer, Channel> channel : youViewChannels.entrySet()) {
+                for (Entry<Integer, Channel> entry : youViewChannels.entries()) {
                     Interval interval = new Interval(start.toDateTimeAtStartOfDay(), 
                             end.toDateTimeAtStartOfDay());
-                    Integer serviceId = channel.getKey();
+                    Integer serviceId = entry.getKey();
+                    Channel channel = entry.getValue();
                     DateTime startDate = interval.getStart();
                     DateTime endDate = interval.getEnd();
-                    Document xml = fetcher.getSchedule(startDate, endDate,
-                            serviceId);
+                    Document xml = fetcher.getSchedule(startDate, endDate, serviceId);
                     Element root = xml.getRootElement();
                     Elements entries = root.getChildElements(ENTRY_KEY, root.getNamespaceURI(ATOM_PREFIX));
 
-                    if(entries.size() == 0) {
-                        log.warn("Schedule for {}?starttime={}&endtime={}&service={} is empty for channel {}", fetcher.getBaseUrl(),
-                                startDate.toString(DATE_TIME_FORMAT), endDate.toString(DATE_TIME_FORMAT), serviceId, channel.getValue().getTitle());
+                    if (entries.size() == 0) {
+                        log.warn("Schedule for {}?starttime={}&endtime={}&service={} is empty for {} ({})",
+                                fetcher.getBaseUrl(),
+                                startDate.toString(DATE_TIME_FORMAT),
+                                endDate.toString(DATE_TIME_FORMAT),
+                                serviceId,
+                                channel,
+                                channel.getTitle());
                     }
 
-                    Publisher publisher = publisherFor(channelResolver.getChannelServiceAlias(serviceId));
-                    progress = progress.reduce(processor.process(channel.getValue(),  
-                            publisher, entries, interval));
+                    Publisher publisher = publisherFor(channelResolver.getServiceAliases(channel));
+                    if (publisher == null) {
+                        log.warn("Could not find publisher the channel {} ({}) should be written as (from: {})",
+                                channel, channel.getTitle(), channelResolver.getServiceAliases(channel));
+                        progress = progress.reduce(UpdateProgress.FAILURE);
+                        continue;
+                    }
+                    progress = progress.reduce(processor.process(
+                            channel,
+                            publisher,
+                            entries,
+                            interval
+                    ));
                     reportStatus(progress.toString());
                 }
                 start = end;
@@ -93,15 +106,19 @@ public class YouViewUpdater extends ScheduledTask {
         }
 
     }
-    
-    private Publisher publisherFor(String channelServiceAlias) {
-        for (Entry<String, Publisher> entry : 
-                ingestConfiguration.getAliasPrefixToPublisherMap().entrySet()) {
-            if (channelServiceAlias.startsWith(entry.getKey())) {
-                return entry.getValue();
+
+    @Nullable
+    private Publisher publisherFor(Collection<String> channelServiceAliases) {
+        // TODO: handle multiple?
+        for (String channelServiceAlias : channelServiceAliases) {
+            for (Entry<String, Publisher> entry :
+                    ingestConfiguration.getAliasPrefixToPublisherMap().entrySet()) {
+                    if (channelServiceAlias.startsWith(entry.getKey())) {
+                        return entry.getValue();
+                    }
             }
         }
-        throw new IllegalStateException("Could not find alias prefix to determine which publisher channel should be written as: " + channelServiceAlias);
+        return null;
     }
     
 }

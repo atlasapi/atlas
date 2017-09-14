@@ -1,49 +1,48 @@
 package org.atlasapi.remotesite.youview;
 
-import java.util.List;
-import java.util.Map;
+import java.util.Collection;
 
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Multimap;
 import org.atlasapi.media.channel.Channel;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
 
 public class DummyYouViewChannelResolver implements YouViewChannelResolver {
 
-    private final Map<Integer, Channel> channelMap;
+    private final Multimap<Integer, Channel> channelMap;
     
-    public DummyYouViewChannelResolver(Map<Integer, Channel> channelMap) {
-        this.channelMap = channelMap;
+    public DummyYouViewChannelResolver(Multimap<Integer, Channel> channelMap) {
+        this.channelMap = ImmutableMultimap.copyOf(channelMap);
     }
     
     @Override
-    public String getChannelUri(int channelId) {
-        if (channelMap.containsKey(channelId)) {
-            return channelMap.get(channelId).getUri();
-        }
-        return null;
+    public Collection<String> getChannelUris(int channelId) {
+        return Collections2.transform(
+                channelMap.get(channelId),
+                Channel::getUri
+        );
     }
 
     @Override
-    public Optional<Channel> getChannel(int channelId) {
-        if (channelMap.containsKey(channelId)) {
-            return Optional.fromNullable(channelMap.get(channelId));
-        }
-        return Optional.absent();
+    public Collection<Channel> getChannels(int channelId) {
+        return channelMap.get(channelId);
     }
 
     @Override
-    public List<Channel> getAllChannels() {
-        return ImmutableList.copyOf(channelMap.values());
+    public Collection<Channel> getAllChannels() {
+        return channelMap.values();
     }
 
     @Override
-    public Map<Integer, Channel> getAllChannelsByServiceId() {
+    public Multimap<Integer, Channel> getAllServiceIdsToChannels() {
+        return channelMap;
+    }
+
+    @Override public Collection<String> getServiceAliases(Channel channel) {
         throw new UnsupportedOperationException();
     }
 
-    @Override
-    public String getChannelServiceAlias(int channelId) {
+    @Override public Collection<Integer> getServiceIds(Channel channel) {
         throw new UnsupportedOperationException();
     }
 

@@ -1,20 +1,25 @@
 package org.atlasapi.remotesite.youview;
 
-import java.util.Map;
+import java.util.Collection;
+import java.util.Optional;
 
+import com.google.common.collect.Multimap;
 import org.atlasapi.media.channel.Channel;
 
-import com.google.common.base.Optional;
-
 public interface YouViewChannelResolver {
-    
-    String getChannelUri(int channelId);
-    
-    Optional<Channel> getChannel(int channelId);
-    
-    Iterable<Channel> getAllChannels();
-    
-    Map<Integer, Channel> getAllChannelsByServiceId();
 
-    String getChannelServiceAlias(int channelId);
+    @Deprecated
+    Collection<String> getChannelUris(int channelId);
+
+    @Deprecated
+    Collection<Channel> getChannels(int channelId);
+    
+    Collection<Channel> getAllChannels();
+
+    Multimap<Integer, Channel> getAllServiceIdsToChannels();
+
+    Collection<String> getServiceAliases(Channel channel);
+
+    Collection<Integer> getServiceIds(Channel channel);
+
 }

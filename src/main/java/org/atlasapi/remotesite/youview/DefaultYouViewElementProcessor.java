@@ -1,8 +1,13 @@
 package org.atlasapi.remotesite.youview;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
 import nu.xom.Element;
-
+import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
@@ -18,12 +23,7 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
@@ -43,19 +43,12 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
         this.lookupEntryStore = checkNotNull(lookupEntryStore);
         this.contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.MERGE);
         final String scheduleEventAliasNamespace = extractor.getScheduleEventAliasNamespace(); 
-        this.scheduleEventAliasPredicate = new Predicate<Alias>() {
-
-            @Override
-            public boolean apply(Alias input) {
-                return input.getNamespace().equals(scheduleEventAliasNamespace);
-            };
-            
-        };
+        this.scheduleEventAliasPredicate = input -> input.getNamespace().equals(scheduleEventAliasNamespace);
     }
     
     @Override
-    public ItemRefAndBroadcast process(Publisher targetPublisher, Element element) {
-        Item item = extractor.extract(targetPublisher, element);
+    public ItemRefAndBroadcast process(Channel channel, Publisher targetPublisher, Element element) {
+        Item item = extractor.extract(channel, targetPublisher, element);
         removeStaleScheduleEventOnOldItems(item);
         Maybe<Identified> existing = resolve(item.getCanonicalUri());
         if (existing.isNothing()) {
@@ -87,9 +80,7 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
         Iterable<LookupEntry> entries = lookupEntryStore.entriesForAliases(Optional.of(scheduleEventAliasNamespace), 
                 ImmutableSet.of(scheduleEventAlias.get().getValue()));
         for (LookupEntry entry : entries) {
-            if (entry.uri().equals(item.getCanonicalUri())) {
-                continue;
-            } else {
+            if (!entry.uri().equals(item.getCanonicalUri())) {
                 Identified ided = resolver.findByCanonicalUris(ImmutableSet.of(entry.uri())).getFirstValue().requireValue();
                 ided.setAliases(Iterables.filter(ided.getAliases(), Predicates.not(scheduleEventAliasPredicate)));
                 writer.createOrUpdate((Item)ided);

@@ -1,12 +1,22 @@
 package org.atlasapi.remotesite.pa;
 
-import java.io.File;
-import java.util.Iterator;
-import java.util.List;
-import java.util.Map;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Iterables;
+import com.google.common.io.Resources;
+import com.google.common.util.concurrent.MoreExecutors;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.persistence.MongoTestHelper;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.queue.MessagingException;
+import com.metabroadcast.common.time.DateTimeZones;
+import com.metabroadcast.common.time.TimeMachine;
+import com.mongodb.ReadPreference;
+import junit.framework.TestCase;
+import org.apache.commons.io.FileUtils;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelQuery;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -40,25 +50,6 @@ import org.atlasapi.remotesite.channel4.pmlsd.epg.BroadcastTrimmer;
 import org.atlasapi.remotesite.pa.data.DefaultPaProgrammeDataStore;
 import org.atlasapi.remotesite.pa.deletes.ExistingItemUnPublisher;
 import org.atlasapi.remotesite.pa.persistence.PaScheduleVersionStore;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.persistence.MongoTestHelper;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.queue.MessagingException;
-import com.metabroadcast.common.time.DateTimeZones;
-import com.metabroadcast.common.time.TimeMachine;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Iterables;
-import com.google.common.io.Resources;
-import com.google.common.util.concurrent.MoreExecutors;
-import com.mongodb.ReadPreference;
-import junit.framework.TestCase;
-import org.apache.commons.io.FileUtils;
 import org.jmock.Expectations;
 import org.jmock.Mockery;
 import org.jmock.integration.junit4.JMock;
@@ -70,6 +61,12 @@ import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import javax.annotation.Nullable;
+import java.io.File;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
 
 import static org.mockito.Mockito.mock;
 

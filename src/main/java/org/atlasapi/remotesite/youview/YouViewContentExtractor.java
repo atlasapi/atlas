@@ -2,6 +2,8 @@ package org.atlasapi.remotesite.youview;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
+import java.util.Collection;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import nu.xom.Attribute;
@@ -15,7 +17,6 @@ import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
@@ -27,11 +28,14 @@ import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableMap;
 import com.metabroadcast.common.collect.ImmutableOptionalMap;
 import com.metabroadcast.common.collect.OptionalMap;
 import com.metabroadcast.common.intl.Countries;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
 
 public class YouViewContentExtractor {
 
@@ -65,7 +69,8 @@ public class YouViewContentExtractor {
                 Publisher.C4_PMLSD, Platform.YOUVIEW_4OD,
                 Publisher.FIVE, Platform.YOUVIEW_DEMAND5
             ));
-            
+
+    private static final Logger log = LoggerFactory.getLogger(YouViewContentExtractor.class);
             
             
     private final YouViewChannelResolver channelResolver;
@@ -78,7 +83,8 @@ public class YouViewContentExtractor {
         this.channelResolver = checkNotNull(channelResolver);
     }
     
-    public Item extract(Publisher targetPublisher, Element source) {
+    public Item extract(Channel channel, Publisher targetPublisher, Element source) {
+        checkChannel(channel, source);
         
         Item item = new Item();
 
@@ -86,7 +92,7 @@ public class YouViewContentExtractor {
         item.setCanonicalUri(canonicalUriFor(targetPublisher, source));
         item.addAlias(new Alias(getScheduleEventAliasNamespace(), id));
         item.setTitle(getTitle(source));
-        item.setMediaType(getMediaType(source));
+        item.setMediaType(channel.getMediaType());
         item.setPublisher(targetPublisher);
 
         Optional<String> programmeId = getProgrammeId(source);
@@ -96,7 +102,7 @@ public class YouViewContentExtractor {
                     + ":programme", programmeId.get()));
         }
         
-        item.addVersion(getVersion(source));
+        item.addVersion(getVersion(channel, source));
         return item;
     }
     
@@ -141,13 +147,13 @@ public class YouViewContentExtractor {
 
         Element available = source.getFirstChildElement(AVAILABLE_KEY, source.getNamespaceURI(YV_PREFIX));
         if (available == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         
         Attribute start = available.getAttribute(START_KEY);
         Attribute end = available.getAttribute(END_KEY);
         if (start == null || end == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         
         Policy policy = new Policy();
@@ -199,12 +205,17 @@ public class YouViewContentExtractor {
         return YOUVIEW_PREFIX + broadcastId.getValue();
     }
 
-    private Optional<Channel> getChannel(Element source) {
+    private int getServiceId(Element source) {
         Element serviceId = source.getFirstChildElement(SERVICE_ID_KEY, source.getNamespaceURI(YV_PREFIX));
         if (serviceId == null) {
             throw new ElementNotFoundException(source, YV_PREFIX + ":" + SERVICE_ID_KEY);
         }
-        return channelResolver.getChannel(Integer.parseInt(serviceId.getValue()));
+        return Integer.parseInt(serviceId.getValue());
+    }
+
+    @Deprecated
+    private Collection<Channel> getChannels(Element source) {
+        return channelResolver.getChannels(getServiceId(source));
     }
 
     private Duration getBroadcastDuration(Element source) {
@@ -235,10 +246,9 @@ public class YouViewContentExtractor {
         return dateFormatter.parseDateTime(transmissionTime.getValue());
     }
 
-    private Version getVersion(Element source) {
-        Channel channel = getChannel(source).get();
+    private Version getVersion(Channel channel, Element source) {
         Optional<Location> location = getLocation(source, channel);
-        
+
         Version version = new Version();
         version.setDuration(getBroadcastDuration(source));
         version.setPublishedDuration(version.getDuration());
@@ -253,20 +263,15 @@ public class YouViewContentExtractor {
 
     private Optional<String> getProgrammeCrid(Element source) {
         Element programmeCrid = getElementOfType(source, IDENTIFIER_KEY, YV_PREFIX, PROGRAMME_CRID_KEY);
-        if (programmeCrid == null) {
-            return Optional.absent();
-        }
-        return Optional.fromNullable(programmeCrid.getValue());
+        return Optional.ofNullable(programmeCrid).map(Element::getValue);
     }
 
     private Optional<String> getSeriesCrid(Element source) {
         Element seriesCrid = getElementOfType(source, IDENTIFIER_KEY, YV_PREFIX, SERIES_CRID_KEY);
-        if (seriesCrid == null) {
-            return Optional.absent();
-        }
-        return Optional.fromNullable(seriesCrid.getValue());
+        return Optional.ofNullable(seriesCrid).map(Element::getValue);
     }
 
+    @Nullable
     private Element getElementOfType(Element source, String elementName, String prefixName, String elementType) {
         Elements elements = source.getChildElements(elementName, source.getNamespaceURI(prefixName));
         for (int i = 0; i < elements.size(); i++) {
@@ -280,22 +285,16 @@ public class YouViewContentExtractor {
 
     private Optional<String> getProgrammeId(Element source) {
         Element programmeId = source.getFirstChildElement(PROGRAMME_ID_KEY, source.getNamespaceURI(YV_PREFIX));
-        if (programmeId == null) {
-            return Optional.absent();
-        }
-        return Optional.fromNullable(programmeId.getValue());
+        return Optional.ofNullable(programmeId).map(Element::getValue);
     }
 
-    private MediaType getMediaType(Element source) {
-        Element serviceId = source.getFirstChildElement(SERVICE_ID_KEY, source.getNamespaceURI(YV_PREFIX));
-        if (serviceId == null) {
-            throw new ElementNotFoundException(source, YV_PREFIX + ":" + SERVICE_ID_KEY);
+    private void checkChannel(Channel channel, Element source) {
+        @SuppressWarnings("deprecated") // used for checks only
+        Collection<Channel> channels = getChannels(source);
+        if (!channels.contains(channel)) {
+            log.warn("Extraction channel ({}) isn't included in channels for serviceId={}: {}",
+                    channel, getServiceId(source), channels);
         }
-        Optional<Channel> channel = channelResolver.getChannel(Integer.parseInt(serviceId.getValue()));
-        if (!channel.isPresent()) {
-            throw new RuntimeException("Channel with YouView Id: " + serviceId.getValue() + " not found");
-        }
-        return channel.get().getMediaType();
     }
 
     private String getTitle(Element source) {

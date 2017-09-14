@@ -1,19 +1,16 @@
 package org.atlasapi.remotesite.youview;
 
-import static org.hamcrest.Matchers.is;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertThat;
-import static org.junit.Assert.assertTrue;
-
-import java.io.IOException;
-import java.util.Map;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.time.DateTimeZones;
 import nu.xom.Builder;
 import nu.xom.Document;
 import nu.xom.Element;
 import nu.xom.ParsingException;
-import nu.xom.ValidityException;
-
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
@@ -30,11 +27,12 @@ import org.joda.time.DateTimeZone;
 import org.junit.Test;
 import org.springframework.core.io.ClassPathResource;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.time.DateTimeZones;
+import java.io.IOException;
+
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 public class YouViewItemParseTest {
 
@@ -47,17 +45,17 @@ public class YouViewItemParseTest {
         YouViewIngestConfiguration ingestConfiguration = new YouViewIngestConfiguration(
                 ImmutableMap.of(PaChannelsIngester.YOUVIEW_SERVICE_ID_ALIAS_PREFIX, Publisher.YOUVIEW_STAGE),
                 "aliasprefix");
-        Map<Integer, Channel> channelMapping = ImmutableMap.<Integer, Channel>builder()
+        Multimap<Integer, Channel> channelMapping = ImmutableSetMultimap.<Integer, Channel>builder()
                 .put(1044, FIVE)
                 .build();
         contentExtractor = new YouViewContentExtractor(new DummyYouViewChannelResolver(channelMapping), ingestConfiguration);
     }
     
     @Test
-    public void testItemParsing() throws ValidityException, ParsingException, IOException {
+    public void testItemParsing() throws ParsingException, IOException {
         DateTimeZone.setDefault(DateTimeZones.UTC);
 
-        Item item = contentExtractor.extract(Publisher.YOUVIEW_STAGE, getContentElementFromFile("youview-item.xml"));
+        Item item = contentExtractor.extract(FIVE, Publisher.YOUVIEW_STAGE, getContentElementFromFile("youview-item.xml"));
         
         assertEquals("http://stage.youview.com/programmecrid/20121118/www.five.tv/V65K2", item.getCanonicalUri());
         assertEquals("Hatfields & McCoys", item.getTitle());
@@ -95,14 +93,17 @@ public class YouViewItemParseTest {
 
     
     @Test
-    public void testItemParsingNoProgrammeId() throws ValidityException, ParsingException, IOException {
-        Item item = contentExtractor.extract(Publisher.YOUVIEW_STAGE, 
-                getContentElementFromFile("youview-item-no-programme-id.xml"));
+    public void testItemParsingNoProgrammeId() throws ParsingException, IOException {
+        Item item = contentExtractor.extract(
+                FIVE,
+                Publisher.YOUVIEW_STAGE,
+                getContentElementFromFile("youview-item-no-programme-id.xml")
+        );
         
         assertTrue(item.getAliasUrls().isEmpty());
     }
     
-    public static Element getContentElementFromFile(String fileName) throws ValidityException, ParsingException, IOException {
+    public static Element getContentElementFromFile(String fileName) throws ParsingException, IOException {
         Document youViewData = new Builder().build(new ClassPathResource(fileName).getInputStream());
         Element root = youViewData.getRootElement();
         String namespace = root.getNamespaceURI();

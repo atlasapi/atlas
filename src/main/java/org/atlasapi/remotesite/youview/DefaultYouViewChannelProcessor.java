@@ -1,11 +1,10 @@
 package org.atlasapi.remotesite.youview;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableMap.Builder;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.scheduling.UpdateProgress;
 import nu.xom.Elements;
-
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
@@ -15,10 +14,9 @@ import org.joda.time.Interval;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMap.Builder;
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.scheduling.UpdateProgress;
+import java.util.List;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
 
@@ -45,22 +43,32 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
         UpdateProgress progress = UpdateProgress.START;
         for (int i = 0; i < elements.size(); i++) {
             try {
-                ItemRefAndBroadcast itemAndBroadcast = processor.process(targetPublisher, elements.get(i));
-                if (itemAndBroadcast != null) {
-                    broadcasts.add(itemAndBroadcast);
-                    acceptableBroadcastIds.put(itemAndBroadcast.getBroadcast().getSourceId(),itemAndBroadcast.getItemUri());
-                    progress = progress.reduce(UpdateProgress.SUCCESS);
-                } else {
-                    progress = progress.reduce(UpdateProgress.FAILURE);
-                }
+                ItemRefAndBroadcast itemAndBroadcast = processor.process(
+                        channel,
+                        targetPublisher,
+                        elements.get(i)
+                );
+                broadcasts.add(itemAndBroadcast);
+                acceptableBroadcastIds.put(
+                        itemAndBroadcast.getBroadcast().getSourceId(),
+                        itemAndBroadcast.getItemUri()
+                );
+                progress = progress.reduce(UpdateProgress.SUCCESS);
             } catch (Exception e) {
                 log.error(String.format("Failed to process element: %s", elements.get(i).toXML()), e);
                 progress = progress.reduce(UpdateProgress.FAILURE);
             }
         }
+
         if (trimmer != null) {
-            trimmer.trimBroadcasts(targetPublisher, schedulePeriod, channel, acceptableBroadcastIds.build());
+            trimmer.trimBroadcasts(
+                    targetPublisher,
+                    schedulePeriod,
+                    channel,
+                    acceptableBroadcastIds.build()
+            );
         }
+
         if (broadcasts.isEmpty()) {
             log.info(String.format("No broadcasts for channel %s (%s) on %s", channel.getTitle(), 
                     getYouViewId(channel), schedulePeriod.getStart().toString()));

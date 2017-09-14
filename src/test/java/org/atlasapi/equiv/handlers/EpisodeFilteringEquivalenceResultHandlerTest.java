@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -320,6 +321,32 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 handler.handle(result),
                 is(false)
         );
+    }
+
+    @Test
+    public void whenThereIsNotContainerSummaryReturnFalse() {
+        when(summaryStore.summariesForUris(argThat(hasItem(subject.getContainer().getUri()))))
+                .thenReturn(ImmutableOptionalMap.of());
+
+        EquivalenceResult<Item> result = new EquivalenceResult<Item>(
+                subject,
+                noScores,
+                emptyCombined,
+                ImmutableMultimap.of(Publisher.PA, ScoredCandidate.valueOf(new Item(), Score.ONE)),
+                new DefaultDescription()
+        );
+
+        EquivalenceResultHandler<Item> handler = EpisodeFilteringEquivalenceResultHandler.relaxed(
+                delegate,
+                summaryStore
+        );
+
+        try {
+            handler.handle(result);
+            fail("Item with missing container summary failed to throw exception");
+        } catch (ContainerSummaryRequiredException e) {
+            assertThat(e.getItem(), is(subject));
+        }
     }
 
     @Test

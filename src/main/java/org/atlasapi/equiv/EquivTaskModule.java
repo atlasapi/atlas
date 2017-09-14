@@ -33,6 +33,7 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.atlasapi.remotesite.bbc.nitro.channels.NitroChannelMap;
 import org.atlasapi.remotesite.channel4.pmlsd.C4AtomApi;
 import org.atlasapi.remotesite.five.FiveChannelMap;
 import org.atlasapi.remotesite.itv.whatson.ItvWhatsonChannelMap;
@@ -174,6 +175,8 @@ public class EquivTaskModule {
     private static final RepetitionRule EBS_SPORTS_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(4, 0));
     private static final RepetitionRule C4_PRESS_EQUIVALENCE_REPETITION =
+            RepetitionRules.daily(new LocalTime(4, 0));
+    private static final RepetitionRule NITRO_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(4, 0));
 
     @Value("${equiv.updater.enabled}") private String updaterEnabled;
@@ -414,8 +417,11 @@ public class EquivTaskModule {
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
-                publisherUpdateTask(BBC_NITRO).withName("BBC Nitro Updater"),
-                RepetitionRules.NEVER,
+                taskBuilder(0, 7)
+                        .withPublishers(BBC_NITRO)
+                        .withChannelsSupplier(nitroChannelsSupplier())
+                        .build().withName("BBC Nitro (8 day) Updater"),
+                NITRO_EQUIVALENCE_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
@@ -635,6 +641,12 @@ public class EquivTaskModule {
         return new YouViewChannelsChannelSupplier(youviewChannelResolver);
     }
 
+    private Supplier<Iterable<Channel>> nitroChannelsSupplier() {
+        return Suppliers.ofInstance(
+                (Iterable<Channel>) new NitroChannelMap(channelResolver).values()
+        );
+    }
+
     private Supplier<Iterable<Channel>> itvChannels() {
         return Suppliers.ofInstance(
                 (Iterable<Channel>) new ItvWhatsonChannelMap(channelResolver).values()
@@ -679,12 +691,24 @@ public class EquivTaskModule {
                                 YOUVIEW_BT_STAGE,
                                 BETTY,
                                 BT_TVE_VOD,
-                                BT_VOD
+                                BT_VOD,
+                                BBC_NITRO
                         ),
                         Predicates.and(
                                 Predicates.instanceOf(Container.class),
-                                sourceIsIn(BBC, C4_PMLSD, ITV, FIVE, BBC_REDUX, ITUNES,
-                                        RADIO_TIMES, LOVEFILM, TALK_TALK, YOUVIEW, NETFLIX
+                                sourceIsIn(
+                                        BBC,
+                                        C4_PMLSD,
+                                        ITV,
+                                        FIVE,
+                                        BBC_REDUX,
+                                        ITUNES,
+                                        RADIO_TIMES,
+                                        LOVEFILM,
+                                        TALK_TALK,
+                                        YOUVIEW,
+                                        NETFLIX,
+                                        BBC_NITRO
                                 )
                         )
                 ))

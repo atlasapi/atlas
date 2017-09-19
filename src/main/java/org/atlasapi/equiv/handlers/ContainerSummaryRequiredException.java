@@ -7,7 +7,7 @@ public class ContainerSummaryRequiredException extends RuntimeException {
     private Item item;
 
     public ContainerSummaryRequiredException(Item item) {
-        super("Container summary not found so equivalence is being run on container with id: "
+        super("Container summary not found so equivalence needs to be run on container with id: "
                 + item.getContainer().getId() + "and then item with id: " + item.getId());
         this.item = item;
 

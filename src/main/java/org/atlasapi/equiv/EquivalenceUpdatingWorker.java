@@ -75,21 +75,24 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
                     message.getEntitySource(), message.getEntityType(), eid});
             try {
                 equivUpdater.updateEquivalences(content, telescope);
-            } catch (ContainerSummaryRequiredException e) {
-                log.trace(e.getMessage());
-                Maybe<Identified> maybeContainer = contentResolver.findByCanonicalUris(
-                        ImmutableSet.of(e.getItem()
-                                .getContainer()
-                                .getUri())).getFirstValue();
-                if (maybeContainer.hasValue()) {
-                    Identified container = maybeContainer.requireValue();
-                    equivUpdater.updateEquivalences((Content) container, telescope);
-                    equivUpdater.updateEquivalences(e.getItem(), telescope);
-                } else {
-                    log.error("Container summary missing AND container not resolved. Unable to "
-                            + "run equivalence on item with ID: " + content.getId());
+            } catch (ContainerSummaryRequiredException containerSummaryError) {
+                log.trace("Container summary required, attempting to run", containerSummaryError);
+                try {
+                    Maybe<Identified> maybeContainer = contentResolver.findByCanonicalUris(
+                            ImmutableSet.of(containerSummaryError.getItem()
+                                    .getContainer()
+                                    .getUri())).getFirstValue();
+                    if (maybeContainer.hasValue()) {
+                        Identified container = maybeContainer.requireValue();
+                        equivUpdater.updateEquivalences((Content) container, telescope);
+                        equivUpdater.updateEquivalences(containerSummaryError.getItem(), telescope);
+                    } else {
+                        log.error("Container summary missing AND container not resolved. Unable to "
+                                + "run equivalence on item with ID: " + content.getId());
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to rerun equivalence for missing container summary", e);
                 }
-
             }
         } else {
             log.trace("{} skipping equiv update: {} {} {}", 

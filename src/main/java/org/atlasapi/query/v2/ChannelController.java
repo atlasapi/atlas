@@ -152,9 +152,9 @@ public class ChannelController extends BaseController<Iterable<Channel>> {
                     advertiseFromKey,
                     publisherKey,
                     uriKey,
-                    channelType,
                     aliasNamespace,
-                    aliasValue
+                    aliasValue,
+                    channelType
             );
 
             Iterable<Channel> channels;

@@ -70,8 +70,12 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
         }
 
         if (broadcasts.isEmpty()) {
-            log.info(String.format("No broadcasts for channel %s (%s) on %s", channel.getTitle(), 
-                    getYouViewId(channel), schedulePeriod.getStart().toString()));
+            if (log.isInfoEnabled()) {
+                log.info("No broadcasts for channel {} ({}) on {}",
+                        channel.getTitle(),
+                        getYouViewId(channel),
+                        schedulePeriod.getStart());
+            }
         } else {
             try {
                 scheduleWriter.replaceScheduleBlock(targetPublisher, channel, broadcasts);
@@ -91,6 +95,9 @@ public class DefaultYouViewChannelProcessor implements YouViewChannelProcessor {
                 return alias;
             }
         }
-        throw new RuntimeException("Channel " + channel.getTitle() + " does not have a YouView alias (" + channel.toString() + ")");
+        throw new IllegalArgumentException(
+                "Channel " + channel.getTitle()
+                + " does not have a YouView alias (" + channel.toString() + ")"
+        );
     }
 }

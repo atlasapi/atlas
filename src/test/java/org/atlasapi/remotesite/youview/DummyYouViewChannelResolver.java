@@ -1,31 +1,35 @@
 package org.atlasapi.remotesite.youview;
 
-import java.util.Collection;
-
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
 import org.atlasapi.media.channel.Channel;
 
+import java.util.Collection;
+import java.util.Map;
+
 public class DummyYouViewChannelResolver implements YouViewChannelResolver {
 
-    private final Multimap<Integer, Channel> channelMap;
-    
-    public DummyYouViewChannelResolver(Multimap<Integer, Channel> channelMap) {
+    private final Multimap<ServiceId, Channel> channelMap;
+    private final Map<Integer, ServiceId> serviceIdMap;
+
+    public DummyYouViewChannelResolver(Multimap<ServiceId, Channel> channelMap) {
         this.channelMap = ImmutableMultimap.copyOf(channelMap);
+        this.serviceIdMap = Maps.uniqueIndex(channelMap.keySet(), ServiceId::getId);
     }
     
     @Override
     public Collection<String> getChannelUris(int channelId) {
         return Collections2.transform(
-                channelMap.get(channelId),
+                channelMap.get(serviceIdMap.get(channelId)),
                 Channel::getUri
         );
     }
 
     @Override
     public Collection<Channel> getChannels(int channelId) {
-        return channelMap.get(channelId);
+        return channelMap.get(serviceIdMap.get(channelId));
     }
 
     @Override
@@ -34,16 +38,12 @@ public class DummyYouViewChannelResolver implements YouViewChannelResolver {
     }
 
     @Override
-    public Multimap<Integer, Channel> getAllServiceIdsToChannels() {
+    public Multimap<ServiceId, Channel> getAllServiceIdsToChannels() {
         return channelMap;
     }
 
-    @Override public Collection<String> getServiceAliases(Channel channel) {
-        throw new UnsupportedOperationException();
-    }
-
-    @Override public Collection<Integer> getServiceIds(Channel channel) {
-        throw new UnsupportedOperationException();
+    @Override public Collection<ServiceId> getServiceIds(Channel channel) {
+        return channelMap.keySet();
     }
 
 }

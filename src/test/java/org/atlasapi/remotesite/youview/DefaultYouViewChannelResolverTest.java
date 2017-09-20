@@ -1,16 +1,16 @@
 package org.atlasapi.remotesite.youview;
 
-import java.util.Set;
-
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
-
-import com.google.common.collect.ImmutableSet;
 import org.junit.Before;
 import org.junit.Test;
+
+import java.util.Set;
 
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertThat;
@@ -77,8 +77,8 @@ public class DefaultYouViewChannelResolverTest {
         assertThat("Shouldn't be able to look up by overridden service ID",
                     yvChannelResolver.getChannels(123).isEmpty(), is(true));
         
-        assertThat(yvChannelResolver.getServiceAliases(BBC_ONE),
-                is(ImmutableSet.of("http://youview.com/service/456")));
+        assertThat(Iterables.getOnlyElement(yvChannelResolver.getServiceIds(BBC_ONE)).getAlias(),
+                is("http://youview.com/service/456"));
     }
     
     @Test

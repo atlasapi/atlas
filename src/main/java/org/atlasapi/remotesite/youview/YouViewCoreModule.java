@@ -14,8 +14,8 @@ import org.springframework.context.annotation.Configuration;
 @Configuration
 public class YouViewCoreModule {
 
-    protected final static String SCOTLAND_SERVICE_ALIAS_PREFIX = "http://scotlandradio.youview.com/service/";
-    private final static Set<String> ALIAS_PREFIXES = Sets.union( 
+    protected static final String SCOTLAND_SERVICE_ALIAS_PREFIX = "http://scotlandradio.youview.com/service/";
+    private static final Set<String> ALIAS_PREFIXES = Sets.union(
             ImmutableSet.of(SCOTLAND_SERVICE_ALIAS_PREFIX), ImmutableSet.copyOf(PaChannelsIngester.YOUVIEW_SERVICE_ID_ALIAS_PREFIXES));
     
     private @Autowired ChannelResolver channelResolver;

@@ -5,7 +5,6 @@ import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
 import nu.xom.Element;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
@@ -50,12 +49,12 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
     public ItemRefAndBroadcast process(Channel channel, Publisher targetPublisher, Element element) {
         Item item = extractor.extract(channel, targetPublisher, element);
         removeStaleScheduleEventOnOldItems(item);
-        Maybe<Identified> existing = resolve(item.getCanonicalUri());
-        if (existing.isNothing()) {
-            write(item);
+        Optional<Identified> existing = resolve(item.getCanonicalUri());
+        if (existing.isPresent()) {
+            Identified identified = existing.get();
+            write(contentMerger.merge(ContentMerger.asItem(identified), item));
         } else {
-            Identified identified = existing.requireValue();
-                write(contentMerger.merge(ContentMerger.asItem(identified), item));
+            write(item);
         }
         return new ItemRefAndBroadcast(item, getBroadcastFromItem(item));
     }
@@ -65,9 +64,9 @@ public class DefaultYouViewElementProcessor implements YouViewElementProcessor {
         return Iterables.getOnlyElement(version.getBroadcasts());
     }
 
-    private Maybe<Identified> resolve(String uri) {
+    private Optional<Identified> resolve(String uri) {
         ImmutableSet<String> uris = ImmutableSet.of(uri);
-        return resolver.findByCanonicalUris(uris).get(uri);
+        return resolver.findByCanonicalUris(uris).get(uri).toGuavaOptional();
     }
 
     private void write(Content content) {

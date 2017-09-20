@@ -1,17 +1,5 @@
 package org.atlasapi.remotesite.youview;
 
-import java.io.InputStream;
-import java.util.concurrent.TimeUnit;
-
-import nu.xom.Builder;
-import nu.xom.Document;
-
-import org.apache.commons.httpclient.ConnectTimeoutException;
-import org.atlasapi.remotesite.HttpClients;
-import org.joda.time.DateTime;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import com.metabroadcast.common.http.HttpException;
 import com.metabroadcast.common.http.HttpResponsePrologue;
 import com.metabroadcast.common.http.HttpResponseTransformer;
@@ -19,6 +7,15 @@ import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.http.SimpleHttpClientBuilder;
 import com.metabroadcast.common.http.SimpleHttpRequest;
 import com.metabroadcast.common.url.QueryStringParameters;
+import nu.xom.Builder;
+import nu.xom.Document;
+import org.atlasapi.remotesite.HttpClients;
+import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.io.InputStream;
+import java.util.concurrent.TimeUnit;
 
 public class YouViewScheduleFetcher {
     
@@ -39,17 +36,19 @@ public class YouViewScheduleFetcher {
     }
 
     // fetch schedule from start to finish
-    public Document getSchedule(DateTime start, DateTime finish, int service) throws HttpException, Exception {
+    public Document getSchedule(DateTime start, DateTime finish, int service) throws HttpException {
         QueryStringParameters qsp = new QueryStringParameters();
-        qsp.add("service", "" + service);
+        qsp.add("service", String.valueOf(service));
         qsp.add("starttime", start.toString(DATE_TIME_FORMAT));
         qsp.add("endtime", finish.toString(DATE_TIME_FORMAT));
         String url = youviewUrl + "?" + qsp.toQueryString();
-        log.trace("Querying: " + url);
+        log.trace("Querying: {}", url);
         try {
-            client.get(new SimpleHttpRequest<Void>(url, xmlTransformer));
+            client.get(new SimpleHttpRequest<>(url, xmlTransformer));
+        } catch (HttpException e) {
+            throw e;
         } catch (Exception e) {
-            throw new RuntimeException("Failed to get " + url, e);
+            throw new HttpException("Failed to get " + url, e, null);
         }
         return xmlTransformer.getXml();
     }
@@ -62,7 +61,7 @@ public class YouViewScheduleFetcher {
         private Document xml;
         
         @Override
-        public Void transform(HttpResponsePrologue prologue, InputStream body) throws HttpException, Exception {
+        public Void transform(HttpResponsePrologue prologue, InputStream body) throws Exception {
             xml = new Builder().build(body);
             return null;
         }

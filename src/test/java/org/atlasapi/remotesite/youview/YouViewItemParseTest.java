@@ -22,6 +22,8 @@ import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.pa.channels.PaChannelsIngester;
+import org.atlasapi.remotesite.youview.DefaultYouViewChannelResolver.ImmutableServiceId;
+import org.atlasapi.remotesite.youview.YouViewChannelResolver.ServiceId;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.junit.Test;
@@ -45,8 +47,8 @@ public class YouViewItemParseTest {
         YouViewIngestConfiguration ingestConfiguration = new YouViewIngestConfiguration(
                 ImmutableMap.of(PaChannelsIngester.YOUVIEW_SERVICE_ID_ALIAS_PREFIX, Publisher.YOUVIEW_STAGE),
                 "aliasprefix");
-        Multimap<Integer, Channel> channelMapping = ImmutableSetMultimap.<Integer, Channel>builder()
-                .put(1044, FIVE)
+        Multimap<ServiceId, Channel> channelMapping = ImmutableSetMultimap.<ServiceId, Channel>builder()
+                .put(ImmutableServiceId.create("aliasprefix", "aliasprefix1044"), FIVE)
                 .build();
         contentExtractor = new YouViewContentExtractor(new DummyYouViewChannelResolver(channelMapping), ingestConfiguration);
     }

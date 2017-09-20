@@ -73,6 +73,6 @@ public class ChannelAvailableOnSettingTask extends ScheduledTask {
         
         MongoChannelGroupStore store = new MongoChannelGroupStore(mongo);
         
-        new ChannelAvailableOnSettingTask(new CachingChannelStore(new MongoChannelStore(mongo, store, store)) ,mongo.collection(MongoChannelStore.COLLECTION)).run();
+        new ChannelAvailableOnSettingTask(new CachingChannelStore(new MongoChannelStore(mongo, store, store)) ,mongo.collection(MongoChannelStore.COLLECTION_NAME)).run();
     }
 }

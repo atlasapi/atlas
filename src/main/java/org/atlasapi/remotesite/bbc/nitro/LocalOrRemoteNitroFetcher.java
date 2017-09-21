@@ -199,8 +199,11 @@ public class LocalOrRemoteNitroFetcher {
         return mergeItemsWithExisting(fetchedItemSet, wrappedItems);
     }
 
-    private <T> ModelWithPayload<T> wrapResolvedContentWithEmptyPayload(T item){
-        return new ModelWithPayload<T>(item, "Resolved content. Payload is unavailable");
+    private <T> ModelWithPayload<T> wrapResolvedContentWithEmptyPayload(T item) {
+        return new ModelWithPayload<T>(
+                item,
+                "Resolved content (" + item.getClass().getSimpleName() + "). Payload is unavailable."
+        );
     }
 
     private ImmutableListMultimap<String, Broadcast> buildBroadcastIndex(

@@ -12,6 +12,8 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -34,7 +36,12 @@ public class ConjunctiveFilterTest {
         
         DefaultDescription desc = new DefaultDescription();
         Iterable<ScoredCandidate<Integer>> candidates = candidatesFor(Range.closed(0, 20));
-        List<ScoredCandidate<Integer>> filtered = filter.apply(candidates, null, desc);
+        List<ScoredCandidate<Integer>> filtered = filter.apply(
+                candidates,
+                null,
+                desc,
+                EquivToTelescopeResults.create("id", "publisher")
+        );
         
         assertThat(Lists.transform(filtered, ScoredCandidate.<Integer>toCandidate()), is(hasItems(6,12,18)));
     }
@@ -61,7 +68,12 @@ public class ConjunctiveFilterTest {
         }
 
         @Override
-        protected boolean doFilter(ScoredCandidate<Integer> input, Integer subject, ResultDescription desc) {
+        protected boolean doFilter(
+                ScoredCandidate<Integer> input,
+                Integer subject,
+                ResultDescription desc,
+                EquivToTelescopeResults equivToTelescopeResults
+        ) {
             return input.candidate() % factor == 0;
         }
         

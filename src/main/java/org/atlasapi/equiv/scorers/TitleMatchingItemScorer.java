@@ -89,10 +89,12 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
             equivalents.addEquivalent(suggestion, equivScore);
-            scorerComponent.addComponentResult(
-                    suggestion.getId(),
-                    String.valueOf(equivScore.asDouble())
-            );
+            if (suggestion.getId() != null) {
+                scorerComponent.addComponentResult(
+                        suggestion.getId(),
+                        String.valueOf(equivScore.asDouble())
+                );
+            }
         }
     
         return equivalents.build();

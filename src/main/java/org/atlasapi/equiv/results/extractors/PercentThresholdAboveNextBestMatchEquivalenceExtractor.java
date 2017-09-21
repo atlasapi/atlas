@@ -51,10 +51,12 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
         }
         
         if (candidates.size() == 1) {
-            extractorComponent.addComponentResult(
-                    ((Content) candidates.get(0).candidate()).getId(),
-                    String.valueOf(candidates.get(0).score().asDouble())
-            );
+            if (((Content) candidates.get(0).candidate()).getId() != null) {
+                extractorComponent.addComponentResult(
+                        ((Content) candidates.get(0).candidate()).getId(),
+                        String.valueOf(candidates.get(0).score().asDouble())
+                );
+            }
             equivToTelescopeResults.addExtractorResult(extractorComponent);
             return Optional.of(candidates.get(0));
         }
@@ -80,10 +82,12 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
         if ( (strongest.score().asDouble() / nextBest.score().asDouble()) >= threshold) {
             desc.appendText("%s extracted. Strongest score of %s wins over next best from %s of %s.", strongest.candidate(), strongest.score(), 
                     nextBest.candidate(), nextBest.score());
-            extractorComponent.addComponentResult(
-                    ((Content) strongest.candidate()).getId(),
-                    String.valueOf(strongest.score().asDouble())
-            );
+            if (((Content) strongest.candidate()).getId() != null) {
+                extractorComponent.addComponentResult(
+                        ((Content) strongest.candidate()).getId(),
+                        String.valueOf(strongest.score().asDouble())
+                );
+            }
             equivToTelescopeResults.addExtractorResult(extractorComponent);
             return Optional.of(strongest);
         }

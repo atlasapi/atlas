@@ -49,19 +49,25 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
             for (Item candidate : candidates) {
                 Score score = score(episode, candidate, desc);
                 equivalents.addEquivalent(candidate, score);
-                scorerComponent.addComponentResult(
-                        candidate.getId(),
-                        String.valueOf(score.asDouble())
-                );
+
+                if (candidate.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            candidate.getId(),
+                            String.valueOf(score.asDouble())
+                    );
+                }
             }
         } else {
             desc.appendText("Subject: not epsiode");
             for (Item suggestion : candidates) {
                 equivalents.addEquivalent(suggestion, Score.NULL_SCORE);
-                scorerComponent.addComponentResult(
-                        suggestion.getId(),
-                        ""
-                );
+
+                if (suggestion.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            suggestion.getId(),
+                            ""
+                    );
+                }
             }
         }
 

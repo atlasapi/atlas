@@ -47,11 +47,13 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
                     subjectFilm.getYear(),
                     NUMBER_OF_YEARS_DIFFERENT_TOLERANCE
             );
-            filterComponent.addComponentResult(
-                    candidateFilm.getId(),
-                    "Removed as film year differs by more than "
-                            + NUMBER_OF_YEARS_DIFFERENT_TOLERANCE
-            );
+            if (candidateFilm.getId() != null) {
+                filterComponent.addComponentResult(
+                        candidateFilm.getId(),
+                        "Removed as film year differs by more than "
+                                + NUMBER_OF_YEARS_DIFFERENT_TOLERANCE
+                );
+            }
         }
 
         equivToTelescopeResults.addFilterResult(filterComponent);

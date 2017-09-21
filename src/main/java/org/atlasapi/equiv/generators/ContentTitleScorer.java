@@ -36,10 +36,13 @@ public final class ContentTitleScorer<T extends Content> {
         for (T found : ImmutableSet.copyOf(candidates)) {
             Score equivScore = score(content, found, desc);
             equivalents.addEquivalent(found, equivScore);
-            generatorComponent.addComponentResult(
-                    found.getId(),
-                    String.valueOf(equivScore.asDouble())
-            );
+
+            if (found.getId() != null) {
+                generatorComponent.addComponentResult(
+                        found.getId(),
+                        String.valueOf(equivScore.asDouble())
+                );
+            }
         }
 
         return equivalents.build();

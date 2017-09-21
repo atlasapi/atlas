@@ -50,10 +50,12 @@ public class PercentThresholdEquivalenceExtractor<T> implements EquivalenceExtra
         ScoredCandidate<T> strongest = candidates.get(0);
         if (strongest.score().isRealScore() && strongest.score().asDouble() / total > threshold) {
             desc.appendText("%s extracted. %s / %s > %s", strongest.candidate(), strongest.score(), total, threshold).finishStage();
-            extractorCompoenent.addComponentResult(
-                    ((Content) strongest.candidate()).getId(),
-                    String.valueOf(strongest.score().asDouble())
-            );
+            if (((Content) strongest.candidate()).getId() != null) {
+                extractorCompoenent.addComponentResult(
+                        ((Content) strongest.candidate()).getId(),
+                        String.valueOf(strongest.score().asDouble())
+                );
+            }
             equivToTelescopeResults.addExtractorResult(extractorCompoenent);
             return Optional.of(strongest);
         }

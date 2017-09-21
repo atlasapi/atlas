@@ -32,10 +32,13 @@ public class TopEquivalenceExtractor<T extends Content> implements EquivalenceEx
         if(equivalents == null || equivalents.isEmpty()) {
             return Optional.absent();
         }
-        extractorComponent.addComponentResult(
-                equivalents.get(0).candidate().getId(),
-                String.valueOf(equivalents.get(0).score().asDouble())
-        );
+        if (equivalents.get(0).candidate().getId() != null
+                && equivalents.get(0).score() != null) {
+            extractorComponent.addComponentResult(
+                    equivalents.get(0).candidate().getId(),
+                    String.valueOf(equivalents.get(0).score().asDouble())
+            );
+        }
 
         equivToTelescopeResults.addExtractorResult(extractorComponent);
 

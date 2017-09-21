@@ -27,10 +27,12 @@ public class ContainerHierarchyFilter extends AbstractEquivalenceFilter<Containe
         boolean retain = isTopLevel(subject) == isTopLevel(input.candidate());
         if (!retain) {
             desc.appendText("remove %s", input.candidate());
-            filterComponent.addComponentResult(
-                    input.candidate().getId(),
-                    "Removed for not being top level"
-            );
+            if (input.candidate().getId() != null) {
+                filterComponent.addComponentResult(
+                        input.candidate().getId(),
+                        "Removed for not being top level"
+                );
+            }
         }
         equivToTelescopeResults.addFilterResult(filterComponent);
 

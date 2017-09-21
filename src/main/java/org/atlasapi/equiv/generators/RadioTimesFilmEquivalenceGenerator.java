@@ -67,10 +67,13 @@ public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<
             if (resolvedContent.hasValue()
                     && filmIsActivelyPublished(resolvedContent.requireValue())) {
                 results.addEquivalent((Film)resolvedContent.requireValue(), Score.ONE);
-                generatorComponent.addComponentResult(
-                        resolvedContent.requireValue().getId(),
-                        "1.0"
-                );
+
+                if (((Film) resolvedContent.requireValue()).getId() != null) {
+                    generatorComponent.addComponentResult(
+                            resolvedContent.requireValue().getId(),
+                            "1.0"
+                    );
+                }
             }
         }
         

@@ -58,10 +58,12 @@ public class CrewMemberScorer implements EquivalenceScorer<Item> {
             desc.appendText("Subject has no crew");
             for (Item candidate : candidates) {
                 scored.addEquivalent(candidate, Score.NULL_SCORE);
-                scorerComponent.addComponentResult(
-                        candidate.getId(),
-                        ""
-                );
+                if (candidate.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            candidate.getId(),
+                            ""
+                    );
+                }
             }
             return scored.build();
         }
@@ -78,10 +80,13 @@ public class CrewMemberScorer implements EquivalenceScorer<Item> {
                 desc.finishStage();
             }
             scored.addEquivalent(candidate, score);
-            scorerComponent.addComponentResult(
-                    candidate.getId(),
-                    String.valueOf(score.asDouble())
-            );
+
+            if (candidate.getId() != null) {
+                scorerComponent.addComponentResult(
+                        candidate.getId(),
+                        String.valueOf(score.asDouble())
+                );
+            }
         }
         return scored.build();
     }

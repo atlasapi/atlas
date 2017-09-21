@@ -33,10 +33,12 @@ public class UnpublishedContentFilter<T extends Content> extends AbstractEquival
                     equivalent);
             log.info("Candidate {} was filtered out because it was not actively published",
                     equivalent.getCanonicalUri());
-            filterCompoenent.addComponentResult(
-                    equivalent.getId(),
-                    "Removed for not being actively published"
-            );
+            if (equivalent.getId() != null) {
+                filterCompoenent.addComponentResult(
+                        equivalent.getId(),
+                        "Removed for not being actively published"
+                );
+            }
         }
 
         equivToTelescopeResults.addFilterResult(filterCompoenent);

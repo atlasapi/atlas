@@ -81,10 +81,12 @@ public class MultipleCandidateExtractor<T extends Content> {
         allowedCandidates.addAll(matchedCandidates);
 
         allowedCandidates.forEach(candidate -> {
-                    extractorComponent.addComponentResult(
-                            candidate.candidate().getId(),
-                            String.valueOf(candidate.score().asDouble())
-                    );
+                    if (candidate.candidate().getId() != null) {
+                        extractorComponent.addComponentResult(
+                                candidate.candidate().getId(),
+                                String.valueOf(candidate.score().asDouble())
+                        );
+                    }
                 }
         );
 

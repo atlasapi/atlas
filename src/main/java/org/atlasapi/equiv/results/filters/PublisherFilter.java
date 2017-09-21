@@ -46,11 +46,13 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
                     candidate.candidate().getPublisher(),
                     unacceptable
             );
-            filterCompoenent.addComponentResult(
-                    candidate.candidate().getId(),
-                    "Removing for containing unacceptable publisher"
-                            + candidate.candidate().getPublisher().toString()
-            );
+            if (candidate.candidate().getId() != null) {
+                filterCompoenent.addComponentResult(
+                        candidate.candidate().getId(),
+                        "Removing for containing unacceptable publisher"
+                                + candidate.candidate().getPublisher().toString()
+                );
+            }
         }
 
         equivToTelescopeResults.addFilterResult(filterCompoenent);

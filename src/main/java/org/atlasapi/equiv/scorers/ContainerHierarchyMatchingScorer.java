@@ -78,10 +78,13 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
             for (Container cand : candidates) {
                 Score equivScore = score(subjSeriesSizes, cand, desc);
                 results.addEquivalent(cand, equivScore);
-                scorerComponent.addComponentResult(
-                        cand.getId(),
-                        String.valueOf(equivScore.asDouble())
-                );
+
+                if (cand.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            cand.getId(),
+                            String.valueOf(equivScore.asDouble())
+                    );
+                }
 
             }
         } else {
@@ -92,20 +95,24 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
                 for (Container candidate : candidates) {
                     results.addEquivalent(candidate, Score.nullScore());
 
-                    scorerComponent.addComponentResult(
-                            candidate.getId(),
-                            ""
-                    );
+                    if (candidate.getId() != null) {
+                        scorerComponent.addComponentResult(
+                                candidate.getId(),
+                                ""
+                        );
+                    }
                 }
             } else {
                 for (Container candidate : candidates) {
                     Score equivScore = score(subj, candidate, desc);
                     results.addEquivalent(candidate, equivScore);
 
-                    scorerComponent.addComponentResult(
-                            candidate.getId(),
-                            String.valueOf(equivScore.asDouble())
-                    );
+                    if (candidate.getId() != null) {
+                        scorerComponent.addComponentResult(
+                                candidate.getId(),
+                                String.valueOf(equivScore.asDouble())
+                        );
+                    }
                 }
             }
         }

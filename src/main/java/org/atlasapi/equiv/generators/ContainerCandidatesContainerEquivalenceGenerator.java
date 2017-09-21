@@ -62,10 +62,8 @@ public class ContainerCandidatesContainerEquivalenceGenerator
             EquivToTelescopeResults equivToTelescopeResults
     ) {
         Builder<Container> result = DefaultScoredCandidates.fromSource("Container");
-
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Container Candidates Container Equivalence Generator");
-
         if (subject instanceof Series) {
             Series series = (Series) subject;
             ParentRef parent = series.getParent();
@@ -111,7 +109,7 @@ public class ContainerCandidatesContainerEquivalenceGenerator
         return "Container's candidates generator";
     }
     
-    private static final Function<ContentRef, String> TO_CANONICAL_URI =  input-> input.getCanonicalUri();
+    private static final Function<ContentRef, String> TO_CANONICAL_URI = input-> input.getCanonicalUri() ;
 
     
 }

@@ -96,10 +96,12 @@ public class ContainerChildEquivalenceGenerator implements EquivalenceGenerator<
                         Score score = score(parent.getCount(), children);
                         candidates.addEquivalent(container, score);
 
-                        generatorComponent.addComponentResult(
-                                container.getId(),
-                                String.valueOf(score.asDouble())
-                        );
+                        if (container.getId() != null) {
+                            generatorComponent.addComponentResult(
+                                    container.getId(),
+                                    String.valueOf(score.asDouble())
+                            );
+                        }
 
                         desc.appendText(
                                 "%s: scored %s (%s)",

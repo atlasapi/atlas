@@ -35,10 +35,12 @@ public class DummyContainerFilter<T extends Content> extends AbstractEquivalence
                     subjectContainer,
                     candidateContainer
             );
-            filterComponent.addComponentResult(
-                    candidateContainer.getId(),
-                    "Removed as dummy (empty) container"
-            );
+            if (candidateContainer.getId() != null) {
+                filterComponent.addComponentResult(
+                        candidateContainer.getId(),
+                        "Removed as dummy (empty) container"
+                );
+            }
         }
 
         equivToTelescopeResults.addFilterResult(filterComponent);

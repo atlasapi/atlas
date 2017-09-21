@@ -158,7 +158,9 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                         && hasQualifyingBroadcast(scheduleItem, broadcast)) {
                     scores.addEquivalent(scheduleItem, Score.valueOf(1.0));
 
-                    generatorComponent.addComponentResult(scheduleItem.getId(), "1.0");
+                    if (scheduleItem.getId() != null) {
+                        generatorComponent.addComponentResult(scheduleItem.getId(), "1.0");
+                    }
 
                 } else if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()

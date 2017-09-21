@@ -237,7 +237,10 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
                         equivalents.addEquivalent((T) identified, Score.ONE);
                         desc.appendText("Resolved %s", identified.getCanonicalUri());
 
-                        generatorComponent.addComponentResult(identified.getId(), "1.0");
+                        // this if statement keeps lots of old tests happy
+                        if (identified.getId() != null) {
+                            generatorComponent.addComponentResult(identified.getId(), "1.0");
+                        }
                     }
                 }
             })

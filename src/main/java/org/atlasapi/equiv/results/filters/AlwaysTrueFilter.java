@@ -5,6 +5,7 @@ import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Identified;
 
 public class AlwaysTrueFilter<T> extends AbstractEquivalenceFilter<T> {
 
@@ -27,10 +28,13 @@ public class AlwaysTrueFilter<T> extends AbstractEquivalenceFilter<T> {
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
         filterComponent.setComponentName("Always True Filter");
-        filterComponent.addComponentResult(
-                ((Content) input.candidate()).getId(),
-                "Always True"
-        );
+        if (subject != null
+                &&((Identified) subject).getId() != null) {
+            filterComponent.addComponentResult(
+                    ((Identified) input.candidate()).getId(),
+                    "Always True"
+            );
+        }
         equivToTelescopeResults.addFilterResult(filterComponent);
         return true;
     }

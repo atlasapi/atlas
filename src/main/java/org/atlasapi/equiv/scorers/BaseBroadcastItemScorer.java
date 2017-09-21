@@ -198,10 +198,12 @@ public abstract class BaseBroadcastItemScorer implements EquivalenceScorer<Item>
             Score equivScore = score(subject, subjectContainer, candidate, desc);
             equivalents.addEquivalent(candidate, equivScore);
 
-            scorerComponent.addComponentResult(
-                    subject.getId(),
-                    String.valueOf(equivScore.asDouble())
-            );
+            if (subject.getId() != null) {
+                scorerComponent.addComponentResult(
+                        subject.getId(),
+                        String.valueOf(equivScore.asDouble())
+                );
+            }
         }
 
         equivToTelescopeResults.addScorerResult(scorerComponent);

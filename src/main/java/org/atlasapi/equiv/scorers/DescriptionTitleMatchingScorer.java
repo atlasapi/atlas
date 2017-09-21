@@ -57,10 +57,13 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
         for (Item suggestion : suggestions) {
             Score equivScore = score(subject, suggestion, desc);
             equivalents.addEquivalent(suggestion, equivScore);
-            scorerComponent.addComponentResult(
-                    suggestion.getId(),
-                    String.valueOf(equivScore)
-            );
+
+            if (suggestion.getId() != null) {
+                scorerComponent.addComponentResult(
+                        suggestion.getId(),
+                        String.valueOf(equivScore)
+                );
+            }
         }
 
         equivToTelescopeResults.addScorerResult(scorerComponent);

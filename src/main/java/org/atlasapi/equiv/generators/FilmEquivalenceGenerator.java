@@ -127,26 +127,35 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             if(imdbRef.hasValue() && equivImdbRef.hasValue() && Objects.equal(imdbRef.requireValue(), equivImdbRef.requireValue())) {
                 desc.appendText("%s (%s) scored 1.0 (IMDB match)", equivFilm.getTitle(), equivFilm.getCanonicalUri());
                 scores.addEquivalent(equivFilm, Score.valueOf(1.0));
-                generatorComponent.addComponentResult(
-                        equivFilm.getId(),
-                        "1.0"
-                );
+
+                if (equivFilm.getId() != null) {
+                    generatorComponent.addComponentResult(
+                            equivFilm.getId(),
+                            "1.0"
+                    );
+                }
                 
             } else if ((film.getYear() != null && tolerableYearDifference(film, equivFilm)) || (film.getYear() == null && acceptNullYears)) {
                 Score score = Score.valueOf(titleMatcher.titleMatch(film, equivFilm));
                 desc.appendText("%s (%s) scored %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), score);
                 scores.addEquivalent(equivFilm, score);
-                generatorComponent.addComponentResult(
-                        equivFilm.getId(),
-                        String.valueOf(score.asDouble())
-                );
+
+                if (equivFilm.getId() != null) {
+                    generatorComponent.addComponentResult(
+                            equivFilm.getId(),
+                            String.valueOf(score.asDouble())
+                    );
+                }
             } else {
-                desc.appendText("%s (%s) ignored. Wrong year %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), equivFilm.getYear());
                 scores.addEquivalent(equivFilm, Score.negativeOne());
-                generatorComponent.addComponentResult(
-                        equivFilm.getId(),
-                        "-1.0"
-                );
+
+                if (equivFilm.getId() != null) {
+                    desc.appendText("%s (%s) ignored. Wrong year %s", equivFilm.getTitle(), equivFilm.getCanonicalUri(), equivFilm.getYear());
+                    generatorComponent.addComponentResult(
+                            equivFilm.getId(),
+                            "-1.0"
+                    );
+                }
             }
         }
 

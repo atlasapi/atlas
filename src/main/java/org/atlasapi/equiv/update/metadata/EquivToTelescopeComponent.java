@@ -5,6 +5,8 @@ import java.util.HashMap;
 
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
 
+import com.google.common.base.Strings;
+
 public class EquivToTelescopeComponent {
 
     private String componentName;
@@ -30,6 +32,9 @@ public class EquivToTelescopeComponent {
     }
 
     public void addComponentResult(String id, String score) {
+        if (Strings.isNullOrEmpty(id)) {
+            return;
+        }
         componentResults.put(id, score);
     }
 

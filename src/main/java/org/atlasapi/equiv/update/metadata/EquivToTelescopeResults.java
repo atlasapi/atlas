@@ -1,6 +1,8 @@
 package org.atlasapi.equiv.update.metadata;
 
+import java.util.ArrayList;
 import java.util.List;
+
 
 public class EquivToTelescopeResults {
 
@@ -15,6 +17,11 @@ public class EquivToTelescopeResults {
     private EquivToTelescopeResults(String contentId, String publisher) {
         this.contentId = contentId;
         this.publisher = publisher;
+        generators = new ArrayList<>();
+        scorers = new ArrayList<>();
+        combiners = new ArrayList<>();
+        filters = new ArrayList<>();
+        extractors = new ArrayList<>();
     }
 
     public static EquivToTelescopeResults create(String contentId, String publisher) {

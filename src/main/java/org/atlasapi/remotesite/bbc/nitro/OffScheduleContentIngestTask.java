@@ -27,6 +27,7 @@ import com.metabroadcast.atlas.glycerin.queries.MediaTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.stream.MoreCollectors;
 
@@ -179,11 +180,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         telescope.reportSuccessfulEvent(
                                 brandWithPayload.getModel().getId(),
                                 brandWithPayload.getModel().getAliases(),
+                                EntityType.BRAND,
                                 itemWithPayload.getPayload(), brandWithPayload.getPayload()
                         );
                     } else {
                         telescope.reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
+                                EntityType.BRAND,
                                 itemWithPayload.getPayload(), brandWithPayload.getPayload()
                         );
                     }
@@ -197,11 +200,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         telescope.reportSuccessfulEvent(
                                 seriesWithPayload.getModel().getId(),
                                 seriesWithPayload.getModel().getAliases(),
+                                EntityType.SERIES,
                                 itemWithPayload.getPayload(), seriesWithPayload.getPayload()
                         );
                     } else {
                         telescope.reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
+                                EntityType.SERIES,
                                 itemWithPayload.getPayload()
                         );
                     }
@@ -212,11 +217,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     telescope.reportSuccessfulEvent(
                             item.getId(),
                             item.getAliases(),
+                            EntityType.ITEM,
                             itemWithPayload.getPayload()
                     );
                 } else {
                     telescope.reportFailedEvent(
                             "Atlas did not return an id after attempting to create or update this Item",
+                            EntityType.ITEM,
                             itemWithPayload.getPayload()
                     );
                 }

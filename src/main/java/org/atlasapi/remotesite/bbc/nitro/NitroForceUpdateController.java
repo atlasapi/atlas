@@ -26,6 +26,7 @@ import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.http.HttpStatusCode;
 
 import com.google.common.base.Throwables;
@@ -217,10 +218,12 @@ public class NitroForceUpdateController {
                 telescope.reportSuccessfulEvent(
                         channel.getId(),
                         channel.getAliases(),
+                        EntityType.CHANNEL,
                         channelWithPayload.get().getPayload());
             } else {
                 telescope.reportFailedEvent(
                         "There was an error while trying to write this Channel to Atlas. Channel pid=" + pid,
+                        EntityType.CHANNEL,
                         channelWithPayload.get().getPayload()
                 );
             }
@@ -327,11 +330,13 @@ public class NitroForceUpdateController {
             telescope.reportSuccessfulEvent(
                     item.getId(),
                     item.getAliases(),
+                    EntityType.ITEM,
                     itemWithPayload.getPayload()
             );
         } else {
             telescope.reportFailedEvent(
                     "There was an error while trying to write this Item to Atlas. Item pid=" + pid,
+                    EntityType.ITEM,
                     itemWithPayload.getPayload()
             );
         }
@@ -375,11 +380,13 @@ public class NitroForceUpdateController {
                 telescope.reportSuccessfulEvent(
                         series.getId(),
                         series.getAliases(),
+                        EntityType.SERIES,
                         seryWithPayload.getPayload(), itemWithPayload.getPayload());
             } else {
                 telescope.reportFailedEvent(
                         "There was an error while trying to write this Series to Atlas. "
                         + " seriesPid=" + seriesPid + " itemPid=" + pid,
+                        EntityType.SERIES,
                         itemWithPayload.getPayload(), seryWithPayload.getPayload());
             }
         } catch (NitroException e) {
@@ -388,6 +395,7 @@ public class NitroForceUpdateController {
             telescope.reportFailedEvent(
                     "There was an error while trying to write this Series to Atlas. "
                     + " seriesPid=" + seriesPid + " itemPid=" + pid,
+                    EntityType.SERIES,
                     itemWithPayload.getPayload());
         }
     }
@@ -427,12 +435,14 @@ public class NitroForceUpdateController {
                     telescope.reportSuccessfulEvent(
                             brand.getId(),
                             brand.getAliases(),
+                            EntityType.BRAND,
                             brandWithPayload.getPayload(), itemWithPayload.getPayload()
                     );
                 } else {
                     telescope.reportFailedEvent(
                             "There was an error while trying to write this Brand to Atlas."
                             + " brandPid=" + parentPid + " itemPid=" + pid,
+                            EntityType.BRAND,
                             brandWithPayload.getPayload(), itemWithPayload.getPayload()
                     );
                 }
@@ -443,6 +453,7 @@ public class NitroForceUpdateController {
             telescope.reportFailedEvent(
                     "There was an error while trying to write this Brand to Atlas. "
                     + " brandPid=" + parentPid + " itemPid=" + pid,
+                    EntityType.BRAND,
                     itemWithPayload.getPayload()
             );
             writeServerErrorWithStack(response, e);

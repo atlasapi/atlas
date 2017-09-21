@@ -22,6 +22,7 @@ import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.util.GroupLock;
 
 import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Objects;
@@ -171,11 +172,13 @@ public class ContentUpdatingNitroBroadcastHandler
                         telescope.reportSuccessfulEvent(
                                 brand.getModel().getId(),
                                 brand.getModel().getAliases(),
+                                EntityType.BRAND,
                                 nitroBroadcast, item.getPayload(), brand.getPayload() //this might be an overkill
                         );
                     } else {
                         telescope.reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
+                                EntityType.BRAND,
                                 nitroBroadcast
                         );
                     }
@@ -189,11 +192,13 @@ public class ContentUpdatingNitroBroadcastHandler
                         telescope.reportSuccessfulEvent(
                                 sery.getModel().getId(),
                                 sery.getModel().getAliases(),
+                                EntityType.SERIES,
                                 nitroBroadcast, item.getPayload(), sery.getPayload()
                         );
                     } else {
                         telescope.reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
+                                EntityType.SERIES,
                                 nitroBroadcast
                         );
                     }
@@ -205,11 +210,13 @@ public class ContentUpdatingNitroBroadcastHandler
                     telescope.reportSuccessfulEvent(
                             item.getModel().getId(),
                             item.getModel().getAliases(),
+                            EntityType.ITEM,
                             nitroBroadcast,  item.getPayload()
                     );
                 } else {
                     telescope.reportFailedEvent(
                             "Atlas did not return an id after attempting to create or update this Item",
+                            EntityType.ITEM,
                             nitroBroadcast, item.getPayload()
                     );
                 }
@@ -218,7 +225,7 @@ public class ContentUpdatingNitroBroadcastHandler
             } catch (Exception e) {
                 log.error(nitroBroadcast.getPid(), e);
                 telescope.reportFailedEvent(
-                        "An internal error has prevent content from being written to Atlas. (" + e.toString() + ")",
+                        "An error has prevent content from being written to Atlas. (" + e.toString() + ")",
                         nitroBroadcast
                 );
                 results.add(Optional.<ItemRefAndBroadcast>absent());

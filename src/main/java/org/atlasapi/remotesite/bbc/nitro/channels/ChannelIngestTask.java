@@ -11,6 +11,7 @@ import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
@@ -155,6 +156,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     telescope.reportSuccessfulEvent(
                             existingChannel.getId(),
                             existingChannel.getAliases(),
+                            EntityType.CHANNEL,
                             channelWithPayload.getPayload());
 
                     log.debug("Writing merged channel {}", existingChannel);
@@ -163,6 +165,7 @@ public class ChannelIngestTask extends ScheduledTask {
                     telescope.reportSuccessfulEvent(
                             channel.getId(),
                             channel.getAliases(),
+                            EntityType.CHANNEL,
                             channelWithPayload.getPayload());
                 }
                 progress = progress.reduce(UpdateProgress.SUCCESS);

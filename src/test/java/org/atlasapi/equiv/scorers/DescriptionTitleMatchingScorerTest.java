@@ -9,6 +9,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
 
 import com.google.common.collect.ImmutableSet;
@@ -133,7 +134,12 @@ public class DescriptionTitleMatchingScorerTest {
 
     private Score score(Item subject, Item candidate) {
         DefaultDescription desc = new DefaultDescription();
-        ScoredCandidates<Item> scores = scorer.score(subject, ImmutableSet.of(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                desc,
+                EquivToTelescopeResults.create("id", "publisher")
+        );
         return scores.candidates().get(candidate);
     }
 }

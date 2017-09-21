@@ -16,6 +16,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
@@ -51,8 +52,13 @@ public class EquivalenceResultBuilderTest {
                 .build()
         );
 
-        EquivalenceResult<Item> result = builder.resultFor(item, equivalents , new DefaultDescription());
-        
+        EquivalenceResult<Item> result = builder.resultFor(
+                item,
+                equivalents,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
+
         ScoredCandidates<Item> equivalences = result.combinedEquivalences();
         
         assertEquals("A Source/B Source", equivalences.source());

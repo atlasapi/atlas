@@ -200,9 +200,10 @@ public class LocalOrRemoteNitroFetcher {
     }
 
     private <T> ModelWithPayload<T> wrapResolvedContentWithEmptyPayload(T item) {
-        return new ModelWithPayload<T>(
+        return new ModelWithPayload<>(
                 item,
-                "Resolved content (" + item.getClass().getSimpleName() + "). Payload is unavailable."
+                //if item is null ModelWithPayload will throw exception anyway, so no reason to recheck.
+                "Resolved content (" + item.getClass().getCanonicalName() + "). Payload is unavailable."
         );
     }
 
@@ -355,7 +356,7 @@ public class LocalOrRemoteNitroFetcher {
 
     private Multimap<String, Episode> toSeriesUriMap(Iterable<Episode> episodes) {
         return Multimaps.index(Iterables.filter(episodes, HAS_SERIES_REF), TO_SERIES_REF_URI); 
-    };
+    }
     
     private static Function<Episode, String> TO_SERIES_REF_URI = new Function<Episode, String>() {
 
@@ -442,7 +443,7 @@ public class LocalOrRemoteNitroFetcher {
     private static boolean inTopLevelSeries(Item item) {
         if (item instanceof Episode) {
             Episode ep = (Episode)item;
-            return ep.getSeriesRef() != null 
+            return ep.getSeriesRef() != null
                 && ep.getSeriesRef().equals(ep.getContainer());
         }
         return false;

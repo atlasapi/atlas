@@ -173,13 +173,13 @@ public class ContentUpdatingNitroBroadcastHandler
                                 brand.getModel().getId(),
                                 brand.getModel().getAliases(),
                                 EntityType.BRAND,
-                                nitroBroadcast, item.getPayload(), brand.getPayload() //this might be an overkill
+                                nitroBroadcast
                         );
                     } else {
                         telescope.reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
                                 EntityType.BRAND,
-                                nitroBroadcast
+                                nitroBroadcast, item.getPayload(), brand.getPayload() //this might be an overkill
                         );
                     }
                 }
@@ -193,13 +193,13 @@ public class ContentUpdatingNitroBroadcastHandler
                                 sery.getModel().getId(),
                                 sery.getModel().getAliases(),
                                 EntityType.SERIES,
-                                nitroBroadcast, item.getPayload(), sery.getPayload()
+                                nitroBroadcast
                         );
                     } else {
                         telescope.reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
                                 EntityType.SERIES,
-                                nitroBroadcast
+                                nitroBroadcast, item.getPayload(), sery.getPayload()
                         );
                     }
                 }
@@ -211,7 +211,7 @@ public class ContentUpdatingNitroBroadcastHandler
                             item.getModel().getId(),
                             item.getModel().getAliases(),
                             EntityType.ITEM,
-                            nitroBroadcast,  item.getPayload()
+                            nitroBroadcast
                     );
                 } else {
                     telescope.reportFailedEvent(

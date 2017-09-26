@@ -436,7 +436,7 @@ public class NitroForceUpdateController {
                             brand.getId(),
                             brand.getAliases(),
                             EntityType.BRAND,
-                            brandWithPayload.getPayload(), itemWithPayload.getPayload()
+                            brandWithPayload.getPayload()
                     );
                 } else {
                     telescope.reportFailedEvent(

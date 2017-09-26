@@ -181,13 +181,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 brandWithPayload.getModel().getId(),
                                 brandWithPayload.getModel().getAliases(),
                                 EntityType.BRAND,
-                                itemWithPayload.getPayload(), brandWithPayload.getPayload()
+                                brandWithPayload.getPayload()
                         );
                     } else {
                         telescope.reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
                                 EntityType.BRAND,
-                                itemWithPayload.getPayload(), brandWithPayload.getPayload()
+                                brandWithPayload.getPayload(), itemWithPayload.getPayload()
                         );
                     }
                 }
@@ -201,13 +201,13 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 seriesWithPayload.getModel().getId(),
                                 seriesWithPayload.getModel().getAliases(),
                                 EntityType.SERIES,
-                                itemWithPayload.getPayload(), seriesWithPayload.getPayload()
+                                seriesWithPayload.getPayload()
                         );
                     } else {
                         telescope.reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
                                 EntityType.SERIES,
-                                itemWithPayload.getPayload()
+                                seriesWithPayload.getPayload(), itemWithPayload.getPayload()
                         );
                     }
                 }

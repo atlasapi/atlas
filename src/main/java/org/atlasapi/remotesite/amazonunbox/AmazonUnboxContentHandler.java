@@ -2,7 +2,6 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;

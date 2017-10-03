@@ -149,27 +149,16 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             @Nullable EntityType entityType,
             Object... objectToSerialise) {
 
-        reportFailedEvent(errorMsg, entityType, objectToSerialise);
-    }
-
-    public <T extends Identified> void reportFailedEvent(
-            long dbId,
-            String errorMsg,
-            @Nullable EntityType entityType,
-            Object... objectToSerialise) {
-
         Event event = super.getEventBuilder()
                 .withType(this.eventType)
                 .withStatus(Event.Status.FAILURE)
                 .withEntityState(EntityState.builder()
-                        .withAtlasId(encode(dbId))
                         .withError(errorMsg)
                         .withType(entityType != null ? entityType.getVerbose() : null)
                         .withRaw(TelescopeReporterHelperMethods.serialize(objectToSerialise))
                         .withRawMime(MimeType.APPLICATION_JSON.toString())
                         .build()
                 )
-
                 .build();
         reportEvent(event);
     }

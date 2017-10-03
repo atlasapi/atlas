@@ -6,7 +6,6 @@ import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 
 public class AmazonUnboxPreProcessingItemProcessor
@@ -54,7 +53,7 @@ public class AmazonUnboxPreProcessingItemProcessor
     }
 
     @Override
-    public void finish(OwlTelescopeReporter telescope) {
+    public void finish() {
         for (String brand : brandUriToSeriesUrisMap.keySet()) {
             if (brandUriToSeriesUrisMap.get(brand).size() == 1) {
                 String series = Iterables.getOnlyElement(brandUriToSeriesUrisMap.get(brand));

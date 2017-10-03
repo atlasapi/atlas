@@ -27,6 +27,7 @@ import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -38,11 +39,9 @@ import org.xml.sax.SAXException;
 
 import static org.mockito.Matchers.any;
 import static org.mockito.Matchers.anyCollection;
-import static org.mockito.Mockito.times;
-import static org.mockito.Mockito.verify;
 
 import static org.junit.Assert.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.*;
 
 @RunWith(MockitoJUnitRunner.class)
 public class AmazonUnboxContentWritingItemProcessorTest {
@@ -57,6 +56,8 @@ public class AmazonUnboxContentWritingItemProcessorTest {
     private ContentLister lister;
     @Mock
     private AmazonUnboxBrandProcessor brandProcessor;
+    @Mock
+    private OwlTelescopeReporter telescope = mock(OwlTelescopeReporter.class);
     @Captor
     private ArgumentCaptor<Episode> itemArgumentCaptor;
     @Captor
@@ -89,7 +90,7 @@ public class AmazonUnboxContentWritingItemProcessorTest {
         for (AmazonUnboxItem item : testprocessor.getItems()) {
             processor.process(item);
         }
-        processor.finish();
+        processor.finish(telescope);
         verify(writer, times(3)).createOrUpdate(itemArgumentCaptor.capture());
         verify(writer, times(3)).createOrUpdate(containerArgumentCaptor.capture());
         List<Container> allValues = containerArgumentCaptor.getAllValues();

@@ -18,6 +18,8 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
     BBC_NITRO_INGEST_API("bbc.nitro.ingester.api", "Nitro API Ingester"),
     BBC_NITRO_INGEST_CHANNELS("bbc.nitro.ingester.channels", "Nitro Channel Ingester"),
 
+    AMAZON_UNBOX_UPDATE_TASK("amazon.ingester","Amazon Ingester"),
+
     PICKS_CONTENT_GROUP_UPDATER("mbst-picks-content-group-updater","Mbst Picks Content Group Updater"),
     
     CHANNEL_EQUIVALENCE("equivalence.channel.auto", "Channel Equivalence"),

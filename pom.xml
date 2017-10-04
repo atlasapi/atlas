@@ -421,7 +421,7 @@
         <dependency>
             <groupId>org.atlasapi</groupId>
             <artifactId>atlas-model</artifactId>
-            <version>5.0-20170609.181635-184</version>
+            <version>5.0-20170921.105033-190</version>
         </dependency>
         <dependency>
             <groupId>org.atlasapi</groupId>

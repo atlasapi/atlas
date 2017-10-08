@@ -29,6 +29,7 @@ import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -122,25 +123,13 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         }
 
         Gson gson = new Gson();
-        String equivResultsJson = gson.toJson(resultsForTelescope);
+        JsonElement equivResultsJson = gson.toJsonTree(resultsForTelescope);
 
         telescope.reportSuccessfulEvent(
                 content.getId(),
                 content.getAliases(),
                 content,
                 equivResultsJson
-        );
-
-        result.strongEquivalences().values().forEach(
-                strong -> {
-                        Content candidate = strong.candidate();
-                        telescope.reportSuccessfulEvent(
-                                candidate.getId(),
-                                candidate.getAliases(),
-                                content,
-                                equivResultsJson
-                        );
-                }
         );
 
         return !result.combinedEquivalences().candidates().isEmpty();

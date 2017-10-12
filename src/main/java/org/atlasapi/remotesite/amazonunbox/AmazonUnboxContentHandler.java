@@ -15,7 +15,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.google.common.base.Splitter;
 
 
-
 public class AmazonUnboxContentHandler extends DefaultHandler {
     
     private static final Splitter SPLIT_ON_COMMA =
@@ -293,8 +292,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withUrl(buffer.toString());
                 break;
             default:
-                //TODO change this log level
-                log.info("Field " + qName + " not currently processed");
+                log.debug("Field " + qName + " not currently processed");
                 break;
             }
             buffer = null;

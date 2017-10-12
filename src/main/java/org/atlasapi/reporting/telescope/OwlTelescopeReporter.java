@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 import javax.validation.constraints.NotNull;
 
 import org.atlasapi.media.entity.Identified;
+import org.atlasapi.remotesite.amazonunbox.TelescopeReporterHelperMethods;
 
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;
@@ -16,7 +17,7 @@ import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporter;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
-import com.metabroadcast.columbus.telescope.client.http.TelescopeReporterHelperMethods;
+//import com.metabroadcast.columbus.telescope.client.http.TelescopeReporterHelperMethods;
 import com.metabroadcast.common.media.MimeType;
 
 import org.slf4j.Logger;
@@ -149,16 +150,27 @@ public class OwlTelescopeReporter extends TelescopeReporter {
             @Nullable EntityType entityType,
             Object... objectToSerialise) {
 
+        reportFailedEvent(errorMsg, entityType, objectToSerialise);
+    }
+
+    public <T extends Identified> void reportFailedEvent(
+            long dbId,
+            String errorMsg,
+            @Nullable EntityType entityType,
+            Object... objectToSerialise) {
+
         Event event = super.getEventBuilder()
                 .withType(this.eventType)
                 .withStatus(Event.Status.FAILURE)
                 .withEntityState(EntityState.builder()
+                        .withAtlasId(encode(dbId))
                         .withError(errorMsg)
                         .withType(entityType != null ? entityType.getVerbose() : null)
                         .withRaw(TelescopeReporterHelperMethods.serialize(objectToSerialise))
                         .withRawMime(MimeType.APPLICATION_JSON.toString())
                         .build()
                 )
+
                 .build();
         reportEvent(event);
     }

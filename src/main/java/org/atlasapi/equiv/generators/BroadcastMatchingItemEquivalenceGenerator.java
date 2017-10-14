@@ -40,6 +40,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
 	private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> filter;
     private final Duration EXTENDED_END_TIME_FLEXIBILITY = Duration.standardHours(3).plus(Duration.standardMinutes(5));
+    private final Duration SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY = Duration.standardMinutes(10);
 
     public BroadcastMatchingItemEquivalenceGenerator(ScheduleResolver resolver, ChannelResolver channelResolver, Set<Publisher> supportedPublishers, Duration flexibility, Predicate<? super Broadcast> filter) {
         this.resolver = resolver;
@@ -228,9 +229,8 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);
         DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
 
-        // 600000 millis is 10 minutes
         // if the broadcast is less than 10 minutes long, reduce the flexibility
-        if (broadcastPeriod.compareTo(new Duration(600000)) < 0) {
+        if (broadcastPeriod.compareTo(SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY) < 0) {
             start = broadcast.getTransmissionTime().minus(shortBroadcastFlexibility);
             end = broadcast.getTransmissionEndTime().plus(shortBroadcastFlexibility);
         }

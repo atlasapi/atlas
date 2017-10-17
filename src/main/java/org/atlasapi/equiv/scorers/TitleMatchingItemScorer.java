@@ -96,6 +96,8 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
                 );
             }
         }
+
+        equivToTelescopeResults.addScorerResult(scorerComponent);
     
         return equivalents.build();
     }

@@ -6,6 +6,8 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Alias;
 
@@ -27,12 +29,28 @@ public class ContentAliasScorer implements EquivalenceScorer<Item> {
     public ScoredCandidates<Item> score(
             Item subject,
             Set<? extends Item> candidates,
-            ResultDescription desc) {
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         DefaultScoredCandidates.Builder<Item> equivalents =
                 DefaultScoredCandidates.fromSource(NAME);
 
-        candidates.forEach(candidate ->
-                equivalents.addEquivalent(candidate, score(subject, candidate)));
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName("Content Alias Scorer");
+
+        candidates.forEach(candidate -> {
+            Score score = score(subject, candidate);
+            equivalents.addEquivalent(candidate, score);
+
+            if (candidate.getId() != null) {
+                scorerComponent.addComponentResult(
+                        candidate.getId(),
+                        String.valueOf(score.asDouble())
+                );
+            }
+        });
+
+        equivToTelescopeResults.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

@@ -175,7 +175,11 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
         when(resolver.unmergedSchedule(utcTime(880000), utcTime(1320000), ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(BBC)))
                 .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE_CAMBRIDGE, (List<Item>)ImmutableList.<Item>of(item2)), interval(880000, 1320000)));
 
-        ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
+        ScoredCandidates<Item> equivalents = generator.generate(
+                item1,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         Map<Item, Score> scoreMap = equivalents.candidates();
 

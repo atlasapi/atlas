@@ -30,6 +30,7 @@ import com.google.common.collect.Maps.EntryTransformer;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.joda.time.Period;
 
 public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGenerator<Item>{
 
@@ -39,6 +40,7 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
 	private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> filter;
     private final Duration EXTENDED_END_TIME_FLEXIBILITY = Duration.standardHours(3).plus(Duration.standardMinutes(5));
+    private final Duration SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY = Duration.standardMinutes(10);
 
     public BroadcastMatchingItemEquivalenceGenerator(ScheduleResolver resolver, ChannelResolver channelResolver, Set<Publisher> supportedPublishers, Duration flexibility, Predicate<? super Broadcast> filter) {
         this.resolver = resolver;
@@ -218,11 +220,28 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers) {
+        Duration shortBroadcastFlexibility = Duration.standardMinutes(2);
+        Duration broadcastPeriod = new Duration(
+                broadcast.getTransmissionTime(),
+                broadcast.getTransmissionEndTime()
+        );
+
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);
         DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
+
+        // if the broadcast is less than 10 minutes long, reduce the flexibility
+        if (broadcastPeriod.compareTo(SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY) < 0) {
+            start = broadcast.getTransmissionTime().minus(shortBroadcastFlexibility);
+            end = broadcast.getTransmissionEndTime().plus(shortBroadcastFlexibility);
+        }
         Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
         if (channel.hasValue()) {
-            return resolver.unmergedSchedule(start, end, ImmutableSet.of(channel.requireValue()), publishers);
+            return resolver.unmergedSchedule(
+                    start,
+                    end,
+                    ImmutableSet.of(channel.requireValue()),
+                    publishers
+            );
         }
         return null;
     }

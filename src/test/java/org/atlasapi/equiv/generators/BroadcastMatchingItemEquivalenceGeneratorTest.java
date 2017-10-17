@@ -61,13 +61,13 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
     @Test
     public void testGenerateEquivalencesForOneMatchingBroadcast() {
         final Item item1 = episodeWithBroadcasts("subjectItem", Publisher.PA, 
-                new Broadcast(BBC_ONE.getUri(), utcTime(100000), utcTime(200000)),
-                new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(100000), utcTime(200000)));//ignored
+                new Broadcast(BBC_ONE.getUri(), utcTime(100000), utcTime(2000000)),
+                new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(100000), utcTime(2000000)));//ignored
         
-        final Item item2 = episodeWithBroadcasts("equivItem", Publisher.BBC, new Broadcast(BBC_ONE.getUri(), utcTime(100000), utcTime(200000)));
+        final Item item2 = episodeWithBroadcasts("equivItem", Publisher.BBC, new Broadcast(BBC_ONE.getUri(), utcTime(100000), utcTime(2000000)));
 
-        when(resolver.unmergedSchedule(utcTime(40000), utcTime(260000), ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC)))
-                .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000)));
+        when(resolver.unmergedSchedule(utcTime(40000), utcTime(2060000), ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC)))
+                .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 2060000)));
 
         ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
         
@@ -85,12 +85,12 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
     @Test
     public void testGenerateEquivalenceForRegionalVariantWhenOnlyBroadcast() {
         final Item item1 = episodeWithBroadcasts("subjectItem", Publisher.PA, 
-                new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(100000), utcTime(200000)));//not ignored
+                new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(100000), utcTime(2000000)));//not ignored
         
-        final Item item2 = episodeWithBroadcasts("equivItem", Publisher.BBC, new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(100000), utcTime(200000)));
+        final Item item2 = episodeWithBroadcasts("equivItem", Publisher.BBC, new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(100000), utcTime(2000000)));
         
-            when(resolver.unmergedSchedule(utcTime(40000), utcTime(260000), ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(BBC)))
-                    .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE_CAMBRIDGE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000)));
+            when(resolver.unmergedSchedule(utcTime(40000), utcTime(2060000), ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(BBC)))
+                    .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE_CAMBRIDGE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 2060000)));
 
         ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
         
@@ -151,5 +151,22 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
         item.addVersion(version);
         return item;
     }
-    
+
+    @Test
+    public void broadcastsWithDurationLessThanTenMinutesHaveLowerFlexibility() {
+        Item item1 = episodeWithBroadcasts("subjectitem", Publisher.PA,
+                new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(1000000), utcTime(1200000)));//not ignored
+
+        Item item2 = episodeWithBroadcasts("equivitem", Publisher.BBC, new Broadcast(BBC_ONE_CAMBRIDGE.getUri(), utcTime(1000000), utcTime(1200000)));
+
+        when(resolver.unmergedSchedule(utcTime(880000), utcTime(1320000), ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(BBC)))
+                .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE_CAMBRIDGE, (List<Item>)ImmutableList.<Item>of(item2)), interval(880000, 1320000)));
+
+        ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
+
+        Map<Item, Score> scoreMap = equivalents.candidates();
+
+        assertThat(scoreMap.size(), is(1));
+        assertThat(scoreMap.get(item2).asDouble(), is(equalTo(1.0)));
+    }
 }

@@ -16,6 +16,7 @@ import junit.framework.TestCase;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Broadcast;
@@ -69,7 +70,11 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
         when(resolver.unmergedSchedule(utcTime(40000), utcTime(2060000), ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC)))
                 .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 2060000)));
 
-        ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
+        ScoredCandidates<Item> equivalents = generator.generate(
+                item1,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
         
         Map<Item, Score> scoreMap = equivalents.candidates();
         
@@ -92,7 +97,11 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
             when(resolver.unmergedSchedule(utcTime(40000), utcTime(2060000), ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(BBC)))
                     .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE_CAMBRIDGE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 2060000)));
 
-        ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
+        ScoredCandidates<Item> equivalents = generator.generate(
+                item1,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
         
         Map<Item, Score> scoreMap = equivalents.candidates();
         
@@ -120,7 +129,11 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
         when(resolver.unmergedSchedule(time("2014-03-21T14:50:00Z"), time("2014-03-21T16:00:00Z"), ImmutableSet.of(BBC_ONE), ImmutableSet.of(BBC)))
                 .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE, (List<Item>)ImmutableList.<Item>of(item2)), interval(40000, 260000)));
 
-        ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
+        ScoredCandidates<Item> equivalents = generator.generate(
+                item1,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
         
         Map<Item, Score> scoreMap = equivalents.candidates();
         
@@ -162,7 +175,11 @@ public class BroadcastMatchingItemEquivalenceGeneratorTest extends TestCase {
         when(resolver.unmergedSchedule(utcTime(880000), utcTime(1320000), ImmutableSet.of(BBC_ONE_CAMBRIDGE), ImmutableSet.of(BBC)))
                 .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(BBC_ONE_CAMBRIDGE, (List<Item>)ImmutableList.<Item>of(item2)), interval(880000, 1320000)));
 
-        ScoredCandidates<Item> equivalents = generator.generate(item1, new DefaultDescription());
+        ScoredCandidates<Item> equivalents = generator.generate(
+                item1,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         Map<Item, Score> scoreMap = equivalents.candidates();
 

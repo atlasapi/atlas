@@ -9,6 +9,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 
@@ -26,7 +28,15 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
     }
     
     @Override
-    public ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates, ResultDescription desc) {
+    public ScoredCandidates<Item> score(
+            Item subject,
+            Set<? extends Item> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName("Sequence Item Scorer");
+
         Builder<Item> equivalents = DefaultScoredCandidates.fromSource(SEQUENCE_SCORER);
         
         if (subject instanceof Episode) {
@@ -39,13 +49,29 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
             for (Item candidate : candidates) {
                 Score score = score(episode, candidate, desc);
                 equivalents.addEquivalent(candidate, score);
+
+                if (candidate.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            candidate.getId(),
+                            String.valueOf(score.asDouble())
+                    );
+                }
             }
         } else {
             desc.appendText("Subject: not epsiode");
             for (Item suggestion : candidates) {
                 equivalents.addEquivalent(suggestion, Score.NULL_SCORE);
+
+                if (suggestion.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            suggestion.getId(),
+                            ""
+                    );
+                }
             }
         }
+
+        equivToTelescopeResults.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

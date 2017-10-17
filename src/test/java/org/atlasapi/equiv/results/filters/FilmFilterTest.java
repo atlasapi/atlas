@@ -4,6 +4,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
 
@@ -15,6 +16,8 @@ import static org.junit.Assert.assertTrue;
 public class FilmFilterTest {
 
     private final FilmFilter underTest = new FilmFilter();
+    private final EquivToTelescopeResults equivToTelescopeResults =
+            EquivToTelescopeResults.create("id", "publisher");
 
     @Test
     public void testDoesntFilterNonFilms() {
@@ -23,8 +26,12 @@ public class FilmFilterTest {
         ResultDescription result = new DefaultDescription();
 
         assertTrue(
-                underTest.doFilter(ScoredCandidate.valueOf(candidate, Score.ONE),
-                        subject, result)
+                underTest.doFilter(
+                        ScoredCandidate.valueOf(candidate, Score.ONE),
+                        subject,
+                        result,
+                        equivToTelescopeResults
+                )
         );
     }
 
@@ -35,8 +42,12 @@ public class FilmFilterTest {
         ResultDescription result = new DefaultDescription();
 
         assertTrue(
-                underTest.doFilter(ScoredCandidate.valueOf(candidate, Score.ONE),
-                        subject, result)
+                underTest.doFilter(
+                        ScoredCandidate.valueOf(candidate, Score.ONE),
+                        subject,
+                        result,
+                        equivToTelescopeResults
+                )
         );
     }
 
@@ -48,12 +59,24 @@ public class FilmFilterTest {
         Film candidate2016 = filmWithYear(2016);
         ResultDescription result = new DefaultDescription();
 
-        assertTrue(underTest.doFilter(ScoredCandidate.valueOf(candidate2015, Score.ONE),
-                subject, result));
-        assertTrue(underTest.doFilter(ScoredCandidate.valueOf(candidate2016, Score.ONE),
-                subject, result));
-        assertTrue(underTest.doFilter(ScoredCandidate.valueOf(candidate2017, Score.ONE),
-                subject, result));
+        assertTrue(underTest.doFilter(
+                ScoredCandidate.valueOf(candidate2015, Score.ONE),
+                subject,
+                result,
+                equivToTelescopeResults
+        ));
+        assertTrue(underTest.doFilter(
+                ScoredCandidate.valueOf(candidate2016, Score.ONE),
+                subject,
+                result,
+                equivToTelescopeResults
+        ));
+        assertTrue(underTest.doFilter(
+                ScoredCandidate.valueOf(candidate2017, Score.ONE),
+                subject,
+                result,
+                equivToTelescopeResults
+        ));
     }
 
     @Test
@@ -62,8 +85,12 @@ public class FilmFilterTest {
         Film candidate = filmWithYear(2014);
         ResultDescription result = new DefaultDescription();
 
-        assertFalse(underTest.doFilter(ScoredCandidate.valueOf(candidate, Score.ONE),
-                subject, result));
+        assertFalse(underTest.doFilter(
+                ScoredCandidate.valueOf(candidate, Score.ONE),
+                subject,
+                result,
+                equivToTelescopeResults
+        ));
 
     }
 

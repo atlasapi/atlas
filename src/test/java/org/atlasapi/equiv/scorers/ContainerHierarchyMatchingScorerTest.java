@@ -16,6 +16,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
@@ -49,12 +50,19 @@ public class ContainerHierarchyMatchingScorerTest {
     private SubscriptionCatchupBrandDetector subscriptionCatchupBrandDetector = mock(SubscriptionCatchupBrandDetector.class);
     
     private final ContainerHierarchyMatchingScorer scorer = new ContainerHierarchyMatchingScorer(contentResolver, Score.negativeOne(), subscriptionCatchupBrandDetector);
-    
+    private final EquivToTelescopeResults equivToTelescopeResults =
+            EquivToTelescopeResults.create("id", "publisher");
+
     @Test
     @SuppressWarnings("unchecked")
     public void testScoresNullWhenFlatContainerWithChildCountsOutOfRange() {
         
-        ScoredCandidates<Container> score = scorer.score(brandWithChildren(5), ImmutableSet.<Container>of(brandWithChildren(7)), desc());
+        ScoredCandidates<Container> score = scorer.score(
+                brandWithChildren(5),
+                ImmutableSet.<Container>of(brandWithChildren(7)),
+                desc(),
+                equivToTelescopeResults
+        );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
         verify(contentResolver, never()).findByCanonicalUris((Iterable<String>)any());
@@ -64,7 +72,12 @@ public class ContainerHierarchyMatchingScorerTest {
     @SuppressWarnings("unchecked")
     public void testScores1WhenFlatContainerWithChildCountsInRange() {
         
-        ScoredCandidates<Container> score = scorer.score(brandWithChildren(7), ImmutableSet.<Container>of(brandWithChildren(7)), desc());
+        ScoredCandidates<Container> score = scorer.score(
+                brandWithChildren(7),
+                ImmutableSet.<Container>of(brandWithChildren(7)),
+                desc(),
+                equivToTelescopeResults
+        );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.ONE));
         verify(contentResolver, never()).findByCanonicalUris((Iterable<String>)any());
@@ -82,7 +95,12 @@ public class ContainerHierarchyMatchingScorerTest {
         when(contentResolver.findByCanonicalUris(ImmutableList.copyOf(Iterables.transform(candidate.getSeriesRefs(),SeriesRef.TO_URI))))
             .thenReturn(ResolvedContent.builder().putAll(series(7)).build());
 
-        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.<Container>of(candidate), desc());
+        ScoredCandidates<Container> score = scorer.score(
+                subject,
+                ImmutableSet.<Container>of(candidate),
+                desc(),
+                equivToTelescopeResults
+        );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
     }
@@ -98,7 +116,12 @@ public class ContainerHierarchyMatchingScorerTest {
         when(contentResolver.findByCanonicalUris(ImmutableList.copyOf(Iterables.transform(candidate.getSeriesRefs(),SeriesRef.TO_URI))))
             .thenReturn(ResolvedContent.builder().putAll(series(6)).build());
 
-        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.<Container>of(candidate), desc());
+        ScoredCandidates<Container> score = scorer.score(
+                subject,
+                ImmutableSet.<Container>of(candidate),
+                desc(),
+                equivToTelescopeResults
+        );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.ONE));
     }
@@ -130,7 +153,12 @@ public class ContainerHierarchyMatchingScorerTest {
         when(contentResolver.findByCanonicalUris(ImmutableList.copyOf(Iterables.transform(subject.getSeriesRefs(),SeriesRef.TO_URI))))
             .thenReturn(ResolvedContent.builder().putAll(series(1)).build());
         
-        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.of(candidate), desc());
+        ScoredCandidates<Container> score = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                desc(),
+                equivToTelescopeResults
+        );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.negativeOne()));
         verify(contentResolver).findByCanonicalUris((Iterable<String>)any());
@@ -144,7 +172,12 @@ public class ContainerHierarchyMatchingScorerTest {
         Brand subject = brandWithSeries(0);
         Brand candidate = brandWithSeries(1);
 
-        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.of(candidate), desc());
+        ScoredCandidates<Container> score = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                desc(),
+                equivToTelescopeResults
+        );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
         verify(contentResolver, never()).findByCanonicalUris((Iterable<String>)any());
@@ -158,7 +191,12 @@ public class ContainerHierarchyMatchingScorerTest {
         Brand subject = brandWithChildren(1);
         Brand candidate = brandWithChildren(0);
 
-        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.of(candidate), desc());
+        ScoredCandidates<Container> score = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                desc(),
+                equivToTelescopeResults
+        );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
         verify(contentResolver, never()).findByCanonicalUris((Iterable<String>)any());
@@ -172,7 +210,12 @@ public class ContainerHierarchyMatchingScorerTest {
         Brand subject = brandWithChildren(0);
         Brand candidate = brandWithChildren(1);
         
-        ScoredCandidates<Container> score = scorer.score(subject, ImmutableSet.of(candidate), desc());
+        ScoredCandidates<Container> score = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                desc(),
+                equivToTelescopeResults
+        );
         
         assertThat(Iterables.getOnlyElement(score.candidates().values()), is(Score.nullScore()));
         verify(contentResolver, never()).findByCanonicalUris((Iterable<String>)any());

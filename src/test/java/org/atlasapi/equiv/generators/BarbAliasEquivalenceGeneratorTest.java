@@ -10,6 +10,7 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
@@ -148,7 +149,11 @@ public class BarbAliasEquivalenceGeneratorTest {
         Content subject = new Item();
         subject.setCanonicalUri("http://cdmf.barb.co.uk/episode/219060");
 
-        ScoredCandidates scoredCandidates = generator.generate(subject, desc);
+        ScoredCandidates scoredCandidates = generator.generate(
+                subject,
+                desc,
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         Content identified = new Item();
         identified.setCanonicalUri("http://txlogs.barb.co.uk/episode/00000000000226905561");
@@ -174,7 +179,11 @@ public class BarbAliasEquivalenceGeneratorTest {
     @Test
     public void aliasGeneratorFindsByAlias() {
 
-        ScoredCandidates scoredCandidates = aliasGenerator.generate(aliasIdentified2, desc);
+        ScoredCandidates scoredCandidates = aliasGenerator.generate(
+                aliasIdentified2,
+                desc,
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         System.out.println(desc.toString());
         System.out.println(scoredCandidates.toString());

@@ -5,6 +5,7 @@ import static org.junit.Assert.assertEquals;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Item;
@@ -121,7 +122,15 @@ public class TitleSubsetBroadcastItemScorerTest {
 
     private Score score(Item subject, Item candidate) {
         DefaultDescription desc = new DefaultDescription();
-        ScoredCandidates<Item> scores = scorer.score(subject, ImmutableSet.of(candidate), desc);
+        EquivToTelescopeResults equivToTelescopeResults =
+                EquivToTelescopeResults.create("id", "publisher");
+
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         return scores.candidates().get(candidate);
     }
 

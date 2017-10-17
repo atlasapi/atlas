@@ -7,7 +7,10 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Equiv;
 import org.atlasapi.media.entity.Item;
 
 import com.google.common.base.Objects;
@@ -17,8 +20,15 @@ public class SeriesSequenceItemScorer implements EquivalenceScorer<Item> {
     private static final Score NEGATIVE_ONE = Score.valueOf(-1.0);
 
     @Override
-    public ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates,
-            ResultDescription desc) {
+    public ScoredCandidates<Item> score(
+            Item subject,
+            Set<? extends Item> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName("Series Sequence Item Scorer");
+
         Builder<Item> equivalents = DefaultScoredCandidates.fromSource("Series");
         
         if (subject instanceof Episode) {
@@ -30,11 +40,25 @@ public class SeriesSequenceItemScorer implements EquivalenceScorer<Item> {
             for (Item candidate : candidates) {
                 Score score = score(episode, candidate, desc);
                 equivalents.addEquivalent(candidate, score);
+
+                if (candidate.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            candidate.getId(),
+                            String.valueOf(score.asDouble())
+                    );
+                }
             }
         } else {
             desc.appendText("Subject: not epsiode");
             for (Item suggestion : candidates) {
                 equivalents.addEquivalent(suggestion, Score.NULL_SCORE);
+
+                if (suggestion.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            suggestion.getId(),
+                            ""
+                    );
+                }
             }
         }
         

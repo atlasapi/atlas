@@ -4,6 +4,7 @@ import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -29,7 +30,9 @@ public class ContentAliasScorerTest {
         ScoredCandidates<Item> results = scorer.score(
                 subject,
                 ImmutableSet.of(candidate),
-                new DefaultDescription());
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         assertThat(results.candidates().get(candidate), is(mismatchScore));
     }
@@ -46,7 +49,9 @@ public class ContentAliasScorerTest {
         ScoredCandidates<Item> results = scorer.score(
                 subject,
                 ImmutableSet.of(candidate),
-                new DefaultDescription());
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         assertThat(results.candidates().get(candidate), is(Score.ONE));
     }
@@ -65,7 +70,9 @@ public class ContentAliasScorerTest {
         ScoredCandidates<Item> results = scorer.score(
                 subject,
                 ImmutableSet.of(candidate),
-                new DefaultDescription());
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         assertThat(results.candidates().get(candidate), is(mismatchScore));
     }
@@ -84,7 +91,9 @@ public class ContentAliasScorerTest {
         ScoredCandidates<Item> results = scorer.score(
                 subject,
                 ImmutableSet.of(candidate),
-                new DefaultDescription());
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         assertThat(results.candidates().get(candidate), is(Score.ONE));
     }

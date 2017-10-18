@@ -8,6 +8,7 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.HttpClients;
+import org.atlasapi.remotesite.amazonunbox.LastUpdatedSettingContentWriter;
 
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
@@ -27,7 +28,7 @@ public class AmazonUnboxModule {
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentWriter contentWriter;
     private @Autowired ContentLister contentLister;
-    private @Autowired ContentResolver resolver;
+    private @Autowired ContentResolver contentResolver;
     
     private @Value("${s3.access}") String s3access;
     private @Value("${s3.secret}") String s3secret;
@@ -49,8 +50,8 @@ public class AmazonUnboxModule {
                 new AmazonUnboxContentExtractor();
         AmazonUnboxItemProcessor processor = new AmazonUnboxContentWritingItemProcessor(
                 contentExtractor,
-                resolver,
-                contentWriter,
+                contentResolver,
+                contentWriter(),
                 contentLister,
                 missingContentPercentage,
                 preProcessor
@@ -62,5 +63,10 @@ public class AmazonUnboxModule {
     @Bean
     public AmazonUnboxHttpFeedSupplier amazonUnboxFeedSupplier() {
         return new AmazonUnboxHttpFeedSupplier(unboxUrl);
+    }
+
+
+    public ContentWriter contentWriter() {
+        return new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
     }
 }

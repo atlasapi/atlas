@@ -239,7 +239,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         if (cached.values().size() > 0) {
             log.warn("{} extracted but unwritten", cached.values().size());
             for (Entry<String, Collection<Content>> mapping : cached.asMap().entrySet()) {
-                log.warn(mapping.toString());
+                log.warn(mapping.getKey().toString());
             }
         }
         

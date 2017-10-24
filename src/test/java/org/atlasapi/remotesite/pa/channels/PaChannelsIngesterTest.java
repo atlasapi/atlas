@@ -120,59 +120,6 @@ public class PaChannelsIngesterTest {
         );
     }
 
-    @Test
-    public void processUtvStationRenamesItToItv() throws Exception {
-        // This is to enforce an end of life for the workaround described in MBST-18347 by failing
-        // this test.
-        DateTime endOfLifeDateTime = new DateTime(
-                2017, 12, 1, 10, 0, UTC
-        );
-
-        if (DateTime.now().isAfter(endOfLifeDateTime)) {
-            fail("Time to remove this workaround");
-        }
-
-        Station station = getStation(
-                "7",
-                ImmutableList.of(
-                        getChannel("2"),
-                        getChannel("3")
-                )
-        );
-
-        ChannelTree channelTree = ingester.processStation(
-                station,
-                ImmutableList.of()
-        );
-
-        assertThat(
-                channelTree.getParent().getUri(),
-                is(STATION_URI_PREFIX + station.getId())
-        );
-
-        assertThat(
-                channelTree.getParent().getTitle(),
-                is("ITV")
-        );
-
-        Iterable<TemporalField<String>> titles = channelTree.getParent().getAllTitles();
-        assertThat(
-                Iterables.size(titles),
-                is(1)
-        );
-
-        TemporalField<String> title = Iterables.get(titles, 0);
-
-        assertThat(
-                title.getValue(),
-                is("ITV")
-        );
-        assertThat(
-                title.getStartDate(),
-                is(new LocalDate(1970, 1, 1))
-        );
-    }
-
     private Station getStation(String id, ImmutableList<Channel> channels) {
         Station station = new Station();
 

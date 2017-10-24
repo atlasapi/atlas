@@ -339,10 +339,14 @@ CMD java \
     -Dyouview.prod.url="$YOUVIEW_PROD_URL" \
     -Dyouview.stage.url="$YOUVIEW_STAGE_URL" \
     -Dyouview.timeout.seconds="$YOUVIEW_TIMEOUT_SECONDS" \
-    -Dyouview.upload.nitro.password="$YOUVIEW_UPLOAD_NITRO_PASSWORD" \
     -Dyouview.upload.nitro.upload.enabled="$YOUVIEW_UPLOAD_NITRO_UPLOAD_ENABLED" \
     -Dyouview.upload.nitro.url="$YOUVIEW_UPLOAD_NITRO_URL" \
     -Dyouview.upload.nitro.username="$YOUVIEW_UPLOAD_NITRO_USERNAME" \
+    -Dyouview.upload.nitro.password="$YOUVIEW_UPLOAD_NITRO_PASSWORD" \
+    -Dyouview.upload.unbox.upload.enabled="$YOUVIEW_UPLOAD_UNBOX_UPLOAD_ENABLED" \
+    -Dyouview.upload.unbox.url="$YOUVIEW_UPLOAD_UNBOX_URL" \
+    -Dyouview.upload.unbox.username="$YOUVIEW_UPLOAD_UNBOX_USERNAME" \
+    -Dyouview.upload.unbox.password="$YOUVIEW_UPLOAD_UNBOX_PASSWORD" \
     -Dyouview.upload.password="$YOUVIEW_UPLOAD_PASSWORD" \
     -Dyouview.upload.username="$YOUVIEW_UPLOAD_USERNAME" \
     -Dmetrics.graphite.enabled="$METRICS_GRAPHITE_ENABLED" \

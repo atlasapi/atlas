@@ -16,6 +16,7 @@ import org.atlasapi.equiv.EquivalenceSummaryStore;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Publisher;
@@ -73,7 +74,11 @@ public class ContainerChildEquivalenceGeneratorTest extends TestCase {
             content
         );
 
-        ScoredCandidates<Container> scores = generator.generate(subject, new DefaultDescription());
+        ScoredCandidates<Container> scores = generator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
 
         assertThat(scores.candidates(), hasEntry(equiv1, Score.ONE));
         assertThat(scores.candidates(), hasEntry(equiv2, Score.valueOf(0.5)));

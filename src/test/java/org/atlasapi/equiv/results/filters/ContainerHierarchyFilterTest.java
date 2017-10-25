@@ -7,6 +7,7 @@ import java.util.List;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
@@ -31,9 +32,24 @@ public class ContainerHierarchyFilterTest {
         nonTopLevelSeries.setParent(brand);
         
         List<ScoredCandidate<Container>> candidates = candidates(brand, topLevelSeries, nonTopLevelSeries);
-        checkFiltered(filter.apply(candidates, brand, new DefaultDescription()), brand, topLevelSeries);
-        checkFiltered(filter.apply(candidates, topLevelSeries, new DefaultDescription()), brand, topLevelSeries);
-        checkFiltered(filter.apply(candidates, nonTopLevelSeries, new DefaultDescription()), nonTopLevelSeries);
+        checkFiltered(filter.apply(
+                candidates,
+                brand,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        ), brand, topLevelSeries);
+        checkFiltered(filter.apply(
+                candidates,
+                topLevelSeries,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        ), brand, topLevelSeries);
+        checkFiltered(filter.apply(
+                candidates,
+                nonTopLevelSeries,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        ), nonTopLevelSeries);
         
     }
 

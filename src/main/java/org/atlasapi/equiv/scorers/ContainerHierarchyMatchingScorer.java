@@ -8,6 +8,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Identified;
@@ -43,7 +45,15 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
     }
     
     @Override
-    public ScoredCandidates<Container> score(Container subj, Set<? extends Container> candidates, ResultDescription desc) {
+    public ScoredCandidates<Container> score(
+            Container subj,
+            Set<? extends Container> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName("Container Hierarchy Matching Scorer");
+
         Builder<Container> results = DefaultScoredCandidates.fromSource("Hierarchy");
 
         // Brands can have full Series hierarchy so compare its Series' hierarchies if present. 
@@ -53,6 +63,10 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
             if (subscriptionCatchupBrandDetector.couldBeSubscriptionCatchup(subj, series)) {
                 for (Container cand : candidates) {
                     results.addEquivalent(cand, Score.nullScore());
+                    scorerComponent.addComponentResult(
+                            cand.getId(),
+                            ""
+                    );
                 }
                 desc.appendText("Detected as subscription catchup brand, not scoring hierarchies");
                 desc.finishStage();
@@ -62,7 +76,16 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
             desc.appendText("Subject %s, %s series: %s", subj, subjSeriesSizes.size(), subjSeriesSizes)
                 .startStage("matches:");
             for (Container cand : candidates) {
-                results.addEquivalent(cand, score(subjSeriesSizes, cand, desc));
+                Score equivScore = score(subjSeriesSizes, cand, desc);
+                results.addEquivalent(cand, equivScore);
+
+                if (cand.getId() != null) {
+                    scorerComponent.addComponentResult(
+                            cand.getId(),
+                            String.valueOf(equivScore.asDouble())
+                    );
+                }
+
             }
         } else {
             desc.appendText("Subject %s, no series:", subj)
@@ -71,13 +94,30 @@ public class ContainerHierarchyMatchingScorer implements EquivalenceScorer<Conta
                 desc.appendText("Subject has no episodes: all score null");
                 for (Container candidate : candidates) {
                     results.addEquivalent(candidate, Score.nullScore());
+
+                    if (candidate.getId() != null) {
+                        scorerComponent.addComponentResult(
+                                candidate.getId(),
+                                ""
+                        );
+                    }
                 }
             } else {
                 for (Container candidate : candidates) {
-                    results.addEquivalent(candidate, score(subj, candidate, desc));
+                    Score equivScore = score(subj, candidate, desc);
+                    results.addEquivalent(candidate, equivScore);
+
+                    if (candidate.getId() != null) {
+                        scorerComponent.addComponentResult(
+                                candidate.getId(),
+                                String.valueOf(equivScore.asDouble())
+                        );
+                    }
                 }
             }
         }
+
+        equivToTelescopeResults.addScorerResult(scorerComponent);
         
         desc.finishStage();
         return results.build();

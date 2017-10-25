@@ -11,6 +11,9 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
+import org.atlasapi.media.entity.Equiv;
 import org.atlasapi.media.entity.Item;
 
 import com.google.common.base.Strings;
@@ -39,14 +42,31 @@ public class DescriptionMatchingScorer implements EquivalenceScorer<Item> {
     }
 
     @Override
-    public ScoredCandidates<Item> score(Item subject, Set<? extends Item> candidates,
-            ResultDescription desc) {
+    public ScoredCandidates<Item> score(
+            Item subject,
+            Set<? extends Item> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName("Description Matching Scorer");
+
         DefaultScoredCandidates.Builder<Item> equivalents =
                 DefaultScoredCandidates.fromSource(NAME);
 
         for (Item candidate : candidates) {
-            equivalents.addEquivalent(candidate, score(subject, candidate, desc));
+            Score equivScore = score(subject, candidate, desc);
+            equivalents.addEquivalent(candidate, equivScore);
+
+            if (candidate.getId() != null) {
+                scorerComponent.addComponentResult(
+                        candidate.getId(),
+                        String.valueOf(equivScore.asDouble())
+                );
+            }
         }
+
+        equivToTelescopeResults.addScorerResult(scorerComponent);
 
         return equivalents.build();
     }

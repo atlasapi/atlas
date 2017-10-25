@@ -15,7 +15,6 @@ import org.xml.sax.helpers.DefaultHandler;
 import com.google.common.base.Splitter;
 
 
-
 public class AmazonUnboxContentHandler extends DefaultHandler {
     
     private static final Splitter SPLIT_ON_COMMA =

@@ -12,6 +12,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
 
 import com.google.common.base.Strings;
@@ -69,7 +71,15 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
     }
 
     @Override
-    public ScoredCandidates<Item> score(Item subject, Set<? extends Item> suggestions, ResultDescription desc) {
+    public ScoredCandidates<Item> score(
+            Item subject,
+            Set<? extends Item> suggestions,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName("Title Matching Item Scorer");
+
         Builder<Item> equivalents = DefaultScoredCandidates.fromSource(NAME);
         
         if(Strings.isNullOrEmpty(subject.getTitle())) {
@@ -77,8 +87,17 @@ public class TitleMatchingItemScorer implements EquivalenceScorer<Item> {
         }
         
         for (Item suggestion : suggestions) {
-            equivalents.addEquivalent(suggestion, score(subject, suggestion, desc));
+            Score equivScore = score(subject, suggestion, desc);
+            equivalents.addEquivalent(suggestion, equivScore);
+            if (suggestion.getId() != null) {
+                scorerComponent.addComponentResult(
+                        suggestion.getId(),
+                        String.valueOf(equivScore.asDouble())
+                );
+            }
         }
+
+        equivToTelescopeResults.addScorerResult(scorerComponent);
     
         return equivalents.build();
     }

@@ -7,8 +7,6 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.remotesite.ContentExtractor;
-import org.atlasapi.remotesite.HttpClients;
-import org.atlasapi.remotesite.amazonunbox.LastUpdatedSettingContentWriter;
 
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.RepetitionRules.Daily;

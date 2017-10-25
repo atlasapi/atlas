@@ -9,6 +9,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Test;
@@ -19,22 +20,57 @@ public class PublisherFilteringExtractorTest {
 
     @Test
     public void testFiltersUnacceptablePublishers() {
+
+        EquivToTelescopeResults equivToTelescopeResults =
+                EquivToTelescopeResults.create("id", "publisher");
         
         PublisherFilter<Item> filter = new PublisherFilter<Item>();
         
         List<ScoredCandidate<Item>> paScore = ImmutableList.of(scoreOneFor(Publisher.PA));
         
-        assertFalse(filter.apply(paScore, itemWithPublisher(Publisher.PA), new DefaultDescription()).iterator().hasNext());
-        assertTrue(filter.apply(paScore, itemWithPublisher(Publisher.BBC), new DefaultDescription()).iterator().hasNext());
-        assertTrue(filter.apply(paScore, itemWithPublisher(Publisher.C4_PMLSD), new DefaultDescription()).iterator().hasNext());
+        assertFalse(filter.apply(
+                paScore,
+                itemWithPublisher(Publisher.PA),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        ).iterator().hasNext());
+
+        assertTrue(filter.apply(
+                paScore,
+                itemWithPublisher(Publisher.BBC),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        ).iterator().hasNext());
+
+        assertTrue(filter.apply(
+                paScore,
+                itemWithPublisher(Publisher.C4_PMLSD),
+                new DefaultDescription(),
+                equivToTelescopeResults).iterator().hasNext()
+        );
         
         List<ScoredCandidate<Item>> BbcScore = ImmutableList.of(scoreOneFor(Publisher.BBC));
-        assertFalse(filter.apply(BbcScore, itemWithPublisher(Publisher.C4_PMLSD), new DefaultDescription()).iterator().hasNext());
-        assertTrue(filter.apply(BbcScore, itemWithPublisher(Publisher.SEESAW), new DefaultDescription()).iterator().hasNext());
+        assertFalse(filter.apply(
+                BbcScore,
+                itemWithPublisher(Publisher.C4_PMLSD),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        ).iterator().hasNext());
+
+        assertTrue(filter.apply(
+                BbcScore,
+                itemWithPublisher(Publisher.SEESAW),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        ).iterator().hasNext());
         
         List<ScoredCandidate<Item>> dmScore = ImmutableList.of(scoreOneFor(Publisher.DAILYMOTION));
-        assertTrue(filter.apply(dmScore, itemWithPublisher(Publisher.C4_PMLSD), new DefaultDescription()).iterator().hasNext());
-        
+        assertTrue(filter.apply(
+                dmScore,
+                itemWithPublisher(Publisher.C4_PMLSD),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        ).iterator().hasNext());
     }
 
     private ScoredCandidate<Item> scoreOneFor(Publisher pub) {

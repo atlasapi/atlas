@@ -9,6 +9,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Broadcast;
@@ -30,6 +32,7 @@ import com.google.common.collect.Maps.EntryTransformer;
 import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.joda.time.Period;
 
 public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGenerator<Item>{
 
@@ -38,9 +41,18 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     private final Duration flexibility;
 	private final ChannelResolver channelResolver;
     private final Predicate<? super Broadcast> filter;
-    private final Duration EXTENDED_END_TIME_FLEXIBILITY = Duration.standardHours(3).plus(Duration.standardMinutes(5));
+    private final Duration EXTENDED_END_TIME_FLEXIBILITY = Duration
+            .standardHours(3)
+            .plus(Duration.standardMinutes(5));
+    private final Duration SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY = Duration.standardMinutes(10);
 
-    public BroadcastMatchingItemEquivalenceGenerator(ScheduleResolver resolver, ChannelResolver channelResolver, Set<Publisher> supportedPublishers, Duration flexibility, Predicate<? super Broadcast> filter) {
+    public BroadcastMatchingItemEquivalenceGenerator(
+            ScheduleResolver resolver,
+            ChannelResolver channelResolver,
+            Set<Publisher> supportedPublishers,
+            Duration flexibility,
+            Predicate<? super Broadcast> filter
+    ) {
         this.resolver = resolver;
         this.channelResolver = channelResolver;
         this.supportedPublishers = supportedPublishers;
@@ -48,8 +60,18 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
         this.filter = filter;
     }
     
-    public BroadcastMatchingItemEquivalenceGenerator(ScheduleResolver resolver, ChannelResolver channelResolver, Set<Publisher> supportedPublishers, Duration flexibility) {
-        this(resolver, channelResolver, supportedPublishers, flexibility, new Predicate<Broadcast>() {
+    public BroadcastMatchingItemEquivalenceGenerator(
+            ScheduleResolver resolver,
+            ChannelResolver channelResolver,
+            Set<Publisher> supportedPublishers,
+            Duration flexibility
+    ) {
+        this(
+                resolver,
+                channelResolver,
+                supportedPublishers,
+                flexibility,
+                new Predicate<Broadcast>() {
             @Override
             public boolean apply(Broadcast input) {
                 DateTime eightDaysInFuture = new DateTime(DateTimeZones.UTC).plusDays(8);
@@ -58,16 +80,30 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
         });
     }
     
-    public BroadcastMatchingItemEquivalenceGenerator(ScheduleResolver resolver, ChannelResolver channelResolver, Set<Publisher> supportedPublishers) {
+    public BroadcastMatchingItemEquivalenceGenerator(
+            ScheduleResolver resolver,
+            ChannelResolver channelResolver,
+            Set<Publisher> supportedPublishers
+    ) {
         this(resolver, channelResolver, supportedPublishers, Duration.standardMinutes(5));
     }
 
     @Override
-    public ScoredCandidates<Item> generate(Item content, ResultDescription desc) {
+    public ScoredCandidates<Item> generate(
+            Item content,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
 
         Builder<Item> scores = DefaultScoredCandidates.fromSource("broadcast");
 
-        Set<Publisher> validPublishers = Sets.difference(supportedPublishers, ImmutableSet.of(content.getPublisher()));
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Broadcast Matching Item Equivalence Generator");
+
+        Set<Publisher> validPublishers = Sets.difference(
+                supportedPublishers,
+                ImmutableSet.of(content.getPublisher())
+        );
 
         int processedBroadcasts = 0;
         int totalBroadcasts = 0;
@@ -80,10 +116,17 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                         && (!onIgnoredChannel(broadcast) || broadcastCount == 1) 
                         && filter.apply(broadcast)) {
                     processedBroadcasts++;
-                    findMatchesForBroadcast(scores, broadcast, validPublishers);
+                    findMatchesForBroadcast(
+                            scores,
+                            broadcast,
+                            validPublishers,
+                            generatorComponent
+                    );
                 }
             }
         }
+
+        equivToTelescopeResults.addGeneratorResult(generatorComponent);
 
         desc.appendText("Processed %s of %s broadcasts", processedBroadcasts, totalBroadcasts);
 
@@ -101,7 +144,8 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     private void findMatchesForBroadcast(
             Builder<Item> scores,
             Broadcast broadcast,
-            Set<Publisher> validPublishers
+            Set<Publisher> validPublishers,
+            EquivToTelescopeComponent generatorComponent
     ) {
 
         Schedule schedule = scheduleAround(broadcast, validPublishers);
@@ -115,10 +159,17 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
                         && scheduleItem.isActivelyPublished()
                         && hasQualifyingBroadcast(scheduleItem, broadcast)) {
                     scores.addEquivalent(scheduleItem, Score.valueOf(1.0));
+
+                    if (scheduleItem.getId() != null) {
+                        generatorComponent.addComponentResult(scheduleItem.getId(), "1.0");
+                    }
+
                 } else if (scheduleItem instanceof Item
                         && scheduleItem.isActivelyPublished()
                         && hasFlexibleQualifyingBroadcast(scheduleItem, broadcast)) {
                     scores.addEquivalent(scheduleItem, Score.valueOf(0.1));
+
+                    generatorComponent.addComponentResult(scheduleItem.getId(), "0.1");
                 }
             }
         }
@@ -155,8 +206,15 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
 		.add("http://www.bbc.co.uk/services/radio4/lw")
      .build();
 
-    private ScoredCandidates<Item> scale(ScoredCandidates<Item> scores, final int broadcasts, final ResultDescription desc) {
-        return DefaultScoredCandidates.fromMappedEquivs(scores.source(), Maps.transformEntries(scores.candidates(), new EntryTransformer<Item, Score, Score>() {
+    private ScoredCandidates<Item> scale(
+            ScoredCandidates<Item> scores,
+            final int broadcasts,
+            final ResultDescription desc
+    ) {
+        return DefaultScoredCandidates.fromMappedEquivs(
+                scores.source(),
+                Maps.transformEntries(scores.candidates(),
+                        new EntryTransformer<Item, Score, Score>() {
             @Override
             public Score transformEntry(Item key, Score value) {
                 desc.appendText("%s matched %s broadcasts", key.getCanonicalUri(), value);
@@ -186,7 +244,8 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     private boolean hasFlexibleQualifyingBroadcast(Item item, Broadcast referenceBroadcast) {
         for (Version version : item.nativeVersions()) {
             for (Broadcast broadcast : version.getBroadcasts()) {
-                if (flexibleAround(broadcast, referenceBroadcast) && broadcast.getBroadcastOn() != null
+                if (flexibleAround(broadcast, referenceBroadcast)
+                        && broadcast.getBroadcastOn() != null
                         && broadcast.getBroadcastOn().equals(referenceBroadcast.getBroadcastOn())
                         && broadcast.isActivelyPublished()) {
                     return true;
@@ -209,7 +268,8 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
 
     private boolean flexibleAround(Broadcast broadcast, Broadcast referenceBroadcast) {
         return around(broadcast.getTransmissionTime(), referenceBroadcast.getTransmissionTime())
-                && flexibleAroundEndTime(broadcast.getTransmissionEndTime(), referenceBroadcast.getTransmissionEndTime());
+                && flexibleAroundEndTime(broadcast.getTransmissionEndTime(),
+                referenceBroadcast.getTransmissionEndTime());
     }
 
     private boolean flexibleAroundEndTime(DateTime transmissionTime, DateTime transmissionTime2) {
@@ -218,11 +278,28 @@ public class BroadcastMatchingItemEquivalenceGenerator implements EquivalenceGen
     }
 
     private Schedule scheduleAround(Broadcast broadcast, Set<Publisher> publishers) {
+        Duration shortBroadcastFlexibility = Duration.standardMinutes(2);
+        Duration broadcastPeriod = new Duration(
+                broadcast.getTransmissionTime(),
+                broadcast.getTransmissionEndTime()
+        );
+
         DateTime start = broadcast.getTransmissionTime().minus(flexibility);
         DateTime end = broadcast.getTransmissionEndTime().plus(flexibility);
+
+        // if the broadcast is less than 10 minutes long, reduce the flexibility
+        if (broadcastPeriod.compareTo(SHORT_CONTENT_REDUCED_TIME_FLEXIBILITY) < 0) {
+            start = broadcast.getTransmissionTime().minus(shortBroadcastFlexibility);
+            end = broadcast.getTransmissionEndTime().plus(shortBroadcastFlexibility);
+        }
         Maybe<Channel> channel = channelResolver.fromUri(broadcast.getBroadcastOn());
         if (channel.hasValue()) {
-            return resolver.unmergedSchedule(start, end, ImmutableSet.of(channel.requireValue()), publishers);
+            return resolver.unmergedSchedule(
+                    start,
+                    end,
+                    ImmutableSet.of(channel.requireValue()),
+                    publishers
+            );
         }
         return null;
     }

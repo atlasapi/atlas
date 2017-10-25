@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import java.util.Set;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 
@@ -31,6 +32,7 @@ public class AmazonUnboxItem {
     private final String synopsis;
     private final String rating;
     private final String price;
+    @JsonSerialize(using=DateTimeSerializer.class)
     private final DateTime releaseDate;
     private final Duration duration;
     private final Set<String> starring;

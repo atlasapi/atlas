@@ -9,6 +9,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
@@ -59,7 +60,12 @@ public class SeriesSequenceItemScorerTest {
     }
 
     private void checkScore(Item subject, Item candidate, Score expectedScore) {
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                EquivToTelescopeResults.create("id", "publisher")
+        );
         assertThat(scores.candidates().get(candidate), is(expectedScore));
     }
 

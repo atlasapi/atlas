@@ -5,6 +5,7 @@ import static org.junit.Assert.assertTrue;
 
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
@@ -36,7 +37,11 @@ public class TitleSearchGeneratorTest {
         };
         
         TitleSearchGenerator<Container> generator = TitleSearchGenerator.create(searchResolver, Container.class, Publisher.all(), 2);
-        ScoredCandidates<Container> generated = generator.generate(subject, new DefaultDescription());
+        ScoredCandidates<Container> generated = generator.generate(
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        );
         
         assertTrue(generated.candidates().keySet().size() == 1);
         

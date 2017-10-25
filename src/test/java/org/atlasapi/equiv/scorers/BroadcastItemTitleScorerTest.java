@@ -13,6 +13,7 @@ import static org.mockito.Mockito.when;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
@@ -31,6 +32,8 @@ public class BroadcastItemTitleScorerTest {
     private final ContentResolver resolver = mock(ContentResolver.class);
     private final BroadcastItemTitleScorer scorer
         = new BroadcastItemTitleScorer(resolver, mismatchScore);
+    private final EquivToTelescopeResults equivToTelescopeResults =
+            EquivToTelescopeResults.create("id", "publisher");
     
     @Test
     public void testScoresOneIfBrandTitleMatchesWhenCandidateHasContainer() {
@@ -48,7 +51,12 @@ public class BroadcastItemTitleScorerTest {
         when(resolver.findByCanonicalUris(argThat(hasItem(candidateBrand.getCanonicalUri()))))
             .thenReturn(ResolvedContent.builder().put(candidateBrand.getCanonicalUri(), candidateBrand).build());
         
-        ScoredCandidates<Item> results = scorer.score(subject, ImmutableSet.of(candidate), new DefaultDescription());
+        ScoredCandidates<Item> results = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        );
         
         assertThat(results.candidates().get(candidate), is(Score.ONE));
         
@@ -70,7 +78,12 @@ public class BroadcastItemTitleScorerTest {
         when(resolver.findByCanonicalUris(argThat(hasItem(subjectBrand.getCanonicalUri()))))
         .thenReturn(ResolvedContent.builder().put(subjectBrand.getCanonicalUri(), subjectBrand).build());
         
-        ScoredCandidates<Item> results = scorer.score(subject, ImmutableSet.of(candidate), new DefaultDescription());
+        ScoredCandidates<Item> results = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        );
         
         assertThat(results.candidates().get(candidate), is(Score.ONE));
         
@@ -89,7 +102,12 @@ public class BroadcastItemTitleScorerTest {
         candidateBrand.setTitle("Coast");
         candidate.setContainer(candidateBrand);
         
-        ScoredCandidates<Item> results = scorer.score(subject, ImmutableSet.of(candidate), new DefaultDescription());
+        ScoredCandidates<Item> results = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        );
         
         assertThat(results.candidates().get(candidate), is(Score.ONE));
         
@@ -114,7 +132,12 @@ public class BroadcastItemTitleScorerTest {
         when(resolver.findByCanonicalUris(argThat(hasItem(candidateBrand.getCanonicalUri()))))
             .thenReturn(ResolvedContent.builder().put(candidateBrand.getCanonicalUri(), candidateBrand).build());
     
-        ScoredCandidates<Item> results = scorer.score(subject, ImmutableSet.of(candidate), new DefaultDescription());
+        ScoredCandidates<Item> results = scorer.score(
+                subject,
+                ImmutableSet.of(candidate),
+                new DefaultDescription(),
+                equivToTelescopeResults
+        );
         
         assertThat(results.candidates().get(candidate), is(mismatchScore));
         

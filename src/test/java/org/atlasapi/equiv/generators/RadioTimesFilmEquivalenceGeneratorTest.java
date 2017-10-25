@@ -2,6 +2,7 @@ package org.atlasapi.equiv.generators;
 
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.persistence.content.ContentResolver;
@@ -46,7 +47,8 @@ public class RadioTimesFilmEquivalenceGeneratorTest {
         film.setCanonicalUri("http://radiotimes.com/films/1");
         ScoredCandidates<Item> scoredCandidates = rtFilmEquivalenceGenerator.generate(
                 film,
-                new DefaultDescription()
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
         );
         Item onlyElement = Iterables.getOnlyElement(scoredCandidates.candidates().keySet());
         assertTrue(onlyElement instanceof Film);
@@ -59,7 +61,8 @@ public class RadioTimesFilmEquivalenceGeneratorTest {
         film.setCanonicalUri("http://radiotimes.com/films/2");
         ScoredCandidates<Item> scoredCandidates = rtFilmEquivalenceGenerator.generate(
                 film,
-                new DefaultDescription()
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
         );
         assertTrue(scoredCandidates.candidates().isEmpty());
     }

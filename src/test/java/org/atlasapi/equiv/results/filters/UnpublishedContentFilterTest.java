@@ -3,6 +3,7 @@ package org.atlasapi.equiv.results.filters;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
 
 import org.junit.Test;
@@ -22,7 +23,12 @@ public class UnpublishedContentFilterTest {
         ScoredCandidate<Item> itemScoredCandidate = ScoredCandidate.valueOf(item, Score.ONE);
         Item subject = new Item();
         subject.setCanonicalUri("subject");
-        assertFalse(filter.doFilter(itemScoredCandidate, subject, new DefaultDescription()));
+        assertFalse(filter.doFilter(
+                itemScoredCandidate,
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        ));
     }
 
     @Test
@@ -32,6 +38,11 @@ public class UnpublishedContentFilterTest {
         ScoredCandidate<Item> itemScoredCandidate = ScoredCandidate.valueOf(item, Score.ONE);
         Item subject = new Item();
         subject.setCanonicalUri("subject");
-        assertTrue(filter.doFilter(itemScoredCandidate, subject, new DefaultDescription()));
+        assertTrue(filter.doFilter(
+                itemScoredCandidate,
+                subject,
+                new DefaultDescription(),
+                EquivToTelescopeResults.create("id", "publisher")
+        ));
     }
 }

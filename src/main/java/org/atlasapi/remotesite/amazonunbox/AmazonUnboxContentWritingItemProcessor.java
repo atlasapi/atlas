@@ -246,8 +246,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         if (cached.values().size() > 0) {
             log.warn("{} extracted but unwritten", cached.values().size());
             for (Entry<String, Collection<ModelWithPayload<? extends Content>>> mapping
-                    : cached.asMap().entrySet()) {
-                log.warn(mapping.toString());
+                    : cached.asMap().entrySet()) {              
+
 
                 for(ModelWithPayload<? extends Content> map : mapping.getValue()) {
                     telescope.reportFailedEvent(
@@ -440,12 +440,13 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 } else {
                     telescope.reportFailedEvent(
                             "This item could not be written to Atlas. id=" + notSeenContent +
-                                    " (LoveFilm content with uri" +
+                                    " (Amazon content with uri" +             
                                     notSeenContent.getCanonicalUri() +
                                     "not an Item or a Container",
                             UNPUBLISH_NO_PAYLOAD_STRING
                     );
-                    throw new RuntimeException("LoveFilm content with uri " +
+
+                    throw new RuntimeException("Amazon Unbox content with uri " +
                             notSeenContent.getCanonicalUri() + " not an Item or a Container");
                 }
             }
@@ -649,7 +650,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             );
         }
     }
-
     private void reportContentToTelescope(
             Content content,
             EntityType entityType,

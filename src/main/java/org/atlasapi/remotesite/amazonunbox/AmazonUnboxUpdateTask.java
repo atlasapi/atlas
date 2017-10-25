@@ -65,11 +65,16 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
             
             itemProcessor.finish(telescope);
             reportStatus(processor.getResult().toString());
+
+            // Dont put this into a finally since we dont want to end reporting when something major
+            // happens. This will help alert us.
+            telescope.endReporting();
             
         } catch (Exception e) {
             telescope.reportFailedEvent("An exception has prevented this task from " +
                     "completing properly (" + e.getMessage() + ")");
             reportStatus(e.getMessage());
+            telescope.endReporting();
             Throwables.propagate(e);
         }
         telescope.endReporting();

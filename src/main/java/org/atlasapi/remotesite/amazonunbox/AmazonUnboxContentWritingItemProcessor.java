@@ -252,10 +252,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                     telescope.reportFailedEvent(
                             contentWithPayload.getModel().getId(),
                             "Content has been extracted but not written",
-                            EntityType.CONTENT,
+                            contentWithPayload.getModel(),
                             contentWithPayload.getPayload()
-                    );
-                    log.warn(mapping.getKey().toString());
+                            );
+                    log.warn("Unwritten: {} - {} ", mapping.getKey(), contentWithPayload );
                 }
             }
         }
@@ -271,6 +271,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void processSeenContent(OwlTelescopeReporter telescope) {
+        //Process Brands first, Series next and everything else last.
         List<ModelWithPayload<Content>> brands = new ArrayList<>();
         List<ModelWithPayload<Content>> series = new ArrayList<>();
         List<ModelWithPayload<Content>> notContainers = new ArrayList<>();
@@ -285,9 +286,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             }
         }
 
-        brands.stream().forEach(c -> checkAndWriteSeenContent(c, telescope));
-        series.stream().forEach(c -> checkAndWriteSeenContent(c, telescope));
-        notContainers.stream().forEach(c -> checkAndWriteSeenContent(c, telescope));
+        brands.forEach(c -> checkAndWriteSeenContent(c, telescope));
+        series.forEach(c -> checkAndWriteSeenContent(c, telescope));
+        notContainers.forEach(c -> checkAndWriteSeenContent(c, telescope));
     }
 
     private void checkAndWriteSeenContent(

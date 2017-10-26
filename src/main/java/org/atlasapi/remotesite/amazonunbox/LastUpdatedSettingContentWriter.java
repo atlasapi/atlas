@@ -367,11 +367,11 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     }
 
     private boolean itemsEqual(Item prevItem, Item item) {
-        if( Objects.equal(item.getPeople(), prevItem.getPeople() )) {log.info(prevItem.getId()+"people {} {} ",item.getPeople(), prevItem.getPeople() );}
-        if( Objects.equal(item.getBlackAndWhite(), prevItem.getBlackAndWhite())){log.info(prevItem.getId()+"black and white {} {} ", item.getBlackAndWhite(), prevItem.getBlackAndWhite());}
-        if( Objects.equal(item.getContainer(), prevItem.getContainer())){log.info(prevItem.getId()+"item containers {} {} ",item.getContainer(), prevItem.getContainer());}
-        if( Objects.equal(item.getCountriesOfOrigin(), prevItem.getCountriesOfOrigin()) ){log.info(prevItem.getId()+"countries of origin {} {} ",item.getCountriesOfOrigin(), prevItem.getCountriesOfOrigin());}
-        if( Objects.equal(item.getIsLongForm(), prevItem.getIsLongForm())){log.info(prevItem.getId()+"is long form {} {} ",item.getIsLongForm(), prevItem.getIsLongForm());}
+        if( !Objects.equal(item.getPeople(), prevItem.getPeople() )) {log.info(prevItem.getId()+"people {} {} ",item.getPeople(), prevItem.getPeople() );}
+        if( !Objects.equal(item.getBlackAndWhite(), prevItem.getBlackAndWhite())){log.info(prevItem.getId()+"black and white {} {} ", item.getBlackAndWhite(), prevItem.getBlackAndWhite());}
+        if( !Objects.equal(item.getContainer(), prevItem.getContainer())){log.info(prevItem.getId()+"item containers {} {} ",item.getContainer(), prevItem.getContainer());}
+        if( !Objects.equal(item.getCountriesOfOrigin(), prevItem.getCountriesOfOrigin()) ){log.info(prevItem.getId()+"countries of origin {} {} ",item.getCountriesOfOrigin(), prevItem.getCountriesOfOrigin());}
+        if( !Objects.equal(item.getIsLongForm(), prevItem.getIsLongForm())){log.info(prevItem.getId()+"is long form {} {} ",item.getIsLongForm(), prevItem.getIsLongForm());}
 
         return contentEqual(prevItem, item)
                 && Objects.equal(item.getPeople(), prevItem.getPeople())
@@ -460,10 +460,10 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
         }
 
 
-        if( Objects.equal(current.getAliases(), previous.getAliases())){log.info(previous.getId()+"getAliases {} {} ",current.getAliases(), previous.getAliases());}
-        if( Objects.equal(current.getAllUris(), previous.getAllUris()) ){log.info(previous.getId()+"getAllUris {} {} ",current.getAllUris(), previous.getAllUris());}
-        if( Objects.equal(current.getAliasUrls(), previous.getAliasUrls())){log.info(previous.getId()+"getAliasUrls {} {} ",current.getAliasUrls(), previous.getAliasUrls());}
-        if( Objects.equal(current.getCurie(), previous.getCurie())){log.info(previous.getId()+"getCurie {} {} ",current.getCurie(), previous.getCurie());}
+        if( !Objects.equal(current.getAliases(), previous.getAliases())){log.info(previous.getId()+"getAliases {} {} ",current.getAliases(), previous.getAliases());}
+        if( !Objects.equal(current.getAllUris(), previous.getAllUris()) ){log.info(previous.getId()+"getAllUris {} {} ",current.getAllUris(), previous.getAllUris());}
+        if( !Objects.equal(current.getAliasUrls(), previous.getAliasUrls())){log.info(previous.getId()+"getAliasUrls {} {} ",current.getAliasUrls(), previous.getAliasUrls());}
+        if( !Objects.equal(current.getCurie(), previous.getCurie())){log.info(previous.getId()+"getCurie {} {} ",current.getCurie(), previous.getCurie());}
 
 
         return Objects.equal(previous.getAliases(), current.getAliases())
@@ -474,28 +474,28 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
 
     private boolean contentEqual(Content prevContent, Content content) {
 
-        if(imagesEquals(prevContent.getImages(), content.getImages())){log.info(prevContent.getId()+"images {} {}",prevContent.getImages(), content.getImages());}
-        if(               listsEqualNotCaringOrder(prevContent.getTopicRefs(), content.getTopicRefs())){log.info(prevContent.getId()+"topic refs  {} {}");}
-        if(               Objects.equal(prevContent.getTitle(), content.getTitle())){log.info(prevContent.getId()+"title  {} {}",prevContent.getTitle(), content.getTitle());}
-        if(               Objects.equal(prevContent.getDescription(), content.getDescription())){log.info(prevContent.getId()+"desc {} {}",prevContent.getDescription(), content.getDescription());}
-        if(               Objects.equal(prevContent.getGenres(), content.getGenres())){log.info(prevContent.getId()+"genre {} {}",prevContent.getGenres(), content.getGenres());}
-        if(               Objects.equal(prevContent.getImage(), content.getImage())){log.info(prevContent.getId()+"image {} {}",prevContent.getImage(), content.getImage());}
-        if(               Objects.equal(prevContent.getThumbnail(), content.getThumbnail())){log.info(prevContent.getId()+"thumbnail {} {}",prevContent.getThumbnail(), content.getThumbnail());}
-        if(               Objects.equal(prevContent.getCertificates(), content.getCertificates())){log.info(prevContent.getId()+"certificates {} {}",prevContent.getCertificates(), content.getCertificates());}
-        if(               Objects.equal(prevContent.getContentGroupRefs(), content.getContentGroupRefs())){log.info(prevContent.getId()+"content group refs {} {}",prevContent.getContentGroupRefs(), content.getContentGroupRefs());}
-        if(               Objects.equal(prevContent.getKeyPhrases(), content.getKeyPhrases())){log.info(prevContent.getId()+"key phrases {} {}",prevContent.getKeyPhrases(), content.getKeyPhrases());}
-        if(               Objects.equal(prevContent.getLanguages(), content.getLanguages())){log.info(prevContent.getId()+"languages {} {}",prevContent.getLanguages(), content.getLanguages());}
-        if(               Objects.equal(prevContent.getLongDescription(), content.getLongDescription())){log.info(prevContent.getId()+"long desc {} {}",prevContent.getLongDescription(), content.getLongDescription());}
-        if(               Objects.equal(prevContent.getMediaType(), content.getMediaType())){log.info(prevContent.getId()+"media type {} {}",prevContent.getMediaType(), content.getMediaType());}
-        if(               Objects.equal(prevContent.getMediumDescription(), content.getMediumDescription())){log.info(prevContent.getId()+"medium desc {} {}",prevContent.getMediumDescription(), content.getMediumDescription());}
-        if(               Objects.equal(prevContent.getPresentationChannel(), content.getPresentationChannel())){log.info(prevContent.getId()+"presentation channel {} {}",prevContent.getPresentationChannel(), content.getPresentationChannel());}
-        if(               Objects.equal(prevContent.getPublisher(), content.getPublisher())){log.info(prevContent.getId()+"publisher {} {}",prevContent.getPublisher(), content.getPublisher());}
-        if(               Objects.equal(prevContent.getRelatedLinks(), content.getRelatedLinks())){log.info(prevContent.getId()+"related links {} {}",prevContent.getRelatedLinks(), content.getRelatedLinks());}
-        if(               Objects.equal(prevContent.getReviews(), content.getReviews())){log.info(prevContent.getId()+"reviews {} {}",prevContent.getReviews(), content.getReviews());}
-        if(               Objects.equal(prevContent.getShortDescription(), content.getShortDescription())){log.info(prevContent.getId()+"short desc {} {}",prevContent.getShortDescription(), content.getShortDescription());}
-        if(               Objects.equal(prevContent.getSpecialization(), content.getSpecialization())){log.info(prevContent.getId()+"specialtions {} {}",prevContent.getSpecialization(), content.getSpecialization());}
-        if(               Objects.equal(prevContent.getTags(), content.getTags())){log.info(prevContent.getId()+"tags {} {}",prevContent.getTags(), content.getTags());}
-        if(               Objects.equal(prevContent.getYear(), content.getYear())){log.info(prevContent.getId()+"years {} {}",prevContent.getYear(), content.getYear());}
+        if(!imagesEquals(prevContent.getImages(), content.getImages())){log.info(prevContent.getId()+"images {} {}",prevContent.getImages(), content.getImages());}
+        if( !              listsEqualNotCaringOrder(prevContent.getTopicRefs(), content.getTopicRefs())){log.info(prevContent.getId()+"topic refs  {} {}");}
+        if(               !Objects.equal(prevContent.getTitle(), content.getTitle())){log.info(prevContent.getId()+"title  {} {}",prevContent.getTitle(), content.getTitle());}
+        if(  !             Objects.equal(prevContent.getDescription(), content.getDescription())){log.info(prevContent.getId()+"desc {} {}",prevContent.getDescription(), content.getDescription());}
+        if(   !            Objects.equal(prevContent.getGenres(), content.getGenres())){log.info(prevContent.getId()+"genre {} {}",prevContent.getGenres(), content.getGenres());}
+        if(    !           Objects.equal(prevContent.getImage(), content.getImage())){log.info(prevContent.getId()+"image {} {}",prevContent.getImage(), content.getImage());}
+        if(     !          Objects.equal(prevContent.getThumbnail(), content.getThumbnail())){log.info(prevContent.getId()+"thumbnail {} {}",prevContent.getThumbnail(), content.getThumbnail());}
+        if(      !         Objects.equal(prevContent.getCertificates(), content.getCertificates())){log.info(prevContent.getId()+"certificates {} {}",prevContent.getCertificates(), content.getCertificates());}
+        if(       !        Objects.equal(prevContent.getContentGroupRefs(), content.getContentGroupRefs())){log.info(prevContent.getId()+"content group refs {} {}",prevContent.getContentGroupRefs(), content.getContentGroupRefs());}
+        if(        !       Objects.equal(prevContent.getKeyPhrases(), content.getKeyPhrases())){log.info(prevContent.getId()+"key phrases {} {}",prevContent.getKeyPhrases(), content.getKeyPhrases());}
+        if(         !      Objects.equal(prevContent.getLanguages(), content.getLanguages())){log.info(prevContent.getId()+"languages {} {}",prevContent.getLanguages(), content.getLanguages());}
+        if(          !     Objects.equal(prevContent.getLongDescription(), content.getLongDescription())){log.info(prevContent.getId()+"long desc {} {}",prevContent.getLongDescription(), content.getLongDescription());}
+        if(           !    Objects.equal(prevContent.getMediaType(), content.getMediaType())){log.info(prevContent.getId()+"media type {} {}",prevContent.getMediaType(), content.getMediaType());}
+        if(            !   Objects.equal(prevContent.getMediumDescription(), content.getMediumDescription())){log.info(prevContent.getId()+"medium desc {} {}",prevContent.getMediumDescription(), content.getMediumDescription());}
+        if(             !  Objects.equal(prevContent.getPresentationChannel(), content.getPresentationChannel())){log.info(prevContent.getId()+"presentation channel {} {}",prevContent.getPresentationChannel(), content.getPresentationChannel());}
+        if(              ! Objects.equal(prevContent.getPublisher(), content.getPublisher())){log.info(prevContent.getId()+"publisher {} {}",prevContent.getPublisher(), content.getPublisher());}
+        if(               !Objects.equal(prevContent.getRelatedLinks(), content.getRelatedLinks())){log.info(prevContent.getId()+"related links {} {}",prevContent.getRelatedLinks(), content.getRelatedLinks());}
+        if( !              Objects.equal(prevContent.getReviews(), content.getReviews())){log.info(prevContent.getId()+"reviews {} {}",prevContent.getReviews(), content.getReviews());}
+        if(  !             Objects.equal(prevContent.getShortDescription(), content.getShortDescription())){log.info(prevContent.getId()+"short desc {} {}",prevContent.getShortDescription(), content.getShortDescription());}
+        if(   !            Objects.equal(prevContent.getSpecialization(), content.getSpecialization())){log.info(prevContent.getId()+"specialtions {} {}",prevContent.getSpecialization(), content.getSpecialization());}
+        if(    !           Objects.equal(prevContent.getTags(), content.getTags())){log.info(prevContent.getId()+"tags {} {}",prevContent.getTags(), content.getTags());}
+        if(     !          Objects.equal(prevContent.getYear(), content.getYear())){log.info(prevContent.getId()+"years {} {}",prevContent.getYear(), content.getYear());}
 
 
 

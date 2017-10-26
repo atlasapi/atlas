@@ -396,17 +396,20 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     public void createOrUpdate(Container container) {
         Maybe<Identified> previously = resolver.findByCanonicalUris(ImmutableList.of(container.getCanonicalUri())).get(container.getCanonicalUri());
 
-        if(previously.hasValue() && previously.requireValue() instanceof Container) {
-            Container prevContainer = (Container) previously.requireValue();
-            if(!equal(prevContainer, container)) {
-                container.setLastUpdated(clock.now());
-                container.setThisOrChildLastUpdated(clock.now());
-            }
-        }
+        DateTime now = clock.now();
 
-        if(container.getLastUpdated() == null || previously.isNothing()) {
-            container.setLastUpdated(clock.now());
-            container.setThisOrChildLastUpdated(clock.now());
+        if (previously.hasValue() && previously.requireValue() instanceof Container) {
+            Container prevContainer = (Container) previously.requireValue();
+            if (equal(prevContainer, container) && prevContainer.getThisOrChildLastUpdated() != null) {
+                container.setLastUpdated(prevContainer.getThisOrChildLastUpdated());
+                container.setThisOrChildLastUpdated(prevContainer.getThisOrChildLastUpdated());
+            } else {
+                container.setLastUpdated(now);
+                container.setThisOrChildLastUpdated(now);
+            }
+        } else if (container.getLastUpdated() == null) {
+            container.setLastUpdated(now);
+            container.setThisOrChildLastUpdated(now);
         }
 
         writer.createOrUpdate(container);

@@ -497,7 +497,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
         }
 
         for (Image prevImage: prevImages) {
-            if (contains(images, prevImage)) {
+            if (!contains(images, prevImage)) {
                 return false;
             }
         }

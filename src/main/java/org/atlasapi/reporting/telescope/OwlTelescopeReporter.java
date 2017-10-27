@@ -47,7 +47,8 @@ public class OwlTelescopeReporter extends TelescopeReporter {
     }
 
     public void reportSuccessfulEvent(
-            long dbId,Set<org.atlasapi.media.entity.Alias> aliases,
+            long dbId,
+            Set<org.atlasapi.media.entity.Alias> aliases,
             EntityType entityType,
             Object... objectToSerialise
     ) {
@@ -65,7 +66,8 @@ public class OwlTelescopeReporter extends TelescopeReporter {
      * the class of autoTypeDiscoveryObject.
      */
     public <T extends Identified> void reportSuccessfulEvent(
-            long dbId,Set<org.atlasapi.media.entity.Alias> aliases,
+            long dbId,
+            Set<org.atlasapi.media.entity.Alias> aliases,
             T autoTypeDiscoveryObject,
             Object... objectToSerialise) {
 
@@ -144,33 +146,48 @@ public class OwlTelescopeReporter extends TelescopeReporter {
                 objectToSerialise);
     }
 
+    public <T extends Identified> void reportFailedEvent(
+            Long id,
+            String errorMsg,
+            T autoTypeDiscoveryObject,
+            Object... objectToSerialise) {
+
+        reportFailedEvent(
+                id,
+                errorMsg,
+                OwlTelescopeUtilityMethodsAtlas.getEntityTypeFor(autoTypeDiscoveryObject),
+                objectToSerialise);
+    }
+
 
     public void reportFailedEvent(
             String errorMsg,
             @Nullable EntityType entityType,
             Object... objectToSerialise) {
 
-        reportFailedEvent(errorMsg, entityType, objectToSerialise);
+        reportFailedEvent(null, errorMsg, entityType, objectToSerialise);
     }
 
     public <T extends Identified> void reportFailedEvent(
-            long dbId,
+            Long dbId,
             String errorMsg,
             @Nullable EntityType entityType,
             Object... objectToSerialise) {
 
+        EntityState.Builder entityState = EntityState.builder()
+                .withError(errorMsg)
+                .withType(entityType != null ? entityType.getVerbose() : null)
+                .withRaw(TelescopeReporterHelperMethods.serialize(objectToSerialise))
+                .withRawMime(MimeType.APPLICATION_JSON.toString());
+
+        if(dbId != null){
+                entityState.withAtlasId(encode(dbId));
+        }
+
         Event event = super.getEventBuilder()
                 .withType(this.eventType)
                 .withStatus(Event.Status.FAILURE)
-                .withEntityState(EntityState.builder()
-                        .withAtlasId(encode(dbId))
-                        .withError(errorMsg)
-                        .withType(entityType != null ? entityType.getVerbose() : null)
-                        .withRaw(TelescopeReporterHelperMethods.serialize(objectToSerialise))
-                        .withRawMime(MimeType.APPLICATION_JSON.toString())
-                        .build()
-                )
-
+                .withEntityState(entityState.build())
                 .build();
         reportEvent(event);
     }

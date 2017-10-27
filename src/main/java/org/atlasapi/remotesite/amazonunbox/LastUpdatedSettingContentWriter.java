@@ -75,7 +75,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             } else {
                 item.setLastUpdated(now);
             }
-            //shouldn't this update the parent last updated?
             setUpdatedVersions(prevItem.getVersions(), item.getVersions(), now);
             setUpdatedClips(prevItem.getClips(), item.getClips(), now);
         }
@@ -123,6 +122,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             if (prevClip != null && equal(clip, prevClip) && prevClip.getLastUpdated() != null) {
                 clip.setLastUpdated(prevClip.getLastUpdated());
             } else {
+                log.info(clip.getId()+" clips {} {}", prevClip, clip);
                 clip.setLastUpdated(now);
             }
         }

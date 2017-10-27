@@ -75,16 +75,42 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             } else {
                 item.setLastUpdated(now);
             }
+            //shouldn't this update the parent last updated?
             setUpdatedVersions(prevItem.getVersions(), item.getVersions(), now);
             setUpdatedClips(prevItem.getClips(), item.getClips(), now);
         }
         else {
+            log.info("new item or model change");
             item.setLastUpdated(now);
             setUpdatedVersions(Sets.<Version>newHashSet(), item.getVersions(), now);
             setUpdatedClips(Lists.<Clip>newArrayList(), item.getClips(), now);
         }
 
         return writer.createOrUpdate(item);
+    }
+
+    @Override
+    public void createOrUpdate(Container container) {
+        Maybe<Identified> previously = resolver.findByCanonicalUris(ImmutableList.of(container.getCanonicalUri())).get(container.getCanonicalUri());
+
+        DateTime now = clock.now();
+
+        if (previously.hasValue() && previously.requireValue() instanceof Container) {
+            Container prevContainer = (Container) previously.requireValue();
+            if (equal(prevContainer, container) && prevContainer.getThisOrChildLastUpdated() != null) {
+                container.setLastUpdated(prevContainer.getThisOrChildLastUpdated());
+                container.setThisOrChildLastUpdated(prevContainer.getThisOrChildLastUpdated());
+            } else {
+                container.setLastUpdated(now);
+                container.setThisOrChildLastUpdated(now);
+            }
+        } else if (container.getLastUpdated() == null) {
+            log.info("new container or model change");
+            container.setLastUpdated(now);
+            container.setThisOrChildLastUpdated(now);
+        }
+
+        writer.createOrUpdate(container);
     }
 
     private void setUpdatedClips(List<Clip> clips, List<Clip> prevClips, DateTime now) {
@@ -121,6 +147,8 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                 if(prevBroadcast != null && equal(prevBroadcast, broadcast) && prevBroadcast.getLastUpdated() != null) {
                     broadcast.setLastUpdated(prevBroadcast.getLastUpdated());
                 } else {
+
+                   log.info(broadcast.getId()+" broadcasts {} {} ",prevBroadcast, broadcast);
                     broadcast.setLastUpdated(now);
                 }
             }
@@ -231,6 +259,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     }
 
     private void setLastUpdatedTime(Version version, Version prevVersion, DateTime now) {
+        if(!equal(prevVersion, version)){log.info(version.getId()+" versions {} {} ",prevVersion, version);}
         if (prevVersion != null && equal(prevVersion, version) && prevVersion.getLastUpdated() != null) {
             version.setLastUpdated(prevVersion.getLastUpdated());
         } else {
@@ -398,29 +427,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
         return Sets.newHashSet(list1).equals(Sets.newHashSet(list2));
     }
 
-    @Override
-    public void createOrUpdate(Container container) {
-        Maybe<Identified> previously = resolver.findByCanonicalUris(ImmutableList.of(container.getCanonicalUri())).get(container.getCanonicalUri());
-
-        DateTime now = clock.now();
-
-        if (previously.hasValue() && previously.requireValue() instanceof Container) {
-            Container prevContainer = (Container) previously.requireValue();
-            if (equal(prevContainer, container) && prevContainer.getThisOrChildLastUpdated() != null) {
-                container.setLastUpdated(prevContainer.getThisOrChildLastUpdated());
-                container.setThisOrChildLastUpdated(prevContainer.getThisOrChildLastUpdated());
-            } else {
-                container.setLastUpdated(now);
-                container.setThisOrChildLastUpdated(now);
-            }
-        } else if (container.getLastUpdated() == null) {
-            container.setLastUpdated(now);
-            container.setThisOrChildLastUpdated(now);
-        }
-
-        writer.createOrUpdate(container);
-    }
-
     private boolean equal(Image image, Image prevImage) {
         if (image == prevImage) {
             return true;
@@ -476,7 +482,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
 
         if(!imagesEquals(prevContent.getImages(), content.getImages())){log.info(prevContent.getId()+"images {} {}",prevContent.getImages(), content.getImages());}
         if( !              listsEqualNotCaringOrder(prevContent.getTopicRefs(), content.getTopicRefs())){log.info(prevContent.getId()+"topic refs  {} {}");}
-        if(               !Objects.equal(prevContent.getTitle(), content.getTitle())){log.info(prevContent.getId()+"title  {} {}",prevContent.getTitle(), content.getTitle());}
+        if( !              Objects.equal(prevContent.getTitle(), content.getTitle())){log.info(prevContent.getId()+"title  {} {}",prevContent.getTitle(), content.getTitle());}
         if(  !             Objects.equal(prevContent.getDescription(), content.getDescription())){log.info(prevContent.getId()+"desc {} {}",prevContent.getDescription(), content.getDescription());}
         if(   !            Objects.equal(prevContent.getGenres(), content.getGenres())){log.info(prevContent.getId()+"genre {} {}",prevContent.getGenres(), content.getGenres());}
         if(    !           Objects.equal(prevContent.getImage(), content.getImage())){log.info(prevContent.getId()+"image {} {}",prevContent.getImage(), content.getImage());}

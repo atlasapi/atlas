@@ -29,7 +29,6 @@ import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
-
 public abstract class AbstractBtChannelGroupSaver {
 
     // deliberately internalising the codec, since there are many ID codecs flying around
@@ -139,7 +138,10 @@ public abstract class AbstractBtChannelGroupSaver {
         return currentChannels;
     }
 
-    private void setCurrentChannelsToChannelGroup(final ChannelGroup channelGroup, Set<Long> currentChannels) {
+    private void setCurrentChannelsToChannelGroup(
+            final ChannelGroup channelGroup,
+            Set<Long> currentChannels
+    ) {
         ImmutableList.Builder<ChannelNumbering> channelNumberings = ImmutableList.builder();
         for (Long channelId : currentChannels) {
             ChannelNumbering channel = ChannelNumbering.builder()

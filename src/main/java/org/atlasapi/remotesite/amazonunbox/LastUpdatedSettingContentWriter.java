@@ -92,6 +92,10 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     public void createOrUpdate(Container container) {
         Maybe<Identified> previously = resolver.findByCanonicalUris(ImmutableList.of(container.getCanonicalUri())).get(container.getCanonicalUri());
 
+        //convert nulls to empty string. This is because our DB classes will ignore nulls and
+        //retain the old value instead (presumably that is a feature). Consequently we need to
+        //convert nulls to empty Strings in order to remove them from the DB.
+
         DateTime now = clock.now();
 
         if (previously.hasValue() && previously.requireValue() instanceof Container) {
@@ -288,18 +292,20 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     }
 
     private boolean equal(Restriction prevRestriction, Restriction restriction) {
-        if(!Objects.equal(prevRestriction.isRestricted(), restriction.isRestricted())){log.info(restriction.getCanonicalUri()+" isRestricted {} {} ",prevRestriction.isRestricted(), restriction.isRestricted());}
-        if(!Objects.equal(prevRestriction.getMessage(), restriction.getMessage())){log.info(restriction.getCanonicalUri()+" getMessage {} {} ",prevRestriction.getMessage(), restriction.getMessage());}
-        if(!Objects.equal(prevRestriction.getMinimumAge(), restriction.getMinimumAge())){log.info(restriction.getCanonicalUri()+" getMinimumAge {} {} ",prevRestriction.getMinimumAge(), restriction.getMinimumAge());}
-
 
         if (prevRestriction == restriction) {
             return true;
         }
 
         if (prevRestriction == null || restriction == null) {
+            log.info("restriction was null "+prevRestriction+ " <> "+restriction);
             return false;
         }
+
+
+        if(!Objects.equal(prevRestriction.isRestricted(), restriction.isRestricted())){log.info(restriction.getCanonicalUri()+" isRestricted {} {} ",prevRestriction.isRestricted(), restriction.isRestricted());}
+        if(!Objects.equal(prevRestriction.getMessage(), restriction.getMessage())){log.info(restriction.getCanonicalUri()+" getMessage {} {} ",prevRestriction.getMessage(), restriction.getMessage());}
+        if(!Objects.equal(prevRestriction.getMinimumAge(), restriction.getMinimumAge())){log.info(restriction.getCanonicalUri()+" getMinimumAge {} {} ",prevRestriction.getMinimumAge(), restriction.getMinimumAge());}
 
         return identifiedEqual(prevRestriction, restriction)
                 && Objects.equal(prevRestriction.isRestricted(), restriction.isRestricted())

@@ -6,12 +6,17 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
+import org.atlasapi.persistence.content.mongo.MongoContentWriter;
+import org.atlasapi.persistence.media.entity.ContentTranslator;
+import org.atlasapi.persistence.media.entity.DescribedTranslator;
+import org.atlasapi.persistence.media.entity.IdentifiedTranslator;
 import org.atlasapi.remotesite.ContentExtractor;
 
 import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.RepetitionRules.Daily;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.LocalTime;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -32,6 +37,16 @@ public class AmazonUnboxModule {
     private @Value("${s3.secret}") String s3secret;
     private @Value("${unbox.url}") String unboxUrl;
     private @Value("${unbox.missingContent.percentage}") Integer missingContentPercentage;
+
+    /**
+     * This keys will be removed from the database if their values are empty during an ingest.
+     */
+    private final Iterable<String> KEYS_TO_REMOVE = ImmutableSet.of(
+            DescribedTranslator.IMAGE_KEY,
+            DescribedTranslator.GENRES_KEY,
+            ContentTranslator.YEAR_KEY,
+            ContentTranslator.CERTIFICATES_KEY
+    );
     
     @PostConstruct
     public void startBackgroundTasks() {
@@ -65,6 +80,13 @@ public class AmazonUnboxModule {
 
 
     public ContentWriter contentWriter() {
-        return new LastUpdatedSettingContentWriter(contentResolver, contentWriter);
+        ContentWriter tmpContentWriter;
+        if(contentWriter instanceof MongoContentWriter){
+            tmpContentWriter = ((MongoContentWriter) contentWriter).withKeysToRemove(KEYS_TO_REMOVE);
+        }
+        else{
+            tmpContentWriter = contentWriter;
+        }
+        return new LastUpdatedSettingContentWriter(contentResolver, tmpContentWriter);
     }
 }

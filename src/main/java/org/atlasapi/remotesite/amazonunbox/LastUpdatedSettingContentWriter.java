@@ -278,7 +278,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
 
     private boolean equal(Version prevVersion, Version version) {
 
-        if(identifiedEqual(prevVersion, version) {
+        if(identifiedEqual(prevVersion, version)) {
             if (!Objects.equal(prevVersion.getDuration(), version.getDuration())) {
                 log.info(
                         version.getCanonicalUri() + " duration {} {} ",

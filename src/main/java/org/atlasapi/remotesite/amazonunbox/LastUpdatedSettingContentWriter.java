@@ -277,11 +277,40 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     }
 
     private boolean equal(Version prevVersion, Version version) {
-        if(!Objects.equal(prevVersion.getDuration(), version.getDuration())){log.info(version.getCanonicalUri()+" duration {} {} ",prevVersion.getDuration(), version.getDuration());}
-        if(!Objects.equal(prevVersion.getProvider(), version.getProvider())){log.info(version.getCanonicalUri()+" provider {} {} ",prevVersion.getProvider(), version.getProvider());}
-        if(!Objects.equal(prevVersion.getPublishedDuration(), version.getPublishedDuration())){log.info(version.getCanonicalUri()+" pubDuration {} {} ",prevVersion.getPublishedDuration(), version.getPublishedDuration());}
-        if(!Objects.equal(prevVersion.is3d(), version.is3d())){log.info(version.getCanonicalUri()+" is3d {} {} ",prevVersion.is3d(), version.is3d());}
 
+        if(identifiedEqual(prevVersion, version) {
+            if (!Objects.equal(prevVersion.getDuration(), version.getDuration())) {
+                log.info(
+                        version.getCanonicalUri() + " duration {} {} ",
+                        prevVersion.getDuration(),
+                        version.getDuration()
+                );
+            }
+            if (!Objects.equal(prevVersion.getProvider(), version.getProvider())) {
+                log.info(
+                        version.getCanonicalUri() + " provider {} {} ",
+                        prevVersion.getProvider(),
+                        version.getProvider()
+                );
+            }
+            if (!Objects.equal(
+                    prevVersion.getPublishedDuration(),
+                    version.getPublishedDuration()
+            )) {
+                log.info(
+                        version.getCanonicalUri() + " pubDuration {} {} ",
+                        prevVersion.getPublishedDuration(),
+                        version.getPublishedDuration()
+                );
+            }
+            if (!Objects.equal(prevVersion.is3d(), version.is3d())) {
+                log.info(
+                        version.getCanonicalUri() + " is3d {} {} ",
+                        prevVersion.is3d(),
+                        version.is3d()
+                );
+            }
+        }
 
         return identifiedEqual(prevVersion, version)
                 && equal(prevVersion.getRestriction(), version.getRestriction())

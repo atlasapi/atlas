@@ -40,12 +40,14 @@ public class AmazonUnboxModule {
 
     /**
      * This keys will be removed from the database if their values are empty during an ingest.
+     * Maybe everything should be here, but who knows what everything really is!?
      */
     private final Iterable<String> KEYS_TO_REMOVE = ImmutableSet.of(
             DescribedTranslator.IMAGE_KEY,
             DescribedTranslator.GENRES_KEY,
             ContentTranslator.YEAR_KEY,
-            ContentTranslator.CERTIFICATES_KEY
+            ContentTranslator.CERTIFICATES_KEY,
+            "restriction" //hardcoded in the translator classes as well
     );
     
     @PostConstruct

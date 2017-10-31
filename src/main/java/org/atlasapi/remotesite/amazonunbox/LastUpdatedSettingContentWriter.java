@@ -144,6 +144,14 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
 
         for (Version version : versions) {
             Version prevVersion = prevVersionsMap.get(version.getCanonicalUri());
+            // when the resolver reads stuff from the db, if it finds that version.restrictions == null
+            // is will slam a new Restriction() object in there, with null fields
+            // (org.atlasapi.persistence.media.entity.VersionTranslator).
+            // Consequently, if the ingested version has a null restriction they will be identified
+            // as different.To "fix" that, we will add the same logic in the ingested content as well.
+            if (version.getRestriction() == null) {
+                version.setRestriction(new Restriction());
+            }
             setLastUpdatedTime(version, prevVersion, now);
 
             for (Broadcast broadcast : version.getBroadcasts()) {

@@ -289,6 +289,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             policy.withPrice(new Price(Currency.getInstance("GBP"), Double.valueOf(price)));
         }
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
+        // We will mark all content as available to youview. This is the
+        // way that the YV uploader will then pick them up as ondemands.
+        policy.setPlatform(Policy.Platform.YOUVIEW_AMAZON);
         return policy;
     }
     

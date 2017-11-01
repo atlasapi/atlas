@@ -1,16 +1,11 @@
 package org.atlasapi.remotesite.youview;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import java.util.Collection;
 import java.util.Optional;
 import java.util.regex.Pattern;
 
-import nu.xom.Attribute;
-import nu.xom.Element;
-import nu.xom.Elements;
+import javax.annotation.Nullable;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Broadcast;
@@ -23,19 +18,24 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.AttributeNotFoundException;
 import org.atlasapi.remotesite.netflix.ElementNotFoundException;
+
+import com.metabroadcast.common.collect.ImmutableOptionalMap;
+import com.metabroadcast.common.collect.OptionalMap;
+import com.metabroadcast.common.intl.Countries;
+
+import com.google.common.collect.ImmutableMap;
+import nu.xom.Attribute;
+import nu.xom.Element;
+import nu.xom.Elements;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-
-import com.google.common.collect.ImmutableMap;
-import com.metabroadcast.common.collect.ImmutableOptionalMap;
-import com.metabroadcast.common.collect.OptionalMap;
-import com.metabroadcast.common.intl.Countries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import javax.annotation.Nullable;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class YouViewContentExtractor {
 
@@ -62,12 +62,13 @@ public class YouViewContentExtractor {
     private static final String START_KEY = "start";
     private static final String END_KEY = "end";
 
-    private static final OptionalMap<Publisher, Platform> BROADCASTER_TO_PLATFORM = 
+    private static final OptionalMap<Publisher, Platform> BROADCASTER_TO_PLATFORM =
             ImmutableOptionalMap.fromMap(ImmutableMap.of(
-                Publisher.BBC, Platform.YOUVIEW_IPLAYER,
-                Publisher.ITV, Platform.YOUVIEW_ITVPLAYER,
-                Publisher.C4_PMLSD, Platform.YOUVIEW_4OD,
-                Publisher.FIVE, Platform.YOUVIEW_DEMAND5
+                    Publisher.BBC, Platform.YOUVIEW_IPLAYER,
+                    Publisher.ITV, Platform.YOUVIEW_ITVPLAYER,
+                    Publisher.C4_PMLSD, Platform.YOUVIEW_4OD,
+                    Publisher.FIVE, Platform.YOUVIEW_DEMAND5,
+                    Publisher.AMAZON_UNBOX, Platform.YOUVIEW_AMAZON
             ));
 
     private static final Logger log = LoggerFactory.getLogger(YouViewContentExtractor.class);

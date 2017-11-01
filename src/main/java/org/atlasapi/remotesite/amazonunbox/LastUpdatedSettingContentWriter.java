@@ -208,6 +208,15 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
     private void setLastUpdatedTimeToNow(Set<Location> locations, DateTime now) {
         for (Location location : locations) {
             location.setLastUpdated(now);
+            setLastUpdatedTime(location.getPolicy(), now);
+        }
+    }
+
+    //the reason to update policies along with locations is that the date is required by the YV
+    //uploader, so it should not be null.
+    private void setLastUpdatedTime(Policy policy, DateTime time) {
+        if (policy != null) {
+            policy.setLastUpdated(time);
         }
     }
 
@@ -221,9 +230,11 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             if (prevLocation.isPresent() && prevLocation.get().getLastUpdated() != null) {
                 log.debug("Matched location {}", location);
                 location.setLastUpdated(prevLocation.get().getLastUpdated());
+                setLastUpdatedTime(location.getPolicy(), prevLocation.get().getLastUpdated());
             } else {
                 log.debug("Could not match location {}", location);
                 location.setLastUpdated(now);
+                setLastUpdatedTime(location.getPolicy(), now);
             }
         }
     }

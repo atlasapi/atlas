@@ -68,6 +68,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
 
     //since they have no end dates, but we check for an end-date, add a very very long end date.
     private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T01:11:11"));
+    private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2000-01-10T01:11:11"));
 
     private static final OptionalMap<String, Certificate> certificateMap =
             ImmutableOptionalMap.fromMap(
@@ -295,11 +296,18 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             policy.withPrice(new Price(Currency.getInstance("GBP"), Double.valueOf(price)));
         }
         policy.setAvailableCountries(ImmutableSet.of(Countries.GB));
+
+        //THE CODE BELOW, IS BASED ON THE EXISTING STATE WHERE AMAZON ALWAYS SENDS NULLS.
         // We will mark all content as available to youview. This is the
         // way that the YV uploader will then pick them up as ondemands.
         policy.setPlatform(Policy.Platform.YOUVIEW_AMAZON);
-        //And for a similar reason add a very long end date to that polily
+        //And for a similar reason add a very long end date to that policy
+        //This needs to be a static date, because the policy will be different from its
+        //predecesor in the database and the item will be marked as updates, while in truth
+        //amazon would have changed nothing.
         policy.setAvailabilityEnd(POLICY_AVAILABILITY_ENDS);
+        policy.setAvailabilityStart(POLICY_AVAILABILITY_START);
+
 
         return policy;
     }

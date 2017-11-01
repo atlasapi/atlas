@@ -41,6 +41,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.joda.time.DateTime;
+
 import com.metabroadcast.common.collect.ImmutableOptionalMap;
 import com.metabroadcast.common.collect.OptionalMap;
 import com.metabroadcast.common.currency.Price;
@@ -63,6 +65,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String URL_SUFFIX_TO_REMOVE = "ref=atv_feed_catalog";
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
+
+    //since they have no end dates, but we check for an end-date, add a very very long end date.
+    private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T01:11:11"));
+
     private static final OptionalMap<String, Certificate> certificateMap =
             ImmutableOptionalMap.fromMap(
                     ImmutableMap.<String,Certificate>builder()
@@ -292,6 +298,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         // We will mark all content as available to youview. This is the
         // way that the YV uploader will then pick them up as ondemands.
         policy.setPlatform(Policy.Platform.YOUVIEW_AMAZON);
+        //And for a similar reason add a very long end date to that polily
+        policy.setAvailabilityEnd(POLICY_AVAILABILITY_ENDS);
+
         return policy;
     }
     

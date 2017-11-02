@@ -159,7 +159,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private Content extractBrand(AmazonUnboxItem source) {
         Brand brand = new Brand();
         setCommonFields(brand, source.getSeriesTitle(), createBrandUri(source.getSeriesAsin()));
-        brand.setDescription(source.getSynopsis());
+        brand.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
         brand.setSpecialization(Specialization.TV);
         
         RelatedLink relatedLink = RelatedLink

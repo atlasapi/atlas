@@ -6,13 +6,12 @@ import java.util.Set;
 
 import javax.annotation.Nullable;
 
-import org.apache.commons.lang.StringEscapeUtils;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.CrewMember.Role;
-import org.atlasapi.media.entity.Certificate;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Film;
@@ -33,6 +32,12 @@ import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 
+import com.metabroadcast.common.collect.ImmutableOptionalMap;
+import com.metabroadcast.common.collect.OptionalMap;
+import com.metabroadcast.common.currency.Price;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.media.MimeType;
+
 import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
@@ -41,13 +46,8 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTime;
-
-import com.metabroadcast.common.collect.ImmutableOptionalMap;
-import com.metabroadcast.common.collect.OptionalMap;
-import com.metabroadcast.common.currency.Price;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.media.MimeType;
 
 public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
                                                     Iterable<Content>> {
@@ -59,7 +59,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String ASIN_NAMESPACE = "gb:amazon:asin";
     private static final String IMDB_ALIAS_URL_PREFIX = "http://imdb.com/title/%s";
     private static final String AMAZON_ALIAS_URL_VERSION = "http://gb.amazon.com/asin/%s";
-    private static final String URI_VERSION = "http://unbox.amazon.co.uk/%s";
+    public static final String URI_PREFIX = "http://unbox.amazon.co.uk/";
+    private static final String URI_VERSION = URI_PREFIX + "%s";
     private static final String LOCATION_URI_PATTERN = "http://www.amazon.co.uk/dp/%s/";
     private static final String SERIES_URI_PATTERN = LOCATION_URI_PATTERN;
     private static final String URL_SUFFIX_TO_REMOVE = "ref=atv_feed_catalog";

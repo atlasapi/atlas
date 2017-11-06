@@ -6,6 +6,7 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -53,7 +54,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-
+import static org.atlasapi.remotesite.amazonunbox.AmazonUnboxContentExtractor.URI_PREFIX;
 
 public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemProcessor {
 
@@ -95,6 +96,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private final Predicate<Alias> AMAZON_ALIAS =
             input -> GB_AMAZON_ASIN.equals(input.getNamespace());
+    private final Predicate<String> AMAZON_ALIAS_URL =
+            input -> input.startsWith(URI_PREFIX);
+
 
     private final Logger log = LoggerFactory.getLogger(
             AmazonUnboxContentWritingItemProcessor.class
@@ -235,9 +239,18 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         Alias alias = Iterables.getOnlyElement(Iterables.filter(item.getModel().getAliases(),
                 AMAZON_ALIAS::test
         ));
+
+        String aliasUrl = item.getModel()
+                .getAliasUrls()
+                .stream()
+                .filter(AMAZON_ALIAS_URL)
+                .findFirst().get(); //we want it to throw an exception if its empty
+
         version.addAlias(alias);
-        seen.getModel().addAlias(alias);
+        version.addAliasUrl(aliasUrl);
         seen.getModel().addVersion(version);
+        seen.getModel().addAlias(alias);
+        seen.getModel().addAliasUrl(aliasUrl);
         return seen;
     }
 

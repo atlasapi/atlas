@@ -6,7 +6,6 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Optional;
 import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
@@ -15,17 +14,12 @@ import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.Policy;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -49,7 +43,6 @@ import com.google.common.collect.Maps;
 import com.google.common.collect.Ordering;
 import com.google.common.collect.SetMultimap;
 import com.google.common.collect.Sets;
-import javafx.application.Platform;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -85,12 +78,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         }
     };
 
-    public static final String CONTAINER = "CONTAINER";
-    public static final String EPISODE = "EPISODE";
-    public static final String ITEM = "ITEM";
-    public static final String BRAND = "BRAND";
-    public static final String SERIES = "SERIES";
-    public static final String FILM = "FILM";
     public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
     public static final String UNPUBLISH_NO_PAYLOAD_STRING = "Unpublished item has no payload";
 
@@ -110,12 +97,12 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
     private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
-    private final Map<String, String> duplicatedSeriesToCommonKeyMap = Maps.newHashMap();
-    private final Map<String, ModelWithPayload<Series>>
-            commonSeriesKeyToCommonSeriesMap = Maps.newHashMap();
-    private final Map<String, String> duplicatedBrandToCommonKeyMap = Maps.newHashMap();
-    private final Map<String, ModelWithPayload<Brand>>
-            commonBrandKeyToCommonBrandMap = Maps.newHashMap();
+//    private final Map<String, String> duplicatedSeriesToCommonKeyMap = Maps.newHashMap();
+//    private final Map<String, ModelWithPayload<Series>>
+//            commonSeriesKeyToCommonSeriesMap = Maps.newHashMap();
+//    private final Map<String, String> duplicatedBrandToCommonKeyMap = Maps.newHashMap();
+//    private final Map<String, ModelWithPayload<Brand>>
+//            commonBrandKeyToCommonBrandMap = Maps.newHashMap();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -160,98 +147,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         for (Content content : extract(item)) {
 
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload(content, item);
-            checkForDuplicatesSaveForProcessing(contentWithPayload);
+            seenContent.put(content.getCanonicalUri(), contentWithPayload);
         }
-    }
-
-    private void checkForDuplicatesSaveForProcessing(ModelWithPayload<Content> content) {
-        StringBuilder key = new StringBuilder();
-        if (content.getModel() instanceof Container) {
-
-            if (content.getModel() instanceof Brand) {
-                ModelWithPayload<Brand> brand = content.asModelType(Brand.class);
-                String title = brand.getModel().getTitle();
-                key.append(title).append(BRAND);
-                duplicatedBrandToCommonKeyMap.put(
-                        brand.getModel().getCanonicalUri(),
-                        key.toString());
-                if (!commonBrandKeyToCommonBrandMap.containsKey(key.toString())) {
-                    commonBrandKeyToCommonBrandMap.put(key.toString(), brand);
-                }
-            } else if (content.getModel() instanceof Series){
-                ModelWithPayload<Series> series = content.asModelType(Series.class);
-                String title = series.getModel().getTitle();
-                String brandTitle = series.getModel().getShortDescription();
-                key.append(title).append(brandTitle).append(SERIES);
-                duplicatedSeriesToCommonKeyMap.put(
-                        series.getModel().getCanonicalUri(),
-                        key.toString());
-                if (!commonSeriesKeyToCommonSeriesMap.containsKey(key.toString())) {
-                    commonSeriesKeyToCommonSeriesMap.put(key.toString(), series);
-                }
-            }
-            String hash = key.toString();
-            if (!seenContent.containsKey(hash) && !seenContent.containsValue(content)) {
-                seenContent.put(hash, content);
-            }
-
-        } else {
-
-            if (content.getModel() instanceof Episode){
-                Episode episode = (Episode) content.getModel();
-                String title = episode.getTitle();
-                int episodeNumber = episode.getEpisodeNumber();
-                int seasonNumber = episode.getSeriesNumber();
-                String brandTitle = episode.getShortDescription();
-                key
-                        .append(title)
-                        .append(brandTitle)
-                        .append(episodeNumber)
-                        .append(seasonNumber)
-                        .append(EPISODE);
-            } else if (content.getModel() instanceof Film) {
-                Film film = (Film) content.getModel();
-                String title = film.getTitle();
-                Integer year = film.getYear();
-                if (film.getYear() != null) {
-                    key.append(year);
-                }
-                key.append(title).append(FILM);
-            } else {
-                Item item = (Item) content.getModel();
-                String title = item.getTitle();
-                key.append(title).append(ITEM);
-            }
-            String hash = key.toString();
-            if (!seenContent.containsKey(hash)) {
-                seenContent.put(hash, content);
-            } else {
-                ModelWithPayload<Content> seen = seenContent.get(hash);
-                seenContent.forcePut(hash, mergeAliasesAndLocations(content, seen));
-            }
-        }
-    }
-
-    private ModelWithPayload<Content> mergeAliasesAndLocations(
-            ModelWithPayload<Content> item,
-            ModelWithPayload<Content> seen) {
-        Version version = Iterables.getOnlyElement(item.getModel().getVersions());
-        Alias alias = Iterables.getOnlyElement(Iterables.filter(item.getModel().getAliases(),
-                AMAZON_ALIAS::test
-        ));
-
-        String aliasUrl = item.getModel()
-                .getAliasUrls()
-                .stream()
-                .filter(AMAZON_ALIAS_URL)
-                .findFirst().get(); //we want it to throw an exception if its empty
-
-        version.addAlias(alias);
-        version.addAliasUrl(aliasUrl);
-        seen.getModel().addVersion(version);
-        seen.getModel().addAlias(alias);
-        seen.getModel().addAliasUrl(aliasUrl);
-        return seen;
     }
 
     @Override
@@ -288,7 +185,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void processSeenContent(OwlTelescopeReporter telescope) {
-        //Process Brands first, Series next and everything else last.
         List<ModelWithPayload<Content>> brands = new ArrayList<>();
         List<ModelWithPayload<Content>> series = new ArrayList<>();
         List<ModelWithPayload<Content>> notContainers = new ArrayList<>();
@@ -303,6 +199,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             }
         }
 
+        //Process Brands first, Series next and everything else last.
         brands.forEach(c -> checkAndWriteSeenContent(c, telescope));
         series.forEach(c -> checkAndWriteSeenContent(c, telescope));
         notContainers.forEach(c -> checkAndWriteSeenContent(c, telescope));
@@ -311,6 +208,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private void checkAndWriteSeenContent(
             ModelWithPayload<Content> content,
             OwlTelescopeReporter telescope) {
+
         Maybe<Identified> existing = resolve(content.getModel().getCanonicalUri());
         if (existing.isNothing()) {
             write(content, telescope);
@@ -318,13 +216,13 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             Identified identified = existing.requireValue();
             if (content.getModel() instanceof Item) {
                 write(mergeItemsWithPayload(
-                        ContentMerger.asItem(identified),
-                        content.asModelType(Item.class)),
+                            ContentMerger.asItem(identified),
+                            content.asModelType(Item.class)),
                         telescope);
             } else if (content.getModel() instanceof Container) {
                 write(mergeContainersWithPayload(
-                        ContentMerger.asContainer(identified),
-                        content.asModelType(Container.class)),
+                            ContentMerger.asContainer(identified),
+                            content.asModelType(Container.class)),
                         telescope);
             }
         }
@@ -553,11 +451,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             OwlTelescopeReporter telescope) {
         ParentRef parent = series.getModel().getParent();
         if (parent != null) {
-            ModelWithPayload<Brand> brand = commonBrandKeyToCommonBrandMap.get(
-                    duplicatedBrandToCommonKeyMap.get(parent.getUri())
-            );
-            if (brand != null) {
-                series.getModel().setParent(brand.getModel());
+            ModelWithPayload<Content> brand = seenContent.get(parent.getUri());
+            if (brand != null && brand.getModel() instanceof Brand) {
+                series.getModel().setParent(brand.asModelType(Brand.class).getModel());
             }
             String brandUri = series.getModel().getParent().getUri();
             if (!seenContainer.containsKey(brandUri)) {
@@ -609,10 +505,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         ParentRef parent = episode.getModel().getContainer();
 
         if (parent != null) {
-            ModelWithPayload<Brand> brand = commonBrandKeyToCommonBrandMap.get(
-                    duplicatedBrandToCommonKeyMap.get(parent.getUri())
-            );
-            episode.getModel().setContainer(brand.getModel());
+            ModelWithPayload<Content> brand = seenContent.get(parent.getUri());
             String brandUri = brand.getModel().getCanonicalUri();
             if (!seenContainer.containsKey(brandUri)) {
                 cached.put(brandUri, episode);
@@ -620,22 +513,18 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             }
         }
         
-        String seriesUri = episode.getModel().getSeriesRef() != null ?
-                episode.getModel().getSeriesRef().getUri() :
-                null;
-        if (seriesUri != null) {
-            ModelWithPayload<Series> series = commonSeriesKeyToCommonSeriesMap.get(
-                    duplicatedSeriesToCommonKeyMap.get(seriesUri)
-            );
-            if (series != null) {
-                episode.getModel().setSeriesRef(ParentRef.parentRefFrom(series.getModel()));
-                seriesUri = series.getModel().getCanonicalUri();
-            }
+        String seriesUri = episode.getModel().getSeriesRef() != null
+                           ? episode.getModel().getSeriesRef().getUri()
+                           : null;
+        if (seriesUri != null ) {
             if (!seenContainer.containsKey(seriesUri)) {
                 cached.put(seriesUri, episode);
                 return;
             }
-            episode.getModel().setSeriesNumber(series.getModel().getSeriesNumber());
+            ModelWithPayload<Content> series = seenContent.get(seriesUri);
+            if(series.getModel() instanceof Series) {
+                episode.getModel().setSeriesNumber(series.asModelType(Series.class).getModel().getSeriesNumber());
+            }
         }
 
         writer.createOrUpdate(episode.getModel());

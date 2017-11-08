@@ -152,19 +152,16 @@ public class ContentWriteController {
     }
 
     @Nullable
-    @RequestMapping(value = "/3.0/content.json", method = RequestMethod.POST)
     public WriteResponse postContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, MERGE);
     }
 
     @Nullable
-    @RequestMapping(value = "/3.0/content.json", method = RequestMethod.PUT)
     public WriteResponse putContent(HttpServletRequest req, HttpServletResponse resp) {
         return deserializeAndUpdateContent(req, resp, OVERWRITE);
     }
 
     @Nullable
-    @RequestMapping(value = "/3.0/content.json", method = RequestMethod.DELETE)
     public WriteResponse unpublishContent(HttpServletRequest req, HttpServletResponse resp) {
 
         Optional<AtlasErrorSummary> configErrorSummary = validateApplicationConfiguration(

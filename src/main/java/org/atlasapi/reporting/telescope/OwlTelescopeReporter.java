@@ -8,6 +8,7 @@ import javax.validation.constraints.NotNull;
 
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.remotesite.amazonunbox.TelescopeReporterHelperMethods;
+import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 
 import com.metabroadcast.columbus.telescope.api.Alias;
 import com.metabroadcast.columbus.telescope.api.EntityState;

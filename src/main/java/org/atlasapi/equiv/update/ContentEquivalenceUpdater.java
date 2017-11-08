@@ -213,7 +213,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         private ImmutableSet.Builder<EquivalenceScorer<T>> scorers = ImmutableSet.builder();
         private ScoreCombiner<T> combiner;
         private EquivalenceFilter<T> filter;
-        private ImmutableList.Builder<EquivalenceExtractor<T>> extractors;
+        private ImmutableList.Builder<EquivalenceExtractor<T>> extractors = ImmutableList.builder();
         private EquivalenceResultHandler<T> handler;
         private EquivalenceResultMessenger<T> messenger;
         private Set<String> excludedUris;

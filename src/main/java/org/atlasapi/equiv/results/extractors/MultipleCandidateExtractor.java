@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
+import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
@@ -32,7 +33,7 @@ import org.joda.time.Duration;
  *     target broadcast (+- {@link MultipleCandidateExtractor#BROADCAST_TIME_FLEXIBILITY})</li>
  * </ul>
  */
-public class MultipleCandidateExtractor<T extends Content> {
+public class MultipleCandidateExtractor<T extends Content> implements EquivalenceExtractor<T>{
 
     private static final Duration BROADCAST_TIME_FLEXIBILITY = Duration.standardMinutes(5);
     private static final double PUBLISHER_MATCHING_EQUIV_THRESHOLD = 0.3;
@@ -44,22 +45,24 @@ public class MultipleCandidateExtractor<T extends Content> {
         return new MultipleCandidateExtractor<>();
     }
 
-    public Optional<Set<ScoredCandidate<T>>> extract(
+    @Override
+    public Set<ScoredCandidate<T>> extract(
             List<ScoredCandidate<T>> candidates,
             T target,
+            ResultDescription desc,
             EquivToTelescopeResults equivToTelescopeResults
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
         extractorComponent.setComponentName("Multiple Candidate Extractor");
 
         if (isSeriesOrBrand(target) || candidates.isEmpty()) {
-            return Optional.absent();
+            return ImmutableSet.of();
         }
 
         ScoredCandidate<T> highestScoringCandidate = candidates.get(0);
 
         if (isSeriesOrBrand(highestScoringCandidate.candidate())) {
-            return Optional.absent();
+            return ImmutableSet.of();
         }
 
         Set<ScoredCandidate<T>> allowedCandidates = new HashSet<ScoredCandidate<T>>();
@@ -92,12 +95,10 @@ public class MultipleCandidateExtractor<T extends Content> {
 
         equivToTelescopeResults.addExtractorResult(extractorComponent);
 
-        // If we have found a group of candidates return it otherwise return absent and let
-        // the configured extractor decide instead
         if (allowedCandidates.size() > 1) {
-            return Optional.of(allowedCandidates);
+            return allowedCandidates;
         } else {
-            return Optional.absent();
+            return ImmutableSet.of();
         }
     }
 

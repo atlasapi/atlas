@@ -13,6 +13,7 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
+import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScore;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
@@ -24,7 +25,6 @@ import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
@@ -37,13 +37,13 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+public class AmazonItemEquivalenceUpdaterType implements EquivalenceUpdaterProvider<Item> {
 
-    private AmazonItemUpdaterProvider() {
+    private AmazonItemEquivalenceUpdaterType() {
     }
 
-    public static AmazonItemUpdaterProvider create() {
-        return new AmazonItemUpdaterProvider();
+    public static AmazonItemEquivalenceUpdaterType create() {
+        return new AmazonItemEquivalenceUpdaterType();
     }
 
     @Override
@@ -72,7 +72,6 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
-                                new DescriptionTitleMatchingScorer(),
                                 new SequenceItemScorer(Score.ONE)
                         )
                 )
@@ -97,8 +96,10 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                 new UnpublishedContentFilter<>()
                         ))
                 )
-                .withExtractor(
-                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+                .withExtractors(
+                        ImmutableList.of(
+                                AllWithTheSameHighScore.create(1)
+                        )
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

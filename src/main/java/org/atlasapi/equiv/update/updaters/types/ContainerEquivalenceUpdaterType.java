@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.update.updaters.types;
 
+import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BroadcastItemContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.BtVodContainerUpdaterProvider;
@@ -42,7 +43,7 @@ public enum ContainerEquivalenceUpdaterType {
     ),
     RTE_VOD_CONTAINER(
             RteContainerUpdaterProvider.create()
-    )
+    ),
     ;
 
     private final EquivalenceUpdaterProvider<Container> provider;

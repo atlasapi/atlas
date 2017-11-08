@@ -1,6 +1,8 @@
 package org.atlasapi.equiv.update.updaters.types;
 
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.container.VodContainerUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.AmazonItemEquivalenceUpdaterType;
 import org.atlasapi.equiv.update.updaters.providers.item.BarbItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BettyItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.BroadcastItemUpdaterProvider;
@@ -49,6 +51,9 @@ public enum ItemEquivalenceUpdaterType {
     ),
     VOD_ITEM(
             VodItemUpdaterProvider.create()
+    ),
+    AMAZON_ITEM(
+            AmazonItemEquivalenceUpdaterType.create()
     ),
     VOD_WITH_SERIES_SEQUENCE_ITEM(
             VodItemWithSeriesSequenceUpdaterProvider.create()

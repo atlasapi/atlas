@@ -21,6 +21,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Multimap;
 import org.junit.Test;
 
@@ -35,7 +36,8 @@ public class EquivalenceResultBuilderTest {
         ScoreCombiner<Item> combiner = new AddingEquivalenceCombiner<Item>();
         EquivalenceFilter<Item> filter = AlwaysTrueFilter.get();
         EquivalenceExtractor<Item> extractor = new TopEquivalenceExtractor<Item>();
-        EquivalenceResultBuilder<Item> builder = new DefaultEquivalenceResultBuilder<Item>(combiner, filter, extractor);
+        EquivalenceResultBuilder<Item> builder = new DefaultEquivalenceResultBuilder<Item>(combiner, filter, ImmutableList
+                .of(extractor));
 
         Item item = new Item("testUri","testCurie",Publisher.PA);
         Item bbcItem = new Item("bbcItem", "bbcItemCurie", Publisher.BBC);

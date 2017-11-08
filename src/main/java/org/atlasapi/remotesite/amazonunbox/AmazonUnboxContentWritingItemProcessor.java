@@ -308,7 +308,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void checkForDeletedContent(OwlTelescopeReporter telescope) {
-        //get all amazon content from the db. See if there are any items we have not seen in the current ingest
+        //get all amazon content from the db. See if there are any items we have not seen in the current ingest.
         Set<Content> notSeen = new TreeSet<>(REVERSE_HIERARCHICAL_ORDER);
         Iterator<Content> allAmazonContent = resolveAllAmazonUnboxContent();
         int allAmazonContentSize = 1; //prevent division by zero later on.
@@ -321,7 +321,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         }
 
         //make sure we won't disable all amazon content due to a corrupted file
-        float missingPercentage = ( notSeen.size() / (float) allAmazonContentSize) * 100; //cast to convert to floating point calculations
+        float missingPercentage = ( notSeen.size() / (float) allAmazonContentSize) * 100; //cast to convert to floating point calculations.
         if (missingPercentage > (float) missingContentPercentage) {
             telescope.reportFailedEvent(missingPercentage +
                                         "% of all Amazon content is missing from the ingest file. "

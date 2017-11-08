@@ -7,6 +7,7 @@ import java.util.stream.StreamSupport;
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.handlers.EquivalenceResultHandler;
+import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
 
 import com.metabroadcast.common.stream.MoreCollectors;
@@ -21,7 +22,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
     private final ImmutableList<String> scorers;
     private final String combiner;
     private final String filter;
-    private final String extractor;
+    private final ImmutableList<String> extractor;
     private final String handler;
     private final ImmutableList<String> excludedUris;
     private final ImmutableList<String> excludedIds;
@@ -31,7 +32,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
             Iterable<String> scorers,
             String combiner,
             String filter,
-            String extractor,
+            Iterable<String> extractors,
             String handler,
             Iterable<String> excludedUris,
             Iterable<String> excludedIds
@@ -40,7 +41,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         this.scorers = ImmutableList.copyOf(scorers);
         this.combiner = checkNotNull(combiner);
         this.filter = checkNotNull(filter);
-        this.extractor = checkNotNull(extractor);
+        this.extractor = ImmutableList.copyOf(extractors);
         this.handler = checkNotNull(handler);
         this.excludedUris = ImmutableList.copyOf(excludedUris);
         this.excludedIds = ImmutableList.copyOf(excludedIds);
@@ -66,7 +67,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         return filter;
     }
 
-    public String getExtractor() {
+    public ImmutableList<String> getExtractor() {
         return extractor;
     }
 
@@ -104,7 +105,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
 
     public interface ExtractorStep {
 
-        HandlerStep withExtractor(Object extractor);
+        <T> HandlerStep withExtractors(Iterable<EquivalenceExtractor<T>> extractors);
     }
 
     public interface HandlerStep {
@@ -134,7 +135,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         private List<String> scorers;
         private String combiner;
         private String filter;
-        private String extractor;
+        private List<String> extractors;
         private String handler;
         private Set<String> excludedUris;
         private Set<String> excludedIds;
@@ -169,8 +170,8 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
         }
 
         @Override
-        public HandlerStep withExtractor(Object extractor) {
-            this.extractor = getClassName(extractor);
+        public <T> HandlerStep withExtractors(Iterable<EquivalenceExtractor<T>> extractors) {
+            this.extractors = getClassName(extractors);
             return this;
         }
 
@@ -199,7 +200,7 @@ public class ContentEquivalenceUpdaterMetadata extends EquivalenceUpdaterMetadat
                     this.scorers,
                     this.combiner,
                     this.filter,
-                    this.extractor,
+                    this.extractors,
                     this.handler,
                     this.excludedUris,
                     this.excludedIds

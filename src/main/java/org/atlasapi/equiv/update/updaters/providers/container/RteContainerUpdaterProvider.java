@@ -11,6 +11,7 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
+import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -93,9 +94,12 @@ public class RteContainerUpdaterProvider implements EquivalenceUpdaterProvider<C
                                 new UnpublishedContentFilter<>()
                         ))
                 )
-                .withExtractor(
-                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
-                                .atLeastNTimesGreater(1.5)
+                .withExtractors(
+                        ImmutableList.of(
+                                MultipleCandidateExtractor.create(),
+                                PercentThresholdAboveNextBestMatchEquivalenceExtractor
+                                        .atLeastNTimesGreater(1.5)
+                        )
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

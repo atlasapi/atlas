@@ -591,11 +591,11 @@ public class UpdaterConfigurationRegistry {
                         targetSources
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        AMAZON_ITEM,
+                        VOD_CONTAINER,
                         targetSources
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        AMAZON_ITEM,
+                        STANDARD_SERIES,
                         targetSources
                 )
                 .build();

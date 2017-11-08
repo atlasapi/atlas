@@ -14,7 +14,6 @@ import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScore;
-import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -37,13 +36,13 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class AmazonItemEquivalenceUpdaterType implements EquivalenceUpdaterProvider<Item> {
+public class AmazonItemEquivalenceProvider implements EquivalenceUpdaterProvider<Item> {
 
-    private AmazonItemEquivalenceUpdaterType() {
+    private AmazonItemEquivalenceProvider() {
     }
 
-    public static AmazonItemEquivalenceUpdaterType create() {
-        return new AmazonItemEquivalenceUpdaterType();
+    public static AmazonItemEquivalenceProvider create() {
+        return new AmazonItemEquivalenceProvider();
     }
 
     @Override

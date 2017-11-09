@@ -144,15 +144,6 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
                 }
             }
 
-
-            Set<ScoredCandidate<T>> multipleExtractedCandidates =
-                    multipleCandidateExtractor.extract(
-                            copyOfSorted.asList().reverse(),
-                            target,
-                            desc,
-                            equivToTelescopeResults
-                    );
-
             desc.finishStage();
         }
         

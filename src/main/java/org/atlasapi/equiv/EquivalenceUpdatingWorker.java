@@ -64,15 +64,17 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
         String eid = message.getEntityId();
         Content content = resolveId(idCodec.decode(eid).longValue());
         if (content == null) {
-            log.warn("{} resolved null/not Content for {} {} {}", 
-                new Object[]{message.getMessageId(), 
-                    message.getEntitySource(), message.getEntityType(), eid});
+            log.warn("{} resolved null/not Content for {} {} {}",
+                    message.getMessageId(),
+                    message.getEntitySource(), message.getEntityType(), eid
+            );
             return;
         }
         if (filter.apply(content)) {
-            log.debug("{} updating equivalence: {} {} {}", 
-                new Object[]{message.getMessageId(), 
-                    message.getEntitySource(), message.getEntityType(), eid});
+            log.debug("{} updating equivalence: {} {} {}",
+                    message.getMessageId(),
+                    message.getEntitySource(), message.getEntityType(), eid
+            );
             try {
                 equivUpdater.updateEquivalences(content, telescope);
             } catch (ContainerSummaryRequiredException containerSummaryError) {
@@ -95,9 +97,10 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
                 }
             }
         } else {
-            log.trace("{} skipping equiv update: {} {} {}", 
-                new Object[]{message.getMessageId(), 
-                    message.getEntitySource(), message.getEntityType(), eid});
+            log.trace("{} skipping equiv update: {} {} {}",
+                    message.getMessageId(),
+                    message.getEntitySource(), message.getEntityType(), eid
+            );
         }
     }
 

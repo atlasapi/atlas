@@ -84,7 +84,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         
         Film film = (Film) item;
         
-        if (film.getYear() == null && !acceptNullYears) {
+        if (!acceptNullYears && film.getYear() == null ) {
             desc.appendText("Can't continue: null year");
             return scores.build();
         }
@@ -101,8 +101,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             desc.appendText("Using IMDB ref %s", imdbRef.requireValue());
         }
 
-        String title = film.getTitle();
-        title = normalize(title);
+        String title = normalize(film.getTitle());
         String expandedTitle = titleExpander.expand(title);
 
         Iterable<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(title),

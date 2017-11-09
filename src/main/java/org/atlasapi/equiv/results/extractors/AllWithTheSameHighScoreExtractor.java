@@ -1,6 +1,5 @@
 package org.atlasapi.equiv.results.extractors;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
@@ -8,28 +7,24 @@ import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Series;
 
 import com.google.common.collect.ImmutableSet;
-import org.joda.time.DateTime;
 
 /**
  * This extractor will get all select all candidates that tie at the top score, over or equal to the
  * given threshold. If nothing ties at the top, this returns nothing.
  */
-public class AllWithTheSameHighScore<T extends Content> implements EquivalenceExtractor<T> {
+public class AllWithTheSameHighScoreExtractor<T extends Content> implements EquivalenceExtractor<T> {
 
     private final double threshold;
 
-    private AllWithTheSameHighScore(double threshold) {
+    private AllWithTheSameHighScoreExtractor(double threshold) {
         this.threshold = threshold;
     }
 
-    public static <T extends Content> AllWithTheSameHighScore<T> create(double threshold) {
-        return new AllWithTheSameHighScore<>(threshold);
+    public static <T extends Content> AllWithTheSameHighScoreExtractor<T> create(double threshold) {
+        return new AllWithTheSameHighScoreExtractor<>(threshold);
     }
 
     @Override
@@ -52,10 +47,10 @@ public class AllWithTheSameHighScore<T extends Content> implements EquivalenceEx
             return ImmutableSet.of();
         }
 
-        Set<ScoredCandidate<T>> allowedCandidates = new HashSet<>();
+        ImmutableSet.Builder<ScoredCandidate<T>> allowedCandidatesBuilder = ImmutableSet.builder();
         for (ScoredCandidate<T> candidate : candidates) {
             if (candidate.score().asDouble() == highestScoringCandidate.score().asDouble()) {
-                allowedCandidates.add(highestScoringCandidate);
+                allowedCandidatesBuilder.add(highestScoringCandidate);
                 //keep notes for result presentation.
                 if (candidate.candidate().getId() != null) {
                     extractorComponent.addComponentResult(
@@ -65,9 +60,9 @@ public class AllWithTheSameHighScore<T extends Content> implements EquivalenceEx
                 }
             }
         }
-
         equivToTelescopeResults.addExtractorResult(extractorComponent);
 
+        ImmutableSet<ScoredCandidate<T>> allowedCandidates = allowedCandidatesBuilder.build();
         //if its only 1, then nothing ties at the top of the list, and this fails.
         if (allowedCandidates.size() > 1) {
             return allowedCandidates;

@@ -13,7 +13,9 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
-import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScore;
+import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScoreExtractor;
+import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
@@ -24,6 +26,7 @@ import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
 import org.atlasapi.equiv.scorers.SequenceItemScorer;
 import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
@@ -36,13 +39,13 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class AmazonItemEquivalenceProvider implements EquivalenceUpdaterProvider<Item> {
+public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
 
-    private AmazonItemEquivalenceProvider() {
+    private AmazonItemUpdaterProvider() {
     }
 
-    public static AmazonItemEquivalenceProvider create() {
-        return new AmazonItemEquivalenceProvider();
+    public static AmazonItemUpdaterProvider create() {
+        return new AmazonItemUpdaterProvider();
     }
 
     @Override
@@ -71,6 +74,7 @@ public class AmazonItemEquivalenceProvider implements EquivalenceUpdaterProvider
                 .withScorers(
                         ImmutableSet.of(
                                 new TitleMatchingItemScorer(),
+                                DescriptionMatchingScorer.makeScorer(),
                                 new SequenceItemScorer(Score.ONE)
                         )
                 )
@@ -97,7 +101,15 @@ public class AmazonItemEquivalenceProvider implements EquivalenceUpdaterProvider
                 )
                 .withExtractors(
                         ImmutableList.of(
-                                AllWithTheSameHighScore.create(1)
+                                //get all items that tie at the top of the scores with a score of at least 2.
+                                //this should equiv all amazon versions of the same content together
+                                //then let it equivalate with other stuff as well.
+                                RemoveAndCombineExtractor.create(
+                                        AllWithTheSameHighScoreExtractor.create(2.1),
+                                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+
+                                )
+
                         )
                 )
                 .withHandler(

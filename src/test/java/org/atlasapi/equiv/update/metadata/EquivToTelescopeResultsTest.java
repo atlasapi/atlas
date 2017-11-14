@@ -1,7 +1,6 @@
 package org.atlasapi.equiv.update.metadata;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
+
 import org.junit.Before;
 import org.junit.Test;
 
@@ -38,12 +37,6 @@ public class EquivToTelescopeResultsTest {
 
         assertEquals(equivToTelescopeResults.getGenerators().get(0), generator);
         assertEquals(equivToTelescopeResults.getScorers().size(), 2);
-
-
-        // print json at the end to be checked visually
-        Gson gson = new Gson();
-        JsonElement equivResultsJson = gson.toJsonTree(equivToTelescopeResults);
-        System.out.println(equivResultsJson);
     }
 
 }

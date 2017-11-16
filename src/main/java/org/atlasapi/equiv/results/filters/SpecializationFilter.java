@@ -36,6 +36,11 @@ public class SpecializationFilter<T extends Content> extends AbstractEquivalence
                     candidate.candidate().getId(),
                     "Removed due to non matching specializations"
             );
+        } else {
+            filterComponent.addComponentResult(
+                    candidate.candidate().getId(),
+                    "Went through."
+            );
         }
 
         equivToTelescopeResults.addFilterResult(filterComponent);

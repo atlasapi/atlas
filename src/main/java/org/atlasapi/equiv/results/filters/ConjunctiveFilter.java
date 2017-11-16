@@ -23,13 +23,13 @@ public class ConjunctiveFilter<T> implements EquivalenceFilter<T> {
 
     @Override
     public List<ScoredCandidate<T>> apply(
-            Iterable<ScoredCandidate<T>> candidate,
+            Iterable<ScoredCandidate<T>> candidates,
             T subject,
             ResultDescription desc,
             EquivToTelescopeResults equivToTelescopeResults
     ) {
         desc.startStage(toString());
-        Iterable<ScoredCandidate<T>> result = candidate;
+        Iterable<ScoredCandidate<T>> result = candidates;
         for (EquivalenceFilter<T> filter : filters) {
             result = filter.apply(result, subject, desc, equivToTelescopeResults);
         }

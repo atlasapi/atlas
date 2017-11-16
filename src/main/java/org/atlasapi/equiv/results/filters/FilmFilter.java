@@ -22,6 +22,11 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
         filterComponent.setComponentName("Film Filter");
 
         if (!(input.candidate() instanceof Film && subject instanceof Film)) {
+            filterComponent.addComponentResult(
+                    input.candidate().getId(),
+                    "Went through, not a film."
+            );
+            equivToTelescopeResults.addFilterResult(filterComponent);
             return true;
         }
 
@@ -32,6 +37,11 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
             desc.appendText(
                     "Subject or candidate film year is null; not applying film year filter."
             );
+            filterComponent.addComponentResult(
+                    input.candidate().getId(),
+                    "Went through, subject or candidate film year is null; not applying film year filter."
+            );
+            equivToTelescopeResults.addFilterResult(filterComponent);
             return true;
         }
 
@@ -54,6 +64,11 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
                                 + NUMBER_OF_YEARS_DIFFERENT_TOLERANCE
                 );
             }
+        } else {
+            filterComponent.addComponentResult(
+                    candidateFilm.getId(),
+                    "Went through."
+            );
         }
 
         equivToTelescopeResults.addFilterResult(filterComponent);

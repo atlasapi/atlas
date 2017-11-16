@@ -37,6 +37,11 @@ public class MediaTypeFilter<T extends Content> extends AbstractEquivalenceFilte
                     equivalent.getId(),
                     "Removed due to differing media types"
             );
+        } else{
+            filterComponent.addComponentResult(
+                    equivalent.getId(),
+                    "Went through."
+            );
         }
 
         equivToTelescopeResults.addFilterResult(filterComponent);

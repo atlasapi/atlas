@@ -11,6 +11,7 @@ import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScoreExtractor;
@@ -80,7 +81,7 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 )
                 .withCombiner(
                         new RequiredScoreFilteringCombiner<>(
-                                new NullScoreAwareAveragingCombiner<>(),
+                                new AddingEquivalenceCombiner<>(),
                                 TitleMatchingItemScorer.NAME
                         )
                 )
@@ -89,7 +90,6 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                 new MinimumScoreFilter<>(0.25),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
-                                new PublisherFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()

@@ -50,7 +50,7 @@ public class AllWithTheSameHighScoreExtractor<T extends Content> implements Equi
         ImmutableSet.Builder<ScoredCandidate<T>> allowedCandidatesBuilder = ImmutableSet.builder();
         for (ScoredCandidate<T> candidate : candidates) {
             if (candidate.score().asDouble() == highestScoringCandidate.score().asDouble()) {
-                allowedCandidatesBuilder.add(highestScoringCandidate);
+                allowedCandidatesBuilder.add(candidate);
                 //keep notes for result presentation.
                 if (candidate.candidate().getId() != null) {
                     extractorComponent.addComponentResult(

@@ -20,7 +20,7 @@ public class MediaTypeFilter<T extends Content> extends AbstractEquivalenceFilte
             EquivToTelescopeResults equivToTelescopeResults
     ) {
         EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
-        filterComponent.setComponentName("Meda Type Filter");
+        filterComponent.setComponentName("Media Type Filter");
 
         T equivalent = input.candidate();
         MediaType candMediaType = equivalent.getMediaType();

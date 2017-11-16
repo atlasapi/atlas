@@ -114,7 +114,10 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
             Set<String> containerIds = ImmutableSet.of();
             try {
                 episodeIds = ImmutableSet.copyOf(itemsWithPayload.stream()
-                        .map(input -> BbcFeeds.pidFrom(input.getModel().getCanonicalUri()))
+                        .map(ModelWithPayload::getModel)
+                        .map(Item::getCanonicalUri)
+                        .map(BbcFeeds::pidFrom)
+                        .filter(Objects::nonNull)
                         .collect(Collectors.toList()));
 
                 containerIds = topLevelContainerIds(itemsWithPayload);

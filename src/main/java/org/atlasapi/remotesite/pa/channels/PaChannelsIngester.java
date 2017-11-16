@@ -354,7 +354,7 @@ public class PaChannelsIngester {
                 channel.addTitle(name.getvalue(), titleStartDate, titleEndDate.plusDays(1));
             } else {
                 channel.addTitle(
-                        parseTitle(channel, name),
+                        name.getvalue(),
                         titleStartDate
                 );
             }
@@ -380,21 +380,5 @@ public class PaChannelsIngester {
                 channel.addImage(image, imageStartDate);
             }
         }
-    }
-
-    private String parseTitle(Channel channel, Name name) {
-        // PA is sending the parent station for all ITV channels with the name UTV. They
-        // have been asked to change it, but that will take too long for RT's needs. This is
-        // a workaround to name the station 'ITV'.
-        // What we do is hard.
-        // TODO MBST-18347
-        if (Objects.equals(
-                channel.getUri(),
-                "http://ref.atlasapi.org/channels/pressassociation.com/stations/7"
-        )) {
-            return "ITV";
-        }
-
-        return name.getvalue();
     }
 }

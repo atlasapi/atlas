@@ -61,12 +61,14 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
                 new SubscriptionChannelGroupSaver(publisher, aliasUriPrefix, aliasNamespacePrefix,
                         channelGroupResolver, channelGroupWriter, channelResolver, channelWriter),
                 new TargetUserGroupChannelGroupSaver(publisher,  aliasUriPrefix, aliasNamespacePrefix,
-                        channelGroupResolver, channelGroupWriter, btMpxClient, channelResolver, channelWriter),
+                        channelGroupResolver, channelGroupWriter, channelResolver, channelWriter, btMpxClient),
                 new WatchableChannelGroupSaver(publisher, aliasUriPrefix, aliasNamespacePrefix,
                         channelGroupResolver, channelGroupWriter, channelResolver, channelWriter),
                 new OutputProtectionChannelGroupSaver(publisher, aliasUriPrefix, aliasNamespacePrefix,
                         channelGroupResolver, channelGroupWriter, channelResolver, channelWriter),
                 new AllBtChannelsChannelGroupSaver(publisher, aliasUriPrefix, aliasNamespacePrefix,
+                        channelGroupResolver, channelGroupWriter, channelResolver, channelWriter),
+                new ChannelRestrictionGroupSaver(publisher, aliasUriPrefix, aliasNamespacePrefix,
                         channelGroupResolver, channelGroupWriter, channelResolver, channelWriter)
         );
     }
@@ -141,7 +143,6 @@ public class BtMpxChannelDataIngester extends ScheduledTask {
         private ChannelWriter channelWriter;
         private Lock channelWriterLock;
         private BtChannelDataUpdater channelDataUpdater;
-        private boolean ingestAdvertiseFromField;
         private String aliasUriPrefix;
         private String aliasNamespacePrefix;
 

@@ -21,12 +21,23 @@ public class OutputProtectionChannelGroupSaver extends AbstractBtChannelGroupSav
 
     private final String aliasUriPrefix;
 
-    public OutputProtectionChannelGroupSaver(Publisher publisher, String aliasUriPrefix, 
-            String aliasNamespace, ChannelGroupResolver channelGroupResolver, 
-            ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
-            ChannelWriter channelWriter) {
-        super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, channelWriter,
-                LoggerFactory.getLogger(OutputProtectionChannelGroupSaver.class));
+    public OutputProtectionChannelGroupSaver(
+            Publisher publisher,
+            String aliasUriPrefix,
+            String aliasNamespace,
+            ChannelGroupResolver channelGroupResolver,
+            ChannelGroupWriter channelGroupWriter,
+            ChannelResolver channelResolver,
+            ChannelWriter channelWriter
+    ) {
+        super(
+                publisher,
+                channelGroupResolver,
+                channelGroupWriter,
+                channelResolver,
+                channelWriter,
+                LoggerFactory.getLogger(OutputProtectionChannelGroupSaver.class)
+        );
         
         this.aliasUriPrefix = checkNotNull(aliasUriPrefix);
     }

@@ -14,17 +14,27 @@ import org.slf4j.LoggerFactory;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 
-
 public class WatchableChannelGroupSaver extends AbstractBtChannelGroupSaver {
 
     private final String aliasUriPrefix;
 
-    public WatchableChannelGroupSaver(Publisher publisher, String aliasUriPrefix, 
-            String aliasNamespace, ChannelGroupResolver channelGroupResolver, 
-            ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
-            ChannelWriter channelWriter) {
-        super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, 
-                channelWriter, LoggerFactory.getLogger(WatchableChannelGroupSaver.class));
+    public WatchableChannelGroupSaver(
+            Publisher publisher,
+            String aliasUriPrefix,
+            String aliasNamespace,
+            ChannelGroupResolver channelGroupResolver,
+            ChannelGroupWriter channelGroupWriter,
+            ChannelResolver channelResolver,
+            ChannelWriter channelWriter
+    ) {
+        super(
+                publisher,
+                channelGroupResolver,
+                channelGroupWriter,
+                channelResolver,
+                channelWriter,
+                LoggerFactory.getLogger(WatchableChannelGroupSaver.class)
+        );
         
         this.aliasUriPrefix = aliasUriPrefix;
     }

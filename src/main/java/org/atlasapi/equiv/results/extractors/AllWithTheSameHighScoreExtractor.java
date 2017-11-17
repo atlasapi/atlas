@@ -60,11 +60,11 @@ public class AllWithTheSameHighScoreExtractor<T extends Content> implements Equi
                 }
             }
         }
-        equivToTelescopeResults.addExtractorResult(extractorComponent);
 
         ImmutableSet<ScoredCandidate<T>> allowedCandidates = allowedCandidatesBuilder.build();
         //if its only 1, then nothing ties at the top of the list, and this fails.
         if (allowedCandidates.size() > 1) {
+            equivToTelescopeResults.addExtractorResult(extractorComponent);
             return allowedCandidates;
         } else {
             return ImmutableSet.of();

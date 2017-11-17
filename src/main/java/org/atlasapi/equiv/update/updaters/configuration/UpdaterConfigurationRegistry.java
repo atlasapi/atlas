@@ -17,6 +17,8 @@ import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfigurat
         .NON_STANDARD_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.TARGET_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.VF_SOURCES;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
         .BROADCAST_ITEM_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
@@ -591,11 +593,11 @@ public class UpdaterConfigurationRegistry {
                         targetSources
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        VOD_CONTAINER,
+                        AMAZON_CONTAINER,
                         targetSources
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        STANDARD_SERIES,
+                        AMAZON_SERIES,
                         targetSources
                 )
                 .build();

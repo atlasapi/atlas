@@ -131,7 +131,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 content.getId(),
                 content.getAliases(),
                 content,
-                equivResultsJson
+                resultsForTelescope
         );
 
         return !result.combinedEquivalences().candidates().isEmpty();

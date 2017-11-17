@@ -1,89 +1,66 @@
-package org.atlasapi.equiv.update.updaters.providers.item;
+package org.atlasapi.equiv.update.updaters.providers.container;
 
 import java.util.Set;
 
-import org.atlasapi.application.v3.DefaultApplication;
-import org.atlasapi.equiv.generators.ContainerCandidatesItemEquivalenceGenerator;
-import org.atlasapi.equiv.generators.FilmEquivalenceGenerator;
+import org.atlasapi.equiv.generators.ContainerCandidatesContainerEquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
-import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
-import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
-import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScoreExtractor;
+import org.atlasapi.equiv.results.extractors.ContinueUntilOneWorks;
+import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
+import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.FilmFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
-import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.SequenceItemScorer;
-import org.atlasapi.equiv.scorers.TitleMatchingItemScorer;
+import org.atlasapi.equiv.scorers.SequenceContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
-import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
 
 import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 
-public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Item> {
+public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
 
-    private AmazonItemUpdaterProvider() {
+    private AmazonSeriesUpdaterProvider() {
     }
 
-    public static AmazonItemUpdaterProvider create() {
-        return new AmazonItemUpdaterProvider();
+    public static AmazonSeriesUpdaterProvider create() {
+        return new AmazonSeriesUpdaterProvider();
     }
 
     @Override
-    public EquivalenceUpdater<Item> getUpdater(
+    public EquivalenceUpdater<Container> getUpdater(
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceUpdater.<Item>builder()
+        return ContentEquivalenceUpdater.<Container>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
-                .withGenerators(
-                        ImmutableSet.of(
-                                new ContainerCandidatesItemEquivalenceGenerator(
-                                        dependencies.getContentResolver(),
-                                        dependencies.getEquivSummaryStore()
-                                ),
-                                new FilmEquivalenceGenerator(
-                                        dependencies.getSearchResolver(),
-                                        targetPublishers,
-                                        DefaultApplication.createWithReads(
-                                                ImmutableList.copyOf(targetPublishers)
-                                        ),
-                                        true)
+                .withGenerator(
+                        new ContainerCandidatesContainerEquivalenceGenerator(
+                                dependencies.getContentResolver(),
+                                dependencies.getEquivSummaryStore()
                         )
                 )
-                .withScorers(
-                        ImmutableSet.of(
-                                new TitleMatchingItemScorer(),
-                                DescriptionMatchingScorer.makeScorer(),
-                                new SequenceItemScorer(Score.ONE)
-                        )
+                .withScorer(
+                        new SequenceContainerScorer()
                 )
                 .withCombiner(
-                        new RequiredScoreFilteringCombiner<>(
-                                new AddingEquivalenceCombiner<>(),
-                                TitleMatchingItemScorer.NAME
-                        )
+                        new NullScoreAwareAveragingCombiner<>()
                 )
                 .withFilter(
                         ConjunctiveFilter.valueOf(ImmutableList.of(
@@ -96,29 +73,31 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                                 ),
                                 new FilmFilter<>(),
                                 new DummyContainerFilter<>(),
-                                new UnpublishedContentFilter<>()
+                                new UnpublishedContentFilter<>(),
+                                new ContainerHierarchyFilter()
                         ))
                 )
                 .withExtractors(
                         ImmutableList.of(
-                                //get all items that tie at the top of the scores with a score of at least 3.
+                                //get all items that tie at the top of the scores with a score of at least 2.
                                 //this should equiv all amazon versions of the same content together
                                 //then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
-                                        AllWithTheSameHighScoreExtractor.create(3.1),
-                                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
-
+                                        AllWithTheSameHighScoreExtractor.create(2.1),
+                                        ContinueUntilOneWorks.create(
+                                                ImmutableList.of(
+                                                        MultipleCandidateExtractor.create(),
+                                                        PercentThresholdEquivalenceExtractor.moreThanPercent(
+                                                                90)
+                                                )
+                                        )
                                 )
-
                         )
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
-                                EpisodeFilteringEquivalenceResultHandler.strict(
-                                        LookupWritingEquivalenceHandler.create(
-                                                dependencies.getLookupWriter()
-                                        ),
-                                        dependencies.getEquivSummaryStore()
+                                LookupWritingEquivalenceHandler.create(
+                                        dependencies.getLookupWriter()
                                 ),
                                 new ResultWritingEquivalenceHandler<>(
                                         dependencies.getEquivalenceResultStore()

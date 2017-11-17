@@ -32,8 +32,6 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
     private final List<EquivalenceExtractor<T>> extractors;
     private final EquivalenceFilter<T> filter;
 
-    private final MultipleCandidateExtractor<T> multipleCandidateExtractor;
-
     public DefaultEquivalenceResultBuilder(
             ScoreCombiner<T> combiner,
             EquivalenceFilter<T> filter,
@@ -43,7 +41,6 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
         this.filter = filter;
         this.extractors = extractors;
 
-        this.multipleCandidateExtractor = MultipleCandidateExtractor.create();
     }
 
     public static <T extends Content> EquivalenceResultBuilder<T> create(

@@ -2,8 +2,6 @@ package org.atlasapi.equiv.generators;
 
 import java.util.Set;
 
-import com.google.api.client.util.Lists;
-import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
 import org.atlasapi.equiv.generators.metadata.SourceLimitedEquivalenceGeneratorMetadata;
@@ -17,8 +15,10 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
+import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.query.Selection;
 
+import com.google.api.client.util.Lists;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
@@ -32,13 +32,22 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final static float TITLE_WEIGHTING = 1.0f;
     public final static String NAME = "Title";
     private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
-    
+
     public static final <T extends Content> TitleSearchGenerator<T> create(
             SearchResolver searchResolver, Class<? extends T> cls,
             Iterable<Publisher> publishers,
             double exactMatchScore
     ) {
-        return new TitleSearchGenerator<T>(searchResolver, cls, publishers, exactMatchScore);
+        return create(searchResolver, cls, publishers, exactMatchScore, false);
+    }
+
+    public static final <T extends Content> TitleSearchGenerator<T> create(
+            SearchResolver searchResolver, Class<? extends T> cls,
+            Iterable<Publisher> publishers,
+            double exactMatchScore,
+            boolean includeSelfPublisher
+    ) {
+        return new TitleSearchGenerator<T>(searchResolver, cls, publishers, exactMatchScore, includeSelfPublisher);
     }
     
     private final SearchResolver searchResolver;
@@ -48,21 +57,24 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final ContentTitleScorer<T> titleScorer;
     private final int searchLimit;
     private final ExpandingTitleTransformer titleExpander;
+    private final boolean includeSelfPublisher;
 
-    public TitleSearchGenerator(
+    private TitleSearchGenerator(
             SearchResolver searchResolver, Class<? extends T> cls,
             Iterable<Publisher> publishers,
-            double exactMatchScore
+            double exactMatchScore,
+            boolean includeSelfPublisher
     ) {
-        this(searchResolver, cls, publishers, Functions.<String>identity(), 20, exactMatchScore);
+        this(searchResolver, cls, publishers, Functions.identity(), 20, exactMatchScore, includeSelfPublisher);
     }
     
-    public TitleSearchGenerator(
+    private TitleSearchGenerator(
             SearchResolver searchResolver, Class<? extends T> cls,
             Iterable<Publisher> publishers,
             Function<String,String> titleTransform,
             int searchLimit,
-            double exactMatchScore
+            double exactMatchScore,
+            boolean includeSelfPublisher
     ) {
         this.searchResolver = searchResolver;
         this.cls = cls;
@@ -71,6 +83,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         this.titleTransform = titleTransform;
         this.titleScorer = new ContentTitleScorer<T>(NAME, titleTransform, exactMatchScore);
         this.titleExpander = new ExpandingTitleTransformer();
+        this.includeSelfPublisher = includeSelfPublisher;
     }
 
     @Override
@@ -99,10 +112,16 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     private Iterable<? extends T> searchForCandidates(T content, ResultDescription desc) {
-        Set<Publisher> publishers = Sets.difference(
-                searchPublishers, ImmutableSet.of(content.getPublisher())
-        );
-        Application application = DefaultApplication.createWithReads(Lists.newArrayList(publishers));
+        Set<Publisher> publishers;
+        if (includeSelfPublisher) {
+            publishers = searchPublishers;
+        } else {
+            publishers = Sets.difference(
+                    searchPublishers, ImmutableSet.of(content.getPublisher())
+            );
+        }
+        Application application = DefaultApplication.createWithReads(Lists.newArrayList(
+                publishers));
 
         String title = titleTransform.apply(content.getTitle());
         title = normalize(title);

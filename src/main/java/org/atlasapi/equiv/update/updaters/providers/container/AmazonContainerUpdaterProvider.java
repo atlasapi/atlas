@@ -59,7 +59,8 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                                 dependencies.getSearchResolver(),
                                 Container.class,
                                 targetPublishers,
-                                2
+                                2,
+                                true //allow to generate candidates from amazon itself.
                         )
                 )
                 .withScorers(

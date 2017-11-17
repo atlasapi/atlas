@@ -51,7 +51,14 @@ public class AllWithTheSameHighScoreExtractor<T extends Content> implements Equi
         for (ScoredCandidate<T> candidate : candidates) {
             if (candidate.score().asDouble() == highestScoringCandidate.score().asDouble()) {
                 allowedCandidatesBuilder.add(candidate);
-                //keep notes for result presentation.
+            }
+        }
+
+        ImmutableSet<ScoredCandidate<T>> allowedCandidates = allowedCandidatesBuilder.build();
+        //if its only 1, then nothing ties at the top of the list, and this fails.
+        if (allowedCandidates.size() > 1) {
+            //keep notes for result presentation.
+            for (ScoredCandidate<T> candidate : allowedCandidates) {
                 if (candidate.candidate().getId() != null) {
                     extractorComponent.addComponentResult(
                             candidate.candidate().getId(),
@@ -59,11 +66,6 @@ public class AllWithTheSameHighScoreExtractor<T extends Content> implements Equi
                     );
                 }
             }
-        }
-
-        ImmutableSet<ScoredCandidate<T>> allowedCandidates = allowedCandidatesBuilder.build();
-        //if its only 1, then nothing ties at the top of the list, and this fails.
-        if (allowedCandidates.size() > 1) {
             equivToTelescopeResults.addExtractorResult(extractorComponent);
             return allowedCandidates;
         } else {

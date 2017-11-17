@@ -9,11 +9,7 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
 
 /**
  * This extractor will attempt of delegates one by one, until one of them provides at least one

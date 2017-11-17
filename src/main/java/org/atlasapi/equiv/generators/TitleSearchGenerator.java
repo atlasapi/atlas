@@ -19,6 +19,7 @@ import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.query.Selection;
 
 import com.google.api.client.util.Lists;
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
@@ -59,16 +60,16 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final ExpandingTitleTransformer titleExpander;
     private final boolean includeSelfPublisher;
 
-    private TitleSearchGenerator(
+    public TitleSearchGenerator(
             SearchResolver searchResolver, Class<? extends T> cls,
             Iterable<Publisher> publishers,
             double exactMatchScore,
             boolean includeSelfPublisher
     ) {
-        this(searchResolver, cls, publishers, Functions.identity(), 20, exactMatchScore, includeSelfPublisher);
+        this(searchResolver, cls, publishers, Functions.<String>identity(), 20, exactMatchScore, includeSelfPublisher);
     }
     
-    private TitleSearchGenerator(
+    public TitleSearchGenerator(
             SearchResolver searchResolver, Class<? extends T> cls,
             Iterable<Publisher> publishers,
             Function<String,String> titleTransform,

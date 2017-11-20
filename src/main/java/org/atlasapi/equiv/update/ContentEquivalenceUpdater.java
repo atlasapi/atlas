@@ -17,6 +17,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
+import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredEquivalentsMerger;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
@@ -102,8 +103,8 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 desc,
                 resultsForTelescope
         );
-        
-        Set<T> candidates = ImmutableSet.copyOf(extractCandidates(content, generatedScores));
+
+        Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
         
         List<ScoredCandidates<T>> scoredScores = scorers.score(
                 content,
@@ -148,13 +149,11 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         return metadata;
     }
 
-    private Iterable<T> extractCandidates(T content, Iterable<ScoredCandidates<T>> generatedScores) {
+    private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
 
         return StreamSupport.stream(generatedScores.spliterator(), false)
                 .map(input -> input.candidates().keySet())
                 .flatMap(Set::stream)
-                //in any case, we don't want content to equivalate to itself
-                .filter(input -> !Objects.equals(input.getId(), content.getId()))
                 .collect(MoreCollectors.toImmutableSet());
     }
 

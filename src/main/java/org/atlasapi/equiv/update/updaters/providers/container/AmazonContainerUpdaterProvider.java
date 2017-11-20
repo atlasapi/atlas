@@ -55,6 +55,9 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerator(
+                        //whatever generators are used here, should prevent the creation of
+                        //candidates which are the item itself (because there is no further filtering
+                        //to remove them, whereas the Publisher filter used elsewhere does that).
                         TitleSearchGenerator.create(
                                 dependencies.getSearchResolver(),
                                 Container.class,

@@ -56,6 +56,9 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
+                        //whatever generators are used here, should prevent the creation of
+                        //candidates which are the item itself (because there is no further filtering
+                        //to remove them, whereas the Publisher filter used elsewhere does that).
                         ImmutableSet.of(
                                 new ContainerCandidatesItemEquivalenceGenerator(
                                         dependencies.getContentResolver(),

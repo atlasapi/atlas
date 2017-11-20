@@ -1,5 +1,6 @@
 package org.atlasapi.equiv.generators;
 
+import java.util.Objects;
 import java.util.Set;
 
 import org.atlasapi.application.v3.DefaultApplication;
@@ -11,12 +12,14 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
 
 import com.metabroadcast.applications.client.model.internal.Application;
 import com.metabroadcast.common.query.Selection;
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.api.client.util.Lists;
 import com.google.common.annotations.VisibleForTesting;
@@ -24,6 +27,7 @@ import com.google.common.base.Function;
 import com.google.common.base.Functions;
 import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -137,10 +141,13 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
                 content.getSpecialization(),
                 publishers);
 
-        Iterable<? extends T> results = Iterables.filter(
-                searchResolver.search(titleQuery.build(), application),
-                cls
-        );
+        Iterable<? extends T> results = searchResolver.search(titleQuery.build(), application)
+                .stream()
+                .filter(cls::isInstance)
+                //prevent it from producing an equivalence to itself
+                .filter(input -> !Objects.equals(input.getId(), content.getId()))
+                .map(cls::cast)
+                .collect(MoreCollectors.toImmutableList());
 
         String expandedTitle = titleExpander.expand(title);
 

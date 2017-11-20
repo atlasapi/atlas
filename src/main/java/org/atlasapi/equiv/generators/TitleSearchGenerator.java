@@ -144,7 +144,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
 
         String expandedTitle = titleExpander.expand(title);
 
-        if (!title.toLowerCase().equals(expandedTitle)) {
+        if (!title.equalsIgnoreCase(expandedTitle)) {
             SearchQuery.Builder expandedTitleQuery = getSearchQueryBuilder(
                     publishers,
                     expandedTitle

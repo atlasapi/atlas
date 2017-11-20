@@ -1,7 +1,10 @@
 package org.atlasapi.equiv.update;
 
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerators;
@@ -25,12 +28,15 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
+import com.metabroadcast.common.stream.MoreCollectors;
+
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
+import com.hp.hpl.jena.sparql.function.library.date;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -97,7 +103,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 resultsForTelescope
         );
         
-        Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
+        Set<T> candidates = ImmutableSet.copyOf(extractCandidates(content, generatedScores));
         
         List<ScoredCandidates<T>> scoredScores = scorers.score(
                 content,
@@ -142,11 +148,14 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         return metadata;
     }
 
-    private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
-        return Iterables.concat(Iterables.transform(
-                generatedScores,
-                (Function<ScoredCandidates<T>, Iterable<T>>) input -> input.candidates().keySet()
-        ));
+    private Iterable<T> extractCandidates(T content, Iterable<ScoredCandidates<T>> generatedScores) {
+
+        return StreamSupport.stream(generatedScores.spliterator(), false)
+                .map(input -> input.candidates().keySet())
+                .flatMap(Set::stream)
+                //in any case, we don't want content to equivalate to itself
+                .filter(input -> !Objects.equals(input.getId(), content.getId()))
+                .collect(MoreCollectors.toImmutableSet());
     }
 
     public interface ExcludedUrisStep<T extends Content> {

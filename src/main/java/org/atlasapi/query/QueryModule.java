@@ -71,15 +71,33 @@ public class QueryModule {
 				mongoContentResolver, lookupStore, cassandraEnabled);
 
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
-		
 	    queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
-		
 	    queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
 	    queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
 	    queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
 	    
 	    return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
 	}
+
+	//This is similar to the above, but does not use MergeOnOutput, because we want to equivalate
+	//to single pieces of content, and not on merged pieces of content.
+	@Bean @Qualifier("EquivalenceQueryExecutor") KnownTypeQueryExecutor EquivalenceQueryExecutor() {
+		MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"),
+				new NoLoggingPersistenceAuditLog(), readPreference);
+		KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
+		KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
+
+		KnownTypeQueryExecutor queryExecutor = new LookupResolvingQueryExecutor(cassandraContentResolver,
+				mongoContentResolver, lookupStore, cassandraEnabled);
+
+		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
+		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
+		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
+		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
+
+		return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
+	}
+
 //	
 //	@Bean @Lazy SearchResolver searchResolver() {
 //	    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + applicationsEnabled);

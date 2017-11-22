@@ -13,6 +13,7 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScoreExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
@@ -102,13 +103,12 @@ public class AmazonItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                 )
                 .withExtractors(
                         ImmutableList.of(
-                                //get all items that tie at the top of the scores with a score of at least 3.
+                                ////get all items that scored perfectly everywhere.
                                 //this should equiv all amazon versions of the same content together
                                 //then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
-                                        AllWithTheSameHighScoreExtractor.create(3.1),
+                                        AllOverOrEqThresholdExtractor.create(4.00),
                                         PercentThresholdEquivalenceExtractor.moreThanPercent(90)
-
                                 )
 
                         )

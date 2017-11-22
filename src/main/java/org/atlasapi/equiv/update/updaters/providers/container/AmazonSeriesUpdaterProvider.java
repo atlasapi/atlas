@@ -9,6 +9,7 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScoreExtractor;
 import org.atlasapi.equiv.results.extractors.ContinueUntilOneWorks;
 import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
@@ -82,11 +83,11 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                 )
                 .withExtractors(
                         ImmutableList.of(
-                                //get all items that tie at the top of the scores with a score of at least 2.
+                                //get all items that scored perfectly everywhere.
                                 //this should equiv all amazon versions of the same content together
                                 //then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
-                                        AllWithTheSameHighScoreExtractor.create(2.1),
+                                        AllOverOrEqThresholdExtractor.create(3.0),
                                         ContinueUntilOneWorks.create(
                                                 ImmutableList.of(
                                                         MultipleCandidateExtractor.create(),

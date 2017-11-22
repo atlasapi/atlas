@@ -12,19 +12,18 @@ import org.atlasapi.media.entity.Content;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * This extractor will select all candidates that tie at the top score, over or equal to the
- * given threshold. If nothing ties at the top, this returns nothing.
+ * This extractor will select all candidates over or at the given threshold.
  */
-public class AllWithTheSameHighScoreExtractor<T extends Content> implements EquivalenceExtractor<T> {
+public class AllOverOrEqThresholdExtractor<T extends Content> implements EquivalenceExtractor<T> {
 
     private final double threshold;
 
-    private AllWithTheSameHighScoreExtractor(double threshold) {
+    private AllOverOrEqThresholdExtractor(double threshold) {
         this.threshold = threshold;
     }
 
-    public static <T extends Content> AllWithTheSameHighScoreExtractor<T> create(double threshold) {
-        return new AllWithTheSameHighScoreExtractor<>(threshold);
+    public static <T extends Content> AllOverOrEqThresholdExtractor<T> create(double threshold) {
+        return new AllOverOrEqThresholdExtractor<>(threshold);
     }
 
     @Override
@@ -35,30 +34,16 @@ public class AllWithTheSameHighScoreExtractor<T extends Content> implements Equi
             EquivToTelescopeResults equivToTelescopeResults
     ) {
         EquivToTelescopeComponent extractorComponent = EquivToTelescopeComponent.create();
-        extractorComponent.setComponentName("All that tie at the top and >= " + threshold);
+        extractorComponent.setComponentName("All over >= " + threshold);
 
         if (candidates.isEmpty()) {
             return ImmutableSet.of();
         }
 
-        ScoredCandidate<T> highestScoringCandidate = candidates.get(0);
-
-        if (highestScoringCandidate.score().asDouble() < threshold) {
-            return ImmutableSet.of();
-        }
-
         ImmutableSet.Builder<ScoredCandidate<T>> allowedCandidatesBuilder = ImmutableSet.builder();
         for (ScoredCandidate<T> candidate : candidates) {
-            if (candidate.score().asDouble() == highestScoringCandidate.score().asDouble()) {
+            if (candidate.score().asDouble() >= threshold) {
                 allowedCandidatesBuilder.add(candidate);
-            }
-        }
-
-        ImmutableSet<ScoredCandidate<T>> allowedCandidates = allowedCandidatesBuilder.build();
-        //if its only 1, then nothing ties at the top of the list, and this fails.
-        if (allowedCandidates.size() > 1) {
-            //keep notes for result presentation.
-            for (ScoredCandidate<T> candidate : allowedCandidates) {
                 if (candidate.candidate().getId() != null) {
                     extractorComponent.addComponentResult(
                             candidate.candidate().getId(),
@@ -66,10 +51,7 @@ public class AllWithTheSameHighScoreExtractor<T extends Content> implements Equi
                     );
                 }
             }
-            equivToTelescopeResults.addExtractorResult(extractorComponent);
-            return allowedCandidates;
-        } else {
-            return ImmutableSet.of();
         }
+        return allowedCandidatesBuilder.build();
     }
 }

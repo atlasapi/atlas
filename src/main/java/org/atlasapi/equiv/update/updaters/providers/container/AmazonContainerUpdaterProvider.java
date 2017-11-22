@@ -9,8 +9,9 @@ import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScoreExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
@@ -25,8 +26,6 @@ import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoreThreshold;
 import org.atlasapi.equiv.scorers.ContainerHierarchyMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionMatchingScorer;
-import org.atlasapi.equiv.scorers.DescriptionTitleMatchingScorer;
 import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
@@ -82,7 +81,7 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                 )
                 .withCombiner(
                         new RequiredScoreFilteringCombiner<>(
-                                new NullScoreAwareAveragingCombiner<>(),
+                                new AddingEquivalenceCombiner<>(),
                                 TitleMatchingContainerScorer.NAME,
                                 ScoreThreshold.greaterThanOrEqual(2)
                         )
@@ -107,11 +106,13 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                                 //this should equiv all amazon versions of the same content together
                                 //then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
-                                        AllWithTheSameHighScoreExtractor.create(1.99),
+                                        RemoveAndCombineExtractor.create(
+                                                AllWithTheSameHighScoreExtractor.create(2.00),
+                                                AllOverOrEqThresholdExtractor.create(3.00)
+                                        ),
                                         PercentThresholdAboveNextBestMatchEquivalenceExtractor
                                                 .atLeastNTimesGreater(1.5)
                                 )
-
                         )
                 )
                 .withHandler(

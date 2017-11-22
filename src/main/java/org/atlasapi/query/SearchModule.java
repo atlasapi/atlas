@@ -40,7 +40,7 @@ public class SearchModule {
 
         SearchResolver equivSearchResolver = equivSearchResolver();
         if (equivSearchResolver instanceof ContentResolvingSearcher) {
-            ContentResolvingSearcher resolver = (ContentResolvingSearcher) searchResolver;
+            ContentResolvingSearcher resolver = (ContentResolvingSearcher) equivSearchResolver;
             resolver.setExecutor(equivQueryExecutor);
             resolver.setPeopleQueryResolver(peopleQueryResolver);
         }

@@ -33,8 +33,8 @@ import com.metabroadcast.common.collect.DedupingIterator;
 
 public class ContentResolvingSearcher implements SearchResolver {
     private final ContentSearcher fuzzySearcher;
-    private PeopleQueryResolver peopleQueryResolver;
     private KnownTypeQueryExecutor contentResolver;
+    private PeopleQueryResolver peopleQueryResolver;
 
     public ContentResolvingSearcher(
             ContentSearcher fuzzySearcher,

@@ -2,6 +2,8 @@ package org.atlasapi.equiv.generators;
 
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.generators.metadata.EquivalenceGeneratorMetadata;
@@ -12,6 +14,7 @@ import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
+import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
@@ -145,8 +148,6 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
         Iterable<? extends T> results = searchResolver.search(titleQuery.build(), application)
                 .stream()
                 .filter(cls::isInstance)
-                //prevent it from producing an equivalence to itself
-                .filter(input -> !Objects.equals(input.getId(), content.getId()))
                 .map(cls::cast)
                 .collect(MoreCollectors.toImmutableList());
 
@@ -168,7 +169,11 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
             results = Iterables.concat(results, filteredExpandedTitleResults);
         }
 
-        return Iterables.filter(results, IS_ACTIVELY_PUBLISHED);
+        //Return actively published results, and not the subject itself.
+        return StreamSupport.stream(results.spliterator(), false)
+                .filter(Described::isActivelyPublished)
+                .filter(input-> !Objects.equals(input.getId(), content.getId()))
+                .collect(Collectors.toList());
     }
 
     private SearchQuery.Builder getSearchQueryBuilder(Set<Publisher> publishers,
@@ -190,7 +195,4 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     public String toString() {
         return "Title-matching Generator";
     }
-
-    private static Predicate<Content> IS_ACTIVELY_PUBLISHED = input -> input.isActivelyPublished();
-    
 }

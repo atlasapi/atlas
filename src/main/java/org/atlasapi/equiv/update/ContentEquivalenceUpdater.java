@@ -1,8 +1,6 @@
 package org.atlasapi.equiv.update;
 
 import java.util.List;
-import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
 import java.util.stream.StreamSupport;
 
@@ -17,7 +15,6 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ReadableDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredEquivalentsMerger;
 import org.atlasapi.equiv.scorers.EquivalenceScorer;
@@ -31,13 +28,10 @@ import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
 import com.metabroadcast.common.stream.MoreCollectors;
 
-import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
-import com.hp.hpl.jena.sparql.function.library.date;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

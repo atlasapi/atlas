@@ -16,6 +16,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
 import com.google.common.base.Strings;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 public class SearchModule {
@@ -46,6 +47,7 @@ public class SearchModule {
     }
     
     @Bean
+    @Primary
     SearchResolver searchResolver() {
         if (!Strings.isNullOrEmpty(searchHost)) {
             ContentSearcher titleSearcher = new RemoteFuzzySearcher(searchHost);

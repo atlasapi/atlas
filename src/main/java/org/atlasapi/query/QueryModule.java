@@ -44,6 +44,7 @@ import org.springframework.context.annotation.Import;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.mongodb.ReadPreference;
+import org.springframework.context.annotation.Primary;
 
 @Configuration
 @Import(EquivModule.class)
@@ -60,7 +61,7 @@ public class QueryModule {
 	private @Value("${atlas.search.host}") String searchHost;
 	private @Value("${cassandra.enabled}") boolean cassandraEnabled;
 
-	@Bean KnownTypeQueryExecutor queryExecutor() {
+	@Bean @Primary KnownTypeQueryExecutor queryExecutor() {
 	    
         MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"), 
                 new NoLoggingPersistenceAuditLog(), readPreference);

@@ -80,7 +80,7 @@ public class QueryModule {
 	}
 
 	//This is similar to the above, but does not use MergeOnOutput, because we want to equivalate
-	//to single pieces of content, and not on merged pieces of content.
+	//to single pieces of content, and not on merged mashes of content.
 	@Bean @Qualifier("EquivalenceQueryExecutor") KnownTypeQueryExecutor EquivalenceQueryExecutor() {
 		MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"),
 				new NoLoggingPersistenceAuditLog(), readPreference);

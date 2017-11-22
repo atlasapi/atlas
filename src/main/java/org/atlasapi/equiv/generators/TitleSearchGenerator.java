@@ -62,6 +62,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final ContentTitleScorer<T> titleScorer;
     private final int searchLimit;
     private final ExpandingTitleTransformer titleExpander;
+    //include stuff from publisher
     private final boolean includeSelfPublisher;
 
     public TitleSearchGenerator(

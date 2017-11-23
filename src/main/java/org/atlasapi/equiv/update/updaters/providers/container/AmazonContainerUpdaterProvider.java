@@ -103,9 +103,12 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                 )
                 .withExtractors(
                         ImmutableList.of(
-                                //get all items that scored perfectly everywhere.
-                                //this should equiv all amazon versions of the same content together
-                                //then let it equate with other stuff as well.
+                                // Get all amazon items with the same score that scored at least
+                                // perfect for title. This ensures that if there is hierarchy those
+                                // items will be picked with a score of 3, but if there isn't items
+                                // with 2 will be selected. In either case this should equiv all
+                                // amazon versions of the same content together.
+                                // Then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
                                         AllThatTieAtTopFromPublisher.create(2.00),
                                         PercentThresholdAboveNextBestMatchEquivalenceExtractor

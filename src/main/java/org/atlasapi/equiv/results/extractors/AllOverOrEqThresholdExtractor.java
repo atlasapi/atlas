@@ -52,6 +52,8 @@ public class AllOverOrEqThresholdExtractor<T extends Content> implements Equival
                 }
             }
         }
+
+        equivToTelescopeResults.addExtractorResult(extractorComponent);
         return allowedCandidatesBuilder.build();
     }
 }

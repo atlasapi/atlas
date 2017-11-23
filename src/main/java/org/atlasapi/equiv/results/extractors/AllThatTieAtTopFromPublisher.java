@@ -71,6 +71,7 @@ public class AllThatTieAtTopFromPublisher<T extends Content> implements Equivale
             }
         }
 
+        equivToTelescopeResults.addExtractorResult(extractorComponent);
         return allowedCandidatesBuilder.build();
     }
 }

@@ -60,6 +60,7 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractor<T>
                 );
             }
             equivToTelescopeResults.addExtractorResult(extractorComponent);
+            desc.appendText("%s extracted. Only candidate.", candidates.get(0));
             return ImmutableSet.of(candidates.get(0));
         }
         

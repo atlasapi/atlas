@@ -151,6 +151,7 @@ public class QueryModule {
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
 		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
+		queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
 		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
 
 		return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;

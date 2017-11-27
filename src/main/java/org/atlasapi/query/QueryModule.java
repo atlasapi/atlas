@@ -14,13 +14,13 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query;
 
-import static org.atlasapi.media.entity.Publisher.FACEBOOK;
-
+import org.atlasapi.equiv.AllFromPublishersEquivalentContentResolver;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.query.MergeOnOutputQueryExecutor;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.persistence.audit.NoLoggingPersistenceAuditLog;
+import org.atlasapi.persistence.content.DefaultEquivalentContentResolver;
 import org.atlasapi.persistence.content.KnownTypeContentResolver;
 import org.atlasapi.persistence.content.cassandra.CassandraContentStore;
 import org.atlasapi.persistence.content.cassandra.CassandraKnownTypeContentResolver;
@@ -34,17 +34,20 @@ import org.atlasapi.query.content.FilterScheduleOnlyQueryExecutor;
 import org.atlasapi.query.content.LookupResolvingQueryExecutor;
 import org.atlasapi.query.content.UriFetchingQueryExecutor;
 import org.atlasapi.query.uri.canonical.CanonicalisingFetcher;
+
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+
+import com.google.common.collect.ImmutableSet;
+import com.mongodb.ReadPreference;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
-
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.mongodb.ReadPreference;
 import org.springframework.context.annotation.Primary;
+
+import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 
 @Configuration
 @Import(EquivModule.class)
@@ -68,8 +71,19 @@ public class QueryModule {
 	    KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
         KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
 
-		KnownTypeQueryExecutor queryExecutor = new LookupResolvingQueryExecutor(cassandraContentResolver,
-				mongoContentResolver, lookupStore, cassandraEnabled);
+		DefaultEquivalentContentResolver defaultEquivalentContentResolver =
+				new DefaultEquivalentContentResolver(
+						mongoContentResolver,
+						lookupStore
+				);
+
+		KnownTypeQueryExecutor queryExecutor =
+				new LookupResolvingQueryExecutor(
+						cassandraContentResolver,
+						defaultEquivalentContentResolver,
+						lookupStore,
+						cassandraEnabled
+				);
 
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 	    queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
@@ -80,16 +94,59 @@ public class QueryModule {
 	    return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
 	}
 
-	//This is similar to the above, but does not use MergeOnOutput, because we want to equivalate
-	//to single pieces of content, and not on merged mashes of content.
-	@Bean @Qualifier("EquivalenceQueryExecutor") KnownTypeQueryExecutor EquivalenceQueryExecutor() {
+	// This is similar to the above, but does not use MergeOnOutput, because we want to equivalate
+	// to single pieces of content, and not on merged mashes of content.
+	@Bean @Qualifier("EquivalenceQueryExecutor") KnownTypeQueryExecutor equivalenceQueryExecutor() {
 		MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"),
 				new NoLoggingPersistenceAuditLog(), readPreference);
 		KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
 		KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
 
-		KnownTypeQueryExecutor queryExecutor = new LookupResolvingQueryExecutor(cassandraContentResolver,
-				mongoContentResolver, lookupStore, cassandraEnabled);
+		DefaultEquivalentContentResolver defaultEquivalentContentResolver =
+				new DefaultEquivalentContentResolver(
+						mongoContentResolver,
+						lookupStore
+				);
+
+		KnownTypeQueryExecutor queryExecutor =
+				new LookupResolvingQueryExecutor(
+						cassandraContentResolver,
+						defaultEquivalentContentResolver,
+						lookupStore,
+						cassandraEnabled
+				);
+
+		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
+		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
+		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
+		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
+
+		return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
+	}
+
+	// This is similar to the @primary executor, but the EquivalentContentResolver it uses
+	// allows for multiple equivs from the same publisher. This is written so that amazon content
+	// can be merged on output.
+	@Bean @Qualifier("YouviewQueryExecutor") KnownTypeQueryExecutor youviewQueryExecutor() {
+
+		MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"),
+				new NoLoggingPersistenceAuditLog(), readPreference);
+		KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
+		KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
+
+		AllFromPublishersEquivalentContentResolver allFromPublishersEquivalentContentResolver =
+				new AllFromPublishersEquivalentContentResolver(
+						mongoContentResolver,
+						lookupStore
+				);
+
+		KnownTypeQueryExecutor queryExecutor =
+				new LookupResolvingQueryExecutor(
+						cassandraContentResolver,
+						allFromPublishersEquivalentContentResolver,
+						lookupStore,
+						cassandraEnabled
+				);
 
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);

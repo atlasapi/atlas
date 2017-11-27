@@ -94,17 +94,17 @@ public class ContentResolvingSearcher implements SearchResolver {
             Iterable<ContentIdentifier> ids
     ) {
         
-        List<String> contentIds = ImmutableList.copyOf(Iterables.transform(Iterables.filter(ids, Predicates.not(PEOPLE)), 
+        List<String> contentUris = ImmutableList.copyOf(Iterables.transform(Iterables.filter(ids, Predicates.not(PEOPLE)),
                 ContentIdentifier.TO_URI));
         
-        if (!contentIds.isEmpty()) {
+        if (!contentUris.isEmpty()) {
             ContentQuery contentQuery = ContentQueryBuilder.query()
                     .isAnEnumIn(Attributes.DESCRIPTION_PUBLISHER, ImmutableList.<Enum<Publisher>> copyOf(query.getIncludedPublishers()))
                     .withSelection(query.getSelection())
                     .withApplication(application)
                     .build();
             
-            return contentResolver.executeUriQuery(contentIds, contentQuery);
+            return contentResolver.executeUriQuery(contentUris, contentQuery);
         } else {
             return ImmutableMap.of();
         }

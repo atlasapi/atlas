@@ -29,7 +29,6 @@ public class AllFromPublishersEquivalentContentResolver extends DefaultEquivalen
         super(contentResolver, lookupResolver);
     }
 
-    @Override
     protected ImmutableSetMultimap<LookupEntry, LookupRef> resolveAndFilter(
             SetMultimap<LookupRef, LookupRef> secondaryResolve,
             ImmutableSetMultimap<LookupEntry, LookupRef> subjsToEquivs,

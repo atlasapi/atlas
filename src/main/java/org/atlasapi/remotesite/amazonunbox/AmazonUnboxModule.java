@@ -39,10 +39,10 @@ public class AmazonUnboxModule {
     private @Value("${unbox.missingContent.percentage}") Integer missingContentPercentage;
 
     /**
-     * This keys will be removed from the database if their values are empty during an ingest.
+     * These keys will be removed from the database if their values are empty during an ingest.
      * Maybe everything should be here, but who knows what everything really is!?
      */
-    private final Iterable<String> KEYS_TO_REMOVE = ImmutableSet.of(
+    private static final Iterable<String> KEYS_TO_REMOVE = ImmutableSet.of(
             DescribedTranslator.IMAGE_KEY,
             DescribedTranslator.GENRES_KEY,
             ContentTranslator.YEAR_KEY,

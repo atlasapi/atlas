@@ -157,15 +157,4 @@ public class QueryModule {
 		return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
 	}
 
-//	
-//	@Bean @Lazy SearchResolver searchResolver() {
-//	    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + applicationsEnabled);
-//	    if (! Strings.isNullOrEmpty(searchHost)) {
-//	        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + searchHost);
-//    	    ContentSearcher titleSearcher = new RemoteFuzzySearcher(searchHost);
-//    	    return new ContentResolvingSearcher(titleSearcher, queryExecutor());
-//	    }
-//	    
-//	    return new DummySearcher();
-//	}
 }

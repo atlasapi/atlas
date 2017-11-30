@@ -10,7 +10,6 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
-import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScoreExtractor;
 import org.atlasapi.equiv.results.extractors.ContinueUntilOneWorks;
 import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;

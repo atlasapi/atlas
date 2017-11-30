@@ -1,6 +1,5 @@
 package org.atlasapi.equiv.update.updaters.types;
 
-import org.atlasapi.equiv.update.MultipleSourceEquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.AmazonContainerUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.container.AmazonSeriesUpdaterProvider;

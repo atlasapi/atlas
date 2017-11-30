@@ -23,6 +23,7 @@ public class FilmFilterTest {
     public void testDoesntFilterNonFilms() {
         Film subject = filmWithYear(null);
         Item candidate = new Item();
+        candidate.setId(1L);
         ResultDescription result = new DefaultDescription();
 
         assertTrue(
@@ -39,6 +40,7 @@ public class FilmFilterTest {
     public void testDoesntFilterNullFilmYears() {
         Film subject = filmWithYear(null);
         Film candidate = filmWithYear(null);
+        candidate.setId(1L);
         ResultDescription result = new DefaultDescription();
 
         assertTrue(
@@ -57,6 +59,9 @@ public class FilmFilterTest {
         Film candidate2015 = filmWithYear(2015);
         Film candidate2017 = filmWithYear(2017);
         Film candidate2016 = filmWithYear(2016);
+        candidate2015.setId(1L);
+        candidate2016.setId(1L);
+        candidate2017.setId(1L);
         ResultDescription result = new DefaultDescription();
 
         assertTrue(underTest.doFilter(

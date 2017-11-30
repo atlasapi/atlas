@@ -31,6 +31,7 @@ public class DummyContainerFilterTest {
     public void testDoesntFilterNonContainers() {
         Container subject = new Brand();
         Item candidate = new Item();
+        candidate.setId(1L);
         ResultDescription result = new DefaultDescription();
 
         assertTrue(
@@ -59,6 +60,7 @@ public class DummyContainerFilterTest {
         );
         subject.setChildRefs(ImmutableSet.of(ref));
         Container candidate = new Container();
+        candidate.setId(1L);
         candidate.setChildRefs(ImmutableSet.of(ref));
         ResultDescription result = new DefaultDescription();
 

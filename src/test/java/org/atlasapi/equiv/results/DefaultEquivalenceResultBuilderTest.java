@@ -6,6 +6,7 @@ import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.ScoreCombiner;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.extractors.EquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.extractors.TopEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
 import org.atlasapi.equiv.results.filters.EquivalenceFilter;
@@ -32,8 +33,13 @@ public class DefaultEquivalenceResultBuilderTest {
 
     private final ScoreCombiner<Item> combiner = AddingEquivalenceCombiner.create();
     private final EquivalenceFilter<Item> filter = AlwaysTrueFilter.get();
-    private final EquivalenceExtractor<Item> extractor = TopEquivalenceExtractor.create();
-    private final DefaultEquivalenceResultBuilder resultBuilder = new DefaultEquivalenceResultBuilder(combiner, filter, extractor);
+    private final EquivalenceExtractor<Item> extractor1 = MultipleCandidateExtractor.create();
+    private final EquivalenceExtractor<Item> extractor2 = TopEquivalenceExtractor.create();
+    private final DefaultEquivalenceResultBuilder resultBuilder =
+            new DefaultEquivalenceResultBuilder(combiner, filter, ImmutableList.of(
+                    extractor1,
+                    extractor2
+            ));
     private final EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create("id", "publisher");
 
     @Test

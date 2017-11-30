@@ -21,6 +21,7 @@ public class TitleSearchGeneratorTest {
         
         final Publisher subjectPublisher = Publisher.C4;
         Brand subject = new Brand("uri","curie", subjectPublisher);
+        subject.setId(1L);
         final String title = "test";
         subject.setTitle(title);
 

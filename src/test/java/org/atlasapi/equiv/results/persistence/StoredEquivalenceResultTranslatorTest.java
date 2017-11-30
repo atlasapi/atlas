@@ -3,6 +3,7 @@ package org.atlasapi.equiv.results.persistence;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import junit.framework.TestCase;
 
 import org.atlasapi.equiv.results.DefaultEquivalenceResultBuilder;
@@ -34,7 +35,7 @@ public class StoredEquivalenceResultTranslatorTest extends TestCase {
     private final EquivalenceFilter<Item> filter = AlwaysTrueFilter.get();
     private final EquivalenceExtractor<Item> extractor = TopEquivalenceExtractor.create();
     private final EquivalenceResultBuilder<Item> resultBuilder =
-            DefaultEquivalenceResultBuilder.<Item>create(combiner, filter, extractor);
+            DefaultEquivalenceResultBuilder.<Item>create(combiner, filter, ImmutableList.of(extractor));
     private final EquivToTelescopeResults equivToTelescopeResults =
             EquivToTelescopeResults.create("id", "publisher");
 

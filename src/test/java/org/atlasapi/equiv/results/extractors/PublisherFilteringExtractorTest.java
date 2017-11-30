@@ -78,7 +78,9 @@ public class PublisherFilteringExtractorTest {
     }
 
     private Item itemWithPublisher(Publisher pub) {
-        return new Item("uri", "curie", pub);
+        Item item = new Item("uri", "curie", pub);
+        item.setId(1L);
+        return item;
     }
     
 }

@@ -9,6 +9,7 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
+import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.ContainerHierarchyFilter;
@@ -75,8 +76,11 @@ public class StandardSeriesUpdaterProvider implements EquivalenceUpdaterProvider
                                 new ContainerHierarchyFilter()
                         ))
                 )
-                .withExtractor(
-                        PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+                .withExtractors(
+                        ImmutableList.of(
+                                MultipleCandidateExtractor.create(),
+                                PercentThresholdEquivalenceExtractor.moreThanPercent(90)
+                        )
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.generators;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -72,7 +73,10 @@ public class ContainerCandidatesItemEquivalenceGenerator implements EquivalenceG
             if (optional.isPresent()) {
                 EquivalenceSummary summary = optional.get();
                 for (Item child : childrenOf(summary.getCandidates())) {
-                    if (child.isActivelyPublished()) {
+                    //if its published, and its not the subject itself, we have a winner!
+                    if (child.isActivelyPublished() &&
+                        !Objects.equals(child.getId(), subject.getId())) {
+
                         result.addEquivalent(child, Score.NULL_SCORE);
                         generatorComponent.addComponentResult(
                                 child.getId(),

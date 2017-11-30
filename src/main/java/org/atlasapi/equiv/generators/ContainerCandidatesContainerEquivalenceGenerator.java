@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.generators;
 
 import java.util.List;
+import java.util.Objects;
 
 import javax.annotation.Nullable;
 
@@ -76,7 +77,10 @@ public class ContainerCandidatesContainerEquivalenceGenerator
                     for (Series candidateSeries : seriesOf(
                             Iterables.transform(summary.getEquivalents().values(), TO_CANONICAL_URI)
                     )) {
-                        if (candidateSeries.isActivelyPublished()) {
+                        //if its published, and its not the subject itself, we have a winner.
+                        if (candidateSeries.isActivelyPublished()
+                            && !Objects.equals(candidateSeries.getId(), subject.getId())) {
+
                             result.addEquivalent(candidateSeries, Score.NULL_SCORE);
 
                             generatorComponent.addComponentResult(candidateSeries.getId(), "");

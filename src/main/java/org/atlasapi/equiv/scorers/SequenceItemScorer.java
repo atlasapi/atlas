@@ -58,7 +58,7 @@ public class SequenceItemScorer implements EquivalenceScorer<Item> {
                 }
             }
         } else {
-            desc.appendText("Subject: not epsiode");
+            desc.appendText("Subject: not episode");
             for (Item suggestion : candidates) {
                 equivalents.addEquivalent(suggestion, Score.NULL_SCORE);
 

@@ -123,7 +123,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         this.resolver = checkNotNull(resolver);
         this.writer = checkNotNull(writer);
         this.lister = checkNotNull(lister);
-        this.missingContentPercentage = checkNotNull(missingContentPercentage);
+        this.missingContentPercentage = missingContentPercentage;
         this.brandProcessor = checkNotNull(brandProcessor);
         this.contentMerger = new ContentMerger(
                 MergeStrategy.REPLACE,
@@ -187,13 +187,13 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         List<ModelWithPayload<Content>> series = new ArrayList<>();
         List<ModelWithPayload<Content>> notContainers = new ArrayList<>();
 
-        for (ModelWithPayload<Content> container : seenContent.values()){
-            if (container.getModel() instanceof Brand){
-                brands.add(container);
-            } else if (container.getModel() instanceof Series){
-                series.add(container);
+        for (ModelWithPayload<Content> content : seenContent.values()){
+            if (content.getModel() instanceof Brand){
+                brands.add(content);
+            } else if (content.getModel() instanceof Series){
+                series.add(content);
             } else {
-                notContainers.add(container);
+                notContainers.add(content);
             }
         }
 

@@ -9,7 +9,6 @@ import org.atlasapi.persistence.content.listing.ContentLister;
 import org.atlasapi.persistence.content.mongo.MongoContentWriter;
 import org.atlasapi.persistence.media.entity.ContentTranslator;
 import org.atlasapi.persistence.media.entity.DescribedTranslator;
-import org.atlasapi.persistence.media.entity.IdentifiedTranslator;
 import org.atlasapi.remotesite.ContentExtractor;
 
 import com.metabroadcast.common.scheduling.RepetitionRules;
@@ -32,14 +31,13 @@ public class AmazonUnboxModule {
     private @Autowired ContentWriter contentWriter;
     private @Autowired ContentLister contentLister;
     private @Autowired ContentResolver contentResolver;
-    
-    private @Value("${s3.access}") String s3access;
-    private @Value("${s3.secret}") String s3secret;
+
     private @Value("${unbox.url}") String unboxUrl;
     private @Value("${unbox.missingContent.percentage}") Integer missingContentPercentage;
 
     /**
-     * These keys will be removed from the database if their values are empty during an ingest.
+     * These keys will be removed from the database if their values are empty during an ingest. Keys
+     * not here will be retained but with empty values.
      * Maybe everything should be here, but who knows what everything really is!?
      */
     private static final Iterable<String> KEYS_TO_REMOVE = ImmutableSet.of(

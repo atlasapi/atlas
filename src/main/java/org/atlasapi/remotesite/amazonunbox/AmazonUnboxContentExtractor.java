@@ -204,25 +204,31 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 ));
             }
         }
-        
-        if (!Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
-            hdLocations.add(createLocation(source, RevenueContract.PAY_TO_BUY, 
-                    source.getUnboxHdPurchasePrice(), source.getUnboxHdPurchaseUrl()));
-        }
-        
-        if (!Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
-            sdLocations.add(createLocation(source, RevenueContract.PAY_TO_BUY, 
-                    source.getUnboxSdPurchasePrice(), source.getUnboxSdPurchaseUrl()));
-        }
-        
-        if (!Strings.isNullOrEmpty(source.getUnboxSdRentalPrice())) {
-            sdLocations.add(createLocation(source, RevenueContract.PAY_TO_RENT, 
-                    source.getUnboxSdRentalPrice(), source.getUnboxSdRentalUrl()));
-        }
-        
-        if (!Strings.isNullOrEmpty(source.getUnboxHdRentalPrice())) {
-            hdLocations.add(createLocation(source, RevenueContract.PAY_TO_RENT, 
-                    source.getUnboxHdRentalPrice(), source.getUnboxHdRentalUrl()));
+
+        // Each amazon version (i.e. location) has its own ASIN. Amazon duplicates content in the
+        // ingest file by sending links from each ASIN to each other location. We dont want this
+        // information, since we are going to ingest all ASINS anyway. We expect the output merger
+        // to recombine this when needed, and in truth that duplication actually creates problems.
+        if (cleanUri(source.getUnboxHdPurchaseUrl()).equals(source.getUrl())
+            && !Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
+            hdLocations.add(createLocation(source, RevenueContract.PAY_TO_BUY,
+                    source.getUnboxHdPurchasePrice(), source.getUnboxHdPurchaseUrl()
+            ));
+        } else if (cleanUri(source.getUnboxSdPurchaseUrl()).equals(source.getUrl())
+                   && !Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
+            sdLocations.add(createLocation(source, RevenueContract.PAY_TO_BUY,
+                    source.getUnboxSdPurchasePrice(), source.getUnboxSdPurchaseUrl()
+            ));
+        } else if (cleanUri(source.getUnboxHdRentalUrl()).equals(source.getUrl())
+                   && !Strings.isNullOrEmpty(source.getUnboxHdRentalPrice())) {
+            hdLocations.add(createLocation(source, RevenueContract.PAY_TO_RENT,
+                    source.getUnboxHdRentalPrice(), source.getUnboxHdRentalUrl()
+            ));
+        } else if (cleanUri(source.getUnboxSdRentalUrl()).equals(source.getUrl())
+                   && !Strings.isNullOrEmpty(source.getUnboxSdRentalPrice())) {
+            sdLocations.add(createLocation(source, RevenueContract.PAY_TO_RENT,
+                    source.getUnboxSdRentalPrice(), source.getUnboxSdRentalUrl()
+            ));
         }
         
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
@@ -242,10 +248,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
     
     private Version createVersion(AmazonUnboxItem source, String url, Set<Encoding> encodings) {
-        String cleanedUri = url.replaceAll(TAG_PLACEHOLDER, "")
-                                .replaceAll(URL_SUFFIX_TO_REMOVE, "");
         Version version = new Version();
-        version.setCanonicalUri(cleanedUri);
+        version.setCanonicalUri(cleanUri(url));
         if (source.getDuration() != null) {
             version.setDuration(source.getDuration());
         }
@@ -276,9 +280,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     
     private Location createLocation(AmazonUnboxItem source, RevenueContract revenueContract, 
             @Nullable String price, String url) {
-        String cleanedUri = url.replaceAll(TAG_PLACEHOLDER, "")
-                                .replaceAll(URL_SUFFIX_TO_REMOVE, "");
-        
+        String cleanedUri = cleanUri(url);
+
         Location location = new Location();
         // TODO determine location links, if any
         location.setPolicy(generatePolicy(source, revenueContract, price));
@@ -286,7 +289,12 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         location.setCanonicalUri(cleanedUri);
         return location;
     }
-    
+
+    private String cleanUri(String url) {
+        return url.replaceAll(TAG_PLACEHOLDER, "")
+                                    .replaceAll(URL_SUFFIX_TO_REMOVE, "");
+    }
+
     private Policy generatePolicy(
             AmazonUnboxItem source,
             RevenueContract revenueContract,
@@ -304,8 +312,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         // way that the YV uploader will then pick them up as ondemands.
         policy.setPlatform(Policy.Platform.YOUVIEW_AMAZON);
         //And for a similar reason add a very long end date to that policy
-        //This needs to be a static date, because the policy will be different from its
-        //predecesor in the database and the item will be marked as updates, while in truth
+        //This needs to be a static date, because otherwise the policy will be marked as changed
+        //between ingests and the item will be marked as updated, while in truth
         //amazon would have changed nothing.
         policy.setAvailabilityEnd(POLICY_AVAILABILITY_ENDS);
         policy.setAvailabilityStart(POLICY_AVAILABILITY_START);

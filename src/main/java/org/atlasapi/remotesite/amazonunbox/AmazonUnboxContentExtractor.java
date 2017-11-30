@@ -291,6 +291,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private String cleanUri(String url) {
+        if(url==null){
+            return "";
+        }
         return url.replaceAll(TAG_PLACEHOLDER, "")
                                     .replaceAll(URL_SUFFIX_TO_REMOVE, "");
     }

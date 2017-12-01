@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.amazonunbox;
 import java.util.Currency;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
 
@@ -38,13 +39,11 @@ import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
 
-import com.google.common.base.Function;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTime;
@@ -190,14 +189,12 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         if (Boolean.TRUE.equals(source.isTrident())) {
             if (isHd(source)) {
                 hdLocations.add(createLocation(
-                        source,
                         RevenueContract.SUBSCRIPTION,
                         null,
                         source.getUrl()
                 ));
             } else {
                 sdLocations.add(createLocation(
-                        source,
                         RevenueContract.SUBSCRIPTION,
                         null,
                         source.getUrl()
@@ -209,35 +206,43 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         // ingest file by sending links from each ASIN to each other location. We dont want this
         // information, since we are going to ingest all ASINS anyway. We expect the output merger
         // to recombine this when needed, and in truth that duplication actually creates problems.
-        if (cleanUri(source.getUnboxHdPurchaseUrl()).equals(source.getUrl())
+        if (!Strings.isNullOrEmpty(source.getUnboxHdPurchaseUrl())
+            && cleanUri(source.getUnboxHdPurchaseUrl()).equals(source.getUrl())
             && !Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
-            hdLocations.add(createLocation(source, RevenueContract.PAY_TO_BUY,
+            hdLocations.add(createLocation(
+                    RevenueContract.PAY_TO_BUY,
                     source.getUnboxHdPurchasePrice(), source.getUnboxHdPurchaseUrl()
             ));
-        } else if (cleanUri(source.getUnboxSdPurchaseUrl()).equals(source.getUrl())
+        } else if (!Strings.isNullOrEmpty(source.getUnboxSdPurchaseUrl())
+                   && cleanUri(source.getUnboxSdPurchaseUrl()).equals(source.getUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
-            sdLocations.add(createLocation(source, RevenueContract.PAY_TO_BUY,
+            sdLocations.add(createLocation(
+                    RevenueContract.PAY_TO_BUY,
                     source.getUnboxSdPurchasePrice(), source.getUnboxSdPurchaseUrl()
             ));
-        } else if (cleanUri(source.getUnboxHdRentalUrl()).equals(source.getUrl())
+        } else if (!Strings.isNullOrEmpty(source.getUnboxHdRentalUrl())
+                   && cleanUri(source.getUnboxHdRentalUrl()).equals(source.getUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxHdRentalPrice())) {
-            hdLocations.add(createLocation(source, RevenueContract.PAY_TO_RENT,
+            hdLocations.add(createLocation(
+                    RevenueContract.PAY_TO_RENT,
                     source.getUnboxHdRentalPrice(), source.getUnboxHdRentalUrl()
             ));
-        } else if (cleanUri(source.getUnboxSdRentalUrl()).equals(source.getUrl())
+        } else if (!Strings.isNullOrEmpty(source.getUnboxSdRentalUrl())
+                   && cleanUri(source.getUnboxSdRentalUrl()).equals(source.getUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxSdRentalPrice())) {
-            sdLocations.add(createLocation(source, RevenueContract.PAY_TO_RENT,
+            sdLocations.add(createLocation(
+                    RevenueContract.PAY_TO_RENT,
                     source.getUnboxSdRentalPrice(), source.getUnboxSdRentalUrl()
             ));
         }
         
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
         if (!hdLocations.isEmpty()) {
-            encodings.add(createEncoding(source, IS_HD, source.getUrl() + "hd", hdLocations));
+            encodings.add(createEncoding(IS_HD, hdLocations));
         }
         
         if (!sdLocations.isEmpty()) {
-            encodings.add(createEncoding(source, IS_SD, source.getUrl(), sdLocations));
+            encodings.add(createEncoding(IS_SD, sdLocations));
         }
         
         return ImmutableSet.of(createVersion(source, source.getUrl(), encodings.build()));
@@ -257,7 +262,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return version;
     }
     
-    private Encoding createEncoding(AmazonUnboxItem source, boolean isHd, String url, 
+    private Encoding createEncoding(boolean isHd,
             Set<Location> locations) {
         
         Encoding encoding = new Encoding();
@@ -278,28 +283,27 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return encoding;
     }
     
-    private Location createLocation(AmazonUnboxItem source, RevenueContract revenueContract, 
+    private Location createLocation(RevenueContract revenueContract,
             @Nullable String price, String url) {
         String cleanedUri = cleanUri(url);
 
         Location location = new Location();
         // TODO determine location links, if any
-        location.setPolicy(generatePolicy(source, revenueContract, price));
+        location.setPolicy(generatePolicy(revenueContract, price));
         location.setUri(cleanedUri);
         location.setCanonicalUri(cleanedUri);
         return location;
     }
 
     private String cleanUri(String url) {
-        if(url==null){
-            return "";
+        if(url == null){
+            return null;
         }
         return url.replaceAll(TAG_PLACEHOLDER, "")
                                     .replaceAll(URL_SUFFIX_TO_REMOVE, "");
     }
 
     private Policy generatePolicy(
-            AmazonUnboxItem source,
             RevenueContract revenueContract,
             @Nullable String price
     ) {
@@ -358,22 +362,17 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private Set<String> generateGenres(AmazonUnboxItem source) {
-        return ImmutableSet.copyOf(Iterables.transform(
-                source.getGenres(), 
-                new Function<AmazonUnboxGenre, String>() {
-                    @Override
-                    public String apply(AmazonUnboxGenre input) {
-                        return String.format(GENRE_URI_PATTERN, input.name().toLowerCase());
-                    }
-                }
-        ));
+        return ImmutableSet.copyOf(source.getGenres()
+                .stream()
+                .map(input -> String.format(GENRE_URI_PATTERN, input.name().toLowerCase()))
+                .collect(Collectors.toList()));
     }
 
     /**
      * @param source supplied for completeness, so that the signature doesn't need changing if 
      * languages are ingested at a later point  
      */
-    private Set<String> generateLanguages(AmazonUnboxItem source) {
+    private Set<String> generateLanguages(AmazonUnboxItem source) { //NOSONAR
         return ImmutableSet.of(LANGUAGE_ENGLISH);
     }
 

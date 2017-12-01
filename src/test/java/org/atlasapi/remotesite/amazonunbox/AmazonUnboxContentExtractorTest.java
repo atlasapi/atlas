@@ -52,58 +52,6 @@ public class AmazonUnboxContentExtractorTest {
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor = new AmazonUnboxContentExtractor();
     
-    @Test
-    @Ignore
-    public void testExtractionOfAllLocations() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
-                .withQuality(Quality.SD)
-                .withUnboxHdPurchasePrice("12.99")
-                .withUnboxHdPurchaseUrl("http://hdpurchaseurl.org/")
-                .withIsTrident(true)
-                .withUnboxHdRentalPrice("4.99")
-                .withUnboxHdRentalUrl("http://hdrentalurl.org/")
-                .withUnboxSdRentalPrice("1.99")
-                .withUnboxSdRentalUrl("http://sdrentalurl.org/")
-                .build();
-        
-        
-        
-        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
-        Version version = Iterables.getOnlyElement(film.getVersions());
-        
-        Map<Integer, Encoding> encodingsByHorizontalScale = encodingsByHorizontalScale(version.getManifestedAs());
-        Encoding hdEncoding = encodingsByHorizontalScale.get(1280);
-        assertThat(hdEncoding.getHighDefinition(), is(true));
-
-        Map<String, Location> hdLocationsByUri = locationsByUrl(hdEncoding.getAvailableAt());
-        
-        Location hdPurchaseLocation = hdLocationsByUri.get("http://hdpurchaseurl.org/");
-        assertThat(hdPurchaseLocation.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_BUY));
-        assertThat(hdPurchaseLocation.getPolicy().getPrice().getAmount(), is(1299));
-        
-        Location hdRentalLocation = hdLocationsByUri.get("http://hdrentalurl.org/");
-        assertThat(hdRentalLocation.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_RENT));
-        assertThat(hdRentalLocation.getPolicy().getPrice().getAmount(), is(499));
-        
-        Encoding sdEncoding = encodingsByHorizontalScale.get(720);
-        Map<String, Location> sdLocationsByUri = locationsByUrl(sdEncoding.getAvailableAt());
-        
-        Location sdPurchaseLocation = sdLocationsByUri.get("http://www.amazon.co.uk/gp/product/B00EV5ROP4/");
-        assertThat(sdPurchaseLocation.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_BUY));
-        assertThat(sdPurchaseLocation.getPolicy().getPrice().getAmount(), is(999));
-        
-        Location sdRentalLocation = sdLocationsByUri.get("http://sdrentalurl.org/");
-        assertThat(sdRentalLocation.getPolicy().getRevenueContract(), is(RevenueContract.PAY_TO_RENT));
-        assertThat(sdRentalLocation.getPolicy().getPrice().getAmount(), is(199));
-        
-        Location primeSubscriptionLocation = sdLocationsByUri.get("http://www.amazon.com/gp/product/B007FUIBHM/");
-        assertThat(primeSubscriptionLocation.getPolicy().getRevenueContract(), is(RevenueContract.SUBSCRIPTION));
-        
-        
-        
-        
-    }
-    
     private Map<Integer, Encoding> encodingsByHorizontalScale(Iterable<Encoding> encodings) {
         return Maps.uniqueIndex(encodings, new Function<Encoding, Integer>() {
             @Override
@@ -129,9 +77,9 @@ public class AmazonUnboxContentExtractorTest {
     }
 
     @Test
-    @Ignore
     public void testExtractionOfHdContent() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+                .withUrl("http://hdlocation.org/")
                 .withUnboxHdPurchaseUrl("http://hdlocation.org/")
                 .withUnboxHdPurchasePrice("9.99")
                 .withUnboxSdPurchasePrice(null)
@@ -262,12 +210,12 @@ public class AmazonUnboxContentExtractorTest {
     }
     
     @Test
-    @Ignore
     public void testExtractionOfPolicyWithSubscription() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withRental(false)
                 .withUrl("unbox.amazon.co.uk/filmAsin")
-                .withUnboxHdRentalUrl("unbox.amazon.co.uk/filmAsin")
+                .withUnboxHdPurchaseUrl("unbox.amazon.co.uk/filmAsin")
+                .withUnboxHdPurchasePrice("5.00")
                 .build();
 
         Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));

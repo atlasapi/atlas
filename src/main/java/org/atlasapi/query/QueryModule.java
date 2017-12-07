@@ -30,6 +30,7 @@ import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.atlasapi.query.content.ApplicationConfigurationQueryExecutor;
 import org.atlasapi.query.content.CurieResolvingQueryExecutor;
 import org.atlasapi.query.content.FilterActivelyPublishedOnlyQueryExecutor;
+import org.atlasapi.query.content.FilterEquivalentToRespectKeyQueryExecutor;
 import org.atlasapi.query.content.FilterScheduleOnlyQueryExecutor;
 import org.atlasapi.query.content.LookupResolvingQueryExecutor;
 import org.atlasapi.query.content.UriFetchingQueryExecutor;
@@ -87,6 +88,7 @@ public class QueryModule {
 
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 	    queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
+	    queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 	    queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
 	    queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
 	    queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
@@ -118,6 +120,7 @@ public class QueryModule {
 
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
+		queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
 		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
 
@@ -150,6 +153,7 @@ public class QueryModule {
 
 		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
+		queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
 		queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
 		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);

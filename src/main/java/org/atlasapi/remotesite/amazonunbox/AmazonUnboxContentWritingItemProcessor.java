@@ -156,7 +156,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         processStandAloneEpisodes(telescope);
 
         if (!cached.isEmpty()) {
-            log.warn("{} extracted but unwritten", cached.values().size());
+            log.warn("{} pieces of amazon content have been extracted but not written", cached.values().size());
             for (Entry<String, Collection<ModelWithPayload<? extends Content>>>
                     mapping : cached.asMap().entrySet()) {
 
@@ -167,7 +167,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                             contentWithPayload.getModel(),
                             contentWithPayload.getPayload()
                             );
-                    log.warn("Unwritten: {} - {} ", mapping.getKey(), contentWithPayload );
+                    log.warn("Not written: {} - {} ", mapping.getKey(), contentWithPayload.getModel() );
                 }
             }
         }
@@ -327,7 +327,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                                         "% of all Amazon content is missing from the ingest file. "
                                         + "As this is abnormal, nothing was unpublished. "
                                         + "It is possible the file is truncated.");
-            throw new RuntimeException("File failed to update " +
+            throw new IllegalStateException("File failed to update " +
                             missingPercentage +
                             "% of all Amazon content. File may be truncated.");
         }

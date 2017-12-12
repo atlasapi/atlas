@@ -55,6 +55,8 @@ public class AmazonUnboxItemExtractionTest {
         assertEquals(Boolean.FALSE, item.isRental());
         assertEquals(Boolean.FALSE, item.isSeasonPass());
         assertEquals(Boolean.TRUE, item.isStreamable());
+        assertEquals(null, item.getUnboxHdPurchaseUrl());
+        assertEquals("http://www.amazon.com/gp/product/B0091VSK3S/INSERT_TAG_HERE/ref=atv_feed_catalog/", item.getUnboxSdPurchaseUrl());
         assertEquals(
                 "When a solar storm wipes out the air traffic control system, Air Force One and a passenger jet liner "
                 + "are locked on a collision course in the skies.",

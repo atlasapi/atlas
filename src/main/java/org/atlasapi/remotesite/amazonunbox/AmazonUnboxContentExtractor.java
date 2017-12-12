@@ -202,33 +202,25 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             }
         }
 
-        // Each amazon version (i.e. location) has its own ASIN. Amazon duplicates content in the
-        // ingest file by sending links from each ASIN to each other location. We dont want this
-        // information, since we are going to ingest all ASINS anyway. We expect the output merger
-        // to recombine this when needed, and in truth that duplication actually creates problems.
         if (!Strings.isNullOrEmpty(source.getUnboxHdPurchaseUrl())
-            && cleanUri(source.getUnboxHdPurchaseUrl()).equals(source.getUrl())
             && !Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
             hdLocations.add(createLocation(
                     RevenueContract.PAY_TO_BUY,
                     source.getUnboxHdPurchasePrice(), source.getUnboxHdPurchaseUrl()
             ));
         } else if (!Strings.isNullOrEmpty(source.getUnboxSdPurchaseUrl())
-                   && cleanUri(source.getUnboxSdPurchaseUrl()).equals(source.getUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_BUY,
                     source.getUnboxSdPurchasePrice(), source.getUnboxSdPurchaseUrl()
             ));
         } else if (!Strings.isNullOrEmpty(source.getUnboxHdRentalUrl())
-                   && cleanUri(source.getUnboxHdRentalUrl()).equals(source.getUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxHdRentalPrice())) {
             hdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,
                     source.getUnboxHdRentalPrice(), source.getUnboxHdRentalUrl()
             ));
         } else if (!Strings.isNullOrEmpty(source.getUnboxSdRentalUrl())
-                   && cleanUri(source.getUnboxSdRentalUrl()).equals(source.getUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxSdRentalPrice())) {
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,

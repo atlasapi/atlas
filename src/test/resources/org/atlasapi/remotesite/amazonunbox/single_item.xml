@@ -23,6 +23,7 @@
     <PRICE>9.99</PRICE>
     <RELEASEDATE>2011-12-31T00:00:00</RELEASEDATE>
     <RUNTIME>93</RUNTIME>
+    <UNBOX_SD_PURCHASE_URL>http://www.amazon.com/gp/product/B0091VSK3S/INSERT_TAG_HERE/ref=atv_feed_catalog/</UNBOX_SD_PURCHASE_URL>
     <RELATED_PRODUCTS>
       <!--DO NOT USE RELATED_PRODUCT URLs. These URLs are deprecated. Please use the item URL to access all purchase options on one detail page-->
       <UNBOX_RENTAL_ASIN>B007P0ZEHW</UNBOX_RENTAL_ASIN>

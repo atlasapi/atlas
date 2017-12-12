@@ -1,7 +1,6 @@
 package org.atlasapi.equiv;
 
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.scheduling.RepetitionRules;
 import com.metabroadcast.common.scheduling.SimpleScheduler;
 import com.mongodb.ReadPreference;
 import org.atlasapi.equiv.update.tasks.ScheduleTaskProgressStore;

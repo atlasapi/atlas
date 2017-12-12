@@ -1,42 +1,33 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Stream;
-
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.media.entity.Container;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.Version;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.bbc.BbcFeeds;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroBroadcastExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.util.GroupLock;
-
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.columbus.telescope.client.EntityType;
-import com.metabroadcast.common.stream.MoreCollectors;
-
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.status.api.EntityRef;
+import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.persistence.content.ContentResolver;
+import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.remotesite.bbc.BbcFeeds;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroBroadcastExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.util.GroupLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.base.Preconditions.checkArgument;
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Stream;
+
+import static com.google.common.base.Preconditions.*;
+import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
 
 /**
  * {@link NitroBroadcastHandler} which fetches, updates and writes relevant
@@ -63,7 +54,7 @@ public class ContentUpdatingNitroBroadcastHandler
     @Override
     public ImmutableList<Optional<ItemRefAndBroadcast>> handle(
             Iterable<com.metabroadcast.atlas.glycerin.model.Broadcast> nitroBroadcasts,
-            OwlTelescopeReporter telescope) throws NitroException {
+            OwlReporter owlReporter) throws NitroException {
 
         Set<String> itemIds = itemIds(nitroBroadcasts);
         Set<String> containerIds = ImmutableSet.of();
@@ -98,11 +89,11 @@ public class ContentUpdatingNitroBroadcastHandler
                             .map(modelAndPayload -> modelAndPayload.asModelType(Brand.class))
                             .collect(MoreCollectors.toImmutableSet());
 
-            return writeContent(nitroBroadcasts, items, series, brands, telescope);
+            return writeContent(nitroBroadcasts, items, series, brands, owlReporter);
         } catch (InterruptedException ie) {
             return ImmutableList.of();
         } catch (Exception e) {
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "An exception has prevented handling Nitro Broadcasts (" + e.toString() + ")",
                     nitroBroadcasts);
             log.error("An exception has prevented handling Nitro Broadcasts.", e);
@@ -135,7 +126,7 @@ public class ContentUpdatingNitroBroadcastHandler
             Set<ModelWithPayload<Item>> items,
             Set<ModelWithPayload<Series>> series,
             Set<ModelWithPayload<Brand>> brands,
-            OwlTelescopeReporter telescope) {
+            OwlReporter owlReporter) {
 
         Map<String, ModelWithPayload<Item>> itemIndex = LocalOrRemoteNitroFetcher.getIndex(items);
         Map<String, ModelWithPayload<Brand>> brandIndex = LocalOrRemoteNitroFetcher.getIndex(brands);
@@ -169,14 +160,26 @@ public class ContentUpdatingNitroBroadcastHandler
                     writer.createOrUpdate(brand.getModel());
                     //report to telescope
                     if (brand.getModel().getId() != null) {
-                        telescope.reportSuccessfulEvent(
+                        owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                                 brand.getModel().getId(),
                                 brand.getModel().getAliases(),
                                 EntityType.BRAND,
                                 nitroBroadcast
                         );
+
+                        if (brand.getModel().getTitle() == null || brand.getModel().getTitle().isEmpty()) {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    brand.getModel().getId(),
+                                    getMissingContentTitleStatus(
+                                            EntityType.BRAND.toString(),
+                                            brand.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId())
+                            );
+                        }
+
                     } else {
-                        telescope.reportFailedEvent(
+                        owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
                                 EntityType.BRAND,
                                 nitroBroadcast, item.getPayload(), brand.getPayload() //this might be an overkill
@@ -189,14 +192,26 @@ public class ContentUpdatingNitroBroadcastHandler
                     writer.createOrUpdate(sery.getModel());
                     //report to telescope
                     if (sery.getModel().getId() != null) {
-                        telescope.reportSuccessfulEvent(
+                        owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                                 sery.getModel().getId(),
                                 sery.getModel().getAliases(),
                                 EntityType.SERIES,
                                 nitroBroadcast
                         );
+
+                        if (sery.getModel().getTitle() == null || sery.getModel().getTitle().isEmpty()){
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    sery.getModel().getId(),
+                                    getMissingContentTitleStatus(
+                                            EntityType.SERIES.toString(),
+                                            sery.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId())
+                            );
+                        }
+
                     } else {
-                        telescope.reportFailedEvent(
+                        owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
                                 EntityType.SERIES,
                                 nitroBroadcast, item.getPayload(), sery.getPayload()
@@ -207,14 +222,25 @@ public class ContentUpdatingNitroBroadcastHandler
                 writer.createOrUpdate(item.getModel());
                 //report to telescope
                 if (item.getModel().getId() != null) {
-                    telescope.reportSuccessfulEvent(
+                    owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                             item.getModel().getId(),
                             item.getModel().getAliases(),
                             EntityType.ITEM,
                             nitroBroadcast
                     );
+
+                    if (item.getModel().getTitle() == null || item.getModel().getTitle().isEmpty()){
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getModel().getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.ITEM.toString(),
+                                        item.getModel().getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
                 } else {
-                    telescope.reportFailedEvent(
+                    owlReporter.getTelescopeReporter().reportFailedEvent(
                             "Atlas did not return an id after attempting to create or update this Item",
                             EntityType.ITEM,
                             nitroBroadcast, item.getPayload()
@@ -224,7 +250,7 @@ public class ContentUpdatingNitroBroadcastHandler
                 results.add(Optional.of(new ItemRefAndBroadcast(item.getModel(), broadcast.get())));
             } catch (Exception e) {
                 log.error(nitroBroadcast.getPid(), e);
-                telescope.reportFailedEvent(
+                owlReporter.getTelescopeReporter().reportFailedEvent(
                         "An error has prevent content from being written to Atlas. (" + e.toString() + ")",
                         nitroBroadcast
                 );

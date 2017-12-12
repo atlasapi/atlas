@@ -1,12 +1,12 @@
 package org.atlasapi.output;
 
-import java.util.Set;
-
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.simple.ProductQueryResult;
 import org.atlasapi.media.product.Product;
 import org.atlasapi.output.simple.ProductModelSimplifier;
 import org.atlasapi.persistence.content.ContentResolver;
+
+import java.util.Set;
 
 public class SimpleProductModelWriter extends TransformingModelWriter<Iterable<Product>, ProductQueryResult> {
 

@@ -1,7 +1,12 @@
 package org.atlasapi.equiv;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.queue.Worker;
 import org.atlasapi.equiv.handlers.ContainerSummaryRequiredException;
 import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -15,20 +20,11 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.properties.Configurer;
-import com.metabroadcast.common.queue.Worker;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
 

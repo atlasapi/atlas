@@ -24,6 +24,8 @@ ENV SERVER_PORT="8080" \
     SCHEDULE_REPOPULATOR_C4_SCHEDULED="false" \
     SCHEDULE_REPOPULATOR_FULL_SCHEDULED="false" \
     SCHEDULE_REPOPULATOR_REDUX_SCHEDULED="false" \
+    STATUS_SERVICE_HOST= "" \
+    STATUS_SERVICE_PORT = "" \
     TALKTALK_VALIDATE="false" \
     TELESCOPE_ENVIRONMENT="" \
     TELESCOPE_HOST="" \
@@ -247,6 +249,8 @@ CMD java \
     -Dredux.host="$REDUX_HOST" \
     -Dredux.password="$REDUX_PASSWORD" \
     -Dredux.username="$REDUX_USERNAME" \
+    -Dstatus.service.host="$STATUS_SERVICE_HOST" \
+    -Dstatus.service.port="$STATUS_SERVICE_PORT" \
     -Dtelescope.environment="$TELESCOPE_ENVIRONMENT" \
     -Dtelescope.host="$TELESCOPE_HOST" \
     -Dtelescope.coreReportingThreads="$TELESCOPE_CORE_REPORTING_THREADS" \

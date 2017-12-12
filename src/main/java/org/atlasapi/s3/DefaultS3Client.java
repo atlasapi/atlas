@@ -1,11 +1,6 @@
 package org.atlasapi.s3;
 
-import java.io.File;
-import java.io.IOException;
-import java.io.InputStream;
-import java.security.NoSuchAlgorithmException;
-import java.util.Date;
-
+import com.metabroadcast.common.base.Maybe;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.io.IOUtils;
 import org.jets3t.service.S3ServiceException;
@@ -17,7 +12,11 @@ import org.jets3t.service.model.S3Object;
 import org.jets3t.service.security.AWSCredentials;
 import org.joda.time.DateTime;
 
-import com.metabroadcast.common.base.Maybe;
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.security.NoSuchAlgorithmException;
+import java.util.Date;
 
 public class DefaultS3Client implements S3Client {
 

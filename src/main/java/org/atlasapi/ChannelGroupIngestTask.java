@@ -1,21 +1,5 @@
 package org.atlasapi;
 
-import static com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES;
-
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.List;
-
-import org.atlasapi.media.channel.ChannelGroup;
-import org.atlasapi.media.channel.ChannelGroupWriter;
-import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.MongoChannelGroupStore;
-import org.atlasapi.media.channel.MongoChannelStore;
-import org.atlasapi.media.channel.Region;
-import org.atlasapi.media.entity.Channel;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.persistence.ids.MongoSequentialIdGenerator;
-
 import com.google.common.base.Charsets;
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
@@ -29,6 +13,16 @@ import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.metabroadcast.common.properties.Configurer;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
+import org.atlasapi.media.channel.*;
+import org.atlasapi.media.entity.Channel;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.persistence.ids.MongoSequentialIdGenerator;
+
+import java.net.URL;
+import java.net.UnknownHostException;
+import java.util.List;
+
+import static com.google.gson.FieldNamingPolicy.LOWER_CASE_WITH_UNDERSCORES;
 
 public class ChannelGroupIngestTask implements Runnable {
     

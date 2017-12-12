@@ -1,22 +1,19 @@
 package org.atlasapi.output;
 
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.UUID;
-
-import javax.validation.ConstraintViolationException;
-
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
+import com.google.common.collect.ImmutableMap;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.webapp.query.DateTimeInQueryParser.MalformedDateTimeException;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.output.exceptions.ForbiddenException;
 import org.atlasapi.output.exceptions.UnauthorizedException;
 
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.webapp.query.DateTimeInQueryParser.MalformedDateTimeException;
-
-import com.fasterxml.jackson.core.JsonParseException;
-import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
-import com.google.common.collect.ImmutableMap;
+import javax.validation.ConstraintViolationException;
+import java.io.IOException;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.UUID;
 
 public class AtlasErrorSummary {
 

@@ -1,13 +1,12 @@
 package org.atlasapi.output;
 
-import java.util.Set;
-
+import com.google.common.collect.Iterables;
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.entity.simple.ChannelGroupQueryResult;
 import org.atlasapi.output.simple.ChannelGroupModelSimplifier;
 
-import com.google.common.collect.Iterables;
+import java.util.Set;
 
 /**
  * {@link AtlasModelWriter} that translates the full Atlas ChannelGroup model

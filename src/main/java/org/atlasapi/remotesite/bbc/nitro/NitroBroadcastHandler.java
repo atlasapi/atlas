@@ -1,8 +1,7 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
-
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.OwlReporter;
 
 /**
  * <p>
@@ -19,6 +18,6 @@ public interface NitroBroadcastHandler<T> {
      * @param broadcast - the {@code Broadcast} to be processed.
      * @return - the result of processing the {@code broadcast}
      */
-    T handle(Iterable<Broadcast> broadcast, OwlTelescopeReporter telescope) throws NitroException;
+    T handle(Iterable<Broadcast> broadcast, OwlReporter owlReporter) throws NitroException;
 
 }

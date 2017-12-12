@@ -1,9 +1,14 @@
 package org.atlasapi;
 
+import com.google.common.base.Function;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableList.Builder;
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.properties.Configurer;
 import org.atlasapi.application.ApplicationModule;
+import org.atlasapi.equiv.DataBackpopulationModule;
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.EquivTaskModule;
-import org.atlasapi.equiv.DataBackpopulationModule;
 import org.atlasapi.equiv.channel.ChannelEquivModule;
 import org.atlasapi.equiv.channel.ChannelEquivTaskModule;
 import org.atlasapi.feeds.AtlasFeedsModule;
@@ -31,13 +36,6 @@ import org.atlasapi.remotesite.metabroadcast.picks.PicksModule;
 import org.atlasapi.remotesite.metabroadcast.similar.SimilarContentModule;
 import org.atlasapi.remotesite.wikipedia.WikipediaModule;
 import org.atlasapi.system.ContentPurgeWebModule;
-
-import com.metabroadcast.common.properties.Configurer;
-
-import com.google.common.base.Function;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.Lists;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 public class ConfigurableAnnotationWebApplicationContext extends AnnotationConfigWebApplicationContext {

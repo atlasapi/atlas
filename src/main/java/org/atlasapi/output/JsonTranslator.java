@@ -14,6 +14,21 @@ permissions and limitations under the License. */
 
 package org.atlasapi.output;
 
+import com.google.common.base.Charsets;
+import com.google.common.io.Flushables;
+import com.google.gson.*;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.http.HttpHeaders;
+import com.metabroadcast.common.time.DateTimeZones;
+import org.atlasapi.media.entity.simple.Description;
+import org.atlasapi.media.entity.simple.Item;
+import org.atlasapi.media.entity.simple.Person;
+import org.atlasapi.media.entity.simple.Playlist;
+import org.joda.time.DateTime;
+import org.joda.time.format.ISODateTimeFormat;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.OutputStream;
 import java.io.OutputStreamWriter;
@@ -24,30 +39,6 @@ import java.text.DateFormat;
 import java.util.Date;
 import java.util.Set;
 import java.util.zip.GZIPOutputStream;
-
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-import org.atlasapi.media.entity.simple.Description;
-import org.atlasapi.media.entity.simple.Item;
-import org.atlasapi.media.entity.simple.Person;
-import org.atlasapi.media.entity.simple.Playlist;
-import org.joda.time.DateTime;
-import org.joda.time.format.ISODateTimeFormat;
-
-import com.google.common.base.Charsets;
-import com.google.common.io.Flushables;
-import com.google.gson.FieldNamingPolicy;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonPrimitive;
-import com.google.gson.JsonSerializationContext;
-import com.google.gson.JsonSerializer;
-import com.metabroadcast.common.http.HttpHeaders;
-import com.metabroadcast.common.time.DateTimeZones;
 
 /**
  * Outputs simple URIplay model in Json.

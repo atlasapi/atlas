@@ -14,47 +14,29 @@ permissions and limitations under the License. */
 
 package org.atlasapi.output;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Set;
-import java.util.zip.GZIPOutputStream;
+import com.google.common.base.Charsets;
+import com.google.common.base.Throwables;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.http.HttpHeaders;
+import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.Serializer;
+import org.atlasapi.media.entity.simple.*;
+import org.atlasapi.media.vocabulary.DC;
+import org.atlasapi.media.vocabulary.PLAY_SIMPLE_XML;
+import org.atlasapi.media.vocabulary.PO;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.Serializer;
-
-import org.atlasapi.media.entity.simple.Broadcast;
-import org.atlasapi.media.entity.simple.Channel;
-import org.atlasapi.media.entity.simple.ChannelGroup;
-import org.atlasapi.media.entity.simple.ChannelGroupQueryResult;
-import org.atlasapi.media.entity.simple.ChannelQueryResult;
-import org.atlasapi.media.entity.simple.ContentGroup;
-import org.atlasapi.media.entity.simple.ContentGroupQueryResult;
-import org.atlasapi.media.entity.simple.ContentQueryResult;
-import org.atlasapi.media.entity.simple.Item;
-import org.atlasapi.media.entity.simple.Location;
-import org.atlasapi.media.entity.simple.PeopleQueryResult;
-import org.atlasapi.media.entity.simple.Playlist;
-import org.atlasapi.media.entity.simple.PublisherDetails;
-import org.atlasapi.media.entity.simple.ScheduleQueryResult;
-import org.atlasapi.media.entity.simple.Topic;
-import org.atlasapi.media.entity.simple.TopicQueryResult;
-import org.atlasapi.media.vocabulary.DC;
-import org.atlasapi.media.vocabulary.PLAY_SIMPLE_XML;
-import org.atlasapi.media.vocabulary.PO;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Throwables;
-import com.metabroadcast.common.http.HttpHeaders;
-import com.sun.xml.bind.marshaller.NamespacePrefixMapper;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Set;
+import java.util.zip.GZIPOutputStream;
 
 /**
  * Outputs simple URIplay model in plain XML format using JAXB.

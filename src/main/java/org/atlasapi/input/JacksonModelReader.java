@@ -1,16 +1,11 @@
 package org.atlasapi.input;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
+import javax.validation.*;
 import java.io.IOException;
 import java.io.Reader;
 import java.util.Set;
-
-import javax.validation.ConstraintViolation;
-import javax.validation.ConstraintViolationException;
-import javax.validation.Validation;
-import javax.validation.Validator;
-import javax.validation.ValidatorFactory;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
 
 public class JacksonModelReader implements ModelReader {
 

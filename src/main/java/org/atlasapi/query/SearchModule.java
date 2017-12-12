@@ -1,7 +1,6 @@
 package org.atlasapi.query;
 
-import javax.annotation.PostConstruct;
-
+import com.google.common.base.Strings;
 import org.atlasapi.persistence.content.PeopleQueryResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
@@ -14,7 +13,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.common.base.Strings;
+import javax.annotation.PostConstruct;
 
 @Configuration
 public class SearchModule {

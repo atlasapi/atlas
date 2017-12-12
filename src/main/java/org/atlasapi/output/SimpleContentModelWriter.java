@@ -1,7 +1,7 @@
 package org.atlasapi.output;
 
-import java.util.Set;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.ContentGroup;
@@ -10,16 +10,9 @@ import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.simple.ContentQueryResult;
 import org.atlasapi.media.entity.simple.ContentQueryResult.Pagination;
 import org.atlasapi.media.product.Product;
-import org.atlasapi.output.simple.ContainerModelSimplifier;
-import org.atlasapi.output.simple.ContentGroupModelSimplifier;
-import org.atlasapi.output.simple.ImageSimplifier;
-import org.atlasapi.output.simple.ItemModelSimplifier;
-import org.atlasapi.output.simple.PersonModelSimplifier;
-import org.atlasapi.output.simple.ProductModelSimplifier;
-import org.atlasapi.output.simple.TopicModelSimplifier;
+import org.atlasapi.output.simple.*;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
+import java.util.Set;
 
 /**
  * {@link AtlasModelWriter} that translates the full URIplay object model

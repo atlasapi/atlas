@@ -1,5 +1,20 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import com.google.common.base.Supplier;
+import com.google.common.collect.ImmutableList;
+import com.google.common.util.concurrent.*;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.joda.time.LocalDate;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
@@ -9,27 +24,6 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
-
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.UpdateProgress;
-
-import com.google.common.base.Supplier;
-import com.google.common.collect.ImmutableList;
-import com.google.common.util.concurrent.FutureCallback;
-import com.google.common.util.concurrent.Futures;
-import com.google.common.util.concurrent.ListenableFuture;
-import com.google.common.util.concurrent.ListeningExecutorService;
-import com.google.common.util.concurrent.MoreExecutors;
-import org.joda.time.LocalDate;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -116,12 +110,13 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
                 telescopeReporterName,
                 Event.Type.INGEST
         );
-        telescope.startReporting();
+        OwlReporter owlReporter = new OwlReporter(telescope);
+        owlReporter.getTelescopeReporter().startReporting();
 
         ImmutableList.Builder<ListenableFuture<UpdateProgress>> results = ImmutableList.builder();
 
         while (channelsIter.hasNext() && shouldContinue()) {
-            results.add(submitTask(channelsIter.next(), telescope));
+            results.add(submitTask(channelsIter.next(), owlReporter));
             updateStatus();
         }
 
@@ -131,7 +126,7 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
             listener.completed(progress.get());
         }
 
-        telescope.endReporting();
+        owlReporter.getTelescopeReporter().endReporting();
 
         if (taskFailureRateExceedsJobFailThreshold()) {
             throw new RuntimeException(
@@ -183,11 +178,11 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
         }
     }
 
-    private ListenableFuture<UpdateProgress> submitTask(final ChannelDay cd, OwlTelescopeReporter telescope) {
+    private ListenableFuture<UpdateProgress> submitTask(final ChannelDay cd, OwlReporter owlReporter) {
         log.debug("submit: {}", cd);
         ListenableFuture<UpdateProgress> taskResult =
                 executor.submit(
-                        new ChannelDayProcessTask(cd, listener, telescope)
+                        new ChannelDayProcessTask(cd, listener, owlReporter)
                 );
         Futures.addCallback(taskResult, new ProgressUpdatingCallback());
         return taskResult;
@@ -216,12 +211,12 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
 
         private final ChannelDay cd;
         private final ChannelDayProcessingTaskListener listener;
-        private final OwlTelescopeReporter telescope;
+        private final OwlReporter owlReporter;
 
-        private ChannelDayProcessTask(ChannelDay cd, ChannelDayProcessingTaskListener listener, OwlTelescopeReporter telescope) {
+        private ChannelDayProcessTask(ChannelDay cd, ChannelDayProcessingTaskListener listener, OwlReporter owlReporter) {
             this.cd = cd;
             this.listener = listener;
-            this.telescope = telescope;
+            this.owlReporter = owlReporter;
         }
 
         @Override
@@ -232,7 +227,7 @@ public final class ChannelDayProcessingTask extends ScheduledTask {
                 return UpdateProgress.START;
             }
             try {
-                UpdateProgress progress = processor.process(cd, telescope);
+                UpdateProgress progress = processor.process(cd, owlReporter);
 
                 if (listener != null) {
                     listener.channelDayCompleted(cd, progress);

@@ -1,6 +1,9 @@
 package org.atlasapi.remotesite.amazonunbox;
 
+import java.util.Set;
+
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
@@ -10,7 +13,6 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
-import scala.annotation.target.field;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -29,6 +31,9 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     
     private ItemField currentField = null;
     private StringBuffer buffer = null;
+    //anything nested in the following blocks will be ignored. Will only work on single lvl of nesting.
+    private static final Set<ItemField> IGNORED_BLOCKS = ImmutableSet.of(
+            ItemField.RELATED_PRODUCTS);
     private boolean ignoreBlock = false;
 
     public AmazonUnboxContentHandler(AmazonUnboxProcessor<?> processor) {
@@ -40,12 +45,12 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
             String uri,
             String localName, String qName, Attributes attributes) throws SAXException {
 
-        //ignore everything inside this field.
-        if (qName.equalsIgnoreCase("RELATED_PRODUCTS")) {
-            ignoreBlock = true; //Ending the field above will set this to false;
-        }
         if (item != null) {
             currentField = ItemField.valueOf(qName);
+            //ignore everything inside this field.
+            if (IGNORED_BLOCKS.contains(currentField)) {
+                ignoreBlock = true; //Ending the field above will set this to false;
+            }
             buffer = new StringBuffer();
         } else if (qName.equalsIgnoreCase("Item")) {
             item = AmazonUnboxItem.builder();
@@ -54,16 +59,24 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
 
     @Override
     public void endElement(String uri, String localName, String qName) throws SAXException {
-        if (ignoreBlock) {
-            return;
-        }
         if (qName.equalsIgnoreCase("Item")) {
             processor.process(item.build());
+            ignoreBlock = false; //safety precaution
             item = null;
+            return;
         }
         if (currentField != null) {
+            ItemField itemField = ItemField.valueOf(qName);
+            if(IGNORED_BLOCKS.contains(itemField)){
+                ignoreBlock = false; //stop ignoring stuff
+                return;
+            }
+            if (ignoreBlock) {
+                return; //if the current field was inside a block we are ignoring, do nothing.
+            }
+
             // TODO remove unused cases
-            switch (ItemField.valueOf(qName)) {
+            switch (itemField) {
             case AMAZONRATINGS:
                 item.withAmazonRating(Float.valueOf(buffer.toString()));
                 break;
@@ -208,7 +221,6 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withQuality(Quality.valueOf(buffer.toString().toUpperCase()));
                 break;
             case RELATED_PRODUCTS:
-                ignoreBlock = false; //stop ignoring stuff
                 break;
             case RELEASEDATE:
                 item.withReleaseDate(dateParser.parseDateTime(buffer.toString()));

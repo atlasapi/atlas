@@ -1,7 +1,6 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.google.common.base.Splitter;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
@@ -12,7 +11,7 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.google.common.base.Splitter;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class AmazonUnboxContentHandler extends DefaultHandler {
@@ -28,7 +27,8 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     private AmazonUnboxItem.Builder item = null;
     
     private ItemField currentField = null;
-    private StringBuffer buffer = null; 
+    private StringBuffer buffer = null;
+    private boolean ignoreBlock = false;
 
     public AmazonUnboxContentHandler(AmazonUnboxProcessor<?> processor) {
         this.processor = checkNotNull(processor);
@@ -43,15 +43,20 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
             buffer = new StringBuffer();
         } else if (qName.equalsIgnoreCase("Item")) {
             item = AmazonUnboxItem.builder();
+        } else if (qName.equalsIgnoreCase("RELATED_PRODUCTS")) { //ignore everything inside this field
+            ignoreBlock = true;
         }
     }
 
     @Override
-    public void endElement (String uri, String localName, String qName) throws SAXException {
+    public void endElement(String uri, String localName, String qName) throws SAXException {
+        if (ignoreBlock) {
+            return;
+        }
         if (qName.equalsIgnoreCase("Item")) {
             processor.process(item.build());
             item = null;
-        } 
+        }
         if (currentField != null) {
             // TODO remove unused cases
             switch (ItemField.valueOf(qName)) {
@@ -199,6 +204,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withQuality(Quality.valueOf(buffer.toString().toUpperCase()));
                 break;
             case RELATED_PRODUCTS:
+                ignoreBlock = false; //stop ignoring stuff
                 break;
             case RELEASEDATE:
                 item.withReleaseDate(dateParser.parseDateTime(buffer.toString()));

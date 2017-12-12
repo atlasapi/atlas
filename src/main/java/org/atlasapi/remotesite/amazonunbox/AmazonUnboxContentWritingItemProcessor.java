@@ -84,7 +84,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     };
 
     public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
-    private static final String UNPUBLISH_NO_PAYLOAD_STRING = "This item lacks payload as it not seen in the this ingest, and consequently it being unpublished.";
+    private static final String UNPUBLISH_NO_PAYLOAD_STRING = "This item lacks payload as it was not seen in the this ingest, and consequently it is being unpublished.";
 
     private static final Predicate<Alias> AMAZON_ALIAS =
             input -> GB_AMAZON_ASIN.equals(input.getNamespace());

@@ -50,9 +50,7 @@ import org.joda.time.DateTime;
 
 public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
                                                     Iterable<Content>> {
-    
-    private static final boolean IS_SD = false;
-    private static final boolean IS_HD = true;
+
     private static final String LANGUAGE_ENGLISH = "en";
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
     private static final String ASIN_NAMESPACE = "gb:amazon:asin";
@@ -230,11 +228,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
         if (!hdLocations.isEmpty()) {
-            encodings.add(createEncoding(IS_HD, hdLocations));
+            encodings.add(createEncoding(true, hdLocations));
         }
-        
         if (!sdLocations.isEmpty()) {
-            encodings.add(createEncoding(IS_SD, sdLocations));
+            encodings.add(createEncoding(false, sdLocations));
         }
         
         return ImmutableSet.of(createVersion(source, source.getUrl(), encodings.build()));

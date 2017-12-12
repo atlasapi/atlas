@@ -1,21 +1,28 @@
 package org.atlasapi.system;
 
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+
+import javax.servlet.http.HttpServletResponse;
+
 import org.atlasapi.equiv.EquivalenceBreaker;
-import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+
+import com.google.common.collect.Lists;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-
-import javax.servlet.http.HttpServletResponse;
-import java.util.NoSuchElementException;
-import java.util.Optional;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

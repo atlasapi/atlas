@@ -1,32 +1,45 @@
 package org.atlasapi.input;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSet.Builder;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Sets;
+import java.util.Currency;
+import java.util.Date;
+import java.util.Set;
+
+import org.atlasapi.media.TransportSubType;
+import org.atlasapi.media.TransportType;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Film;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Policy;
+import org.atlasapi.media.entity.Policy.Platform;
+import org.atlasapi.media.entity.Policy.RevenueContract;
+import org.atlasapi.media.entity.ReleaseDate;
+import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.media.entity.Song;
+import org.atlasapi.media.entity.Version;
+import org.atlasapi.media.segment.SegmentEvent;
+import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
+import org.atlasapi.persistence.topic.TopicStore;
+
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
 import com.metabroadcast.common.time.Clock;
 import com.metabroadcast.common.time.DateTimeZones;
-import org.atlasapi.media.TransportSubType;
-import org.atlasapi.media.TransportType;
-import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.*;
-import org.atlasapi.media.entity.Policy.Platform;
-import org.atlasapi.media.entity.Policy.RevenueContract;
-import org.atlasapi.media.segment.SegmentEvent;
-import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-import org.atlasapi.persistence.topic.TopicStore;
+
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSet.Builder;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
-
-import java.util.Currency;
-import java.util.Date;
-import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

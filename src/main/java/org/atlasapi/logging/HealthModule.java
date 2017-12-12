@@ -1,13 +1,17 @@
 package org.atlasapi.logging;
 
+import java.util.Collection;
+import java.util.List;
+import java.util.stream.StreamSupport;
+
+import javax.annotation.PostConstruct;
+
 import com.codahale.metrics.MetricRegistry;
-import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.health.Health;
-import com.metabroadcast.common.health.HealthProbe;
-import com.metabroadcast.common.health.probes.*;
-import com.metabroadcast.common.persistence.mongo.health.MongoConnectionPoolProbe;
+import com.metabroadcast.common.health.probes.MetricsProbe;
+import com.metabroadcast.common.health.probes.MongoProbe;
+import com.metabroadcast.common.health.probes.Probe;
 import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.webapp.health.HealthController;
 import com.mongodb.Mongo;
 import com.mongodb.MongoClient;
 import org.atlasapi.remotesite.health.RemoteSiteHealthModule;
@@ -16,10 +20,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
-import java.util.Collection;
-import java.util.List;
-import java.util.stream.StreamSupport;
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.common.health.HealthProbe;
+import com.metabroadcast.common.health.probes.DiskSpaceProbe;
+import com.metabroadcast.common.health.probes.MemoryInfoProbe;
+import com.metabroadcast.common.persistence.mongo.health.MongoConnectionPoolProbe;
+import com.metabroadcast.common.webapp.health.HealthController;
 
 @Configuration
 public class HealthModule {

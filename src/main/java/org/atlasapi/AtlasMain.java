@@ -1,5 +1,19 @@
 package org.atlasapi;
 
+import java.io.File;
+import java.lang.management.ManagementFactory;
+import java.lang.reflect.InvocationTargetException;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.security.ProtectionDomain;
+import java.text.DecimalFormat;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.concurrent.Executor;
+import java.util.concurrent.TimeUnit;
+
+import org.atlasapi.util.jetty.InstrumentedQueuedThreadPool;
+
 import com.codahale.metrics.Histogram;
 import com.codahale.metrics.JvmAttributeGaugeSet;
 import com.codahale.metrics.MetricFilter;
@@ -13,26 +27,17 @@ import com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMap.Builder;
-import org.atlasapi.util.jetty.InstrumentedQueuedThreadPool;
 import org.eclipse.jetty.io.ByteBufferPool;
-import org.eclipse.jetty.server.*;
+import org.eclipse.jetty.server.Connector;
+import org.eclipse.jetty.server.HttpConfiguration;
+import org.eclipse.jetty.server.HttpConnectionFactory;
+import org.eclipse.jetty.server.Server;
+import org.eclipse.jetty.server.ServerConnector;
 import org.eclipse.jetty.util.thread.QueuedThreadPool;
 import org.eclipse.jetty.util.thread.Scheduler;
 import org.eclipse.jetty.webapp.WebAppContext;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import java.io.File;
-import java.lang.management.ManagementFactory;
-import java.lang.reflect.InvocationTargetException;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.security.ProtectionDomain;
-import java.text.DecimalFormat;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.concurrent.Executor;
-import java.util.concurrent.TimeUnit;
 
 public class AtlasMain {
 

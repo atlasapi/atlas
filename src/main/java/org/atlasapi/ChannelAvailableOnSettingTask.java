@@ -1,5 +1,23 @@
 package org.atlasapi;
 
+import static com.google.common.base.Predicates.notNull;
+import static com.google.common.collect.Iterables.addAll;
+import static com.google.common.collect.Iterables.filter;
+import static com.google.common.collect.Iterables.transform;
+import static com.metabroadcast.common.persistence.mongo.MongoBuilders.update;
+import static com.metabroadcast.common.persistence.mongo.MongoBuilders.where;
+
+import java.net.UnknownHostException;
+import java.util.Set;
+
+import org.atlasapi.media.channel.CachingChannelStore;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelTranslator;
+import org.atlasapi.media.channel.MongoChannelGroupStore;
+import org.atlasapi.media.channel.MongoChannelStore;
+import org.atlasapi.media.entity.Publisher;
+
 import com.google.common.base.Function;
 import com.google.common.collect.Sets;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
@@ -8,16 +26,6 @@ import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.mongodb.DBCollection;
 import com.mongodb.Mongo;
 import com.mongodb.MongoException;
-import org.atlasapi.media.channel.*;
-import org.atlasapi.media.entity.Publisher;
-
-import java.net.UnknownHostException;
-import java.util.Set;
-
-import static com.google.common.base.Predicates.notNull;
-import static com.google.common.collect.Iterables.*;
-import static com.metabroadcast.common.persistence.mongo.MongoBuilders.update;
-import static com.metabroadcast.common.persistence.mongo.MongoBuilders.where;
 
 public class ChannelAvailableOnSettingTask extends ScheduledTask {
     

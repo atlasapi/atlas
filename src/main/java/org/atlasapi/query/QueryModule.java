@@ -14,9 +14,8 @@ permissions and limitations under the License. */
 
 package org.atlasapi.query;
 
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.mongodb.ReadPreference;
+import static org.atlasapi.media.entity.Publisher.FACEBOOK;
+
 import org.atlasapi.equiv.EquivModule;
 import org.atlasapi.equiv.query.MergeOnOutputQueryExecutor;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -28,7 +27,12 @@ import org.atlasapi.persistence.content.cassandra.CassandraKnownTypeContentResol
 import org.atlasapi.persistence.content.mongo.MongoContentResolver;
 import org.atlasapi.persistence.content.query.KnownTypeQueryExecutor;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-import org.atlasapi.query.content.*;
+import org.atlasapi.query.content.ApplicationConfigurationQueryExecutor;
+import org.atlasapi.query.content.CurieResolvingQueryExecutor;
+import org.atlasapi.query.content.FilterActivelyPublishedOnlyQueryExecutor;
+import org.atlasapi.query.content.FilterScheduleOnlyQueryExecutor;
+import org.atlasapi.query.content.LookupResolvingQueryExecutor;
+import org.atlasapi.query.content.UriFetchingQueryExecutor;
 import org.atlasapi.query.uri.canonical.CanonicalisingFetcher;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -37,7 +41,9 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
-import static org.atlasapi.media.entity.Publisher.FACEBOOK;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.mongodb.ReadPreference;
 
 @Configuration
 @Import(EquivModule.class)

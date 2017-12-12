@@ -10,6 +10,7 @@ import org.slf4j.LoggerFactory;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
+import scala.annotation.target.field;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -38,13 +39,16 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     public void startElement (
             String uri,
             String localName, String qName, Attributes attributes) throws SAXException {
+
+        //ignore everything inside this field.
+        if (qName.equalsIgnoreCase("RELATED_PRODUCTS")) {
+            ignoreBlock = true; //Ending the field above will set this to false;
+        }
         if (item != null) {
             currentField = ItemField.valueOf(qName);
             buffer = new StringBuffer();
         } else if (qName.equalsIgnoreCase("Item")) {
             item = AmazonUnboxItem.builder();
-        } else if (qName.equalsIgnoreCase("RELATED_PRODUCTS")) { //ignore everything inside this field
-            ignoreBlock = true;
         }
     }
 

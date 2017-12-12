@@ -1,17 +1,16 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import static org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil.curieFor;
-import static org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil.uriFor;
-
+import com.google.api.client.repackaged.com.google.common.base.Joiner;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Optional;
+import com.metabroadcast.atlas.glycerin.model.Brand;
 import org.atlasapi.media.entity.Actor;
 import org.atlasapi.media.entity.CrewMember;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
 
-import com.google.api.client.repackaged.com.google.common.base.Joiner;
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Optional;
-import com.metabroadcast.atlas.glycerin.model.Brand;
+import static org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil.curieFor;
+import static org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil.uriFor;
 
 public class NitroCrewMemberExtractor implements
         ContentExtractor<Brand.Contributions.Contribution, Optional<CrewMember>> {

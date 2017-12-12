@@ -1,17 +1,15 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
 
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
+import java.util.List;
 
 /**
  * Adapter for fetching data from Nitro by {@link PidReference}.  

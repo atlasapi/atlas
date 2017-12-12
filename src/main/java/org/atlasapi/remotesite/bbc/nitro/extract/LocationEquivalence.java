@@ -1,10 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.Policy;
-
 import com.google.common.base.Equivalence;
 import com.google.common.base.Objects;
+import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.Policy;
 
 final class LocationEquivalence extends Equivalence<Location> {
 

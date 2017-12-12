@@ -1,26 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.atlasapi.media.TransportType;
-import org.atlasapi.media.entity.Encoding;
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.Policy;
-import org.atlasapi.media.entity.Policy.Network;
-import org.atlasapi.media.entity.Policy.Platform;
-
-import com.metabroadcast.atlas.glycerin.model.Availability;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
-import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.time.DateTimeZones;
-
 import com.google.common.base.Equivalence;
 import com.google.common.base.Equivalence.Wrapper;
 import com.google.common.base.Function;
@@ -32,8 +11,26 @@ import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
+import com.metabroadcast.atlas.glycerin.model.Availability;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.ScheduledTime;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.DateTimeZones;
+import org.atlasapi.media.TransportType;
+import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.Policy;
+import org.atlasapi.media.entity.Policy.Network;
+import org.atlasapi.media.entity.Policy.Platform;
 import org.joda.time.DateTime;
 import org.joda.time.chrono.ISOChronology;
+
+import javax.annotation.Nullable;
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

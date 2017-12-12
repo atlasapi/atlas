@@ -13,7 +13,12 @@ import com.metabroadcast.common.http.HttpStatusCode;
 import com.metabroadcast.status.api.EntityRef;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelWriter;
-import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.reporting.OwlReporter;
@@ -35,7 +40,11 @@ import java.util.Optional;
 import java.util.function.Function;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.*;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.AVAILABLE_VERSIONS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
+import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
 import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
 
 @Controller

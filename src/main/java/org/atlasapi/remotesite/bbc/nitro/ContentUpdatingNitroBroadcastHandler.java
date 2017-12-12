@@ -10,8 +10,15 @@ import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.stream.MoreCollectors;
 import com.metabroadcast.status.api.EntityRef;
-import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Container;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.ScheduleEntry.ItemRefAndBroadcast;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
@@ -26,7 +33,9 @@ import java.util.Map;
 import java.util.Set;
 import java.util.stream.Stream;
 
-import static com.google.common.base.Preconditions.*;
+import static com.google.common.base.Preconditions.checkArgument;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
 
 /**

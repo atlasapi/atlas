@@ -1,11 +1,21 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Set;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.hash.Hashing;
+import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
+import com.metabroadcast.atlas.glycerin.model.Episode;
+import com.metabroadcast.atlas.glycerin.model.Format;
+import com.metabroadcast.atlas.glycerin.model.GenreGroup;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Synopses;
+import com.metabroadcast.common.intl.Countries;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.feeds.youview.nitro.NitroIdGenerator;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.CrewMember;
@@ -20,26 +30,13 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.people.QueuingPersonWriter;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
-
-import com.metabroadcast.atlas.glycerin.model.AncestorTitles;
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
-import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
-import com.metabroadcast.atlas.glycerin.model.Episode;
-import com.metabroadcast.atlas.glycerin.model.Format;
-import com.metabroadcast.atlas.glycerin.model.GenreGroup;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Synopses;
-import com.metabroadcast.common.intl.Countries;
-import com.metabroadcast.common.time.Clock;
-
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Lists;
-import com.google.common.hash.Hashing;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.math.BigInteger;
+import java.util.List;
+import java.util.Set;
 
 import static com.metabroadcast.atlas.glycerin.model.Brand.Contributions;
 

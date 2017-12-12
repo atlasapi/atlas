@@ -1,10 +1,14 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.List;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Objects;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.Brand;
+import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
+import com.metabroadcast.atlas.glycerin.model.Synopses;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.feeds.radioplayer.RadioPlayerServices;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
@@ -15,21 +19,13 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
-
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
-import com.metabroadcast.atlas.glycerin.model.Brand;
-import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
-import com.metabroadcast.atlas.glycerin.model.Synopses;
-import com.metabroadcast.common.time.Clock;
-
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.hp.hpl.jena.sparql.function.library.now;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
 
 /**
  * Template extractor for extracting {@link Content} from Nitro sources.

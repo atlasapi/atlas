@@ -1,13 +1,12 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import org.atlasapi.media.entity.Identified;
-
 import com.google.api.client.repackaged.com.google.common.base.Objects;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import org.atlasapi.media.entity.Identified;
 
 
 public class ResolveOrFetchResult<I extends Identified> {

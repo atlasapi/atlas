@@ -78,7 +78,7 @@ public class TargetUserGroupChannelSaverTest {
     
     private final TargetUserGroupChannelGroupSaver saver 
         = new TargetUserGroupChannelGroupSaver(Publisher.METABROADCAST, ALIAS_URI_PREFIX, ALIAS_NAMESPACE, 
-                channelGroupResolver, channelGroupWriter, btMpxClient, channelResolver, channelWriter);
+                channelGroupResolver, channelGroupWriter, channelResolver, channelWriter, btMpxClient);
     
     @Before
     public void setUp() {

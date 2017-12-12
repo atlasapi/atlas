@@ -1,41 +1,29 @@
 package org.atlasapi.remotesite.metabroadcast.picks;
 
-import java.util.List;
-import java.util.Map;
-
-import org.atlasapi.media.entity.ChildRef;
-import org.atlasapi.media.entity.ContentGroup;
-import org.atlasapi.media.entity.Identified;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Schedule.ScheduleChannel;
-import org.atlasapi.media.util.ItemAndBroadcast;
-import org.atlasapi.persistence.content.ContentGroupResolver;
-import org.atlasapi.persistence.content.ContentGroupWriter;
-import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
-import org.atlasapi.persistence.content.ScheduleResolver;
-import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
-import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessor;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.scheduling.UpdateProgress;
-
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.base.Predicates;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.scheduling.UpdateProgress;
+import org.atlasapi.media.entity.*;
+import org.atlasapi.media.entity.Schedule.ScheduleChannel;
+import org.atlasapi.media.util.ItemAndBroadcast;
+import org.atlasapi.persistence.content.*;
+import org.atlasapi.remotesite.bbc.nitro.ChannelDay;
+import org.atlasapi.remotesite.bbc.nitro.ChannelDayProcessor;
+import org.atlasapi.reporting.OwlReporter;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import static com.google.common.collect.Iterables.concat;
-import static com.google.common.collect.Iterables.filter;
-import static com.google.common.collect.Iterables.transform;
+import java.util.List;
+import java.util.Map;
+
+import static com.google.common.collect.Iterables.*;
 
 
 public class PicksDayUpdater implements ChannelDayProcessor {
@@ -75,7 +63,7 @@ public class PicksDayUpdater implements ChannelDayProcessor {
     }
     
     @Override
-    public UpdateProgress process(ChannelDay channelDay, OwlTelescopeReporter telescope) throws Exception {
+    public UpdateProgress process(ChannelDay channelDay, OwlReporter owlReporter) throws Exception {
         //yes. We don't use telescope here yet.
         try {
             Iterable<Item> picks = concat(transform(

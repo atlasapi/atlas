@@ -213,6 +213,7 @@ public class YouViewContentExtractor {
         return Integer.parseInt(serviceId.getValue());
     }
 
+    /** @deprecated only used for checks */
     @Deprecated
     private Collection<Channel> getChannels(Element source) {
         return channelResolver.getChannels(getServiceId(source));
@@ -290,7 +291,7 @@ public class YouViewContentExtractor {
 
     private void checkChannel(Channel channel, Element source) {
         @SuppressWarnings("deprecated") // used for checks only
-        Collection<Channel> channels = getChannels(source);
+        Collection<Channel> channels = getChannels(source);     //NOSONAR: deprecated
         if (!channels.contains(channel)) {
             log.warn("Extraction channel ({}) isn't included in channels for serviceId={}: {}",
                     channel, getServiceId(source), channels);

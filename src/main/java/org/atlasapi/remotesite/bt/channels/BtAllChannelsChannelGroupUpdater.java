@@ -30,9 +30,13 @@ public class BtAllChannelsChannelGroupUpdater {
 
     private Publisher publisher;
 
-    public BtAllChannelsChannelGroupUpdater(ChannelGroupWriter channelGroupWriter,
-            ChannelGroupResolver channelGroupResolver, String freeviewPlatformChannelGroupId,
-            String uriPrefix, Publisher publisher) {
+    public BtAllChannelsChannelGroupUpdater(
+            ChannelGroupWriter channelGroupWriter,
+            ChannelGroupResolver channelGroupResolver,
+            String freeviewPlatformChannelGroupId,
+            String uriPrefix,
+            Publisher publisher
+    ) {
         this.channelGroupResolver = checkNotNull(channelGroupResolver);
         this.channelGroupWriter = checkNotNull(channelGroupWriter);
         this.uriPrefix = checkNotNull(uriPrefix);

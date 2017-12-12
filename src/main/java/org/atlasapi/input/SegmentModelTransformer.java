@@ -6,7 +6,6 @@ import com.google.common.base.Strings;
 import com.google.common.collect.Lists;
 import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-
 import org.atlasapi.media.SegmentType;
 import org.atlasapi.media.entity.Description;
 import org.atlasapi.media.entity.Publisher;
@@ -18,10 +17,10 @@ import org.atlasapi.media.segment.SegmentRef;
 import org.atlasapi.media.segment.SegmentWriter;
 import org.joda.time.Duration;
 
+import java.util.List;
+
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
 
 
 public class SegmentModelTransformer {

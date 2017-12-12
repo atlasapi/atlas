@@ -12,6 +12,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Film;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
@@ -34,8 +36,15 @@ public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<
     }
     
     @Override
-    public ScoredCandidates<Item> generate(Item content, ResultDescription desc) {
+    public ScoredCandidates<Item> generate(
+            Item content,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
         checkArgument(content instanceof Film, "Content not Film:" + content.getCanonicalUri());
+
+        EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
+        generatorComponent.setComponentName("Radio Times Film Equivalence Generator");
         
         Builder<Item> results = DefaultScoredCandidates.fromSource("RTtoPA");
         
@@ -58,6 +67,13 @@ public class RadioTimesFilmEquivalenceGenerator implements EquivalenceGenerator<
             if (resolvedContent.hasValue()
                     && filmIsActivelyPublished(resolvedContent.requireValue())) {
                 results.addEquivalent((Film)resolvedContent.requireValue(), Score.ONE);
+
+                if (((Film) resolvedContent.requireValue()).getId() != null) {
+                    generatorComponent.addComponentResult(
+                            resolvedContent.requireValue().getId(),
+                            "1.0"
+                    );
+                }
             }
         }
         

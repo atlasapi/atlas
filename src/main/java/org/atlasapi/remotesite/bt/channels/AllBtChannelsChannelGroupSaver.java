@@ -22,12 +22,23 @@ public class AllBtChannelsChannelGroupSaver extends AbstractBtChannelGroupSaver 
     static final String BT_CHANNELS_URI_SUFFIX = "bt-channels";
     private final String aliasUriPrefix;
 
-    public AllBtChannelsChannelGroupSaver(Publisher publisher, String aliasUriPrefix, 
-            String aliasNamespace, ChannelGroupResolver channelGroupResolver, 
-            ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
-            ChannelWriter channelWriter) {
-        super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, 
-                channelWriter, LoggerFactory.getLogger(AllBtChannelsChannelGroupSaver.class));
+    public AllBtChannelsChannelGroupSaver(
+            Publisher publisher,
+            String aliasUriPrefix,
+            String aliasNamespace,
+            ChannelGroupResolver channelGroupResolver,
+            ChannelGroupWriter channelGroupWriter,
+            ChannelResolver channelResolver,
+            ChannelWriter channelWriter
+    ) {
+        super(
+                publisher,
+                channelGroupResolver,
+                channelGroupWriter,
+                channelResolver,
+                channelWriter,
+                LoggerFactory.getLogger(AllBtChannelsChannelGroupSaver.class)
+        );
         
         this.aliasUriPrefix = checkNotNull(aliasUriPrefix);
     }

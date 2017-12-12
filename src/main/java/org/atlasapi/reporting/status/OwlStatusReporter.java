@@ -1,0 +1,47 @@
+package org.atlasapi.reporting.status;
+
+import com.metabroadcast.status.api.EntityRef;
+import com.metabroadcast.status.api.PartialStatus;
+import com.metabroadcast.status.client.StatusClientWithApp;
+import com.metabroadcast.status.client.http.HttpExecutor;
+import telescope_client_shaded.org.slf4j.Logger;
+import telescope_client_shaded.org.slf4j.LoggerFactory;
+
+public class OwlStatusReporter {
+    private static final Logger log = LoggerFactory.getLogger(OwlStatusReporter.class);
+    private final String appId;
+    private StatusClientWithApp statusClientWithApp;
+
+    public OwlStatusReporter(HttpExecutor httpExecutor, String appId) {
+        this.appId = appId;
+
+        try {
+            if(httpExecutor == null) {
+                throw new NullPointerException("httpExecutor=" + httpExecutor);
+            }
+            this.statusClientWithApp = new StatusClientWithApp(httpExecutor, appId);
+        } catch (NullPointerException | IllegalArgumentException var10) {
+            log.error("Could not create an http executor for the status reporter.\n " +
+                    "StatusReporter has protected you from this exception by creating a StatusReporter that will not report to the status service.", var10);
+        } catch (Exception var11) {
+            log.error("An unknown exception has occurred when creating the http executor\n" +
+                    "StatusReporter has protected you from this exception by creating a StatusReporter that will not report to the status service.", var11);
+        }
+    }
+
+    public void updateStatus(EntityRef.Type type, String id, PartialStatus partialStatus) {
+        if (statusClientWithApp != null){
+            statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+        }
+        log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
+                "StatusReporter has protected you from this problem.");
+    }
+
+    public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
+        if (statusClientWithApp != null){
+            statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+        }
+        log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
+                "StatusReporter has protected you from this problem.");
+    }
+}

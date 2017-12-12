@@ -64,7 +64,7 @@ public class YouViewEquivalenceBreaker {
     public void orphanItems(DateTime from, DateTime to) {
         for (org.atlasapi.media.channel.Channel channel : youViewChannelResolver.getAllChannels()) {
             log.debug("Searching for orphans on channel {} ({}) between {} and {}", 
-                    new String[] { String.valueOf(channel.getId()), channel.getTitle(), from.toString(), to.toString() });
+                     channel.getId(), channel.getTitle(), from, to);
             process(scheduleResolver.unmergedSchedule(from, to, ImmutableSet.of(channel), ImmutableSet.of(referenceSchedulePublisher)));
         }
     }
@@ -118,13 +118,7 @@ public class YouViewEquivalenceBreaker {
     }
 
     private Predicate<LookupRef> createShouldRetainLookupRefPredicate(final Set<String> toOrphan) {
-        return new Predicate<LookupRef>() {
-
-            @Override
-            public boolean apply(LookupRef input) {
-                return !toOrphan.contains(input.uri());
-            }
-        };
+        return input -> !toOrphan.contains(input.uri());
     }
 
     private boolean shouldOrphan(Identified identified) {

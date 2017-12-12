@@ -7,6 +7,8 @@ import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates.Builder;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Series;
 
@@ -16,24 +18,31 @@ import com.google.common.collect.Iterables;
 public class SequenceContainerScorer implements EquivalenceScorer<Container> {
 
     @Override
-    public ScoredCandidates<Container> score(Container subject,
-            Set<? extends Container> candidates, ResultDescription desc) {
+    public ScoredCandidates<Container> score(
+            Container subject,
+            Set<? extends Container> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent scorerComponent = EquivToTelescopeComponent.create();
+        scorerComponent.setComponentName("Sequence Container Scorer");
+
         Builder<Container> scores = DefaultScoredCandidates.fromSource("Sequence");
         
         if (!(subject instanceof Series)) {
             desc.appendText("subject %s not Series", subject.getClass());
-            return scoreAllNull(scores, candidates); 
+            return scoreAllNull(scores, candidates, scorerComponent);
         }
         
         Series series = (Series) subject;
         if (series.getParent() == null) {
             desc.appendText("subject is top level");
-            return scoreAllNull(scores, candidates); 
+            return scoreAllNull(scores, candidates, scorerComponent);
         }
 
         if (series.getSeriesNumber() == null) {
             desc.appendText("subject has no series number");
-            return scoreAllNull(scores, candidates);
+            return scoreAllNull(scores, candidates, scorerComponent);
         }
         desc.appendText("subject series number: ", series.getSeriesNumber());
                     
@@ -53,15 +62,26 @@ public class SequenceContainerScorer implements EquivalenceScorer<Container> {
                 desc.appendText("%s: series number: %s: %s", candidate, candidate.getSeriesNumber(), score);
             }
             scores.addEquivalent(candidate, score);
+            scorerComponent.addComponentResult(
+                    candidate.getId(),
+                    String.valueOf(score.asDouble())
+            );
         }
 
         return scores.build();
     }
 
-    private ScoredCandidates<Container> scoreAllNull(Builder<Container> scores,
-            Set<? extends Container> candidates) {
+    private ScoredCandidates<Container> scoreAllNull(
+            Builder<Container> scores,
+            Set<? extends Container> candidates,
+            EquivToTelescopeComponent scorerComponent
+    ) {
         for (Container container : candidates) {
             scores.addEquivalent(container, Score.nullScore());
+            scorerComponent.addComponentResult(
+                    container.getId(),
+                    ""
+            );
         }
         return scores.build();
     }

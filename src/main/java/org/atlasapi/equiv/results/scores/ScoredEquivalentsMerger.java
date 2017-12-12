@@ -16,7 +16,10 @@ import com.google.common.collect.Maps;
 
 public class ScoredEquivalentsMerger {
 
-    public <T extends Content> List<ScoredCandidates<T>> merge(List<ScoredCandidates<T>> lefts, List<ScoredCandidates<T>> rights) {
+    public <T extends Content> List<ScoredCandidates<T>> merge(
+            List<ScoredCandidates<T>> lefts,
+            List<ScoredCandidates<T>> rights
+    ) {
         
         Map<String,ScoredCandidates<T>> left = Maps.uniqueIndex(lefts, TO_SOURCE);
         ImmutableMap<String, ScoredCandidates<T>> right = Maps.uniqueIndex(rights, TO_SOURCE);

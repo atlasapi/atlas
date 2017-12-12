@@ -4,6 +4,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
 
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -15,20 +16,29 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-
 
 public class SubscriptionChannelGroupSaver extends AbstractBtChannelGroupSaver {
 
     private final String aliasUriPrefix;
     private final String aliasNamespace;
 
-    public SubscriptionChannelGroupSaver(Publisher publisher, String aliasUriPrefix, 
-            String aliasNamespace, ChannelGroupResolver channelGroupResolver, 
-            ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
-            ChannelWriter channelWriter) {
-        super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, channelWriter,
-                LoggerFactory.getLogger(SubscriptionChannelGroupSaver.class));
+    public SubscriptionChannelGroupSaver(
+            Publisher publisher,
+            String aliasUriPrefix,
+            String aliasNamespace,
+            ChannelGroupResolver channelGroupResolver,
+            ChannelGroupWriter channelGroupWriter,
+            ChannelResolver channelResolver,
+            ChannelWriter channelWriter
+    ) {
+        super(
+                publisher,
+                channelGroupResolver,
+                channelGroupWriter,
+                channelResolver,
+                channelWriter,
+                LoggerFactory.getLogger(SubscriptionChannelGroupSaver.class)
+        );
         
         this.aliasUriPrefix = checkNotNull(aliasUriPrefix);
         this.aliasNamespace = checkNotNull(aliasNamespace) + ":subscription-code";
@@ -36,12 +46,10 @@ public class SubscriptionChannelGroupSaver extends AbstractBtChannelGroupSaver {
     
     @Override
     protected List<String> keysFor(Entry channel) {
-        ImmutableList.Builder<String> keys = ImmutableList.builder();
-        for (Category category : channel.getCategories()) {
-            if ("subscription".equals(category.getScheme()))
-                keys.add(category.getName());
-        }
-        return keys.build();
+        return channel.getCategories().stream()
+                .filter(category ->  "subscription".equals(category.getScheme()))
+                .map(Category::getName)
+                .collect(MoreCollectors.toImmutableList());
     }
 
     @Override

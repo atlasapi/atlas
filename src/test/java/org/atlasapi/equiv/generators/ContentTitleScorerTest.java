@@ -10,6 +10,8 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Publisher;
@@ -27,7 +29,12 @@ public class ContentTitleScorerTest {
     private final ResultDescription desc = new DefaultDescription();
 
     private ScoredCandidates<Container> score(String subject, String candidate) {
-        return scorer.scoreCandidates(brandWithTitle(subject), ImmutableList.of(brandWithTitle(candidate)), desc);
+        return scorer.scoreCandidates(
+                brandWithTitle(subject),
+                ImmutableList.of(brandWithTitle(candidate)),
+                desc,
+                EquivToTelescopeComponent.create()
+        );
     }
     
     @Test

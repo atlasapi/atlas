@@ -1,6 +1,5 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-
 import java.util.Currency;
 import java.util.List;
 import java.util.Set;
@@ -48,8 +47,8 @@ import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
 
-
-public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem, Iterable<Content>> {
+public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
+                                                    Iterable<Content>> {
     
     private static final boolean IS_SD = false;
     private static final boolean IS_HD = true;
@@ -234,7 +233,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
     
     private Version createVersion(AmazonUnboxItem source, String url, Set<Encoding> encodings) {
-        String cleanedUri = url.replaceAll(TAG_PLACEHOLDER, "").replaceAll(URL_SUFFIX_TO_REMOVE, "");
+        String cleanedUri = url.replaceAll(TAG_PLACEHOLDER, "")
+                                .replaceAll(URL_SUFFIX_TO_REMOVE, "");
         Version version = new Version();
         version.setCanonicalUri(cleanedUri);
         if (source.getDuration() != null) {
@@ -267,7 +267,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     
     private Location createLocation(AmazonUnboxItem source, RevenueContract revenueContract, 
             @Nullable String price, String url) {
-        String cleanedUri = url.replaceAll(TAG_PLACEHOLDER, "").replaceAll(URL_SUFFIX_TO_REMOVE, "");
+        String cleanedUri = url.replaceAll(TAG_PLACEHOLDER, "")
+                                .replaceAll(URL_SUFFIX_TO_REMOVE, "");
         
         Location location = new Location();
         // TODO determine location links, if any

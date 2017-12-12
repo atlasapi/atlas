@@ -12,6 +12,8 @@ import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.TopEquivalenceExtractor;
 import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.scorers.ContentAliasScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
@@ -49,7 +51,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         )
                 )
                 .withScorers(
-                        ImmutableSet.of()
+                        ImmutableSet.of(new ContentAliasScorer(Score.nullScore()))
                 )
                 .withCombiner(
                         new NullScoreAwareAveragingCombiner<>()

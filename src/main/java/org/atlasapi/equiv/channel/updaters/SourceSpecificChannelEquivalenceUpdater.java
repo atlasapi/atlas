@@ -11,11 +11,12 @@ import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.TelescopeUtilityMethodsAtlas;
 
 import java.util.Optional;
 import java.util.Set;
 import java.util.stream.StreamSupport;
+
+import com.metabroadcast.columbus.telescope.client.EntityType;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -78,12 +79,14 @@ public class SourceSpecificChannelEquivalenceUpdater implements EquivalenceUpdat
         telescope.reportSuccessfulEvent(
                 subject.getId(),
                 subject.getAliases(),
+                EntityType.CHANNEL,
                 subject
         );
 
         telescope.reportSuccessfulEvent(
                 candidate.getId(),
                 candidate.getAliases(),
+                EntityType.CHANNEL,
                 candidate
         );
     }

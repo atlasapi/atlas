@@ -1,14 +1,6 @@
 package org.atlasapi.remotesite.youview;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.io.IOException;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.metabroadcast.common.time.DateTimeZones;
 import org.joda.time.DateTime;
 import org.joda.time.LocalDate;
 import org.joda.time.format.DateTimeFormatter;
@@ -18,8 +10,12 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.time.DateTimeZones;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 @Controller
 public class YouViewEquivalanceBreakerController {
@@ -40,18 +36,11 @@ public class YouViewEquivalanceBreakerController {
         try {
             day = dateFormat.parseLocalDate(date);
         } catch (IllegalArgumentException iae) {
-            response.sendError(HttpStatusCode.NOT_FOUND.code());
+            response.sendError(HttpServletResponse.SC_NOT_FOUND);
             return;
         }
         final DateTime startOfDay = day.toDateTimeAtStartOfDay();
-        executor.submit(new Runnable() {
-
-            @Override
-            public void run() {
-                equivalenceBreaker.orphanItems(startOfDay, startOfDay.plusDays(1));
-                
-            }
-        });
-        response.setStatus(HttpStatusCode.ACCEPTED.code());
+        executor.submit(() -> equivalenceBreaker.orphanItems(startOfDay, startOfDay.plusDays(1)));
+        response.setStatus(HttpServletResponse.SC_ACCEPTED);
     }
 }

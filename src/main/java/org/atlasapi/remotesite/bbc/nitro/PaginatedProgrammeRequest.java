@@ -1,17 +1,16 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.NoSuchElementException;
-
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
 import com.metabroadcast.atlas.glycerin.Glycerin;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.atlas.glycerin.GlycerinResponse;
 import com.metabroadcast.atlas.glycerin.model.Programme;
 import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
 
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
+import java.util.Iterator;
+import java.util.List;
+import java.util.NoSuchElementException;
 
 /**
  * Used to paginate over Nitro Programmes to reduce the heap overhead.

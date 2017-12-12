@@ -1,18 +1,17 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.Collections;
-import java.util.Iterator;
-import java.util.List;
-
-import org.atlasapi.media.channel.Channel;
-import org.joda.time.LocalDate;
-
 import com.google.api.client.repackaged.com.google.common.base.Preconditions;
 import com.google.common.base.Supplier;
 import com.google.common.collect.BoundType;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Range;
+import org.atlasapi.media.channel.Channel;
+import org.joda.time.LocalDate;
+
+import java.util.Collections;
+import java.util.Iterator;
+import java.util.List;
 
 public class DayRangeChannelDaySupplier implements Supplier<ImmutableList<ChannelDay>>{
 

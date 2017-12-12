@@ -1,12 +1,20 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
+import com.google.common.base.Function;
+import com.google.common.base.Predicate;
+import com.google.common.base.Predicates;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Multimaps;
+import com.google.common.collect.Sets;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.stream.MoreCollectors;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Episode;
@@ -21,28 +29,18 @@ import org.atlasapi.remotesite.ContentMerger;
 import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.stream.MoreCollectors;
-import com.metabroadcast.common.time.Clock;
-
-import com.google.common.base.Function;
-import com.google.common.base.Predicate;
-import com.google.common.base.Predicates;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Multimaps;
-import com.google.common.collect.Sets;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Interval;
 import org.joda.time.LocalDate;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.Set;
+import java.util.stream.Collectors;
+import java.util.stream.StreamSupport;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -199,8 +197,12 @@ public class LocalOrRemoteNitroFetcher {
         return mergeItemsWithExisting(fetchedItemSet, wrappedItems);
     }
 
-    private <T> ModelWithPayload<T> wrapResolvedContentWithEmptyPayload(T item){
-        return new ModelWithPayload<T>(item, "Resolved content. Payload is unavailable");
+    private <T> ModelWithPayload<T> wrapResolvedContentWithEmptyPayload(T item) {
+        return new ModelWithPayload<>(
+                item,
+                //if item is null ModelWithPayload will throw exception anyway, so no reason to recheck.
+                "Resolved content (" + item.getClass().getCanonicalName() + "). Payload is unavailable."
+        );
     }
 
     private ImmutableListMultimap<String, Broadcast> buildBroadcastIndex(
@@ -352,7 +354,7 @@ public class LocalOrRemoteNitroFetcher {
 
     private Multimap<String, Episode> toSeriesUriMap(Iterable<Episode> episodes) {
         return Multimaps.index(Iterables.filter(episodes, HAS_SERIES_REF), TO_SERIES_REF_URI); 
-    };
+    }
     
     private static Function<Episode, String> TO_SERIES_REF_URI = new Function<Episode, String>() {
 
@@ -439,7 +441,7 @@ public class LocalOrRemoteNitroFetcher {
     private static boolean inTopLevelSeries(Item item) {
         if (item instanceof Episode) {
             Episode ep = (Episode)item;
-            return ep.getSeriesRef() != null 
+            return ep.getSeriesRef() != null
                 && ep.getSeriesRef().equals(ep.getContainer());
         }
         return false;

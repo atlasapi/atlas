@@ -1,12 +1,7 @@
 package org.atlasapi.equiv;
 
-import java.io.IOException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Future;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.http.HttpStatusCode;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.springframework.stereotype.Controller;
@@ -14,8 +9,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.http.HttpStatusCode;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 
 @Controller
 public class ChildRefUpdateController {

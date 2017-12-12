@@ -1,8 +1,8 @@
 package org.atlasapi.query;
 
-import javax.servlet.http.HttpServletRequest;
-
 import com.metabroadcast.common.webapp.http.AbstractCorsFilter;
+
+import javax.servlet.http.HttpServletRequest;
 
 
 public class CorsFilter extends AbstractCorsFilter {

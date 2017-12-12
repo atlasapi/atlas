@@ -34,6 +34,7 @@ import org.junit.runner.RunWith;
 import org.mockito.Matchers;
 import org.mockito.runners.MockitoJUnitRunner;
 
+import static junit.framework.TestCase.fail;
 import static org.hamcrest.Matchers.hasItem;
 import static org.hamcrest.core.Is.is;
 import static org.junit.Assert.assertThat;
@@ -340,10 +341,12 @@ public class EpisodeFilteringEquivalenceResultHandlerTest {
                 summaryStore
         );
 
-        assertThat(
-                handler.handle(result),
-                is(false)
-        );
+        try {
+            handler.handle(result);
+            fail("Item with missing container summary failed to throw exception");
+        } catch (ContainerSummaryRequiredException e) {
+            assertThat(e.getItem(), is(subject));
+        }
     }
 
     @Test

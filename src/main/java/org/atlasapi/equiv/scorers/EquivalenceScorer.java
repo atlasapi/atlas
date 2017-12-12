@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 
 public interface EquivalenceScorer<T> {
 
@@ -18,6 +19,11 @@ public interface EquivalenceScorer<T> {
      * @param desc
      * @return
      */
-    ScoredCandidates<T> score(T subject, Set<? extends T> candidates, ResultDescription desc);
+    ScoredCandidates<T> score(
+            T subject,
+            Set<? extends T> candidates,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    );
     
 }

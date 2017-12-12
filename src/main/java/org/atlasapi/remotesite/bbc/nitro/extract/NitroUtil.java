@@ -1,14 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Set;
-
-import javax.xml.datatype.XMLGregorianCalendar;
-
-import org.joda.time.DateTime;
-import org.joda.time.chrono.ISOChronology;
-
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
@@ -19,6 +10,13 @@ import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.model.PidReference;
 import com.metabroadcast.atlas.glycerin.model.Version;
 import com.metabroadcast.common.time.DateTimeZones;
+import org.joda.time.DateTime;
+import org.joda.time.chrono.ISOChronology;
+
+import javax.xml.datatype.XMLGregorianCalendar;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 /**
  * Utility methods for extracting Nitro data.

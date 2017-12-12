@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 
@@ -34,6 +35,7 @@ public class EquivalenceGeneratorsTest {
     private ScoredCandidates candidates;
 
     private EquivalenceGenerators<Content> generators;
+    private EquivToTelescopeResults equivToTelescopeResults;
 
     @Before
     public void setUp() {
@@ -46,15 +48,27 @@ public class EquivalenceGeneratorsTest {
                 excludedIds
         );
 
-        when(generator.generate(any(Content.class), any(ResultDescription.class)))
-                .thenReturn(candidates);
+        when(generator.generate(
+                any(Content.class),
+                any(ResultDescription.class),
+                any(EquivToTelescopeResults.class))
+        ).thenReturn(candidates);
+
+        equivToTelescopeResults = EquivToTelescopeResults.create(
+                "id",
+                "publisher"
+        );
     }
 
     @Test
     public void generatorCreatesNoCandidatesForExcludedUri() {
         Item item = new Item();
         item.setCanonicalUri("excluded");
-        List<ScoredCandidates<Content>> generated = generators.generate(item, resultDescription);
+        List<ScoredCandidates<Content>> generated = generators.generate(
+                item,
+                resultDescription,
+                equivToTelescopeResults
+        );
         assertTrue(generated.isEmpty());
     }
 
@@ -65,7 +79,11 @@ public class EquivalenceGeneratorsTest {
 
         Item item = new Item();
         item.setId(decodedExcludedId);
-        List<ScoredCandidates<Content>> generated = generators.generate(item, resultDescription);
+        List<ScoredCandidates<Content>> generated = generators.generate(
+                item,
+                resultDescription,
+                equivToTelescopeResults
+        );
         assertTrue(generated.isEmpty());
     }
 
@@ -73,15 +91,15 @@ public class EquivalenceGeneratorsTest {
     public void generatorCreatesCandidatesForNonExcludedUri() {
         Item item = new Item();
         item.setCanonicalUri("notexcluded");
-        generators.generate(item, resultDescription);
-        verify(generator).generate(item, resultDescription);
+        generators.generate(item, resultDescription, equivToTelescopeResults);
+        verify(generator).generate(item, resultDescription, equivToTelescopeResults);
     }
 
     @Test
     public void generatorCreatesCandidatesForNonExcludedId() {
         Item item = new Item();
         item.setId(12345678L);
-        generators.generate(item, resultDescription);
-        verify(generator).generate(item, resultDescription);
+        generators.generate(item, resultDescription, equivToTelescopeResults);
+        verify(generator).generate(item, resultDescription, equivToTelescopeResults);
     }
 }

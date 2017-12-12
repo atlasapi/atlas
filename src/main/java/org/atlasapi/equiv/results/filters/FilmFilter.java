@@ -2,6 +2,8 @@ package org.atlasapi.equiv.results.filters;
 
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Film;
 
@@ -10,7 +12,14 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
     private static final int NUMBER_OF_YEARS_DIFFERENT_TOLERANCE = 1;
 
     @Override
-    protected boolean doFilter(ScoredCandidate<T> input, T subject, ResultDescription desc) {
+    protected boolean doFilter(
+            ScoredCandidate<T> input,
+            T subject,
+            ResultDescription desc,
+            EquivToTelescopeResults equivToTelescopeResults
+    ) {
+        EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
+        filterComponent.setComponentName("Film Filter");
 
         if (!(input.candidate() instanceof Film && subject instanceof Film)) {
             return true;
@@ -38,7 +47,16 @@ public class FilmFilter<T extends Content> extends AbstractEquivalenceFilter<T> 
                     subjectFilm.getYear(),
                     NUMBER_OF_YEARS_DIFFERENT_TOLERANCE
             );
+            if (candidateFilm.getId() != null) {
+                filterComponent.addComponentResult(
+                        candidateFilm.getId(),
+                        "Removed as film year differs by more than "
+                                + NUMBER_OF_YEARS_DIFFERENT_TOLERANCE
+                );
+            }
         }
+
+        equivToTelescopeResults.addFilterResult(filterComponent);
 
         return shouldRetain;
     }

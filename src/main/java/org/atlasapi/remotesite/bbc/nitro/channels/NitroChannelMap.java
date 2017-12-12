@@ -1,12 +1,11 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
-import java.util.Map;
-
+import com.google.common.collect.ForwardingMap;
+import com.google.common.collect.ImmutableBiMap;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 
-import com.google.common.collect.ForwardingMap;
-import com.google.common.collect.ImmutableBiMap;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

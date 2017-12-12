@@ -14,9 +14,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import javax.annotation.PostConstruct;
-import java.util.Arrays;
 import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings("PublicConstructor")
 @Configuration
@@ -38,10 +37,7 @@ public class ChannelEquivModule {
 
         registerPublisherUpdaters(
                 updaters,
-                Publisher.BT_TV_CHANNELS,
-                Publisher.BT_TV_CHANNELS_TEST1,
-                Publisher.BT_TV_CHANNELS_TEST2,
-                Publisher.BT_TV_CHANNELS_REFERENCE
+                channelMatchers.keySet()
         );
 
         return updaters;
@@ -49,9 +45,9 @@ public class ChannelEquivModule {
 
     private void registerPublisherUpdaters(
             MultipleSourceChannelEquivalenceUpdater updaters,
-            Publisher... publishers
+            Set<Publisher> publishers
     ) {
-        Arrays.stream(publishers).forEach(
+        publishers.forEach(
                 publisher -> updaters.register(publisher, createUpdaterFor(publisher))
         );
     }

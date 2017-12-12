@@ -5,6 +5,7 @@ import com.google.common.cache.CacheLoader;
 import com.google.common.cache.LoadingCache;
 import com.google.common.collect.Collections2;
 import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.ImmutableSetMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.LinkedHashMultimap;
@@ -20,8 +21,7 @@ import java.util.Map.Entry;
 import java.util.Optional;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -77,11 +77,6 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
     }
     
     @Override
-    public Collection<String> getServiceAliases(Channel channel) {
-        return getResolvedChannels().getAliases(channel);
-    }
-
-    @Override
     public Collection<Channel> getChannels(int serviceId) {
         return getResolvedChannels().getChannels(serviceId);
     }
@@ -92,12 +87,12 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
     }
 
     @Override
-    public Multimap<Integer, Channel> getAllServiceIdsToChannels() {
+    public Multimap<ServiceId, Channel> getAllServiceIdsToChannels() {
         return getResolvedChannels().getAllServiceIdsToChannels();
     }
 
     @Override
-    public Collection<Integer> getServiceIds(Channel channel) {
+    public Collection<ServiceId> getServiceIds(Channel channel) {
         return getResolvedChannels().getServiceIds(channel);
     }
 
@@ -117,9 +112,6 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
             String prefix,
             ResolvedChannels.Builder resolvedChannels
     ) {
-        // match the alias followed by the serviceId as the first group, e.g.:
-        // ^http://youview.com/services/(12345)$
-        Pattern pattern = Pattern.compile("^" + prefix + "(\\d+)$");
         ImmutableMultimap<Channel, String> overrides = overrideAliasesForPrefix(prefix);
 
         for (Entry<String, Channel> entry : channelResolver.allForAliases(prefix).entries()) {
@@ -137,38 +129,27 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
                 alias = overrideFor(channel, overrides).orElse(channelAlias);
             }
 
-            boolean added = resolvedChannels.addService(
-                    extractServiceId(pattern, alias),
-                    alias,
-                    channel
-            );
+            boolean added;
+            try {
+                added = resolvedChannels.addService(
+                        ImmutableServiceId.create(prefix, alias),
+                        channel
+                );
+            } catch (NullPointerException | IllegalArgumentException e) {
+                added = false;
+            }
             if (!added) {
-                log.warn("Service not added: serviceId={} alias={} channel={}",
-                        extractServiceId(pattern, alias),
-                        alias,
-                        channel);
+                log.warn("Service not added: prefix={} alias={} channel={}",
+                        prefix, alias, channel);
             }
         }
 
         // ensure that where there's _only_ an override on a channel that's taken into account
-        addOverridesWhereNoPrimaryAliasExists(
-                pattern, overrides, resolvedChannels
-        );
-    }
-
-    @Nullable
-    private Integer extractServiceId(Pattern pattern, String alias) {
-        Matcher m = pattern.matcher(alias);
-        if (m.matches()) {
-            return Integer.decode(m.group(1));
-        } else {
-            log.error("Could not parse YouView alias " + alias);
-            return null;
-        }
+        addOverridesWhereNoPrimaryAliasExists(prefix, overrides, resolvedChannels);
     }
 
     private void addOverridesWhereNoPrimaryAliasExists(
-            Pattern pattern,
+            String prefix,
             Multimap<Channel, String> overrides,
             ResolvedChannels.Builder resolvedChannels
     ) {
@@ -177,16 +158,18 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
                 continue;
             }
             String normalisedAlias = normaliseOverrideAlias(override.getValue());
-            boolean added = resolvedChannels.addService(
-                    extractServiceId(pattern, normalisedAlias),
-                    normalisedAlias,
-                    override.getKey()
-            );
+            boolean added;
+            try {
+                added = resolvedChannels.addService(
+                        ImmutableServiceId.create(prefix, normalisedAlias),
+                        override.getKey()
+                );
+            } catch (NullPointerException | IllegalArgumentException e) {
+                added = false;
+            }
             if (!added) {
-                log.warn("Service not added: serviceId={} alias={} channel={}",
-                        extractServiceId(pattern, normalisedAlias),
-                        normalisedAlias,
-                        override.getKey());
+                log.warn("Service not added: prefix={} alias={} channel={}",
+                        prefix, normalisedAlias, override.getKey());
             }
         }
     }
@@ -200,7 +183,7 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
         Collection<String> overrideAliases = overrides.get(channel);
         if (!overrideAliases.isEmpty()) {
             if (overrideAliases.size() > 1) {
-                log.warn("Multiple override aliases found on single channel, taking first " +
+                log.warn("Multiple override aliases found on single channel, taking first {}",
                         overrideAliases);
             }
             return Optional.of(normaliseOverrideAlias(overrideAliases.iterator().next()));
@@ -239,44 +222,50 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
      */
     private static class ResolvedChannels {
 
-        private final ImmutableSetMultimap<Integer, Channel> serviceId2channel;
-        private final ImmutableSetMultimap<Channel, String> channel2alias;
-        private final ImmutableSetMultimap<String, Integer> alias2serviceId;
+        private final ImmutableSetMultimap<ServiceId, Channel> channelMap;
+        private final ImmutableSetMultimap<Integer, ServiceId> serviceIdMap;
+        private final ImmutableSetMultimap<String, ServiceId> aliasMap;
 
         private ResolvedChannels(Builder builder) {
-            this.serviceId2channel = ImmutableSetMultimap.copyOf(builder.serviceId2channel);
-            this.channel2alias = ImmutableSetMultimap.copyOf(builder.channel2alias);
-            this.alias2serviceId = ImmutableSetMultimap.copyOf(builder.alias2serviceId);
+            this.channelMap = ImmutableSetMultimap.copyOf(builder.channelMap).inverse();
+            this.serviceIdMap = ImmutableSetMultimap.copyOf(builder.serviceIdMap);
+            this.aliasMap = ImmutableSetMultimap.copyOf(builder.aliasMap);
         }
 
         public boolean contains(Channel channel) {
-            return channel2alias.containsKey(channel);
+            return channelMap.inverse().containsKey(channel);
         }
-        public boolean contains(Integer serviceId) {
-            return serviceId2channel.containsKey(serviceId);
+        public boolean contains(int serviceId) {
+            return serviceIdMap.containsKey(serviceId);
         }
         public boolean contains(String alias) {
-            return alias2serviceId.containsKey(alias);
+            return aliasMap.containsKey(alias);
         }
 
-        public Set<Channel> getAllChannels() {
-            return channel2alias.keySet();
+        public ImmutableSet<Channel> getAllChannels() {
+            return channelMap.inverse().keySet();
         }
 
-        public Multimap<Integer, Channel> getAllServiceIdsToChannels() {
-            return serviceId2channel;
+        public ImmutableMultimap<ServiceId, Channel> getAllServiceIdsToChannels() {
+            return channelMap;
         }
 
-        public Set<Channel> getChannels(int serviceId) {
-            return serviceId2channel.get(serviceId);
+        public ImmutableSet<Channel> getChannels(int serviceId) {
+            // Ideally this would return a view, but there's nothing in the standard libs/guava,
+            // so we'll just have to accept the memory churn.
+            // Note also, that we can't just use MoreCollectors.toImmutableSet as there may be
+            // duplicates, which would cause the ImmutableSet builder to throw, so instead collect
+            // into an ordinary set, and return an immutable copy.
+            return ImmutableSet.copyOf(
+                    serviceIdMap.get(serviceId).stream()
+                            .map(channelMap::get)
+                            .flatMap(Set::stream)
+                            .collect(Collectors.toSet())
+            );
         }
 
-        public Set<String> getAliases(Channel channel) {
-            return channel2alias.get(channel);
-        }
-
-        public Set<Integer> getServiceIds(Channel channel) {
-            return serviceId2channel.inverse().get(channel);
+        public ImmutableSet<ServiceId> getServiceIds(Channel channel) {
+            return channelMap.inverse().get(channel);
         }
 
         public static Builder builder() {
@@ -284,44 +273,94 @@ public class DefaultYouViewChannelResolver implements YouViewChannelResolver {
         }
 
         public static class Builder {
-            private Multimap<Integer, Channel> serviceId2channel;
-            private Multimap<Channel, String> channel2alias;
-            private Multimap<String, Integer> alias2serviceId;
+            // This is reversed so contains(channel) is efficient.
+            private Multimap<Channel, ServiceId> channelMap;
+            private Multimap<Integer, ServiceId> serviceIdMap;
+            private Multimap<String, ServiceId> aliasMap;
 
             public Builder() {
-                serviceId2channel = LinkedHashMultimap.create();
-                channel2alias = LinkedHashMultimap.create();
-                alias2serviceId = LinkedHashMultimap.create();
+                channelMap = LinkedHashMultimap.create();
+                serviceIdMap = LinkedHashMultimap.create();
+                aliasMap = LinkedHashMultimap.create();
             }
 
-            public boolean addService(
-                    @Nullable Integer serviceId,
-                    @Nullable String alias,
-                    @Nullable Channel channel
-            ) {
-                if (serviceId == null || alias == null || channel == null) {
-                    return false;
-                }
-                boolean added = true;
-                added &= serviceId2channel.put(serviceId, channel);
-                added &= channel2alias.put(channel, alias);
-                added &= alias2serviceId.put(alias, serviceId);
-                return added;
+            public boolean addService(ImmutableServiceId serviceId, Channel channel)
+                    throws NullPointerException     //NOSONAR RedundantThrows
+            {
+                //noinspection ConstantConditions   - need to be sure
+                if (serviceId == null) throw new NullPointerException("serviceId is null");
+                //noinspection ConstantConditions   - need to be sure
+                if (channel == null) throw new NullPointerException("channel is null");
+
+                boolean added = channelMap.put(channel, serviceId);
+                if (!added) return false;   // already been added
+                serviceIdMap.put(serviceId.getId(), serviceId);
+                aliasMap.put(serviceId.getAlias(), serviceId);
+                return true;
             }
 
-            public boolean contains(Channel channel) {
-                return channel2alias.containsKey(channel);
+            public boolean contains(@Nullable Channel channel) {
+                return channel != null && channelMap.containsKey(channel);
             }
-            public boolean contains(Integer serviceId) {
-                return serviceId2channel.containsKey(serviceId);
+            public boolean contains(@Nullable ServiceId serviceId) {
+                return serviceId != null && serviceIdMap.get(serviceId.getId()).contains(serviceId);
             }
-            public boolean contains(String alias) {
-                return alias2serviceId.containsKey(alias);
+            public boolean contains(@Nullable Integer serviceId) {
+                return serviceId != null && serviceIdMap.containsKey(serviceId);
+            }
+            public boolean contains(@Nullable String alias) {
+                return alias != null && aliasMap.containsKey(alias);
             }
 
             public ResolvedChannels build() {
                 return new ResolvedChannels(this);
             }
+        }
+
+    }
+
+    public static final class ImmutableServiceId extends ServiceId {
+        private final int id;
+        private final String prefix;
+        private final String alias;
+        private ImmutableServiceId(int id, String prefix, String alias) {
+            this.id = id;
+            this.prefix = checkNotNull(prefix);
+            this.alias = checkNotNull(alias);
+        }
+        public static ImmutableServiceId create(String prefix, String alias)
+                throws NullPointerException, IllegalArgumentException   //NOSONAR RedundantThrows
+        {
+            //noinspection ConstantConditions   - need to be sure
+            if (prefix == null) throw new NullPointerException("prefix is null");
+            //noinspection ConstantConditions   - need to be sure
+            if (alias == null) throw new NullPointerException("alias is null");
+            try {
+                return new ImmutableServiceId(
+                        Integer.parseInt(alias.substring(prefix.length())),
+                        prefix,
+                        alias
+                );
+            } catch (NumberFormatException e) {
+                throw new IllegalArgumentException("Invalid ID in alias: " + alias);
+            }
+        }
+
+        @Override public int getId() {
+            return id;
+        }
+
+        @Override public String getPrefix() {
+            return prefix;
+        }
+
+        @Override public String getAlias() {
+            return alias;
+        }
+
+        private transient String str;   //NOSONAR transient - cached value
+        @Override public String toString() {
+            return (str == null) ? (str = super.toString()) : str;
         }
     }
 }

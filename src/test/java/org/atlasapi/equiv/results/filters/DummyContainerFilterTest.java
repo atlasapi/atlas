@@ -4,6 +4,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.ChildRef;
 import org.atlasapi.media.entity.Container;
@@ -23,6 +24,8 @@ import org.junit.Test;
 public class DummyContainerFilterTest {
 
     private DummyContainerFilter dummyContainerFilter = new DummyContainerFilter();
+    private final EquivToTelescopeResults equivToTelescopeResults =
+            EquivToTelescopeResults.create("id", "publisher");
 
     @Test
     public void testDoesntFilterNonContainers() {
@@ -33,12 +36,18 @@ public class DummyContainerFilterTest {
         assertTrue(
                 dummyContainerFilter.doFilter(
                         ScoredCandidate.valueOf(candidate, Score.ONE),
-                        subject, result)
+                        subject,
+                        result,
+                        equivToTelescopeResults
+                )
         );
         assertTrue(
                 dummyContainerFilter.doFilter(
                         ScoredCandidate.valueOf(candidate, Score.ONE),
-                        candidate, result)
+                        candidate,
+                        result,
+                        equivToTelescopeResults
+                )
         );
     }
 
@@ -56,7 +65,10 @@ public class DummyContainerFilterTest {
         assertTrue(
                 dummyContainerFilter.doFilter(
                         ScoredCandidate.valueOf(candidate, Score.ONE),
-                        subject, result)
+                        subject,
+                        result,
+                        equivToTelescopeResults
+                )
         );
     }
 
@@ -69,7 +81,10 @@ public class DummyContainerFilterTest {
         assertFalse(
                 dummyContainerFilter.doFilter(
                         ScoredCandidate.valueOf(candidate, Score.ONE),
-                        subject, result)
+                        subject,
+                        result,
+                        equivToTelescopeResults
+                )
         );
     }
 
@@ -83,7 +98,10 @@ public class DummyContainerFilterTest {
         assertFalse(
                 dummyContainerFilter.doFilter(
                         ScoredCandidate.valueOf(candidate, Score.ONE),
-                        subject, result)
+                        subject,
+                        result,
+                        equivToTelescopeResults
+                )
         );
     }
 

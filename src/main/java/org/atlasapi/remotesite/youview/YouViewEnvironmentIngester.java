@@ -24,8 +24,8 @@ import com.metabroadcast.common.scheduling.SimpleScheduler;
 @Configuration
 public class YouViewEnvironmentIngester {
     
-    private final static Every EVERY_15_MINUTES = RepetitionRules.every(Duration.standardMinutes(15));
-    private final static Every EVERY_HOUR = RepetitionRules.every(Duration.standardHours(1));
+    private static final Every EVERY_15_MINUTES = RepetitionRules.every(Duration.standardMinutes(15));
+    private static final Every EVERY_HOUR = RepetitionRules.every(Duration.standardHours(1));
     
     private final SimpleScheduler scheduler;
     private final YouViewChannelProcessor youViewChannelProcessor;

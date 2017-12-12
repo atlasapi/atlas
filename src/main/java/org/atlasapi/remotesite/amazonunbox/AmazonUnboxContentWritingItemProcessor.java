@@ -1,14 +1,26 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import java.util.Collection;
 import java.util.Iterator;
+import java.util.Set;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Collection;
 import java.util.Map.Entry;
-import java.util.Set;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import com.google.common.collect.HashMultimap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Ordering;
+import com.google.common.collect.SetMultimap;
+import com.google.common.collect.BiMap;
+import com.google.common.collect.HashBiMap;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -31,21 +43,12 @@ import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 
 import com.metabroadcast.common.base.Maybe;
 
-import com.google.common.collect.BiMap;
-import com.google.common.collect.HashBiMap;
-import com.google.common.collect.HashMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Ordering;
-import com.google.common.collect.SetMultimap;
-import com.google.common.collect.Sets;
+import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Predicates.and;
-import static com.google.common.base.Predicates.not;
 
 
 public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemProcessor {
@@ -77,15 +80,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         }
     };
 
-    private static final Predicate<Content> IS_BRAND =
-            input -> input instanceof Brand;
-    
-    private static final Predicate<Content> IS_SERIES =
-            input -> input instanceof Series;
-
-    private static final Predicate<Content> IS_ITEM =
-            input -> input instanceof Item;
-
     public static final String CONTAINER = "CONTAINER";
     public static final String EPISODE = "EPISODE";
     public static final String ITEM = "ITEM";
@@ -93,6 +87,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     public static final String SERIES = "SERIES";
     public static final String FILM = "FILM";
     public static final String GB_AMAZON_ASIN = "gb:amazon:asin";
+    public static final String UNPUBLISH_NO_PAYLOAD_STRING = "Unpublished item has no payload";
 
     private final Predicate<Alias> AMAZON_ALIAS =
             input -> GB_AMAZON_ASIN.equals(input.getNamespace());
@@ -100,15 +95,19 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Logger log = LoggerFactory.getLogger(
             AmazonUnboxContentWritingItemProcessor.class
     );
-    private final Map<String, Container> seenContainer = Maps.newHashMap();
-    private final SetMultimap<String, Content> cached = HashMultimap.create();
+    private final Map<String, ModelWithPayload<? extends Container>>
+            seenContainer = Maps.newHashMap();
+    private final SetMultimap<String, ModelWithPayload<? extends Content>>
+            cached = HashMultimap.create();
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
-    private final BiMap<String, Content> seenContent = HashBiMap.create();
+    private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
     private final Map<String, String> duplicatedSeriesToCommonKeyMap = Maps.newHashMap();
-    private final Map<String, Series> commonSeriesKeyToCommonSeriesMap = Maps.newHashMap();
+    private final Map<String, ModelWithPayload<Series>>
+            commonSeriesKeyToCommonSeriesMap = Maps.newHashMap();
     private final Map<String, String> duplicatedBrandToCommonKeyMap = Maps.newHashMap();
-    private final Map<String, Brand> commonBrandKeyToCommonBrandMap = Maps.newHashMap();
+    private final Map<String, ModelWithPayload<Brand>>
+            commonBrandKeyToCommonBrandMap = Maps.newHashMap();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -151,28 +150,34 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     @Override
     public void process(AmazonUnboxItem item) {
         for (Content content : extract(item)) {
-            checkForDuplicatesSaveForProcessing(content);
+
+            ModelWithPayload<Content> contentWithPayload = new ModelWithPayload(content, item);
+            checkForDuplicatesSaveForProcessing(contentWithPayload);
         }
     }
 
-    private void checkForDuplicatesSaveForProcessing(Content content) {
+    private void checkForDuplicatesSaveForProcessing(ModelWithPayload<Content> content) {
         StringBuilder key = new StringBuilder();
-        if (content instanceof Container) {
+        if (content.getModel() instanceof Container) {
 
-            if (content instanceof Brand) {
-                Brand brand = (Brand) content;
-                String title = brand.getTitle();
+            if (content.getModel() instanceof Brand) {
+                ModelWithPayload<Brand> brand = content.asModelType(Brand.class);
+                String title = brand.getModel().getTitle();
                 key.append(title).append(BRAND);
-                duplicatedBrandToCommonKeyMap.put(brand.getCanonicalUri(), key.toString());
+                duplicatedBrandToCommonKeyMap.put(
+                        brand.getModel().getCanonicalUri(),
+                        key.toString());
                 if (!commonBrandKeyToCommonBrandMap.containsKey(key.toString())) {
                     commonBrandKeyToCommonBrandMap.put(key.toString(), brand);
                 }
-            } else if (content instanceof Series){
-                Series series = (Series) content;
-                String title = series.getTitle();
-                String brandTitle = series.getShortDescription();
+            } else if (content.getModel() instanceof Series){
+                ModelWithPayload<Series> series = content.asModelType(Series.class);
+                String title = series.getModel().getTitle();
+                String brandTitle = series.getModel().getShortDescription();
                 key.append(title).append(brandTitle).append(SERIES);
-                duplicatedSeriesToCommonKeyMap.put(series.getCanonicalUri(), key.toString());
+                duplicatedSeriesToCommonKeyMap.put(
+                        series.getModel().getCanonicalUri(),
+                        key.toString());
                 if (!commonSeriesKeyToCommonSeriesMap.containsKey(key.toString())) {
                     commonSeriesKeyToCommonSeriesMap.put(key.toString(), series);
                 }
@@ -184,8 +189,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
         } else {
 
-            if (content instanceof Episode){
-                Episode episode = (Episode) content;
+            if (content.getModel() instanceof Episode){
+                Episode episode = (Episode) content.getModel();
                 String title = episode.getTitle();
                 int episodeNumber = episode.getEpisodeNumber();
                 int seasonNumber = episode.getSeriesNumber();
@@ -196,8 +201,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                         .append(episodeNumber)
                         .append(seasonNumber)
                         .append(EPISODE);
-            } else if (content instanceof Film) {
-                Film film = (Film) content;
+            } else if (content.getModel() instanceof Film) {
+                Film film = (Film) content.getModel();
                 String title = film.getTitle();
                 Integer year = film.getYear();
                 if (film.getYear() != null) {
@@ -205,7 +210,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 }
                 key.append(title).append(FILM);
             } else {
-                Item item = (Item) content;
+                Item item = (Item) content.getModel();
                 String title = item.getTitle();
                 key.append(title).append(ITEM);
             }
@@ -213,163 +218,242 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             if (!seenContent.containsKey(hash)) {
                 seenContent.put(hash, content);
             } else {
-                Content seen = seenContent.get(hash);
+                ModelWithPayload<Content> seen = seenContent.get(hash);
                 seenContent.forcePut(hash, mergeAliasesAndLocations(content, seen));
             }
         }
     }
 
-    private Content mergeAliasesAndLocations(Content item, Content seen) {
-        Version version = Iterables.getOnlyElement(item.getVersions());
-        Alias alias = Iterables.getOnlyElement(Iterables.filter(item.getAliases(),
+    private ModelWithPayload<Content> mergeAliasesAndLocations(
+            ModelWithPayload<Content> item,
+            ModelWithPayload<Content> seen) {
+        Version version = Iterables.getOnlyElement(item.getModel().getVersions());
+        Alias alias = Iterables.getOnlyElement(Iterables.filter(item.getModel().getAliases(),
                 AMAZON_ALIAS::test
         ));
         version.addAlias(alias);
-        seen.addAlias(alias);
-        seen.addVersion(version);
+        seen.getModel().addAlias(alias);
+        seen.getModel().addVersion(version);
         return seen;
     }
 
     @Override
-    public void finish() {
-        processSeenContent();
-        processTopLevelSeries();
-        processStandAloneEpisodes();
+    public void finish(OwlTelescopeReporter telescope) {
+        processSeenContent(telescope);
+        processTopLevelSeries(telescope);
+        processStandAloneEpisodes(telescope);
         
         if (cached.values().size() > 0) {
             log.warn("{} extracted but unwritten", cached.values().size());
-            for (Entry<String, Collection<Content>> mapping : cached.asMap().entrySet()) {
-                log.warn(mapping.toString());
+            for (Entry<String, Collection<ModelWithPayload<? extends Content>>> mapping
+                    : cached.asMap().entrySet()) {              
+
+
+                for(ModelWithPayload<? extends Content> map : mapping.getValue()) {
+                    telescope.reportFailedEvent(
+                            map.getModel().getId(),
+                            "Content has been extracted but not written",
+                            EntityType.CONTENT,
+                            map.getPayload()
+                    );
+                }
             }
         }
-        
+
         seenContainer.clear();
         cached.clear();
         topLevelSeries.clear();
         standAloneEpisodes.clear();
         
-        checkForDeletedContent();
+        checkForDeletedContent(telescope);
         
         seenContent.clear();
     }
 
-    private void processSeenContent() {
-        Iterable<Content> brands = Iterables.filter(seenContent.values(), IS_BRAND::test);
-        for (Content container : brands) {
-            checkAndWriteSeenContent(container);
+    private void processSeenContent(OwlTelescopeReporter telescope) {
+        List<ModelWithPayload<Content>> brands = new ArrayList<>();
+        List<ModelWithPayload<Content>> series = new ArrayList<>();
+        List<ModelWithPayload<Content>> notContainers = new ArrayList<>();
+
+        for (ModelWithPayload<Content> container : seenContent.values()){
+            if (container.getModel() instanceof Brand){
+                brands.add(container);
+            } else if (container.getModel() instanceof Series){
+                series.add(container);
+            } else {
+                notContainers.add(container);
+            }
         }
 
-        Iterable<Content> series = Iterables.filter(seenContent.values(), IS_SERIES::test);
-        for (Content container : series) {
-            checkAndWriteSeenContent(container);
-        }
-
-        Iterable<Content> notContainers =
-                seenContent.values()
-                        .stream()
-                        .filter(and(not(IS_BRAND::test), not(IS_SERIES::test))::apply)
-                        .collect(Collectors.toList());
-        for (Content notContainer : notContainers) {
-            checkAndWriteSeenContent(notContainer);
-        }
+        brands.stream().forEach(c -> checkAndWriteSeenContent(c, telescope));
+        series.stream().forEach(c -> checkAndWriteSeenContent(c, telescope));
+        notContainers.stream().forEach(c -> checkAndWriteSeenContent(c, telescope));
     }
 
-    private void checkAndWriteSeenContent(Content content) {
-        Maybe<Identified> existing = resolve(content.getCanonicalUri());
+    private void checkAndWriteSeenContent(
+            ModelWithPayload<Content> content,
+            OwlTelescopeReporter telescope) {
+        Maybe<Identified> existing = resolve(content.getModel().getCanonicalUri());
         if (existing.isNothing()) {
-            write(content);
+            write(content, telescope);
         } else {
             Identified identified = existing.requireValue();
-            if (content instanceof Item) {
-                write(contentMerger.merge(ContentMerger.asItem(identified), (Item) content));
-            } else if (content instanceof Container) {
-                write(contentMerger.merge(
-                        ContentMerger.asContainer(identified), (Container) content)
-                );
+            if (content.getModel() instanceof Item) {
+                write(mergeItemsWithPayload(
+                        ContentMerger.asItem(identified),
+                        content.asModelType(Item.class)),
+                        telescope);
+            } else if (content.getModel() instanceof Container) {
+                write(mergeContainersWithPayload(
+                        ContentMerger.asContainer(identified),
+                        content.asModelType(Container.class)),
+                        telescope);
             }
         }
     }
 
-    private void processStandAloneEpisodes() {
+    private ModelWithPayload<? extends Item> mergeItemsWithPayload(
+            Item existingContent,
+            ModelWithPayload<? extends Item> contentWithPayload
+    ) {
+            Item merged = contentMerger.merge(existingContent, contentWithPayload.getModel());
+            return new ModelWithPayload<>(merged, contentWithPayload.getPayload());
+    }
+
+
+    private ModelWithPayload<? extends Container> mergeContainersWithPayload(
+            Container existingContent,
+            ModelWithPayload<? extends Container> contentWithPayload
+    ) {
+        Container merged = contentMerger.merge(existingContent, contentWithPayload.getModel());
+        return new ModelWithPayload<>(merged, contentWithPayload.getPayload());
+    }
+
+    private void processStandAloneEpisodes(OwlTelescopeReporter telescope) {
         for (Entry<String, Brand> entry : standAloneEpisodes.entrySet()) {
-            Item item = (Item) Iterables.getOnlyElement(
-                    Iterables.filter(cached.get(entry.getKey()), IS_ITEM::test)
-            );
+
+            List<ModelWithPayload<Item>> cachedItems =
+                    cached.get(entry.getKey()).stream()
+                            .filter(c -> c.getModel() instanceof Item)
+                            .map(c -> c.asModelType(Item.class))
+                            .collect(Collectors.toList());
+
+            ModelWithPayload<Item> item = Iterables.getOnlyElement(cachedItems);
+
             cached.removeAll(entry.getKey());
             
-            if (item instanceof Episode) {
-                Episode episode = (Episode) item;
+            if (item.getModel() instanceof Episode) {
+                Episode episode = (Episode) item.getModel();
                 episode.setSeriesRef(null);
                 episode.setSeriesNumber(null);
             }
-            item.setParentRef(null);
-            write(item);
+            item.getModel().setParentRef(null);
+            write(item, telescope);
         }
     }
 
-    private void processTopLevelSeries() {
+    private void processTopLevelSeries(OwlTelescopeReporter telescope) {
         for (Entry<String, Brand> entry : topLevelSeries.entrySet()) {
-            
-            Series series = (Series) Iterables.getOnlyElement(
-                    Iterables.filter(cached.get(entry.getKey()), IS_SERIES::test)
-            );
+
+            List<ModelWithPayload<Series>> cachedSeries =
+                    cached.get(entry.getKey()).stream()
+                            .filter(c -> c.getModel() instanceof Series)
+                            .map(c -> c.asModelType(Series.class))
+                            .collect(Collectors.toList());
+
+            ModelWithPayload<Series> series = Iterables.getOnlyElement(cachedSeries);
+
             cached.remove(entry.getKey(), series);
             
-            series.setParentRef(null);
-            String seriesUri = series.getCanonicalUri();
+            series.getModel().setParentRef(null);
+            String seriesUri = series.getModel().getCanonicalUri();
             // TODO will this update the refs?
-            for (Content child : cached.get(seriesUri)) {
-                Episode episode = (Episode) child;
-                episode.setParentRef(ParentRef.parentRefFrom(series));
+            for (ModelWithPayload<? extends Content> child : cached.get(seriesUri)) {
+                Episode episode = (Episode) child.getModel();
+                episode.setParentRef(ParentRef.parentRefFrom(series.getModel()));
                 episode.setSeriesRef(null);
                 episode.setSeriesNumber(null);
                 //write(episode);
             }
             // this will write those items cached against the series
-            write(series);
+            write(series, telescope);
             
-            for (Content child : cached.removeAll(entry.getKey())) {
-                if (child instanceof Item) {
-                    Item item = (Item) child;
-                    if (item instanceof Episode) {
-                        Episode episode = (Episode) child;
+            for (ModelWithPayload<? extends Content> child : cached.removeAll(entry.getKey())) {
+                if (child.getModel() instanceof Item) {
+                    ModelWithPayload<Item> item = child.asModelType(Item.class);
+                    if (item.getModel() instanceof Episode) {
+                        Episode episode = (Episode) child.getModel();
                         episode.setSeriesRef(null);
                         episode.setSeriesNumber(null);
                     } 
-                    item.setParentRef(ParentRef.parentRefFrom(series));
-                    write(item);
+                    item.getModel().setParentRef(ParentRef.parentRefFrom(series.getModel()));
+                    write(item, telescope);
                 }
             }
         }
     }
      
-    private void checkForDeletedContent() {
-        Set<Content> allLoveFilmContent = ImmutableSet.copyOf(resolveAllLoveFilmContent());
-        Set<Content> notSeen = Sets.difference(allLoveFilmContent, seenContent.values());
+    private void checkForDeletedContent(OwlTelescopeReporter telescope) {
+        Set<Content> allAmazonContent = ImmutableSet.copyOf(resolveAllAmazonUnboxContent());
+        Set<Content> contents = seenContent.values().stream()
+                .map(ModelWithPayload::getModel)
+                .collect(MoreCollectors.toImmutableSet());
+        Set<Content> notSeen = Sets.difference(
+                allAmazonContent,
+                contents
+        );
         
         float missingPercentage =
-                ((float) notSeen.size() / (float) allLoveFilmContent.size()) * 100;
+                ((float) notSeen.size() / (float) allAmazonContent.size()) * 100;
         if (missingPercentage > (float) missingContentPercentage) {
+            telescope.reportFailedEvent("File failed to update " +
+                    missingPercentage +
+                    "% of all Amazon content. File may be truncated.");
             throw new RuntimeException("File failed to update " +
                             missingPercentage +
-                            "% of all LoveFilm content. File may be truncated.");
+                            "% of all Amazon content. File may be truncated.");
         } else {
             List<Content> orderedContent = REVERSE_HIERARCHICAL_ORDER.sortedCopy(notSeen);
             for (Content notSeenContent : orderedContent) {
                 notSeenContent.setActivelyPublished(false);
                 if (notSeenContent instanceof Item) {
                     writer.createOrUpdate((Item) notSeenContent);
+
+                    reportContentToTelescope(
+                            notSeenContent,
+                            EntityType.ITEM,
+                            "Atlas did not return an id after attempting to " +
+                                    "create or update this Item",
+                            telescope
+                    );
                 } else if (notSeenContent instanceof Container) {
                     writer.createOrUpdate((Container) notSeenContent);
+
+                    reportContentToTelescope(
+                            notSeenContent,
+                            EntityType.CONTAINER,
+                            "Atlas did not return an id after attempting to " +
+                                    "create or update this Container",
+                            telescope
+                    );
+
                 } else {
-                    throw new RuntimeException("LoveFilm content with uri " +
+                    telescope.reportFailedEvent(
+                            "This item could not be written to Atlas. id=" + notSeenContent +
+                                    " (Amazon content with uri" +             
+                                    notSeenContent.getCanonicalUri() +
+                                    "not an Item or a Container",
+                            UNPUBLISH_NO_PAYLOAD_STRING
+                    );
+
+                    throw new RuntimeException("Amazon Unbox content with uri " +
                             notSeenContent.getCanonicalUri() + " not an Item or a Container");
                 }
             }
         }
     }
 
-    private Iterator<Content> resolveAllLoveFilmContent() {
+    private Iterator<Content> resolveAllAmazonUnboxContent() {
         ContentListingCriteria criteria = ContentListingCriteria
             .defaultCriteria()
             .forPublisher(Publisher.AMAZON_UNBOX)
@@ -387,115 +471,204 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         return resolver.findByCanonicalUris(uris).get(uri);
     }
     
-    private void write(Content content) {
-        if (content instanceof Container) {
-            if (content instanceof Series) {
-                cacheOrWriteSeriesAndSubContents((Series) content);
-            } else if (content instanceof Brand) {
-                cacheOrWriteBrandAndCachedSubContents((Brand) content);
+    private void write(ModelWithPayload<? extends Content> content, OwlTelescopeReporter telescope) {
+        if (content.getModel() instanceof Container) {
+            if (content.getModel() instanceof Series) {
+                cacheOrWriteSeriesAndSubContents(content.asModelType(Series.class), telescope);
+            } else if (content.getModel() instanceof Brand) {
+                cacheOrWriteBrandAndCachedSubContents(content.asModelType(Brand.class), telescope);
             } else {
-                writer.createOrUpdate((Container) content);
+                writer.createOrUpdate(content.asModelType(Container.class).getModel());
+
+                reportContentWithPayloadToTelescope(
+                        content,
+                        EntityType.CONTAINER,
+                        "Atlas did not return an id after attempting to " +
+                                "create or update this Container",
+                        telescope
+                );
+
             }
-        } else if (content instanceof Item) {
-            if (content instanceof Episode) {
-                cacheOrWriteEpisode((Episode) content);
+        } else if (content.getModel() instanceof Item) {
+            if (content.getModel() instanceof Episode) {
+                cacheOrWriteEpisode(content.asModelType(Episode.class), telescope);
             } else {
-                cacheOrWriteItem(content);
+                cacheOrWriteItem(content.asModelType(Content.class), telescope);
             }
         }
     }
 
-    private void cacheOrWriteBrandAndCachedSubContents(Brand brand) {
-        String brandUri = brand.getCanonicalUri();
+    private void cacheOrWriteBrandAndCachedSubContents(
+            ModelWithPayload<Brand> brand,
+            OwlTelescopeReporter telescope) {
+        String brandUri = brand.getModel().getCanonicalUri();
         BrandType brandType = brandProcessor.getBrandType(brandUri);
         if (BrandType.TOP_LEVEL_SERIES.equals(brandType)) {
             log.trace("Caching top-level series " + brandUri);
-            topLevelSeries.put(brandUri, brand);
+            topLevelSeries.put(brandUri, brand.getModel());
         } else if (BrandType.STAND_ALONE_EPISODE.equals(brandType)) {
             log.trace("Caching stand-alone episode " + brandUri);
-            standAloneEpisodes.put(brandUri, brand);
+            standAloneEpisodes.put(brandUri, brand.getModel());
         } else {
-            writeBrand(brand);
+            writeBrand(brand, telescope);
         }
     }
     
-    private void writeBrand(Brand brand) {
-        writer.createOrUpdate(brand);
-        String brandUri = brand.getCanonicalUri();
+    private void writeBrand(ModelWithPayload<Brand> brand, OwlTelescopeReporter telescope) {
+        writer.createOrUpdate(brand.getModel());
+
+        reportContentWithPayloadToTelescope(
+                brand,
+                EntityType.BRAND,
+                "Atlas did not return an id after attempting to create or update this Brand",
+                telescope);
+
+        String brandUri = brand.getModel().getCanonicalUri();
         seenContainer.put(brandUri, brand);
-        for (Content subContent : cached.removeAll(brandUri)) {
-            write(subContent);
+        for (ModelWithPayload<? extends Content> subContent : cached.removeAll(brandUri)) {
+            write(subContent, telescope);
         }
     }
 
-    private void cacheOrWriteSeriesAndSubContents(Series series) {
-        ParentRef parent = series.getParent();
+    private void cacheOrWriteSeriesAndSubContents(
+            ModelWithPayload<Series> series,
+            OwlTelescopeReporter telescope) {
+        ParentRef parent = series.getModel().getParent();
         if (parent != null) {
-            Brand brand = commonBrandKeyToCommonBrandMap.get(
+            ModelWithPayload<Brand> brand = commonBrandKeyToCommonBrandMap.get(
                     duplicatedBrandToCommonKeyMap.get(parent.getUri())
             );
             if (brand != null) {
-                series.setParent(brand);
+                series.getModel().setParent(brand.getModel());
             }
-            String brandUri = series.getParent().getUri();
+            String brandUri = series.getModel().getParent().getUri();
             if (!seenContainer.containsKey(brandUri)) {
                 cached.put(brandUri, series);
                 return;
             }
         }
-        writeSeries(series);
+        writeSeries(series, telescope);
     }
 
-    public void writeSeries(Series series) {
-        String seriesUri = series.getCanonicalUri();
-        writer.createOrUpdate(series);
+    public void writeSeries(ModelWithPayload<Series> series, OwlTelescopeReporter telescope) {
+        String seriesUri = series.getModel().getCanonicalUri();
+        writer.createOrUpdate(series.getModel());
+
+        reportContentWithPayloadToTelescope(
+                series,
+                EntityType.SERIES,
+                "Atlas did not return an id after attempting to create or update this Series",
+                telescope
+        );
+
         seenContainer.put(seriesUri, series);
-        for (Content episode : cached.removeAll(seriesUri)) {
-            write(episode);
+        for (ModelWithPayload<? extends Content> episode : cached.removeAll(seriesUri)) {
+            write(episode, telescope);
         }
     }
 
-    private void cacheOrWriteItem(Content content) {
-        Item item = (Item) content;
-        ParentRef parent = item.getContainer();
+    private void cacheOrWriteItem(
+            ModelWithPayload<Content> content,
+            OwlTelescopeReporter telescope) {
+        ModelWithPayload<Item> item = content.asModelType(Item.class);
+        ParentRef parent = item.getModel().getContainer();
         if (parent != null && !seenContainer.containsKey(parent.getUri())) {
             cached.put(parent.getUri(), item);
         } else {
-            writer.createOrUpdate((Item) content);
+            writer.createOrUpdate(content.asModelType(Item.class).getModel());
+
+            reportContentWithPayloadToTelescope(
+                    content,
+                    EntityType.CONTENT,
+                    "Atlas did not return an id after attempting to create or update this Content",
+                    telescope);
         }
     }
 
-    private void cacheOrWriteEpisode(Episode episode) {
-        ParentRef parent = episode.getContainer();
+    private void cacheOrWriteEpisode(
+            ModelWithPayload<Episode> episode,
+            OwlTelescopeReporter telescope) {
+        ParentRef parent = episode.getModel().getContainer();
 
         if (parent != null) {
-            Brand brand = commonBrandKeyToCommonBrandMap.get(
+            ModelWithPayload<Brand> brand = commonBrandKeyToCommonBrandMap.get(
                     duplicatedBrandToCommonKeyMap.get(parent.getUri())
             );
-            episode.setContainer(brand);
-            String brandUri = brand.getCanonicalUri();
+            episode.getModel().setContainer(brand.getModel());
+            String brandUri = brand.getModel().getCanonicalUri();
             if (!seenContainer.containsKey(brandUri)) {
                 cached.put(brandUri, episode);
                 return;
             }
         }
         
-        String seriesUri = episode.getSeriesRef() != null ? episode.getSeriesRef().getUri() : null;
+        String seriesUri = episode.getModel().getSeriesRef() != null ?
+                episode.getModel().getSeriesRef().getUri() :
+                null;
         if (seriesUri != null) {
-            Series series = commonSeriesKeyToCommonSeriesMap.get(
+            ModelWithPayload<Series> series = commonSeriesKeyToCommonSeriesMap.get(
                     duplicatedSeriesToCommonKeyMap.get(seriesUri)
             );
             if (series != null) {
-                episode.setSeriesRef(ParentRef.parentRefFrom(series));
-                seriesUri = series.getCanonicalUri();
+                episode.getModel().setSeriesRef(ParentRef.parentRefFrom(series.getModel()));
+                seriesUri = series.getModel().getCanonicalUri();
             }
             if (!seenContainer.containsKey(seriesUri)) {
                 cached.put(seriesUri, episode);
                 return;
             }
-            episode.setSeriesNumber(series.getSeriesNumber());
+            episode.getModel().setSeriesNumber(series.getModel().getSeriesNumber());
         }
 
-        writer.createOrUpdate(episode);
+        writer.createOrUpdate(episode.getModel());
+
+        reportContentWithPayloadToTelescope(
+                episode,
+                EntityType.EPISODE,
+                "Atlas did not return an id after attempting to create or update this Episode",
+                telescope);
+    }
+
+    private void reportContentWithPayloadToTelescope(
+            ModelWithPayload<? extends Content> content,
+            EntityType entityType,
+            String failedEventMessage,
+            OwlTelescopeReporter telescope)
+    {
+        if(content.getModel().getId() != null){
+            telescope.reportSuccessfulEvent(
+                    content.getModel().getId(),
+                    content.getModel().getAliases(),
+                    entityType,
+                    content.getPayload()
+            );
+        } else {
+            telescope.reportFailedEvent(
+                    failedEventMessage,
+                    entityType,
+                    content.getPayload()
+            );
+        }
+    }
+    private void reportContentToTelescope(
+            Content content,
+            EntityType entityType,
+            String failedEventMessage,
+            OwlTelescopeReporter telescope)
+    {
+        if(content.getId() != null){
+            telescope.reportSuccessfulEvent(
+                    content.getId(),
+                    content.getAliases(),
+                    entityType,
+                    UNPUBLISH_NO_PAYLOAD_STRING
+            );
+        } else {
+            telescope.reportFailedEvent(
+                    failedEventMessage,
+                    entityType,
+                    UNPUBLISH_NO_PAYLOAD_STRING
+            );
+        }
     }
 }

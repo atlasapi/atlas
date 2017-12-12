@@ -1,15 +1,14 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.List;
-import java.util.Set;
-
-import org.apache.commons.lang.StringEscapeUtils;
-import org.atlasapi.remotesite.ContentExtractor;
-
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.atlas.glycerin.model.Genre;
 import com.metabroadcast.atlas.glycerin.model.GenreGroup;
+import org.apache.commons.lang.StringEscapeUtils;
+import org.atlasapi.remotesite.ContentExtractor;
+
+import java.util.List;
+import java.util.Set;
 
 public class NitroGenresExtractor implements ContentExtractor<List<GenreGroup>, Set<String>> {
     private static final String PREFIX = "http://www.bbc.co.uk/programmes/genres/";

@@ -1,7 +1,13 @@
 package org.atlasapi.equiv;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.queue.Worker;
+import org.atlasapi.equiv.handlers.ContainerSummaryRequiredException;
 import org.atlasapi.equiv.results.persistence.EquivalenceResultStore;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.media.entity.Content;
@@ -14,20 +20,11 @@ import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.properties.Configurer;
-import com.metabroadcast.common.queue.Worker;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
 
@@ -72,7 +69,27 @@ public class EquivalenceUpdatingWorker implements Worker<EntityUpdatedMessage> {
             log.debug("{} updating equivalence: {} {} {}", 
                 new Object[]{message.getMessageId(), 
                     message.getEntitySource(), message.getEntityType(), eid});
-            equivUpdater.updateEquivalences(content, telescope);
+            try {
+                equivUpdater.updateEquivalences(content, telescope);
+            } catch (ContainerSummaryRequiredException containerSummaryError) {
+                log.trace("Container summary required, attempting to run", containerSummaryError);
+                try {
+                    Maybe<Identified> maybeContainer = contentResolver.findByCanonicalUris(
+                            ImmutableSet.of(containerSummaryError.getItem()
+                                    .getContainer()
+                                    .getUri())).getFirstValue();
+                    if (maybeContainer.hasValue()) {
+                        Identified container = maybeContainer.requireValue();
+                        equivUpdater.updateEquivalences((Content) container, telescope);
+                        equivUpdater.updateEquivalences(containerSummaryError.getItem(), telescope);
+                    } else {
+                        log.error("Container summary missing AND container not resolved. Unable to "
+                                + "run equivalence on item with ID: " + content.getId());
+                    }
+                } catch (Exception e) {
+                    log.error("Failed to rerun equivalence for missing container summary", e);
+                }
+            }
         } else {
             log.trace("{} skipping equiv update: {} {} {}", 
                 new Object[]{message.getMessageId(), 

@@ -10,6 +10,7 @@ import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
@@ -22,13 +23,19 @@ public class SequenceItemScorerTest {
 
     private final SequenceItemScorer scorer = new SequenceItemScorer(Score.ONE);
     private final ResultDescription desc = new DefaultDescription();
+    private final EquivToTelescopeResults equivToTelescopeResults =
+            EquivToTelescopeResults.create("id", "publisher");
 
     @Test
     public void testScoresNullWhenSubjectNotEpisode() {
         Item subject = new Item("item", "item", Publisher.BBC);
         Episode candidate = episode("episode", 4, 5);
 
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject, set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
 
         assertEquals("should score null if subject not episode",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -39,7 +46,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", 5, 4);
         Item candidate = new Item("item", "item", Publisher.BBC);
 
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
 
         assertEquals("should score null if candidate not episode",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -50,7 +62,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", null, null);
         Episode candidate = episode("candidate", null, null);
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score null if episode and series number absent",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -61,7 +78,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", 6, null);
         Episode candidate = episode("candidate", 6, null);
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score null if episode number absent and series number match",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -72,7 +94,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", 5, null);
         Episode candidate = episode("candidate", 4, null);
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score null if episode number absent and series number differs",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -83,7 +110,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", 5, 4);
         Episode candidate = episode("candidate", 4, 4);
 
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
 
         assertEquals("should score null if series number differs",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -94,7 +126,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", 5, 4);
         Episode candidate = episode("candidate", 5, 6);
 
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
 
         assertEquals("should score null if episode number differs",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -106,7 +143,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", null, 5);
         Episode candidate = episode("candidate", null, 6);
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score null if series number absent and episode numbers differ",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -117,7 +159,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", 4, 5);
         Episode candidate = episode("candidate", 8, 6);
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score null if series number and episode numbers differ",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -128,7 +175,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", null, 6);
         Episode candidate = episode("candidate", null, 6);
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score one if series number absent and episode numbers match",
             ONE, scores.candidates().get(candidate));
@@ -139,7 +191,12 @@ public class SequenceItemScorerTest {
         Episode subject = episode("subject", 5, 6);
         Episode candidate = episode("candidate", 5, 6);
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score one if series number absent and episode numbers match",
             ONE, scores.candidates().get(candidate));
@@ -151,7 +208,12 @@ public class SequenceItemScorerTest {
         subject.setSeriesRef(subject.getContainer());
         Episode candidate = episode("candidate", 5, 6);
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score null if subject child of top-level series and candidate not",
             NULL_SCORE, scores.candidates().get(candidate));
@@ -164,7 +226,12 @@ public class SequenceItemScorerTest {
         Episode candidate = episode("candidate", 5, 6);
         candidate.setSeriesRef(candidate.getContainer());
         
-        ScoredCandidates<Item> scores = scorer.score(subject, set(candidate), desc);
+        ScoredCandidates<Item> scores = scorer.score(
+                subject,
+                set(candidate),
+                desc,
+                equivToTelescopeResults
+        );
         
         assertEquals("should score null if candidate child of top-level series and subject not",
                 NULL_SCORE, scores.candidates().get(candidate));

@@ -12,6 +12,7 @@ import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Identified;
@@ -33,6 +34,7 @@ public class DefaultEquivalenceResultBuilderTest {
     private final EquivalenceFilter<Item> filter = AlwaysTrueFilter.get();
     private final EquivalenceExtractor<Item> extractor = TopEquivalenceExtractor.create();
     private final DefaultEquivalenceResultBuilder resultBuilder = new DefaultEquivalenceResultBuilder(combiner, filter, extractor);
+    private final EquivToTelescopeResults equivToTelescopeResults = EquivToTelescopeResults.create("id", "publisher");
 
     @Test
     public void checkDoesNotEquivalateToSeveralPaWithoutBroadcasts() {
@@ -43,7 +45,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
 
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
@@ -82,7 +85,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
     }
@@ -183,7 +187,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
     }
@@ -219,7 +224,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
     }
@@ -283,7 +289,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
         return equivalenceResult;
     }
@@ -321,7 +328,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
         return equivalenceResult;
     }
@@ -362,7 +370,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
 
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 0);
@@ -382,7 +391,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
 
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
@@ -397,7 +407,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
 
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
@@ -421,7 +432,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
 
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
@@ -444,7 +456,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
 
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);
@@ -460,7 +473,8 @@ public class DefaultEquivalenceResultBuilderTest {
         EquivalenceResult equivalenceResult = resultBuilder.resultFor(
                 item,
                 equivalents,
-                new DefaultDescription()
+                new DefaultDescription(),
+                equivToTelescopeResults
         );
 
         assertTrue(equivalenceResult.strongEquivalences().values().size() == 1);

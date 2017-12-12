@@ -7,6 +7,7 @@ import static org.junit.Assert.assertTrue;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.scores.Score;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
+import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
 import org.junit.Test;
@@ -17,6 +18,9 @@ import com.google.common.collect.ImmutableList;
 
 public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
 
+    private final EquivToTelescopeResults equivToTelescopeResults =
+            EquivToTelescopeResults.create("id", "publisher");
+
     @Test
     public void testExtractsWhenStrongBeatsNextBestByThreshold() {
 
@@ -26,7 +30,8 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
         Optional<ScoredCandidate<Item>> extract = extractor.extract(ImmutableList.<ScoredCandidate<Item>>of(
                 strong,
                 ScoredCandidate.valueOf(new Item("test2","cur2",Publisher.BBC), Score.valueOf(0.5))
-        ), null, new DefaultDescription());
+        ), null, new DefaultDescription(),
+                equivToTelescopeResults);
         
         assertTrue("Strong extracted", extract.isPresent());
         assertEquals(extract.get(), strong);
@@ -39,10 +44,16 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
         PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item> extractor = PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item>atLeastNTimesGreater(2);
         
         ScoredCandidate<Item> strong = ScoredCandidate.valueOf(new Item("test1","cur1",Publisher.BBC), Score.valueOf(1.0));
-        Optional<ScoredCandidate<Item>> extract = extractor.extract(ImmutableList.<ScoredCandidate<Item>>of(
-                strong,
-                ScoredCandidate.valueOf(new Item("test2","cur2",Publisher.BBC), Score.valueOf(0.6))
-        ), null, new DefaultDescription());
+        Optional<ScoredCandidate<Item>> extract = extractor.extract(
+                ImmutableList.<ScoredCandidate<Item>>of(
+                        strong,
+                        ScoredCandidate.valueOf(
+                                new Item("test2","cur2",Publisher.BBC),
+                                Score.valueOf(0.6))
+                ),
+                null,
+                new DefaultDescription(),
+                equivToTelescopeResults);
         
         assertFalse("Strong should not be extracted", extract.isPresent());
     } 
@@ -53,7 +64,12 @@ public class PercentThresholdAboveNextBestMatchEquivalenceExtractorTest {
         PercentThresholdAboveNextBestMatchEquivalenceExtractor<Item> extractor = PercentThresholdAboveNextBestMatchEquivalenceExtractor.<Item>atLeastNTimesGreater(2);
         
         ScoredCandidate<Item> strong = ScoredCandidate.valueOf(new Item("test1","cur1",Publisher.BBC), Score.valueOf(1.0));
-        Optional<ScoredCandidate<Item>> extract = extractor.extract(ImmutableList.<ScoredCandidate<Item>>of(strong), null, new DefaultDescription());
+        Optional<ScoredCandidate<Item>> extract = extractor.extract(
+                ImmutableList.<ScoredCandidate<Item>>of(strong),
+                null,
+                new DefaultDescription(),
+                equivToTelescopeResults
+        );
         
         assertTrue("Strong extracted", extract.isPresent());
         assertEquals(extract.get(), strong);

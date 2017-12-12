@@ -209,6 +209,7 @@ public class QueryWebModule {
     @Autowired private LookupWriter lookupWriter;
 
     @Autowired private KnownTypeQueryExecutor queryExecutor;
+    @Autowired @Qualifier("YouviewQueryExecutor")  private KnownTypeQueryExecutor allowMultipleFromSamePublisherExecutor;
     @Autowired private ApplicationFetcher applicationFetcher;
     @Autowired private AdapterLog log;
     @Autowired private EventContentLister eventContentLister;
@@ -390,6 +391,7 @@ public class QueryWebModule {
     QueryController queryController() {
         return new QueryController(
                 queryExecutor,
+                allowMultipleFromSamePublisherExecutor,
                 applicationFetcher,
                 log,
                 contentModelOutputter(),

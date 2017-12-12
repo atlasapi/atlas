@@ -130,6 +130,9 @@ public class QueryModule {
 	// This is similar to the @primary executor, but the EquivalentContentResolver it uses
 	// allows for multiple equivs from the same publisher. This is written so that amazon content
 	// can be merged on output.
+	//
+	// THE MAIL OWL CONTENT ENDPOINT HAS PIGGY BAGGED in this executor as well, when the respective
+	// annotation is set.
 	@Bean @Qualifier("YouviewQueryExecutor") KnownTypeQueryExecutor youviewQueryExecutor() {
 
 		MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"),

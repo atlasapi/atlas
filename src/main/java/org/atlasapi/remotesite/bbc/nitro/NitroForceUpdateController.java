@@ -232,7 +232,18 @@ public class NitroForceUpdateController {
                             getMissingContentTitleStatus(
                                     EntityType.CHANNEL.toString(),
                                     channel.getId(),
-                                    owlReporter.getTelescopeReporter().getTaskId())
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    false)
+                    );
+                } else {
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CHANNEL,
+                            channel.getId(),
+                            getMissingContentTitleStatus(
+                                    EntityType.CHANNEL.toString(),
+                                    channel.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    true)
                     );
                 }
 
@@ -357,7 +368,18 @@ public class NitroForceUpdateController {
                         getMissingContentTitleStatus(
                                 EntityType.ITEM.toString(),
                                 item.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId())
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                false)
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item.getId(),
+                        getMissingContentTitleStatus(
+                                EntityType.ITEM.toString(),
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                true)
                 );
             }
 
@@ -368,7 +390,18 @@ public class NitroForceUpdateController {
                         getMissingContentGenresStatus(
                                 EntityType.ITEM.toString(),
                                 item.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId())
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                false)
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item.getId(),
+                        getMissingContentGenresStatus(
+                                EntityType.ITEM.toString(),
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                true)
                 );
             }
 
@@ -379,7 +412,18 @@ public class NitroForceUpdateController {
                         getMissingEpisodeNumberStatus(
                                 EntityType.EPISODE.toString(),
                                 item.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId())
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                false)
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item.getId(),
+                        getMissingEpisodeNumberStatus(
+                                EntityType.EPISODE.toString(),
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                true)
                 );
             }
         } else {
@@ -439,7 +483,18 @@ public class NitroForceUpdateController {
                             getMissingContentTitleStatus(
                                     EntityType.SERIES.toString(),
                                     series.getId(),
-                                    owlReporter.getTelescopeReporter().getTaskId())
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    false)
+                    );
+                } else {
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CONTENT,
+                            series.getId(),
+                            getMissingContentTitleStatus(
+                                    EntityType.SERIES.toString(),
+                                    series.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    true)
                     );
                 }
 
@@ -450,7 +505,18 @@ public class NitroForceUpdateController {
                             getMissingContentGenresStatus(
                                     EntityType.SERIES.toString(),
                                     series.getId(),
-                                    owlReporter.getTelescopeReporter().getTaskId())
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    false)
+                    );
+                } else {
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CONTENT,
+                            series.getId(),
+                            getMissingContentGenresStatus(
+                                    EntityType.SERIES.toString(),
+                                    series.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    true)
                     );
                 }
 
@@ -518,7 +584,18 @@ public class NitroForceUpdateController {
                                 getMissingContentTitleStatus(
                                         EntityType.BRAND.toString(),
                                         brand.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                brand.getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.BRAND.toString(),
+                                        brand.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
 
@@ -529,7 +606,18 @@ public class NitroForceUpdateController {
                                 getMissingContentGenresStatus(
                                         EntityType.BRAND.toString(),
                                         brand.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                brand.getId(),
+                                getMissingContentGenresStatus(
+                                        EntityType.BRAND.toString(),
+                                        brand.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
 

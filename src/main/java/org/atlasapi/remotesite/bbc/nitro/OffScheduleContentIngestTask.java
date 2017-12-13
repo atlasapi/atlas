@@ -198,7 +198,18 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                     getMissingContentTitleStatus(
                                             EntityType.BRAND.toString(),
                                             brandWithPayload.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId())
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            false)
+                            );
+                        } else {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    brandWithPayload.getModel().getId(),
+                                    getMissingContentTitleStatus(
+                                            EntityType.BRAND.toString(),
+                                            brandWithPayload.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            true)
                             );
                         }
 
@@ -209,7 +220,18 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                     getMissingContentGenresStatus(
                                             EntityType.BRAND.toString(),
                                             brandWithPayload.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId())
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            false)
+                            );
+                        } else {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    brandWithPayload.getModel().getId(),
+                                    getMissingContentGenresStatus(
+                                            EntityType.BRAND.toString(),
+                                            brandWithPayload.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            true)
                             );
                         }
                     } else {
@@ -241,7 +263,18 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                     getMissingContentTitleStatus(
                                             EntityType.SERIES.toString(),
                                             seriesWithPayload.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId())
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            false)
+                            );
+                        } else {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    seriesWithPayload.getModel().getId(),
+                                    getMissingContentTitleStatus(
+                                            EntityType.SERIES.toString(),
+                                            seriesWithPayload.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            true)
                             );
                         }
 
@@ -252,7 +285,18 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                     getMissingContentGenresStatus(
                                             EntityType.SERIES.toString(),
                                             seriesWithPayload.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId())
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            false)
+                            );
+                        } else {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    seriesWithPayload.getModel().getId(),
+                                    getMissingContentGenresStatus(
+                                            EntityType.SERIES.toString(),
+                                            seriesWithPayload.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            true)
                             );
                         }
                     } else {
@@ -280,7 +324,18 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 getMissingContentTitleStatus(
                                         EntityType.ITEM.toString(),
                                         item.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.ITEM.toString(),
+                                        item.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
 
@@ -291,7 +346,18 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 getMissingContentGenresStatus(
                                         EntityType.ITEM.toString(),
                                         item.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getId(),
+                                getMissingContentGenresStatus(
+                                        EntityType.ITEM.toString(),
+                                        item.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
 
@@ -302,7 +368,18 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 getMissingEpisodeNumberStatus(
                                         EntityType.EPISODE.toString(),
                                         item.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getId(),
+                                getMissingEpisodeNumberStatus(
+                                        EntityType.EPISODE.toString(),
+                                        item.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
                 } else {

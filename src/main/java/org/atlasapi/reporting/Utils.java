@@ -6,15 +6,20 @@ public class Utils {
     public static PartialStatus getMissingContentTitleStatus(
             String contentType,
             String contentId,
-            String taskId
+            String taskId,
+            boolean isOk
     ) {
+        Category category = Category.ALERT;
+        if (isOk){
+            category = Category.AUTO_ASSIGNED;
+        }
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.TITLE)
-                        .withCategory(Category.ALERT)
+                        .withCategory(category)
                         .withValue("")
                         .withDescription(
                                 String.format("The title is missing " +
@@ -34,15 +39,21 @@ public class Utils {
     public static PartialStatus getMissingContentTitleStatus(
             String contentType,
             long contentId,
-            String taskId
+            String taskId,
+            boolean isOk
     ) {
+
+        Category category = Category.ALERT;
+        if (isOk){
+            category = Category.AUTO_ASSIGNED;
+        }
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.TITLE)
-                        .withCategory(Category.ALERT)
+                        .withCategory(category)
                         .withValue("")
                         .withDescription(
                                 String.format("The title is missing " +
@@ -62,15 +73,21 @@ public class Utils {
     public static PartialStatus getMissingContentGenresStatus(
             String contentType,
             String contentId,
-            String taskId
+            String taskId,
+            boolean isOk
     ) {
+
+        Category category = Category.TO_SET;
+        if (isOk){
+            category = Category.AUTO_ASSIGNED;
+        }
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.GENRE)
-                        .withCategory(Category.TO_SET)
+                        .withCategory(category)
                         .withValue("")
                         .withDescription(
                                 String.format("The genres are missing " +
@@ -90,15 +107,21 @@ public class Utils {
     public static PartialStatus getMissingContentGenresStatus(
             String contentType,
             long contentId,
-            String taskId
+            String taskId,
+            boolean isOk
     ) {
+
+        Category category = Category.TO_SET;
+        if (isOk){
+            category = Category.AUTO_ASSIGNED;
+        }
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.GENRE)
-                        .withCategory(Category.TO_SET)
+                        .withCategory(category)
                         .withValue("")
                         .withDescription(
                                 String.format("The genres are missing " +
@@ -118,15 +141,21 @@ public class Utils {
     public static PartialStatus getMissingEpisodeNumberStatus(
             String contentType,
             String contentId,
-            String taskId
+            String taskId,
+            boolean isOk
     ) {
+
+        Category category = Category.ALERT;
+        if (isOk){
+            category = Category.AUTO_ASSIGNED;
+        }
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.EPISODE_NUMBER)
-                        .withCategory(Category.ALERT)
+                        .withCategory(category)
                         .withValue("")
                         .withDescription(
                                 String.format("The episode number is missing " +
@@ -146,15 +175,21 @@ public class Utils {
     public static PartialStatus getMissingEpisodeNumberStatus(
             String contentType,
             long contentId,
-            String taskId
+            String taskId,
+            boolean isOk
     ) {
+
+        Category category = Category.ALERT;
+        if (isOk){
+            category = Category.AUTO_ASSIGNED;
+        }
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.EPISODE_NUMBER)
-                        .withCategory(Category.ALERT)
+                        .withCategory(category)
                         .withValue("")
                         .withDescription(
                                 String.format("The episode number is missing " +

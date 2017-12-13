@@ -185,7 +185,18 @@ public class ContentUpdatingNitroBroadcastHandler
                                     getMissingContentTitleStatus(
                                             EntityType.BRAND.toString(),
                                             brand.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId())
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            false)
+                            );
+                        } else {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    brand.getModel().getId(),
+                                    getMissingContentTitleStatus(
+                                            EntityType.BRAND.toString(),
+                                            brand.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            true)
                             );
                         }
 
@@ -196,7 +207,18 @@ public class ContentUpdatingNitroBroadcastHandler
                                     getMissingContentGenresStatus(
                                             EntityType.BRAND.toString(),
                                             brand.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId())
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            false)
+                            );
+                        } else {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    brand.getModel().getId(),
+                                    getMissingContentGenresStatus(
+                                            EntityType.BRAND.toString(),
+                                            brand.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            true)
                             );
                         }
 
@@ -228,7 +250,18 @@ public class ContentUpdatingNitroBroadcastHandler
                                     getMissingContentTitleStatus(
                                             EntityType.SERIES.toString(),
                                             sery.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId())
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            false)
+                            );
+                        } else {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    sery.getModel().getId(),
+                                    getMissingContentTitleStatus(
+                                            EntityType.SERIES.toString(),
+                                            sery.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            true)
                             );
                         }
 
@@ -239,7 +272,18 @@ public class ContentUpdatingNitroBroadcastHandler
                                     getMissingContentGenresStatus(
                                             EntityType.SERIES.toString(),
                                             sery.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId())
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            false)
+                            );
+                        } else {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    sery.getModel().getId(),
+                                    getMissingContentGenresStatus(
+                                            EntityType.SERIES.toString(),
+                                            sery.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId(),
+                                            true)
                             );
                         }
 
@@ -269,7 +313,18 @@ public class ContentUpdatingNitroBroadcastHandler
                                 getMissingContentTitleStatus(
                                         EntityType.ITEM.toString(),
                                         item.getModel().getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getModel().getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.ITEM.toString(),
+                                        item.getModel().getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
 
@@ -280,7 +335,18 @@ public class ContentUpdatingNitroBroadcastHandler
                                 getMissingContentGenresStatus(
                                         EntityType.ITEM.toString(),
                                         item.getModel().getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getModel().getId(),
+                                getMissingContentGenresStatus(
+                                        EntityType.ITEM.toString(),
+                                        item.getModel().getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
 
@@ -291,7 +357,18 @@ public class ContentUpdatingNitroBroadcastHandler
                                 getMissingEpisodeNumberStatus(
                                         EntityType.EPISODE.toString(),
                                         item.getModel().getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getModel().getId(),
+                                getMissingEpisodeNumberStatus(
+                                        EntityType.EPISODE.toString(),
+                                        item.getModel().getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
 

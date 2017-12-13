@@ -168,7 +168,18 @@ public class ChannelIngestTask extends ScheduledTask {
                                 getMissingContentTitleStatus(
                                         EntityType.CHANNEL.toString(),
                                         existingChannel.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CHANNEL,
+                                existingChannel.getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.CHANNEL.toString(),
+                                        existingChannel.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
 
@@ -188,7 +199,18 @@ public class ChannelIngestTask extends ScheduledTask {
                                 getMissingContentTitleStatus(
                                         EntityType.CHANNEL.toString(),
                                         channel.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId())
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        false)
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CHANNEL,
+                                channel.getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.CHANNEL.toString(),
+                                        channel.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        true)
                         );
                     }
                 }

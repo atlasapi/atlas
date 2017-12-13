@@ -4,8 +4,8 @@ import com.metabroadcast.status.api.EntityRef;
 import com.metabroadcast.status.api.PartialStatus;
 import com.metabroadcast.status.client.StatusClientWithApp;
 import com.metabroadcast.status.client.http.HttpExecutor;
-import telescope_client_shaded.org.slf4j.Logger;
-import telescope_client_shaded.org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OwlStatusReporter {
     private static final Logger log = LoggerFactory.getLogger(OwlStatusReporter.class);
@@ -31,17 +31,29 @@ public class OwlStatusReporter {
 
     public void updateStatus(EntityRef.Type type, String id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
-            statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+            try {
+                statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+            } catch (Exception e) {
+                log.error("An unknown exception occured during .updateStatus " + e.getMessage() + ".\n"+
+                        "StatusReporter has protected you from this problem.");
+            }
+        } else {
+            log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
+                    "StatusReporter has protected you from this problem.");
         }
-        log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
-                "StatusReporter has protected you from this problem.");
     }
 
     public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
-            statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+            try {
+                statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+            } catch (Exception e) {
+                log.error("An unknown exception occured during .updateStatus " + e + ".\n"+
+                        "StatusReporter has protected you from this problem.");
+            }
+        } else {
+            log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
+                    "StatusReporter has protected you from this problem.");
         }
-        log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
-                "StatusReporter has protected you from this problem.");
     }
 }

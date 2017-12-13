@@ -1,24 +1,20 @@
 package org.atlasapi.reporting.telescope;
 
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
-
-import org.atlasapi.AtlasMain;
-
+import com.codahale.metrics.MetricRegistry;
+import com.google.common.util.concurrent.ThreadFactoryBuilder;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterFactory;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
-import com.metabroadcast.common.ingest.monitorclient.model.Ingester;
 import com.metabroadcast.common.properties.Configurer;
-
-import com.codahale.metrics.MetricRegistry;
-import com.google.common.util.concurrent.ThreadFactoryBuilder;
+import org.atlasapi.AtlasMain;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class OwlTelescopeReporterFactory extends TelescopeReporterFactory {
     private static final Logger log = LoggerFactory.getLogger(OwlTelescopeReporterFactory.class);

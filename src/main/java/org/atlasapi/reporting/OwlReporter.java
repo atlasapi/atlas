@@ -21,8 +21,8 @@ public class OwlReporter {
                         HttpClients.custom()
                             .setServiceUnavailableRetryStrategy(new RetryStrategy())
                             .build(),
-                        Configurer.get("status.service.host").get(),
-                        Configurer.get("status.service.port").toInt()),
+                        Configurer.get("status.client.host").get(),
+                        Configurer.get("status.client.port").toInt()),
                 appId);
     }
 

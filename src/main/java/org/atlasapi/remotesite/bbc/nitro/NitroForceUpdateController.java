@@ -47,6 +47,7 @@ import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GRO
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
 import static org.atlasapi.reporting.Utils.getMissingContentGenresStatus;
 import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
+import static org.atlasapi.reporting.Utils.getMissingEpisodeNumberStatus;
 
 @Controller
 public class NitroForceUpdateController {
@@ -366,6 +367,17 @@ public class NitroForceUpdateController {
                         item.getId(),
                         getMissingContentGenresStatus(
                                 EntityType.ITEM.toString(),
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId())
+                );
+            }
+
+            if (item instanceof Episode && ((Episode) item).getEpisodeNumber() == null) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item.getId(),
+                        getMissingEpisodeNumberStatus(
+                                EntityType.EPISODE.toString(),
                                 item.getId(),
                                 owlReporter.getTelescopeReporter().getTaskId())
                 );

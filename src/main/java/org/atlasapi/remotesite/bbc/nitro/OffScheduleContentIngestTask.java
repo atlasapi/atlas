@@ -39,6 +39,7 @@ import java.util.stream.Collectors;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static org.atlasapi.reporting.Utils.getMissingContentGenresStatus;
 import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
+import static org.atlasapi.reporting.Utils.getMissingEpisodeNumberStatus;
 
 public class OffScheduleContentIngestTask extends ScheduledTask {
 
@@ -289,6 +290,17 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 item.getId(),
                                 getMissingContentGenresStatus(
                                         EntityType.ITEM.toString(),
+                                        item.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
+
+                    if (item instanceof Episode && ((Episode) item).getEpisodeNumber() == null) {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getId(),
+                                getMissingEpisodeNumberStatus(
+                                        EntityType.EPISODE.toString(),
                                         item.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId())
                         );

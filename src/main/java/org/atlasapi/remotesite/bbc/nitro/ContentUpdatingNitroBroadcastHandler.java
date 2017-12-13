@@ -38,6 +38,7 @@ import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
 import static org.atlasapi.reporting.Utils.getMissingContentGenresStatus;
 import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
+import static org.atlasapi.reporting.Utils.getMissingEpisodeNumberStatus;
 
 /**
  * {@link NitroBroadcastHandler} which fetches, updates and writes relevant
@@ -278,6 +279,17 @@ public class ContentUpdatingNitroBroadcastHandler
                                 item.getModel().getId(),
                                 getMissingContentGenresStatus(
                                         EntityType.ITEM.toString(),
+                                        item.getModel().getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
+
+                    if (item.getModel() instanceof Episode && ((Episode) item.getModel()).getEpisodeNumber() == null) {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getModel().getId(),
+                                getMissingEpisodeNumberStatus(
+                                        EntityType.EPISODE.toString(),
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId())
                         );

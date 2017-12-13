@@ -31,17 +31,29 @@ public class OwlStatusReporter {
 
     public void updateStatus(EntityRef.Type type, String id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
-            statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+            try {
+                statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+            } catch (Exception e) {
+                log.error("An unknown exception occured during .updateStatus " + e.getMessage() + ".\n"+
+                        "StatusReporter has protected you from this problem.");
+            }
+        } else {
+            log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
+                    "StatusReporter has protected you from this problem.");
         }
-        log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
-                "StatusReporter has protected you from this problem.");
     }
 
     public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
-            statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+            try {
+                statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+            } catch (Exception e) {
+                log.error("An unknown exception occured during .updateStatus " + e.getMessage() + ".\n"+
+                        "StatusReporter has protected you from this problem.");
+            }
+        } else {
+            log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
+                    "StatusReporter has protected you from this problem.");
         }
-        log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
-                "StatusReporter has protected you from this problem.");
     }
 }

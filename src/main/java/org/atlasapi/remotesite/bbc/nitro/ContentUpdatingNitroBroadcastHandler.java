@@ -36,6 +36,7 @@ import java.util.stream.Stream;
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.google.common.base.Preconditions.checkState;
+import static org.atlasapi.reporting.Utils.getMissingContentGenresStatus;
 import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
 
 /**
@@ -187,6 +188,17 @@ public class ContentUpdatingNitroBroadcastHandler
                             );
                         }
 
+                        if (brand.getModel().getGenres() == null || brand.getModel().getGenres().isEmpty()) {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    brand.getModel().getId(),
+                                    getMissingContentGenresStatus(
+                                            EntityType.BRAND.toString(),
+                                            brand.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId())
+                            );
+                        }
+
                     } else {
                         owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
@@ -213,6 +225,17 @@ public class ContentUpdatingNitroBroadcastHandler
                                     EntityRef.Type.CONTENT,
                                     sery.getModel().getId(),
                                     getMissingContentTitleStatus(
+                                            EntityType.SERIES.toString(),
+                                            sery.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId())
+                            );
+                        }
+
+                        if (sery.getModel().getGenres() == null || sery.getModel().getGenres().isEmpty()) {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    sery.getModel().getId(),
+                                    getMissingContentGenresStatus(
                                             EntityType.SERIES.toString(),
                                             sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId())
@@ -248,6 +271,18 @@ public class ContentUpdatingNitroBroadcastHandler
                                         owlReporter.getTelescopeReporter().getTaskId())
                         );
                     }
+
+                    if (item.getModel().getGenres() == null || item.getModel().getGenres().isEmpty()) {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getModel().getId(),
+                                getMissingContentGenresStatus(
+                                        EntityType.ITEM.toString(),
+                                        item.getModel().getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
+
                 } else {
                     owlReporter.getTelescopeReporter().reportFailedEvent(
                             "Atlas did not return an id after attempting to create or update this Item",

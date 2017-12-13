@@ -45,6 +45,7 @@ import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.AVAILABLE
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
+import static org.atlasapi.reporting.Utils.getMissingContentGenresStatus;
 import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
 
 @Controller
@@ -358,6 +359,17 @@ public class NitroForceUpdateController {
                                 owlReporter.getTelescopeReporter().getTaskId())
                 );
             }
+
+            if (item.getGenres() == null || item.getGenres().isEmpty()) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item.getId(),
+                        getMissingContentGenresStatus(
+                                EntityType.ITEM.toString(),
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId())
+                );
+            }
         } else {
             owlReporter.getTelescopeReporter().reportFailedEvent(
                     "There was an error while trying to write this Item to Atlas. Item pid=" + pid,
@@ -418,6 +430,18 @@ public class NitroForceUpdateController {
                                     owlReporter.getTelescopeReporter().getTaskId())
                     );
                 }
+
+                if (series.getGenres() == null || series.getGenres().isEmpty()) {
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CONTENT,
+                            series.getId(),
+                            getMissingContentGenresStatus(
+                                    EntityType.SERIES.toString(),
+                                    series.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId())
+                    );
+                }
+
             } else {
                 owlReporter.getTelescopeReporter().reportFailedEvent(
                         "There was an error while trying to write this Series to Atlas. "
@@ -485,6 +509,18 @@ public class NitroForceUpdateController {
                                         owlReporter.getTelescopeReporter().getTaskId())
                         );
                     }
+
+                    if (brand.getGenres() == null || brand.getGenres().isEmpty()) {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                brand.getId(),
+                                getMissingContentGenresStatus(
+                                        EntityType.BRAND.toString(),
+                                        brand.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
+
                 } else {
                     owlReporter.getTelescopeReporter().reportFailedEvent(
                             "There was an error while trying to write this Brand to Atlas."

@@ -37,6 +37,7 @@ import java.util.Set;
 import java.util.stream.Collectors;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.reporting.Utils.getMissingContentGenresStatus;
 import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
 
 public class OffScheduleContentIngestTask extends ScheduledTask {
@@ -199,6 +200,17 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                             owlReporter.getTelescopeReporter().getTaskId())
                             );
                         }
+
+                        if (brandWithPayload.getModel().getGenres() == null || brandWithPayload.getModel().getGenres().isEmpty()) {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    brandWithPayload.getModel().getId(),
+                                    getMissingContentGenresStatus(
+                                            EntityType.BRAND.toString(),
+                                            brandWithPayload.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId())
+                            );
+                        }
                     } else {
                         owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
@@ -231,6 +243,17 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                             owlReporter.getTelescopeReporter().getTaskId())
                             );
                         }
+
+                        if (seriesWithPayload.getModel().getGenres() == null || seriesWithPayload.getModel().getGenres().isEmpty()) {
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    seriesWithPayload.getModel().getId(),
+                                    getMissingContentGenresStatus(
+                                            EntityType.SERIES.toString(),
+                                            seriesWithPayload.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId())
+                            );
+                        }
                     } else {
                         owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
@@ -254,6 +277,17 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 EntityRef.Type.CONTENT,
                                 item.getId(),
                                 getMissingContentTitleStatus(
+                                        EntityType.ITEM.toString(),
+                                        item.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
+
+                    if (item.getGenres() == null || item.getGenres().isEmpty()) {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getId(),
+                                getMissingContentGenresStatus(
                                         EntityType.ITEM.toString(),
                                         item.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId())

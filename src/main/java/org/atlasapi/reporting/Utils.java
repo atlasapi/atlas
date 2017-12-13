@@ -58,4 +58,60 @@ public class Utils {
                         .build())
                 .build();
     }
+
+    public static PartialStatus getMissingContentGenresStatus(
+            String contentType,
+            String contentId,
+            String taskId
+    ) {
+
+        return PartialStatus.builder()
+                .withAlert(NewAlert.builder()
+                        .withKey(
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.GENRE)
+                        .withCategory(Category.TO_SET)
+                        .withValue("")
+                        .withDescription(
+                                String.format("The genres are missing " +
+                                                "for the given %s: %s",
+                                        contentType,
+                                        contentId))
+                        .build())
+                .withEntity(EntityRef.create(
+                        EntityRef.Type.CONTENT,
+                        contentId))
+                .withTask(TaskRef.builder()
+                        .withId(taskId)
+                        .build())
+                .build();
+    }
+
+    public static PartialStatus getMissingContentGenresStatus(
+            String contentType,
+            long contentId,
+            String taskId
+    ) {
+
+        return PartialStatus.builder()
+                .withAlert(NewAlert.builder()
+                        .withKey(
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.GENRE)
+                        .withCategory(Category.TO_SET)
+                        .withValue("")
+                        .withDescription(
+                                String.format("The genres are missing " +
+                                                "for the given %s: %s",
+                                        contentType,
+                                        contentId))
+                        .build())
+                .withEntity(EntityRef.create(
+                        EntityRef.Type.CONTENT,
+                        contentId))
+                .withTask(TaskRef.builder()
+                        .withId(taskId)
+                        .build())
+                .build();
+    }
 }

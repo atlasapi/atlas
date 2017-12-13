@@ -14,7 +14,7 @@ public class Utils {
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.TITLE)
-                        .withCategory(Category.TO_SET)
+                        .withCategory(Category.ALERT)
                         .withValue("")
                         .withDescription(
                                 String.format("The title is missing " +
@@ -42,7 +42,7 @@ public class Utils {
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.TITLE)
-                        .withCategory(Category.TO_SET)
+                        .withCategory(Category.ALERT)
                         .withValue("")
                         .withDescription(
                                 String.format("The title is missing " +
@@ -126,7 +126,7 @@ public class Utils {
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.EPISODE_NUMBER)
-                        .withCategory(Category.TO_SET)
+                        .withCategory(Category.ALERT)
                         .withValue("")
                         .withDescription(
                                 String.format("The episode number is missing " +
@@ -154,7 +154,7 @@ public class Utils {
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.EPISODE_NUMBER)
-                        .withCategory(Category.TO_SET)
+                        .withCategory(Category.ALERT)
                         .withValue("")
                         .withDescription(
                                 String.format("The episode number is missing " +

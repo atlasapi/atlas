@@ -189,8 +189,6 @@ public class ContentUpdatingNitroBroadcastHandler
                                             false)
                             );
                         } else {
-                            log.info("Brand is ok");
-                            log.error("Brand is ok");
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
                                     brand.getModel().getId(),

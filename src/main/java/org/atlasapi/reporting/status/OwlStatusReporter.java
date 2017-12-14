@@ -49,6 +49,8 @@ public class OwlStatusReporter {
     }
 
     public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
+        log.info("update status start");
+        log.error("update status start");
         if (statusClientWithApp != null){
             try {
                 log.error("Status is about to be updated.");

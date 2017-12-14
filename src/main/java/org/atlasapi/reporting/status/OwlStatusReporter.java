@@ -4,8 +4,8 @@ import com.metabroadcast.status.api.EntityRef;
 import com.metabroadcast.status.api.PartialStatus;
 import com.metabroadcast.status.client.StatusClientWithApp;
 import com.metabroadcast.status.client.http.HttpExecutor;
-import telescope_client_shaded.org.slf4j.Logger;
-import telescope_client_shaded.org.slf4j.LoggerFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class OwlStatusReporter {
     private static final Logger log = LoggerFactory.getLogger(OwlStatusReporter.class);
@@ -33,6 +33,8 @@ public class OwlStatusReporter {
     }
 
     public void updateStatus(EntityRef.Type type, String id, PartialStatus partialStatus) {
+        log.info("update status start");
+        log.error("update status start");
         if (statusClientWithApp != null){
             try {
                 log.error("Status is about to be updated.");

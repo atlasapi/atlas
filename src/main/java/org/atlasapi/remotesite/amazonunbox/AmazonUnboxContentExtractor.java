@@ -183,49 +183,68 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private Set<Version> generateVersions(AmazonUnboxItem source) {
         Set<Location> hdLocations = Sets.newHashSet();
         Set<Location> sdLocations = Sets.newHashSet();
-        
-        if (Boolean.TRUE.equals(source.isTrident())) {
-            if (isHd(source)) {
-                hdLocations.add(createLocation(
-                        RevenueContract.SUBSCRIPTION,
-                        null,
-                        source.getUrl()
-                ));
-            } else {
-                sdLocations.add(createLocation(
-                        RevenueContract.SUBSCRIPTION,
-                        null,
-                        source.getUrl()
-                ));
-            }
-        }
 
+        // PURCHASE URLS
         if (!Strings.isNullOrEmpty(source.getUnboxHdPurchaseUrl())
             && !Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
             hdLocations.add(createLocation(
                     RevenueContract.PAY_TO_BUY,
-                    source.getUnboxHdPurchasePrice(), source.getUnboxHdPurchaseUrl()
+                    source.getUnboxHdPurchasePrice(),
+                    source.getUnboxHdPurchaseUrl()
             ));
+            if (source.isTrident()) { //available through subscription
+                hdLocations.add(createLocation(
+                        RevenueContract.SUBSCRIPTION,
+                        null,
+                        source.getUnboxHdPurchaseUrl()
+                ));
+            }
         } else if (!Strings.isNullOrEmpty(source.getUnboxSdPurchaseUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_BUY,
-                    source.getUnboxSdPurchasePrice(), source.getUnboxSdPurchaseUrl()
+                    source.getUnboxSdPurchasePrice(),
+                    source.getUnboxSdPurchaseUrl()
             ));
+            if (source.isTrident()) {
+                sdLocations.add(createLocation(
+                        RevenueContract.SUBSCRIPTION,
+                        null,
+                        source.getUnboxSdPurchaseUrl()
+                ));
+            }
+            //RENT URLS
         } else if (!Strings.isNullOrEmpty(source.getUnboxHdRentalUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxHdRentalPrice())) {
             hdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,
-                    source.getUnboxHdRentalPrice(), source.getUnboxHdRentalUrl()
+                    source.getUnboxHdRentalPrice(),
+                    source.getUnboxHdRentalUrl()
             ));
+            if (source.isTrident()) {
+                hdLocations.add(createLocation(
+                        RevenueContract.SUBSCRIPTION,
+                        null,
+
+                        source.getUnboxHdRentalUrl()
+                ));
+            }
         } else if (!Strings.isNullOrEmpty(source.getUnboxSdRentalUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxSdRentalPrice())) {
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,
-                    source.getUnboxSdRentalPrice(), source.getUnboxSdRentalUrl()
+                    source.getUnboxSdRentalPrice(),
+                    source.getUnboxSdRentalUrl()
             ));
+            if (source.isTrident()) {
+                sdLocations.add(createLocation(
+                        RevenueContract.SUBSCRIPTION,
+                        null,
+                        source.getUnboxSdRentalUrl()
+                ));
+            }
         }
-        
+
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
         if (!hdLocations.isEmpty()) {
             encodings.add(createEncoding(true, hdLocations));
@@ -236,11 +255,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         
         return ImmutableSet.of(createVersion(source, source.getUrl(), encodings.build()));
     }
-    
-    private boolean isHd(AmazonUnboxItem source) {
-        return Quality.HD.equals(source.getQuality()); 
-    }
-    
+
     private Version createVersion(AmazonUnboxItem source, String url, Set<Encoding> encodings) {
         Version version = new Version();
         version.setCanonicalUri(cleanUri(url));
@@ -277,7 +292,6 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         String cleanedUri = cleanUri(url);
 
         Location location = new Location();
-        // TODO determine location links, if any
         location.setPolicy(generatePolicy(revenueContract, price));
         location.setUri(cleanedUri);
         location.setCanonicalUri(cleanedUri);
@@ -288,8 +302,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         if(url == null){
             return null;
         }
-        return url.replaceAll(TAG_PLACEHOLDER, "")
-                                    .replaceAll(URL_SUFFIX_TO_REMOVE, "");
+        return url.replaceAll(TAG_PLACEHOLDER, "").replaceAll(URL_SUFFIX_TO_REMOVE, "");
     }
 
     private Policy generatePolicy(

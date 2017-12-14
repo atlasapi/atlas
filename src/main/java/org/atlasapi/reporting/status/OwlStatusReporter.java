@@ -15,6 +15,9 @@ public class OwlStatusReporter {
     public OwlStatusReporter(HttpExecutor httpExecutor, String appId) {
         this.appId = appId;
 
+        log.info("OwlStatusReporter test");
+        log.error("OwlStatusReporter test");
+
         try {
             if(httpExecutor == null) {
                 throw new NullPointerException("httpExecutor=" + httpExecutor);
@@ -32,9 +35,9 @@ public class OwlStatusReporter {
     public void updateStatus(EntityRef.Type type, String id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
             try {
-                log.info("Status is about to be updated.");
+                log.error("Status is about to be updated.");
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
-                log.info("Status updates for " + id + ".");
+                log.error("Status updates for " + id + ".");
             } catch (Exception e) {
                 log.error("An unknown exception occured during .updateStatus " + e.getMessage() + ".\n"+
                         "StatusReporter has protected you from this problem.");
@@ -48,7 +51,7 @@ public class OwlStatusReporter {
     public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
             try {
-                log.info("Status is about to be updated.");
+                log.error("Status is about to be updated.");
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
                 log.info("Status updates for " + id + ".");
             } catch (Exception e) {

@@ -184,6 +184,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         Set<Location> hdLocations = Sets.newHashSet();
         Set<Location> sdLocations = Sets.newHashSet();
 
+        //We will choose the url that is in any of the
+        String representingUrl = "http://www.amazon.co.uk/gp/product/"+source.getAsin()+"/";
+
         // PURCHASE URLS
         if (!Strings.isNullOrEmpty(source.getUnboxHdPurchaseUrl())
             && !Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
@@ -253,7 +256,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             encodings.add(createEncoding(false, sdLocations));
         }
         
-        return ImmutableSet.of(createVersion(source, source.getUrl(), encodings.build()));
+        return ImmutableSet.of(createVersion(source, representingUrl, encodings.build()));
     }
 
     private Version createVersion(AmazonUnboxItem source, String url, Set<Encoding> encodings) {

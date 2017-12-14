@@ -192,7 +192,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                     source.getUnboxHdPurchasePrice(),
                     source.getUnboxHdPurchaseUrl()
             ));
-            if (source.isTrident()) { //available through subscription
+            if (Boolean.TRUE.equals(source.isTrident())) { //available through subscription
                 hdLocations.add(createLocation(
                         RevenueContract.SUBSCRIPTION,
                         null,
@@ -206,7 +206,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                     source.getUnboxSdPurchasePrice(),
                     source.getUnboxSdPurchaseUrl()
             ));
-            if (source.isTrident()) {
+            if (Boolean.TRUE.equals(source.isTrident())) {
                 sdLocations.add(createLocation(
                         RevenueContract.SUBSCRIPTION,
                         null,
@@ -221,7 +221,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                     source.getUnboxHdRentalPrice(),
                     source.getUnboxHdRentalUrl()
             ));
-            if (source.isTrident()) {
+            if (Boolean.TRUE.equals(source.isTrident())) {
                 hdLocations.add(createLocation(
                         RevenueContract.SUBSCRIPTION,
                         null,
@@ -236,7 +236,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                     source.getUnboxSdRentalPrice(),
                     source.getUnboxSdRentalUrl()
             ));
-            if (source.isTrident()) {
+            if (Boolean.TRUE.equals(source.isTrident())) {
                 sdLocations.add(createLocation(
                         RevenueContract.SUBSCRIPTION,
                         null,

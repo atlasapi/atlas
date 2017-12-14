@@ -33,6 +33,7 @@ public class OwlStatusReporter {
         if (statusClientWithApp != null){
             try {
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+                log.info("Status updates for " + id + ".");
             } catch (Exception e) {
                 log.error("An unknown exception occured during .updateStatus " + e.getMessage() + ".\n"+
                         "StatusReporter has protected you from this problem.");
@@ -47,6 +48,7 @@ public class OwlStatusReporter {
         if (statusClientWithApp != null){
             try {
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+                log.info("Status updates for " + id + ".");
             } catch (Exception e) {
                 log.error("An unknown exception occured during .updateStatus " + e.getMessage() + ".\n"+
                         "StatusReporter has protected you from this problem.");

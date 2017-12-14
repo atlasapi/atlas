@@ -32,6 +32,7 @@ public class OwlStatusReporter {
     public void updateStatus(EntityRef.Type type, String id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
             try {
+                log.info("Status is about to be updated.");
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
                 log.info("Status updates for " + id + ".");
             } catch (Exception e) {
@@ -47,6 +48,7 @@ public class OwlStatusReporter {
     public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
             try {
+                log.info("Status is about to be updated.");
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
                 log.info("Status updates for " + id + ".");
             } catch (Exception e) {

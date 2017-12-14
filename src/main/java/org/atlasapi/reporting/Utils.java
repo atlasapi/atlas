@@ -9,17 +9,14 @@ public class Utils {
             String taskId,
             boolean isOk
     ) {
-        Category category = Category.ALERT;
-        if (isOk){
-            category = Category.AUTO_ASSIGNED;
-        }
+        State state = isOk ? State.AUTO_CLEARED : State.FIRING;
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.TITLE)
-                        .withCategory(category)
+                        .withState(state)
                         .withValue("")
                         .withDescription(
                                 String.format("The title is missing " +
@@ -42,18 +39,14 @@ public class Utils {
             String taskId,
             boolean isOk
     ) {
-
-        Category category = Category.ALERT;
-        if (isOk){
-            category = Category.AUTO_ASSIGNED;
-        }
+        State state = isOk ? State.AUTO_CLEARED : State.FIRING;
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.TITLE)
-                        .withCategory(category)
+                        .withState(state)
                         .withValue("")
                         .withDescription(
                                 String.format("The title is missing " +
@@ -76,18 +69,14 @@ public class Utils {
             String taskId,
             boolean isOk
     ) {
-
-        Category category = Category.TO_SET;
-        if (isOk){
-            category = Category.AUTO_ASSIGNED;
-        }
+        State state = isOk ? State.AUTO_CLEARED : State.FIRING;
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.GENRE)
-                        .withCategory(category)
+                        .withState(state)
                         .withValue("")
                         .withDescription(
                                 String.format("The genres are missing " +
@@ -111,17 +100,14 @@ public class Utils {
             boolean isOk
     ) {
 
-        Category category = Category.TO_SET;
-        if (isOk){
-            category = Category.AUTO_ASSIGNED;
-        }
+        State state = isOk ? State.AUTO_CLEARED : State.FIRING;
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.GENRE)
-                        .withCategory(category)
+                        .withState(state)
                         .withValue("")
                         .withDescription(
                                 String.format("The genres are missing " +
@@ -145,17 +131,14 @@ public class Utils {
             boolean isOk
     ) {
 
-        Category category = Category.ALERT;
-        if (isOk){
-            category = Category.AUTO_ASSIGNED;
-        }
+        State state = isOk ? State.AUTO_CLEARED : State.FIRING;
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.EPISODE_NUMBER)
-                        .withCategory(category)
+                        .withState(state)
                         .withValue("")
                         .withDescription(
                                 String.format("The episode number is missing " +
@@ -179,17 +162,14 @@ public class Utils {
             boolean isOk
     ) {
 
-        Category category = Category.ALERT;
-        if (isOk){
-            category = Category.AUTO_ASSIGNED;
-        }
+        State state = isOk ? State.AUTO_CLEARED : State.FIRING;
 
         return PartialStatus.builder()
                 .withAlert(NewAlert.builder()
                         .withKey(
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.EPISODE_NUMBER)
-                        .withCategory(category)
+                        .withState(state)
                         .withValue("")
                         .withDescription(
                                 String.format("The episode number is missing " +

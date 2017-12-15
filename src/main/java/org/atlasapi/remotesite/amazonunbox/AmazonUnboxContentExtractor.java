@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import com.google.common.collect.Lists;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTime;
 
@@ -64,7 +64,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final String TAG_PLACEHOLDER = "INSERT_TAG_HERE/ref=atv_feed_catalog/";
     private static final String GENRE_URI_PATTERN = "http://unbox.amazon.co.uk/genres/%s";
 
-    //since they have no end dates, but we check for an end-date, add a very very long end date.
+    //because they need dates in order to generate onDemands.
     private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T01:11:11"));
     private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2000-01-10T01:11:11"));
 
@@ -181,11 +181,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
     
     private Set<Version> generateVersions(AmazonUnboxItem source) {
-        Set<Location> hdLocations = Sets.newHashSet();
-        Set<Location> sdLocations = Sets.newHashSet();
+        List<Location> hdLocations = Lists.newArrayList();
+        List<Location> sdLocations = Lists.newArrayList();
 
-        //We will choose the url that is in any of the
-        String representingUrl = "http://www.amazon.co.uk/gp/product/"+source.getAsin()+"/";
+        //We will create the version based on of the item itself.
+        String representingUrl = String.format(AMAZON_ALIAS_URL_VERSION, source.getAsin());
 
         // PURCHASE URLS
         if (!Strings.isNullOrEmpty(source.getUnboxHdPurchaseUrl())
@@ -297,8 +297,20 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         Location location = new Location();
         location.setPolicy(generatePolicy(revenueContract, price));
         location.setUri(cleanedUri);
-        location.setCanonicalUri(cleanedUri);
+        location.setCanonicalUri(createCannonicalUri(revenueContract, cleanedUri));
         return location;
+    }
+
+    /**
+     * The plan is to create a unique identifier for each location, so can fit in the same set
+     * multiple locations with the same uri, but different revenue methods.
+     * @return
+     * @param revenueContract
+     * @param cleanedUri
+     */
+    private String createCannonicalUri(
+            RevenueContract revenueContract, String cleanedUri) {
+        return cleanedUri + revenueContract;
     }
 
     private String cleanUri(String url) {

@@ -648,7 +648,7 @@ public class NitroForceUpdateController {
                                         NewAlert.Key.Check.MISSING,
                                         NewAlert.Key.Field.TITLE,
                                         String.format("Content %s is missing a title.",
-                                                encode(item.getId())
+                                                encode(brand.getId())
                                         ),
                                         EntityRef.Type.CONTENT,
                                         false
@@ -659,7 +659,7 @@ public class NitroForceUpdateController {
                                 EntityRef.Type.CONTENT,
                                 brand.getId(),
                                 getPartialStatusForContent(
-                                        item.getId(),
+                                        brand.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
                                         NewAlert.Key.Check.MISSING,
                                         NewAlert.Key.Field.TITLE,

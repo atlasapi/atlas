@@ -269,12 +269,12 @@ public class ContentUpdatingNitroBroadcastHandler
                                     EntityRef.Type.CONTENT,
                                     sery.getModel().getId(),
                                     getPartialStatusForContent(
-                                            brand.getModel().getId(),
+                                            sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
                                             NewAlert.Key.Check.MISSING,
                                             NewAlert.Key.Field.TITLE,
                                             String.format("Content %s is missing a title.",
-                                                    encode(brand.getModel().getId())
+                                                    encode(sery.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
                                             false
@@ -285,7 +285,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                     EntityRef.Type.CONTENT,
                                     sery.getModel().getId(),
                                     getPartialStatusForContent(
-                                            brand.getModel().getId(),
+                                            sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
                                             NewAlert.Key.Check.MISSING,
                                             NewAlert.Key.Field.TITLE,
@@ -432,7 +432,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                 EntityRef.Type.CONTENT,
                                 item.getModel().getId(),
                                 getPartialStatusForContent(
-                                        brand.getModel().getId(),
+                                        item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
                                         NewAlert.Key.Check.MISSING,
                                         NewAlert.Key.Field.EPISODE_NUMBER,

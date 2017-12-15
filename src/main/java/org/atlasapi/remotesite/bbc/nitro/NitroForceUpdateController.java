@@ -239,6 +239,7 @@ public class NitroForceUpdateController {
                                             encode(channel.getId())
                                     ),
                                     EntityRef.Type.CHANNEL,
+                                    channel.getSource().key(),
                                     false
                             )
                     );
@@ -253,6 +254,7 @@ public class NitroForceUpdateController {
                                     NewAlert.Key.Field.TITLE,
                                     null,
                                     EntityRef.Type.CHANNEL,
+                                    channel.getSource().key(),
                                     true
                             )
                     );
@@ -385,6 +387,7 @@ public class NitroForceUpdateController {
                                         encode(item.getId())
                                 ),
                                 EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
                                 false
                         )
                 );
@@ -399,6 +402,7 @@ public class NitroForceUpdateController {
                                 NewAlert.Key.Field.TITLE,
                                 null,
                                 EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
                                 true
                         )
                 );
@@ -417,6 +421,7 @@ public class NitroForceUpdateController {
                                         encode(item.getId())
                                 ),
                                 EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
                                 false
                         )
                 );
@@ -431,6 +436,7 @@ public class NitroForceUpdateController {
                                 NewAlert.Key.Field.GENRE,
                                 null,
                                 EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
                                 true
                         )
                 );
@@ -449,6 +455,7 @@ public class NitroForceUpdateController {
                                         encode(item.getId())
                                 ),
                                 EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
                                 false
                         )
                 );
@@ -463,6 +470,7 @@ public class NitroForceUpdateController {
                                 NewAlert.Key.Field.EPISODE_NUMBER,
                                 null,
                                 EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
                                 true
                         )
                 );
@@ -530,6 +538,7 @@ public class NitroForceUpdateController {
                                             encode(series.getId())
                                     ),
                                     EntityRef.Type.CONTENT,
+                                    series.getPublisher().key(),
                                     false
                             )
                     );
@@ -544,6 +553,7 @@ public class NitroForceUpdateController {
                                     NewAlert.Key.Field.TITLE,
                                     null,
                                     EntityRef.Type.CONTENT,
+                                    series.getPublisher().key(),
                                     true
                             )
                     );
@@ -562,6 +572,7 @@ public class NitroForceUpdateController {
                                             encode(series.getId())
                                     ),
                                     EntityRef.Type.CONTENT,
+                                    series.getPublisher().key(),
                                     false
                             )
                     );
@@ -576,6 +587,7 @@ public class NitroForceUpdateController {
                                     NewAlert.Key.Field.EPISODE_NUMBER,
                                     null,
                                     EntityRef.Type.CONTENT,
+                                    series.getPublisher().key(),
                                     true
                             )
                     );
@@ -651,6 +663,7 @@ public class NitroForceUpdateController {
                                                 encode(brand.getId())
                                         ),
                                         EntityRef.Type.CONTENT,
+                                        brand.getPublisher().key(),
                                         false
                                 )
                         );
@@ -665,6 +678,7 @@ public class NitroForceUpdateController {
                                         NewAlert.Key.Field.TITLE,
                                         null,
                                         EntityRef.Type.CONTENT,
+                                        brand.getPublisher().key(),
                                         true
                                 )
                         );
@@ -683,6 +697,7 @@ public class NitroForceUpdateController {
                                                 encode(brand.getId())
                                         ),
                                         EntityRef.Type.CONTENT,
+                                        brand.getPublisher().key(),
                                         false
                                 )
                         );
@@ -697,6 +712,7 @@ public class NitroForceUpdateController {
                                         NewAlert.Key.Field.GENRE,
                                         null,
                                         EntityRef.Type.CONTENT,
+                                        brand.getPublisher().key(),
                                         true
                                 )
                         );

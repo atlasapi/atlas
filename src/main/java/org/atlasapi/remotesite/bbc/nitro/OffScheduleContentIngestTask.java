@@ -204,6 +204,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                                     encode(brandWithPayload.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
+                                            brandWithPayload.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -218,6 +219,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                             NewAlert.Key.Field.TITLE,
                                             null,
                                             EntityRef.Type.CONTENT,
+                                            brandWithPayload.getModel().getPublisher().key(),
                                             true
                                     )
                             );
@@ -236,6 +238,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                                     encode(brandWithPayload.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
+                                            brandWithPayload.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -250,6 +253,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                             NewAlert.Key.Field.GENRE,
                                             null,
                                             EntityRef.Type.CONTENT,
+                                            brandWithPayload.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -288,6 +292,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                                     encode(seriesWithPayload.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
+                                            seriesWithPayload.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -302,6 +307,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                             NewAlert.Key.Field.TITLE,
                                             null,
                                             EntityRef.Type.CONTENT,
+                                            seriesWithPayload.getModel().getPublisher().key(),
                                             true
                                     )
                             );
@@ -320,6 +326,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                                     encode(seriesWithPayload.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
+                                            seriesWithPayload.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -334,6 +341,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                             NewAlert.Key.Field.GENRE,
                                             null,
                                             EntityRef.Type.CONTENT,
+                                            seriesWithPayload.getModel().getPublisher().key(),
                                             true
                                     )
                             );
@@ -369,6 +377,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                                 encode(item.getId())
                                         ),
                                         EntityRef.Type.CONTENT,
+                                        item.getPublisher().key(),
                                         false
                                 )
                         );
@@ -383,6 +392,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                         NewAlert.Key.Field.TITLE,
                                         null,
                                         EntityRef.Type.CONTENT,
+                                        item.getPublisher().key(),
                                         true
                                 )
                         );
@@ -401,6 +411,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                                 encode(item.getId())
                                         ),
                                         EntityRef.Type.CONTENT,
+                                        item.getPublisher().key(),
                                         false
                                 )
                         );
@@ -415,6 +426,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                         NewAlert.Key.Field.GENRE,
                                         null,
                                         EntityRef.Type.CONTENT,
+                                        item.getPublisher().key(),
                                         true
                                 )
                         );
@@ -433,6 +445,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                                 encode(item.getId())
                                         ),
                                         EntityRef.Type.CONTENT,
+                                        item.getPublisher().key(),
                                         false
                                 )
                         );
@@ -447,6 +460,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                         NewAlert.Key.Field.EPISODE_NUMBER,
                                         null,
                                         EntityRef.Type.CONTENT,
+                                        item.getPublisher().key(),
                                         true
                                 )
                         );

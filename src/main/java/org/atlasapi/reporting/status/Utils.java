@@ -1,6 +1,7 @@
 package org.atlasapi.reporting.status;
 
 
+import com.metabroadcast.status.api.EntityAndPublisher;
 import com.metabroadcast.status.api.EntityRef;
 import com.metabroadcast.status.api.NewAlert;
 import com.metabroadcast.status.api.PartialStatus;
@@ -16,6 +17,7 @@ public class Utils {
             NewAlert.Key.Field alertField,
             String description,
             EntityRef.Type entityRefType,
+            String publisher,
             boolean isOk
     ) {
         State state = isOk ? State.AUTO_CLEARED : State.FIRING;
@@ -27,7 +29,7 @@ public class Utils {
                         .withValue("")
                         .withDescription(description!=null?description:"")
                         .build())
-                .withEntity(EntityRef.create(entityRefType, id))
+                .withEntity(EntityAndPublisher.create(entityRefType, id, publisher))
                 .withTask(TaskRef.builder()
                         .withId(taskId)
                         .build())
@@ -41,6 +43,7 @@ public class Utils {
             NewAlert.Key.Field alertField,
             String description,
             EntityRef.Type entityRefType,
+            String publisher,
             boolean isOk
     ) {
         State state = isOk ? State.AUTO_CLEARED : State.FIRING;
@@ -52,7 +55,7 @@ public class Utils {
                         .withValue("")
                         .withDescription(description!=null?description:"")
                         .build())
-                .withEntity(EntityRef.create(entityRefType, id))
+                .withEntity(EntityAndPublisher.create(entityRefType, id, publisher))
                 .withTask(TaskRef.builder()
                         .withId(taskId)
                         .build())

@@ -177,6 +177,7 @@ public class ChannelIngestTask extends ScheduledTask {
                                                 encode(existingChannel.getId())
                                         ),
                                         EntityRef.Type.CHANNEL,
+                                        existingChannel.getSource().key(),
                                         false
                                 )
                         );
@@ -191,6 +192,7 @@ public class ChannelIngestTask extends ScheduledTask {
                                         NewAlert.Key.Field.TITLE,
                                         null,
                                         EntityRef.Type.CHANNEL,
+                                        existingChannel.getSource().key(),
                                         true
                                 )
                         );
@@ -218,6 +220,7 @@ public class ChannelIngestTask extends ScheduledTask {
                                                 encode(channel.getId())
                                         ),
                                         EntityRef.Type.CHANNEL,
+                                        channel.getSource().key(),
                                         false
                                 )
                         );
@@ -232,6 +235,7 @@ public class ChannelIngestTask extends ScheduledTask {
                                         NewAlert.Key.Field.TITLE,
                                         null,
                                         EntityRef.Type.CHANNEL,
+                                        channel.getSource().key(),
                                         true
                                 )
                         );

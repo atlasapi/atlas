@@ -192,6 +192,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                                     encode(brand.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
+                                            brand.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -206,6 +207,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                             NewAlert.Key.Field.TITLE,
                                             null,
                                             EntityRef.Type.CONTENT,
+                                            brand.getModel().getPublisher().key(),
                                             true
                                     )
                             );
@@ -224,6 +226,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                                     encode(brand.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
+                                            brand.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -238,6 +241,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                             NewAlert.Key.Field.GENRE,
                                             null,
                                             EntityRef.Type.CONTENT,
+                                            brand.getModel().getPublisher().key(),
                                             true
                                     )
                             );
@@ -277,6 +281,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                                     encode(sery.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
+                                            sery.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -291,6 +296,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                             NewAlert.Key.Field.TITLE,
                                             null,
                                             EntityRef.Type.CONTENT,
+                                            sery.getModel().getPublisher().key(),
                                             true
                                     )
                             );
@@ -309,6 +315,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                                     encode(sery.getModel().getId())
                                             ),
                                             EntityRef.Type.CONTENT,
+                                            sery.getModel().getPublisher().key(),
                                             false
                                     )
                             );
@@ -323,6 +330,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                             NewAlert.Key.Field.GENRE,
                                             null,
                                             EntityRef.Type.CONTENT,
+                                            sery.getModel().getPublisher().key(),
                                             true
                                     )
                             );
@@ -360,6 +368,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                                 encode(item.getModel().getId())
                                         ),
                                         EntityRef.Type.CONTENT,
+                                        item.getModel().getPublisher().key(),
                                         false
                                 )
                         );
@@ -374,6 +383,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                         NewAlert.Key.Field.TITLE,
                                         null,
                                         EntityRef.Type.CONTENT,
+                                        item.getModel().getPublisher().key(),
                                         true
                                 )
                         );
@@ -392,6 +402,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                                 encode(item.getModel().getId())
                                         ),
                                         EntityRef.Type.CONTENT,
+                                        item.getModel().getPublisher().key(),
                                         false
                                 )
                         );
@@ -406,6 +417,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                         NewAlert.Key.Field.GENRE,
                                         null,
                                         EntityRef.Type.CONTENT,
+                                        item.getModel().getPublisher().key(),
                                         true
                                 )
                         );
@@ -424,6 +436,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                                 encode(item.getModel().getId())
                                         ),
                                         EntityRef.Type.CONTENT,
+                                        item.getModel().getPublisher().key(),
                                         false
                                 )
                         );
@@ -438,6 +451,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                         NewAlert.Key.Field.EPISODE_NUMBER,
                                         null,
                                         EntityRef.Type.CONTENT,
+                                        item.getModel().getPublisher().key(),
                                         true
                                 )
                         );

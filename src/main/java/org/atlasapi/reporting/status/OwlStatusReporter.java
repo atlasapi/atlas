@@ -33,13 +33,9 @@ public class OwlStatusReporter {
     }
 
     public void updateStatus(EntityRef.Type type, String id, PartialStatus partialStatus) {
-        log.info("update status start");
-        log.error("update status start");
         if (statusClientWithApp != null){
             try {
-                log.error("Status is about to be updated.");
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
-                log.error("Status updates for " + id + ".");
             } catch (Exception e) {
                 log.error("An unknown exception occured during .updateStatus " + e.getMessage() + ".\n"+
                         "StatusReporter has protected you from this problem.");
@@ -53,9 +49,7 @@ public class OwlStatusReporter {
     public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
             try {
-                log.error("Status is about to be updated.");
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
-                log.info("Status updates for " + id + ".");
             } catch (Exception e) {
                 log.error("An unknown exception occured during .updateStatus " + e + ".\n"+
                         "StatusReporter has protected you from this problem.");

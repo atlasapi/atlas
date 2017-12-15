@@ -12,6 +12,7 @@ import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
 import com.metabroadcast.status.api.EntityRef;
+import com.metabroadcast.status.api.NewAlert;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.channel.ChannelWriter;
@@ -25,7 +26,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
-import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
+import static com.metabroadcast.status.util.Utils.encode;
+import static org.atlasapi.reporting.status.Utils.getPartialStatusForContent;
 
 public class ChannelIngestTask extends ScheduledTask {
 
@@ -165,21 +167,31 @@ public class ChannelIngestTask extends ScheduledTask {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
                                 existingChannel.getId(),
-                                getMissingContentTitleStatus(
-                                        EntityType.CHANNEL.toString(),
+                                getPartialStatusForContent(
                                         existingChannel.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
-                                        false)
+                                        NewAlert.Key.Check.MISSING,
+                                        NewAlert.Key.Field.TITLE,
+                                        String.format("Channel %s is missing a title.",
+                                                encode(existingChannel.getId())
+                                        ),
+                                        EntityRef.Type.CHANNEL,
+                                        false
+                                )
                         );
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
                                 existingChannel.getId(),
-                                getMissingContentTitleStatus(
-                                        EntityType.CHANNEL.toString(),
+                                getPartialStatusForContent(
                                         existingChannel.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
-                                        true)
+                                        NewAlert.Key.Check.MISSING,
+                                        NewAlert.Key.Field.TITLE,
+                                        null,
+                                        EntityRef.Type.CHANNEL,
+                                        true
+                                )
                         );
                     }
 
@@ -196,21 +208,31 @@ public class ChannelIngestTask extends ScheduledTask {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
                                 channel.getId(),
-                                getMissingContentTitleStatus(
-                                        EntityType.CHANNEL.toString(),
+                                getPartialStatusForContent(
                                         channel.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
-                                        false)
+                                        NewAlert.Key.Check.MISSING,
+                                        NewAlert.Key.Field.TITLE,
+                                        String.format("Channel %s is missing a title.",
+                                                encode(channel.getId())
+                                        ),
+                                        EntityRef.Type.CHANNEL,
+                                        false
+                                )
                         );
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
                                 channel.getId(),
-                                getMissingContentTitleStatus(
-                                        EntityType.CHANNEL.toString(),
+                                getPartialStatusForContent(
                                         channel.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
-                                        true)
+                                        NewAlert.Key.Check.MISSING,
+                                        NewAlert.Key.Field.TITLE,
+                                        null,
+                                        EntityRef.Type.CHANNEL,
+                                        true
+                                )
                         );
                     }
                 }

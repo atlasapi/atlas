@@ -15,9 +15,6 @@ public class OwlStatusReporter {
     public OwlStatusReporter(HttpExecutor httpExecutor, String appId) {
         this.appId = appId;
 
-        log.info("OwlStatusReporter test");
-        log.error("OwlStatusReporter test");
-
         try {
             if(httpExecutor == null) {
                 throw new NullPointerException("httpExecutor=" + httpExecutor);

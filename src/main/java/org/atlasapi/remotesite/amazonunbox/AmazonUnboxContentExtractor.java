@@ -39,6 +39,7 @@ import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
 
+import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -185,7 +186,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         Set<Location> sdLocations = Sets.newHashSet();
 
         //We will create the version id based on of the item itself.
-        String versionUrl = String.format(AMAZON_ALIAS_URL_VERSION, source.getAsin());
+        String versionUrl = String.format(AMAZON_ALIAS_URL_VERSION, source.getAsin()) + "/";
         boolean addedSubscription = false;
 
         // PURCHASE URLS

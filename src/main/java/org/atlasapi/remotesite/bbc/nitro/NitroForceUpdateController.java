@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
@@ -225,7 +226,7 @@ public class NitroForceUpdateController {
                         EntityType.CHANNEL,
                         channelWithPayload.get().getPayload());
 
-                if (channel.getTitle() == null || channel.getTitle().isEmpty()){
+                if (Strings.isNullOrEmpty(channel.getTitle())){
                     owlReporter.getStatusReporter().updateStatus(
                             EntityRef.Type.CHANNEL,
                             channel.getId(),
@@ -371,7 +372,7 @@ public class NitroForceUpdateController {
                     itemWithPayload.getPayload()
             );
 
-            if (item.getTitle() == null || item.getTitle().isEmpty()){
+            if (Strings.isNullOrEmpty(item.getTitle())){
                 owlReporter.getStatusReporter().updateStatus(
                         EntityRef.Type.CONTENT,
                         item.getId(),
@@ -516,7 +517,7 @@ public class NitroForceUpdateController {
                         EntityType.SERIES,
                         seryWithPayload.getPayload(), itemWithPayload.getPayload());
 
-                if (series.getTitle() == null || series.getTitle().isEmpty()){
+                if (Strings.isNullOrEmpty(series.getTitle())){
                     owlReporter.getStatusReporter().updateStatus(
                             EntityRef.Type.CONTENT,
                             series.getId(),
@@ -637,7 +638,7 @@ public class NitroForceUpdateController {
                             brandWithPayload.getPayload()
                     );
 
-                    if (brand.getTitle() == null || brand.getTitle().isEmpty()){
+                    if (Strings.isNullOrEmpty(brand.getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
                                 brand.getId(),

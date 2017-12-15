@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Objects;
 import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
@@ -178,7 +179,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                 nitroBroadcast
                         );
 
-                        if (brand.getModel().getTitle() == null || brand.getModel().getTitle().isEmpty()) {
+                        if (Strings.isNullOrEmpty(brand.getModel().getTitle())) {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
                                     brand.getModel().getId(),
@@ -263,7 +264,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                 nitroBroadcast
                         );
 
-                        if (sery.getModel().getTitle() == null || sery.getModel().getTitle().isEmpty()){
+                        if (Strings.isNullOrEmpty(sery.getModel().getTitle())){
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
                                     sery.getModel().getId(),
@@ -346,7 +347,7 @@ public class ContentUpdatingNitroBroadcastHandler
                             nitroBroadcast
                     );
 
-                    if (item.getModel().getTitle() == null || item.getModel().getTitle().isEmpty()){
+                    if (Strings.isNullOrEmpty(item.getModel().getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
                                 item.getModel().getId(),

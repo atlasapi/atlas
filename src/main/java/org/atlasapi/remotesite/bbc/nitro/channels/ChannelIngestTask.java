@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
@@ -163,7 +164,7 @@ public class ChannelIngestTask extends ScheduledTask {
                             EntityType.CHANNEL,
                             channelWithPayload.getPayload());
 
-                    if (existingChannel.getTitle() == null || existingChannel.getTitle().isEmpty()){
+                    if (Strings.isNullOrEmpty(existingChannel.getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
                                 existingChannel.getId(),
@@ -204,7 +205,7 @@ public class ChannelIngestTask extends ScheduledTask {
                             EntityType.CHANNEL,
                             channelWithPayload.getPayload());
 
-                    if (channel.getTitle() == null || channel.getTitle().isEmpty()){
+                    if (Strings.isNullOrEmpty(channel.getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CHANNEL,
                                 channel.getId(),

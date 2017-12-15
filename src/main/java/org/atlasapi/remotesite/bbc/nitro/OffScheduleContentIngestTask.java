@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
+import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.api.client.repackaged.com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableListMultimap;
 import com.google.common.collect.ImmutableSet;
@@ -190,8 +191,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 brandWithPayload.getPayload()
                         );
 
-                        if (brandWithPayload.getModel().getTitle() == null ||
-                                brandWithPayload.getModel().getTitle().isEmpty()){
+                        if (Strings.isNullOrEmpty(brandWithPayload.getModel().getTitle())){
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
                                     brandWithPayload.getModel().getId(),
@@ -275,8 +275,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 seriesWithPayload.getPayload()
                         );
 
-                        if (seriesWithPayload.getModel().getTitle() == null ||
-                                seriesWithPayload.getModel().getTitle().isEmpty()){
+                        if (Strings.isNullOrEmpty(seriesWithPayload.getModel().getTitle())){
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
                                     seriesWithPayload.getModel().getId(),
@@ -357,7 +356,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                             itemWithPayload.getPayload()
                     );
 
-                    if (item.getTitle() == null || item.getTitle().isEmpty()){
+                    if (Strings.isNullOrEmpty(item.getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
                                 item.getId(),

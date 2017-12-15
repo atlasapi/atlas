@@ -239,8 +239,13 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         //if isTrident is set, but we did not find any specific URLS, we'll use the generic one
         //(as per this version of the ingesters, they should be the same anyway)
         if (!addedSubscription && Boolean.TRUE.equals(source.isTrident())) {
-            sdLocations.add(createSubLocation(versionUrl));
+            if (Quality.HD.equals(source.getQuality())) {
+                hdLocations.add(createSubLocation(versionUrl));
+            } else {
+                sdLocations.add(createSubLocation(versionUrl));
+            }
         }
+
 
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
         if (!hdLocations.isEmpty()) {

@@ -44,7 +44,7 @@ import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTime;
 
@@ -181,8 +181,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
     
     private Set<Version> generateVersions(AmazonUnboxItem source) {
-        List<Location> hdLocations = Lists.newArrayList();
-        List<Location> sdLocations = Lists.newArrayList();
+        Set<Location> hdLocations = Sets.newHashSet();
+        Set<Location> sdLocations = Sets.newHashSet();
 
         //We will create the version based on of the item itself.
         String representingUrl = String.format(AMAZON_ALIAS_URL_VERSION, source.getAsin());

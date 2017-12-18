@@ -1,17 +1,16 @@
 package org.atlasapi.system;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.http.HttpStatusCode;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentPurger;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
-import com.google.common.collect.ImmutableSet;
-import com.metabroadcast.common.http.HttpStatusCode;
+import javax.servlet.http.HttpServletResponse;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 @Controller

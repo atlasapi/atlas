@@ -1,10 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro.v1;
 
-import java.util.List;
-
+import com.google.api.client.util.Key;
 import org.joda.time.DateTime;
 
-import com.google.api.client.util.Key;
+import java.util.List;
 
 public class NitroGenreGroup {
 

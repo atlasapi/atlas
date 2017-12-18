@@ -1,19 +1,18 @@
 package org.atlasapi;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.stream.StreamSupport;
-
-import com.metabroadcast.common.stream.MoreCollectors;
-
 import com.google.common.base.Function;
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
+import com.metabroadcast.common.stream.MoreCollectors;
 import com.mongodb.DBObject;
 import com.mongodb.ReadPreference;
 import com.mongodb.Tag;
 import com.mongodb.TagSet;
+
+import java.util.Iterator;
+import java.util.List;
+import java.util.stream.StreamSupport;
 
 public class MongoSecondaryReadPreferenceBuilder {
 

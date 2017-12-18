@@ -1,30 +1,31 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.channel.ChannelWriter;
-import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
-import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.metabroadcast.atlas.glycerin.GlycerinException;
 import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.base.Maybe;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.scheduling.UpdateProgress;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Sets;
+import com.metabroadcast.status.api.EntityRef;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.channel.ChannelWriter;
+import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
+import org.atlasapi.remotesite.bbc.nitro.NitroChannelAdapter;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
 
 public class ChannelIngestTask extends ScheduledTask {
 
@@ -63,7 +64,8 @@ public class ChannelIngestTask extends ScheduledTask {
                 OwlTelescopeReporters.BBC_NITRO_INGEST_CHANNELS,
                 Event.Type.INGEST
         );
-        telescope.startReporting();
+        OwlReporter owlReporter = new OwlReporter(telescope);
+        owlReporter.getTelescopeReporter().startReporting();
 
         try {
             progress = UpdateProgress.START;
@@ -72,7 +74,7 @@ public class ChannelIngestTask extends ScheduledTask {
             Iterable<ModelWithPayload<Channel>> filteredMasterBrands = hydrator.hydrateMasterbrands(masterbrands);
 
             ImmutableMap.Builder<String, Channel> uriToId = ImmutableMap.builder();
-            for (Channel channel : writeAndMergeChannels(filteredMasterBrands, telescope)) {
+            for (Channel channel : writeAndMergeChannels(filteredMasterBrands, owlReporter)) {
                 uriToId.put(channel.getUri(), channel);
             }
 
@@ -95,22 +97,22 @@ public class ChannelIngestTask extends ScheduledTask {
                 }
             }
 
-            writeAndMergeChannels(withUris.build(), telescope);
+            writeAndMergeChannels(withUris.build(), owlReporter);
 
             reportStatus(progress.toString());
         } catch (GlycerinException e) {
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "A Glycerin exception prevented this channel ingest task from running properly."
                     + " (" + e.toString() + ")");
             throw Throwables.propagate(e);
         } finally {
-            telescope.endReporting();
+            owlReporter.getTelescopeReporter().endReporting();
         }
     }
 
     private Iterable<Channel> writeAndMergeChannels(
             Iterable<ModelWithPayload<Channel>> channels,
-            OwlTelescopeReporter telescope) {
+            OwlReporter owlReporter) {
 
         ImmutableList.Builder<Channel> written = ImmutableList.builder();
         for (ModelWithPayload<Channel> channelWithPayload : channels) {
@@ -153,25 +155,47 @@ public class ChannelIngestTask extends ScheduledTask {
                     existingChannel.setAliases(channel.getAliases());
 
                     written.add(channelWriter.createOrUpdate(existingChannel));
-                    telescope.reportSuccessfulEvent(
+                    owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                             existingChannel.getId(),
                             existingChannel.getAliases(),
                             EntityType.CHANNEL,
                             channelWithPayload.getPayload());
 
+                    if (existingChannel.getTitle() == null || existingChannel.getTitle().isEmpty()){
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CHANNEL,
+                                existingChannel.getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.CHANNEL.toString(),
+                                        existingChannel.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
+
                     log.debug("Writing merged channel {}", existingChannel);
                 } else {
                     written.add(channelWriter.createOrUpdate(channel));
-                    telescope.reportSuccessfulEvent(
+                    owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                             channel.getId(),
                             channel.getAliases(),
                             EntityType.CHANNEL,
                             channelWithPayload.getPayload());
+
+                    if (channel.getTitle() == null || channel.getTitle().isEmpty()){
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CHANNEL,
+                                channel.getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.CHANNEL.toString(),
+                                        channel.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
                 }
                 progress = progress.reduce(UpdateProgress.SUCCESS);
             } catch (Exception e) {
                 log.error("Failed to write channel {} - {}", channel.getCanonicalUri(), e);
-                telescope.reportFailedEvent(
+                owlReporter.getTelescopeReporter().reportFailedEvent(
                         "Failed to write channel (" + e.toString() + ")",
                         channelWithPayload.getPayload());
                 progress = progress.reduce(UpdateProgress.FAILURE);

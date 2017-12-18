@@ -1,17 +1,16 @@
 package org.atlasapi.equiv;
 
+import com.metabroadcast.common.scheduling.ScheduledTask;
+import com.metabroadcast.common.scheduling.UpdateProgress;
+import com.mongodb.DBCollection;
+import com.mongodb.DBCursor;
+import com.mongodb.DBObject;
 import org.atlasapi.media.entity.Person;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.atlasapi.persistence.media.entity.PersonTranslator;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
-import com.metabroadcast.common.scheduling.ScheduledTask;
-import com.metabroadcast.common.scheduling.UpdateProgress;
-import com.mongodb.DBCollection;
-import com.mongodb.DBCursor;
-import com.mongodb.DBObject;
 
 
 public class PersonLookupPopulationTask extends ScheduledTask {

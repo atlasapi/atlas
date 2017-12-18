@@ -1,25 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.ParentRef;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.persistence.content.ContentWriter;
-import org.atlasapi.remotesite.bbc.BbcFeeds;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
-import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-import org.atlasapi.util.GroupLock;
-
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableListMultimap;
+import com.google.common.collect.ImmutableSet;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 import com.metabroadcast.atlas.glycerin.queries.AvailabilityEntityTypeOption;
 import com.metabroadcast.atlas.glycerin.queries.EntityTypeOption;
@@ -30,14 +13,31 @@ import com.metabroadcast.columbus.telescope.api.Event;
 import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableListMultimap;
-import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.status.api.EntityRef;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.ParentRef;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.persistence.content.ContentWriter;
+import org.atlasapi.remotesite.bbc.BbcFeeds;
+import org.atlasapi.reporting.OwlReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+import org.atlasapi.util.GroupLock;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
+import java.util.stream.Collectors;
+
 import static com.google.common.base.Preconditions.checkNotNull;
+import static org.atlasapi.reporting.Utils.getMissingContentTitleStatus;
 
 public class OffScheduleContentIngestTask extends ScheduledTask {
 
@@ -106,7 +106,8 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 OwlTelescopeReporters.BBC_NITRO_INGEST_OFFSCHEDULE,
                 Event.Type.INGEST
         );
-        telescope.startReporting();
+        OwlReporter owlReporter = new OwlReporter(telescope);
+        owlReporter.getTelescopeReporter().startReporting();
 
         for (List<ModelWithPayload<Item>> itemsWithPayload : fetched) {
             reportStatus("Locking item IDs");
@@ -143,7 +144,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                 .collect(MoreCollectors.toImmutableSet());
 
                 reportStatus("Writing items");
-                writeContent(resolvedItems, series, brands, telescope);
+                writeContent(resolvedItems, series, brands, owlReporter);
             } catch (NitroException e) {
                 log.error("Item fetching failed", e);
                 throw Throwables.propagate(e);
@@ -160,14 +161,14 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 ));
             }
         }
-        telescope.endReporting();
+        owlReporter.getTelescopeReporter().endReporting();
     }
 
     private void writeContent(
             ImmutableSet<ModelWithPayload<Item>> itemsWithPayload,
             @Nullable Set<ModelWithPayload<Series>> series,
             @Nullable Set<ModelWithPayload<Brand>> brands,
-            OwlTelescopeReporter telescope
+            OwlReporter owlReporter
     ) {
         Map<String, ModelWithPayload<Series>> seriesIndex = LocalOrRemoteNitroFetcher.getIndex(series);
         Map<String, ModelWithPayload<Brand>> brandIndex = LocalOrRemoteNitroFetcher.getIndex(brands);
@@ -180,14 +181,26 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     contentWriter.createOrUpdate(brandWithPayload.getModel());
                     //report to telescope
                     if (brandWithPayload.getModel().getId() != null) {
-                        telescope.reportSuccessfulEvent(
+                        owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                                 brandWithPayload.getModel().getId(),
                                 brandWithPayload.getModel().getAliases(),
                                 EntityType.BRAND,
                                 brandWithPayload.getPayload()
                         );
+
+                        if (brandWithPayload.getModel().getTitle() == null ||
+                                brandWithPayload.getModel().getTitle().isEmpty()){
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    brandWithPayload.getModel().getId(),
+                                    getMissingContentTitleStatus(
+                                            EntityType.BRAND.toString(),
+                                            brandWithPayload.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId())
+                            );
+                        }
                     } else {
-                        telescope.reportFailedEvent(
+                        owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
                                 EntityType.BRAND,
                                 brandWithPayload.getPayload(), itemWithPayload.getPayload()
@@ -200,14 +213,26 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     contentWriter.createOrUpdate(seriesWithPayload.getModel());
                     //report to telescope
                     if (seriesWithPayload.getModel().getId() != null) {
-                        telescope.reportSuccessfulEvent(
+                        owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                                 seriesWithPayload.getModel().getId(),
                                 seriesWithPayload.getModel().getAliases(),
                                 EntityType.SERIES,
                                 seriesWithPayload.getPayload()
                         );
+
+                        if (seriesWithPayload.getModel().getTitle() == null ||
+                                seriesWithPayload.getModel().getTitle().isEmpty()){
+                            owlReporter.getStatusReporter().updateStatus(
+                                    EntityRef.Type.CONTENT,
+                                    seriesWithPayload.getModel().getId(),
+                                    getMissingContentTitleStatus(
+                                            EntityType.SERIES.toString(),
+                                            seriesWithPayload.getModel().getId(),
+                                            owlReporter.getTelescopeReporter().getTaskId())
+                            );
+                        }
                     } else {
-                        telescope.reportFailedEvent(
+                        owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
                                 EntityType.SERIES,
                                 seriesWithPayload.getPayload(), itemWithPayload.getPayload()
@@ -217,14 +242,25 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 contentWriter.createOrUpdate(item);
                 //report to telescope
                 if (item.getId() != null) {
-                    telescope.reportSuccessfulEvent(
+                    owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                             item.getId(),
                             item.getAliases(),
                             EntityType.ITEM,
                             itemWithPayload.getPayload()
                     );
+
+                    if (item.getTitle() == null || item.getTitle().isEmpty()){
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                item.getId(),
+                                getMissingContentTitleStatus(
+                                        EntityType.ITEM.toString(),
+                                        item.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId())
+                        );
+                    }
                 } else {
-                    telescope.reportFailedEvent(
+                    owlReporter.getTelescopeReporter().reportFailedEvent(
                             "Atlas did not return an id after attempting to create or update this Item",
                             EntityType.ITEM,
                             itemWithPayload.getPayload()
@@ -232,7 +268,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                 }
                 written++;
             } catch (Exception e) {
-                telescope.reportFailedEvent(
+                owlReporter.getTelescopeReporter().reportFailedEvent(
                         "This item could not be written to Atlas. id=" + item.getId() + " (" + e.getMessage() + ")",
                         itemWithPayload.getPayload()
                 );

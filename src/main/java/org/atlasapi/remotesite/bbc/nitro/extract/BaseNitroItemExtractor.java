@@ -1,10 +1,19 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Function;
+import com.google.common.base.Optional;
+import com.google.common.base.Predicate;
 import com.google.common.collect.FluentIterable;
 import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableSetMultimap;
+import com.google.common.collect.ImmutableSetMultimap.Builder;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.model.WarningTexts;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
 import org.atlasapi.media.entity.Film;
@@ -15,25 +24,13 @@ import org.atlasapi.media.entity.Restriction;
 import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
-
-import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.model.WarningTexts;
-import com.metabroadcast.common.time.Clock;
-
-import com.google.common.base.Function;
-import com.google.common.base.Optional;
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableSetMultimap;
-import com.google.common.collect.ImmutableSetMultimap.Builder;
-import com.google.common.collect.Iterables;
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 
 import javax.annotation.Nullable;
+import java.util.List;
+import java.util.Set;
 
 /**
  * Base extractor for extracting common properties of {@link Item}s from a

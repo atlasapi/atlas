@@ -1,25 +1,19 @@
 package org.atlasapi.equiv;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-
-import javax.annotation.Nullable;
-
+import com.google.common.base.Predicate;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.ContentResolver;
-import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 
-import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.metabroadcast.common.base.Maybe;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class EquivalenceBreaker {

@@ -1,12 +1,11 @@
 package org.atlasapi;
 
-import org.atlasapi.logging.HealthModule;
-import org.atlasapi.system.JettyHealthProbe;
-import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
-
 import com.google.common.base.Function;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Lists;
+import org.atlasapi.logging.HealthModule;
+import org.atlasapi.system.JettyHealthProbe;
+import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 
 
 public class MonitoringWebApplicationContext extends AnnotationConfigWebApplicationContext {

@@ -1,11 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
+import com.google.common.base.Objects;
 import org.atlasapi.media.channel.Channel;
 import org.joda.time.LocalDate;
 
-import com.google.common.base.Objects;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class ChannelDay {

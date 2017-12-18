@@ -1,9 +1,5 @@
 package org.atlasapi.http;
 
-import java.io.IOException;
-import java.net.Socket;
-import java.net.URL;
-
 import org.apache.http.Header;
 import org.apache.http.HttpResponse;
 import org.apache.http.impl.DefaultHttpClientConnection;
@@ -13,6 +9,10 @@ import org.apache.http.params.HttpConnectionParams;
 import org.apache.http.protocol.HTTP;
 import org.atlasapi.remotesite.HttpClients;
 import org.joda.time.Duration;
+
+import java.io.IOException;
+import java.net.Socket;
+import java.net.URL;
 
 public class RedirectShortUrlResolver implements ShortUrlResolver {
 

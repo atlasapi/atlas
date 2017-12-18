@@ -515,7 +515,8 @@ public class QueryWebModule {
 
     @Bean
     EventsController eventController() {
-        Iterable<String> whitelistedIds = Splitter.on(',').split(eventsWhitelist);
+        Iterable<String> whitelistedIds = Splitter.on(',').trimResults().omitEmptyStrings()
+                .split(eventsWhitelist);
         return new EventsController(
                 applicationFetcher,
                 log,

@@ -189,7 +189,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         String versionUrl = String.format(AMAZON_ALIAS_URL_VERSION, source.getAsin()) + "/";
         boolean addedSubscription = false;
 
-        // PURCHASE URLS
+        // ---PURCHASE URLS---
         if (!Strings.isNullOrEmpty(source.getUnboxHdPurchaseUrl())
             && !Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
             hdLocations.add(createLocation(
@@ -212,8 +212,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 sdLocations.add(createSubLocation(source.getUnboxSdPurchaseUrl()));
                 addedSubscription = true;
             }
-            //RENT URLS
-        } else if (!Strings.isNullOrEmpty(source.getUnboxHdRentalUrl())
+        } //---RENT URLS---
+        else if (!Strings.isNullOrEmpty(source.getUnboxHdRentalUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxHdRentalPrice())) {
             hdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,
@@ -237,8 +237,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             }
         }
 
-        //if isTrident is set, but we did not find any specific URLS, we'll use the generic one
-        //(as per this version of the ingesters, they should be the same anyway)
+        // if isTrident is set, but we did not find any specific URLS in the to_rent or to_buy
+        // sections, we'll use the generic url of the versio to create the subscription location.
+        // (as per this version of the ingester, they should be the same url anyway)
         if (!addedSubscription && Boolean.TRUE.equals(source.isTrident())) {
             if (Quality.HD.equals(source.getQuality())) {
                 hdLocations.add(createSubLocation(versionUrl));

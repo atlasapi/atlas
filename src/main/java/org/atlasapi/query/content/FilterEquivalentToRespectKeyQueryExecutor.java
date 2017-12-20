@@ -59,17 +59,17 @@ public class FilterEquivalentToRespectKeyQueryExecutor implements KnownTypeQuery
     }
 
     public static Map<String, List<Identified>> filter(
-            Map<String, List<Identified>> unfiltered,
+            Map<String, List<Identified>> content,
             ContentQuery query) {
         if (!query.getAnnotations().contains(Annotation.RESPECT_API_KEY_FOR_EQUIV_LIST)) {
-            return unfiltered;
+            return content;
         }
 
         ImmutableSet<Publisher> enabledReadSources = query.getApplication()
                 .getConfiguration()
                 .getEnabledReadSources();
 
-        for (Map.Entry<String, List<Identified>> entry : unfiltered.entrySet()) {
+        for (Map.Entry<String, List<Identified>> entry : content.entrySet()) {
             for (Identified identified : entry.getValue()) {
                 ImmutableSet<LookupRef> newSet =
                         identified.getEquivalentTo().stream()
@@ -79,7 +79,7 @@ public class FilterEquivalentToRespectKeyQueryExecutor implements KnownTypeQuery
             }
         }
 
-        return unfiltered;
+        return content;
     }
 
 }

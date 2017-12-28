@@ -39,7 +39,6 @@ import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
 
-import com.google.common.base.Joiner;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
@@ -298,7 +297,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         Location location = new Location();
         location.setPolicy(generatePolicy(revenueContract, price));
         location.setUri(cleanedUri);
-        location.setCanonicalUri(createCannonicalUri(revenueContract, cleanedUri));
+        location.setCanonicalUri(createCannonicalUri(cleanedUri, revenueContract));
         return location;
     }
 
@@ -310,11 +309,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
      * The plan is to create a unique identifier for each location, so can fit in the same set
      * multiple locations with the same uri, but different revenue methods.
      * @return
-     * @param revenueContract
      * @param cleanedUri
+     * @param revenueContract
      */
     private String createCannonicalUri(
-            RevenueContract revenueContract, String cleanedUri) {
+            String cleanedUri, RevenueContract revenueContract) {
         return cleanedUri + revenueContract;
     }
 

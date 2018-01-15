@@ -102,8 +102,9 @@ public class AmazonUnboxContentExtractorTest {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE).build();
 
         Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
-        
-        assertEquals(ImmutableSet.of("en"), film.getLanguages());
+
+        //amazon feed does not contain languaged, so this should be undefined for now.
+        assertEquals(ImmutableSet.of("und"), film.getLanguages());
     }
     
     @Test

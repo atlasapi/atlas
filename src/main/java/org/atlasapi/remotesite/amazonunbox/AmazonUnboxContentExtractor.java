@@ -51,7 +51,7 @@ import org.joda.time.DateTime;
 public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
                                                     Iterable<Content>> {
 
-    private static final String LANGUAGE_ENGLISH = "en";
+    private static final String LANGUAGE_UNDEFINED = "und";
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
     private static final String ASIN_NAMESPACE = "gb:amazon:asin";
     private static final String IMDB_ALIAS_URL_PREFIX = "http://imdb.com/title/%s";
@@ -394,7 +394,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
      * languages are ingested at a later point  
      */
     private Set<String> generateLanguages(AmazonUnboxItem source) { //NOSONAR
-        return ImmutableSet.of(LANGUAGE_ENGLISH);
+        return ImmutableSet.of(LANGUAGE_UNDEFINED);
     }
 
     private List<CrewMember> generatePeople(AmazonUnboxItem source) {

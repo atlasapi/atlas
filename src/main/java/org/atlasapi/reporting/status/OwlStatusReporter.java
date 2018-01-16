@@ -46,7 +46,7 @@ public class OwlStatusReporter {
     public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
         if (statusClientWithApp != null){
             try {
-                statusClientWithApp.updateStatus(appId, type, id, partialStatus);
+ //               statusClientWithApp.updateStatus(appId, type, id, partialStatus);
             } catch (Exception e) {
                 log.error("An unknown exception occured during .updateStatus " + e + ".\n"+
                         "StatusReporter has protected you from this problem.");

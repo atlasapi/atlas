@@ -90,7 +90,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withContentType(ContentType.valueOf(buffer.toString().toUpperCase()));
                 break;
             case DIRECTOR:
-                item.withDirector(buffer.toString());
+                item.addDirectorRoles(SPLIT_ON_COMMA.split(buffer.toString()));
                 break;
             case EPISODENUMBER:
                 item.withEpisodeNumber(Integer.valueOf(buffer.toString()));
@@ -241,7 +241,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withSeriesTitle(buffer.toString());
                 break;
             case STARRING:
-                item.withStarringRoles(SPLIT_ON_COMMA.split(buffer.toString()));
+                item.addStarringRoles(SPLIT_ON_COMMA.split(buffer.toString()));
                 break;
             case STUDIO:
                 item.withStudio(buffer.toString());

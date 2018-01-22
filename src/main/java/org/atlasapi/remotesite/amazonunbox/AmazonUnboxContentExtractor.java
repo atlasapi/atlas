@@ -398,22 +398,23 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private List<CrewMember> generatePeople(AmazonUnboxItem source) {
-        if (source.getDirector() == null && source.getStarring().isEmpty()) {
+        if (source.getDirectors().isEmpty() && source.getStarring().isEmpty()) {
             return ImmutableList.of();
         }
         Builder<CrewMember> people = ImmutableList.<CrewMember>builder();
-        if (source.getDirector() != null) {
+        for (String directorName : source.getDirectors()) {
             CrewMember director = new CrewMember();
             director.withPublisher(Publisher.AMAZON_UNBOX);
-            director.withName(source.getDirector());
+            director.withName(directorName);
             director.withRole(Role.DIRECTOR);
             people.add(director);
         }
-        for (String role : source.getStarring()) {
-            CrewMember star = new CrewMember();
-            star.withPublisher(Publisher.AMAZON_UNBOX);
-            star.withName(role);
-            people.add(star);
+        for (String actorName : source.getStarring()) {
+            CrewMember actor = new CrewMember();
+            actor.withPublisher(Publisher.AMAZON_UNBOX);
+            actor.withName(actorName);
+            actor.withRole(Role.ACTOR);
+            people.add(actor);
         }
         return people.build();
     }

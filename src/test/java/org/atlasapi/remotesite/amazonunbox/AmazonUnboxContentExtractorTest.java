@@ -9,7 +9,6 @@ import static org.junit.Assert.assertThat;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -34,12 +33,10 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
@@ -123,9 +120,9 @@ public class AmazonUnboxContentExtractorTest {
     public void testExtractionOfPeople() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
                 .withDirector("Director")
-                .withStarring("Cast 1")
-                .withStarring("Cast 2")
-                .withStarring("Cast 3")
+                .addStarringRole("Cast 1")
+                .addStarringRole("Cast 2")
+                .addStarringRole("Cast 3")
                 .build();
         
         Content extractedContent = Iterables.getOnlyElement(extractor.extract(filmItem));

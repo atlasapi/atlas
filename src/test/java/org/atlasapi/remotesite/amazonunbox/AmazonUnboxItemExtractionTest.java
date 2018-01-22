@@ -47,7 +47,7 @@ public class AmazonUnboxItemExtractionTest {
         assertThat(item.getAmazonRatingsCount(), is(equalTo(7)));
         assertEquals("B007FUIBHM", item.getAsin());
         assertEquals(ContentType.MOVIE, item.getContentType());
-        assertEquals("Liz Adams", item.getDirector());
+        assertEquals(ImmutableSet.of("Liz Adams"), item.getDirectors());
         assertEquals(ImmutableSet.of(ACTION, ADVENTURE, THRILLER), item.getGenres());
         assertEquals("http://ecx.images-amazon.com/images/I/51LG6PC6P1L._SX320_SY240_.jpg", item.getLargeImageUrl());
         assertEquals(Quality.SD, item.getQuality());

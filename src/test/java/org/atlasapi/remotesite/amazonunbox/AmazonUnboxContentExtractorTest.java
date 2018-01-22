@@ -9,6 +9,7 @@ import static org.junit.Assert.assertThat;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -119,7 +120,7 @@ public class AmazonUnboxContentExtractorTest {
     @Test
     public void testExtractionOfPeople() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
-                .withDirector("Director")
+                .addDirectorRole("Director")
                 .addStarringRole("Cast 1")
                 .addStarringRole("Cast 2")
                 .addStarringRole("Cast 3")
@@ -129,19 +130,14 @@ public class AmazonUnboxContentExtractorTest {
         Film film = (Film) extractedContent;
 
         List<CrewMember> people = film.getPeople();
-        Iterable<String> names = Iterables.transform(people, new Function<CrewMember, String>() {
-            @Override
-            public String apply(CrewMember input) {
-                return input.name();
-            }
-        });
+        Iterable<String> names = people.stream()
+                .map(input -> input.name())
+                .collect(Collectors.toList());
         assertEquals(ImmutableSet.of("Director", "Cast 1", "Cast 2", "Cast 3"), ImmutableSet.copyOf(names));
         
-        CrewMember director = Iterables.getOnlyElement(Iterables.filter(people, new Predicate<CrewMember>() {
-            @Override
-            public boolean apply(CrewMember input) {
-                return input.role() != null;
-            }}));
+        CrewMember director = Iterables.getOnlyElement(people.stream()
+                .filter(input -> input.role() == Role.DIRECTOR)
+                .collect(Collectors.toList()));
         
         assertEquals(Role.DIRECTOR, director.role());
         assertEquals("Director", director.name());

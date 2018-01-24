@@ -239,7 +239,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         }
 
         // if isTrident is set, but we did not find any specific URLS in the to_rent or to_buy
-        // sections, we'll use the generic url of the versio to create the subscription location.
+        // sections, we'll use the generic url of the version to create the subscription location.
         // (as per this version of the ingester, they should be the same url anyway)
         if (!addedSubscription && Boolean.TRUE.equals(source.isTrident())) {
             if (Quality.HD.equals(source.getQuality())) {

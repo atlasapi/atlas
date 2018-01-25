@@ -11,6 +11,8 @@ import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -21,6 +23,7 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
+import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -95,6 +98,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
     private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
+    private final List<String> brandsPendingImages = new ArrayList<>();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -132,6 +136,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         topLevelSeries.clear();
         standAloneEpisodes.clear();
         seenContent.clear();
+        brandsPendingImages.clear();
     }
     
     @Override
@@ -139,11 +144,20 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         for (Content content : extract(item)) {
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
             seenContent.put(content.getCanonicalUri(), contentWithPayload);
+            if(content instanceof Brand){
+                //As Brands are synthesized we want them to have the same image. We will pick the
+                //image from the 1 season, but for this to become available we first need to ingest
+                //everything. So we'll mark the brand as pending image and deal with it later.
+                brandsPendingImages.add(content.getCanonicalUri());
+            }
         }
     }
 
     @Override
     public void finish(OwlTelescopeReporter telescope) {
+        //now that all content has been loaded, we need to tie some loose ends.
+        assignImagesToBrands();
+
         processSeenContent(telescope);
         processTopLevelSeries(telescope);
         processStandAloneEpisodes(telescope);
@@ -173,6 +187,35 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         checkForDeletedContent(telescope);
         
         seenContent.clear();
+    }
+
+    private void assignImagesToBrands(){
+        for (String uri : brandsPendingImages) {
+            Brand brand = (Brand) seenContent.get(uri).getModel();
+            int trySeriesNo = 0; //try all series number in order, until you find an image.
+            boolean imageFound = false;
+            do {
+                trySeriesNo++;
+                Series series = getSeries(brand.getSeriesRefs(), trySeriesNo);
+                if(series == null){
+                    break; //we run out of series. Exit.
+                }
+                if (series.getImage() != null && !series.getImage().equals("")) {
+                    brand.setImage(series.getImage());
+                    imageFound = true;
+                }
+            } while (!imageFound);
+        }
+    }
+
+    @Nullable
+    private Series getSeries(List<SeriesRef> series, int index){
+        for (SeriesRef seriesRef : series) {
+            if( seriesRef.getSeriesNumber() == index ){
+               return (Series) seenContent.get(seriesRef.getUri()).getModel();
+            }
+        }
+        return null;
     }
 
     private void processSeenContent(OwlTelescopeReporter telescope) {

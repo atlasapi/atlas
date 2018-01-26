@@ -51,7 +51,6 @@ import org.joda.time.DateTime;
 public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
                                                     Iterable<Content>> {
 
-    private static final String LANGUAGE_UNDEFINED = "und";
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
     private static final String ASIN_NAMESPACE = "gb:amazon:asin";
     private static final String IMDB_ALIAS_URL_PREFIX = "http://imdb.com/title/%s";

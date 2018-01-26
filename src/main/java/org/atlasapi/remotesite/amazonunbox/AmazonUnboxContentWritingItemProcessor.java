@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
@@ -10,8 +11,6 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
-
-import javax.annotation.Nullable;
 
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -23,7 +22,6 @@ import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
-import org.atlasapi.media.entity.SeriesRef;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.listing.ContentLister;
@@ -98,7 +96,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
     private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
-    private final List<String> brandsPendingImages = new ArrayList<>();
+    private final Set<String> allSeries = new HashSet<>();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -136,7 +134,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         topLevelSeries.clear();
         standAloneEpisodes.clear();
         seenContent.clear();
-        brandsPendingImages.clear();
+        allSeries.clear();
     }
     
     @Override
@@ -144,18 +142,18 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         for (Content content : extract(item)) {
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
             seenContent.put(content.getCanonicalUri(), contentWithPayload);
-            if(content instanceof Brand){
-                //As Brands are synthesized we want them to have the same image. We will pick the
-                //image from the 1 season, but for this to become available we first need to ingest
-                //everything. So we'll mark the brand as pending image and deal with it later.
-                brandsPendingImages.add(content.getCanonicalUri());
+
+            //As Brands are synthesized we want them to have the same image. We will pick the
+            //image from season 1, but for this to become available we first need to ingest
+            //everything. So we'll keep the note of all series.
+            if( content instanceof Series){
+                allSeries.add(content.getCanonicalUri());
             }
         }
     }
 
     @Override
     public void finish(OwlTelescopeReporter telescope) {
-        //now that all content has been loaded, we need to tie some loose ends.
         assignImagesToBrands();
 
         processSeenContent(telescope);
@@ -185,37 +183,44 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         standAloneEpisodes.clear();
         
         checkForDeletedContent(telescope);
-        
+
         seenContent.clear();
     }
 
-    private void assignImagesToBrands(){
-        for (String uri : brandsPendingImages) {
-            Brand brand = (Brand) seenContent.get(uri).getModel();
-            int trySeriesNo = 0; //try all series number in order, until you find an image.
-            boolean imageFound = false;
-            do {
-                trySeriesNo++;
-                Series series = getSeries(brand.getSeriesRefs(), trySeriesNo);
-                if(series == null){
-                    break; //we run out of series. Exit.
+    private void assignImagesToBrands() {
+        // Because brands don't contain series ref at this point we'll go the other way around.
+        // We'll loop the series and assign images to their parents.
+
+        //try all series number in order, so lower numbers are preferred
+        boolean foundOne = false;
+        for (int seriesNo = 1; seriesNo < 100; seriesNo++) {
+            for (String uri : allSeries) {
+                Series series = (Series) seenContent.get(uri).getModel();
+                if (series.getSeriesNumber() == seriesNo) {
+                    foundOne = true;
+                    assignImageToParent(series);
                 }
-                if (series.getImage() != null && !series.getImage().equals("")) {
-                    brand.setImage(series.getImage());
-                    imageFound = true;
+                //if we found no series, the seriesNo is high enough. break the loop.
+                if (!foundOne) {
+                    break;
                 }
-            } while (!imageFound);
+            }
         }
     }
 
-    @Nullable
-    private Series getSeries(List<SeriesRef> series, int index){
-        for (SeriesRef seriesRef : series) {
-            if( seriesRef.getSeriesNumber() == index ){
-               return (Series) seenContent.get(seriesRef.getUri()).getModel();
+    private void assignImageToParent(Series series) {
+        if (series.getImage() != null && !series.getImage().equals("")) {
+            String parentUri = series.getParent().getUri();
+            if (parentUri != null) {
+                ModelWithPayload<Content> parent = seenContent.get(parentUri);
+                if (parent != null) {
+                    Content model = parent.getModel();
+                    if (model.getImage() == null || model.getImage().equals("")) {
+                        model.setImage(series.getImage());
+                    }
+                }
             }
         }
-        return null;
     }
 
     private void processSeenContent(OwlTelescopeReporter telescope) {

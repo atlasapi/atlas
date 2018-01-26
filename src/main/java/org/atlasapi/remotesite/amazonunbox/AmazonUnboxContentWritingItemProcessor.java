@@ -96,7 +96,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
     private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
-    private final Set<String> allSeries = new HashSet<>();
+    private final Set<String> seriesMarkedForImageExtraction = new HashSet<>();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -134,7 +134,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         topLevelSeries.clear();
         standAloneEpisodes.clear();
         seenContent.clear();
-        allSeries.clear();
+        seriesMarkedForImageExtraction.clear();
     }
     
     @Override
@@ -147,7 +147,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             //image from season 1, but for this to become available we first need to ingest
             //everything. So we'll keep the note of all series.
             if( content instanceof Series){
-                allSeries.add(content.getCanonicalUri());
+                seriesMarkedForImageExtraction.add(content.getCanonicalUri());
             }
         }
     }
@@ -193,16 +193,16 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
         //try all series number in order, so lower numbers are preferred
         boolean foundOne = false;
-        for (int seriesNo = 1; seriesNo < 100; seriesNo++) {
-            for (String uri : allSeries) {
+        for (int seriesNo = 1; seriesNo < 100 || !foundOne; seriesNo++) {
+            foundOne = false;
+            Iterator<String> iterator = seriesMarkedForImageExtraction.iterator();
+            while (iterator.hasNext()) {
+                String uri = iterator.next();
+                iterator.remove();
                 Series series = (Series) seenContent.get(uri).getModel();
                 if (series.getSeriesNumber() == seriesNo) {
                     foundOne = true;
                     assignImageToParent(series);
-                }
-                //if we found no series, the seriesNo is high enough. break the loop.
-                if (!foundOne) {
-                    break;
                 }
             }
         }

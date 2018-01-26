@@ -34,6 +34,7 @@ import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import com.google.common.base.Function;
@@ -94,15 +95,18 @@ public class AmazonUnboxContentExtractorTest {
         assertEquals("16:9", encoding.getVideoAspectRatio());
         assertThat(encoding.getBitRate(), is(equalTo(3308)));
     }
-    
+
+    //the test is meaningless since there is nothing on the feed and thus we (now) do nothing, and
+    //this checks the nothingness of it all.
+    @Ignore
     @Test
     public void testExtractionOfLanguages() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE).build();
 
         Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
 
-        //amazon feed does not contain languaged, so this should be undefined for now.
-        assertEquals(ImmutableSet.of("und"), film.getLanguages());
+        //amazon feed does not contain languages, so no languages is extracted.
+        assertEquals(ImmutableSet.of(), film.getLanguages());
     }
     
     @Test

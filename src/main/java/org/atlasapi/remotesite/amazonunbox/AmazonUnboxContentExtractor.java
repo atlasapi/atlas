@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.amazonunbox;
 import java.util.Currency;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import javax.annotation.Nullable;
@@ -47,9 +48,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringEscapeUtils;
 import org.joda.time.DateTime;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
                                                     Iterable<Content>> {
+
+    private static final Logger log = LoggerFactory.getLogger(AmazonUnboxContentExtractor.class);
 
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
     private static final String ASIN_NAMESPACE = "gb:amazon:asin";
@@ -66,6 +71,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     //because they need dates in order to generate onDemands.
     private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T01:11:11"));
     private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2000-01-10T01:11:11"));
+
+    private final Pattern strayDashes = Pattern.compile("^[\\p{Pd} ]+|[\\p{Pd} ]+$");//all dashes
 
     private static final OptionalMap<String, Certificate> certificateMap =
             ImmutableOptionalMap.fromMap(
@@ -373,7 +380,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             AmazonUnboxItem source,
             String uri
     ) {
-        setCommonFields(content, source.getTitle(), uri);
+        //if this has parent content, then the parent content title should not be repeated in the
+        //child content title.
+        String title = cleanTitle(source.getTitle(), source.getSeriesTitle());
+
+        setCommonFields(content, title, uri);
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
         
@@ -390,6 +401,22 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         content.setAliases(generateAliases(source));
         content.setAliasUrls(generateAliasUrls(source));
         content.setPeople(generatePeople(source));
+    }
+
+    private String cleanTitle(String title, String seriesTitle) {
+        if (title == null || seriesTitle == null) {
+            return title;
+        }
+        String cleanTitle = title.replaceAll(seriesTitle, "");
+        //clean any leftover separating characters.
+        cleanTitle = strayDashes.matcher(cleanTitle).replaceAll("");
+
+        //TODO: This line is here to monitor weird cases. It should be removed once we reach prod state.
+        if (!cleanTitle.equals(title)) {
+            log.info("AMAZON_TITLE_CHANGE: {} = {}", title, cleanTitle);
+        }
+
+        return cleanTitle;
     }
 
     private Set<String> generateGenres(AmazonUnboxItem source) {

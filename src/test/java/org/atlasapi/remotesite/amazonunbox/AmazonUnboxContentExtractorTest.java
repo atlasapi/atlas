@@ -189,10 +189,16 @@ public class AmazonUnboxContentExtractorTest {
         assertEquals("http://unbox.amazon.co.uk/versions/filmAsin", version.getCanonicalUri());
         assertThat(version.getDuration(), is(equalTo(100)));
     }
-    
+
+    @Test
     public void testExtractionOfPolicyWithRental() {
-        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
-                .withRental(true)
+        AmazonUnboxItem filmItem = AmazonUnboxItem.builder()
+                .withAsin("filmAsin")
+                .withUrl("http://www.amazon.com/gp/product/B007FUIBHM/ref=atv_feed_catalog")
+                .withContentType(ContentType.MOVIE)
+                .withPrice("9.99")
+                .withUnboxSdRentalPrice("9.99")
+                .withUnboxSdRentalUrl("http://www.amazon.co.uk/gp/product/B00EV5ROP4/INSERT_TAG_HERE/ref=atv_feed_catalog/")
                 .build();
 
         Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
@@ -254,6 +260,21 @@ public class AmazonUnboxContentExtractorTest {
         assertEquals("http://unbox.amazon.co.uk/seasonAsin", episode.getSeriesRef().getUri());
         assertThat(episode.getEpisodeNumber(), is(equalTo(5)));
         assertThat(episode.getSeriesNumber(), is(equalTo(2)));
+    }
+
+    @Test
+    public void testEpisodeTitleDoesNotContainBrandTitle() {
+        AmazonUnboxItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
+                .withEpisodeNumber(5)
+                .withSeasonNumber(2)
+                .withSeasonAsin("seasonAsin")
+                .withSeriesTitle("Vivere Pericolosamente")
+                .withTitle("Ep.5 - Vivereext Pericolosamente")
+                .build();
+
+        Episode episode = Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Episode.class));
+
+        assertThat(episode.getTitle(), is("Ep.5"));
     }
     
     @Test

@@ -199,7 +199,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 Series series = (Series) seenContent.get(uri).getModel();
                 if (series.getSeriesNumber() == null || series.getSeriesNumber() == 0) {
                     iterator.remove();
-                    ;
                 }
                 if (series.getSeriesNumber() == seriesNo) {
                     iterator.remove();

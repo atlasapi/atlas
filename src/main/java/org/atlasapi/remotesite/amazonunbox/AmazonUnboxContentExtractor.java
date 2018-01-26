@@ -405,7 +405,9 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
      * languages are ingested at a later point  
      */
     private Set<String> generateLanguages(AmazonUnboxItem source) { //NOSONAR
-        return ImmutableSet.of(LANGUAGE_UNDEFINED);
+        // YV requires the language to be correct. We ingest nothing so we store nothing. YV output
+        // code will detect the lack of language and publish the content as UND (i.e. undefined).
+        return ImmutableSet.of();
     }
 
     private List<CrewMember> generatePeople(AmazonUnboxItem source) {

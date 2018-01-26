@@ -96,7 +96,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
     private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
-    private final Set<String> seriesMarkedForImageExtraction = new HashSet<>();
+    private final Set<String> seriesForImageExtraction = new HashSet<>();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -134,7 +134,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         topLevelSeries.clear();
         standAloneEpisodes.clear();
         seenContent.clear();
-        seriesMarkedForImageExtraction.clear();
+        seriesForImageExtraction.clear();
     }
     
     @Override
@@ -147,7 +147,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             //image from season 1, but for this to become available we first need to ingest
             //everything. So we'll keep the note of all series.
             if( content instanceof Series){
-                seriesMarkedForImageExtraction.add(content.getCanonicalUri());
+                seriesForImageExtraction.add(content.getCanonicalUri());
             }
         }
     }
@@ -192,16 +192,17 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         // We'll loop the series and assign images to their parents.
 
         //try all series number in order, so lower numbers are preferred
-        boolean foundOne = false;
-        for (int seriesNo = 1; seriesNo < 100 || !foundOne; seriesNo++) {
-            foundOne = false;
-            Iterator<String> iterator = seriesMarkedForImageExtraction.iterator();
+        for (int seriesNo = 1; seriesNo < 100 && !seriesForImageExtraction.isEmpty(); seriesNo++) {
+            Iterator<String> iterator = seriesForImageExtraction.iterator();
             while (iterator.hasNext()) {
                 String uri = iterator.next();
-                iterator.remove();
                 Series series = (Series) seenContent.get(uri).getModel();
+                if (series.getSeriesNumber() == null || series.getSeriesNumber() == 0) {
+                    iterator.remove();
+                    ;
+                }
                 if (series.getSeriesNumber() == seriesNo) {
-                    foundOne = true;
+                    iterator.remove();
                     assignImageToParent(series);
                 }
             }

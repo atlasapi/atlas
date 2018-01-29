@@ -205,7 +205,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         String versionUrl = String.format(AMAZON_ALIAS_URL_VERSION, source.getAsin()) + "/";
         boolean addedSubscription = false;
 
-        // ---PURCHASE URLS---
+        // ---HD URLS---
         if (!Strings.isNullOrEmpty(source.getUnboxHdPurchaseUrl())
             && !Strings.isNullOrEmpty(source.getUnboxHdPurchasePrice())) {
             hdLocations.add(createLocation(
@@ -217,19 +217,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 hdLocations.add(createSubLocation(source.getUnboxHdPurchaseUrl()));
                 addedSubscription = true;
             }
-        } else if (!Strings.isNullOrEmpty(source.getUnboxSdPurchaseUrl())
-                   && !Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
-            sdLocations.add(createLocation(
-                    RevenueContract.PAY_TO_BUY,
-                    source.getUnboxSdPurchasePrice(),
-                    source.getUnboxSdPurchaseUrl()
-            ));
-            if (Boolean.TRUE.equals(source.isTrident())) {
-                sdLocations.add(createSubLocation(source.getUnboxSdPurchaseUrl()));
-                addedSubscription = true;
-            }
-        } //---RENT URLS---
-        else if (!Strings.isNullOrEmpty(source.getUnboxHdRentalUrl())
+        } else if (!Strings.isNullOrEmpty(source.getUnboxHdRentalUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxHdRentalPrice())) {
             hdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,
@@ -240,7 +228,19 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 hdLocations.add(createSubLocation(source.getUnboxHdRentalUrl()));
                 addedSubscription = true;
             }
-        } else if (!Strings.isNullOrEmpty(source.getUnboxSdRentalUrl())
+        } //---SD URLS--- (its an else-if because currently one asin = one SD/HD RENT/BUY combo.)
+        else if (!Strings.isNullOrEmpty(source.getUnboxSdPurchaseUrl())
+                  && !Strings.isNullOrEmpty(source.getUnboxSdPurchasePrice())) {
+            sdLocations.add(createLocation(
+                    RevenueContract.PAY_TO_BUY,
+                    source.getUnboxSdPurchasePrice(),
+                    source.getUnboxSdPurchaseUrl()
+            ));
+            if (Boolean.TRUE.equals(source.isTrident())) {
+                sdLocations.add(createSubLocation(source.getUnboxSdPurchaseUrl()));
+                addedSubscription = true;
+            }
+        }  else if (!Strings.isNullOrEmpty(source.getUnboxSdRentalUrl())
                    && !Strings.isNullOrEmpty(source.getUnboxSdRentalPrice())) {
             sdLocations.add(createLocation(
                     RevenueContract.PAY_TO_RENT,

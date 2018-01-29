@@ -269,7 +269,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withSeasonNumber(2)
                 .withSeasonAsin("seasonAsin")
                 .withSeriesTitle("Vivere Pericolosamente")
-                .withTitle("Ep.5 - Vivereext Pericolosamente")
+                .withTitle("Ep.5 - Vivere Pericolosamente")
                 .build();
 
         Episode episode = Iterables.getOnlyElement(Iterables.filter(extractor.extract(episodeItem), Episode.class));

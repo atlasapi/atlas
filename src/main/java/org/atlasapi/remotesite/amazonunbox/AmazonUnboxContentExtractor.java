@@ -391,7 +391,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         //note at this stage we still use amazon terminology, where series is what we call brand.
         String title = cleanTitle(source.getTitle(), source.getSeriesTitle());
         //if it was made out purely from the parent content, synthesize a title.
-        if (title.isEmpty()) {
+        if (title != null && title.isEmpty()) {
             title = createBackupTitle(source);
         }
 

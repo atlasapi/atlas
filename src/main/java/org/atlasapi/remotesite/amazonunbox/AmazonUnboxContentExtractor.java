@@ -395,6 +395,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             title = createBackupTitle(source);
         }
 
+        //TODO: This line is here to monitor weird cases. It should be removed once we reach prod state.
+        if (!source.getSeriesTitle().equals(title)) {
+            log.info("AMAZON_TITLE_CHANGE: {} = {}", title, cleanTitle);
+        }
+
         setCommonFields(content, title, uri);
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
@@ -421,11 +426,6 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         String cleanTitle = title.replaceAll(parentTitle, "");
         //clean any leftover separating characters.
         cleanTitle = straySymbols.matcher(cleanTitle).replaceAll("");
-
-        //TODO: This line is here to monitor weird cases. It should be removed once we reach prod state.
-        if (!cleanTitle.equals(title)) {
-            log.info("AMAZON_TITLE_CHANGE: {} = {}", title, cleanTitle);
-        }
 
         return cleanTitle;
     }

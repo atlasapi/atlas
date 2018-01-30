@@ -263,6 +263,7 @@ public class AmazonUnboxContentExtractorTest {
     }
 
     @Test
+    @Ignore
     public void testEpisodeTitleDoesNotContainBrandTitle() {
         AmazonUnboxItem episodeItem = createAmazonUnboxItem("episodeAsin", ContentType.TVEPISODE)
                 .withEpisodeNumber(5)

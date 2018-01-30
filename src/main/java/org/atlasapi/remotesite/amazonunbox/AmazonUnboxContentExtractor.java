@@ -385,29 +385,33 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             AmazonUnboxItem source,
             String uri
     ) {
-        // if this has a Brand title, then the brand title should not be repeated in the
-        // child content title. Optimally we'd like to do the same for episode title<->season title,
-        // but we don't have the season title available yet.
-        //note at this stage we still use amazon terminology, where series is what we call brand.
-        String title = cleanTitle(source.getTitle(), source.getSeriesTitle());
-        //if it was made out purely from the parent content, synthesize a title.
-        if (title != null && title.isEmpty()) {
-            title = createBackupTitle(source);
-        }
+//        // if this has a Brand title, then the brand title should not be repeated in the
+//        // child content title. Optimally we'd like to do the same for episode title<->season title,
+//        // but we don't have the season title available yet.
+//        //note at this stage we still use amazon terminology, where series is what we call brand.
+//        String title = cleanTitle(source.getTitle(), source.getSeriesTitle());
+//        //if it was made out purely from the parent content and nothing is left, synthesize a title.
+//        if (title != null && title.isEmpty()) {
+//            title = createBackupTitle(source);
+//        }
+//
+//        //TODO: This line is here to monitor weird cases. It should be removed once we reach prod state.
+//        if (source.getTitle()!=null && !source.getTitle().equals(title)) {
+//            log.info("AMAZON_TITLE_CHANGE: {} = {}", source.getTitle(), title);
+//        }
 
-        //TODO: This line is here to monitor weird cases. It should be removed once we reach prod state.
-        if (source.getTitle()!=null && !source.getTitle().equals(title)) {
-            log.info("AMAZON_TITLE_CHANGE: {} = {}", source.getTitle(), title);
-        }
-
-        setCommonFields(content, title, uri);
+        setCommonFields(content, source.getTitle(), uri);
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
         
         content.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
         // we are setting title of brand as description for deduping episodes that
         // have same title, episode number and series number such as "Pilot Ep.1 S.1"
-        content.setShortDescription(source.getSeriesTitle());
+        if (source.getSeriesTitle() != null && !source.getSeriesTitle().isEmpty()) {
+            content.setShortDescription(source.getSeriesTitle());
+        } else { //but if that is blank, use the episode title (YV requires a synopsis)
+            content.setShortDescription(source.getTitle());
+        }
         content.setImage(source.getLargeImageUrl());
         content.setImages(generateImages(source));
         if (source.getReleaseDate() != null) {

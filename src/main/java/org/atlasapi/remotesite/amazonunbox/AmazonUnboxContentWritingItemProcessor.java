@@ -10,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.function.Predicate;
+import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
 import org.atlasapi.media.entity.Alias;
@@ -96,7 +97,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Map<String, Brand> topLevelSeries = Maps.newHashMap();
     private final Map<String, Brand> standAloneEpisodes = Maps.newHashMap();
     private final BiMap<String, ModelWithPayload<Content>> seenContent = HashBiMap.create();
-    private final Set<String> seriesForImageExtraction = new HashSet<>();
+    private final Set<String> seriesUris = new HashSet<>();
+    private final Set<String> episodeUris = new HashSet<>();
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -105,6 +107,11 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final int missingContentPercentage;
     private final AmazonUnboxBrandProcessor brandProcessor;
     private final ContentMerger contentMerger;
+
+    //Title Cleaning
+    private final Pattern straySymbols = Pattern.compile("^[\\p{Pd}: ]+|[\\p{Pd}: ]+$");//p{Pd}=dashes
+    private final Pattern episodePattern1 = Pattern.compile("(?i)ep[\\.-]*[isode]*[ -]*[\\d]+");//Ep1, Episode 1 etc.
+    private final Pattern episodePattern2 = Pattern.compile("(?i)[s|e]+[\\d]+[ \\.-\\/]*[s|e]+[\\d]+");//S05E01 etc
 
     public AmazonUnboxContentWritingItemProcessor(
             ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor,
@@ -134,7 +141,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         topLevelSeries.clear();
         standAloneEpisodes.clear();
         seenContent.clear();
-        seriesForImageExtraction.clear();
+        seriesUris.clear();
+        episodeUris.clear();
     }
     
     @Override
@@ -147,13 +155,17 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             //image from season 1, but for this to become available we first need to ingest
             //everything. So we'll keep the note of all series.
             if( content instanceof Series){
-                seriesForImageExtraction.add(content.getCanonicalUri());
+                seriesUris.add(content.getCanonicalUri());
+            }
+            else if( content instanceof Episode){
+                episodeUris.add(content.getCanonicalUri());
             }
         }
     }
 
     @Override
     public void finish(OwlTelescopeReporter telescope) {
+        titleCleaning();
         assignImagesToBrands();
 
         processSeenContent(telescope);
@@ -192,8 +204,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         // We'll loop the series and assign images to their parents.
 
         //try all series number in order, so lower numbers are preferred
-        for (int seriesNo = 1; seriesNo < 100 && !seriesForImageExtraction.isEmpty(); seriesNo++) {
-            Iterator<String> iterator = seriesForImageExtraction.iterator();
+        for (int seriesNo = 1; seriesNo < 100 && !seriesUris.isEmpty(); seriesNo++) {
+            Iterator<String> iterator = seriesUris.iterator();
             while (iterator.hasNext()) {
                 String uri = iterator.next();
                 Series series = (Series) seenContent.get(uri).getModel();
@@ -221,6 +233,72 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
                 }
             }
         }
+    }
+
+    private void titleCleaning() {
+        for (String uri : episodeUris) {
+            Episode episode = (Episode) seenContent.get(uri).getModel();
+            Series series = getSeries(episode);
+            Brand brand = getBrand(series);
+
+            String title = episode.getTitle();
+            if (episode.getEpisodeNumber() != null && episode.getEpisodeNumber() > 0) {
+                //If we have a number, try to remove existing format and add synthesized
+                title = removeEpisodeAndSeasonInfo(title, "Episode ", episode.getEpisodeNumber());
+            }
+            if (series != null && series.getTitle() != null) {
+                title = dedupParentTitle(title, series.getTitle());
+            }
+            if (brand != null && brand.getTitle() != null) {
+                title = dedupParentTitle(title, brand.getTitle());
+            }
+
+            if(!title.equals(episode.getTitle())){
+                log.info("AMAZON_TITLE_CHANGE: Brand={}, Series={}, Episode={} = {}", brand.getTitle(), series.getTitle(), episode.getTitle(), title);
+            }
+        }
+    }
+
+    private String removeEpisodeAndSeasonInfo(String title, String identifier, int num) {
+        //If we have a number, try to remove existing format and add synthesized
+        title = episodePattern1.matcher(title).replaceAll("");
+        title = episodePattern2.matcher(title).replaceAll("");
+        title = straySymbols.matcher(title.trim()).replaceAll("");
+        title = title.trim();
+
+        String sythesizedTitle = identifier + num;
+        if (!title.isEmpty()) { //if you still have a title append it
+            sythesizedTitle = sythesizedTitle + " - " + title;
+        }
+        return sythesizedTitle;
+    }
+
+    private String dedupParentTitle(String title, String parentTitle) {
+        if (title == null || parentTitle == null) {
+            return title;
+        }
+        String cleanTitle = title.replaceAll(parentTitle, "");
+        //clean any leftover separating characters.
+        cleanTitle = straySymbols.matcher(cleanTitle).replaceAll("");
+
+        return cleanTitle;
+    }
+
+    private Brand getBrand(Series series) {
+        if (series != null
+        && series.getParent() != null
+        && series.getParent().getUri() != null) {
+            return (Brand) seenContent.get(series.getParent().getUri()).getModel();
+        }
+        return null;
+    }
+
+    private Series getSeries(Episode episode) {
+        if (episode.getSeriesRef() != null
+            && episode.getSeriesRef().getUri() != null) {
+            return (Series) seenContent.get(episode.getSeriesRef().getUri()).getModel();
+        }
+        return null;
     }
 
     private void processSeenContent(OwlTelescopeReporter telescope) {

@@ -397,7 +397,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
 
         //TODO: This line is here to monitor weird cases. It should be removed once we reach prod state.
         if (!source.getSeriesTitle().equals(title)) {
-            log.info("AMAZON_TITLE_CHANGE: {} = {}", title, cleanTitle);
+            log.info("AMAZON_TITLE_CHANGE: {} = {}", source.getSeriesTitle(), title);
         }
 
         setCommonFields(content, title, uri);

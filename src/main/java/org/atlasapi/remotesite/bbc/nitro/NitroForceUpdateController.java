@@ -229,7 +229,7 @@ public class NitroForceUpdateController {
                 if (Strings.isNullOrEmpty(channel.getTitle())){
                     owlReporter.getStatusReporter().updateStatus(
                             EntityRef.Type.CHANNEL,
-                            channel.getId(),
+                            channel,
                             getPartialStatusForContent(
                                     channel.getId(),
                                     owlReporter.getTelescopeReporter().getTaskId(),
@@ -246,7 +246,7 @@ public class NitroForceUpdateController {
                 } else {
                     owlReporter.getStatusReporter().updateStatus(
                             EntityRef.Type.CHANNEL,
-                            channel.getId(),
+                            channel,
                             getPartialStatusForContent(
                                     channel.getId(),
                                     owlReporter.getTelescopeReporter().getTaskId(),
@@ -377,7 +377,7 @@ public class NitroForceUpdateController {
             if (Strings.isNullOrEmpty(item.getTitle())){
                 owlReporter.getStatusReporter().updateStatus(
                         EntityRef.Type.CONTENT,
-                        item.getId(),
+                        item,
                         getPartialStatusForContent(
                                 item.getId(),
                                 owlReporter.getTelescopeReporter().getTaskId(),
@@ -394,7 +394,7 @@ public class NitroForceUpdateController {
             } else {
                 owlReporter.getStatusReporter().updateStatus(
                         EntityRef.Type.CONTENT,
-                        item.getId(),
+                        item,
                         getPartialStatusForContent(
                                 item.getId(),
                                 owlReporter.getTelescopeReporter().getTaskId(),
@@ -411,7 +411,7 @@ public class NitroForceUpdateController {
             if (item.getGenres() == null || item.getGenres().isEmpty()) {
                 owlReporter.getStatusReporter().updateStatus(
                         EntityRef.Type.CONTENT,
-                        item.getId(),
+                        item,
                         getPartialStatusForContent(
                                 item.getId(),
                                 owlReporter.getTelescopeReporter().getTaskId(),
@@ -428,7 +428,7 @@ public class NitroForceUpdateController {
             } else {
                 owlReporter.getStatusReporter().updateStatus(
                         EntityRef.Type.CONTENT,
-                        item.getId(),
+                        item,
                         getPartialStatusForContent(
                                 item.getId(),
                                 owlReporter.getTelescopeReporter().getTaskId(),
@@ -445,7 +445,7 @@ public class NitroForceUpdateController {
             if (item instanceof Episode && ((Episode) item).getEpisodeNumber() == null) {
                 owlReporter.getStatusReporter().updateStatus(
                         EntityRef.Type.CONTENT,
-                        item.getId(),
+                        item,
                         getPartialStatusForContent(
                                 item.getId(),
                                 owlReporter.getTelescopeReporter().getTaskId(),
@@ -462,7 +462,7 @@ public class NitroForceUpdateController {
             } else {
                 owlReporter.getStatusReporter().updateStatus(
                         EntityRef.Type.CONTENT,
-                        item.getId(),
+                        item,
                         getPartialStatusForContent(
                                 item.getId(),
                                 owlReporter.getTelescopeReporter().getTaskId(),
@@ -528,7 +528,7 @@ public class NitroForceUpdateController {
                 if (Strings.isNullOrEmpty(series.getTitle())){
                     owlReporter.getStatusReporter().updateStatus(
                             EntityRef.Type.CONTENT,
-                            series.getId(),
+                            series,
                             getPartialStatusForContent(
                                     series.getId(),
                                     owlReporter.getTelescopeReporter().getTaskId(),
@@ -545,7 +545,7 @@ public class NitroForceUpdateController {
                 } else {
                     owlReporter.getStatusReporter().updateStatus(
                             EntityRef.Type.CONTENT,
-                            series.getId(),
+                            series,
                             getPartialStatusForContent(
                                     series.getId(),
                                     owlReporter.getTelescopeReporter().getTaskId(),
@@ -562,7 +562,7 @@ public class NitroForceUpdateController {
                 if (series.getGenres() == null || series.getGenres().isEmpty()) {
                     owlReporter.getStatusReporter().updateStatus(
                             EntityRef.Type.CONTENT,
-                            series.getId(),
+                            series,
                             getPartialStatusForContent(
                                     series.getId(),
                                     owlReporter.getTelescopeReporter().getTaskId(),
@@ -579,7 +579,7 @@ public class NitroForceUpdateController {
                 } else {
                     owlReporter.getStatusReporter().updateStatus(
                             EntityRef.Type.CONTENT,
-                            series.getId(),
+                            series,
                             getPartialStatusForContent(
                                     series.getId(),
                                     owlReporter.getTelescopeReporter().getTaskId(),
@@ -653,7 +653,7 @@ public class NitroForceUpdateController {
                     if (Strings.isNullOrEmpty(brand.getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                brand.getId(),
+                                brand,
                                 getPartialStatusForContent(
                                         brand.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -670,7 +670,7 @@ public class NitroForceUpdateController {
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                brand.getId(),
+                                brand,
                                 getPartialStatusForContent(
                                         brand.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -687,7 +687,7 @@ public class NitroForceUpdateController {
                     if (brand.getGenres() == null || brand.getGenres().isEmpty()) {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                brand.getId(),
+                                brand,
                                 getPartialStatusForContent(
                                         brand.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -704,7 +704,7 @@ public class NitroForceUpdateController {
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                brand.getId(),
+                                brand,
                                 getPartialStatusForContent(
                                         brand.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),

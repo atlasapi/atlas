@@ -182,7 +182,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         if (Strings.isNullOrEmpty(brand.getModel().getTitle())) {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brand.getModel().getId(),
+                                    brand.getModel(),
                                     getPartialStatusForContent(
                                             brand.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -199,7 +199,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brand.getModel().getId(),
+                                    brand.getModel(),
                                     getPartialStatusForContent(
                                             brand.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -216,7 +216,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         if (brand.getModel().getGenres() == null || brand.getModel().getGenres().isEmpty()) {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brand.getModel().getId(),
+                                    brand.getModel(),
                                     getPartialStatusForContent(
                                             brand.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -233,7 +233,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brand.getModel().getId(),
+                                    brand.getModel(),
                                     getPartialStatusForContent(
                                             brand.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -271,7 +271,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         if (Strings.isNullOrEmpty(sery.getModel().getTitle())){
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    sery.getModel().getId(),
+                                    sery.getModel(),
                                     getPartialStatusForContent(
                                             sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -288,7 +288,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    sery.getModel().getId(),
+                                    sery.getModel(),
                                     getPartialStatusForContent(
                                             sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -305,7 +305,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         if (sery.getModel().getGenres() == null || sery.getModel().getGenres().isEmpty()) {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    sery.getModel().getId(),
+                                    sery.getModel(),
                                     getPartialStatusForContent(
                                             sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -322,7 +322,7 @@ public class ContentUpdatingNitroBroadcastHandler
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    sery.getModel().getId(),
+                                    sery.getModel(),
                                     getPartialStatusForContent(
                                             sery.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -358,7 +358,7 @@ public class ContentUpdatingNitroBroadcastHandler
                     if (Strings.isNullOrEmpty(item.getModel().getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -375,7 +375,7 @@ public class ContentUpdatingNitroBroadcastHandler
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -392,7 +392,7 @@ public class ContentUpdatingNitroBroadcastHandler
                     if (item.getModel().getGenres() == null || item.getModel().getGenres().isEmpty()) {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -409,7 +409,7 @@ public class ContentUpdatingNitroBroadcastHandler
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -426,7 +426,7 @@ public class ContentUpdatingNitroBroadcastHandler
                     if (item.getModel() instanceof Episode && ((Episode) item.getModel()).getEpisodeNumber() == null) {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -443,7 +443,7 @@ public class ContentUpdatingNitroBroadcastHandler
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getModel().getId(),
+                                item.getModel(),
                                 getPartialStatusForContent(
                                         item.getModel().getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),

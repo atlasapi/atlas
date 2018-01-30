@@ -1,9 +1,14 @@
 package org.atlasapi.reporting.status;
 
+import org.atlasapi.media.entity.Described;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Specialization;
+
 import com.metabroadcast.status.api.EntityRef;
 import com.metabroadcast.status.api.PartialStatus;
 import com.metabroadcast.status.client.StatusClientWithApp;
 import com.metabroadcast.status.client.http.HttpExecutor;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -29,22 +34,17 @@ public class OwlStatusReporter {
         }
     }
 
-    public void updateStatus(EntityRef.Type type, String id, PartialStatus partialStatus) {
-        if (statusClientWithApp != null){
-            try {
-                statusClientWithApp.updateStatus(appId, type, id, partialStatus);
-            } catch (Exception e) {
-                log.error("An unknown exception occured during .updateStatus " + e.getMessage() + ".\n"+
-                        "StatusReporter has protected you from this problem.");
-            }
-        } else {
-            log.error("StatusReporter attempted to update a status while not being initialised properly.\n" +
-                    "StatusReporter has protected you from this problem.");
+    public void updateStatus(EntityRef.Type type, Described model, PartialStatus partialStatus) {
+        //the status service does not care for radio status, so ignore them.
+        if (Specialization.RADIO.equals(model.getSpecialization())) {
+            return;
         }
+        updateStatus(type, (Identified) model, partialStatus);
     }
 
-    public void updateStatus(EntityRef.Type type, Long id, PartialStatus partialStatus) {
-        if (statusClientWithApp != null){
+    public void updateStatus(EntityRef.Type type, Identified model, PartialStatus partialStatus) {
+        Long id = model.getId();
+        if (statusClientWithApp != null) {
             try {
                 statusClientWithApp.updateStatus(appId, type, id, partialStatus);
             } catch (Exception e) {

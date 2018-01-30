@@ -194,7 +194,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         if (Strings.isNullOrEmpty(brandWithPayload.getModel().getTitle())){
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brandWithPayload.getModel().getId(),
+                                    brandWithPayload.getModel(),
                                     getPartialStatusForContent(
                                             brandWithPayload.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -211,7 +211,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brandWithPayload.getModel().getId(),
+                                    brandWithPayload.getModel(),
                                     getPartialStatusForContent(
                                             brandWithPayload.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -228,7 +228,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         if (brandWithPayload.getModel().getGenres() == null || brandWithPayload.getModel().getGenres().isEmpty()) {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brandWithPayload.getModel().getId(),
+                                    brandWithPayload.getModel(),
                                     getPartialStatusForContent(
                                             brandWithPayload.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -245,7 +245,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    brandWithPayload.getModel().getId(),
+                                    brandWithPayload.getModel(),
                                     getPartialStatusForContent(
                                             brandWithPayload.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -282,7 +282,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         if (Strings.isNullOrEmpty(seriesWithPayload.getModel().getTitle())){
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    seriesWithPayload.getModel().getId(),
+                                    seriesWithPayload.getModel(),
                                     getPartialStatusForContent(
                                             seriesWithPayload.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -299,7 +299,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    seriesWithPayload.getModel().getId(),
+                                    seriesWithPayload.getModel(),
                                     getPartialStatusForContent(
                                             seriesWithPayload.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -316,7 +316,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         if (seriesWithPayload.getModel().getGenres() == null || seriesWithPayload.getModel().getGenres().isEmpty()) {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    seriesWithPayload.getModel().getId(),
+                                    seriesWithPayload.getModel(),
                                     getPartialStatusForContent(
                                             seriesWithPayload.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -333,7 +333,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                         } else {
                             owlReporter.getStatusReporter().updateStatus(
                                     EntityRef.Type.CONTENT,
-                                    seriesWithPayload.getModel().getId(),
+                                    seriesWithPayload.getModel(),
                                     getPartialStatusForContent(
                                             seriesWithPayload.getModel().getId(),
                                             owlReporter.getTelescopeReporter().getTaskId(),
@@ -367,7 +367,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     if (Strings.isNullOrEmpty(item.getTitle())){
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getId(),
+                                item,
                                 getPartialStatusForContent(
                                         item.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -384,7 +384,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getId(),
+                                item,
                                 getPartialStatusForContent(
                                         item.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -401,7 +401,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     if (item.getGenres() == null || item.getGenres().isEmpty()) {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getId(),
+                                item,
                                 getPartialStatusForContent(
                                         item.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -418,7 +418,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getId(),
+                                item,
                                 getPartialStatusForContent(
                                         item.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -435,7 +435,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     if (item instanceof Episode && ((Episode) item).getEpisodeNumber() == null) {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getId(),
+                                item,
                                 getPartialStatusForContent(
                                         item.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),
@@ -452,7 +452,7 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                     } else {
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
-                                item.getId(),
+                                item,
                                 getPartialStatusForContent(
                                         item.getId(),
                                         owlReporter.getTelescopeReporter().getTaskId(),

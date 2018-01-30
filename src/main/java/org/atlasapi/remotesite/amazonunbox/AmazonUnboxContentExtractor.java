@@ -396,7 +396,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         }
 
         //TODO: This line is here to monitor weird cases. It should be removed once we reach prod state.
-        if (source.getSeriesTitle()!=null && !source.getSeriesTitle().equals(title)) {
+        if (source.getTitle()!=null && !source.getTitle().equals(title)) {
             log.info("AMAZON_TITLE_CHANGE: {} = {}", source.getTitle(), title);
         }
 
@@ -405,7 +405,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         content.setLanguages(generateLanguages(source));
         
         content.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
-        //we are setting title of brand as description for deduping episodes that
+        // we are setting title of brand as description for deduping episodes that
         // have same title, episode number and series number such as "Pilot Ep.1 S.1"
         content.setShortDescription(source.getSeriesTitle());
         content.setImage(source.getLargeImageUrl());

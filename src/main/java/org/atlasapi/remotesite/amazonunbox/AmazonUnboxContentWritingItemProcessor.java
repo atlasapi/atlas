@@ -254,7 +254,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             }
 
             if(!title.equals(episode.getTitle())){
-                log.info("AMAZON_TITLE_CHANGE: Brand={}, Series={}, Episode={} = {}", brand.getTitle(), series.getTitle(), episode.getTitle(), title);
+                log.info("AMAZON_TITLE_CHANGE ### {} ### {} ### {} ### {} ", (brand!=null?brand.getTitle():""), (series!=null?series.getTitle():""), episode.getTitle(), title);
             }
         }
     }

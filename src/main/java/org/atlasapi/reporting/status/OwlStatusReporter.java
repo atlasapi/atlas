@@ -2,6 +2,7 @@ package org.atlasapi.reporting.status;
 
 import org.atlasapi.media.entity.Described;
 import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Specialization;
 
 import com.metabroadcast.status.api.EntityRef;
@@ -36,7 +37,8 @@ public class OwlStatusReporter {
 
     public void updateStatus(EntityRef.Type type, Described model, PartialStatus partialStatus) {
         //the status service does not care for radio status, so ignore them.
-        if (Specialization.RADIO.equals(model.getSpecialization())) {
+        if (Specialization.RADIO.equals(model.getSpecialization())
+            || MediaType.AUDIO.equals(model.getMediaType())) {
             return;
         }
         updateStatus(type, (Identified) model, partialStatus);

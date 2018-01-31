@@ -242,10 +242,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             Brand brand = getBrand(series);
 
             String title = episode.getTitle();
-            if (episode.getEpisodeNumber() != null && episode.getEpisodeNumber() > 0) {
-                //If we have a number, try to remove existing format and add synthesized
-                title = removeEpisodeAndSeasonInfo(title, "Episode ", episode.getEpisodeNumber());
-            }
+//            if (episode.getEpisodeNumber() != null && episode.getEpisodeNumber() > 0) {
+//                //If we have a number, try to remove existing format and add synthesized
+//                title = removeEpisodeAndSeasonInfo(title, "Episode ", episode.getEpisodeNumber());
+//            }
             if (series != null && series.getTitle() != null) {
                 title = dedupParentTitle(title, series.getTitle());
             }
@@ -277,9 +277,11 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         if (title == null || parentTitle == null) {
             return title;
         }
-        String cleanTitle = title.replaceAll(parentTitle, "");
-        //clean any leftover separating characters.
-        cleanTitle = straySymbols.matcher(cleanTitle).replaceAll("");
+        if(title.equals(parentTitle)){
+            return "";
+        }
+        Pattern removeTitle = Pattern.compile(parentTitle + "[ ]*[\\p{Pd}:]+[ ]*", Pattern.CASE_INSENSITIVE);
+        String cleanTitle = removeTitle.matcher(title).replaceAll("").trim();
 
         return cleanTitle;
     }

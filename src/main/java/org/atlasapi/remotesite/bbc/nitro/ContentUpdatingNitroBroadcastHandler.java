@@ -440,7 +440,7 @@ public class ContentUpdatingNitroBroadcastHandler
                                         false
                                 )
                         );
-                    } else {
+                    } else { //TODO: Is this "else" correct?
                         owlReporter.getStatusReporter().updateStatus(
                                 EntityRef.Type.CONTENT,
                                 item.getModel(),

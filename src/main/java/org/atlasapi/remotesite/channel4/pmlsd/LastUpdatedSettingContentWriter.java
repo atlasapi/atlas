@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.channel4.pmlsd;
 import java.util.Map;
 import java.util.Set;
 
+import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Container;
 import org.atlasapi.media.entity.Encoding;
@@ -11,6 +12,7 @@ import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Location;
 import org.atlasapi.media.entity.Policy;
+import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -283,6 +285,147 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
         }
         
         writer.createOrUpdate(container);
+
+        if (container instanceof Series) {
+            if (Strings.isNullOrEmpty(container.getTitle())) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        container,
+                        getPartialStatusForContent(
+                                container.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.TITLE,
+                                String.format(
+                                        "Content %s is missing a title.",
+                                        encode(container.getId())
+                                ),
+                                EntityRef.Type.CONTENT,
+                                container.getPublisher().key(),
+                                false
+                        )
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        container,
+                        getPartialStatusForContent(
+                                container.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.TITLE,
+                                null,
+                                EntityRef.Type.CONTENT,
+                                container.getPublisher().key(),
+                                true
+                        )
+                );
+            }
+
+            if (container.getGenres() == null || container.getGenres().isEmpty()) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        container,
+                        getPartialStatusForContent(
+                                container.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.GENRE,
+                                String.format(
+                                        "Content %s is missing genres.",
+                                        encode(container.getId())
+                                ),
+                                EntityRef.Type.CONTENT,
+                                container.getPublisher().key(),
+                                false
+                        )
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        container,
+                        getPartialStatusForContent(
+                                container.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.GENRE,
+                                null,
+                                EntityRef.Type.CONTENT,
+                                container.getPublisher().key(),
+                                true
+                        )
+                );
+            }
+        }
+        else if(container instanceof Brand){
+            if (Strings.isNullOrEmpty(container.getTitle())) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        container,
+                        getPartialStatusForContent(
+                                container.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.TITLE,
+                                String.format("Content %s is missing a title.",
+                                        encode(container.getId())
+                                ),
+                                EntityRef.Type.CONTENT,
+                                container.getPublisher().key(),
+                                false
+                        )
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        container,
+                        getPartialStatusForContent(
+                                container.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.TITLE,
+                                null,
+                                EntityRef.Type.CONTENT,
+                                container.getPublisher().key(),
+                                true
+                        )
+                );
+            }
+
+            if (container.getGenres() == null || container.getGenres().isEmpty()) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        container,
+                        getPartialStatusForContent(
+                                container.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.GENRE,
+                                String.format("Content %s is missing genres.",
+                                        encode(container.getId())
+                                ),
+                                EntityRef.Type.CONTENT,
+                                container.getPublisher().key(),
+                                false
+                        )
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        container,
+                        getPartialStatusForContent(
+                                container.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.GENRE,
+                                null,
+                                EntityRef.Type.CONTENT,
+                                container.getPublisher().key(),
+                                true
+                        )
+                );
+            }
+        }
     }
 
     private boolean equal(Container prevContainer, Container container) {

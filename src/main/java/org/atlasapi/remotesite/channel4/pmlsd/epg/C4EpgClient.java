@@ -37,7 +37,7 @@ public class C4EpgClient implements RemoteSiteClient<List<C4EpgEntry>>{
     @Override
     public List<C4EpgEntry> get(String uri) throws Exception {
         Document d = client.get(uri);
-        log.info("%s", d.toXML());
+        log.info("{}", d.toXML());
         return getEntries(client.get(uri));
     }
 

@@ -1,7 +1,7 @@
 package org.atlasapi.reporting.status;
 
 
-import com.metabroadcast.status.api.EntityAndPublisher;
+import com.metabroadcast.status.api.EntityAndSource;
 import com.metabroadcast.status.api.EntityRef;
 import com.metabroadcast.status.api.NewAlert;
 import com.metabroadcast.status.api.PartialStatus;
@@ -29,9 +29,9 @@ public class Utils {
                         .withValue("")
                         .withDescription(description!=null?description:"")
                         .build())
-                .withEntity(EntityAndPublisher.builder()
+                .withEntity(EntityAndSource.builder()
                         .withId(id)
-                        .withPublisher(publisher)
+                        .withSource(publisher)
                         .withType(entityRefType)
                         .build())
                 .withTask(TaskRef.builder()
@@ -59,9 +59,9 @@ public class Utils {
                         .withValue("")
                         .withDescription(description!=null?description:"")
                         .build())
-                .withEntity(EntityAndPublisher.builder()
+                .withEntity(EntityAndSource.builder()
                         .withId(id)
-                        .withPublisher(publisher)
+                        .withSource(publisher)
                         .withType(entityRefType)
                         .build())
                 .withTask(TaskRef.builder()

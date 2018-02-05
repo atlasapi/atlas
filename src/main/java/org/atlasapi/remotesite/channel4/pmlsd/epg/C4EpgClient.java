@@ -18,8 +18,12 @@ import org.atlasapi.remotesite.channel4.pmlsd.epg.model.C4MediaGroupElement;
 
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.http.SimpleHttpClient;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class C4EpgClient implements RemoteSiteClient<List<C4EpgEntry>>{
+
+    Logger log = LoggerFactory.getLogger(C4EpgClient.class);
 
     private static final String ATOM_FEED_ATOM_ENTRY_XPATH = "//atom:feed/atom:entry";
     private static final XPathContext xPathContext = new XPathContext("atom", "http://www.w3.org/2005/Atom");
@@ -32,6 +36,8 @@ public class C4EpgClient implements RemoteSiteClient<List<C4EpgEntry>>{
     
     @Override
     public List<C4EpgEntry> get(String uri) throws Exception {
+        Document d = client.get(uri);
+        log.info("%s", d.toXML());
         return getEntries(client.get(uri));
     }
 

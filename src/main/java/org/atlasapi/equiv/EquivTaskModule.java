@@ -153,6 +153,8 @@ public class EquivTaskModule {
             RepetitionRules.daily(new LocalTime(22, 0));
     private static final RepetitionRule BT_VOD_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(3, 0));
+    private static final RepetitionRule STANDARD_DAILY_REPETITION =
+            RepetitionRules.daily(new LocalTime(11, 0));
     private static final RepetitionRule AMAZON_EQUIVALENCE_REPETITION =
             RepetitionRules.daily(new LocalTime(3, 0));
     private static final RepetitionRule UKTV_EQUIVALENCE_REPETITION =
@@ -403,17 +405,22 @@ public class EquivTaskModule {
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_MASTER).withName("Barb CDMF Updater"),
-                RepetitionRules.NEVER,
+                STANDARD_DAILY_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(BARB_TRANSMISSIONS).withName("Barb TxLogs Updater"),
-                RepetitionRules.NEVER,
+                STANDARD_DAILY_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(
                 publisherUpdateTask(ITV_CPS).withName("ITV CPS Updater"),
-                RepetitionRules.NEVER,
+                STANDARD_DAILY_REPETITION,
+                jobsAtStartup
+        );
+        scheduleEquivalenceJob(
+                publisherUpdateTask(C4_PMLSD).withName("C4 PMLSD Updater"),
+                STANDARD_DAILY_REPETITION,
                 jobsAtStartup
         );
         scheduleEquivalenceJob(

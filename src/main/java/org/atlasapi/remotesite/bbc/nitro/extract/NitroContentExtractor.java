@@ -91,10 +91,9 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         if (masterBrand != null) {
             String masterBrandChannel = BbcIonServices.getMasterBrand(masterBrand.getMid());
             content.setPresentationChannel(masterBrandChannel);
-            //this log line spams the log and we generally ignore it anyway.
-//            if (masterBrandChannel == null) {
-//                log.warn("No master brand mapping found for pid={}, uri={}", pid , content.getCanonicalUri());
-//            }
+            if (masterBrandChannel == null) {
+                log.warn("No master brand mapping found for pid={}, uri={}", pid , content.getCanonicalUri());
+            }
         }
         //TODO: genres from v2 API
         extractAdditionalFields(source, content, now);

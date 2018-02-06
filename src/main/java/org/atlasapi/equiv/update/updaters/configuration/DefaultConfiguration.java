@@ -17,6 +17,7 @@ import static org.atlasapi.media.entity.Publisher.BETTY;
 import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
+import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
@@ -108,7 +109,8 @@ public class DefaultConfiguration {
                             BARB_MASTER,
                             BARB_TRANSMISSIONS,
                             ITV_CPS,
-                            BBC_NITRO
+                            BBC_NITRO,
+                            C4_PMLSD
                     )
             )
             .addAll(MUSIC_SOURCES)

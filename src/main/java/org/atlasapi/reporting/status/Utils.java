@@ -64,7 +64,8 @@ public class Utils {
                         .withType(entityRefType)
                         .build())
                 .withTask(TaskRef.builder()
-                        .withId(taskId)
+                        //TODO: Hack to avoid NPEs until the Status Service gets updated.
+                        .withId((taskId == null ? "UNKNOWN" : taskId))
                         .build())
                 .build();
     }

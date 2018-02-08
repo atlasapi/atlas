@@ -1,4 +1,4 @@
-package org.atlasapi.remotesite.amazonunbox;
+package org.atlasapi.reporting.telescope;
 
 import com.fasterxml.jackson.annotation.JsonAutoDetect;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
@@ -20,7 +20,7 @@ public class TelescopeReporterHelperMethods {
             .setVisibility(PropertyAccessor.IS_GETTER, JsonAutoDetect.Visibility.NONE)
             .configure(SerializationFeature.FAIL_ON_EMPTY_BEANS, false)
             //add the same mixin to every class that suffers from circular references
-            .addMixIn(Iterable.class, org.atlasapi.remotesite.amazonunbox.TelescopeReporterHelperMethods.PreventCircularReferences.class);
+            .addMixIn(Iterable.class, TelescopeReporterHelperMethods.PreventCircularReferences.class);
 
     /**
      * Serializes all the objects in a single json. The serializer used converts all object fields

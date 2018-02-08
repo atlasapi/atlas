@@ -256,10 +256,12 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             }
 
             //if nothing was left, try to construct a title from the episode Number
-            if (episode.getEpisodeNumber() != null && episode.getEpisodeNumber() != 0) {
-                title = "Episode " + episode.getEpisodeNumber();
-            } else { //fallback to what it was and do nothing
-                title = episode.getTitle();
+            if (title.isEmpty()) {
+                if (episode.getEpisodeNumber() != null && episode.getEpisodeNumber() != 0) {
+                    title = "Episode " + episode.getEpisodeNumber();
+                } else { //fallback to what it was and do nothing
+                    title = episode.getTitle();
+                }
             }
 
             episode.setTitle(title);

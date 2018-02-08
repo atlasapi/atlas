@@ -109,9 +109,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final ContentMerger contentMerger;
 
     //Title Cleaning
-    private final Pattern straySymbols = Pattern.compile("^[\\p{Pd}: ]+|[\\p{Pd}: ]+$");//p{Pd}=dashes
-    private final Pattern episodePattern1 = Pattern.compile("(?i)ep[\\.-]*[isode]*[ -]*[\\d]+");//Ep1, Episode 1 etc.
-    private final Pattern episodePattern2 = Pattern.compile("(?i)[s|e]+[\\d]+[ \\.-\\/]*[s|e]+[\\d]+");//S05E01 etc
+//    private final Pattern straySymbols = Pattern.compile("^[\\p{Pd}: ]+|[\\p{Pd}: ]+$");//p{Pd}=dashes
+//    private final Pattern episodePattern1 = Pattern.compile("(?i)ep[\\.-]*[isode]*[ -]*[\\d]+");//Ep1, Episode 1 etc.
+//    private final Pattern episodePattern2 = Pattern.compile("(?i)[s|e]+[\\d]+[ \\.-\\/]*[s|e]+[\\d]+");//S05E01 etc
+    private final String titleSeparator = "[ ]*[\\p{Pd}:]+[ ]*"; // any dash or colon.
 
     public AmazonUnboxContentWritingItemProcessor(
             ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor,
@@ -151,9 +152,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
             seenContent.put(content.getCanonicalUri(), contentWithPayload);
 
-            //As Brands are synthesized we want them to have the same image. We will pick the
-            //image from season 1, but for this to become available we first need to ingest
-            //everything. So we'll keep the note of all series.
+            //Keep a note of all series and episodes
             if( content instanceof Series){
                 seriesUris.add(content.getCanonicalUri());
             }
@@ -200,6 +199,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void assignImagesToBrands() {
+        //As Brands are synthesized we want them to have the same image. We will pick the
+        //image from season 1.
         // Because brands don't contain series ref at this point we'll go the other way around.
         // We'll loop the series and assign images to their parents.
 
@@ -236,53 +237,42 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private void titleCleaning() {
+        // YV presents content as brand - series - episode. Thus, we would like not to repeat
+        // the brand or series title in the episode title. It was agreed that metabroadcast
+        // would perform a simple cleaning task of the below format.
+        // https://jira-ngyv.youview.co.uk/browse/ECOTEST-268
         for (String uri : episodeUris) {
             Episode episode = (Episode) seenContent.get(uri).getModel();
             Series series = getSeries(episode);
             Brand brand = getBrand(series);
 
             String title = episode.getTitle();
-//            if (episode.getEpisodeNumber() != null && episode.getEpisodeNumber() > 0) {
-//                //If we have a number, try to remove existing format and add synthesized
-//                title = removeEpisodeAndSeasonInfo(title, "Episode ", episode.getEpisodeNumber());
-//            }
             if (series != null && series.getTitle() != null) {
-                title = dedupParentTitle(title, series.getTitle());
+                title = removeTitle(title, series.getTitle());
             }
             if (brand != null && brand.getTitle() != null) {
-                title = dedupParentTitle(title, brand.getTitle());
+                title = removeTitle(title, brand.getTitle());
             }
 
-            if(!title.equals(episode.getTitle())){
-                log.info("AMAZON_TITLE_CHANGE ### {} ### {} ### {} ### {} ", (brand!=null?brand.getTitle():""), (series!=null?series.getTitle():""), episode.getTitle(), title);
+            //if nothing was left, try to construct a title from the episode Number
+            if (episode.getEpisodeNumber() != null && episode.getEpisodeNumber() != 0) {
+                title = "Episode " + episode.getEpisodeNumber();
+            } else { //fallback to what it was and do nothing
+                title = episode.getTitle();
             }
+
+            episode.setTitle(title);
         }
     }
 
-    private String removeEpisodeAndSeasonInfo(String title, String identifier, int num) {
-        //If we have a number, try to remove existing format and add synthesized
-        title = episodePattern1.matcher(title).replaceAll("");
-        title = episodePattern2.matcher(title).replaceAll("");
-        title = straySymbols.matcher(title.trim()).replaceAll("");
-        title = title.trim();
-
-        String sythesizedTitle = identifier + num;
-        if (!title.isEmpty()) { //if you still have a title append it
-            sythesizedTitle = sythesizedTitle + " - " + title;
-        }
-        return sythesizedTitle;
-    }
-
-    private String dedupParentTitle(String title, String parentTitle) {
-        if (title == null || parentTitle == null) {
-            return title;
-        }
-        if(title.equals(parentTitle)){
+    private String removeTitle(String goodTitle, String badTitle) {
+        if(goodTitle.equals(badTitle)){
             return "";
         }
-        Pattern removeTitle = Pattern.compile(parentTitle + "[ ]*[\\p{Pd}:]+[ ]*", Pattern.CASE_INSENSITIVE);
-        String cleanTitle = removeTitle.matcher(title).replaceAll("").trim();
+        Pattern titleWithSeparator =
+                Pattern.compile("^" + badTitle.trim() + titleSeparator, Pattern.CASE_INSENSITIVE);
 
+        String cleanTitle = titleWithSeparator.matcher(goodTitle).replaceAll("").trim();
         return cleanTitle;
     }
 

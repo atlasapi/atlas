@@ -65,6 +65,7 @@ public class ChannelRestrictionGroupSaver extends AbstractBtChannelGroupSaver {
         return channel.getCategories().stream()
                 .filter(category -> "channelRestriction".equals(category.getScheme()))
                 .map(Category::getName)
+                .filter(RESTRICTION_MAP::containsKey)
                 .collect(MoreCollectors.toImmutableList());
     }
 

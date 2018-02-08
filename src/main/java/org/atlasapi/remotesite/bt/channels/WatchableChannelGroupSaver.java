@@ -41,7 +41,8 @@ public class WatchableChannelGroupSaver extends AbstractBtChannelGroupSaver {
 
     @Override
     protected List<String> keysFor(Entry channel) {
-        if (channel.isStreamable()) {
+        // We're getting a problem with hm27 appearing, so hack this in for now...
+        if (channel.isStreamable() && !channel.getGuid().trim().equals("hm27")) {
             return ImmutableList.of("1");
         }
         return ImmutableList.of();

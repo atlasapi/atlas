@@ -13,6 +13,8 @@ import java.util.function.Predicate;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+import javax.annotation.Nullable;
+
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Container;
@@ -279,19 +281,29 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         return cleanTitle;
     }
 
+    @Nullable
     private Brand getBrand(Series series) {
         if (series != null
         && series.getParent() != null
         && series.getParent().getUri() != null) {
-            return (Brand) seenContent.get(series.getParent().getUri()).getModel();
+            ModelWithPayload<Content> brand =
+                    seenContent.get(series.getParent().getUri());
+            if (brand != null) {
+                return (Brand) brand.getModel();
+            }
         }
         return null;
     }
 
+    @Nullable
     private Series getSeries(Episode episode) {
         if (episode.getSeriesRef() != null
             && episode.getSeriesRef().getUri() != null) {
-            return (Series) seenContent.get(episode.getSeriesRef().getUri()).getModel();
+            ModelWithPayload<Content> series =
+                    seenContent.get(episode.getSeriesRef().getUri());
+            if (series != null) {
+                return (Series) series.getModel();
+            }
         }
         return null;
     }

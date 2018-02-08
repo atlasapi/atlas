@@ -240,6 +240,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         // YV presents content as brand - series - episode. Thus, we would like not to repeat
         // the brand or series title in the episode title. It was agreed that metabroadcast
         // would perform a simple cleaning task of the below format.
+        // (in case you are wondering, series are replaced by their numbers on output).
         // https://jira-ngyv.youview.co.uk/browse/ECOTEST-268
         for (String uri : episodeUris) {
             Episode episode = (Episode) seenContent.get(uri).getModel();

@@ -55,6 +55,7 @@ public class C4EpgEpisodeExtractor extends BaseC4EpisodeExtractor {
         String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
         if (programmeId != null) {
             episode.addAlias(new Alias(C4AtomApi.ALIAS, programmeId));
+            episode.addAlias(new Alias(C4AtomApi.ALIAS_FOR_BARB, programmeId));
         }
 
         if (txChannel != null) {

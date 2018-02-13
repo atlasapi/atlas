@@ -60,7 +60,7 @@ public abstract class AbstractBtChannelGroupSaver {
         this.log = checkNotNull(log);
     }
 
-    protected void start() { };
+    protected void start() { /* do nothing by default */ }
 
     protected abstract List<String> keysFor(Entry channel);
     protected abstract Optional<Alias> aliasFor(String key);
@@ -90,15 +90,26 @@ public abstract class AbstractBtChannelGroupSaver {
             channelGroup.setPublisher(publisher);
             channelGroup.addTitle(titleFor(entry.getKey()));
 
-            Set<Long> currentChannels = Sets.newHashSet();
+            // update the listed channels with this channel group
+            Set<Long> channels;
             try {
-                currentChannels = updateChannelNumberingInChannels(entry, channelGroup);
+                channels = updateChannelNumberingInChannels(entry, channelGroup);
             } catch (Exception e) {
                 log.error("Failure to process. Channel Id may contain illegal characters that cannot be decoded", e);
+                channels = ImmutableSet.of();
             }
+            Set<Long> currentChannels = ImmutableSet.copyOf(channels);
 
+            // remove the channel group from any that were listed, and now aren't
+            channelGroup.getChannelNumberings().stream()
+                    .map(ChannelNumbering::getChannel)
+                    .filter(id -> !currentChannels.contains(id))
+                    .forEach(id -> removeChannelGroupFromChannel(id, channelGroup));
+
+            // update the channels on the channelGroup
             setCurrentChannelsToChannelGroup(channelGroup, currentChannels);
             channelGroupWriter.createOrUpdate(channelGroup);
+
             channelGroupUris.add(channelGroup.getCanonicalUri());
         }
         return channelGroupUris.build();
@@ -107,7 +118,7 @@ public abstract class AbstractBtChannelGroupSaver {
     private Set<Long> updateChannelNumberingInChannels(
             Map.Entry<String, Collection<String>> entry,
             ChannelGroup channelGroup
-    ) throws Exception {
+    ) {
         Set<Long> currentChannels = Sets.newHashSet();
         for (String channelId : entry.getValue()) {
             try {
@@ -136,6 +147,47 @@ public abstract class AbstractBtChannelGroupSaver {
         }
 
         return currentChannels;
+    }
+
+    /**
+     * Remove the channel group from the numberings of the channel.
+     * @param channelId     the id of the channel to modify.
+     * @param channelGroup  the channel group to remove.
+     * @return  {@code false} if it wasn't there in the first place.
+     */
+    private boolean removeChannelGroupFromChannel(
+            Long channelId,
+            ChannelGroup channelGroup
+    ) {
+        Channel channel = Iterables.getOnlyElement(
+                channelResolver.forIds(ImmutableSet.of(channelId)),
+                null
+        );
+        if (channel == null) {
+            log.warn("Could not resolve channel with ID {}", channelId);
+            return false;
+        }
+        if (channel.getChannelNumbers() == null) {
+            return false;   // no numberings
+        }
+        ImmutableSet.Builder<ChannelNumbering> newNumberings = ImmutableSet.builder();
+        boolean modified = false;
+        for (ChannelNumbering channelNumbering : channel.getChannelNumbers()) {
+            if (channelGroup.getId().equals(channelNumbering.getChannelGroup())) {
+                // don't add it to the new list
+                modified = true;    // and we'll need to do the write
+            } else {
+                newNumberings.add(channelNumbering);
+            }
+        }
+        if (!modified) {
+            // all channelNumberings have been added to the new list,
+            // so there's no change, so no point doing anything.
+            return false;
+        }
+        channel.setChannelNumbers(newNumberings.build());
+        channelWriter.createOrUpdate(channel);
+        return true;
     }
 
     private void setCurrentChannelsToChannelGroup(

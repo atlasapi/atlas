@@ -1,7 +1,7 @@
 package org.atlasapi.remotesite.bt.channels;
 
-import java.util.List;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -11,8 +11,7 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 public class WatchableChannelGroupSaver extends AbstractBtChannelGroupSaver {
 
@@ -41,8 +40,7 @@ public class WatchableChannelGroupSaver extends AbstractBtChannelGroupSaver {
 
     @Override
     protected List<String> keysFor(Entry channel) {
-        // We're getting a problem with hm27 appearing, so hack this in for now...
-        if (channel.isStreamable() && !channel.getGuid().trim().equals("hm27")) {
+        if (channel.isStreamable()) {
             return ImmutableList.of("1");
         }
         return ImmutableList.of();

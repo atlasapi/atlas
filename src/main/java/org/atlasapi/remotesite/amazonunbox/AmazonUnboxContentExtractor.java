@@ -81,7 +81,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     //You can use grep TITLE  GBAmazonUnboxCatalog-2017-12-12.xml | g -o "\[.*\]" | sort | uniq
     //to search the xml file and see if any new tags have been added.
     private static final Pattern UHD_PATTERN =
-            Pattern.compile("(\\[Ultra HD\\]|\\[ULTRA HD\\]|\\[UHD\\]|\\[4K/Ultra HD\\]|\\[4K/UHD\\]|\\[4K\\])");
+            Pattern.compile("\\[Ultra HD\\]|\\[ULTRA HD\\]|\\[UHD\\]|\\[4K\\/Ultra HD\\]|\\[4K\\/UHD\\]|\\[4K\\]");
 
     private static final OptionalMap<String, Certificate> certificateMap =
             ImmutableOptionalMap.fromMap(
@@ -208,10 +208,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
 
     private Set<Version> generateVersions(AmazonUnboxItem source) {
         //There are two source of information about the actual quality
-        //1. does the title contain a tag?
+        //1. does the title contain a UHD tag?
         //2. Do we have buy and rent links for either quality?
         //3. (Unused) actual quality sent by amazon.
-        boolean isUhd = UHD_PATTERN.matcher(source.getTitle()).matches();
+        boolean isUhd = isUhd(source);
 
         Set<Location> hdLocations = Sets.newHashSet();
         Set<Location> sdLocations = Sets.newHashSet();
@@ -294,6 +294,13 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             }
         }
         return ImmutableSet.of(createVersion(source, versionUrl, encodings.build()));
+    }
+
+    private boolean isUhd(AmazonUnboxItem source) {
+        if (source.getTitle() != null) {
+            return UHD_PATTERN.matcher(source.getTitle()).find();
+        }
+        return false;
     }
 
     private Version createVersion(AmazonUnboxItem source, String url, Set<Encoding> encodings) {
@@ -418,10 +425,14 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     /**
      * Remove tags from the title, i.e. Quality info such as [UHD]
      */
-    private String cleanTitle(String title) {
+    @Nullable
+    private String cleanTitle(@Nullable String title) {
+        if (title == null) {
+            return null;
+        }
         Matcher matcher = UHD_PATTERN.matcher(title);
-        if(matcher.matches()){
-            return matcher.replaceAll("");
+        if (matcher.find()) {
+            return matcher.replaceAll("").trim();
         }
         return title;
     }

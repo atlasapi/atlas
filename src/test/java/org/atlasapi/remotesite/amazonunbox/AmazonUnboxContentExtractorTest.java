@@ -5,6 +5,7 @@ import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
+import static org.junit.Assert.assertTrue;
 
 import java.util.Currency;
 import java.util.List;
@@ -50,7 +51,7 @@ import com.metabroadcast.common.media.MimeType;
 public class AmazonUnboxContentExtractorTest {
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor = new AmazonUnboxContentExtractor();
-    
+
     private Map<Integer, Encoding> encodingsByHorizontalScale(Iterable<Encoding> encodings) {
         return Maps.uniqueIndex(encodings, new Function<Encoding, Integer>() {
             @Override
@@ -59,11 +60,11 @@ public class AmazonUnboxContentExtractorTest {
             }
         });
     }
-    
+
     private Map<String, Location> locationsByUrl(Iterable<Location> locations) {
         return Maps.uniqueIndex(locations, Location.TO_URI);
     }
-    
+
     private void assertVersionFeatures(Version version, int horizontalScale, int verticalScale, String aspectRatio, int bitRate,
             String locationUri, RevenueContract payToBuy, boolean isHd) {
 
@@ -72,7 +73,7 @@ public class AmazonUnboxContentExtractorTest {
         assertThat(encoding.getVideoVerticalSize(), is(equalTo(verticalScale)));
         assertEquals(aspectRatio, encoding.getVideoAspectRatio());
         assertThat(encoding.getBitRate(), is(equalTo(bitRate)));
-        
+
     }
 
     @Test
@@ -89,11 +90,27 @@ public class AmazonUnboxContentExtractorTest {
         
         Version version = Iterables.getOnlyElement(film.getVersions());
         Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
-        
-        assertThat(encoding.getVideoHorizontalSize(), is(equalTo(1280)));
-        assertThat(encoding.getVideoVerticalSize(), is(equalTo(720)));
-        assertEquals("16:9", encoding.getVideoAspectRatio());
-        assertThat(encoding.getBitRate(), is(equalTo(3308)));
+
+        assertEquals(encoding.getQuality(), org.atlasapi.media.entity.Quality.HD);
+    }
+
+    @Test
+    public void testExtractionOfUhdContent() {
+        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+                .withUrl("http://hdlocation.org/")
+                .withUnboxHdPurchaseUrl("http://hdlocation.org/")
+                .withUnboxHdPurchasePrice("9.99")
+                .withUnboxSdPurchasePrice(null)
+                .withUnboxSdPurchaseUrl(null)
+                .withTitle("Super Drugs [UHD]")
+                .build();
+
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
+
+        Version version = Iterables.getOnlyElement(film.getVersions());
+        Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
+
+        assertEquals(encoding.getQuality(), org.atlasapi.media.entity.Quality.FOUR_K);
     }
 
     //the test is meaningless since there is nothing on the feed and thus we (now) do nothing, and
@@ -214,8 +231,9 @@ public class AmazonUnboxContentExtractorTest {
     }
     
     @Test
-    public void testExtractionOfPolicyWithSubscription() {
+    public void testExtractionOfPolicyWithNoSubscription() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+                .withTitle("testTitle")
                 .withRental(false)
                 .withUrl("unbox.amazon.co.uk/filmAsin")
                 .withUnboxHdPurchaseUrl("unbox.amazon.co.uk/filmAsin")
@@ -230,6 +248,38 @@ public class AmazonUnboxContentExtractorTest {
         Policy policy = location.getPolicy();
         
         assertEquals(RevenueContract.PAY_TO_BUY, policy.getRevenueContract());
+    }
+
+    @Test
+    public void testExtractionOfPolicyWithSubscription() {
+        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+                .withTitle("testTitle [UHD]")
+                .withRental(true)
+                .withIsTrident(true)
+                .withUrl("unbox.amazon.co.uk/filmAsin")
+                .withUnboxHdPurchaseUrl("unbox.amazon.co.uk/filmAsin")
+                .withUnboxHdPurchasePrice("5.00")
+                .build();
+
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
+
+        Version version = Iterables.getOnlyElement(film.getVersions());
+        Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
+
+        assertEquals(encoding.getAvailableAt().size(), 2);
+        boolean foundSub = false;
+        boolean foundPay = false;
+        for (Location location : encoding.getAvailableAt()) {
+            Policy policy = location.getPolicy();
+            if(policy.getRevenueContract() == RevenueContract.SUBSCRIPTION){
+                foundSub = true;
+            }
+            else if(policy.getRevenueContract() == RevenueContract.PAY_TO_BUY){
+                foundPay = true;
+            }
+        }
+        assertTrue("The subscription location was not generated",foundSub);
+        assertTrue("The pay policy was not generated",foundPay);
     }
     
     @Test
@@ -384,6 +434,7 @@ public class AmazonUnboxContentExtractorTest {
     private AmazonUnboxItem.Builder createAmazonUnboxItem(String asin, ContentType type) {
         return AmazonUnboxItem.builder()
                 .withAsin(asin)
+                .withTitle("testTitle")
                 .withUrl("http://www.amazon.com/gp/product/B007FUIBHM/ref=atv_feed_catalog")
                 .withSynopsis("Synopsis of the item")
                 .withLargeImageUrl("Large Image")

@@ -1,10 +1,18 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
+import com.google.common.base.Charsets;
+import com.google.common.base.Optional;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Maps;
+import com.google.common.io.Resources;
+import com.metabroadcast.common.http.FixedResponseHttpClient;
+import com.metabroadcast.common.http.SimpleHttpClient;
+import com.sun.syndication.feed.atom.Entry;
+import com.sun.syndication.feed.atom.Feed;
+import junit.framework.TestCase;
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
@@ -25,21 +33,6 @@ import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.testing.StubContentResolver;
 import org.atlasapi.remotesite.channel4.RecordingContentWriter;
-
-import com.metabroadcast.common.http.FixedResponseHttpClient;
-import com.metabroadcast.common.http.SimpleHttpClient;
-
-import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
-import com.google.common.collect.Maps;
-import com.google.common.io.Resources;
-import com.sun.syndication.feed.atom.Entry;
-import com.sun.syndication.feed.atom.Feed;
-import junit.framework.TestCase;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
@@ -47,6 +40,11 @@ import org.junit.runner.RunWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.IOException;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
 import static org.hamcrest.Matchers.hasItem;
@@ -147,7 +145,7 @@ public class C4BrandExtractorTest extends TestCase {
 	        "tag:pmlsc.channel4.com,2009:/programmes/ramsays-kitchen-nightmares/episode-guide/series-1/episode-1"
         )));
 
-        assertThat(firstItem.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:prod:pmlsd:programmeId", "36423/001"))));
+        assertThat(firstItem.getAliases(), hasItem(new Alias("gb:channel4:prod:pmlsd:programmeId", "36423/001")));
 		
 		assertThat(firstItem.getTitle(), is(("Series 1 Episode 1")));
 		

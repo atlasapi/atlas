@@ -1,37 +1,5 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.Collections;
-import java.util.List;
-import java.util.Set;
-
-import junit.framework.TestCase;
-
-import org.atlasapi.media.TransportType;
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.media.entity.Encoding;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.Policy;
-import org.atlasapi.media.entity.Policy.Platform;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Restriction;
-import org.atlasapi.media.entity.Version;
-import org.atlasapi.remotesite.channel4.pmlsd.C4AtomApiClient;
-import org.atlasapi.remotesite.channel4.pmlsd.C4PmlsdModule;
-import org.atlasapi.remotesite.channel4.pmlsd.C4OdEpisodesAdapter;
-import org.joda.time.DateTime;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.google.common.base.Charsets;
 import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
@@ -49,6 +17,34 @@ import com.metabroadcast.common.time.DateTimeZones;
 import com.metabroadcast.common.time.SystemClock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
+import junit.framework.TestCase;
+import org.atlasapi.media.TransportType;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.Policy;
+import org.atlasapi.media.entity.Policy.Platform;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Restriction;
+import org.atlasapi.media.entity.Version;
+import org.joda.time.DateTime;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 
 @RunWith( MockitoJUnitRunner.class )
 public class C4FourOdEpisodesExtractorTest extends TestCase {
@@ -101,7 +97,7 @@ public class C4FourOdEpisodesExtractorTest extends TestCase {
 		assertThat(firstEpisode.getDescription(), startsWith("Gordon Ramsay visits Bonapartes in Silsden, West Yorkshire."));
 		assertThat(firstEpisode.getThumbnail(), is("http://www.channel4.com/assets/programmes/images/ramsays-kitchen-nightmares/series-1/ramsays-kitchen-nightmares-s1-20090617160732_200x113.jpg"));
 		assertThat(firstEpisode.getImage(), is("http://www.channel4.com/assets/programmes/images/ramsays-kitchen-nightmares/series-1/ramsays-kitchen-nightmares-s1-20090617160732_625x352.jpg"));
-		assertThat(firstEpisode.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:prod:pmlsd:programmeId", "36423/001"))));
+		assertThat(firstEpisode.getAliases(), hasItem(new Alias("gb:channel4:prod:pmlsd:programmeId", "36423/001")));
 
 		Version firstEpisodeVersion = Iterables.get(firstEpisode.getVersions(), 0);
 		assertThat(firstEpisodeVersion.getDuration(), is((48 * 60) + 55));

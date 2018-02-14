@@ -523,7 +523,7 @@ public class ItemModelSimplifier
     }
 
     // temporary fix: some versions are missing durations so
-    // we fall back to the broadcast and location durations
+    // we fall back to the broadcast and locations durations
     private Integer durationFrom(org.atlasapi.media.entity.Item item, Version version) {
         if (version.getDuration() != null && version.getDuration() > 0) {
             return version.getDuration();

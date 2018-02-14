@@ -179,10 +179,10 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             Optional<Location> prevLocation = Iterables.tryFind(prevLocations, isEqualTo(location));
 
             if (prevLocation.isPresent() && prevLocation.get().getLastUpdated() != null) {
-                log.debug("Matched location {}", location);
+                log.debug("Matched locations {}", location);
                 location.setLastUpdated(prevLocation.get().getLastUpdated());
             } else {
-                log.debug("Could not match location {}", location);
+                log.debug("Could not match locations {}", location);
                 location.setLastUpdated(now);
             }
         }

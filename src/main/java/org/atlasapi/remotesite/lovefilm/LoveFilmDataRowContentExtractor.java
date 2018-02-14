@@ -371,7 +371,7 @@ public class LoveFilmDataRowContentExtractor implements ContentExtractor<LoveFil
         return certificateMap.get(certificate).asSet();
     }
     
-    // if no start/end date, don't add a location
+    // if no start/end date, don't add a locations
     // prevents issues with sending missing availability windows to youview
     private Set<Version> versionAndLocationFrom(LoveFilmDataRow source, Optional<Policy> policy) {
         Version version = new Version();

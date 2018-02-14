@@ -408,9 +408,9 @@ public class ContentMergerTest {
         Encoding currentEncoding = new Encoding();
         currentEncoding.setCanonicalUri("http://example.org/encoding/1");
         Location currentLocation1 = new Location();
-        currentLocation1.setUri("http://example.org/location/1");
+        currentLocation1.setUri("http://example.org/locations/1");
         Location currentLocation2 = new Location();
-        currentLocation2.setUri("http://example.org/location/2");
+        currentLocation2.setUri("http://example.org/locations/2");
         currentEncoding.setAvailableAt(ImmutableSet.of(currentLocation1, currentLocation2));
         currentVersion.setManifestedAs(ImmutableSet.of(currentEncoding));
 
@@ -424,7 +424,7 @@ public class ContentMergerTest {
         Encoding extractedEncodign = new Encoding();
         extractedEncodign.setCanonicalUri("http://example.org/encoding/1");
         Location extractedLocation1 = new Location();
-        extractedLocation1.setUri("http://example.org/location/1");
+        extractedLocation1.setUri("http://example.org/locations/1");
         extractedEncodign.setAvailableAt(ImmutableSet.of(extractedLocation1));
         extractedVersion.setManifestedAs(ImmutableSet.of(extractedEncodign));
 
@@ -437,7 +437,7 @@ public class ContentMergerTest {
         assertThat(encoding.getAvailableAt().size(), is(2));
 
         for (Location location : encoding.getAvailableAt()) {
-            if ("http://example.org/location/2".equals(location.getUri())) {
+            if ("http://example.org/locations/2".equals(location.getUri())) {
                 assertThat(location.getAvailable(), is(false));
             } else {
                 assertThat(location.getAvailable(), is(true));
@@ -461,9 +461,9 @@ public class ContentMergerTest {
         Encoding encoding = new Encoding();
         encoding.setCanonicalUri("http://example.org/encoding/1");
         Location location1 = new Location();
-        location1.setUri("http://example.org/location/1");
+        location1.setUri("http://example.org/locations/1");
         Location location2 = new Location();
-        location2.setUri("http://example.org/location/2");
+        location2.setUri("http://example.org/locations/2");
         encoding.setAvailableAt(ImmutableSet.of(location1, location2));
         currentVersionWithRevokedLocation.setManifestedAs(ImmutableSet.of(encoding));
 
@@ -473,9 +473,9 @@ public class ContentMergerTest {
         Encoding encoding2 = new Encoding();
         encoding2.setCanonicalUri("http://example.org/encoding/1");
         Location revokedLocation1 = new Location();
-        revokedLocation1.setUri("http://example.org/location/1");
+        revokedLocation1.setUri("http://example.org/locations/1");
         Location revokedLocation2 = new Location();
-        revokedLocation2.setUri("http://example.org/location/2");
+        revokedLocation2.setUri("http://example.org/locations/2");
         encoding2.setAvailableAt(ImmutableSet.of(revokedLocation1, revokedLocation2));
         revokedCurrentVersion.setManifestedAs(ImmutableSet.of(encoding2));
 
@@ -489,7 +489,7 @@ public class ContentMergerTest {
         Series extracted = new Series();
 
         Location extractedLocation = new Location();
-        extractedLocation.setUri("http://example.org/location/2");
+        extractedLocation.setUri("http://example.org/locations/2");
 
         Encoding extractedEncoding = new Encoding();
         extractedEncoding.setAvailableAt(ImmutableSet.of(extractedLocation));
@@ -517,12 +517,12 @@ public class ContentMergerTest {
 
         Encoding mergedEncoding1 = Iterables.getOnlyElement(merged1.getManifestedAs());
         for (Location mergedLocation : mergedEncoding1.getAvailableAt()) {
-            if ("http://example.org/location/1".equals(mergedLocation.getUri())) {
+            if ("http://example.org/locations/1".equals(mergedLocation.getUri())) {
                 assertThat(mergedLocation.getAvailable(), is(false));
-            } else if ("http://example.org/location/2".equals(mergedLocation.getUri())) {
+            } else if ("http://example.org/locations/2".equals(mergedLocation.getUri())) {
                 assertThat(mergedLocation.getAvailable(), is(true));
             } else {
-                fail(String.format("Unexpected location %s", mergedLocation));
+                fail(String.format("Unexpected locations %s", mergedLocation));
             }
         }
 

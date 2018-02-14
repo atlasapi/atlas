@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.amazonunbox;
 import java.util.Currency;
 import java.util.List;
 import java.util.Set;
+import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
@@ -77,7 +78,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final DateTime POLICY_AVAILABILITY_ENDS = new DateTime(DateTime.parse("2100-01-10T01:11:11"));
     private static final DateTime POLICY_AVAILABILITY_START = new DateTime(DateTime.parse("2000-01-10T01:11:11"));
 
-    private final Pattern straySymbols = Pattern.compile("^[\\p{Pd}: ]+|[\\p{Pd}: ]+$");//p{Pd}=dashes
+    //You can use grep TITLE  GBAmazonUnboxCatalog-2017-12-12.xml | g -o "\[.*\]" | sort | uniq
+    //to search the xml file and see if any new tags have been added.
+    private static final Pattern UHD_PATTERN =
+            Pattern.compile("(\\[Ultra HD\\]|\\[ULTRA HD\\]|\\[UHD\\]|\\[4K/Ultra HD\\]|\\[4K/UHD\\]|\\[4K\\])");
 
     private static final OptionalMap<String, Certificate> certificateMap =
             ImmutableOptionalMap.fromMap(
@@ -201,8 +205,14 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         film.setVersions(generateVersions(source));
         return film;
     }
-    
+
     private Set<Version> generateVersions(AmazonUnboxItem source) {
+        //There are two source of information about the actual quality
+        //1. does the title contain a tag?
+        //2. Do we have buy and rent links for either quality?
+        //3. (Unused) actual quality sent by amazon.
+        boolean isUhd = UHD_PATTERN.matcher(source.getTitle()).matches();
+
         Set<Location> hdLocations = Sets.newHashSet();
         Set<Location> sdLocations = Sets.newHashSet();
 
@@ -271,13 +281,18 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
 
 
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
-        if (!hdLocations.isEmpty()) {
-            encodings.add(createEncoding(true, hdLocations));
+        if(isUhd) { //if its uhd all else is irrelevant, cause they are not respected in amazon xml
+            encodings.add(createEncoding(org.atlasapi.media.entity.Quality.FOUR_K,
+                    Sets.union(sdLocations, hdLocations))); //normally one of them will be filled.
         }
-        if (!sdLocations.isEmpty()) {
-            encodings.add(createEncoding(false, sdLocations));
+        else { //if its not uhd see what amazon has told us.
+            if (!hdLocations.isEmpty()) {
+                encodings.add(createEncoding(org.atlasapi.media.entity.Quality.HD, hdLocations));
+            }
+            if (!sdLocations.isEmpty()) {
+                encodings.add(createEncoding(org.atlasapi.media.entity.Quality.SD, sdLocations));
+            }
         }
-        
         return ImmutableSet.of(createVersion(source, versionUrl, encodings.build()));
     }
 
@@ -291,23 +306,15 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         return version;
     }
     
-    private Encoding createEncoding(boolean isHd,
+    private Encoding createEncoding(org.atlasapi.media.entity.Quality quality,
             Set<Location> locations) {
         
         Encoding encoding = new Encoding();
-        if (isHd) {
-            encoding.setVideoHorizontalSize(1280);
-            encoding.setVideoVerticalSize(720);
-            encoding.setVideoAspectRatio("16:9");
-            encoding.setBitRate(3308);
+        if (quality != org.atlasapi.media.entity.Quality.SD) {
             encoding.setHighDefinition(true);
-        } else {
-            encoding.setVideoHorizontalSize(720);
-            encoding.setVideoVerticalSize(576);
-            encoding.setVideoAspectRatio("16:9");
-            encoding.setBitRate(1600);
         }
-        
+
+        encoding.setQuality(quality);
         encoding.setAvailableAt(locations);
         return encoding;
     }
@@ -328,7 +335,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     /**
-     * The plan is to create a unique identifier for each location, so can fit in the same set
+     * The plan is to create a unique identifier for each locations, so can fit in the same set
      * multiple locations with the same uri, but different revenue methods.
      * @return
      * @param cleanedUri
@@ -377,7 +384,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         content.setActivelyPublished(true);
         content.setMediaType(MediaType.VIDEO);
         content.setPublisher(Publisher.AMAZON_UNBOX);
-        content.setTitle(title);
+        content.setTitle(cleanTitle(title));
     }
 
     private void setFieldsForNonSynthesizedContent(
@@ -385,22 +392,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             AmazonUnboxItem source,
             String uri
     ) {
-//        // if this has a Brand title, then the brand title should not be repeated in the
-//        // child content title. Optimally we'd like to do the same for episode title<->season title,
-//        // but we don't have the season title available yet.
-//        //note at this stage we still use amazon terminology, where series is what we call brand.
-//        String title = cleanTitle(source.getTitle(), source.getSeriesTitle());
-//        //if it was made out purely from the parent content and nothing is left, synthesize a title.
-//        if (title != null && title.isEmpty()) {
-//            title = createBackupTitle(source);
-//        }
-//
-//        //TODO: This line is here to monitor weird cases. It should be removed once we reach prod state.
-//        if (source.getTitle()!=null && !source.getTitle().equals(title)) {
-//            log.info("AMAZON_TITLE_CHANGE: {} = {}", source.getTitle(), title);
-//        }
-
-        setCommonFields(content, source.getTitle(), uri);
+        setCommonFields(content,source.getTitle(), uri);
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
         
@@ -423,32 +415,15 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         content.setPeople(generatePeople(source));
     }
 
-    private String cleanTitle(String title, String parentTitle) {
-        if (title == null || parentTitle == null) {
-            return title;
+    /**
+     * Remove tags from the title, i.e. Quality info such as [UHD]
+     */
+    private String cleanTitle(String title) {
+        Matcher matcher = UHD_PATTERN.matcher(title);
+        if(matcher.matches()){
+            return matcher.replaceAll("");
         }
-        String cleanTitle = title.replaceAll(parentTitle, "");
-        //clean any leftover separating characters.
-        cleanTitle = straySymbols.matcher(cleanTitle).replaceAll("");
-
-        return cleanTitle;
-    }
-
-    private String createBackupTitle(AmazonUnboxItem source) {
-        switch (source.getContentType()) {
-        case TVSEASON:
-            if (source.getSeasonNumber() != null && source.getSeasonNumber() != 0) {
-                return "Season " + source.getSeasonNumber();
-            }
-            break;
-        case TVEPISODE:
-            if (source.getEpisodeNumber() != null && source.getEpisodeNumber() != 0) {
-                return "Episode " + source.getEpisodeNumber();
-            }
-            break;
-
-        }
-        return source.getTitle(); //nothing cab ne synthesized
+        return title;
     }
 
     private Set<String> generateGenres(AmazonUnboxItem source) {

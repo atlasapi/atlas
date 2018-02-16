@@ -391,7 +391,10 @@ public class ContentWriteController {
             );
         }
 
+
+        log.info("TIMER validating app config. "+Thread.currentThread().getName());
         Optional<AtlasErrorSummary> configErrorSummary = validateApplicationConfiguration(req, resp);
+        log.info("TIMER parsing input stream. "+Thread.currentThread().getName());
         if (configErrorSummary.isPresent()) {
             return error(req, resp, configErrorSummary.get());
         }
@@ -425,6 +428,7 @@ public class ContentWriteController {
         }
 
         Content content = inputContent.getContent();
+        log.info("TIMER validating api key. "+Thread.currentThread().getName());
 
         Optional<AtlasErrorSummary> apiKeyErrorSummary = validateApiKey(
                 req,
@@ -435,16 +439,20 @@ public class ContentWriteController {
             return error(req, resp, apiKeyErrorSummary.get());
         }
 
+        log.info("TIMER content lookup. "+Thread.currentThread().getName());
         Long contentId = lookupBackedContentIdGenerator.getId(content);
 
         try {
             if (async) {
                 sendMessage(inputStreamBytes, contentId, merge);
             } else {
+
+                log.info("TIMER writing content. "+Thread.currentThread().getName());
                 content.setId(contentId);
                 writeExecutor.writeContent(content, inputContent.getType(), merge,
                         broadcastMerger
                 );
+                log.info("TIMER done. "+Thread.currentThread().getName());
             }
         } catch (IllegalArgumentException | NullPointerException e) {
             logError("Error executing request", e, req);

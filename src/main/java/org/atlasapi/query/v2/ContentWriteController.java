@@ -436,31 +436,24 @@ public class ContentWriteController {
             return error(req, resp, apiKeyErrorSummary.get());
         }
 
-        log.info("TIMER 1 content lookup. "+Thread.currentThread().getName());
         Long contentId = lookupBackedContentIdGenerator.getId(content);
-        log.info("TIMER 2 lookup done. "+Thread.currentThread().getName());
 
         try {
             if (async) {
-                log.info("TIMER 3 message was async. "+Thread.currentThread().getName());
                 sendMessage(inputStreamBytes, contentId, merge);
             } else {
 
-                log.info("TIMER 3 writing content. "+Thread.currentThread().getName());
                 content.setId(contentId);
                 writeExecutor.writeContent(content, inputContent.getType(), merge,
                         broadcastMerger
                 );
             }
-            log.info("TIMER 4 done. "+Thread.currentThread().getName());
         } catch (IllegalArgumentException | NullPointerException e) {
-            log.info("TIMER 4 exception. "+Thread.currentThread().getName());
             logError("Error executing request", e, req);
             AtlasErrorSummary errorSummary = new AtlasErrorSummary(e).withStatusCode(
                     HttpStatusCode.BAD_REQUEST);
             return error(req, resp, errorSummary);
         } catch (Exception e) {
-            log.info("TIMER 4 exception 2. "+Thread.currentThread().getName());
             logError("Error executing request", e, req);
             AtlasErrorSummary errorSummary = new AtlasErrorSummary(e)
                     .withMessage("Error reading input for the request")

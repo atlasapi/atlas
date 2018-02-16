@@ -3,6 +3,7 @@ package org.atlasapi.remotesite.amazonunbox;
 import static org.hamcrest.Matchers.equalTo;
 import static org.hamcrest.Matchers.is;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertThat;
 import static org.junit.Assert.assertTrue;
@@ -10,6 +11,7 @@ import static org.junit.Assert.assertTrue;
 import java.util.Currency;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 import org.atlasapi.media.entity.Alias;
@@ -65,16 +67,6 @@ public class AmazonUnboxContentExtractorTest {
         return Maps.uniqueIndex(locations, Location.TO_URI);
     }
 
-    private void assertVersionFeatures(Version version, int horizontalScale, int verticalScale, String aspectRatio, int bitRate,
-            String locationUri, RevenueContract payToBuy, boolean isHd) {
-
-        Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
-        assertThat(encoding.getVideoHorizontalSize(), is(equalTo(horizontalScale)));
-        assertThat(encoding.getVideoVerticalSize(), is(equalTo(verticalScale)));
-        assertEquals(aspectRatio, encoding.getVideoAspectRatio());
-        assertThat(encoding.getBitRate(), is(equalTo(bitRate)));
-
-    }
 
     @Test
     public void testExtractionOfHdContent() {
@@ -108,9 +100,60 @@ public class AmazonUnboxContentExtractorTest {
         Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
 
         Version version = Iterables.getOnlyElement(film.getVersions());
-        Encoding encoding = Iterables.getOnlyElement(version.getManifestedAs());
+        Set<Encoding> encodings = version.getManifestedAs();
 
-        assertEquals(encoding.getQuality(), org.atlasapi.media.entity.Quality.FOUR_K);
+        boolean foundSd = false;
+        boolean foundHd = false;
+        boolean foundUhd = false;
+        for (Encoding encoding : encodings) {
+            if(encoding.getQuality().equals(org.atlasapi.media.entity.Quality.SD)){
+                foundSd = true;
+            }
+            if(encoding.getQuality().equals(org.atlasapi.media.entity.Quality.HD)){
+                foundHd = true;
+            }
+            if(encoding.getQuality().equals(org.atlasapi.media.entity.Quality.FOUR_K)){
+                foundUhd = true;
+            }
+        }
+        assertFalse("An SD encoding was created, but it shouldn't", foundSd);
+        assertTrue("The HD encoding was not created, but it should have.", foundHd);
+        assertTrue("The UHD encoding was not created, but it should have.", foundUhd);
+    }
+
+    @Test
+    public void testExtractionOfNonExtractionOfUhdContent() {
+        AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
+                .withUrl("http://hdlocation.org/")
+                .withUnboxHdPurchaseUrl(null)
+                .withUnboxHdPurchasePrice(null)
+                .withUnboxSdPurchaseUrl("http://sdlocation.org/")
+                .withUnboxSdPurchasePrice("9.99")
+                .withTitle("Super Drugs [UHD]")
+                .build();
+
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
+
+        Version version = Iterables.getOnlyElement(film.getVersions());
+        Set<Encoding> encodings = version.getManifestedAs();
+
+        boolean foundSd = false;
+        boolean foundHd = false;
+        boolean foundUhd = false;
+        for (Encoding encoding : encodings) {
+            if(encoding.getQuality().equals(org.atlasapi.media.entity.Quality.SD)){
+                foundSd = true;
+            }
+            if(encoding.getQuality().equals(org.atlasapi.media.entity.Quality.HD)){
+                foundHd = true;
+            }
+            if(encoding.getQuality().equals(org.atlasapi.media.entity.Quality.FOUR_K)){
+                foundUhd = true;
+            }
+        }
+        assertTrue("An SD encoding was not created, but it should.", foundSd);
+        assertFalse("The HD encoding was created, but it should not have.", foundHd);
+        assertFalse("The UHD encoding was created, but it shouldn't have because the content is SD.", foundUhd);
     }
 
     //the test is meaningless since there is nothing on the feed and thus we (now) do nothing, and
@@ -141,27 +184,20 @@ public class AmazonUnboxContentExtractorTest {
     @Test
     public void testExtractionOfPeople() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
-                .addDirectorRole("Director")
+                .addDirectorRole("Director 1")
+                .addDirectorRole("Director 2")
                 .addStarringRole("Cast 1")
                 .addStarringRole("Cast 2")
                 .addStarringRole("Cast 3")
                 .build();
-        
-        Content extractedContent = Iterables.getOnlyElement(extractor.extract(filmItem));
-        Film film = (Film) extractedContent;
+
+        Film film = (Film) Iterables.getOnlyElement(extractor.extract(filmItem));
 
         List<CrewMember> people = film.getPeople();
         Iterable<String> names = people.stream()
                 .map(input -> input.name())
                 .collect(Collectors.toList());
-        assertEquals(ImmutableSet.of("Director", "Cast 1", "Cast 2", "Cast 3"), ImmutableSet.copyOf(names));
-        
-        CrewMember director = Iterables.getOnlyElement(people.stream()
-                .filter(input -> input.role() == Role.DIRECTOR)
-                .collect(Collectors.toList()));
-        
-        assertEquals(Role.DIRECTOR, director.role());
-        assertEquals("Director", director.name());
+        assertEquals(ImmutableSet.of("Director 1", "Director 2", "Cast 1", "Cast 2", "Cast 3"), ImmutableSet.copyOf(names));
     }
     
     @Test
@@ -253,7 +289,7 @@ public class AmazonUnboxContentExtractorTest {
     @Test
     public void testExtractionOfPolicyWithSubscription() {
         AmazonUnboxItem filmItem = createAmazonUnboxItem("filmAsin", ContentType.MOVIE)
-                .withTitle("testTitle [UHD]")
+                .withTitle("testTitle")
                 .withRental(true)
                 .withIsTrident(true)
                 .withUrl("unbox.amazon.co.uk/filmAsin")

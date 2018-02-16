@@ -271,9 +271,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     private String removeTitle(String goodTitle, String badTitle) {
-        if(goodTitle.equals(badTitle)){
-            return "";
-        }
+        //YV asked to not do that until they get a chance to review the content.
+//        if(goodTitle.equals(badTitle)){
+//            return "";
+//        }
         Pattern titleWithSeparator =
                 Pattern.compile("^" + badTitle.trim() + titleSeparator, Pattern.CASE_INSENSITIVE);
 

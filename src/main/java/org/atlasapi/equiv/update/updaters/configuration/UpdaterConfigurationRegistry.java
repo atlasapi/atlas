@@ -126,7 +126,8 @@ public class UpdaterConfigurationRegistry {
                 makeBarbTransmissionConfiguration(),
                 makeItvCpsConfiguration(),
                 makeNitroConfiguration(),
-                makeC4PmlsdConfiguration()
+                makeC4PmlsdConfiguration(),
+                makeUktvConfiguration()
         );
 
         configurations.add(
@@ -702,8 +703,8 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(FIVE)
                 .withItemEquivalenceUpdater(
-                        STRICT_ITEM,
-                        TARGET_SOURCES
+                        BARB_ITEM,
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
@@ -721,7 +722,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BARB_MASTER)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,
@@ -739,7 +740,7 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BARB_TRANSMISSIONS)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD)
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         NOP_CONTAINER,
@@ -791,6 +792,24 @@ public class UpdaterConfigurationRegistry {
     private static UpdaterConfiguration makeC4PmlsdConfiguration() {
         return UpdaterConfiguration.builder()
                 .withSource(C4_PMLSD)
+                .withItemEquivalenceUpdater(
+                        BARB_ITEM,
+                        ImmutableSet.of(BARB_TRANSMISSIONS, BARB_MASTER, PA, RADIO_TIMES)
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        TARGET_SOURCES
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        TARGET_SOURCES
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeUktvConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(UKTV)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
                         ImmutableSet.of(BARB_TRANSMISSIONS, BARB_MASTER, PA, RADIO_TIMES)

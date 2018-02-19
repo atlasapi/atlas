@@ -51,13 +51,14 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_NO_LOCK_SETTING_CONTENT_WRITER;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @SuppressWarnings("PublicConstructor")
 @Configuration
 @Import({ KafkaMessagingModule.class })
 public class QueryExecutorModule {
-    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired @Qualifier(NON_ID_NO_LOCK_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
     @Autowired private ScheduleWriter scheduleWriter;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;
@@ -115,7 +116,7 @@ public class QueryExecutorModule {
                 new DefaultJacksonModelReader(),
                 delegatingModelTransformer(),
                 contentResolver,
-                contentWriter,
+                contentWrier,
                 scheduleWriter,
                 channelResolver,
                 eventResolver,

@@ -164,9 +164,8 @@ public class ContentWriteExecutor {
 
 
         long endTime = System.nanoTime();
-
         long duration = (endTime - startTime)/1000000;
-        if(duration > 100){
+        if(duration > 1000){
             log.info("TIMER SLOW UPDATE {}. {} {}",duration,content.getId(), Thread.currentThread().getName());
         }
     }

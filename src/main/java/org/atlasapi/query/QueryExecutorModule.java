@@ -116,7 +116,7 @@ public class QueryExecutorModule {
                 new DefaultJacksonModelReader(),
                 delegatingModelTransformer(),
                 contentResolver,
-                contentWrier,
+                contentWriter,
                 scheduleWriter,
                 channelResolver,
                 eventResolver,

@@ -444,9 +444,16 @@ public class ContentWriteController {
             } else {
 
                 content.setId(contentId);
+                long startTime = System.nanoTime();
                 writeExecutor.writeContent(content, inputContent.getType(), merge,
                         broadcastMerger
                 );
+                long endTime = System.nanoTime();
+
+                long duration = (endTime - startTime)/1000000;
+                if(duration > 100){
+                    log.info("TIMER SLOW CONTROLLER UPDATE {}. {} {}",duration,content.getId(), Thread.currentThread().getName());
+                }
             }
         } catch (IllegalArgumentException | NullPointerException e) {
             logError("Error executing request", e, req);

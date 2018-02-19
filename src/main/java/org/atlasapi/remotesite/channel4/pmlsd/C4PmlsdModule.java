@@ -20,6 +20,9 @@ import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgChannelDayUpdater;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgClient;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgEntryUriExtractor;
 import org.atlasapi.remotesite.channel4.pmlsd.epg.C4EpgUpdater;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateClient;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateForceIngestController;
+import org.atlasapi.remotesite.channel4.pirate.C4PirateItemTransformer;
 import org.joda.time.Duration;
 import org.joda.time.LocalTime;
 import org.slf4j.Logger;
@@ -72,6 +75,10 @@ public class C4PmlsdModule {
     private @Value("${service.web.id}") Long webServiceId;
     private @Value("${service.ios.id}") Long iOsServiceId;
     private @Value("${player.4od.id}") Long fourODPlayerId;
+
+    private @Value("${c4.pirate.url}") String c4PirateUrl;
+    private @Value("${c4.pirate.username}") String c4PirateUser;
+    private @Value("${c4.pirate.password}") String c4PiratePass;
 	
 	public static Map<Publisher, String> PUBLISHER_TO_CANONICAL_URI_HOST_MAP 
 	    = ImmutableMap.of(Publisher.C4_PMLSD, "pmlsc.channel4.com",
@@ -189,6 +196,14 @@ public class C4PmlsdModule {
     @Bean protected C4LocationPolicyIds c4XBoxLocationPolicyIds() {
         return C4LocationPolicyIds.builder()
                     .build();
+    }
+
+    @Bean protected C4PirateForceIngestController c4PirateForceIngestController() {
+        return new C4PirateForceIngestController(
+                contentWriter,
+                C4PirateItemTransformer.create(),
+                C4PirateClient.create(c4PirateUser, c4PiratePass, c4PirateUrl)
+        );
     }
     
 }

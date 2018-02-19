@@ -150,6 +150,9 @@ CMD java \
     -Dc4.keystore.path="$C4_KEYSTORE_PATH" \
     -Dc4.lakeviewavailability.apiroot="$C4_LAKEVIEWAVAILABILITY_APIROOT" \
     -Dc4.lakeviewavailability.key="$C4_LAKEVIEWAVAILABILITY_KEY" \
+    -Dc4.pirate.url="$C4_PIRATE_URL" \
+    -Dc4.pirate.username="$C4_PIRATE_USERNAME" \
+    -Dc4.pirate.password="$C4_PIRATE_PASSWORD" \
     -Dcannon.host.name="$CANNON_HOST_NAME" \
     -Dcannon.host.port="$CANNON_HOST_PORT" \
     -Dcassandra.connectionTimeout="$CASSANDRA_CONNECTIONTIMEOUT" \

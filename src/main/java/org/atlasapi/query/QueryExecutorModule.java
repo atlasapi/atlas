@@ -58,7 +58,7 @@ import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETT
 @Configuration
 @Import({ KafkaMessagingModule.class })
 public class QueryExecutorModule {
-    @Autowired @Qualifier(NON_ID_NO_LOCK_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
     @Autowired private ScheduleWriter scheduleWriter;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;

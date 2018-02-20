@@ -177,7 +177,7 @@ public class QueryWebModule {
     @Autowired private DatabasedMongo mongo;
     @Autowired private ContentGroupWriter contentGroupWriter;
     @Autowired private ContentGroupResolver contentGroupResolver;
-    @Autowired @Qualifier(NON_ID_NO_LOCK_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
+    @Autowired @Qualifier(NON_ID_SETTING_CONTENT_WRITER) private ContentWriter contentWriter;
     @Autowired private LookupBackedContentIdGenerator lookupBackedContentIdGenerator;
     @Autowired private ScheduleWriter scheduleWriter;
     @Autowired private ContentResolver contentResolver;

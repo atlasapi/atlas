@@ -135,31 +135,25 @@ public class ContentWriteExecutor {
 
         log.info("TIMER 1 start. {} {}",content.getId(), Thread.currentThread().getName());
         Content updatedContent = updateEventPublisher(content);
-        log.info("TIMER 2 updated event publisher. {} {}",content.getId(), Thread.currentThread().getName());
         Maybe<Identified> identified = resolveExisting(updatedContent);
 
         if ("broadcast".equals(type)) {
-            log.info("TIMER 3 resolved existing. Its a broadcast. {} {}",content.getId(), Thread.currentThread().getName());
             updatedContent = versionMerger.mergeBroadcasts(
                     identified, updatedContent, shouldMerge, broadcastMerger
             );
         } else {
-            log.info("TIMER 3 resolved existing. {} {}",content.getId(), Thread.currentThread().getName());
             updatedContent = contentMerger.merge(
                     identified, updatedContent, shouldMerge, broadcastMerger
             );
         }
         if (updatedContent instanceof Item) {
-            log.info("TIMER 4 merge is done. This is an item. {} {}",content.getId(), Thread.currentThread().getName());
             Item item = (Item) updatedContent;
             writer.createOrUpdate(item);
-            log.info("TIMER 5 updated is done. {} {}",content.getId(), Thread.currentThread().getName());
+            log.info("TIMER updated is done. {} {}",content.getId(), Thread.currentThread().getName());
             updateSchedule(item);
-            log.info("TIMER 6 updating schedule. {} {}",content.getId(), Thread.currentThread().getName());
         } else {
-            log.info("TIMER 4 merge is done. {} {}",content.getId(), Thread.currentThread().getName());
             writer.createOrUpdate((Container) updatedContent);
-            log.info("TIMER 5 updated is done. {} {}",content.getId(), Thread.currentThread().getName());
+            log.info("TIMER updated is done. {} {}",content.getId(), Thread.currentThread().getName());
         }
 
 

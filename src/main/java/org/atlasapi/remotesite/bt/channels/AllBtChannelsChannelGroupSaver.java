@@ -3,7 +3,9 @@ package org.atlasapi.remotesite.bt.channels;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
+import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -49,8 +51,8 @@ public class AllBtChannelsChannelGroupSaver extends AbstractBtChannelGroupSaver 
     }
 
     @Override
-    protected Optional<Alias> aliasFor(String key) {
-        return Optional.absent();
+    protected Set<Alias> aliasesFor(String key) {
+        return ImmutableSet.of();
     }
 
     @Override

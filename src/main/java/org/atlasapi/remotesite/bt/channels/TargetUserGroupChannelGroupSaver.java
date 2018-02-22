@@ -1,11 +1,10 @@
 package org.atlasapi.remotesite.bt.channels;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.google.common.base.Preconditions.checkState;
-
-import java.util.List;
-import java.util.Map;
-
+import com.google.api.client.repackaged.com.google.common.base.Throwables;
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -19,10 +18,12 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.atlasapi.remotesite.bt.channels.mpxclient.PaginatedEntries;
 import org.slf4j.LoggerFactory;
 
-import com.google.api.client.repackaged.com.google.common.base.Throwables;
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.google.common.base.Preconditions.checkState;
 
 public class TargetUserGroupChannelGroupSaver extends AbstractBtChannelGroupSaver {
     
@@ -91,8 +92,8 @@ public class TargetUserGroupChannelGroupSaver extends AbstractBtChannelGroupSave
     }
 
     @Override
-    protected Optional<Alias> aliasFor(String key) {
-        return Optional.of(new Alias(aliasNamespace, key));
+    protected Set<Alias> aliasesFor(String key) {
+        return ImmutableSet.of(new Alias(aliasNamespace, key));
     }
 
     @Override

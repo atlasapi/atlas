@@ -63,7 +63,7 @@ public abstract class AbstractBtChannelGroupSaver {
     protected void start() { /* do nothing by default */ }
 
     protected abstract List<String> keysFor(Entry channel);
-    protected abstract Optional<Alias> aliasFor(String key);
+    protected abstract Set<Alias> aliasesFor(String key);
     protected abstract String aliasUriFor(String key);
     protected abstract String titleFor(String key);
 
@@ -84,9 +84,9 @@ public abstract class AbstractBtChannelGroupSaver {
         ImmutableSet.Builder<String> channelGroupUris = ImmutableSet.builder();
         for (Map.Entry<String, Collection<String>> entry : keys.asMap().entrySet()) {
             String aliasUri = aliasUriFor(entry.getKey());
-            Optional<Alias> alias = aliasFor(entry.getKey());
+            Set<Alias> aliases = aliasesFor(entry.getKey());
 
-            ChannelGroup channelGroup = getOrCreateChannelGroup(aliasUri, alias);
+            ChannelGroup channelGroup = getOrCreateChannelGroup(aliasUri, aliases);
             channelGroup.setPublisher(publisher);
             channelGroup.addTitle(titleFor(entry.getKey()));
 
@@ -205,7 +205,7 @@ public abstract class AbstractBtChannelGroupSaver {
         channelGroup.setChannelNumberings(channelNumberings.build());
     }
 
-    private ChannelGroup getOrCreateChannelGroup(String uri, Optional<Alias> alias) {
+    private ChannelGroup getOrCreateChannelGroup(String uri, Set<Alias> aliases) {
         Optional<ChannelGroup> channelGroup = channelGroupResolver.channelGroupFor(uri);
 
         ChannelGroup group;
@@ -219,9 +219,7 @@ public abstract class AbstractBtChannelGroupSaver {
             channelGroupWriter.createOrUpdate(group);
         }
 
-        if (alias.isPresent()) {
-            group.setAliases(alias.asSet());
-        }
+        group.setAliases(aliases);
 
         return group;
     }

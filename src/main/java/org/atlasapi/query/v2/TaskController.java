@@ -139,7 +139,8 @@ public class TaskController extends BaseController<Iterable<Task>> {
             contentUri = NITRO_URI_PREFIX + contentUri;
         }
 
-        TaskQuery.Builder query = TaskQuery.builder(selection, publisher, destinationType)
+        TaskQuery.Builder query = TaskQuery.builder(selection, destinationType)
+                .withPublisher(publisher)
                 .withContentUri(contentUri)
                 .withRemoteId(remoteId)
                 .withElementId(elementId);

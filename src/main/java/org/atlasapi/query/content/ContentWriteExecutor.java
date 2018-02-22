@@ -131,9 +131,7 @@ public class ContentWriteExecutor {
             BroadcastMerger broadcastMerger
     ) {
         checkArgument(content.getId() != null, "Cannot write content without an ID");
-        long startTime = System.nanoTime();
 
-        log.info("TIMER 1 start. {} {}",content.getId(), Thread.currentThread().getName());
         Content updatedContent = updateEventPublisher(content);
         Maybe<Identified> identified = resolveExisting(updatedContent);
 
@@ -146,21 +144,18 @@ public class ContentWriteExecutor {
                     identified, updatedContent, shouldMerge, broadcastMerger
             );
         }
+        long startTime = System.nanoTime();
         if (updatedContent instanceof Item) {
             Item item = (Item) updatedContent;
             writer.createOrUpdate(item);
-            log.info("TIMER updated is done. {} {}",content.getId(), Thread.currentThread().getName());
             updateSchedule(item);
         } else {
             writer.createOrUpdate((Container) updatedContent);
-            log.info("TIMER updated is done. {} {}",content.getId(), Thread.currentThread().getName());
         }
 
-
-        long endTime = System.nanoTime();
-        long duration = (endTime - startTime)/1000000;
+        long duration = (System.nanoTime() - startTime)/1000000;
         if(duration > 1000){
-            log.info("TIMER SLOW UPDATE {}. {} {}",duration,content.getId(), Thread.currentThread().getName());
+            log.info("TIMER. Super slow. Writing to db took {}ms. uri={} {}",duration, content.getCanonicalUri(), Thread.currentThread().getName());
         }
     }
 

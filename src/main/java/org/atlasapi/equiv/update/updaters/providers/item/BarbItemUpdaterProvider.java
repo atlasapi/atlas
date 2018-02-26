@@ -103,7 +103,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         ))
                 )
                 .withExtractor(
-                        PercentThresholdAboveNextBestMatchEquivalenceExtractor.atLeastNTimesGreater(1.5)
+                        TopEquivalenceExtractor.create()
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler(ImmutableList.of(

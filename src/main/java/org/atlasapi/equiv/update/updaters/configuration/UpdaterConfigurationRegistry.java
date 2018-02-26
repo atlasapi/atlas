@@ -722,15 +722,21 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BARB_MASTER)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE)
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                        )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                        )
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_SERIES,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                        )
                 )
                 .build();
     }
@@ -743,12 +749,12 @@ public class UpdaterConfigurationRegistry {
                         ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_SERIES,
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
                 )
                 .build();
     }

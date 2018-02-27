@@ -17,6 +17,7 @@ import javax.annotation.Nullable;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
@@ -38,40 +39,12 @@ public class ChannelRestrictionGroupSaver extends AbstractBtChannelGroupSaver {
                     new Restriction(IS_CASTABLE_RAW, IS_CASTABLE_TITLE, IS_CASTABLE_URL),
                     new Restriction(LARGE_SCREEN_RAW, LARGE_SCREEN_TITLE, LARGE_SCREEN_URL)
             ),
-            Restriction::getPrefix
+            Restriction::getKey
     );
-
-    @Nullable private static String withoutSuffix(String s) {
-        int i = s.lastIndexOf(':');
-        if (i >= 0) return s.substring(0, i);
-        return null;
-    }
-    @Nullable private Restriction getRestriction(@Nullable String key) {
-        if (key == null) return null;
-        String pre = key;
-        do {
-            Restriction restriction = RESTRICTION_MAP.get(pre);
-            if (restriction != null) {
-                return restriction;
-            }
-            pre = withoutSuffix(pre);
-        } while (pre != null);
-        return null;
-    }
-    private Restriction getRestrictionChecked(String key) {
-        Restriction restriction = getRestriction(key);
-        if (restriction == null) {
-            throw new IllegalArgumentException("Key is not valid for a restriction: " + key);
-        }
-        return restriction;
-    }
-
-    private boolean validRestriction(@Nullable String key) {
-        return getRestriction(key) != null;
-    }
 
     private final String aliasUriPrefix;
     private final String aliasNamespace;
+    private final ConcurrentMap<String, Set<Alias>> restrictionAliases = new ConcurrentHashMap<>();
 
     public ChannelRestrictionGroupSaver(
             Publisher publisher,
@@ -95,24 +68,61 @@ public class ChannelRestrictionGroupSaver extends AbstractBtChannelGroupSaver {
         this.aliasNamespace = checkNotNull(aliasNamespace) + ":channel-restriction";
     }
 
+    @Override protected void start() {
+        restrictionAliases.clear();
+    }
+
+    @Nullable private static String withoutSuffix(String s) {
+        int i = s.lastIndexOf(':');
+        if (i >= 0) return s.substring(0, i);
+        return null;
+    }
+
+    @Nullable private Restriction getRestriction(@Nullable String key) {
+        if (key == null) return null;
+        String pre = key;
+        do {
+            Restriction restriction = RESTRICTION_MAP.get(pre);
+            if (restriction != null) {
+                return restriction;
+            }
+            pre = withoutSuffix(pre);
+        } while (pre != null);
+        return null;
+    }
+
+    private Restriction getRestrictionChecked(String key)
+            throws IllegalArgumentException {                                           // NOSONAR
+        Restriction restriction = getRestriction(key);
+        if (restriction != null) return restriction;
+        throw new IllegalArgumentException("Key is not valid for a restriction: " + key);
+    }
+
+    private @Nullable String cacheAliasGetKey(@Nullable String name) {
+        Restriction restriction = getRestriction(name);
+        if (restriction == null) return null;
+        Set<Alias> aliases = restrictionAliases.computeIfAbsent(
+                restriction.getKey(),
+                k -> Collections.newSetFromMap(new ConcurrentHashMap<>())
+        );
+        aliases.add(new Alias(aliasNamespace, name));
+        return restriction.getKey();
+    }
+
     @Override
     protected List<String> keysFor(Entry channel) {
         return channel.getCategories().stream()
                 .filter(category -> "channelRestriction".equals(category.getScheme()))
                 .map(Category::getName)
-                .filter(this::validRestriction)
+                .map(this::cacheAliasGetKey)
+                .filter(Objects::nonNull)
+                .distinct()
                 .collect(MoreCollectors.toImmutableList());
     }
 
-    private final ConcurrentMap<String, Set<Alias>> restrictionAliases = new ConcurrentHashMap<>();
     @Override
     protected Set<Alias> aliasesFor(String key) {
-        Restriction restriction = getRestrictionChecked(key);
-        Set<Alias> aliases = restrictionAliases.computeIfAbsent(
-                restriction.getPrefix(),
-                k -> Collections.newSetFromMap(new ConcurrentHashMap<>())
-        );
-        aliases.add(new Alias(aliasNamespace, key));
+        Set<Alias> aliases = restrictionAliases.get(getRestrictionChecked(key).getKey());
         return Collections.unmodifiableSet(aliases);    // don't take a copy until we have to
     }
 
@@ -127,18 +137,18 @@ public class ChannelRestrictionGroupSaver extends AbstractBtChannelGroupSaver {
     }
 
     private static class Restriction {
-        private final String prefix;
+        private final String key;
         private final String title;
         private final String urlSuffix;
 
-        public Restriction(String prefix, String title, String urlSuffix) {
-            this.prefix = checkNotNull(prefix);
+        public Restriction(String key, String title, String urlSuffix) {
+            this.key = checkNotNull(key);
             this.title = checkNotNull(title);
             this.urlSuffix = checkNotNull(urlSuffix);
         }
 
-        public String getPrefix() {
-            return prefix;
+        public String getKey() {
+            return key;
         }
 
         public String getTitle() {

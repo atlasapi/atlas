@@ -91,7 +91,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
     protected void runTask() {
         telescopeReporter = OwlTelescopeReporterFactory.getInstance()
                 .getTelescopeReporter(
-                        OwlTelescopeReporters.RT_INGESTER,
+                        OwlTelescopeReporters.RADIO_TIMES_INGESTER,
                         Event.Type.INGEST);
         telescopeReporter.startReporting();
 

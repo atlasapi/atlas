@@ -22,6 +22,8 @@ public enum OwlTelescopeReporters implements TelescopeReporterName {
 
     AMAZON_UNBOX_UPDATE_TASK("amazon.ingester","Amazon Ingester"),
 
+    RT_INGESTER("radiotimes.ingester", "Radio Times Ingester"),
+
     PICKS_CONTENT_GROUP_UPDATER("mbst-picks-content-group-updater","Mbst Picks Content Group Updater"),
     
     CHANNEL_EQUIVALENCE("equivalence.channel.auto", "Channel Equivalence"),

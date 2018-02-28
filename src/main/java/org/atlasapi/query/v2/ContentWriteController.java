@@ -99,8 +99,6 @@ public class ContentWriteController {
     private final EquivalenceBreaker equivalenceBreaker;
     private final OldContentDeactivator oldContentDeactivator;
 
-    private Optional<Application> possibleApplication;
-
     private ContentWriteController(
             ApplicationFetcher applicationFetcher,
             ContentWriteExecutor contentWriteExecutor,
@@ -167,27 +165,29 @@ public class ContentWriteController {
     @RequestMapping(value = "/3.0/content.json", method = RequestMethod.DELETE)
     public WriteResponse unpublishContent(HttpServletRequest req, HttpServletResponse resp) {
 
-        Optional<AtlasErrorSummary> configErrorSummary = validateApplicationConfiguration(
+        PossibleApplication possibleApplication = validateApplicationConfiguration(
                 req,
                 resp
         );
-        if (configErrorSummary.isPresent()) {
-            return error(req, resp, configErrorSummary.get());
+        if (possibleApplication.getErrorSummary().isPresent()) {
+            return error(req, resp, possibleApplication.getErrorSummary().get());
         }
 
         if (!Strings.isNullOrEmpty(req.getParameter(SOURCE_PARAMETER))
                 && !req.getParameter(VALID_URIS_PARAMETER).isEmpty()) {
-            return unpublishOldContent(req, resp);
+            return unpublishOldContent(req, resp, possibleApplication.getApplication());
         }
 
-        return setPublishStatus(req, resp, false);
+        return setPublishStatus(req, resp, false, possibleApplication.getApplication());
     }
 
     @Nullable
     private WriteResponse unpublishOldContent(
             HttpServletRequest request,
-            HttpServletResponse response
-    ) {
+            HttpServletResponse response,
+            Optional<Application> application) {
+
+
         String source = request.getParameter(SOURCE_PARAMETER);
         ImmutableList<String> validUris = ImmutableList.copyOf(
                 request.getParameter(VALID_URIS_PARAMETER)
@@ -199,7 +199,8 @@ public class ContentWriteController {
         Optional<AtlasErrorSummary> apiKeyErrorSummary = validateApiKey(
                 request,
                 response,
-                publisher
+                publisher,
+                application
         );
         if (apiKeyErrorSummary.isPresent()) {
             return error(request, response, apiKeyErrorSummary.get());
@@ -212,32 +213,33 @@ public class ContentWriteController {
         return null;
     }
 
-    private Optional<AtlasErrorSummary> validateApplicationConfiguration(
+    private PossibleApplication validateApplicationConfiguration(
             HttpServletRequest request,
             HttpServletResponse response
     ) {
+        PossibleApplication possibleApplication = new PossibleApplication();
         try {
-            possibleApplication = applicationFetcher.applicationFor(request);
+            possibleApplication.setApplication(applicationFetcher.applicationFor(request));
         } catch (InvalidApiKeyException ex) {
-            return Optional.of(AtlasErrorSummary.forException(ex));
+            possibleApplication.setErrorSummary(Optional.of(AtlasErrorSummary.forException(ex)));
         }
 
-        if (!possibleApplication.isPresent()) {
-            return Optional.of(
+        if (!possibleApplication.getApplication().isPresent()) {
+            possibleApplication.setErrorSummary(Optional.of(
                     AtlasErrorSummary.forException(new UnauthorizedException(
                             "API key is unauthorised"
                     ))
-            );
+            ));
         }
 
-        return Optional.empty();
+        return possibleApplication;
     }
 
     private Optional<AtlasErrorSummary> validateApiKey(
             HttpServletRequest request,
             HttpServletResponse response,
-            Publisher publisher
-    ) {
+            Publisher publisher,
+            Optional<Application> possibleApplication) {
         if (!possibleApplication.isPresent() || !possibleApplication.get().getConfiguration().isWriteEnabled(publisher)) {
             return Optional.of(
                     AtlasErrorSummary.forException(new ForbiddenException(
@@ -252,8 +254,9 @@ public class ContentWriteController {
     private WriteResponse setPublishStatus(
             HttpServletRequest req,
             HttpServletResponse resp,
-            boolean publishStatus
-    ) {
+            boolean publishStatus,
+            Optional<Application> possibleApplication) {
+
         // get ID / URI, if ID, lookup URI from it
         LookupEntry lookupEntry;
         if (req.getParameter(ID) != null) {
@@ -315,7 +318,8 @@ public class ContentWriteController {
         Optional<AtlasErrorSummary> apiKeyErrorSummary = validateApiKey(
                 req,
                 resp,
-                described.getPublisher()
+                described.getPublisher(),
+                possibleApplication
         );
         if (apiKeyErrorSummary.isPresent()) {
             return error(req, resp, apiKeyErrorSummary.get());
@@ -391,10 +395,9 @@ public class ContentWriteController {
             );
         }
 
-
-        Optional<AtlasErrorSummary> configErrorSummary = validateApplicationConfiguration(req, resp);
-        if (configErrorSummary.isPresent()) {
-            return error(req, resp, configErrorSummary.get());
+        PossibleApplication possibleApplication = validateApplicationConfiguration(req, resp);
+        if (possibleApplication.getErrorSummary().isPresent()) {
+            return error(req, resp, possibleApplication.getErrorSummary().get());
         }
 
         byte[] inputStreamBytes;
@@ -430,7 +433,8 @@ public class ContentWriteController {
         Optional<AtlasErrorSummary> apiKeyErrorSummary = validateApiKey(
                 req,
                 resp,
-                content.getPublisher()
+                content.getPublisher(),
+                possibleApplication.getApplication()
         );
         if (apiKeyErrorSummary.isPresent()) {
             return error(req, resp, apiKeyErrorSummary.get());
@@ -536,6 +540,29 @@ public class ContentWriteController {
             logError("Error executing request", e, request);
         }
         return null;
+    }
+
+    private class PossibleApplication{
+        private Optional<AtlasErrorSummary> errorSummary = Optional.empty();
+        private Optional<Application> application = Optional.empty();
+
+
+        public Optional<AtlasErrorSummary> getErrorSummary() {
+            return errorSummary;
+        }
+
+        public void setErrorSummary(Optional<AtlasErrorSummary> errorSummary) {
+            this.errorSummary = errorSummary;
+        }
+
+        public Optional<Application> getApplication() {
+            return application;
+        }
+
+        public void setApplication(
+                Optional<Application> application) {
+            this.application = application;
+        }
     }
 
 }

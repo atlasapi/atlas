@@ -29,13 +29,13 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
         if (candidates.isEmpty()) {
             return Optional.absent();
         }
-        
+
         desc.startStage(toString());
-        
+
         List<ScoredCandidate<Item>> positiveScores = removeNonPositiveScores(candidates, desc);
-        
+
         Optional<ScoredCandidate<Item>> result = Optional.absent();
-        
+
         if (positiveScores.size() == 1) {
             ScoredCandidate<Item> only = positiveScores.get(0);
             result = candidateIfOverThreshold(only, SINGLE_THRESHOLD, desc);
@@ -44,10 +44,12 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
             result = candidateIfOverThreshold(only, MULTI_THRESHOLD, desc);
         }
 
-        extractorComponent.addComponentResult(
-                result.get().candidate().getId(),
-                String.valueOf(result.get().score())
-        );
+        if (result.isPresent()) {
+            extractorComponent.addComponentResult(
+                    result.get().candidate().getId(),
+                    String.valueOf(result.get().score())
+            );
+        }
         
         desc.finishStage();
         return result; 

@@ -39,10 +39,9 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
             MongoLookupEntryStore lookupEntryStore,
             ContentResolver resolver
     ) {
-        return new BarbAliasEquivalenceGenerator<T>(lookupEntryStore, resolver);
+        return new BarbAliasEquivalenceGenerator<>(lookupEntryStore, resolver);
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     public ScoredCandidates<T> generate(
             T subject,
@@ -59,9 +58,9 @@ public class BarbAliasEquivalenceGenerator<T extends Content> implements Equival
         return equivalents.build();
     }
 
-    private DefaultScoredCandidates.Builder findByCommonAlias(
+    private DefaultScoredCandidates.Builder<T> findByCommonAlias(
             T subject,
-            DefaultScoredCandidates.Builder equivalents,
+            DefaultScoredCandidates.Builder<T> equivalents,
             ResultDescription desc,
             EquivToTelescopeResults equivToTelescopeResults
     ) {

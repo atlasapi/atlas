@@ -36,6 +36,7 @@ import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDe
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import com.google.common.base.Predicates;
@@ -62,7 +63,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
                 .withGenerators(
-                        ImmutableSet.<EquivalenceGenerator<Item>>of(
+                        ImmutableSet.of(
                                 BarbAliasEquivalenceGenerator.barbAliasResolvingGenerator(
                                         ((MongoLookupEntryStore) dependencies.getLookupEntryStore()),
                                         dependencies.getContentResolver()
@@ -106,7 +107,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                         TopEquivalenceExtractor.create()
                 )
                 .withHandler(
-                        new DelegatingEquivalenceResultHandler(ImmutableList.of(
+                        new DelegatingEquivalenceResultHandler<>(ImmutableList.of(
                                 EpisodeFilteringEquivalenceResultHandler.relaxed(
                                         LookupWritingEquivalenceHandler.create(
                                                 dependencies.getLookupWriter()

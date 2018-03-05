@@ -82,6 +82,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             item.setLastUpdated(clock.now());
         }
 
+        item = writer.createOrUpdate(item); // do this first, as we need the ID for new content
 
         if (Strings.isNullOrEmpty(item.getTitle())){
             owlReporter.getStatusReporter().updateStatus(
@@ -186,7 +187,7 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             );
         }
         
-        return writer.createOrUpdate(item);
+        return item;
     }
 
     private void setUpdatedVersions(Set<Version> prevVersions, Set<Version> versions, DateTime now) {

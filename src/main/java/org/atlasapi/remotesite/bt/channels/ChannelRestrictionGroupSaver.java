@@ -14,14 +14,9 @@ import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nullable;
-import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.Objects;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.ConcurrentMap;
 import java.util.regex.Pattern;
 
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -46,7 +41,6 @@ public class ChannelRestrictionGroupSaver extends AbstractBtChannelGroupSaver {
 
     private final String aliasUriPrefix;
     private final String aliasNamespace;
-    private final ConcurrentMap<String, Set<Alias>> restrictionAliases = new ConcurrentHashMap<>();
 
     public ChannelRestrictionGroupSaver(
             Publisher publisher,
@@ -70,10 +64,6 @@ public class ChannelRestrictionGroupSaver extends AbstractBtChannelGroupSaver {
         this.aliasNamespace = checkNotNull(aliasNamespace) + ":channel-restriction";
     }
 
-    @Override protected void start() {
-        restrictionAliases.clear();
-    }
-
     @Nullable private static String withoutSuffix(String s) {
         int i = s.lastIndexOf(':');
         if (i >= 0) return s.substring(0, i);
@@ -93,6 +83,10 @@ public class ChannelRestrictionGroupSaver extends AbstractBtChannelGroupSaver {
         return null;
     }
 
+    private boolean hasRestriction(@Nullable String key) {
+        return getRestriction(key) != null;
+    }
+
     private Restriction getRestrictionChecked(String key)
             throws IllegalArgumentException {                                           // NOSONAR
         Restriction restriction = getRestriction(key);
@@ -100,38 +94,19 @@ public class ChannelRestrictionGroupSaver extends AbstractBtChannelGroupSaver {
         throw new IllegalArgumentException("Key is not valid for a restriction: " + key);
     }
 
-    private Set<Alias> restrictionAliases(String key) {
-        return restrictionAliases.computeIfAbsent(
-                key,
-                k -> Collections.newSetFromMap(new ConcurrentHashMap<>())
-        );
-    }
-
-    private Collection<String> cacheAliasGetKeys(@Nullable String name) {
-        Restriction restriction = getRestriction(name);
-        if (restriction == null) return ImmutableSet.of();
-        Alias newAlias = new Alias(aliasNamespace, name);
-        restrictionAliases(restriction.getKey()).add(newAlias);
-        restrictionAliases(name).add(newAlias);
-        return ImmutableSet.of(restriction.getKey(), name);
-    }
-
     @Override
     protected List<String> keysFor(Entry channel) {
         return channel.getCategories().stream()
                 .filter(category -> "channelRestriction".equals(category.getScheme()))
                 .map(Category::getName)
-                .map(this::cacheAliasGetKeys)
-                .flatMap(Collection::stream)
-                .filter(Objects::nonNull)
-                .distinct()
-                .collect(MoreCollectors.toImmutableList());
+                .filter(this::hasRestriction)
+                .collect(MoreCollectors.toImmutableSet()).asList();
     }
 
     @Override
     protected Set<Alias> aliasesFor(String key) {
-        Set<Alias> aliases = restrictionAliases.get(key);
-        return Collections.unmodifiableSet(aliases);    // don't take a copy until we have to
+        getRestrictionChecked(key);
+        return ImmutableSet.of(new Alias(aliasNamespace, key));
     }
 
     @Override

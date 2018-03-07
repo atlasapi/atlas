@@ -1,8 +1,12 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.util.Map;
-
-import org.atlasapi.media.entity.Alias;
+import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
+import com.google.common.collect.Sets;
+import com.metabroadcast.common.time.Clock;
+import com.metabroadcast.common.time.DateTimeZones;
+import com.sun.syndication.feed.atom.Entry;
+import com.sun.syndication.feed.atom.Feed;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Identified;
@@ -13,13 +17,7 @@ import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
-import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.metabroadcast.common.time.Clock;
-import com.metabroadcast.common.time.DateTimeZones;
-import com.sun.syndication.feed.atom.Entry;
-import com.sun.syndication.feed.atom.Feed;
+import java.util.Map;
 
 public class C4EpgEpisodeExtractor extends BaseC4EpisodeExtractor {
     
@@ -51,12 +49,6 @@ public class C4EpgEpisodeExtractor extends BaseC4EpisodeExtractor {
         String txChannel = channelLookup.get(channelKey);
         String startTime = lookup.get(DC_START_TIME);
         Duration duration = C4AtomApi.durationFrom(lookup);
-
-        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
-        if (programmeId != null) {
-            episode.addAlias(new Alias(C4AtomApi.ALIAS, programmeId));
-            episode.addAlias(new Alias(C4AtomApi.ALIAS_FOR_BARB, programmeId));
-        }
 
         if (txChannel != null) {
             DateTime txStart = fmt.parseDateTime(startTime);

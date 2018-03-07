@@ -1,18 +1,13 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Episode;
-import org.jdom.Element;
-
 import com.metabroadcast.common.time.Clock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
-import com.sun.syndication.feed.atom.Link;
+import org.atlasapi.media.entity.Episode;
+import org.jdom.Element;
+
+import java.util.List;
+import java.util.Map;
 
 final class C4EpisodeGuideEpisodeExtractor extends BaseC4EpisodeExtractor {
 
@@ -25,11 +20,6 @@ final class C4EpisodeGuideEpisodeExtractor extends BaseC4EpisodeExtractor {
             Episode episode) {
         episode.addAliasUrl(C4AtomApi.canonicalizeEpisodeFeedId(entry));
         episode.addAliasUrl(entry.getId());
-        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
-        if (programmeId != null) {
-            episode.addAlias(new Alias(C4AtomApi.ALIAS, programmeId));
-            episode.addAlias(new Alias(C4AtomApi.ALIAS_FOR_BARB, programmeId));
-        }
         return episode;
     }
     

@@ -1,17 +1,14 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.util.Map;
-
-import org.atlasapi.media.entity.Alias;
+import com.google.common.base.Optional;
+import com.metabroadcast.common.time.Clock;
+import com.sun.syndication.feed.atom.Entry;
+import com.sun.syndication.feed.atom.Feed;
 import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Policy.Platform;
 import org.atlasapi.media.entity.Publisher;
 
-import com.metabroadcast.common.time.Clock;
-
-import com.google.common.base.Optional;
-import com.sun.syndication.feed.atom.Entry;
-import com.sun.syndication.feed.atom.Feed;
+import java.util.Map;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -33,11 +30,6 @@ final class C4OnDemandEpisodeExtractor extends BaseC4EpisodeExtractor {
     protected Episode setAdditionalEpisodeFields(Entry entry, Map<String, String> lookup,
             Episode episode) {
         String fourOdUri = C4AtomApi.fourOdUri(entry);
-        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
-        if (programmeId != null) {
-            episode.addAlias(new Alias(C4AtomApi.ALIAS, programmeId));
-            episode.addAlias(new Alias(C4AtomApi.ALIAS_FOR_BARB, programmeId));
-        }
         if (fourOdUri != null) {
             episode.addAliasUrl(fourOdUri);
         }

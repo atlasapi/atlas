@@ -1,9 +1,10 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.Map;
-
+import com.google.common.base.Strings;
+import com.metabroadcast.common.time.Clock;
+import com.sun.syndication.feed.atom.Content;
+import com.sun.syndication.feed.atom.Entry;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Specialization;
@@ -11,10 +12,7 @@ import org.atlasapi.remotesite.ContentExtractor;
 import org.jdom.Attribute;
 import org.jdom.Element;
 
-import com.google.common.base.Strings;
-import com.metabroadcast.common.time.Clock;
-import com.sun.syndication.feed.atom.Content;
-import com.sun.syndication.feed.atom.Entry;
+import java.util.Map;
 
 public abstract class BaseC4ItemExtractor<I extends Item> implements ContentExtractor<Entry, I> {
 
@@ -28,6 +26,13 @@ public abstract class BaseC4ItemExtractor<I extends Item> implements ContentExtr
     public final I extract(Entry entry) {
         Map<String, String> lookup = C4AtomApi.foreignElementLookup(entry);
         I item = createItem(entry, lookup);
+
+        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
+        if (programmeId != null) {
+            item.addAlias(new Alias(C4AtomApi.ALIAS, programmeId));
+            item.addAlias(new Alias(C4AtomApi.ALIAS_FOR_BARB, programmeId));
+        }
+
         item.setLastUpdated(clock.now());
         item.setTitle(entry.getTitle());
         Content summary = entry.getSummary();

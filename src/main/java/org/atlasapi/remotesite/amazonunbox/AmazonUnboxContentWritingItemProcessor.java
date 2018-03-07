@@ -276,7 +276,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 //            return "";
 //        }
         Pattern titleWithSeparator =
-                Pattern.compile("^" + badTitle.trim() + titleSeparator, Pattern.CASE_INSENSITIVE);
+                Pattern.compile("^" + Pattern.quote(badTitle.trim()) + titleSeparator, Pattern.CASE_INSENSITIVE);
 
         String cleanTitle = titleWithSeparator.matcher(goodTitle).replaceAll("").trim();
         return cleanTitle;

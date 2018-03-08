@@ -60,8 +60,13 @@ public class C4EpgChannelDayUpdater {
         this.scheduleWriter = checkNotNull(scheduleWriter);
         this.platform = checkNotNull(platform);
         this.publisher = checkNotNull(publisher);
-        this.epgEntryContentExtractor = new C4EpgEntryContentExtractor(resolver, brandUpdater, 
-                contentFactory, publisher, locationPolicyIds);
+        this.epgEntryContentExtractor = new C4EpgEntryContentExtractor(
+                resolver,
+                brandUpdater,
+                contentFactory,
+                publisher,
+                locationPolicyIds
+        );
         this.trimmer = checkNotNull(trimmer);
     }
     
@@ -117,7 +122,10 @@ public class C4EpgChannelDayUpdater {
     private Map<String, String> broacastIdsFrom(Iterable<ItemRefAndBroadcast> processedItems) {
         ImmutableMap.Builder<String, String> broadcastIdItemIdMap = ImmutableMap.builder();
         for (ItemRefAndBroadcast itemRefAndBroadcast : processedItems) {
-            broadcastIdItemIdMap.put(itemRefAndBroadcast.getBroadcast().getSourceId(), itemRefAndBroadcast.getItemUri());
+            broadcastIdItemIdMap.put(
+                    itemRefAndBroadcast.getBroadcast().getSourceId(),
+                    itemRefAndBroadcast.getItemUri()
+            );
         }
         return broadcastIdItemIdMap.build();
     }
@@ -136,7 +144,9 @@ public class C4EpgChannelDayUpdater {
     private Optional<ItemRefAndBroadcast> processEntry(Channel channel, C4EpgEntry entry) {
         ItemRefAndBroadcast itemAndBroadcast = null;
         try {
-            ContentHierarchyAndBroadcast extractedContent = epgEntryContentExtractor.extract(new C4EpgChannelEntry(entry, channel));
+            ContentHierarchyAndBroadcast extractedContent = epgEntryContentExtractor.extract(
+                    new C4EpgChannelEntry(entry, channel)
+            );
             if (extractedContent.getBrand().isPresent()) {
                 Brand brand = extractedContent.getBrand().get();
                 checkUri(brand);

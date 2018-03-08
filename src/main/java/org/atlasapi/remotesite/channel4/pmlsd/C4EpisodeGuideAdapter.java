@@ -1,5 +1,6 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
+import java.util.Optional;
 import java.util.Set;
 
 import org.atlasapi.media.entity.Episode;
@@ -9,7 +10,6 @@ import org.atlasapi.remotesite.FetchException;
 import org.atlasapi.remotesite.SiteSpecificAdapter;
 import org.jdom.Element;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableSetMultimap;

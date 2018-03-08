@@ -27,12 +27,6 @@ public abstract class BaseC4ItemExtractor<I extends Item> implements ContentExtr
         Map<String, String> lookup = C4AtomApi.foreignElementLookup(entry);
         I item = createItem(entry, lookup);
 
-        String programmeId = lookup.get(C4AtomApi.DC_PROGRAMME_ID);
-        if (programmeId != null) {
-            item.addAlias(new Alias(C4AtomApi.ALIAS, programmeId));
-            item.addAlias(new Alias(C4AtomApi.ALIAS_FOR_BARB, programmeId));
-        }
-
         item.setLastUpdated(clock.now());
         item.setTitle(entry.getTitle());
         Content summary = entry.getSummary();

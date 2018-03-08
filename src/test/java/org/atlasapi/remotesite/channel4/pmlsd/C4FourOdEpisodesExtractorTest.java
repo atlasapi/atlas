@@ -1,7 +1,6 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
@@ -38,6 +37,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.Collections;
 import java.util.List;
+import java.util.Optional;
 import java.util.Set;
 
 import static org.hamcrest.MatcherAssert.assertThat;
@@ -72,12 +72,12 @@ public class C4FourOdEpisodesExtractorTest extends TestCase {
     
     private final SimpleHttpClient httpClient = new FixedResponseHttpClient(
             ImmutableMap.<String, String>of("https://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares/4od.atom", fileContentsFromResource("ramsays-kitchen-nightmares-4od.atom")));
-    private final C4AtomApiClient atomApiClient = new C4AtomApiClient(httpClient, "https://pmlsc.channel4.com/pmlsd/", Optional.<String>absent());
+    private final C4AtomApiClient atomApiClient = new C4AtomApiClient(httpClient, "https://pmlsc.channel4.com/pmlsd/", Optional.empty());
 
     @Test
 	public void testExtractingEpisodes() throws Exception {
 		
-		List<Episode> episodes = new C4OdEpisodesAdapter(atomApiClient, Optional.<Platform>absent(), 
+		List<Episode> episodes = new C4OdEpisodesAdapter(atomApiClient, Optional.empty(),
 		                                contentFactory, Publisher.C4_PMLSD, locationPolicyIds, false, new SystemClock())
 		    .fetch("http://pmlsc.channel4.com/pmlsd/ramsays-kitchen-nightmares");
 

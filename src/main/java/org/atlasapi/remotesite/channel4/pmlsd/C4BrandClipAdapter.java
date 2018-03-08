@@ -1,12 +1,12 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.atlasapi.media.entity.Clip;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.SiteSpecificAdapter;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.metabroadcast.common.time.Clock;

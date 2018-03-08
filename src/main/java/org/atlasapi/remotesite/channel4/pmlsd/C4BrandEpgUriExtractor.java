@@ -1,12 +1,12 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.atlasapi.media.entity.Publisher;
 
-import com.google.common.base.Optional;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
@@ -36,24 +36,23 @@ class C4BrandEpgUriExtractor implements C4UriExtractor<Feed, Feed, Entry> {
 
     
     @Override
-    public Optional<String> uriForBrand(Publisher publisher, Feed remote) {
+    public Optional<C4UriAndAliases> uriForBrand(Publisher publisher, Feed remote) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    public Optional<String> uriForSeries(Publisher publisher, Feed remote) {
+    public Optional<C4UriAndAliases> uriForSeries(Publisher publisher, Feed remote) {
         throw new UnsupportedOperationException();
     }
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Optional<String> uriForItem(Publisher publisher, Entry entry) {
+    public Optional<C4UriAndAliases> uriForItem(Publisher publisher, Entry entry) {
         List<Link> links = entry.getAlternateLinks();
         
         for (Link link : links) {
             String href = link.getHref();
             if (isACanonicalEpisodeUri(href)) {
-                return Optional.of(href);
+                return Optional.of(C4UriAndAliases.create(href));
             }
         }
         
@@ -61,25 +60,35 @@ class C4BrandEpgUriExtractor implements C4UriExtractor<Feed, Feed, Entry> {
         for (Link link : links) {
             String href = link.getHref();
             if (isACanonicalEpisodeUri(href)) {
-                return Optional.of(href);
+                return Optional.of(C4UriAndAliases.create(href));
             }
             Matcher matcher = EPISODE_API_PAGE_PATTERN.matcher(href);
             if(matcher.matches()) {
-                return Optional.of(episodeUri(matcher.group(1), Integer.parseInt(matcher.group(2)), 
-                        Integer.parseInt(matcher.group(3))));
+                return Optional.of(C4UriAndAliases.create(
+                        episodeUri(
+                                matcher.group(1),
+                                Integer.parseInt(matcher.group(2)),
+                                Integer.parseInt(matcher.group(3))
+                        )
+                ));
             }
             matcher = WEB_EPISODE_URI_PATTERN.matcher(href);
             if(matcher.matches()) {
-                return Optional.of(episodeUri(matcher.group(1), Integer.parseInt(matcher.group(2)), 
-                        Integer.parseInt(matcher.group(3))));
+                return Optional.of(C4UriAndAliases.create(
+                        episodeUri(
+                                matcher.group(1),
+                                Integer.parseInt(matcher.group(2)),
+                                Integer.parseInt(matcher.group(3))
+                        )
+                ));
             }
         }
         
-        return null;
+        return Optional.empty();
     }
 
     @Override
-    public Optional<String> uriForClip(Publisher publisher, Entry remote) {
+    public Optional<C4UriAndAliases> uriForClip(Publisher publisher, Entry remote) {
         throw new UnsupportedOperationException();
     }
     

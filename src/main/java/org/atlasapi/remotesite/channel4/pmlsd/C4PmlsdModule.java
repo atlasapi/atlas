@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.TimeUnit;
 
 import javax.annotation.PostConstruct;
@@ -33,7 +34,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableMap;
 import com.metabroadcast.common.http.SimpleHttpClient;
@@ -139,10 +139,18 @@ public class C4PmlsdModule {
 
     @Bean public C4EpgChannelDayUpdater pcC4PlmsdEpgChannelDayUpdater() {
 	    ScheduleResolverBroadcastTrimmer trimmer = new ScheduleResolverBroadcastTrimmer(SOURCE, scheduleResolver, contentResolver, pmlsdLastUpdatedSettingContentWriter());
-	    return new C4EpgChannelDayUpdater(new C4EpgClient(c4HttpsClient()), pmlsdLastUpdatedSettingContentWriter(),
-                contentResolver, pcPmlsdBrandFetcher(Optional.<Platform>absent(),Optional.<String>absent()), trimmer, 
-                scheduleWriter, Publisher.C4_PMLSD, new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4EpgEntryUriExtractor()),
-                Optional.<String>absent(), c4PCLocationPolicyIds());
+        return new C4EpgChannelDayUpdater(
+                new C4EpgClient(c4HttpsClient()),
+                pmlsdLastUpdatedSettingContentWriter(),
+                contentResolver,
+                pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
+                trimmer,
+                scheduleWriter,
+                Publisher.C4_PMLSD,
+                new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4EpgEntryUriExtractor()),
+                Optional.empty(),
+                c4PCLocationPolicyIds()
+        );
 	}
 	
 // Disabling the P06 EPG updater, since it doesn't contain hierarchy links if the programme is
@@ -161,33 +169,75 @@ public class C4PmlsdModule {
 //    }
     
 	@Bean protected C4AtoZAtomContentUpdateTask pcC4PmlsdAtozUpdater() {
-		return new C4AtoZAtomContentUpdateTask(c4HttpsClient(), ATOZ_BASE, pcPmlsdBrandFetcher(Optional.<Platform>absent(),Optional.<String>absent()), Publisher.C4_PMLSD);
+		return new C4AtoZAtomContentUpdateTask(
+		        c4HttpsClient(),
+		        ATOZ_BASE,
+		        pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
+		        Publisher.C4_PMLSD
+        );
 	}
 	
 	@Bean protected C4AtoZAtomContentUpdateTask xboxC4PmlsdAtozUpdater() {
-	    return new C4AtoZAtomContentUpdateTask(c4HttpsClient(), ATOZ_BASE, Optional.of(P06_PLATFORM), 
-	            xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX),Optional.of(P06_PLATFORM)), Publisher.C4_PMLSD_P06);
+	    return new C4AtoZAtomContentUpdateTask(
+	            c4HttpsClient(),
+	            ATOZ_BASE,
+	            Optional.of(P06_PLATFORM),
+	            xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX), Optional.of(P06_PLATFORM)),
+	            Publisher.C4_PMLSD_P06
+        );
 	}
 	
-	protected C4AtomBackedBrandUpdater pcPmlsdBrandFetcher(Optional<Platform> platform, Optional<String> platformParam) {
+	protected C4AtomBackedBrandUpdater pcPmlsdBrandFetcher(
+	        Optional<Platform> platform,
+	        Optional<String> platformParam
+    ) {
 	    C4AtomApiClient client = new C4AtomApiClient(c4HttpsClient(), ATOZ_BASE, platformParam);
-	    C4BrandExtractor extractor = new C4BrandExtractor(client, platform, Publisher.C4_PMLSD, 
-	            channelResolver, new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4AtomFeedUriExtractor()),
-	            c4PCLocationPolicyIds(), true);
-		return new C4AtomBackedBrandUpdater(client, platform, contentResolver, pmlsdLastUpdatedSettingContentWriter(), extractor);
+	    C4BrandExtractor extractor = new C4BrandExtractor(
+	            client,
+	            platform,
+	            Publisher.C4_PMLSD,
+	            channelResolver,
+	            new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4AtomFeedUriExtractor()),
+	            c4PCLocationPolicyIds(),
+	            true
+        );
+		return new C4AtomBackedBrandUpdater(
+		        client,
+		        platform,
+		        contentResolver,
+		        pmlsdLastUpdatedSettingContentWriter(),
+		        extractor
+        );
 	}
 	
 	protected C4AtomBackedBrandUpdater xboxPmlsdBrandFetcher(Optional<Platform> platform, Optional<String> platformParam) {
         C4AtomApiClient client = new C4AtomApiClient(c4HttpsClient(), ATOZ_BASE, platformParam);
-        C4BrandExtractor extractor = new C4BrandExtractor(client, platform, Publisher.C4_PMLSD_P06, 
-                channelResolver, new SourceSpecificContentFactory<>(Publisher.C4_PMLSD_P06, new C4AtomFeedUriExtractor()), 
-                c4XBoxLocationPolicyIds(), false);
-        return new C4AtomBackedBrandUpdater(client, platform, contentResolver, pmlsdLastUpdatedSettingContentWriter(), extractor);
+        C4BrandExtractor extractor = new C4BrandExtractor(
+                client,
+                platform,
+                Publisher.C4_PMLSD_P06,
+                channelResolver,
+                new SourceSpecificContentFactory<>(Publisher.C4_PMLSD_P06, new C4AtomFeedUriExtractor()),
+                c4XBoxLocationPolicyIds(),
+                false
+        );
+        return new C4AtomBackedBrandUpdater(
+                client,
+                platform,
+                contentResolver,
+                pmlsdLastUpdatedSettingContentWriter(),
+                extractor
+        );
     }
 	
 	@Bean protected C4BrandUpdateController c4BrandUpdateController() {
-	    return new C4BrandUpdateController(pcPmlsdBrandFetcher(Optional.<Platform>absent(),Optional.<String>absent()), 
-	            ImmutableMap.of(Platform.XBOX, xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX),Optional.of(P06_PLATFORM))));
+	    return new C4BrandUpdateController(
+	            pcPmlsdBrandFetcher(Optional.empty(), Optional.empty()),
+	            ImmutableMap.of(
+	                    Platform.XBOX,
+	                    xboxPmlsdBrandFetcher(Optional.of(Platform.XBOX), Optional.of(P06_PLATFORM))
+                )
+        );
 	}
 	
 	@Bean protected C4EpgChannelDayUpdateController c4EpgChannelDayUpdateController() {

@@ -80,7 +80,7 @@ public class BarbItemUpdaterProvider implements EquivalenceUpdaterProvider<Item>
                 .withScorers(
                         ImmutableSet.of(
                                 new ContentAliasScorer(Score.nullScore()),
-                                new TitleMatchingItemScorer(Score.ONE),
+                                new TitleMatchingItemScorer(Score.nullScore()),
                                 new DescriptionTitleMatchingScorer(),
                                 DescriptionMatchingScorer.makeScorer()
                         )

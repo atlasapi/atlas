@@ -30,7 +30,7 @@ public class EventsUtilityTest {
     
     @Test
     public void testResolvesLocationUriThenTopic() {
-        String location = "a locations";
+        String location = "a location";
         Mockito.when(topicStore.topicFor("dbpedia", location)).thenReturn(Maybe.just(testTopic));
         
         Optional<Topic> resolved = eventsUtil.createOrResolveVenue(location);
@@ -40,7 +40,7 @@ public class EventsUtilityTest {
     }
 
     /**
-     * This is simulating the lack of an entry for the provided uri in the mapping of locations ->
+     * This is simulating the lack of an entry for the provided uri in the mapping of location ->
      * topic uri.
      */
     @Test
@@ -63,7 +63,7 @@ public class EventsUtilityTest {
     }
 
     /**
-     * This is simulating the lack of an entry for the provided uri in the mapping of locations ->
+     * This is simulating the lack of an entry for the provided uri in the mapping of location ->
      * topic uri.
      */
     @Test

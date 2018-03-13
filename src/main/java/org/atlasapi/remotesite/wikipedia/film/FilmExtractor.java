@@ -160,7 +160,7 @@ public class FilmExtractor implements ContentExtractor<Article, Film> {
             String location = result.location().name.trim().toLowerCase();
             country = countryNames.get(location);
             if (country == null) {  // If we can't recognize it, a) it can't be represented, and b) it's probably a festival or something.
-                log.warn("Failed to interpret release locations \"" + location + "\" – ignoring release date");
+                log.warn("Failed to interpret release location \"" + location + "\" – ignoring release date");
                 return Optional.absent();
             }
         }

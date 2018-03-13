@@ -135,7 +135,7 @@ public class OptaSportsDataHandler extends OptaDataHandler<SportsTeam, SportsMat
         String location = getVenueData(match.stats());
         Optional<Topic> value = utility.createOrResolveVenue(location);
         if (!value.isPresent()) {
-            log.error("Unable to resolve locations: {}", location);
+            log.error("Unable to resolve location: {}", location);
         }
         return value;
     }

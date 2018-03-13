@@ -85,11 +85,11 @@
 //	}
 //
 //	private Item itemWithLocation(String locationUri) {
-//		Location locations = new Location();
-//		locations.setUri(locationUri);
+//		Location location = new Location();
+//		location.setUri(locationUri);
 //		
 //		Encoding encoding = new Encoding();
-//		encoding.addAvailableAt(locations);
+//		encoding.addAvailableAt(location);
 //		
 //		Version version = new Version();
 //		version.addManifestedAs(encoding);
@@ -160,9 +160,9 @@
 //		for (Item item : items) {
 //			for (Version version : item.getVersions()) {
 //				for (Encoding encoding : version.getManifestedAs()) {
-//					for (Location locations : encoding.getAvailableAt()) {
-//						if (uri.equals(locations.getUri())) {
-//							return locations;
+//					for (Location location : encoding.getAvailableAt()) {
+//						if (uri.equals(location.getUri())) {
+//							return location;
 //						}
 //					}
 //				}

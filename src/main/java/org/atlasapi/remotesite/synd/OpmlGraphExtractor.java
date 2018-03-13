@@ -129,7 +129,7 @@
 //		String allow = outline.getAttributeValue("allow");
 //		
 //		for (Location location : locationsFrom(feed.getContents())) {
-//			if (locations.getUri() != null && locations.getUri().contains("bbc.co.uk")) {
+//			if (location.getUri() != null && location.getUri().contains("bbc.co.uk")) {
 //				Policy policy = location.getPolicy();
 //				if (policy == null) {
 //					policy = new Policy();

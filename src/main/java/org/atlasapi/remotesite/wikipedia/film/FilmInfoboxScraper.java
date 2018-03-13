@@ -298,7 +298,7 @@ public final class FilmInfoboxScraper {
                             currentResult.location = list.get(0);
                         }
                     } catch (Exception e) {
-                        log.warn("Extracting release date locations failed: " + SwebleHelper.unparse(a.getValue()), e);
+                        log.warn("Extracting release date location failed: " + SwebleHelper.unparse(a.getValue()), e);
                     }
                     nextField = ReleaseDateResult.Field.YEAR;
                 }

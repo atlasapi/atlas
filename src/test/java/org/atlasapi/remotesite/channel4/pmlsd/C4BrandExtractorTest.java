@@ -401,7 +401,7 @@ public class C4BrandExtractorTest extends TestCase {
             } else if ("all4://views/brands?brand=jamie-does&programme=48367-006".equals(location.getUri())) {
                 foundIosLocation = true;
             } else {
-                throw new IllegalStateException(String.format("Unexpected locations %s", location.getUri()));
+                throw new IllegalStateException(String.format("Unexpected location %s", location.getUri()));
             }
         }
         assertTrue(foundPCLocation);

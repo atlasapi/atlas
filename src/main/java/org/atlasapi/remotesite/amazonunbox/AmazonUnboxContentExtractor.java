@@ -282,12 +282,16 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
 
         ImmutableSet.Builder<Encoding> encodings = ImmutableSet.builder();
         if (!hdLocations.isEmpty()) {
-            encodings.add(createEncoding(org.atlasapi.media.entity.Quality.HD, hdLocations));
-            if(isUhd) { //if it is uhd, and you had HD locations, add them as UHD as well.
+            if(isUhd) { //if it is uhd, and you have HD locations, replace them.
                 encodings.add(createEncoding(org.atlasapi.media.entity.Quality.FOUR_K, hdLocations));
+            } else {
+                encodings.add(createEncoding(org.atlasapi.media.entity.Quality.HD, hdLocations));
             }
         }
         if (!sdLocations.isEmpty()) {
+            //if it uhd and it comes as sd, don't mark anything, cause the title is the same
+            //across SD and HD. If they have UHD, they ought to have HD, so the UHD counterpart to
+            //SD will be added when processing the HD version.
             encodings.add(createEncoding(org.atlasapi.media.entity.Quality.SD, sdLocations));
         }
         return ImmutableSet.of(createVersion(source, versionUrl, encodings.build()));

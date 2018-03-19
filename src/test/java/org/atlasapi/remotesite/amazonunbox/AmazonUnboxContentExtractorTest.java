@@ -92,7 +92,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withUrl("http://hdlocation.org/")
                 .withUnboxHdPurchaseUrl("http://hdlocation.org/")
                 .withUnboxHdPurchasePrice("9.99")
-                .withUnboxSdPurchasePrice(null)
+                .withUnboxSdPurchasePrice( )
                 .withUnboxSdPurchaseUrl(null)
                 .withTitle("Super Drugs [UHD]")
                 .build();
@@ -117,7 +117,7 @@ public class AmazonUnboxContentExtractorTest {
             }
         }
         assertFalse("An SD encoding was created, but it shouldn't", foundSd);
-        assertTrue("The HD encoding was not created, but it should have.", foundHd);
+        assertFalse("The HD encoding was created, but it shouldn't have.", foundHd);
         assertTrue("The UHD encoding was not created, but it should have.", foundUhd);
     }
 

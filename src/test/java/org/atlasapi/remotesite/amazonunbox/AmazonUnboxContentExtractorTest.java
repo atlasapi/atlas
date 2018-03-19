@@ -479,6 +479,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withQuality(Quality.SD)
                 .withDuration(Duration.standardMinutes(100))
                 .withPrice("9.99")
+                .withSeriesAsin("S3R1S4S1N")
                 .withUnboxSdPurchasePrice("9.99")
                 .withUnboxSdPurchaseUrl("http://www.amazon.co.uk/gp/product/B00EV5ROP4/INSERT_TAG_HERE/ref=atv_feed_catalog/");
                 

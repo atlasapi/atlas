@@ -133,7 +133,6 @@ public class ContentMerger {
     }
 
     private <C extends Content> C mergeContents(C current, C extracted) {
-        current.addAliases(extracted.getAliases());
         current.setActivelyPublished(extracted.isActivelyPublished());
         current.setTitle(extracted.getTitle());
         current.setDescription(extracted.getDescription());

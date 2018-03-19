@@ -367,6 +367,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             ModelWithPayload<? extends Container> contentWithPayload
     ) {
         Container merged = contentMerger.merge(existingContent, contentWithPayload.getModel());
+        //and because the merge doesnt really merge, add the aliases
+        merged.addAliases(contentWithPayload.getModel().getAliases());
         return new ModelWithPayload<>(merged, contentWithPayload.getPayload());
     }
 

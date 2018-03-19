@@ -181,6 +181,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         brand.setRelatedLinks(ImmutableSet.of(relatedLink));
 
         setCommonFields(brand, source.getSeriesTitle(), createBrandUri(source.getSeriesAsin()));
+        brand.setAliases(generateBrandAliases(source.getSeriesAsin()));
 
         //if this is being synthesized, which it is if we are creating a brand from an episode.
         if (TVEPISODE.equals(source.getContentType())) {
@@ -482,6 +483,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
             return ImmutableList.of(asinAlias);
         }
         return ImmutableList.of(asinAlias, new Alias(IMDB_NAMESPACE, item.getTConst()));
+    }
+
+    private List<Alias> generateAliases(String asin) {
+        Alias asinAlias = new Alias(AmazonUnboxContentWritingItemProcessor.GB_AMAZON_ASIN, asin);
+        return ImmutableList.of(asinAlias);
     }
 
     private List<String> generateAliasUrls(AmazonUnboxItem item) {

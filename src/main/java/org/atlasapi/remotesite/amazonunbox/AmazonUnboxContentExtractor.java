@@ -172,7 +172,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         Brand brand = new Brand();
         brand.setSpecialization(Specialization.TV);
         String brandAsin = source.getSeriesAsin();
-        if (brandAsin != null && brandAsin.equals("")) {
+        if (brandAsin != null && !brandAsin.equals("")) {
             RelatedLink relatedLink = RelatedLink
                     .vodLink(String.format(
                             SERIES_URI_PATTERN,

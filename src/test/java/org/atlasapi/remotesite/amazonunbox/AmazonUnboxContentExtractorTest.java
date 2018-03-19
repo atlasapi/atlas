@@ -92,7 +92,7 @@ public class AmazonUnboxContentExtractorTest {
                 .withUrl("http://hdlocation.org/")
                 .withUnboxHdPurchaseUrl("http://hdlocation.org/")
                 .withUnboxHdPurchasePrice("9.99")
-                .withUnboxSdPurchasePrice( )
+                .withUnboxSdPurchasePrice(null)
                 .withUnboxSdPurchaseUrl(null)
                 .withTitle("Super Drugs [UHD]")
                 .build();

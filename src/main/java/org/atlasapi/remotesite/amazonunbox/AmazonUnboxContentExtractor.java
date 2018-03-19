@@ -171,6 +171,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private Content extractBrand(AmazonUnboxItem source) {
+        //TODO: This assumption holds true for now, but if it happens that an empty value comes in
+        //we will create a brand with a URI that is just the base URI
         String brandAsin = source.getSeriesAsin();
 
         Brand brand = new Brand();

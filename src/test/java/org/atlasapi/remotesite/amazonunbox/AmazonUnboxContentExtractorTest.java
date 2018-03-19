@@ -431,7 +431,7 @@ public class AmazonUnboxContentExtractorTest {
         Series series = (Series) Iterables.getOnlyElement(extractor.extract(episodeItem));
         
         assertEquals("http://unbox.amazon.co.uk/seasonAsin", series.getCanonicalUri());
-        assertNull(series.getParent());
+        assertEquals("http://unbox.amazon.co.uk/S3R1S4S1N",series.getParent().toString());
     }
 
     @Test

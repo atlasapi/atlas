@@ -63,7 +63,6 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final Logger log = LoggerFactory.getLogger(AmazonUnboxContentExtractor.class);
 
     private static final String IMDB_NAMESPACE = "zz:imdb:id";
-    private static final String ASIN_NAMESPACE = "gb:amazon:asin";
     private static final String IMDB_ALIAS_URL_PREFIX = "http://imdb.com/title/%s";
     private static final String AMAZON_ALIAS_URL_VERSION = "http://gb.amazon.com/asin/%s";
     public static final String URI_PREFIX = "http://unbox.amazon.co.uk/";
@@ -478,7 +477,7 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private List<Alias> generateAliases(AmazonUnboxItem item) {
-        Alias asinAlias = new Alias(ASIN_NAMESPACE, item.getAsin());
+        Alias asinAlias = new Alias(AmazonUnboxContentWritingItemProcessor.GB_AMAZON_ASIN, item.getAsin());
         if (item.getTConst() == null) {
             return ImmutableList.of(asinAlias);
         }

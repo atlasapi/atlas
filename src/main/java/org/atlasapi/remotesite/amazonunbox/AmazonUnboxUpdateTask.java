@@ -93,8 +93,7 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
                     handler.process(aUItem);
                     progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
-                    telescope.reportFailedEvent("Error processing: " +
-                            aUItem.toString() + " (" + e.getMessage());
+                    telescope.reportFailedEvent("Unable to process item. (" + e.getMessage() + ")", aUItem);
                     log.error("Error processing: " + aUItem.toString(), e);
                     progress.reduce(UpdateProgress.FAILURE);
                 }

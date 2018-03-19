@@ -117,13 +117,15 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         if(MOVIE.equals(source.getContentType())) {
             return ImmutableSet.of(extractFilm(source));
         }
-        if (TVSERIES.equals(source.getContentType())) {
-            return ImmutableSet.of(extractBrand(source));
-        }
-        if (TVSEASON.equals(source.getContentType())) {
+        //as things currently are, these are not in the feed, and the extractBrand() method will not
+        //properly cope with this. If things change amend accordingly.
+//        if (TVSERIES.equals(source.getContentType())) {
+//            return ImmutableSet.of(extractBrand(source));
+//        }
+        else if (TVSEASON.equals(source.getContentType())) {
             return ImmutableSet.of(extractSeries(source));
         }
-        if (TVEPISODE.equals(source.getContentType())) {
+        else if (TVEPISODE.equals(source.getContentType())) {
             // Brands are not in the Unbox feed, so we must
             // create them from the data we have for an episode
             return ImmutableSet.of(extractEpisode(source), extractBrand(source));                

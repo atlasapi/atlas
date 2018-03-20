@@ -1,6 +1,12 @@
 package org.atlasapi.remotesite.amazonunbox;
 
+import java.util.Iterator;
 import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
+
+import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.common.base.Splitter;
 import com.google.common.collect.ImmutableSet;
@@ -21,6 +27,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     
     private static final Splitter SPLIT_ON_COMMA =
             Splitter.on(',').trimResults().omitEmptyStrings();
+    private static final Pattern TWO_ALPHA_CHARS = Pattern.compile(".*[a-zA-Z].*[a-zA-Z].*");
     
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentHandler.class);
     private final DateTimeFormatter dateParser =
@@ -90,7 +97,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withContentType(ContentType.valueOf(buffer.toString().toUpperCase()));
                 break;
             case DIRECTOR:
-                item.addDirectorRoles(SPLIT_ON_COMMA.split(buffer.toString()));
+                item.addDirectorRoles(splitAndClean(buffer.toString()));
                 break;
             case EPISODENUMBER:
                 item.withEpisodeNumber(Integer.valueOf(buffer.toString()));
@@ -241,7 +248,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withSeriesTitle(buffer.toString());
                 break;
             case STARRING:
-                item.addStarringRoles(SPLIT_ON_COMMA.split(buffer.toString()));
+                item.addStarringRoles(splitAndClean(buffer.toString()));
                 break;
             case STUDIO:
                 item.withStudio(buffer.toString());
@@ -321,7 +328,17 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
             currentField = null;
         }
     }
-    
+
+    private Iterable<String> splitAndClean(String stringList) {
+
+        ImmutableSet<String> set = StreamSupport.stream(SPLIT_ON_COMMA.split(stringList)
+                .spliterator(), false)
+                .filter(i -> TWO_ALPHA_CHARS.matcher(i).matches())
+                .collect(MoreCollectors.toImmutableSet());
+
+        return set;
+    }
+
     @Override
     public void characters(char ch[], int start, int length) throws SAXException {
         if (buffer != null) {

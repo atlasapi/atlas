@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import java.util.Currency;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -417,8 +418,13 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         setCommonFields(content,source.getTitle(), uri);
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
-        
-        content.setDescription(StringEscapeUtils.unescapeXml(source.getSynopsis()));
+        String desc = StringEscapeUtils.unescapeXml(source.getSynopsis()).trim();
+        if(!desc.equals("")){
+            content.setDescription(desc);
+        } else {
+            content.setDescription(source.getTitle());
+        }
+
         // we are setting title of brand as description for deduping episodes that
         // have same title, episode number and series number such as "Pilot Ep.1 S.1"
         if (source.getSeriesTitle() != null && !source.getSeriesTitle().isEmpty()) {

@@ -418,8 +418,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         setCommonFields(content,source.getTitle(), uri);
         content.setGenres(generateGenres(source));
         content.setLanguages(generateLanguages(source));
-        String desc = StringEscapeUtils.unescapeXml(source.getSynopsis()).trim();
-        if(!desc.equals("")){
+        String desc = StringEscapeUtils.unescapeXml(source.getSynopsis());
+        if(Strings.isNullOrEmpty(desc)){
             content.setDescription(desc);
         } else {
             content.setDescription(source.getTitle());

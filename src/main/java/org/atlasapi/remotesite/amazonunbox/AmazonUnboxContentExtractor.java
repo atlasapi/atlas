@@ -55,7 +55,6 @@ import org.slf4j.LoggerFactory;
 import static org.atlasapi.remotesite.amazonunbox.ContentType.MOVIE;
 import static org.atlasapi.remotesite.amazonunbox.ContentType.TVEPISODE;
 import static org.atlasapi.remotesite.amazonunbox.ContentType.TVSEASON;
-import static org.atlasapi.remotesite.amazonunbox.ContentType.TVSERIES;
 
 public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnboxItem,
                                                     Iterable<Content>> {
@@ -214,10 +213,11 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private Set<Version> generateVersions(AmazonUnboxItem source) {
-        //There are two source of information about the actual quality
+        //There are 4 sources of information about the actual quality
         //1. does the title contain a UHD tag?
-        //2. Do we have buy and rent links for either quality?
-        //3. (Unused) actual quality sent by amazon.
+        //2. does the seriesTitle contain a UHD tag?
+        //3. Do we have buy and rent links for either quality?
+        //4. The actual quality sent by amazon.
         boolean isUhd = isUhd(source);
 
         Set<Location> hdLocations = Sets.newHashSet();
@@ -305,9 +305,16 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private boolean isUhd(AmazonUnboxItem source) {
-        if (source.getTitle() != null) {
-            return UHD_PATTERN.matcher(source.getTitle()).find();
+        if (Strings.isNullOrEmpty(source.getTitle())
+            && UHD_PATTERN.matcher(source.getTitle()).find()) {
+            return true;
         }
+
+        if (Strings.isNullOrEmpty(source.getSeriesTitle())
+            && UHD_PATTERN.matcher(source.getSeriesTitle()).find()) {
+            return true;
+        }
+
         return false;
     }
 

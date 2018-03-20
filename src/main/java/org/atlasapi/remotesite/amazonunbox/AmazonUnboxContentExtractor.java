@@ -305,12 +305,12 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private boolean isUhd(AmazonUnboxItem source) {
-        if (Strings.isNullOrEmpty(source.getTitle())
+        if (!Strings.isNullOrEmpty(source.getTitle())
             && UHD_PATTERN.matcher(source.getTitle()).find()) {
             return true;
         }
 
-        if (Strings.isNullOrEmpty(source.getSeriesTitle())
+        if (!Strings.isNullOrEmpty(source.getSeriesTitle())
             && UHD_PATTERN.matcher(source.getSeriesTitle()).find()) {
             return true;
         }

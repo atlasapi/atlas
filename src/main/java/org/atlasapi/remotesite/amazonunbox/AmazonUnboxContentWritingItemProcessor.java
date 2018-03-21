@@ -102,6 +102,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Set<String> seriesUris = new HashSet<>();
     private final Set<String> episodeUris = new HashSet<>();
 
+    private Set<String> seenImages = new HashSet<>();
+
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
     private final ContentWriter writer;
@@ -146,19 +148,20 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         seenContent.clear();
         seriesUris.clear();
         episodeUris.clear();
+        seenImages.clear();
     }
     
     @Override
     public void process(AmazonUnboxItem item) {
         for (Content content : extract(item)) {
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
+            cleanImage(contentWithPayload.getModel());
             seenContent.put(content.getCanonicalUri(), contentWithPayload);
 
             //Keep a note of all series and episodes
-            if( content instanceof Series){
+            if (content instanceof Series) {
                 seriesUris.add(content.getCanonicalUri());
-            }
-            else if( content instanceof Episode){
+            } else if (content instanceof Episode) {
                 episodeUris.add(content.getCanonicalUri());
             }
         }
@@ -167,7 +170,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     @Override
     public void finish(OwlTelescopeReporter telescope) {
         titleCleaning();
-        assignImagesToBrands();
+//        assignImagesToBrands();
 
         processSeenContent(telescope);
         processTopLevelSeries(telescope);
@@ -198,6 +201,18 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         checkForDeletedContent(telescope);
 
         seenContent.clear();
+        seriesUris.clear();
+        episodeUris.clear();
+        seenImages.clear();
+    }
+
+    //Because YV has their own image fill-in rules, we'll only retain each image once.
+    private void cleanImage(Content content) {
+        if(seenImages.contains(content.getImage())){
+            content.setImage("");
+        } else {
+            seenImages.add(content.getImage());
+        }
     }
 
     private void assignImagesToBrands() {
@@ -272,9 +287,9 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
 
     private String removeTitle(String goodTitle, String badTitle) {
         //YV asked to not do that until they get a chance to review the content.
-//        if(goodTitle.equals(badTitle)){
-//            return "";
-//        }
+        //        if(goodTitle.equals(badTitle)){
+        //            return "";
+        //        }
         Pattern titleWithSeparator =
                 Pattern.compile("^" + Pattern.quote(badTitle.trim()) + titleSeparator, Pattern.CASE_INSENSITIVE);
 

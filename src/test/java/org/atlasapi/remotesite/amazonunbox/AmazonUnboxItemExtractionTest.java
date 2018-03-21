@@ -62,7 +62,7 @@ public class AmazonUnboxItemExtractionTest {
                 + "are locked on a collision course in the skies.",
                 item.getSynopsis()
         );
-        assertEquals("NR", item.getRating());
+        assertEquals("bbfc_rating|ages_12_and_over", item.getRating());
         assertEquals("9.99", item.getPrice());
         assertEquals(new DateTime(2011, 12, 31, 0, 0, 0).withZone(DateTimeZone.forID("Europe/London")), item.getReleaseDate());
         assertEquals(Duration.standardMinutes(93), item.getDuration());

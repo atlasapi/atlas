@@ -216,7 +216,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 break;
             case LONGSYNOPSIS:
                 break;
-            case MPAARATING:
+            case CANONICAL_MATURITY_RATING:
                 item.withRating(buffer.toString());
                 break;
             case PLOTOUTLINE:

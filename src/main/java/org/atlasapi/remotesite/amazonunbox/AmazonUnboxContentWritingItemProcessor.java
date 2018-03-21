@@ -161,10 +161,6 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
             cleanImage(contentWithPayload.getModel());
             if (shouldDiscard(contentWithPayload)) {
-                telescope.reportFailedEvent(
-                        "Episode was discarded because it was a trailer (index 0 or 101)",
-                        EntityType.EPISODE,
-                        contentWithPayload.getPayload());
                 continue;
             }
 
@@ -186,6 +182,10 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
             //YV has requested we do not sent trailers. According to amazon trailers are
             //identified with episodeNumbers 000 or 101.
             if( episodeNumber == 0 || episodeNumber == 101){
+                telescope.reportFailedEvent(
+                        "Episode was discarded because it was a trailer (index 0 or 101)",
+                        EntityType.EPISODE,
+                        contentWithPayload.getPayload());
                 return true;
             }
         }

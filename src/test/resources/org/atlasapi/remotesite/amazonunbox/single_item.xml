@@ -3,6 +3,7 @@
   <Item>
     <AMAZONRATINGS>2.0</AMAZONRATINGS>
     <AMAZONRATINGSCOUNT>7</AMAZONRATINGSCOUNT>
+    <CANONICAL_MATURITY_RATING>bbfc_rating|ages_12_and_over</CANONICAL_MATURITY_RATING>
     <ASIN>B007FUIBHM</ASIN>
     <CONTENTTYPE>Movie</CONTENTTYPE>
     <DIRECTOR>Liz Adams, Superman, ---</DIRECTOR>
@@ -18,7 +19,7 @@
     <ISSEASONPASS>N</ISSEASONPASS>
     <ISSTREAMABLE>Y</ISSTREAMABLE>
     <LONGSYNOPSIS>When a solar storm wipes out the air traffic control system, Air Force One and a passenger jet liner are locked on a collision course in the skies above the midwest.</LONGSYNOPSIS>
-    <MPAARATING>NR</MPAARATING>
+    <MPAARATING>ages_12_and_over</MPAARATING>
     <PLOTOUTLINE>A fierce electromagnetic storm cripples communications; as a result, two planes - one a commercial jet, the other Air Force One, carrying the President of the United States and his family - are on a collision course.</PLOTOUTLINE>
     <PRICE>9.99</PRICE>
     <RELEASEDATE>2011-12-31T00:00:00</RELEASEDATE>

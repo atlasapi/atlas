@@ -536,6 +536,10 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     }
 
     private Iterable<Certificate> generateCertificates(AmazonUnboxItem item) {
-        return certificateMap.get(item.getRating()).asSet();
+        if(!Strings.isNullOrEmpty(item.getRating())) {
+            return ImmutableSet.of(new Certificate(item.getRating(), Countries.GB));
+        } else {
+            return ImmutableSet.of();
+        }
     }
 }

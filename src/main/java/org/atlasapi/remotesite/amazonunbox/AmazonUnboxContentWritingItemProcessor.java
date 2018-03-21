@@ -35,6 +35,7 @@ import org.atlasapi.remotesite.ContentMerger.MergeStrategy;
 import org.atlasapi.remotesite.bbc.nitro.ModelWithPayload;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
+import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.base.Maybe;
 
 import com.google.common.collect.BiMap;
@@ -103,6 +104,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     private final Set<String> episodeUris = new HashSet<>();
 
     private Set<String> seenImages = new HashSet<>();
+    private OwlTelescopeReporter telescope;
 
     private final ContentExtractor<AmazonUnboxItem, Iterable<Content>> extractor;
     private final ContentResolver resolver;
@@ -140,7 +142,7 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
     }
 
     @Override
-    public void prepare() {
+    public void prepare(OwlTelescopeReporter telescope) {
         seenContainer.clear();
         cached.clear();
         topLevelSeries.clear();
@@ -149,6 +151,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         seriesUris.clear();
         episodeUris.clear();
         seenImages.clear();
+
+        this.telescope = telescope;
     }
     
     @Override
@@ -156,6 +160,14 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         for (Content content : extract(item)) {
             ModelWithPayload<Content> contentWithPayload = new ModelWithPayload<>(content, item);
             cleanImage(contentWithPayload.getModel());
+            if (shouldDiscard(contentWithPayload)) {
+                telescope.reportFailedEvent(
+                        "Episode was discarded because it was a trailer (index 0 or 101)",
+                        EntityType.EPISODE,
+                        contentWithPayload.getPayload());
+                continue;
+            }
+
             seenContent.put(content.getCanonicalUri(), contentWithPayload);
 
             //Keep a note of all series and episodes
@@ -167,8 +179,21 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         }
     }
 
+    private boolean shouldDiscard(ModelWithPayload<Content> contentWithPayload) {
+        if(contentWithPayload.getModel() instanceof Episode){
+            Integer episodeNumber =
+                    contentWithPayload.asModelType(Episode.class).getModel().getEpisodeNumber();
+            //YV has requested we do not sent trailers. According to amazon trailers are
+            //identified with episodeNumbers 000 or 101.
+            if( episodeNumber == 0 || episodeNumber == 101){
+                return true;
+            }
+        }
+        return false;
+    }
+
     @Override
-    public void finish(OwlTelescopeReporter telescope) {
+    public void finish() {
         titleCleaning();
 //        assignImagesToBrands();
 
@@ -204,6 +229,8 @@ public class AmazonUnboxContentWritingItemProcessor implements AmazonUnboxItemPr
         seriesUris.clear();
         episodeUris.clear();
         seenImages.clear();
+
+        telescope = null;
     }
 
     //Because YV has their own image fill-in rules, we'll only retain each image once.

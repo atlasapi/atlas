@@ -331,12 +331,10 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
 
     private Iterable<String> splitAndClean(String stringList) {
 
-        ImmutableSet<String> set = StreamSupport.stream(SPLIT_ON_COMMA.split(stringList)
+        return StreamSupport.stream(SPLIT_ON_COMMA.split(stringList)
                 .spliterator(), false)
                 .filter(i -> TWO_ALPHA_CHARS.matcher(i).matches())
                 .collect(MoreCollectors.toImmutableSet());
-
-        return set;
     }
 
     @Override

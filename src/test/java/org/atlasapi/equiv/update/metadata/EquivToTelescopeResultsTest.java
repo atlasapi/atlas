@@ -1,6 +1,7 @@
 package org.atlasapi.equiv.update.metadata;
 
-
+import com.google.gson.Gson;
+import com.google.gson.JsonElement;
 import org.junit.Before;
 import org.junit.Test;
 

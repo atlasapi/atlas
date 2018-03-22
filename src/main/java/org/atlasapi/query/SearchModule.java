@@ -9,17 +9,22 @@ import org.atlasapi.query.content.search.ContentResolvingSearcher;
 import org.atlasapi.query.content.search.DummySearcher;
 import org.atlasapi.search.ContentSearcher;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
+import com.google.common.base.Strings;
+import org.springframework.context.annotation.Primary;
 import javax.annotation.PostConstruct;
 
 @Configuration
 public class SearchModule {
 
     private @Value("${atlas.search.host}") String searchHost;
-    
+
+    //this will use an executor that does not do merging.
+    private @Autowired @Qualifier("EquivalenceQueryExecutor") KnownTypeQueryExecutor equivQueryExecutor;
     private @Autowired KnownTypeQueryExecutor queryExecutor;
     
     private @Autowired PeopleQueryResolver peopleQueryResolver;
@@ -32,10 +37,29 @@ public class SearchModule {
             resolver.setExecutor(queryExecutor);
             resolver.setPeopleQueryResolver(peopleQueryResolver);
         }
+
+        SearchResolver equivSearchResolver = equivSearchResolver();
+        if (equivSearchResolver instanceof ContentResolvingSearcher) {
+            ContentResolvingSearcher resolver = (ContentResolvingSearcher) equivSearchResolver;
+            resolver.setExecutor(equivQueryExecutor);
+            resolver.setPeopleQueryResolver(peopleQueryResolver);
+        }
     }
     
     @Bean
+    @Primary
     SearchResolver searchResolver() {
+        if (!Strings.isNullOrEmpty(searchHost)) {
+            ContentSearcher titleSearcher = new RemoteFuzzySearcher(searchHost);
+            return new ContentResolvingSearcher(titleSearcher, null, null);
+        }
+
+        return new DummySearcher();
+    }
+
+    @Bean
+    @Qualifier("EquivalenceSearchResolver")
+    SearchResolver equivSearchResolver() {
         if (!Strings.isNullOrEmpty(searchHost)) {
             ContentSearcher titleSearcher = new RemoteFuzzySearcher(searchHost);
             return new ContentResolvingSearcher(titleSearcher, null, null);

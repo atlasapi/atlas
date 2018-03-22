@@ -40,9 +40,8 @@ public class ExpandingTitleTransformer {
 
         List<String> cleanWords = words.stream()
                 .map(this::americanize)
-                .map(expander::apply).collect(Collectors.toList());
-
-
+                .map(expander::apply)
+                .collect(Collectors.toList());
 
         return String.join(" ", cleanWords);
     }

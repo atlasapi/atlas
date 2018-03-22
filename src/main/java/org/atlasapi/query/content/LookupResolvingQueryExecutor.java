@@ -39,15 +39,12 @@ public class LookupResolvingQueryExecutor implements KnownTypeQueryExecutor {
 
     public LookupResolvingQueryExecutor(
             KnownTypeContentResolver cassandraContentResolver,
-            KnownTypeContentResolver mongoContentResolver,
+            EquivalentContentResolver mongoEquivsResolver,
             LookupEntryStore mongoLookupResolver,
             boolean cassandraEnabled
     ) {
         this.cassandraContentResolver = cassandraContentResolver;
-        this.mongoEquivsResolver = new DefaultEquivalentContentResolver(
-                mongoContentResolver,
-                mongoLookupResolver
-        );
+        this.mongoEquivsResolver = mongoEquivsResolver;
         this.cassandraEnabled = cassandraEnabled;
         this.lookupEntryStore = mongoLookupResolver;
     }

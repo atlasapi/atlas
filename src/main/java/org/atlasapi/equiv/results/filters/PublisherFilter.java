@@ -27,10 +27,15 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
             ResultDescription desc,
             EquivToTelescopeResults equivToTelescopeResults
     ) {
-        EquivToTelescopeComponent filterCompoenent = EquivToTelescopeComponent.create();
-        filterCompoenent.setComponentName("Publisher Filter");
+        EquivToTelescopeComponent filterComponent = EquivToTelescopeComponent.create();
+        filterComponent.setComponentName("Publisher Filter");
 
         if (candidate.candidate().getPublisher() == subject.getPublisher()) {
+            filterComponent.addComponentResult(
+                    candidate.candidate().getId(),
+                    "Removing because target and source have the same publisher."
+            );
+            equivToTelescopeResults.addFilterResult(filterComponent);
             return false;
         }
         Set<Publisher> unacceptable = unacceptablePublishers.get(subject.getPublisher());
@@ -47,7 +52,7 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
                     unacceptable
             );
             if (candidate.candidate().getId() != null) {
-                filterCompoenent.addComponentResult(
+                filterComponent.addComponentResult(
                         candidate.candidate().getId(),
                         "Removing for containing unacceptable publisher"
                                 + candidate.candidate().getPublisher().toString()
@@ -55,7 +60,7 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
             }
         }
 
-        equivToTelescopeResults.addFilterResult(filterCompoenent);
+        equivToTelescopeResults.addFilterResult(filterComponent);
 
         return passes;
     }

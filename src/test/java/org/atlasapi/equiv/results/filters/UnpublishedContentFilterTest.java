@@ -34,6 +34,7 @@ public class UnpublishedContentFilterTest {
     @Test
     public void testDoesntFilterActivelyPublishedContent() {
         Item item = new Item();
+        item.setId(1L);
         item.setCanonicalUri("uri");
         ScoredCandidate<Item> itemScoredCandidate = ScoredCandidate.valueOf(item, Score.ONE);
         Item subject = new Item();

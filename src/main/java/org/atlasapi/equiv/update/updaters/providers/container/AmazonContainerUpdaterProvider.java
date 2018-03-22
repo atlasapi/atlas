@@ -2,8 +2,6 @@ package org.atlasapi.equiv.update.updaters.providers.container;
 
 import java.util.Set;
 
-import org.atlasapi.equiv.generators.ContainerChildEquivalenceGenerator;
-import org.atlasapi.equiv.generators.ScalingEquivalenceGenerator;
 import org.atlasapi.equiv.generators.TitleSearchGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeMatchingEquivalenceHandler;
@@ -11,20 +9,23 @@ import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
 import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
-import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
+import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
-import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
+import org.atlasapi.equiv.results.extractors.AllWithTheSameHighscoreAndPublisherExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
+import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.FilmFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
-import org.atlasapi.equiv.scorers.EquivalenceScorer;
+import org.atlasapi.equiv.results.scores.Score;
+import org.atlasapi.equiv.results.scores.ScoreThreshold;
+import org.atlasapi.equiv.scorers.ContainerHierarchyMatchingScorer;
+import org.atlasapi.equiv.scorers.SubscriptionCatchupBrandDetector;
 import org.atlasapi.equiv.scorers.TitleMatchingContainerScorer;
 import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -36,13 +37,13 @@ import org.atlasapi.media.entity.Publisher;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 
-public class StandardTopLevelContainerUpdaterProvider
-        implements EquivalenceUpdaterProvider<Container> {
+public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvider<Container> {
 
-    private StandardTopLevelContainerUpdaterProvider() { }
+    private AmazonContainerUpdaterProvider() {
+    }
 
-    public static StandardTopLevelContainerUpdaterProvider create() {
-        return new StandardTopLevelContainerUpdaterProvider();
+    public static AmazonContainerUpdaterProvider create() {
+        return new AmazonContainerUpdaterProvider();
     }
 
     @Override
@@ -50,35 +51,38 @@ public class StandardTopLevelContainerUpdaterProvider
             EquivalenceUpdaterProviderDependencies dependencies,
             Set<Publisher> targetPublishers
     ) {
-        return ContentEquivalenceUpdater.<Container> builder()
+        return ContentEquivalenceUpdater.<Container>builder()
                 .withExcludedUris(dependencies.getExcludedUris())
                 .withExcludedIds(dependencies.getExcludedIds())
-                .withGenerators(
-                        ImmutableSet.of(
-                                TitleSearchGenerator.create(
-                                        dependencies.getSearchResolver(),
-                                        Container.class,
-                                        targetPublishers,
-                                        2
-                                ),
-                                ScalingEquivalenceGenerator.scale(
-                                        new ContainerChildEquivalenceGenerator(
-                                                dependencies.getContentResolver(),
-                                                dependencies.getEquivSummaryStore()
-                                        ),
-                                        20
-                                )
+                .withGenerator(
+                        //whatever generators are used here, should prevent the creation of
+                        //candidates which are the item itself (because there is no further filtering
+                        //to remove them, whereas the Publisher filter used elsewhere does that).
+                        TitleSearchGenerator.create(
+                                dependencies.getSearchResolver(),
+                                Container.class,
+                                targetPublishers,
+                                2,
+                                true //allow to generate candidates from amazon itself.
                         )
                 )
                 .withScorers(
-                        ImmutableSet.<EquivalenceScorer<Container>> of(
-                                new TitleMatchingContainerScorer((double) 2)
+                        ImmutableSet.of(
+                                new TitleMatchingContainerScorer(2),
+                                new ContainerHierarchyMatchingScorer(
+                                        dependencies.getContentResolver(),
+                                        Score.negativeOne(),
+                                        new SubscriptionCatchupBrandDetector(
+                                                dependencies.getContentResolver()
+                                        )
+                                )
                         )
                 )
                 .withCombiner(
                         new RequiredScoreFilteringCombiner<>(
-                                new NullScoreAwareAveragingCombiner<>(),
-                                TitleMatchingContainerScorer.NAME
+                                new AddingEquivalenceCombiner<>(),
+                                TitleMatchingContainerScorer.NAME,
+                                ScoreThreshold.greaterThanOrEqual(2)
                         )
                 )
                 .withFilter(
@@ -86,7 +90,6 @@ public class StandardTopLevelContainerUpdaterProvider
                                 new MinimumScoreFilter<>(0.25),
                                 new MediaTypeFilter<>(),
                                 new SpecializationFilter<>(),
-                                new PublisherFilter<>(),
                                 ExclusionListFilter.create(
                                         dependencies.getExcludedUris(),
                                         dependencies.getExcludedIds()
@@ -98,9 +101,17 @@ public class StandardTopLevelContainerUpdaterProvider
                 )
                 .withExtractors(
                         ImmutableList.of(
-                                MultipleCandidateExtractor.create(),
-                                PercentThresholdAboveNextBestMatchEquivalenceExtractor
-                                        .atLeastNTimesGreater(1.5)
+                                // Get all amazon items with the same score that scored at least
+                                // perfect for title. This ensures that if there is hierarchy those
+                                // items will be picked with a score of 3, but if there isn't items
+                                // with 2 will be selected. In either case this should equiv all
+                                // amazon versions of the same content together.
+                                // Then let it equate with other stuff as well.
+                                RemoveAndCombineExtractor.create(
+                                        AllWithTheSameHighscoreAndPublisherExtractor.create(2.00),
+                                        PercentThresholdAboveNextBestMatchEquivalenceExtractor
+                                                .atLeastNTimesGreater(1.5)
+                                )
                         )
                 )
                 .withHandler(

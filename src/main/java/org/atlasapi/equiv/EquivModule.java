@@ -39,6 +39,7 @@ import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -57,7 +58,7 @@ public class EquivModule {
     @Value("${equiv.excludedIds}") private String excludedIds;
 
     @Autowired private ScheduleResolver scheduleResolver;
-    @Autowired private SearchResolver searchResolver;
+    @Autowired @Qualifier("EquivalenceSearchResolver") private SearchResolver searchResolver;
     @Autowired private ContentResolver contentResolver;
     @Autowired private ChannelResolver channelResolver;
     @Autowired private EquivalenceSummaryStore equivSummaryStore;

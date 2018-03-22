@@ -84,13 +84,15 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         
         Film film = (Film) item;
         
-        if (film.getYear() == null && !acceptNullYears) {
-            desc.appendText("Can't continue: null year");
+        if (!acceptNullYears && film.getYear() == null ) {
+            desc.appendText("Can't generate: null year");
+            equivToTelescopeResults.addGeneratorResult(generatorComponent);
             return scores.build();
         }
         
         if (Strings.isNullOrEmpty(film.getTitle())) {
-            desc.appendText("Can't continue: title '%s'", film.getTitle()).finishStage();
+            desc.appendText("Can't generate: title '%s'", film.getTitle()).finishStage();
+            equivToTelescopeResults.addGeneratorResult(generatorComponent);
             return scores.build();
         } else {
             desc.appendText("Using year %s, title %s", film.getYear(), film.getTitle());
@@ -101,8 +103,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
             desc.appendText("Using IMDB ref %s", imdbRef.requireValue());
         }
 
-        String title = film.getTitle();
-        title = normalize(title);
+        String title = normalize(film.getTitle());
         String expandedTitle = titleExpander.expand(title);
 
         Iterable<Identified> possibleEquivalentFilms = searchResolver.search(searchQueryFor(title),
@@ -122,7 +123,11 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         desc.appendText("Found %s films through title search", Iterables.size(foundFilms));
 
         for (Film equivFilm : ImmutableSet.copyOf(foundFilms)) {
-            
+            //if the candidate film is the subject itself, ignore
+            if(java.util.Objects.equals(equivFilm.getId(), item.getId())){
+                continue;
+            }
+
             Maybe<String> equivImdbRef = getImdbRef(equivFilm);
             if(imdbRef.hasValue() && equivImdbRef.hasValue() && Objects.equal(imdbRef.requireValue(), equivImdbRef.requireValue())) {
                 desc.appendText("%s (%s) scored 1.0 (IMDB match)", equivFilm.getTitle(), equivFilm.getCanonicalUri());
@@ -160,7 +165,6 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         }
 
         equivToTelescopeResults.addGeneratorResult(generatorComponent);
-        
         return scores.build();
     }
 

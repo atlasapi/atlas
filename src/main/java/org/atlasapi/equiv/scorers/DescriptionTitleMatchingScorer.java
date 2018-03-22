@@ -31,7 +31,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
     private final Score scoreOnMismatch;
 
     // This can be calibrated to change how often matching occurs
-    private final double DIVISION_FACTOR;
+    private final double divisionFactor;
 
     public DescriptionTitleMatchingScorer() {
         this(Score.nullScore(), 2.0);
@@ -39,7 +39,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
 
     public DescriptionTitleMatchingScorer(Score scoreOnMismatch, double divisionFactor) {
         this.scoreOnMismatch = scoreOnMismatch;
-        this.DIVISION_FACTOR = divisionFactor;
+        this.divisionFactor = divisionFactor;
     }
 
     @Override
@@ -94,7 +94,7 @@ public class DescriptionTitleMatchingScorer implements EquivalenceScorer<Item> {
         candidateList.retainAll(subjectTitleList);
 
         // Calibrate the division factor to alter matching frequency
-        return subjectList.size() > (candidateTitleList.size()/ DIVISION_FACTOR) || candidateList.size() > (subjectTitleList.size()/ DIVISION_FACTOR);
+        return subjectList.size() > (candidateTitleList.size() / divisionFactor) || candidateList.size() > (subjectTitleList.size() / divisionFactor);
 
     }
 

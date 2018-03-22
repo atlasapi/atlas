@@ -2,6 +2,7 @@ package org.atlasapi.equiv.update;
 
 import java.util.List;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.generators.EquivalenceGenerators;
@@ -25,10 +26,10 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 
-import com.google.common.annotations.VisibleForTesting;
-import com.google.common.base.Function;
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import com.google.gson.Gson;
 import com.google.gson.JsonElement;
 
@@ -49,6 +50,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     private ContentEquivalenceUpdater(Builder<T> builder) {
         ImmutableSet<EquivalenceGenerator<T>> builtGenerators = builder.generators.build();
         ImmutableSet<EquivalenceScorer<T>> builtScorers = builder.scorers.build();
+        ImmutableList<EquivalenceExtractor<T>> builtExtractors = builder.extractors.build();
 
         this.merger = new ScoredEquivalentsMerger();
         this.generators = EquivalenceGenerators.create(
@@ -60,7 +62,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         this.resultBuilder = new DefaultEquivalenceResultBuilder<>(
                 builder.combiner,
                 builder.filter,
-                builder.extractor
+                builtExtractors
         );
         this.handler = checkNotNull(builder.handler);
         this.messenger = checkNotNull(builder.messenger);
@@ -70,7 +72,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 .withScorers(builtScorers)
                 .withCombiner(builder.combiner)
                 .withFilter(builder.filter)
-                .withExtractor(builder.extractor)
+                .withExtractors(builtExtractors)
                 .withHandler(handler)
                 .withExcludedUris(builder.excludedUris)
                 .withExcludedIds(builder.excludedIds)
@@ -139,10 +141,11 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     }
 
     private Iterable<T> extractCandidates(Iterable<ScoredCandidates<T>> generatedScores) {
-        return Iterables.concat(Iterables.transform(
-                generatedScores,
-                (Function<ScoredCandidates<T>, Iterable<T>>) input -> input.candidates().keySet()
-        ));
+
+        return StreamSupport.stream(generatedScores.spliterator(), false)
+                .map(input -> input.candidates().keySet())
+                .flatMap(Set::stream)
+                .collect(MoreCollectors.toImmutableSet());
     }
 
     public interface ExcludedUrisStep<T extends Content> {
@@ -182,6 +185,8 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
     public interface ExtractorStep<T extends Content> {
 
         HandlerStep<T> withExtractor(EquivalenceExtractor<T> extractor);
+
+        HandlerStep<T> withExtractors(List<EquivalenceExtractor<T>> extractors);
     }
 
     public interface HandlerStep<T extends Content> {
@@ -207,7 +212,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
         private ImmutableSet.Builder<EquivalenceScorer<T>> scorers = ImmutableSet.builder();
         private ScoreCombiner<T> combiner;
         private EquivalenceFilter<T> filter;
-        private EquivalenceExtractor<T> extractor;
+        private ImmutableList.Builder<EquivalenceExtractor<T>> extractors = ImmutableList.builder();
         private EquivalenceResultHandler<T> handler;
         private EquivalenceResultMessenger<T> messenger;
         private Set<String> excludedUris;
@@ -268,7 +273,13 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
 
         @Override
         public HandlerStep<T> withExtractor(EquivalenceExtractor<T> extractor) {
-            this.extractor = extractor;
+            this.extractors.add(extractor);
+            return this;
+        }
+
+        @Override
+        public HandlerStep<T> withExtractors(List<EquivalenceExtractor<T>> extractors) {
+            this.extractors.addAll(extractors);
             return this;
         }
 

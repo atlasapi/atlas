@@ -48,7 +48,8 @@ public class MusicItemUpdaterProvider implements EquivalenceUpdaterProvider<Item
                                 targetPublishers,
                                 new SongTitleTransform(),
                                 100,
-                                2
+                                2,
+                                false
                         )
                 )
                 .withScorer(

@@ -12,7 +12,6 @@ import org.atlasapi.equiv.results.filters.EquivalenceFilter;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
-import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Publisher;
@@ -30,29 +29,26 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
         implements EquivalenceResultBuilder<T> {
 
     private final ScoreCombiner<T> combiner;
-    private final EquivalenceExtractor<T> extractor;
+    private final List<EquivalenceExtractor<T>> extractors;
     private final EquivalenceFilter<T> filter;
-
-    private final MultipleCandidateExtractor<T> multipleCandidateExtractor;
 
     public DefaultEquivalenceResultBuilder(
             ScoreCombiner<T> combiner,
             EquivalenceFilter<T> filter,
-            EquivalenceExtractor<T> extractor
+            List<EquivalenceExtractor<T>> extractors
     ) {
         this.combiner = combiner;
         this.filter = filter;
-        this.extractor = extractor;
+        this.extractors = extractors;
 
-        this.multipleCandidateExtractor = MultipleCandidateExtractor.create();
     }
 
     public static <T extends Content> EquivalenceResultBuilder<T> create(
             ScoreCombiner<T> combiner,
             EquivalenceFilter<T> filter,
-            EquivalenceExtractor<T> marker
+            List<EquivalenceExtractor<T>> marker
     ) {
-        return new DefaultEquivalenceResultBuilder<T>(combiner, filter, marker);
+        return new DefaultEquivalenceResultBuilder<>(combiner, filter, marker);
     }
 
     @Override
@@ -132,27 +128,16 @@ public class DefaultEquivalenceResultBuilder<T extends Content>
             ImmutableSortedSet<ScoredCandidate<T>> copyOfSorted =
                     ImmutableSortedSet.copyOfSorted(publisherBins.get(publisher));
 
-            Optional<Set<ScoredCandidate<T>>> multipleExtractedCandidates =
-                    multipleCandidateExtractor.extract(
-                            copyOfSorted.asList().reverse(),
-                            target,
-                            equivToTelescopeResults
-                    );
-
-            if (multipleExtractedCandidates.isPresent()) {
-                builder.putAll(
-                        publisher,
-                        multipleExtractedCandidates.get()
-                );
-            } else {
-                Optional<ScoredCandidate<T>> extracted = extractor.extract(
+            for (EquivalenceExtractor<T> extractor : extractors) {
+                Set<ScoredCandidate<T>> extracted = extractor.extract(
                         copyOfSorted.asList().reverse(),
                         target,
                         desc,
                         equivToTelescopeResults
                 );
-                if (extracted.isPresent()) {
-                    builder.put(publisher, extracted.get());
+                if (!extracted.isEmpty()) {
+                    builder.putAll(publisher, extracted);
+                    break; //try all extractors one by one. Stop if one worked.
                 }
             }
 

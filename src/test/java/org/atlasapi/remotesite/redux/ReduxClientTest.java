@@ -36,6 +36,7 @@ public class ReduxClientTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testCanGetLatest() throws HttpException, Exception {
 		PaginatedBaseProgrammes pbp = reduxClient.latest(Selection.ALL);
 		int first = pbp.getFirst();
@@ -47,6 +48,7 @@ public class ReduxClientTest {
 	}
 	
 	@Test
+	@Ignore
     public void testCanGetLatestForChannel() throws HttpException, Exception {
         PaginatedBaseProgrammes pbp = reduxClient.latest(Selection.ALL, ImmutableSet.of("bbcone"));
         int first = pbp.getFirst();
@@ -68,6 +70,7 @@ public class ReduxClientTest {
 	}
 	
 	@Test
+	@Ignore
 	public void testCachesMediaTypes() throws HttpException, Exception {
 		Map<String, ReduxMedia>mediaMap = reduxClient.getCachedMedia("radio");
 		assertNotNull("Media map should not be null", mediaMap);

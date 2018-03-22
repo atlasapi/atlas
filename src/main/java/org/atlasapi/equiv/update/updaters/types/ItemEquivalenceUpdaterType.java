@@ -13,6 +13,7 @@ import org.atlasapi.equiv.update.updaters.providers.item.RoviItemUpdaterProvider
 import org.atlasapi.equiv.update.updaters.providers.item.RtItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.RtUpcomingItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.StandardItemUpdaterProvider;
+import org.atlasapi.equiv.update.updaters.providers.item.TxlogsItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.VodItemWithSeriesSequenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.item.YouviewItemUpdaterProvider;
@@ -65,6 +66,9 @@ public enum ItemEquivalenceUpdaterType {
     ),
     BARB_ITEM(
             BarbItemUpdaterProvider.create()
+    ),
+    TXLOGS_ITEM(
+            TxlogsItemUpdaterProvider.create()
     ),
     ;
 

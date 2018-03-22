@@ -4,7 +4,6 @@ import java.util.Set;
 
 import org.atlasapi.equiv.generators.BarbAliasEquivalenceGenerator;
 import org.atlasapi.equiv.generators.BroadcastMatchingItemEquivalenceGenerator;
-import org.atlasapi.equiv.generators.EquivalenceGenerator;
 import org.atlasapi.equiv.handlers.DelegatingEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EpisodeFilteringEquivalenceResultHandler;
 import org.atlasapi.equiv.handlers.EquivalenceSummaryWritingHandler;
@@ -12,16 +11,13 @@ import org.atlasapi.equiv.handlers.LookupWritingEquivalenceHandler;
 import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
-import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
-import org.atlasapi.equiv.results.extractors.TopEquivalenceExtractor;
-import org.atlasapi.equiv.results.filters.AlwaysTrueFilter;
+import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
 import org.atlasapi.equiv.results.filters.DummyContainerFilter;
 import org.atlasapi.equiv.results.filters.ExclusionListFilter;
 import org.atlasapi.equiv.results.filters.FilmFilter;
 import org.atlasapi.equiv.results.filters.MediaTypeFilter;
 import org.atlasapi.equiv.results.filters.MinimumScoreFilter;
-import org.atlasapi.equiv.results.filters.PublisherFilter;
 import org.atlasapi.equiv.results.filters.SpecializationFilter;
 import org.atlasapi.equiv.results.filters.UnpublishedContentFilter;
 import org.atlasapi.equiv.results.scores.Score;
@@ -33,10 +29,8 @@ import org.atlasapi.equiv.update.ContentEquivalenceUpdater;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProvider;
 import org.atlasapi.equiv.update.updaters.providers.EquivalenceUpdaterProviderDependencies;
-import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.messaging.v3.ContentEquivalenceAssertionMessage;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 
 import com.google.common.base.Predicates;
@@ -103,7 +97,7 @@ public class TxlogsItemUpdaterProvider implements EquivalenceUpdaterProvider<Ite
                         ))
                 )
                 .withExtractor(
-                        TopEquivalenceExtractor.create()
+                        AllOverOrEqThresholdExtractor.create(1.5)
                 )
                 .withHandler(
                         new DelegatingEquivalenceResultHandler<>(ImmutableList.of(

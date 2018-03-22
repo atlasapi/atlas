@@ -1,27 +1,30 @@
 package org.atlasapi.remotesite.redux;
 
-import static org.junit.Assert.*;
-
 import java.text.ParseException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.atlasapi.remotesite.redux.model.BaseReduxProgramme;
 import org.atlasapi.remotesite.redux.model.FullReduxProgramme;
 import org.atlasapi.remotesite.redux.model.PaginatedBaseProgrammes;
 import org.atlasapi.remotesite.redux.model.ReduxMedia;
+
+import com.metabroadcast.common.http.HttpException;
+import com.metabroadcast.common.query.Selection;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.common.net.HostSpecifier;
 import org.joda.time.LocalDate;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
-import static org.hamcrest.Matchers.lessThan;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.greaterThan;
 
-import com.google.common.collect.ImmutableSet;
-import com.google.common.net.HostSpecifier;
-import com.metabroadcast.common.http.HttpException;
-import com.metabroadcast.common.query.Selection;
+import static org.hamcrest.Matchers.greaterThan;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.lessThan;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertThat;
 
 public class ReduxClientTest {
 
@@ -36,9 +39,14 @@ public class ReduxClientTest {
 	}
 	
 	@Test
-	@Ignore
 	public void testCanGetLatest() throws HttpException, Exception {
-		PaginatedBaseProgrammes pbp = reduxClient.latest(Selection.ALL);
+		PaginatedBaseProgrammes pbp;
+		try {
+			pbp = reduxClient.latest(Selection.ALL);
+		} catch (ExecutionException | HttpException e) {
+			System.out.print("WARNING: Failed to get a connection to redux. Test was skipped.\n");
+			return;
+		}
 		int first = pbp.getFirst();
 		int last = pbp.getLast();
 		assertThat(first, lessThan(last));
@@ -48,9 +56,14 @@ public class ReduxClientTest {
 	}
 	
 	@Test
-	@Ignore
     public void testCanGetLatestForChannel() throws HttpException, Exception {
-        PaginatedBaseProgrammes pbp = reduxClient.latest(Selection.ALL, ImmutableSet.of("bbcone"));
+        PaginatedBaseProgrammes pbp;
+		try {
+			pbp = reduxClient.latest(Selection.ALL, ImmutableSet.of("bbcone"));
+		} catch (ExecutionException | HttpException e) {
+			System.out.print("WARNING: Failed to get a connection to redux. Test was skipped.\n");
+			return;
+		}
         int first = pbp.getFirst();
         int last = pbp.getLast();
         assertThat(first, lessThan(last));
@@ -70,9 +83,14 @@ public class ReduxClientTest {
 	}
 	
 	@Test
-	@Ignore
 	public void testCachesMediaTypes() throws HttpException, Exception {
-		Map<String, ReduxMedia>mediaMap = reduxClient.getCachedMedia("radio");
+		Map<String, ReduxMedia> mediaMap;
+		try {
+			mediaMap = reduxClient.getCachedMedia("radio");
+		} catch (ExecutionException e) {
+			System.out.print("WARNING: Failed to get a connection to redux. Test was skipped.\n");
+			return;
+		}
 		assertNotNull("Media map should not be null", mediaMap);
 		assertThat(mediaMap.size(), greaterThan(0));
 		

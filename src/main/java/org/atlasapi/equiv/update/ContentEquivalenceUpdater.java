@@ -125,7 +125,6 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             messenger.sendMessage(result);
         }
 
-//TODO: mental note. We should probably change that so we print it the way we like it. Both serializers print too much cluter.
         telescope.reportSuccessfulEvent(
                 content.getId(),
                 content.getAliases(),

@@ -15,16 +15,16 @@ import com.google.common.collect.ImmutableSet;
  * This extractor will select all candidates that tie at the top score, over or equal to the
  * given threshold. If nothing ties at the top, this returns nothing.
  */
-public class AllWithTheSameHighScoreExtractor<T extends Content> implements EquivalenceExtractor<T> {
+public class AllThatTieAtTopExtractor<T extends Content> implements EquivalenceExtractor<T> {
 
     private final double threshold;
 
-    private AllWithTheSameHighScoreExtractor(double threshold) {
+    private AllThatTieAtTopExtractor(double threshold) {
         this.threshold = threshold;
     }
 
-    public static <T extends Content> AllWithTheSameHighScoreExtractor<T> create(double threshold) {
-        return new AllWithTheSameHighScoreExtractor<>(threshold);
+    public static <T extends Content> AllThatTieAtTopExtractor<T> create(double threshold) {
+        return new AllThatTieAtTopExtractor<>(threshold);
     }
 
     @Override

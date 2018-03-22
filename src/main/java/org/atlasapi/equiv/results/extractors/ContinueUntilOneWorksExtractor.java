@@ -12,21 +12,21 @@ import org.atlasapi.media.entity.Content;
 import com.google.common.collect.ImmutableSet;
 
 /**
- * This extractor will attempt of delegates one by one, until one of them provides at least one
+ * This extractor will attempt the delegates one by one, until one of them provides at least one
  * result, or it runs out of delegates.
  */
-public class ContinueUntilOneWorks<T extends Content> implements EquivalenceExtractor<T> {
+public class ContinueUntilOneWorksExtractor<T extends Content> implements EquivalenceExtractor<T> {
 
     private final List<EquivalenceExtractor<T>> delegates;
 
-    public ContinueUntilOneWorks(
+    public ContinueUntilOneWorksExtractor(
             List<EquivalenceExtractor<T>> delegates) {
         this.delegates = delegates;
     }
 
-    public static <T extends Content> ContinueUntilOneWorks<T> create(
+    public static <T extends Content> ContinueUntilOneWorksExtractor<T> create(
             List<EquivalenceExtractor<T>> delegates) {
-        return new ContinueUntilOneWorks<>(delegates);
+        return new ContinueUntilOneWorksExtractor<>(delegates);
     }
 
     @Override

@@ -15,16 +15,16 @@ import com.google.common.collect.ImmutableSet;
  * This extractor will select all candidates at the best score from the publisher of the target
  * content, which are at least over or at the given threshold.
  */
-public class AllThatTieAtTopFromPublisher<T extends Content> implements EquivalenceExtractor<T> {
+public class AllWithTheSameHighscoreAndPublisherExtractor<T extends Content> implements EquivalenceExtractor<T> {
 
     private final double threshold;
 
-    private AllThatTieAtTopFromPublisher(double threshold) {
+    private AllWithTheSameHighscoreAndPublisherExtractor(double threshold) {
         this.threshold = threshold;
     }
 
-    public static <T extends Content> AllThatTieAtTopFromPublisher<T> create(double threshold) {
-        return new AllThatTieAtTopFromPublisher<>(threshold);
+    public static <T extends Content> AllWithTheSameHighscoreAndPublisherExtractor<T> create(double threshold) {
+        return new AllWithTheSameHighscoreAndPublisherExtractor<>(threshold);
     }
 
     @Override

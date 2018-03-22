@@ -38,7 +38,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
     
     public static final <T extends Content> TitleSearchGenerator<T> create(
-            SearchResolver searchResolver, Class<? extends T> cls,
+            SearchResolver searchResolver,
+            Class<? extends T> cls,
             Iterable<Publisher> publishers,
             double exactMatchScore
     ) {
@@ -46,7 +47,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     public static final <T extends Content> TitleSearchGenerator<T> create(
-            SearchResolver searchResolver, Class<? extends T> cls,
+            SearchResolver searchResolver,
+            Class<? extends T> cls,
             Iterable<Publisher> publishers,
             double exactMatchScore,
             boolean includeSelfPublisher

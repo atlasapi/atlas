@@ -11,9 +11,7 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.AddingEquivalenceCombiner;
 import org.atlasapi.equiv.results.combining.RequiredScoreFilteringCombiner;
-import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
-import org.atlasapi.equiv.results.extractors.AllThatTieAtTopFromPublisher;
-import org.atlasapi.equiv.results.extractors.AllWithTheSameHighScoreExtractor;
+import org.atlasapi.equiv.results.extractors.AllWithTheSameHighscoreAndPublisherExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdAboveNextBestMatchEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
 import org.atlasapi.equiv.results.filters.ConjunctiveFilter;
@@ -110,7 +108,7 @@ public class AmazonContainerUpdaterProvider implements EquivalenceUpdaterProvide
                                 // amazon versions of the same content together.
                                 // Then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
-                                        AllThatTieAtTopFromPublisher.create(2.00),
+                                        AllWithTheSameHighscoreAndPublisherExtractor.create(2.00),
                                         PercentThresholdAboveNextBestMatchEquivalenceExtractor
                                                 .atLeastNTimesGreater(1.5)
                                 )

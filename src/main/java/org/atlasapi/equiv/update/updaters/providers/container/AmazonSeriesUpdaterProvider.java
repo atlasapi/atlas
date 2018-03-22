@@ -10,7 +10,7 @@ import org.atlasapi.equiv.handlers.ResultWritingEquivalenceHandler;
 import org.atlasapi.equiv.messengers.QueueingEquivalenceResultMessenger;
 import org.atlasapi.equiv.results.combining.NullScoreAwareAveragingCombiner;
 import org.atlasapi.equiv.results.extractors.AllOverOrEqThresholdExtractor;
-import org.atlasapi.equiv.results.extractors.ContinueUntilOneWorks;
+import org.atlasapi.equiv.results.extractors.ContinueUntilOneWorksExtractor;
 import org.atlasapi.equiv.results.extractors.MultipleCandidateExtractor;
 import org.atlasapi.equiv.results.extractors.PercentThresholdEquivalenceExtractor;
 import org.atlasapi.equiv.results.extractors.RemoveAndCombineExtractor;
@@ -87,7 +87,7 @@ public class AmazonSeriesUpdaterProvider implements EquivalenceUpdaterProvider<C
                                 //then let it equate with other stuff as well.
                                 RemoveAndCombineExtractor.create(
                                         AllOverOrEqThresholdExtractor.create(3.0),
-                                        ContinueUntilOneWorks.create(
+                                        ContinueUntilOneWorksExtractor.create(
                                                 ImmutableList.of(
                                                         MultipleCandidateExtractor.create(),
                                                         PercentThresholdEquivalenceExtractor.moreThanPercent(

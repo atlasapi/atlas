@@ -46,6 +46,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_UPCOMING_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STANDARD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType
         .VOD_WITH_SERIES_SEQUENCE_ITEM;
@@ -745,8 +746,16 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BARB_TRANSMISSIONS)
                 .withItemEquivalenceUpdater(
-                        BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
+                        TXLOGS_ITEM,
+                        ImmutableSet.of(
+                                BBC_NITRO,
+                                ITV_CPS,
+                                BARB_MASTER,
+                                UKTV,
+                                C4_PMLSD,
+                                FIVE,
+                                BARB_TRANSMISSIONS
+                        )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,

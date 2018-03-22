@@ -14,8 +14,10 @@ permissions and limitations under the License. */
 
 package org.atlasapi.equiv;
 
-import java.io.File;
-
+import com.google.common.base.Splitter;
+import com.google.common.base.Strings;
+import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.common.queue.MessageSender;
 import org.atlasapi.equiv.results.persistence.FileEquivalenceResultStore;
 import org.atlasapi.equiv.results.persistence.RecentEquivalenceResultStore;
 import org.atlasapi.equiv.update.EquivalenceUpdater;
@@ -36,18 +38,14 @@ import org.atlasapi.persistence.content.ScheduleResolver;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.persistence.lookup.LookupWriter;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
-
-import com.metabroadcast.common.queue.MessageSender;
-
-import com.google.common.base.Splitter;
-import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableSet;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
+
+import java.io.File;
 
 @SuppressWarnings("PublicConstructor")
 @Configuration

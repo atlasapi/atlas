@@ -1,18 +1,15 @@
 package org.atlasapi.input;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import org.atlasapi.media.entity.Content;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.simple.Playlist;
 import org.atlasapi.persistence.lookup.entry.LookupEntryStore;
 import org.atlasapi.persistence.topic.TopicStore;
-import org.joda.time.DateTime;
 
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.time.Clock;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class SeriesModelTransformer extends ContentModelTransformer<Playlist, Series> {
 

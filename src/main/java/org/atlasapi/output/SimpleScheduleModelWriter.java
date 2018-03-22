@@ -1,14 +1,13 @@
 package org.atlasapi.output;
 
-import java.util.Set;
-
+import com.google.common.collect.ImmutableList;
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.Schedule.ScheduleChannel;
 import org.atlasapi.media.entity.simple.ScheduleQueryResult;
 import org.atlasapi.output.simple.ChannelSimplifier;
 import org.atlasapi.output.simple.ItemModelSimplifier;
 
-import com.google.common.collect.ImmutableList;
+import java.util.Set;
 
 /**
  * {@link AtlasModelWriter} that translates the full URIplay object model into a simplified form and

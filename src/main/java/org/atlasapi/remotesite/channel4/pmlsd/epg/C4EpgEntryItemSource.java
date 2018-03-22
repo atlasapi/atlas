@@ -3,7 +3,7 @@ package org.atlasapi.remotesite.channel4.pmlsd.epg;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Series;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public class C4EpgEntryItemSource {
 

@@ -1,9 +1,9 @@
 package org.atlasapi.reporting.telescope;
 
-import java.util.Set;
-
-import javax.annotation.Nullable;
-
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.columbus.telescope.api.Alias;
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelGroup;
 import org.atlasapi.media.channel.Platform;
@@ -22,11 +22,8 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Song;
 import org.atlasapi.media.entity.Version;
 
-import com.metabroadcast.columbus.telescope.api.Alias;
-import com.metabroadcast.columbus.telescope.client.EntityType;
-import com.metabroadcast.common.stream.MoreCollectors;
-
-import com.google.common.collect.ImmutableList;
+import javax.annotation.Nullable;
+import java.util.Set;
 
 public class OwlTelescopeUtilityMethodsAtlas {
 

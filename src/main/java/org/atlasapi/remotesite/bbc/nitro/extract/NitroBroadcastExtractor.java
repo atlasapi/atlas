@@ -1,13 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.List;
-
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Broadcast;
-import org.atlasapi.remotesite.ContentExtractor;
-import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
-import org.joda.time.DateTime;
-
 import com.google.api.client.repackaged.com.google.common.base.Joiner;
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
@@ -16,6 +8,13 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.atlas.glycerin.model.Id;
 import com.metabroadcast.atlas.glycerin.model.Ids;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Broadcast;
+import org.atlasapi.remotesite.ContentExtractor;
+import org.atlasapi.remotesite.bbc.ion.BbcIonServices;
+import org.joda.time.DateTime;
+
+import java.util.List;
 
 /**
  * Extracts a {@link com.metabroadcast.atlas.glycerin.model.Broadcast Atlas

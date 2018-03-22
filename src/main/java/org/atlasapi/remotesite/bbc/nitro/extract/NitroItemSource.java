@@ -1,11 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
 import com.metabroadcast.atlas.glycerin.model.Availability;
 import com.metabroadcast.atlas.glycerin.model.Broadcast;
 
-import com.google.common.collect.ImmutableList;
+import java.util.List;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

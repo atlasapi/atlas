@@ -5,7 +5,6 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 import org.atlasapi.media.entity.Policy.Platform;
-import org.atlasapi.remotesite.channel4.pmlsd.C4AtoZFeedIterator;
 import org.hamcrest.Description;
 import org.hamcrest.TypeSafeMatcher;
 import org.junit.Test;
@@ -13,13 +12,14 @@ import org.junit.runner.RunWith;
 import org.mockito.Mockito;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.http.HttpException;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.http.SimpleHttpRequest;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+
+import java.util.Optional;
 
 @RunWith(MockitoJUnitRunner.class)
 public class C4AtoZFeedIteratorTest {
@@ -30,7 +30,7 @@ public class C4AtoZFeedIteratorTest {
     public void testIteratesOverAtoZFeeds() throws HttpException, Exception {
         
         String base = "base/";
-        Optional<String> platform = Optional.absent();
+        Optional<String> platform = Optional.empty();
         C4AtoZFeedIterator iterator = new C4AtoZFeedIterator(client, base, platform);
         
         String next = "http://asdf.channel4.com/zxcv/atoz/0-9/page-1.atom";

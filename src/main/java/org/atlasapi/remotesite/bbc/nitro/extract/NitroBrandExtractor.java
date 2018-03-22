@@ -1,12 +1,12 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import javax.annotation.Nullable;
-
 import com.metabroadcast.atlas.glycerin.model.AvailableVersions;
 import com.metabroadcast.atlas.glycerin.model.Brand;
 import com.metabroadcast.atlas.glycerin.model.Brand.MasterBrand;
 import com.metabroadcast.atlas.glycerin.model.Synopses;
 import com.metabroadcast.common.time.Clock;
+
+import javax.annotation.Nullable;
 
 /**
  * Extracts a {@link org.atlasapi.media.entity.Brand Atlas Brand} from a

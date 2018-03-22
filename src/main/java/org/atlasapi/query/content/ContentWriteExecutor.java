@@ -30,12 +30,15 @@ import org.atlasapi.persistence.event.EventResolver;
 import org.atlasapi.query.content.merge.BroadcastMerger;
 import org.atlasapi.query.content.merge.ContentMerger;
 import org.atlasapi.query.content.merge.VersionMerger;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 
 import com.metabroadcast.common.base.Maybe;
 
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;
@@ -51,6 +54,7 @@ public class ContentWriteExecutor {
     private final EventResolver eventResolver;
     private final ContentMerger contentMerger;
     private final VersionMerger versionMerger;
+    private static final Logger log = LoggerFactory.getLogger(ContentWriteExecutor.class);
 
     private ContentWriteExecutor(
             ModelReader reader,
@@ -129,7 +133,6 @@ public class ContentWriteExecutor {
         checkArgument(content.getId() != null, "Cannot write content without an ID");
 
         Content updatedContent = updateEventPublisher(content);
-
         Maybe<Identified> identified = resolveExisting(updatedContent);
 
         if ("broadcast".equals(type)) {
@@ -141,12 +144,18 @@ public class ContentWriteExecutor {
                     identified, updatedContent, shouldMerge, broadcastMerger
             );
         }
+        long startTime = System.nanoTime();
         if (updatedContent instanceof Item) {
             Item item = (Item) updatedContent;
             writer.createOrUpdate(item);
             updateSchedule(item);
         } else {
             writer.createOrUpdate((Container) updatedContent);
+        }
+
+        long duration = (System.nanoTime() - startTime)/1000000;
+        if(duration > 1000){
+            log.info("TIMER. Super slow. Writing to db took {}ms. uri={} {}",duration, content.getCanonicalUri(), Thread.currentThread().getName());
         }
     }
 

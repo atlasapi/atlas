@@ -1,12 +1,11 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import org.atlasapi.media.entity.Person;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.remotesite.ContentExtractor;
-
 import com.google.api.client.util.Strings;
 import com.google.common.base.Optional;
 import com.metabroadcast.atlas.glycerin.model.Brand;
+import org.atlasapi.media.entity.Person;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.remotesite.ContentExtractor;
 
 public class NitroPersonExtractor implements
         ContentExtractor<Brand.Contributions.Contribution, Optional<Person>> {

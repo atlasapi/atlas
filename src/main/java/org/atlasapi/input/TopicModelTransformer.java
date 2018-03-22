@@ -1,10 +1,9 @@
 package org.atlasapi.input;
 
+import com.metabroadcast.common.base.Maybe;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Topic;
 import org.atlasapi.media.entity.simple.PublisherDetails;
-
-import com.metabroadcast.common.base.Maybe;
 
 
 public class TopicModelTransformer implements

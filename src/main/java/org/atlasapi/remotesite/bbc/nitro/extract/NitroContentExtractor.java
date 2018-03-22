@@ -1,6 +1,6 @@
 package org.atlasapi.remotesite.bbc.nitro.extract;
 
-import java.util.List;
+import java.util.Set;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -24,9 +24,7 @@ import com.metabroadcast.common.time.Clock;
 
 import com.google.api.client.repackaged.com.google.common.base.Strings;
 import com.google.common.base.Objects;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
-import com.hp.hpl.jena.sparql.function.library.now;
 import org.joda.time.DateTime;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,10 +46,28 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
     private static final String PID_NAMESPACE = "gb:bbc:pid";
     private static final String URI_NAMESPACE = "uri";
 
+    private static final Set<String> GENERIC_BBC_URL_LIST = ImmutableSet.of(
+            //BBC Logo
+            "http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png",
+
+            //BBC Radio Station Images
+            "http://ichef.bbci.co.uk/images/ic/1024x576/p01lcnwl.jpg",
+            "http://ichef.bbci.co.uk/images/ic/1024x576/p01ty5y1.jpg",
+            "http://ichef.bbci.co.uk/images/ic/1024x576/p01t0zdl.jpg"
+
+    );
+
+    private static final Set<String> KNOWN_RADIO_STATION_MASTERBRANDS = ImmutableSet.of(
+            "bbc_local_radio",
+            "bbc_radio_swindon",
+            "bbc_radio_webonly",
+            "bbc_school_radio",
+            "bbc_southern_counties_radio"
+    );
+
     private final Clock clock;
     private final NitroImageExtractor imageExtractor
             = new NitroImageExtractor(1024, 576);
-
     public NitroContentExtractor(Clock clock) {
         this.clock = clock;
     }
@@ -78,12 +94,10 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         }
         com.metabroadcast.atlas.glycerin.model.Brand.Images.Image srcImage = extractImage(source);
 
-        List<String> genericBbcUrlList = createGenericBbcUrlList();
-
         if (srcImage != null && !Strings.isNullOrEmpty(srcImage.getTemplateUrl())) {
             Image image = imageExtractor.extract(srcImage);
 
-            if(genericBbcUrlList.contains(image.getCanonicalUri())) {
+            if(GENERIC_BBC_URL_LIST.contains(image.getCanonicalUri())) {
                 image.setType(ImageType.GENERIC_IMAGE_CONTENT_ORIGINATOR);
             }
             content.setImage(image.getCanonicalUri());
@@ -95,10 +109,10 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
         if (masterBrand != null) {
             String masterBrandChannel = BbcIonServices.getMasterBrand(masterBrand.getMid());
             content.setPresentationChannel(masterBrandChannel);
-            //this log line spams the log and we generally ignore it anyway.
-//            if (masterBrandChannel == null) {
-//                log.warn("No master brand mapping found for pid={}, uri={}", pid , content.getCanonicalUri());
-//            }
+            if (masterBrandChannel == null) {
+                log.warn("No master brand mapping found for pid={}, uri={}, masterbrand={}",
+                        pid , content.getCanonicalUri(), masterBrand.getMid());
+            }
         }
         //TODO: genres from v2 API
         extractAdditionalFields(source, content, now);
@@ -192,22 +206,11 @@ public abstract class NitroContentExtractor<SOURCE, CONTENT extends Content>
             return MediaType.VIDEO;
         }
 
-        return RadioPlayerServices.masterBrandIdToService.containsKey(masterBrand.getMid()) ?
-               MediaType.AUDIO :
-               MediaType.VIDEO;
-    }
-
-    private List<String> createGenericBbcUrlList() {
-
-        return ImmutableList.of(
-                //BBC Logo
-                "http://ichef.bbci.co.uk/images/ic/1024x576/p028s846.png",
-
-                //BBC Radio Station Images
-                "http://ichef.bbci.co.uk/images/ic/1024x576/p01lcnwl.jpg",
-                "http://ichef.bbci.co.uk/images/ic/1024x576/p01ty5y1.jpg",
-                "http://ichef.bbci.co.uk/images/ic/1024x576/p01t0zdl.jpg"
-
-        );
+        if (RadioPlayerServices.masterBrandIdToService.containsKey(masterBrand.getMid())
+                || KNOWN_RADIO_STATION_MASTERBRANDS.contains(masterBrand.getMid())) {
+            return MediaType.AUDIO;
+        } else {
+            return MediaType.VIDEO;
+        }
     }
 }

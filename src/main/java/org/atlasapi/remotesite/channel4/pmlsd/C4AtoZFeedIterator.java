@@ -1,7 +1,7 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.Iterator;
-import java.util.List;
+import java.util.Optional;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -10,7 +10,6 @@ import org.atlasapi.remotesite.support.atom.AtomClient;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.AbstractIterator;
 import com.google.common.collect.ImmutableList;
 import com.metabroadcast.common.http.HttpException;
@@ -18,6 +17,8 @@ import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.url.Urls;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+
+import javax.annotation.Nullable;
 
 public class C4AtoZFeedIterator extends AbstractIterator<Optional<Feed>> {
     
@@ -58,7 +59,7 @@ public class C4AtoZFeedIterator extends AbstractIterator<Optional<Feed>> {
             log.error("Failed to fetch " + nextUri, e);
             nextPageUri = null;
         }
-        return Optional.fromNullable(feed);
+        return Optional.ofNullable(feed);
     }
 
     private String optionallyAppendPlatform(String url) {
@@ -69,7 +70,7 @@ public class C4AtoZFeedIterator extends AbstractIterator<Optional<Feed>> {
         return Urls.appendParameters(url, "platform", platform.get());
     }
 
-    private String nextUri() {
+    @Nullable private String nextUri() {
         if (nextPageUri != null) {
             return constructUri(nextPageUri);
         } else if (letterIterator.hasNext()) {
@@ -82,10 +83,10 @@ public class C4AtoZFeedIterator extends AbstractIterator<Optional<Feed>> {
         return String.format("%satoz/%s.atom", uriBase, letter);
     }
 
-    @SuppressWarnings("unchecked")
-    private String extractNextPageUri(Feed feed) {
+    @Nullable private String extractNextPageUri(@Nullable Feed feed) {
         if (feed != null) {
-            for (Link link : (List<Link>) feed.getOtherLinks()) {
+            for (Object obj : feed.getOtherLinks()) {
+                Link link = (Link) obj;
                 if ("next".equals(link.getRel())) {
                     String next = link.getHref();
                     Matcher matcher = PAGE_PATTERN.matcher(next);

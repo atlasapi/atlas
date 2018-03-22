@@ -60,33 +60,22 @@ public class ScheduleControllerTest {
     private static final String NO_COUNT = null;
     private static final String NO_ON = null;
     private static final String NO_CHANNEL_KEY = null;
+    private static final String NO_PUBLISHERS = null;
 
-    private final ScheduleResolver scheduleResolver =
-            mock(ScheduleResolver.class);
-    private final ChannelResolver channelResolver =
-            mock(ChannelResolver.class);
-    private final ApplicationFetcher configFetcher =
-            mock(ApplicationFetcher.class);
+    private ScheduleResolver scheduleResolver;
+    private ChannelResolver channelResolver;
+    private ApplicationFetcher configFetcher;
 
-    private final AdapterLog log = new NullAdapterLog();
+    private AdapterLog log;
 
-    @SuppressWarnings("unchecked")
-    private final AtlasModelWriter<Iterable<ScheduleChannel>> outputter =
-            mock(AtlasModelWriter.class);
+    private AtlasModelWriter<Iterable<ScheduleChannel>> outputter;
 
-    private final AccessRoles owlRole = mock(AccessRoles.class);
-    private final AccessRoles owlAndSunsetRoles = mock(AccessRoles.class);
-    private final AccessRoles defaultRoles = mock(AccessRoles.class);
-    private final Application application = getMockApplication();
+    private AccessRoles owlRole;
+    private AccessRoles owlAndSunsetRoles;
+    private AccessRoles defaultRoles;
+    private Application application;
 
-    private final ScheduleController controller = new ScheduleController(
-            scheduleResolver,
-            channelResolver,
-            configFetcher,
-            log,
-            outputter,
-            application
-    );
+    private ScheduleController controller;
 
     private DateTime to;
     private DateTime from;
@@ -96,6 +85,25 @@ public class ScheduleControllerTest {
     
     @Before
     public void setup() throws InvalidApiKeyException {
+        scheduleResolver = mock(ScheduleResolver.class);
+        channelResolver = mock(ChannelResolver.class);
+        configFetcher = mock(ApplicationFetcher.class);
+        log = new NullAdapterLog();
+        outputter = mock(AtlasModelWriter.class);
+        owlRole = mock(AccessRoles.class);
+        owlAndSunsetRoles = mock(AccessRoles.class);
+        defaultRoles = mock(AccessRoles.class);
+        application = getMockApplication();
+
+        controller = new ScheduleController(
+                scheduleResolver,
+                channelResolver,
+                configFetcher,
+                log,
+                outputter,
+                application
+        );
+
         from = new DateTime(DateTimeZones.UTC);
         to = new DateTime(DateTimeZones.UTC);
         request = new StubHttpServletRequest();
@@ -116,7 +124,6 @@ public class ScheduleControllerTest {
     @Test
     public void testScheduleRequestFailsWithNoPublishersOrApiKey() throws IOException {
         
-        String NO_PUBLISHERS = null;
         controller.schedule(from.toString(), to.toString(), NO_COUNT, NO_ON, NO_CHANNEL_KEY, "cid", NO_PUBLISHERS, request, response);
         
         verify(outputter).writeError(argThat(is(request)), argThat(is(response)), any(AtlasErrorSummary.class));
@@ -141,12 +148,34 @@ public class ScheduleControllerTest {
 
         when(application.getAccessRoles()).thenReturn(defaultRoles);
 
-        when(scheduleResolver.schedule(eq(from), eq(to), argThat(hasItems(channel)), argThat(hasItems(Publisher.BBC)), eq(Optional.absent())))
+        when(scheduleResolver.schedule(
+                eq(from),
+                eq(from),   // on query, so from and to are the same
+                argThat(hasItems(channel)),
+                argThat(hasItems(Publisher.BBC)),
+                eq(Optional.absent())
+        ))
             .thenReturn(Schedule.fromChannelMap(ImmutableMap.of(), new Interval(from, to)));
         
-        controller.schedule(NO_FROM, NO_TO, NO_COUNT, from.toString(), NO_CHANNEL_KEY, "cbbh", "bbc.co.uk", request, response);
+        controller.schedule(
+                NO_FROM,
+                NO_TO,
+                NO_COUNT,
+                from.toString(),
+                NO_CHANNEL_KEY,
+                "cbbh",
+                "bbc.co.uk",
+                request,
+                response
+        );
         
-        verify(outputter).writeTo(argThat(is(request)), argThat(is(response)), anyChannelSchedules(), anySetOfPublishers(), any(Application.class));
+        verify(outputter).writeTo(
+                argThat(is(request)),
+                argThat(is(response)),
+                anyChannelSchedules(),
+                anySetOfPublishers(),
+                any(Application.class)
+        );
     }
     
     @Test

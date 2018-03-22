@@ -1,13 +1,13 @@
 package org.atlasapi.input;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.Item;
 import org.atlasapi.media.entity.simple.Playlist;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 public class DelegatingModelTransformer implements ModelTransformer<Description, Content> {
 

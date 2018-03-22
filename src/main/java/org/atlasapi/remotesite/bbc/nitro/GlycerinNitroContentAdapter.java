@@ -1,29 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-import java.util.concurrent.Executors;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.media.entity.Brand;
-import org.atlasapi.media.entity.Clip;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.media.entity.Series;
-import org.atlasapi.persistence.content.people.QueuingPersonWriter;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-
-import com.metabroadcast.atlas.glycerin.Glycerin;
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.Episode;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.model.Programme;
-import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-import com.metabroadcast.common.time.Clock;
-
 import com.google.common.base.Function;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
@@ -33,8 +9,29 @@ import com.google.common.collect.Iterables;
 import com.google.common.collect.Multimap;
 import com.google.common.util.concurrent.ListeningExecutorService;
 import com.google.common.util.concurrent.MoreExecutors;
+import com.metabroadcast.atlas.glycerin.Glycerin;
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.Episode;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.model.Programme;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+import com.metabroadcast.common.time.Clock;
+import org.atlasapi.media.entity.Brand;
+import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.media.entity.Series;
+import org.atlasapi.persistence.content.people.QueuingPersonWriter;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroBrandExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroSeriesExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import javax.annotation.Nullable;
+import java.util.List;
+import java.util.concurrent.Executors;
 
 import static com.google.common.base.Preconditions.checkArgument;
 import static com.google.common.base.Preconditions.checkNotNull;

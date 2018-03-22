@@ -11,7 +11,9 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
+import org.atlasapi.remotesite.channel4.pmlsd.C4UriExtractor.C4UriAndAliases;
+
+import java.util.Optional;
 
 public class SourceSpecificContentFactory<B, S, I> implements ContentFactory<B, S, I> {
 
@@ -56,13 +58,18 @@ public class SourceSpecificContentFactory<B, S, I> implements ContentFactory<B, 
      * @param uri
      * @return
      */
-    private <A extends Described> Optional<A> defaulted(A described, Optional<String> uri) {
+    private <A extends Described> Optional<A> defaulted(
+            A described,
+            Optional<C4UriAndAliases> uri
+    ) {
         if (!uri.isPresent()) {
-            return Optional.absent();
+            return Optional.empty();
         }
         
-        described.setCanonicalUri(uri.get());
+        described.setCanonicalUri(uri.get().getUri());
         described.setPublisher(source);
+        described.addAliasUrls(uri.get().getAliasUrls());
+        described.addAliases(uri.get().getAliases());
         return Optional.of(described);
     }
     

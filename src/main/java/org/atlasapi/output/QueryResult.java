@@ -1,13 +1,11 @@
 package org.atlasapi.output;
 
-import java.util.Iterator;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.media.entity.Identified;
-
 import com.google.common.base.Optional;
 import com.metabroadcast.common.query.Selection;
+import org.atlasapi.media.entity.Identified;
+
+import javax.annotation.Nullable;
+import java.util.Iterator;
 
 
 public class QueryResult<CONTENT, CONTEXT> implements Iterable<CONTENT> {

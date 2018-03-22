@@ -1,8 +1,8 @@
 package org.atlasapi.remotesite.bbc.nitro.v1;
 
-import java.util.List;
-
 import org.atlasapi.remotesite.bbc.nitro.NitroException;
+
+import java.util.List;
 
 
 public interface NitroClient {

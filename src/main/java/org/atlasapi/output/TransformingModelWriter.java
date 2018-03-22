@@ -1,12 +1,11 @@
 package org.atlasapi.output;
 
-import java.io.IOException;
-import java.util.Set;
+import com.metabroadcast.applications.client.model.internal.Application;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.metabroadcast.applications.client.model.internal.Application;
+import java.io.IOException;
+import java.util.Set;
 
 public abstract class TransformingModelWriter<I, O> implements AtlasModelWriter<I> {
 

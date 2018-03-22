@@ -1,10 +1,10 @@
 package org.atlasapi.views;
 
-import java.util.Locale;
-
 import org.springframework.core.Ordered;
 import org.springframework.web.servlet.View;
 import org.springframework.web.servlet.ViewResolver;
+
+import java.util.Locale;
 
 /**
  * View resolver that always returns a fixed {@link View}.

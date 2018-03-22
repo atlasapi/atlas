@@ -1,6 +1,7 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.List;
+import java.util.Optional;
 
 import org.atlasapi.media.channel.ChannelResolver;
 import org.atlasapi.media.entity.Brand;
@@ -11,7 +12,6 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.remotesite.ContentExtractor;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.SetMultimap;
@@ -31,7 +31,7 @@ public class C4BrandExtractor implements ContentExtractor<Feed, BrandSeriesAndEp
     private final C4ContentLinker linker = new C4ContentLinker();
     private final C4LinkBrandNameExtractor brandNameExtractor = new C4LinkBrandNameExtractor();
     
-    public C4BrandExtractor(C4AtomApiClient feedClient, Optional<Platform> platform, Publisher publisher, 
+    public C4BrandExtractor(C4AtomApiClient feedClient, Optional<Platform> platform, Publisher publisher,
             ChannelResolver channelResolver, ContentFactory<Feed, Feed, Entry> contentFactory,
             C4LocationPolicyIds locationPolicyIds, boolean createIosBrandLocations) {
         SystemClock clock = new SystemClock();
@@ -39,8 +39,15 @@ public class C4BrandExtractor implements ContentExtractor<Feed, BrandSeriesAndEp
         this.basicDetailsExtractor = new C4BrandBasicDetailsExtractor(c4AtomApi, contentFactory, 
                 clock);
         this.episodeGuideAdapter = new C4EpisodeGuideAdapter(feedClient, contentFactory, clock);
-        this.fourOditemAdapter = new C4OdEpisodesAdapter(feedClient, platform, contentFactory, 
-                publisher, locationPolicyIds, createIosBrandLocations, clock);
+        this.fourOditemAdapter = new C4OdEpisodesAdapter(
+                feedClient,
+                platform,
+                contentFactory,
+                publisher,
+                locationPolicyIds,
+                createIosBrandLocations,
+                clock
+        );
         this.brandEpgAdatper = new C4BrandEpgAdapter(feedClient, clock, c4AtomApi, publisher);
         this.clipAdapter = new C4BrandClipAdapter(feedClient, publisher, clock, contentFactory, 
                 locationPolicyIds);

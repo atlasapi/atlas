@@ -6,18 +6,18 @@ import org.atlasapi.media.entity.Episode;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.Series;
 
-import com.google.common.base.Optional;
+import java.util.Optional;
 
 public interface ContentFactory<B, S, I> {
 
-    public abstract Optional<Brand> createBrand(B remote);
+    Optional<Brand> createBrand(B remote);
 
-    public abstract Optional<Clip> createClip(I remote);
+    Optional<Clip> createClip(I remote);
 
-    public abstract Optional<Episode> createEpisode(I remote);
+    Optional<Episode> createEpisode(I remote);
 
-    public abstract Optional<Item> createItem(I remote);
+    Optional<Item> createItem(I remote);
 
-    public abstract Optional<Series> createSeries(S remote);
+    Optional<Series> createSeries(S remote);
 
 }

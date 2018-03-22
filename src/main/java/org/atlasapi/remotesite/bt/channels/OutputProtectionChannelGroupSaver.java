@@ -1,9 +1,7 @@
 package org.atlasapi.remotesite.bt.channels;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-
-import java.util.List;
-
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -13,8 +11,10 @@ import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.remotesite.bt.channels.mpxclient.Entry;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
+import java.util.List;
+import java.util.Set;
+
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class OutputProtectionChannelGroupSaver extends AbstractBtChannelGroupSaver {
@@ -51,8 +51,8 @@ public class OutputProtectionChannelGroupSaver extends AbstractBtChannelGroupSav
     }
 
     @Override
-    protected Optional<Alias> aliasFor(String key) {
-        return Optional.absent();
+    protected Set<Alias> aliasesFor(String key) {
+        return ImmutableSet.of();
     }
 
     @Override

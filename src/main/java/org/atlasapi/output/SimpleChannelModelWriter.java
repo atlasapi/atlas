@@ -1,16 +1,13 @@
 package org.atlasapi.output;
 
-import java.util.Set;
-import java.util.stream.Collectors;
-import java.util.stream.StreamSupport;
-
-import org.atlasapi.equiv.OutputChannelMerger;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.stream.MoreCollectors;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.entity.simple.ChannelQueryResult;
 import org.atlasapi.output.simple.ChannelModelSimplifier;
 
-import com.metabroadcast.applications.client.model.internal.Application;
-import com.metabroadcast.common.stream.MoreCollectors;
+import java.util.Set;
+import java.util.stream.StreamSupport;
 
 /**
  * {@link AtlasModelWriter} that translates the full Atlas Channel model

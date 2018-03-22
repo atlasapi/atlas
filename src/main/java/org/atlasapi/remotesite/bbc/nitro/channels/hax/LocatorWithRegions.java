@@ -1,9 +1,9 @@
 package org.atlasapi.remotesite.bbc.nitro.channels.hax;
 
-import java.util.List;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
 
 public class LocatorWithRegions {
 

@@ -1,10 +1,12 @@
 package org.atlasapi.output;
 
-import java.io.IOException;
-import java.io.OutputStream;
-import java.io.UnsupportedEncodingException;
-import java.util.Set;
-import java.util.zip.GZIPOutputStream;
+import com.google.common.base.Charsets;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.http.HttpHeaders;
+import nu.xom.Document;
+import nu.xom.Element;
+import nu.xom.Serializer;
+import tva.metadata._2010.TVAMainType;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -12,16 +14,11 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-import nu.xom.Document;
-import nu.xom.Element;
-import nu.xom.Serializer;
-
-import com.google.common.base.Charsets;
-import com.metabroadcast.common.http.HttpHeaders;
-
-import tva.metadata._2010.TVAMainType;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
+import java.util.Set;
+import java.util.zip.GZIPOutputStream;
 
 
 public class JaxbTVAnytimeModelWriter implements AtlasModelWriter<JAXBElement<TVAMainType>> {

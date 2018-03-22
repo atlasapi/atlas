@@ -1,12 +1,12 @@
 package org.atlasapi.output;
 
-import java.util.Set;
-
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.Event;
 import org.atlasapi.media.entity.simple.EventQueryResult;
 import org.atlasapi.output.simple.ModelSimplifier;
 import org.atlasapi.persistence.content.ContentResolver;
+
+import java.util.Set;
 
 public class SimpleEventModelWriter extends TransformingModelWriter<Iterable<Event>, EventQueryResult> {
 

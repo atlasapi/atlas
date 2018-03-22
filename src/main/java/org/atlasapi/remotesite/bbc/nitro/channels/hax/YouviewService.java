@@ -1,10 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro.channels.hax;
 
-import java.util.List;
-import java.util.Set;
-
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonProperty;
+
+import java.util.List;
+import java.util.Set;
 
 public class YouviewService {
 

@@ -1,31 +1,6 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
-import static org.junit.Assert.assertTrue;
-
-import java.io.File;
-import java.io.IOException;
-import java.util.List;
-
-import org.atlasapi.media.TransportSubType;
-import org.atlasapi.media.TransportType;
-import org.atlasapi.media.entity.Clip;
-import org.atlasapi.media.entity.Encoding;
-import org.atlasapi.media.entity.Location;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Version;
-import org.atlasapi.remotesite.channel4.pmlsd.C4AtomApiClient;
-import org.atlasapi.remotesite.channel4.pmlsd.C4BrandClipAdapter;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.google.common.base.Charsets;
-import com.google.common.base.Optional;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.io.Files;
@@ -35,6 +10,28 @@ import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.time.SystemClock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
+import org.atlasapi.media.TransportSubType;
+import org.atlasapi.media.TransportType;
+import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.Encoding;
+import org.atlasapi.media.entity.Location;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Version;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.List;
+import java.util.Optional;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 
 @RunWith( MockitoJUnitRunner.class )
 public class C4BrandClipAdapterTest {
@@ -44,7 +41,11 @@ public class C4BrandClipAdapterTest {
             .put("https://pmlsc.channel4.com/pmlsd/hestons-mission-impossible/videos/all.atom", fileContentsFromResource("hestons-mission-impossible.atom"))
             .build());
 
-    C4AtomApiClient apiClient = new C4AtomApiClient(client, "https://pmlsc.channel4.com/pmlsd/", Optional.<String>absent());
+    C4AtomApiClient apiClient = new C4AtomApiClient(
+    		client,
+    		"https://pmlsc.channel4.com/pmlsd/",
+    		Optional.empty()
+    );
     
     private final ContentFactory<Feed, Feed, Entry> contentFactory 
         = new SourceSpecificContentFactory<>(Publisher.C4_PMLSD, new C4AtomFeedUriExtractor());;

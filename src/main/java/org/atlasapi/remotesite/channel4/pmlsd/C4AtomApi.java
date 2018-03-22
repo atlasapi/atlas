@@ -1,14 +1,5 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.util.List;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import org.atlasapi.media.channel.Channel;
-import org.atlasapi.media.channel.ChannelResolver;
-import org.atlasapi.media.entity.Content;
-
 import com.google.common.base.Splitter;
 import com.google.common.base.Strings;
 import com.google.common.collect.BiMap;
@@ -17,9 +8,17 @@ import com.google.common.collect.Maps;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.channel.ChannelResolver;
+import org.atlasapi.media.entity.Content;
 import org.jdom.Element;
 import org.jdom.Namespace;
 import org.joda.time.Duration;
+
+import javax.annotation.Nullable;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class C4AtomApi {
 
@@ -36,12 +35,12 @@ public class C4AtomApi {
 
     private static final Pattern CANONICAL_BRAND_URI_PATTERN = Pattern.compile(String.format("%s(%s)", Pattern.quote(PROGRAMMES_BASE), WEB_SAFE_NAME_PATTERN));
 
-    private static final Pattern ATLAS_CANONICAL_ID_PATTERN = Pattern.compile("^http://.*\\/pmlsd\\/(.*)");
+    private static final Pattern ATLAS_CANONICAL_ID_PATTERN = Pattern.compile("^http://.*/pmlsd/(.*)");
 
     private static final String FEED_ID_PREFIX_PATTERN = "tag:[a-z0-9.]+\\.channel4\\.com,\\d{4}:/programmes/";
     private static final Pattern BRAND_PAGE_ID_PATTERN = Pattern.compile(String.format("%s(%s)", FEED_ID_PREFIX_PATTERN, WEB_SAFE_NAME_PATTERN));
     private static final Pattern SERIES_PAGE_ID_PATTERN = Pattern.compile(String.format("%s(%s/episode-guide/series-\\d+)", FEED_ID_PREFIX_PATTERN, WEB_SAFE_NAME_PATTERN));
-    private static final Pattern EPISODE_PAGE_LINK_ID_PATTERN = Pattern.compile("^.*\\/pmlsd/([^\\/]+/episode-guide/series-\\d+/episode-\\d+).atom.*");
+    private static final Pattern EPISODE_PAGE_LINK_ID_PATTERN = Pattern.compile("^.*/pmlsd/([^/]+/episode-guide/series-\\d+/episode-\\d+).atom.*");
 
     private static final String FEED_ID_CANONICAL_PREFIX = "tag:pmlsc.channel4.com,2009:/programmes/";
 
@@ -52,9 +51,10 @@ public class C4AtomApi {
     public static final String DC_TX_DATE = "dc:date.TXDate";
     public static final String DC_DURATION = "dc:relation.Duration";
     public static final String ALIAS = "gb:channel4:prod:pmlsd:programmeId";
+    public static final String ALIAS_FOR_BARB = "gb:c4:episode:id";
 
     private static final Pattern IMAGE_PATTERN = Pattern.compile("https?://.+\\.channel4\\.com/(.+?)\\d+x\\d+(\\.[a-zA-Z]+)");
-    private static final Pattern BIPS_IMAGE_PATTERN = Pattern.compile("https?://.+\\.channel4.com\\/bips/(\\d+x\\d+)/videos/.*");
+    private static final Pattern BIPS_IMAGE_PATTERN = Pattern.compile("https?://.+\\.channel4.com/bips/(\\d+x\\d+)/videos/.*");
     private static final String IMAGE_SIZE = "625x352";
     private static final String THUMBNAIL_SIZE = "200x113";
     private static final String IOS_URI_PREFIX = "all4://views/brands?brand=";
@@ -95,9 +95,10 @@ public class C4AtomApi {
         return CANONICAL_BRAND_URI_PATTERN.matcher(brandUri).matches();
     }
 
-    @SuppressWarnings("unchecked")
     public static Map<String, String> foreignElementLookup(Entry entry) {
-        return foreignElementLookup((Iterable<Element>) entry.getForeignMarkup());
+        @SuppressWarnings("unchecked")
+        Iterable<Element> elements = (Iterable<Element>) entry.getForeignMarkup();
+        return foreignElementLookup(elements);
     }
 
     public static Map<String, String> foreignElementLookup(Iterable<Element> foreignMarkup) {
@@ -108,10 +109,9 @@ public class C4AtomApi {
         return foreignElementLookup;
     }
 
-    @SuppressWarnings("unchecked")
-    public static String fourOdUri(Entry entry) {
-        List<Link> links = entry.getAlternateLinks();
-        for (Link link : links) {
+    @Nullable public static String fourOdUri(Entry entry) {
+        for (Object obj : entry.getAlternateLinks()) {
+            Link link = (Link) obj;
             String href = link.getHref();
             if (href.contains("4od#")) {
                 return href;
@@ -120,7 +120,7 @@ public class C4AtomApi {
         return null;
     }
 
-    public static Duration durationFrom(Map<String, String> lookup) {
+    @Nullable public static Duration durationFrom(Map<String, String> lookup) {
         String durationString = lookup.get(DC_DURATION);
         if (durationString == null) {
             return null;
@@ -136,7 +136,7 @@ public class C4AtomApi {
         return BRAND_PAGE_ID_PATTERN.matcher(source.getId()).matches();
     }
 
-    public static String canonicalizeBrandFeedId(Feed source) {
+    @Nullable public static String canonicalizeBrandFeedId(Feed source) {
         Matcher matcher = BRAND_PAGE_ID_PATTERN.matcher(source.getId());
         if (matcher.matches()) {
             return FEED_ID_CANONICAL_PREFIX + matcher.group(1);
@@ -148,7 +148,7 @@ public class C4AtomApi {
         return SERIES_PAGE_ID_PATTERN.matcher(source.getId()).matches();
     }
 
-    public static String canonicalizeSeriesFeedId(Feed source) {
+    @Nullable public static String canonicalizeSeriesFeedId(Feed source) {
         Matcher matcher = SERIES_PAGE_ID_PATTERN.matcher(source.getId());
         if (matcher.matches()) {
             return FEED_ID_CANONICAL_PREFIX + matcher.group(1);
@@ -156,9 +156,9 @@ public class C4AtomApi {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-    public static String canonicalizeEpisodeFeedId(Entry source) {
-        for (Link link : ((List<Link>) source.getOtherLinks())) {
+    @Nullable public static String canonicalizeEpisodeFeedId(Entry source) {
+        for (Object obj : source.getOtherLinks()) {
+            Link link = (Link) obj;
             Matcher matcher = EPISODE_PAGE_LINK_ID_PATTERN.matcher(link.getHref());
             if (matcher.matches()) {
                 return PROGRAMMES_BASE + matcher.group(1);
@@ -167,7 +167,7 @@ public class C4AtomApi {
         return null;
     }
 
-    public static String canonicalSeriesUri(Feed source) {
+    @Nullable public static String canonicalSeriesUri(Feed source) {
         Matcher matcher = SERIES_PAGE_ID_PATTERN.matcher(source.getId());
         if (matcher.matches()) {
             return PROGRAMMES_BASE + matcher.group(1);
@@ -175,9 +175,9 @@ public class C4AtomApi {
         return null;
     }
 
-    @SuppressWarnings("unchecked")
-    public static Element mediaGroup(Entry syndEntry) {
-        for (Element element : (List<Element>) syndEntry.getForeignMarkup()) {
+    @Nullable public static Element mediaGroup(Entry syndEntry) {
+        for (Object obj : (Iterable) syndEntry.getForeignMarkup()) {
+            Element element = (Element) obj;
             if (NS_MEDIA_RSS.equals(element.getNamespace()) && "group".equals(element.getName())) {
                 return element;
             }
@@ -189,7 +189,7 @@ public class C4AtomApi {
         return channelMap;
     }
 
-    public static String hierarchyUriFromCanonical(String canonicalUri) {
+    @Nullable public static String hierarchyUriFromCanonical(String canonicalUri) {
         Matcher matcher = ATLAS_CANONICAL_ID_PATTERN.matcher(canonicalUri);
         if (matcher.matches()) {
             return PROGRAMMES_BASE + matcher.group(1);
@@ -197,7 +197,7 @@ public class C4AtomApi {
         return null;
     }
 
-    public static String iOsUriFromPcUri(String uri, Map<String, String> programmeIdLookup) {
+    @Nullable public static String iOsUriFromPcUri(String uri, Map<String, String> programmeIdLookup) {
         Matcher matcher = WEB_4OD_BRAND_ID_EXTRACTOR.matcher(uri);
 
         if (matcher.matches()) {

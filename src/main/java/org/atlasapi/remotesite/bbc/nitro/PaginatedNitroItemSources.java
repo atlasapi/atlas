@@ -1,26 +1,5 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.Iterator;
-import java.util.List;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.media.entity.Clip;
-import org.atlasapi.media.entity.Item;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
-import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
-
-import com.metabroadcast.atlas.glycerin.Glycerin;
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.atlas.glycerin.GlycerinResponse;
-import com.metabroadcast.atlas.glycerin.model.Broadcast;
-import com.metabroadcast.atlas.glycerin.model.Episode;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
-
 import com.google.common.base.Function;
 import com.google.common.base.Throwables;
 import com.google.common.collect.ImmutableList;
@@ -31,6 +10,24 @@ import com.google.common.collect.Multimaps;
 import com.google.common.util.concurrent.Futures;
 import com.google.common.util.concurrent.ListenableFuture;
 import com.google.common.util.concurrent.ListeningExecutorService;
+import com.metabroadcast.atlas.glycerin.Glycerin;
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.atlas.glycerin.GlycerinResponse;
+import com.metabroadcast.atlas.glycerin.model.Broadcast;
+import com.metabroadcast.atlas.glycerin.model.Episode;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.queries.BroadcastsQuery;
+import org.atlasapi.media.entity.Clip;
+import org.atlasapi.media.entity.Item;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroEpisodeExtractor;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroItemSource;
+import org.atlasapi.remotesite.bbc.nitro.extract.NitroUtil;
+
+import javax.annotation.Nullable;
+import java.util.Iterator;
+import java.util.List;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

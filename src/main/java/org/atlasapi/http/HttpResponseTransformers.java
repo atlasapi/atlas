@@ -1,14 +1,13 @@
 package org.atlasapi.http;
 
-import java.io.InputStreamReader;
-import java.lang.reflect.Type;
-
-import org.atlasapi.remotesite.html.HtmlNavigator;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
 import com.metabroadcast.common.http.HttpResponseTransformer;
+import org.atlasapi.remotesite.html.HtmlNavigator;
+
+import java.io.InputStreamReader;
+import java.lang.reflect.Type;
 
 public class HttpResponseTransformers {
 

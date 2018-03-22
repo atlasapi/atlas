@@ -163,6 +163,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import tva.metadata._2010.TVAMainType;
 
+import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_NO_LOCK_SETTING_CONTENT_WRITER;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @Configuration
@@ -515,7 +516,8 @@ public class QueryWebModule {
 
     @Bean
     EventsController eventController() {
-        Iterable<String> whitelistedIds = Splitter.on(',').split(eventsWhitelist);
+        Iterable<String> whitelistedIds = Splitter.on(',').trimResults().omitEmptyStrings()
+                .split(eventsWhitelist);
         return new EventsController(
                 applicationFetcher,
                 log,

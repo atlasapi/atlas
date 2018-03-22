@@ -6,6 +6,7 @@ import static org.atlasapi.media.entity.Identified.TO_URI;
 import java.util.Collection;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Optional;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -36,7 +37,6 @@ import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
 import com.google.common.base.Objects;
-import com.google.common.base.Optional;
 import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;

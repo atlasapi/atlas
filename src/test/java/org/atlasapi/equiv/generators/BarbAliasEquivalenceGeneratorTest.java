@@ -1,20 +1,15 @@
 package org.atlasapi.equiv.generators;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-
+import com.google.common.base.Optional;
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.equiv.results.description.DefaultDescription;
 import org.atlasapi.equiv.results.description.ResultDescription;
 import org.atlasapi.equiv.results.scores.DefaultScoredCandidates;
 import org.atlasapi.equiv.results.scores.Score;
-import org.atlasapi.equiv.results.scores.ScoredCandidate;
 import org.atlasapi.equiv.results.scores.ScoredCandidates;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Content;
-import org.atlasapi.media.entity.Described;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Item;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.Publisher;
@@ -23,19 +18,17 @@ import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.lookup.entry.LookupEntry;
 import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
-
-import com.google.common.base.Optional;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.mockito.Matchers;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.fail;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -144,7 +137,7 @@ public class BarbAliasEquivalenceGeneratorTest {
         generator = new BarbAliasEquivalenceGenerator(lookupEntryStore, resolver);
     }
 
-    @Test
+    //@Test TODO: create a new test now that the hardcoded content was removed
     public void generatorFindsHardcodedContent() {
         Content subject = new Item();
         subject.setCanonicalUri("http://cdmf.barb.co.uk/episode/219060");

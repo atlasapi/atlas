@@ -40,6 +40,11 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
         }
         Set<Publisher> unacceptable = unacceptablePublishers.get(subject.getPublisher());
         if (unacceptable == null) {
+            filterComponent.addComponentResult(
+                    candidate.candidate().getId(),
+                    "Went through."
+            );
+            equivToTelescopeResults.addFilterResult(filterComponent);
             return true;
         }
 
@@ -58,6 +63,11 @@ public class PublisherFilter<T extends Content> extends AbstractEquivalenceFilte
                                 + candidate.candidate().getPublisher().toString()
                 );
             }
+        } else {
+            filterComponent.addComponentResult(
+                    candidate.candidate().getId(),
+                    "Went through."
+            );
         }
 
         equivToTelescopeResults.addFilterResult(filterComponent);

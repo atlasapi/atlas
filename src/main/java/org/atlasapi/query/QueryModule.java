@@ -30,6 +30,7 @@ import org.atlasapi.persistence.lookup.mongo.MongoLookupEntryStore;
 import org.atlasapi.query.content.ApplicationConfigurationQueryExecutor;
 import org.atlasapi.query.content.CurieResolvingQueryExecutor;
 import org.atlasapi.query.content.FilterActivelyPublishedOnlyQueryExecutor;
+import org.atlasapi.query.content.FilterEquivalentToRespectKeyQueryExecutor;
 import org.atlasapi.query.content.FilterScheduleOnlyQueryExecutor;
 import org.atlasapi.query.content.LookupResolvingQueryExecutor;
 import org.atlasapi.query.content.UriFetchingQueryExecutor;
@@ -94,6 +95,7 @@ public class QueryModule {
 		queryExecutor = new UriFetchingQueryExecutor
                 (localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 	    queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
+	    queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 	    queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
 	    queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
 	    queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
@@ -135,7 +137,8 @@ public class QueryModule {
         queryExecutor = new UriFetchingQueryExecutor
                 (localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
         queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
-        queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
+		queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
+		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
         queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
 
 		return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
@@ -144,7 +147,10 @@ public class QueryModule {
 	// This is similar to the @primary executor, but the EquivalentContentResolver it uses
 	// allows for multiple equivs from the same publisher. This is written so that amazon content
 	// can be merged on output.
-    @Bean
+	//
+	// THE MAIN OWL CONTENT ENDPOINT HAS PIGGY BAGGED on this executor as well, when the respective
+	// annotation is set.
+	@Bean
     @Qualifier("YouviewQueryExecutor")
     KnownTypeQueryExecutor youviewQueryExecutor() {
 
@@ -174,6 +180,7 @@ public class QueryModule {
 		queryExecutor = new UriFetchingQueryExecutor
                 (localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
+		queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
 		queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
 		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
@@ -182,16 +189,4 @@ public class QueryModule {
                ? new ApplicationConfigurationQueryExecutor(queryExecutor)
                : queryExecutor;
 	}
-
-//
-//	@Bean @Lazy SearchResolver searchResolver() {
-//	    System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + applicationsEnabled);
-//	    if (! Strings.isNullOrEmpty(searchHost)) {
-//	        System.out.println(">>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>>" + searchHost);
-//    	    ContentSearcher titleSearcher = new RemoteFuzzySearcher(searchHost);
-//    	    return new ContentResolvingSearcher(titleSearcher, queryExecutor());
-//	    }
-//
-//	    return new DummySearcher();
-//	}
 }

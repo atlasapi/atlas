@@ -18,7 +18,7 @@ public class AmazonUnboxPreProcessingItemProcessor
     private final Map<String, BrandType> brandUriToTypeMap = Maps.newHashMap();
     
     @Override
-    public void prepare() {
+    public void prepare(OwlTelescopeReporter telescope) {
         contentUriToTitleMap.clear();
         brandUriToSeriesUrisMap.clear();
         seriesUriToEpisodeUrisMap.clear();
@@ -54,7 +54,7 @@ public class AmazonUnboxPreProcessingItemProcessor
     }
 
     @Override
-    public void finish(OwlTelescopeReporter telescope) {
+    public void finish() {
         for (String brand : brandUriToSeriesUrisMap.keySet()) {
             if (brandUriToSeriesUrisMap.get(brand).size() == 1) {
                 String series = Iterables.getOnlyElement(brandUriToSeriesUrisMap.get(brand));

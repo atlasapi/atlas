@@ -3,9 +3,10 @@
   <Item>
     <AMAZONRATINGS>2.0</AMAZONRATINGS>
     <AMAZONRATINGSCOUNT>7</AMAZONRATINGSCOUNT>
+    <CANONICAL_MATURITY_RATING>bbfc_rating|ages_12_and_over</CANONICAL_MATURITY_RATING>
     <ASIN>B007FUIBHM</ASIN>
     <CONTENTTYPE>Movie</CONTENTTYPE>
-    <DIRECTOR>Liz Adams</DIRECTOR>
+    <DIRECTOR>Liz Adams, Superman, ---</DIRECTOR>
     <GENRE_ACTION>Y</GENRE_ACTION>
     <GENRE_ADVENTURE>Y</GENRE_ADVENTURE>
     <GENRE_THRILLER>Y</GENRE_THRILLER>
@@ -18,11 +19,12 @@
     <ISSEASONPASS>N</ISSEASONPASS>
     <ISSTREAMABLE>Y</ISSTREAMABLE>
     <LONGSYNOPSIS>When a solar storm wipes out the air traffic control system, Air Force One and a passenger jet liner are locked on a collision course in the skies above the midwest.</LONGSYNOPSIS>
-    <MPAARATING>NR</MPAARATING>
+    <MPAARATING>ages_12_and_over</MPAARATING>
     <PLOTOUTLINE>A fierce electromagnetic storm cripples communications; as a result, two planes - one a commercial jet, the other Air Force One, carrying the President of the United States and his family - are on a collision course.</PLOTOUTLINE>
     <PRICE>9.99</PRICE>
     <RELEASEDATE>2011-12-31T00:00:00</RELEASEDATE>
     <RUNTIME>93</RUNTIME>
+    <UNBOX_SD_PURCHASE_URL>http://www.amazon.com/gp/product/B0091VSK3S/INSERT_TAG_HERE/ref=atv_feed_catalog/</UNBOX_SD_PURCHASE_URL>
     <RELATED_PRODUCTS>
       <!--DO NOT USE RELATED_PRODUCT URLs. These URLs are deprecated. Please use the item URL to access all purchase options on one detail page-->
       <UNBOX_RENTAL_ASIN>B007P0ZEHW</UNBOX_RENTAL_ASIN>

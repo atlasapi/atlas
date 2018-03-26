@@ -34,7 +34,13 @@ public class MinimumScoreFilter<T extends Content>  extends AbstractEquivalenceF
                     candidate.candidate().getId(),
                     "Removed for not reaching minimum score of " + String.valueOf(minimum)
             );
+        } else {
+            filterComponent.addComponentResult(
+                    candidate.candidate().getId(),
+                    "Went through."
+            );
         }
+
 
         equivToTelescopeResults.addFilterResult(filterComponent);
 

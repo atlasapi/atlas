@@ -39,6 +39,11 @@ public class UnpublishedContentFilter<T extends Content> extends AbstractEquival
                         "Removed for not being actively published"
                 );
             }
+        } else {
+            filterCompoenent.addComponentResult(
+                    equivalent.getId(),
+                    "Went through."
+            );
         }
 
         equivToTelescopeResults.addFilterResult(filterCompoenent);

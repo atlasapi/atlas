@@ -3,12 +3,11 @@ package org.atlasapi.remotesite.amazonunbox;
 import java.util.Set;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
-import org.joda.time.DateTime;
-import org.joda.time.Duration;
-
 import com.google.common.base.Objects;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
+import org.joda.time.DateTime;
+import org.joda.time.Duration;
 
 
 public class AmazonUnboxItem {
@@ -19,7 +18,7 @@ public class AmazonUnboxItem {
     private final String asin;
     private final Boolean isTrident;
     private final ContentType contentType;
-    private final String director;
+    private final Set<String> directors;
     private final Integer episodeNumber;
     // TODO how to parse genres
     private final Set<AmazonUnboxGenre> genres;
@@ -79,7 +78,7 @@ public class AmazonUnboxItem {
         this.amazonRatingsCount = builder.amazonRatingsCount;
         this.asin = builder.asin;
         this.contentType = builder.contentType;
-        this.director = builder.director;
+        this.directors = builder.directors;
         this.episodeNumber = builder.episodeNumber;
         this.unboxSdPurchasePrice = builder.unboxSdPurchasePrice;
         this.unboxSdPurchaseUrl = builder.unboxSdPurchaseUrl;
@@ -129,9 +128,9 @@ public class AmazonUnboxItem {
     public ContentType getContentType() {
         return contentType;
     }
-    
-    public String getDirector() {
-        return director;
+
+    public Set<String> getDirectors() {
+        return directors;
     }
     
     public Integer getEpisodeNumber() {
@@ -294,7 +293,7 @@ public class AmazonUnboxItem {
         .add("amazonRatingsCount", amazonRatingsCount)
         .add("asin", asin)
         .add("contentType", contentType)
-        .add("director", director)
+        .add("directors", directors)
         .add("episodeNumber", episodeNumber)
         .add("genres", genres)
         .add("largeImageUrl", largeImageUrl)
@@ -328,7 +327,7 @@ public class AmazonUnboxItem {
         private Integer amazonRatingsCount;
         private String asin;
         private ContentType contentType;
-        private String director;
+        private Set<String> directors = Sets.newHashSet();
         private Integer episodeNumber;
         private Set<AmazonUnboxGenre> genres = Sets.newHashSet();
         private String largeImageUrl;
@@ -389,9 +388,14 @@ public class AmazonUnboxItem {
             this.contentType = contentType;
             return this;
         }
-        
-        public Builder withDirector(String director) {
-            this.director = director;
+
+        public Builder addDirectorRoles(Iterable<String> directors) {
+            this.directors.addAll(Sets.newHashSet(directors));
+            return this;
+        }
+
+        public Builder addDirectorRole(String director) {
+            this.directors.add(director);
             return this;
         }
         
@@ -469,13 +473,13 @@ public class AmazonUnboxItem {
             this.duration = duration;
             return this;
         }
-        
-        public Builder withStarringRoles(Iterable<String> starring) {
-            this.starring = Sets.newHashSet(starring);
+
+        public Builder addStarringRoles(Iterable<String> starring) {
+            this.starring.addAll(Sets.newHashSet(starring));
             return this;
         }
         
-        public Builder withStarring(String starring) {
+        public Builder addStarringRole(String starring) {
             this.starring.add(starring);
             return this;
         }

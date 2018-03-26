@@ -35,7 +35,9 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
         desc.startStage(toString());
 
         List<ScoredCandidate<Item>> positiveScores = removeNonPositiveScores(candidates, desc);
+        
         Optional<ScoredCandidate<Item>> result = Optional.empty();
+        
         if (positiveScores.size() == 1) {
             ScoredCandidate<Item> only = positiveScores.get(0);
             result = candidateIfOverThreshold(only, SINGLE_THRESHOLD, desc);
@@ -51,6 +53,7 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
                 ));
         
         desc.finishStage();
+
         return result.map(ImmutableSet::of).orElseGet(ImmutableSet::of);
     }
 

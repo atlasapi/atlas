@@ -44,26 +44,23 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
         telescope.startReporting();
 
         try  {
-            
+            itemPreProcessor.prepare(telescope);
             AmazonUnboxProcessor<UpdateProgress> processor = processor(itemPreProcessor, telescope);
-
             ImmutableList<AmazonUnboxItem> items = feedSupplier.get();
-            
             for (AmazonUnboxItem item : items) {
                 processor.process(item);
             }
-            
-            itemPreProcessor.finish(telescope);
+            itemPreProcessor.finish();
             
             reportStatus("Preprocessor: " + processor.getResult().toString());
-            
+
+            itemProcessor.prepare(telescope);
             processor = processor(itemProcessor, telescope);
-            
             for (AmazonUnboxItem item : items) {
                 processor.process(item);
             }
-            
-            itemProcessor.finish(telescope);
+            itemProcessor.finish();
+
             reportStatus(processor.getResult().toString());
 
             // Dont put this into a finally since we dont want to end reporting when something major
@@ -93,8 +90,7 @@ public class AmazonUnboxUpdateTask extends ScheduledTask {
                     handler.process(aUItem);
                     progress.reduce(UpdateProgress.SUCCESS);
                 } catch (Exception e) {
-                    telescope.reportFailedEvent("Error processing: " +
-                            aUItem.toString() + " (" + e.getMessage());
+                    telescope.reportFailedEvent("Unable to process item. (" + e.getMessage() + ")", aUItem);
                     log.error("Error processing: " + aUItem.toString(), e);
                     progress.reduce(UpdateProgress.FAILURE);
                 }

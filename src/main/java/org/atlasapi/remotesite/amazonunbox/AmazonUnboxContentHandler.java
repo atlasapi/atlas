@@ -1,7 +1,15 @@
 package org.atlasapi.remotesite.amazonunbox;
 
-import static com.google.common.base.Preconditions.checkNotNull;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
+import com.metabroadcast.common.stream.MoreCollectors;
+
+import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableSet;
 import org.joda.time.DateTimeZone;
 import org.joda.time.Duration;
 import org.joda.time.format.DateTimeFormatter;
@@ -12,13 +20,14 @@ import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
 import org.xml.sax.helpers.DefaultHandler;
 
-import com.google.common.base.Splitter;
+import static com.google.common.base.Preconditions.checkNotNull;
 
 
 public class AmazonUnboxContentHandler extends DefaultHandler {
     
     private static final Splitter SPLIT_ON_COMMA =
             Splitter.on(',').trimResults().omitEmptyStrings();
+    private static final Pattern TWO_ALPHA_CHARS = Pattern.compile(".*[a-zA-Z].*[a-zA-Z].*");
     
     private final Logger log = LoggerFactory.getLogger(AmazonUnboxContentHandler.class);
     private final DateTimeFormatter dateParser =
@@ -28,7 +37,11 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     private AmazonUnboxItem.Builder item = null;
     
     private ItemField currentField = null;
-    private StringBuffer buffer = null; 
+    private StringBuffer buffer = null;
+    //anything nested in the following blocks will be ignored. Will only work on single lvl of nesting.
+    private static final Set<ItemField> IGNORED_BLOCKS = ImmutableSet.of(
+            ItemField.RELATED_PRODUCTS);
+    private boolean ignoreBlock = false;
 
     public AmazonUnboxContentHandler(AmazonUnboxProcessor<?> processor) {
         this.processor = checkNotNull(processor);
@@ -38,8 +51,13 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     public void startElement (
             String uri,
             String localName, String qName, Attributes attributes) throws SAXException {
+
         if (item != null) {
             currentField = ItemField.valueOf(qName);
+            //ignore everything inside this field.
+            if (IGNORED_BLOCKS.contains(currentField)) {
+                ignoreBlock = true; //Ending the field above will set this to false;
+            }
             buffer = new StringBuffer();
         } else if (qName.equalsIgnoreCase("Item")) {
             item = AmazonUnboxItem.builder();
@@ -47,14 +65,25 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
     }
 
     @Override
-    public void endElement (String uri, String localName, String qName) throws SAXException {
+    public void endElement(String uri, String localName, String qName) throws SAXException {
         if (qName.equalsIgnoreCase("Item")) {
             processor.process(item.build());
+            ignoreBlock = false; //safety precaution
             item = null;
-        } 
+            return;
+        }
         if (currentField != null) {
+            ItemField itemField = ItemField.valueOf(qName);
+            if(IGNORED_BLOCKS.contains(itemField)){
+                ignoreBlock = false; //stop ignoring stuff
+                return;
+            }
+            if (ignoreBlock) {
+                return; //if the current field was inside a block we are ignoring, do nothing.
+            }
+
             // TODO remove unused cases
-            switch (ItemField.valueOf(qName)) {
+            switch (itemField) {
             case AMAZONRATINGS:
                 item.withAmazonRating(Float.valueOf(buffer.toString()));
                 break;
@@ -68,7 +97,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withContentType(ContentType.valueOf(buffer.toString().toUpperCase()));
                 break;
             case DIRECTOR:
-                item.withDirector(buffer.toString());
+                item.addDirectorRoles(splitAndClean(buffer.toString()));
                 break;
             case EPISODENUMBER:
                 item.withEpisodeNumber(Integer.valueOf(buffer.toString()));
@@ -187,7 +216,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 break;
             case LONGSYNOPSIS:
                 break;
-            case MPAARATING:
+            case CANONICAL_MATURITY_RATING:
                 item.withRating(buffer.toString());
                 break;
             case PLOTOUTLINE:
@@ -219,7 +248,7 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
                 item.withSeriesTitle(buffer.toString());
                 break;
             case STARRING:
-                item.withStarringRoles(SPLIT_ON_COMMA.split(buffer.toString()));
+                item.addStarringRoles(splitAndClean(buffer.toString()));
                 break;
             case STUDIO:
                 item.withStudio(buffer.toString());
@@ -299,7 +328,15 @@ public class AmazonUnboxContentHandler extends DefaultHandler {
             currentField = null;
         }
     }
-    
+
+    private Iterable<String> splitAndClean(String stringList) {
+
+        return StreamSupport.stream(SPLIT_ON_COMMA.split(stringList)
+                .spliterator(), false)
+                .filter(i -> TWO_ALPHA_CHARS.matcher(i).matches())
+                .collect(MoreCollectors.toImmutableSet());
+    }
+
     @Override
     public void characters(char ch[], int start, int length) throws SAXException {
         if (buffer != null) {

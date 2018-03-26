@@ -24,7 +24,6 @@ import org.atlasapi.remotesite.ContentExtractor;
 
 import com.metabroadcast.common.scheduling.UpdateProgress;
 
-import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.io.Resources;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
@@ -89,10 +88,11 @@ public class AmazonUnboxContentWritingItemProcessorTest {
         AmazonUnboxContentHandler handler = new AmazonUnboxContentHandler(testprocessor);
         saxParser.parse(getFileAsInputStream("hierarchy.xml"), handler);
 
+        processor.prepare(telescope);
         for (AmazonUnboxItem item : testprocessor.getItems()) {
             processor.process(item);
         }
-        processor.finish(telescope);
+        processor.finish();
         verify(writer, times(3)).createOrUpdate(itemArgumentCaptor.capture());
         verify(writer, times(3)).createOrUpdate(containerArgumentCaptor.capture());
         List<Container> allValues = containerArgumentCaptor.getAllValues();

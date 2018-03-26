@@ -1,13 +1,12 @@
 package org.atlasapi.output;
 
-import java.util.Set;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-
 import com.google.common.collect.Iterables;
+import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.media.entity.ContentGroup;
 import org.atlasapi.media.entity.simple.ContentGroupQueryResult;
 import org.atlasapi.output.simple.ContentGroupModelSimplifier;
+
+import java.util.Set;
 
 /**
  */

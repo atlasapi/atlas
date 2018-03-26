@@ -1,17 +1,16 @@
 package org.atlasapi.query;
 
-import java.io.IOException;
-import java.time.Clock;
-import java.time.Duration;
-import java.time.ZonedDateTime;
+import com.google.common.annotations.VisibleForTesting;
+import org.springframework.web.filter.OncePerRequestFilter;
 
 import javax.servlet.FilterChain;
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-
-import com.google.common.annotations.VisibleForTesting;
-import org.springframework.web.filter.OncePerRequestFilter;
+import java.io.IOException;
+import java.time.Clock;
+import java.time.Duration;
+import java.time.ZonedDateTime;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

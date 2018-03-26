@@ -1,13 +1,18 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.io.IOException;
-import java.util.List;
-import java.util.NoSuchElementException;
-import java.util.Optional;
-import java.util.function.Function;
-
-import javax.servlet.http.HttpServletResponse;
-
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Iterables;
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import com.metabroadcast.atlas.glycerin.model.PidReference;
+import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.EntityType;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.status.api.EntityRef;
+import com.metabroadcast.status.api.NewAlert;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.ChannelWriter;
 import org.atlasapi.media.entity.Alias;
@@ -18,21 +23,10 @@ import org.atlasapi.media.entity.ParentRef;
 import org.atlasapi.media.entity.Series;
 import org.atlasapi.persistence.content.ContentWriter;
 import org.atlasapi.remotesite.bbc.BbcFeeds;
+import org.atlasapi.reporting.OwlReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
 import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
-
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-import com.metabroadcast.atlas.glycerin.model.PidReference;
-import com.metabroadcast.atlas.glycerin.queries.ProgrammesQuery;
-import com.metabroadcast.columbus.telescope.api.Event;
-import com.metabroadcast.columbus.telescope.client.EntityType;
-import com.metabroadcast.common.http.HttpStatusCode;
-
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Iterables;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Controller;
@@ -40,12 +34,21 @@ import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
+import java.util.List;
+import java.util.NoSuchElementException;
+import java.util.Optional;
+import java.util.function.Function;
+
 import static com.google.common.base.Preconditions.checkNotNull;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.ANCESTOR_TITLES;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.AVAILABLE_VERSIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.CONTRIBUTIONS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.GENRE_GROUPINGS;
 import static com.metabroadcast.atlas.glycerin.queries.ProgrammesMixin.IMAGES;
+import static com.metabroadcast.status.util.Utils.encode;
+import static org.atlasapi.reporting.status.Utils.getPartialStatusForContent;
 
 @Controller
 public class NitroForceUpdateController {
@@ -81,7 +84,8 @@ public class NitroForceUpdateController {
                 OwlTelescopeReporters.BBC_NITRO_INGEST_API,
                 Event.Type.INGEST
         );
-        telescope.startReporting();
+        OwlReporter owlReporter = new OwlReporter(telescope);
+        owlReporter.getTelescopeReporter().startReporting();
 
         Iterable<List<ModelWithPayload<Item>>> itemListIterable = null;
         ModelWithPayload<Item> itemWithPayload;
@@ -113,19 +117,19 @@ public class NitroForceUpdateController {
             } catch (NitroException e) {
                 log.error("Failed to get Nitro item {}", pid, e);
                 writeServerErrorWithStack(response, e);
-                telescope.reportFailedEvent(
+                owlReporter.getTelescopeReporter().reportFailedEvent(
                         "The request at 'bbc/nitro/merge/content/"+pid+"' failed. "+
                         " (" + e.getMessage() + ")");
-                telescope.endReporting();
+                owlReporter.getTelescopeReporter().endReporting();
                 return;
             } catch (NoSuchElementException e) {
                 log.error("No items found in Nitro for pid {}", pid);
                 response.setStatus(HttpStatusCode.NOT_FOUND.code());
                 response.setContentLength(0);
-                telescope.reportFailedEvent(
+                owlReporter.getTelescopeReporter().reportFailedEvent(
                         "The request at 'bbc/nitro/merge/content/"+pid+"' failed. "+
                         "No items found in Nitro for pid=" + pid);
-                telescope.endReporting();
+                owlReporter.getTelescopeReporter().endReporting();
                 return;
             } catch (IllegalArgumentException e) {
                 //this might also be caused if resolved items dont merge properly
@@ -133,26 +137,26 @@ public class NitroForceUpdateController {
                         "The request at 'bbc/nitro/merge/content/"+pid+"' failed. "+
                         "Got more than 1 item from Nitro for pid %s", pid);
                 log.error(message, e);
-                telescope.reportFailedEvent(message, itemListIterable);
+                owlReporter.getTelescopeReporter().reportFailedEvent(message, itemListIterable);
                 response.setStatus(HttpStatusCode.SERVER_ERROR.code());
                 response.setContentLength(message.length());
                 response.getWriter().write(message);
-                telescope.endReporting();
+                owlReporter.getTelescopeReporter().endReporting();
                 return;
             }
 
         } catch (Exception e) {
             log.error("Exception while getting item for pid={}", pid, e);
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "The request at 'bbc/nitro/merge/content/"+pid+"' failed. "+
                     " (" + e.toString() + ")");
             writeServerErrorWithStack(response, e);
-            telescope.endReporting();
+            owlReporter.getTelescopeReporter().endReporting();
             return;
         }
 
-        createOrUpdateItem(response, pid, itemWithPayload, telescope);
-        telescope.endReporting();
+        createOrUpdateItem(response, pid, itemWithPayload, owlReporter);
+        owlReporter.getTelescopeReporter().endReporting();
     }
 
     @RequestMapping(value = "/system/bbc/nitro/update/{type}/{pid}", method = RequestMethod.POST)
@@ -165,36 +169,37 @@ public class NitroForceUpdateController {
                 OwlTelescopeReporters.BBC_NITRO_INGEST_API,
                 Event.Type.INGEST
         );
-        telescope.startReporting();
+        OwlReporter owlReporter = new OwlReporter(telescope);
+        owlReporter.getTelescopeReporter().startReporting();
 
         try {
             switch (type) {
             case "content":
-                forceUpdateContent(response, pid, telescope);
+                forceUpdateContent(response, pid, owlReporter);
                 break;
             case "service":
-                forceUpdateChannel(response, this::fetchService, pid, telescope);
+                forceUpdateChannel(response, this::fetchService, pid, owlReporter);
                 break;
             case "masterbrand":
-                forceUpdateChannel(response, this::fetchMasterbrand, pid, telescope);
+                forceUpdateChannel(response, this::fetchMasterbrand, pid, owlReporter);
                 break;
             default:
                 throw new IllegalArgumentException(String.format("Bad type %s", type));
             }
         } catch (IOException e) {
             log.error("Failed to get Nitro thing {}", pid, e);
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "The request at 'bbc/nitro/update/"+type+"/"+pid+"' failed. "+
                     "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")");
             writeServerErrorWithStack(response, e);
         } catch (Exception e) {
             log.error("Exception while getting item for pid={}", pid, e);
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "The request at 'bbc/nitro/update/" + type + "/" + pid + "' failed. " +
                     " (" + e.toString() + ")");
             writeServerErrorWithStack(response, e);
         } finally {
-            telescope.endReporting();
+            owlReporter.getTelescopeReporter().endReporting();
         }
     }
 
@@ -202,12 +207,12 @@ public class NitroForceUpdateController {
             HttpServletResponse response,
             Function<String, Optional<ModelWithPayload<Channel>>> channelResolve,
             String pid,
-            OwlTelescopeReporter telescope
+            OwlReporter owlReporter
     ) throws IOException {
         Optional<ModelWithPayload<Channel>> channelWithPayload = channelResolve.apply(pid);
         if (!channelWithPayload.isPresent()) {
             log.error("No items found in Nitro for id {}", pid);
-            telescope.reportFailedEvent("No items found in Nitro for pid=" + pid);
+            owlReporter.getTelescopeReporter().reportFailedEvent("No items found in Nitro for pid=" + pid);
             response.setStatus(HttpStatusCode.NOT_FOUND.code());
             response.setContentLength(0);
         } else {
@@ -215,13 +220,48 @@ public class NitroForceUpdateController {
             channelWriter.createOrUpdate(channel);
             response.setStatus(HttpStatusCode.ACCEPTED.code());
             if(channel.getId() != null) {
-                telescope.reportSuccessfulEvent(
+                owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                         channel.getId(),
                         channel.getAliases(),
                         EntityType.CHANNEL,
                         channelWithPayload.get().getPayload());
+
+                if (Strings.isNullOrEmpty(channel.getTitle())){
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CHANNEL,
+                            channel,
+                            getPartialStatusForContent(
+                                    channel.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    NewAlert.Key.Check.MISSING,
+                                    NewAlert.Key.Field.TITLE,
+                                    String.format("Channel %s is missing a title.",
+                                            encode(channel.getId())
+                                    ),
+                                    EntityRef.Type.CHANNEL,
+                                    channel.getSource().key(),
+                                    false
+                            )
+                    );
+                } else {
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CHANNEL,
+                            channel,
+                            getPartialStatusForContent(
+                                    channel.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    NewAlert.Key.Check.MISSING,
+                                    NewAlert.Key.Field.TITLE,
+                                    null,
+                                    EntityRef.Type.CHANNEL,
+                                    channel.getSource().key(),
+                                    true
+                            )
+                    );
+                }
+
             } else {
-                telescope.reportFailedEvent(
+                owlReporter.getTelescopeReporter().reportFailedEvent(
                         "There was an error while trying to write this Channel to Atlas. Channel pid=" + pid,
                         EntityType.CHANNEL,
                         channelWithPayload.get().getPayload()
@@ -232,7 +272,7 @@ public class NitroForceUpdateController {
 
     private void forceUpdateContent(
             HttpServletResponse response, String pid,
-            OwlTelescopeReporter telescope)
+            OwlReporter owlReporter)
             throws IOException {
         Iterable<List<ModelWithPayload<Item>>> itemsWithPayload;
         ModelWithPayload<Item> itemWithPayload;
@@ -254,7 +294,7 @@ public class NitroForceUpdateController {
                     );
         }catch (NitroException e) {
             log.error("Failed to get Nitro item {}", pid, e);
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "Failed to get Nitro item for pid=" + pid + " (" + e.getMessage() + ")");
             writeServerErrorWithStack(response, e);
             return;
@@ -264,21 +304,21 @@ public class NitroForceUpdateController {
             itemWithPayload = Iterables.getOnlyElement(itemsWithPayload).get(0);
         } catch (NoSuchElementException | IndexOutOfBoundsException e ) {
             log.error("No items found in Nitro for pid {}", pid);
-            telescope.reportFailedEvent("No items found in Nitro for pid=" + pid);
+            owlReporter.getTelescopeReporter().reportFailedEvent("No items found in Nitro for pid=" + pid);
             response.setStatus(HttpStatusCode.NOT_FOUND.code());
             response.setContentLength(0);
             return;
         } catch (IllegalArgumentException e) {
             String message = String.format("Got more than 1 item from Nitro for pid %s", pid);
             log.error(message, e);
-            telescope.reportFailedEvent(message, itemsWithPayload);
+            owlReporter.getTelescopeReporter().reportFailedEvent(message, itemsWithPayload);
             response.setStatus(HttpStatusCode.SERVER_ERROR.code());
             response.setContentLength(message.length());
             response.getWriter().write(message);
             return;
         }
 
-        createOrUpdateItem(response, pid, itemWithPayload, telescope);
+        createOrUpdateItem(response, pid, itemWithPayload, owlReporter);
     }
 
     private Optional<ModelWithPayload<Channel>> fetchService(String sid) {
@@ -317,24 +357,126 @@ public class NitroForceUpdateController {
             HttpServletResponse response,
             String pid,
             ModelWithPayload<Item> itemWithPayload,
-            OwlTelescopeReporter telescope
+            OwlReporter owlReporter
     ) throws IOException {
 
-        updateBrand(response, pid, itemWithPayload, telescope);
-        updateSeries(response, pid, itemWithPayload, telescope);
+        updateBrand(response, pid, itemWithPayload, owlReporter);
+        updateSeries(response, pid, itemWithPayload, owlReporter);
 
         Item item = itemWithPayload.getModel();
 
         contentWriter.createOrUpdate(item);
         if (item.getId() != null) {
-            telescope.reportSuccessfulEvent(
+            owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                     item.getId(),
                     item.getAliases(),
                     EntityType.ITEM,
                     itemWithPayload.getPayload()
             );
+
+            if (Strings.isNullOrEmpty(item.getTitle())){
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item,
+                        getPartialStatusForContent(
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.TITLE,
+                                String.format("Content %s is missing a title.",
+                                        encode(item.getId())
+                                ),
+                                EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
+                                false
+                        )
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item,
+                        getPartialStatusForContent(
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.TITLE,
+                                null,
+                                EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
+                                true
+                        )
+                );
+            }
+
+            if (item.getGenres() == null || item.getGenres().isEmpty()) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item,
+                        getPartialStatusForContent(
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.GENRE,
+                                String.format("Content %s is missing genres.",
+                                        encode(item.getId())
+                                ),
+                                EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
+                                false
+                        )
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item,
+                        getPartialStatusForContent(
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.GENRE,
+                                null,
+                                EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
+                                true
+                        )
+                );
+            }
+
+            if (item instanceof Episode && ((Episode) item).getEpisodeNumber() == null) {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item,
+                        getPartialStatusForContent(
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.EPISODE_NUMBER,
+                                String.format("Content %s is missing an episode number.",
+                                        encode(item.getId())
+                                ),
+                                EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
+                                false
+                        )
+                );
+            } else {
+                owlReporter.getStatusReporter().updateStatus(
+                        EntityRef.Type.CONTENT,
+                        item,
+                        getPartialStatusForContent(
+                                item.getId(),
+                                owlReporter.getTelescopeReporter().getTaskId(),
+                                NewAlert.Key.Check.MISSING,
+                                NewAlert.Key.Field.EPISODE_NUMBER,
+                                null,
+                                EntityRef.Type.CONTENT,
+                                item.getPublisher().key(),
+                                true
+                        )
+                );
+            }
         } else {
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "There was an error while trying to write this Item to Atlas. Item pid=" + pid,
                     EntityType.ITEM,
                     itemWithPayload.getPayload()
@@ -348,7 +490,7 @@ public class NitroForceUpdateController {
             HttpServletResponse response,
             String pid,
             ModelWithPayload<Item> itemWithPayload,
-            OwlTelescopeReporter telescope
+            OwlReporter owlReporter
     ) throws IOException {
         Item item = itemWithPayload.getModel();
         if (!(item instanceof Episode)) {
@@ -377,13 +519,82 @@ public class NitroForceUpdateController {
             Series series = seryWithPayload.getModel();
             contentWriter.createOrUpdate(series);
             if (series.getId() != null) {
-                telescope.reportSuccessfulEvent(
+                owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                         series.getId(),
                         series.getAliases(),
                         EntityType.SERIES,
                         seryWithPayload.getPayload(), itemWithPayload.getPayload());
+
+                if (Strings.isNullOrEmpty(series.getTitle())){
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CONTENT,
+                            series,
+                            getPartialStatusForContent(
+                                    series.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    NewAlert.Key.Check.MISSING,
+                                    NewAlert.Key.Field.TITLE,
+                                    String.format("Content %s is missing a title.",
+                                            encode(series.getId())
+                                    ),
+                                    EntityRef.Type.CONTENT,
+                                    series.getPublisher().key(),
+                                    false
+                            )
+                    );
+                } else {
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CONTENT,
+                            series,
+                            getPartialStatusForContent(
+                                    series.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    NewAlert.Key.Check.MISSING,
+                                    NewAlert.Key.Field.TITLE,
+                                    null,
+                                    EntityRef.Type.CONTENT,
+                                    series.getPublisher().key(),
+                                    true
+                            )
+                    );
+                }
+
+                if (series.getGenres() == null || series.getGenres().isEmpty()) {
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CONTENT,
+                            series,
+                            getPartialStatusForContent(
+                                    series.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    NewAlert.Key.Check.MISSING,
+                                    NewAlert.Key.Field.GENRE,
+                                    String.format("Content %s is missing genres.",
+                                            encode(series.getId())
+                                    ),
+                                    EntityRef.Type.CONTENT,
+                                    series.getPublisher().key(),
+                                    false
+                            )
+                    );
+                } else {
+                    owlReporter.getStatusReporter().updateStatus(
+                            EntityRef.Type.CONTENT,
+                            series,
+                            getPartialStatusForContent(
+                                    series.getId(),
+                                    owlReporter.getTelescopeReporter().getTaskId(),
+                                    NewAlert.Key.Check.MISSING,
+                                    NewAlert.Key.Field.EPISODE_NUMBER,
+                                    null,
+                                    EntityRef.Type.CONTENT,
+                                    series.getPublisher().key(),
+                                    true
+                            )
+                    );
+                }
+
             } else {
-                telescope.reportFailedEvent(
+                owlReporter.getTelescopeReporter().reportFailedEvent(
                         "There was an error while trying to write this Series to Atlas. "
                         + " seriesPid=" + seriesPid + " itemPid=" + pid,
                         EntityType.SERIES,
@@ -392,7 +603,7 @@ public class NitroForceUpdateController {
         } catch (NitroException e) {
             log.error("Failed to get Nitro parent item {}", pid, e);
             writeServerErrorWithStack(response, e);
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "There was an error while trying to write this Series to Atlas. "
                     + " seriesPid=" + seriesPid + " itemPid=" + pid,
                     EntityType.SERIES,
@@ -404,7 +615,7 @@ public class NitroForceUpdateController {
             HttpServletResponse response,
             String pid,
             ModelWithPayload<Item> itemWithPayload,
-            OwlTelescopeReporter telescope
+            OwlReporter owlReporter
     ) throws IOException {
         Item item = itemWithPayload.getModel();
         if (item.getContainer() == null) {
@@ -432,14 +643,83 @@ public class NitroForceUpdateController {
                 Brand brand = brandWithPayload.getModel();
                 contentWriter.createOrUpdate(brand);
                 if (brand.getId() != null) {
-                    telescope.reportSuccessfulEvent(
+                    owlReporter.getTelescopeReporter().reportSuccessfulEvent(
                             brand.getId(),
                             brand.getAliases(),
                             EntityType.BRAND,
                             brandWithPayload.getPayload()
                     );
+
+                    if (Strings.isNullOrEmpty(brand.getTitle())){
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                brand,
+                                getPartialStatusForContent(
+                                        brand.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        NewAlert.Key.Check.MISSING,
+                                        NewAlert.Key.Field.TITLE,
+                                        String.format("Content %s is missing a title.",
+                                                encode(brand.getId())
+                                        ),
+                                        EntityRef.Type.CONTENT,
+                                        brand.getPublisher().key(),
+                                        false
+                                )
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                brand,
+                                getPartialStatusForContent(
+                                        brand.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        NewAlert.Key.Check.MISSING,
+                                        NewAlert.Key.Field.TITLE,
+                                        null,
+                                        EntityRef.Type.CONTENT,
+                                        brand.getPublisher().key(),
+                                        true
+                                )
+                        );
+                    }
+
+                    if (brand.getGenres() == null || brand.getGenres().isEmpty()) {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                brand,
+                                getPartialStatusForContent(
+                                        brand.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        NewAlert.Key.Check.MISSING,
+                                        NewAlert.Key.Field.GENRE,
+                                        String.format("Content %s is missing genres",
+                                                encode(brand.getId())
+                                        ),
+                                        EntityRef.Type.CONTENT,
+                                        brand.getPublisher().key(),
+                                        false
+                                )
+                        );
+                    } else {
+                        owlReporter.getStatusReporter().updateStatus(
+                                EntityRef.Type.CONTENT,
+                                brand,
+                                getPartialStatusForContent(
+                                        brand.getId(),
+                                        owlReporter.getTelescopeReporter().getTaskId(),
+                                        NewAlert.Key.Check.MISSING,
+                                        NewAlert.Key.Field.GENRE,
+                                        null,
+                                        EntityRef.Type.CONTENT,
+                                        brand.getPublisher().key(),
+                                        true
+                                )
+                        );
+                    }
+
                 } else {
-                    telescope.reportFailedEvent(
+                    owlReporter.getTelescopeReporter().reportFailedEvent(
                             "There was an error while trying to write this Brand to Atlas."
                             + " brandPid=" + parentPid + " itemPid=" + pid,
                             EntityType.BRAND,
@@ -450,7 +730,7 @@ public class NitroForceUpdateController {
 
         } catch (NitroException e) {
             log.error("Failed to get Nitro parent item {}", pid, e);
-            telescope.reportFailedEvent(
+            owlReporter.getTelescopeReporter().reportFailedEvent(
                     "There was an error while trying to write this Brand to Atlas. "
                     + " brandPid=" + parentPid + " itemPid=" + pid,
                     EntityType.BRAND,

@@ -1,11 +1,10 @@
 package org.atlasapi.http;
 
-import static com.metabroadcast.common.http.SimpleHttpRequest.httpRequestFrom;
-
-import org.atlasapi.persistence.system.RemoteSiteClient;
-
 import com.metabroadcast.common.http.HttpResponseTransformer;
 import com.metabroadcast.common.http.SimpleHttpClient;
+import org.atlasapi.persistence.system.RemoteSiteClient;
+
+import static com.metabroadcast.common.http.SimpleHttpRequest.httpRequestFrom;
 
 public class HttpBackedRemoteSiteClient<T> implements RemoteSiteClient<T> {
 

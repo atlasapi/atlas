@@ -1,11 +1,12 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
- import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
+import com.google.common.io.Resources;
+import com.metabroadcast.common.time.Clock;
+import com.metabroadcast.common.time.DateTimeZones;
+import com.metabroadcast.common.time.TimeMachine;
+import com.sun.syndication.feed.atom.Entry;
+import com.sun.syndication.feed.atom.Feed;
 import junit.framework.TestCase;
-
 import org.atlasapi.genres.AtlasGenre;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Publisher;
@@ -13,15 +14,12 @@ import org.joda.time.DateTime;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-import org.mockito.Mock;
 import org.mockito.runners.MockitoJUnitRunner;
 
-import com.google.common.io.Resources;
-import com.metabroadcast.common.time.Clock;
-import com.metabroadcast.common.time.DateTimeZones;
-import com.metabroadcast.common.time.TimeMachine;
-import com.sun.syndication.feed.atom.Entry;
-import com.sun.syndication.feed.atom.Feed;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 
 @RunWith(MockitoJUnitRunner.class)
 public class C4BrandBasicDetailsExtractorTest extends TestCase {

@@ -55,28 +55,34 @@ import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 public class QueryModule {
 
 	private @Autowired @Qualifier("remoteSiteContentResolver") CanonicalisingFetcher localOrRemoteFetcher;
-	
+
 	private @Autowired DatabasedMongo mongo;
 	private @Autowired ReadPreference readPreference;
     private @Autowired CassandraContentStore cassandra;
     private @Autowired @Qualifier("contentUpdater") EquivalenceUpdater<Content> equivUpdater;
-	
+
 	private @Value("${applications.enabled}") String applicationsEnabled;
 	private @Value("${atlas.search.host}") String searchHost;
 	private @Value("${cassandra.enabled}") boolean cassandraEnabled;
 
-	@Bean @Primary KnownTypeQueryExecutor queryExecutor() {
-	    
-        MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"), 
-                new NoLoggingPersistenceAuditLog(), readPreference);
-	    KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
-        KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
+    @Bean
+    @Primary
+    KnownTypeQueryExecutor queryExecutor() {
 
-		DefaultEquivalentContentResolver defaultEquivalentContentResolver =
-				new DefaultEquivalentContentResolver(
-						mongoContentResolver,
-						lookupStore
-				);
+        MongoLookupEntryStore lookupStore =
+                new MongoLookupEntryStore(
+                        mongo.collection("lookup"),
+                        new NoLoggingPersistenceAuditLog(),
+                        readPreference
+                );
+        KnownTypeContentResolver mongoContentResolver =
+                new MongoContentResolver(mongo, lookupStore);
+
+        KnownTypeContentResolver cassandraContentResolver =
+                new CassandraKnownTypeContentResolver(cassandra);
+
+        DefaultEquivalentContentResolver defaultEquivalentContentResolver =
+                new DefaultEquivalentContentResolver(mongoContentResolver, lookupStore);
 
 		KnownTypeQueryExecutor queryExecutor =
 				new LookupResolvingQueryExecutor(
@@ -86,23 +92,33 @@ public class QueryModule {
 						cassandraEnabled
 				);
 
-		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
+		queryExecutor = new UriFetchingQueryExecutor
+                (localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 	    queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
 	    queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 	    queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
 	    queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
 	    queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
-	    
-	    return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
-	}
+
+        return Boolean.parseBoolean(applicationsEnabled)
+               ? new ApplicationConfigurationQueryExecutor(queryExecutor)
+               : queryExecutor;
+    }
 
 	// This is similar to the above, but does not use MergeOnOutput, because we want to equivalate
 	// to single pieces of content, and not on merged mashes of content.
 	@Bean @Qualifier("EquivalenceQueryExecutor") KnownTypeQueryExecutor equivalenceQueryExecutor() {
-		MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"),
-				new NoLoggingPersistenceAuditLog(), readPreference);
-		KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
-		KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
+		MongoLookupEntryStore lookupStore =
+                new MongoLookupEntryStore(
+                        mongo.collection("lookup"),
+                        new NoLoggingPersistenceAuditLog(),
+                        readPreference
+                );
+        KnownTypeContentResolver mongoContentResolver =
+                new MongoContentResolver(mongo, lookupStore);
+
+        KnownTypeContentResolver cassandraContentResolver =
+                new CassandraKnownTypeContentResolver(cassandra);
 
 		DefaultEquivalentContentResolver defaultEquivalentContentResolver =
 				new DefaultEquivalentContentResolver(
@@ -118,11 +134,12 @@ public class QueryModule {
 						cassandraEnabled
 				);
 
-		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
-		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
+        queryExecutor = new UriFetchingQueryExecutor
+                (localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
+        queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
 		queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
-		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
+        queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
 
 		return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
 	}
@@ -133,18 +150,24 @@ public class QueryModule {
 	//
 	// THE MAIN OWL CONTENT ENDPOINT HAS PIGGY BAGGED on this executor as well, when the respective
 	// annotation is set.
-	@Bean @Qualifier("YouviewQueryExecutor") KnownTypeQueryExecutor youviewQueryExecutor() {
+	@Bean
+    @Qualifier("YouviewQueryExecutor")
+    KnownTypeQueryExecutor youviewQueryExecutor() {
 
-		MongoLookupEntryStore lookupStore = new MongoLookupEntryStore(mongo.collection("lookup"),
-				new NoLoggingPersistenceAuditLog(), readPreference);
-		KnownTypeContentResolver mongoContentResolver = new MongoContentResolver(mongo, lookupStore);
-		KnownTypeContentResolver cassandraContentResolver = new CassandraKnownTypeContentResolver(cassandra);
+        MongoLookupEntryStore lookupStore =
+                new MongoLookupEntryStore(
+                        mongo.collection("lookup"),
+                        new NoLoggingPersistenceAuditLog(),
+                        readPreference
+                );
+        KnownTypeContentResolver mongoContentResolver =
+                new MongoContentResolver(mongo, lookupStore);
 
-		AllFromPublishersEquivalentContentResolver allFromPublishersEquivalentContentResolver =
-				new AllFromPublishersEquivalentContentResolver(
-						mongoContentResolver,
-						lookupStore
-				);
+        KnownTypeContentResolver cassandraContentResolver =
+                new CassandraKnownTypeContentResolver(cassandra);
+
+        AllFromPublishersEquivalentContentResolver allFromPublishersEquivalentContentResolver =
+                new AllFromPublishersEquivalentContentResolver(mongoContentResolver, lookupStore);
 
 		KnownTypeQueryExecutor queryExecutor =
 				new LookupResolvingQueryExecutor(
@@ -154,14 +177,16 @@ public class QueryModule {
 						cassandraEnabled
 				);
 
-		queryExecutor = new UriFetchingQueryExecutor(localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
+		queryExecutor = new UriFetchingQueryExecutor
+                (localOrRemoteFetcher, queryExecutor, equivUpdater, ImmutableSet.of(FACEBOOK));
 		queryExecutor = new CurieResolvingQueryExecutor(queryExecutor);
 		queryExecutor = new FilterEquivalentToRespectKeyQueryExecutor(queryExecutor);
 		queryExecutor = new FilterActivelyPublishedOnlyQueryExecutor(queryExecutor);
 		queryExecutor = new MergeOnOutputQueryExecutor(queryExecutor);
 		queryExecutor = new FilterScheduleOnlyQueryExecutor(queryExecutor);
 
-		return Boolean.parseBoolean(applicationsEnabled) ? new ApplicationConfigurationQueryExecutor(queryExecutor) : queryExecutor;
+		return Boolean.parseBoolean(applicationsEnabled)
+               ? new ApplicationConfigurationQueryExecutor(queryExecutor)
+               : queryExecutor;
 	}
-
 }

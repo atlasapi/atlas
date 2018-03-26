@@ -1,12 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import org.atlasapi.media.channel.Channel;
-
-import com.metabroadcast.atlas.glycerin.GlycerinException;
-
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
+import com.metabroadcast.atlas.glycerin.GlycerinException;
+import org.atlasapi.media.channel.Channel;
 
 public interface NitroChannelAdapter {
 

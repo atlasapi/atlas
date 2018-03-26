@@ -1,19 +1,18 @@
 package org.atlasapi;
 
-import java.util.List;
-
-import org.atlasapi.media.channel.MongoChannelGroupStore;
-import org.atlasapi.media.channel.MongoChannelStore;
-import org.atlasapi.media.channel.OldChannel;
-import org.atlasapi.media.entity.MediaType;
-import org.atlasapi.media.entity.Publisher;
-
 import com.google.common.collect.ImmutableBiMap;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
 import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
 import com.mongodb.Mongo;
+import org.atlasapi.media.channel.MongoChannelGroupStore;
+import org.atlasapi.media.channel.MongoChannelStore;
+import org.atlasapi.media.channel.OldChannel;
+import org.atlasapi.media.entity.MediaType;
+import org.atlasapi.media.entity.Publisher;
+
+import java.util.List;
 
 public class MongoChannelInitialPopulate {
 

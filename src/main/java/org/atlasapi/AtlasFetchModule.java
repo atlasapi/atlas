@@ -14,10 +14,9 @@ permissions and limitations under the License. */
 
 package org.atlasapi;
 
-import java.util.List;
-
-import javax.annotation.PostConstruct;
-
+import com.google.common.collect.Lists;
+import com.metabroadcast.common.scheduling.SimpleScheduler;
+import com.metabroadcast.common.webapp.scheduling.ManualTaskTrigger;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.persistence.ContentPersistenceModule;
 import org.atlasapi.persistence.content.ContentWriter;
@@ -30,8 +29,8 @@ import org.atlasapi.remotesite.RemoteSiteModule;
 import org.atlasapi.remotesite.bliptv.BlipTvAdapter;
 import org.atlasapi.remotesite.dailymotion.DailyMotionItemAdapter;
 import org.atlasapi.remotesite.facebook.FacebookCanonicaliser;
-import org.atlasapi.remotesite.hulu.WritingHuluBrandAdapter;
 import org.atlasapi.remotesite.hulu.HuluItemAdapter;
+import org.atlasapi.remotesite.hulu.WritingHuluBrandAdapter;
 import org.atlasapi.remotesite.ted.TedTalkAdapter;
 import org.atlasapi.remotesite.tinyurl.SavingShortUrlCanonicaliser;
 import org.atlasapi.remotesite.tinyurl.ShortenedUrlCanonicaliser;
@@ -43,9 +42,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Primary;
 
-import com.google.common.collect.Lists;
-import com.metabroadcast.common.scheduling.SimpleScheduler;
-import com.metabroadcast.common.webapp.scheduling.ManualTaskTrigger;
+import javax.annotation.PostConstruct;
+import java.util.List;
 
 @Configuration
 @Import({AtlasFetchModule.WriterModule.class})

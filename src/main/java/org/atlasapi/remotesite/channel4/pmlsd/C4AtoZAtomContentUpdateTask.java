@@ -1,19 +1,20 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.util.Iterator;
 import java.util.List;
+import java.util.Optional;
 
 import org.atlasapi.media.entity.Publisher;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.scheduling.ScheduledTask;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+
+import javax.annotation.Nullable;
 
 public class C4AtoZAtomContentUpdateTask extends ScheduledTask {
 	
@@ -28,23 +29,27 @@ public class C4AtoZAtomContentUpdateTask extends ScheduledTask {
 
 	public C4AtoZAtomContentUpdateTask(SimpleHttpClient client, String apiBaseUrl, C4BrandUpdater brandUpdater,
 	        Publisher publisher) {
-	    this(client, apiBaseUrl, Optional.<String>absent(), brandUpdater, publisher);
+	    this(client, apiBaseUrl, Optional.empty(), brandUpdater, publisher);
 	}
 	
-    public C4AtoZAtomContentUpdateTask(SimpleHttpClient client, String apiBaseUrl, Optional<String> platform, 
-            C4BrandUpdater brandUpdater, Publisher publisher) {
+    public C4AtoZAtomContentUpdateTask(
+            SimpleHttpClient client,
+            String apiBaseUrl,
+            Optional<String> platform,
+            C4BrandUpdater brandUpdater,
+            Publisher publisher
+    ) {
         this.brandUpdater = brandUpdater;
         this.publisher = publisher;
 		this.atozFeeds = feedSource(client, apiBaseUrl, platform);
     }
 
-    private Iterable<Optional<Feed>> feedSource(final SimpleHttpClient client, final String apiBaseUrl, final Optional<String> platform) {
-        return new Iterable<Optional<Feed>>() {
-            @Override
-            public Iterator<Optional<Feed>> iterator() {
-                return new C4AtoZFeedIterator(client, apiBaseUrl, platform);
-            }
-        };
+    private Iterable<Optional<Feed>> feedSource(
+            final SimpleHttpClient client,
+            final String apiBaseUrl,
+            final Optional<String> platform
+    ) {
+        return () -> new C4AtoZFeedIterator(client, apiBaseUrl, platform);
     }
 
     @Override
@@ -68,8 +73,7 @@ public class C4AtoZAtomContentUpdateTask extends ScheduledTask {
 		}
 	}
 
-    @SuppressWarnings("unchecked")
-    private String extractUriFromLinks(Entry entry) {
+    @Nullable private String extractUriFromLinks(Entry entry) {
         for (Object link : Iterables.concat(entry.getAlternateLinks(), entry.getOtherLinks())) {
             Optional<String> extracted = linkExtractor.c4CanonicalUriFrom(((Link)link).getHref());
             if (extracted.isPresent()) {

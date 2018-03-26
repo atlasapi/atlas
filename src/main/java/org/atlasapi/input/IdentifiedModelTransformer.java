@@ -1,19 +1,17 @@
 package org.atlasapi.input;
 
-import java.util.Collection;
-import java.util.Set;
-
+import com.google.common.collect.Collections2;
+import com.google.common.collect.ImmutableList;
+import com.metabroadcast.common.time.Clock;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.LookupRef;
 import org.atlasapi.media.entity.simple.Alias;
 import org.atlasapi.media.entity.simple.Description;
 import org.atlasapi.media.entity.simple.SameAs;
-
-import com.metabroadcast.common.time.Clock;
-
-import com.google.common.collect.Collections2;
-import com.google.common.collect.ImmutableList;
 import org.joda.time.DateTime;
+
+import java.util.Collection;
+import java.util.Set;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 

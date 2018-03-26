@@ -1,26 +1,5 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import static org.hamcrest.MatcherAssert.assertThat;
-import static org.hamcrest.Matchers.hasItems;
-import static org.hamcrest.Matchers.is;
-import static org.hamcrest.Matchers.startsWith;
-
-import java.util.Map;
-import java.util.Set;
-
-import com.google.common.collect.ImmutableSet;
-import junit.framework.TestCase;
-
-import org.atlasapi.media.entity.Alias;
-import org.atlasapi.media.entity.Episode;
-import org.atlasapi.media.entity.Identified;
-import org.atlasapi.media.entity.Publisher;
-import org.atlasapi.media.entity.Series;
-import org.junit.Test;
-import org.junit.runner.RunWith;
-import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
-
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.SetMultimap;
@@ -28,6 +7,22 @@ import com.google.common.io.Resources;
 import com.metabroadcast.common.time.SystemClock;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Episode;
+import org.atlasapi.media.entity.Identified;
+import org.atlasapi.media.entity.Publisher;
+import org.atlasapi.media.entity.Series;
+import org.junit.Test;
+import org.junit.runner.RunWith;
+import org.mockito.runners.MockitoJUnitRunner;
+
+import java.util.Map;
+
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.hamcrest.Matchers.hasItem;
+import static org.hamcrest.Matchers.hasItems;
+import static org.hamcrest.Matchers.is;
+import static org.hamcrest.Matchers.startsWith;
 
 @RunWith( MockitoJUnitRunner.class )
 public class C4SeriesAndEpisodesExtractorTest {
@@ -69,7 +64,7 @@ public class C4SeriesAndEpisodesExtractorTest {
 		
 		assertThat(firstEpisode.getSeriesNumber(), is(3));
 		assertThat(firstEpisode.getEpisodeNumber(), is(1));
-		assertThat(firstEpisode.getAliases(), is((Set<Alias>) ImmutableSet.of(new Alias("gb:channel4:prod:pmlsd:programmeId", "41337/001"))));
+		assertThat(firstEpisode.getAliases(), hasItem(new Alias("gb:channel4:prod:pmlsd:programmeId", "41337/001")));
 
 		// since this is not a /4od feed there should be no On Demand entries
 		assertThat(firstEpisode.getVersions().isEmpty(), is(true));

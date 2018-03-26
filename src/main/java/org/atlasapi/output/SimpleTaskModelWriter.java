@@ -1,11 +1,11 @@
 package org.atlasapi.output;
 
-import java.util.Set;
-
 import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.feeds.tasks.Task;
 import org.atlasapi.feeds.tasks.simple.TaskQueryResult;
 import org.atlasapi.output.simple.ModelSimplifier;
+
+import java.util.Set;
 
 public class SimpleTaskModelWriter extends TransformingModelWriter<Iterable<Task>, TaskQueryResult> {
 

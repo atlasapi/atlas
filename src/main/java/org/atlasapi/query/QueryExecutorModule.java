@@ -51,6 +51,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 
+import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_NO_LOCK_SETTING_CONTENT_WRITER;
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @SuppressWarnings("PublicConstructor")

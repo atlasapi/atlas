@@ -1,10 +1,10 @@
 package org.atlasapi.remotesite.bbc.nitro;
 
-import java.util.List;
-
 import org.atlasapi.remotesite.bbc.nitro.v1.NitroClient;
 import org.atlasapi.remotesite.bbc.nitro.v1.NitroFormat;
 import org.atlasapi.remotesite.bbc.nitro.v1.NitroGenreGroup;
+
+import java.util.List;
 
 public class UnconfiguredNitroClient implements NitroClient {
 

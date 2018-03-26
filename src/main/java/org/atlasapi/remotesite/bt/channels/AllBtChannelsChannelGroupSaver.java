@@ -3,7 +3,9 @@ package org.atlasapi.remotesite.bt.channels;
 import static com.google.common.base.Preconditions.checkNotNull;
 
 import java.util.List;
+import java.util.Set;
 
+import com.google.common.collect.ImmutableSet;
 import org.atlasapi.media.channel.ChannelGroupResolver;
 import org.atlasapi.media.channel.ChannelGroupWriter;
 import org.atlasapi.media.channel.ChannelResolver;
@@ -22,12 +24,23 @@ public class AllBtChannelsChannelGroupSaver extends AbstractBtChannelGroupSaver 
     static final String BT_CHANNELS_URI_SUFFIX = "bt-channels";
     private final String aliasUriPrefix;
 
-    public AllBtChannelsChannelGroupSaver(Publisher publisher, String aliasUriPrefix, 
-            String aliasNamespace, ChannelGroupResolver channelGroupResolver, 
-            ChannelGroupWriter channelGroupWriter, ChannelResolver channelResolver, 
-            ChannelWriter channelWriter) {
-        super(publisher, channelGroupResolver, channelGroupWriter, channelResolver, 
-                channelWriter, LoggerFactory.getLogger(AllBtChannelsChannelGroupSaver.class));
+    public AllBtChannelsChannelGroupSaver(
+            Publisher publisher,
+            String aliasUriPrefix,
+            String aliasNamespace,
+            ChannelGroupResolver channelGroupResolver,
+            ChannelGroupWriter channelGroupWriter,
+            ChannelResolver channelResolver,
+            ChannelWriter channelWriter
+    ) {
+        super(
+                publisher,
+                channelGroupResolver,
+                channelGroupWriter,
+                channelResolver,
+                channelWriter,
+                LoggerFactory.getLogger(AllBtChannelsChannelGroupSaver.class)
+        );
         
         this.aliasUriPrefix = checkNotNull(aliasUriPrefix);
     }
@@ -38,8 +51,8 @@ public class AllBtChannelsChannelGroupSaver extends AbstractBtChannelGroupSaver 
     }
 
     @Override
-    protected Optional<Alias> aliasFor(String key) {
-        return Optional.absent();
+    protected Set<Alias> aliasesFor(String key) {
+        return ImmutableSet.of();
     }
 
     @Override

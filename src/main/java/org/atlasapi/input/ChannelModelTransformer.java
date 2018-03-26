@@ -1,28 +1,23 @@
 package org.atlasapi.input;
 
-import java.math.BigInteger;
-import java.util.List;
-import java.util.Set;
-import java.util.stream.Collectors;
-
+import com.google.api.client.util.Lists;
+import com.google.common.base.Optional;
+import com.metabroadcast.common.base.Maybe;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
 import org.atlasapi.media.channel.ChannelNumbering;
 import org.atlasapi.media.channel.ChannelType;
-import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.MediaType;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.RelatedLink;
 import org.atlasapi.media.entity.simple.Channel;
 import org.atlasapi.media.entity.simple.PublisherDetails;
-
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-
-import com.google.api.client.util.Lists;
-import com.google.common.base.Optional;
 import org.joda.time.DateTime;
 import org.joda.time.Duration;
 import org.joda.time.LocalDate;
+
+import java.math.BigInteger;
+import java.util.List;
 
 import static com.google.gdata.util.common.base.Preconditions.checkArgument;
 import static com.google.gdata.util.common.base.Preconditions.checkNotNull;

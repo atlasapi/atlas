@@ -1,22 +1,20 @@
 package org.atlasapi.output;
 
-import static com.metabroadcast.common.media.MimeType.TEXT_PLAIN;
+import com.google.common.base.Charsets;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.Maps;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.http.HttpStatusCode;
+import com.metabroadcast.common.media.MimeType;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
-
-import com.metabroadcast.applications.client.model.internal.Application;
-
-import com.google.common.base.Charsets;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.Maps;
-import com.metabroadcast.common.http.HttpStatusCode;
-import com.metabroadcast.common.media.MimeType;
+import static com.metabroadcast.common.media.MimeType.TEXT_PLAIN;
 
 public class DispatchingAtlasModelWriter<T> implements AtlasModelWriter<T> {
     

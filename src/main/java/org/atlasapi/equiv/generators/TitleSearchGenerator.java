@@ -15,7 +15,6 @@ import org.atlasapi.equiv.update.metadata.EquivToTelescopeComponent;
 import org.atlasapi.equiv.update.metadata.EquivToTelescopeResults;
 import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Described;
-import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.persistence.content.SearchResolver;
 import org.atlasapi.search.model.SearchQuery;
@@ -25,12 +24,9 @@ import com.metabroadcast.common.query.Selection;
 import com.metabroadcast.common.stream.MoreCollectors;
 
 import com.google.api.client.util.Lists;
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Functions;
-import com.google.common.base.Predicate;
 import com.google.common.base.Strings;
-import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Sets;
@@ -40,9 +36,10 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final static float TITLE_WEIGHTING = 1.0f;
     public final static String NAME = "Title";
     private final Set<String> TO_REMOVE = ImmutableSet.of("rated", "unrated", "(rated)", "(unrated)");
-
+    
     public static final <T extends Content> TitleSearchGenerator<T> create(
-            SearchResolver searchResolver, Class<? extends T> cls,
+            SearchResolver searchResolver,
+            Class<? extends T> cls,
             Iterable<Publisher> publishers,
             double exactMatchScore
     ) {
@@ -50,7 +47,8 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     }
 
     public static final <T extends Content> TitleSearchGenerator<T> create(
-            SearchResolver searchResolver, Class<? extends T> cls,
+            SearchResolver searchResolver,
+            Class<? extends T> cls,
             Iterable<Publisher> publishers,
             double exactMatchScore,
             boolean includeSelfPublisher
@@ -65,7 +63,7 @@ public class TitleSearchGenerator<T extends Content> implements EquivalenceGener
     private final ContentTitleScorer<T> titleScorer;
     private final int searchLimit;
     private final ExpandingTitleTransformer titleExpander;
-    //include stuff from publisher
+    //include stuff from the same publisher as the given content
     private final boolean includeSelfPublisher;
 
     public TitleSearchGenerator(

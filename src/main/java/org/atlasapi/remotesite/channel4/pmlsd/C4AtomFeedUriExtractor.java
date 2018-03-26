@@ -1,24 +1,21 @@
 package org.atlasapi.remotesite.channel4.pmlsd;
 
-import java.util.List;
-import java.util.Objects;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
-
-import javax.annotation.Nullable;
-
-import org.atlasapi.media.entity.Publisher;
-
-import com.google.common.base.Optional;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.sun.syndication.feed.atom.Entry;
 import com.sun.syndication.feed.atom.Feed;
 import com.sun.syndication.feed.atom.Link;
+import org.atlasapi.media.entity.Alias;
+import org.atlasapi.media.entity.Publisher;
 import org.jdom.Element;
+
+import java.util.List;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+import java.util.stream.Stream;
 
 import static com.google.common.base.Preconditions.checkNotNull;
 
@@ -39,64 +36,65 @@ public class C4AtomFeedUriExtractor implements C4UriExtractor<Feed, Feed, Entry>
     private static final Pattern OD_PATTERN = Pattern.compile("^\\d+-\\d+$");
 
     @Override
-    @SuppressWarnings("unchecked")
-    public Optional<String> uriForBrand(Publisher publisher, Feed feed) {
+    public Optional<C4UriAndAliases> uriForBrand(Publisher publisher, Feed feed) {
         for (Object link : Iterables.concat(feed.getAlternateLinks(), feed.getOtherLinks())) {
             Optional<String> uri = linkExtractor.atlasBrandUriFrom(publisher, ((Link)link).getHref());
             if (uri.isPresent()) {
-                return Optional.of(uri.get());
+                return Optional.of(C4UriAndAliases.create(uri.get()));
             }
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     @Override
-    public Optional<String> uriForSeries(Publisher publisher, Feed feed) {
+    public Optional<C4UriAndAliases> uriForSeries(Publisher publisher, Feed feed) {
         Matcher matcher = SERIES_PAGE_ID_PATTERN.matcher(feed.getId());
         if (matcher.matches()) {
-            return Optional.of(String.format("http://%s/pmlsd/%s", publisherHost(publisher), matcher.group(1)));
+            return Optional.of(C4UriAndAliases.create(
+                    String.format("http://%s/pmlsd/%s", publisherHost(publisher), matcher.group(1))
+            ));
         }
-        return Optional.absent();
+        return Optional.empty();
     }
 
     @Override
-    public Optional<String> uriForItem(Publisher publisher, Entry entry) {
+    public Optional<C4UriAndAliases> uriForItem(Publisher publisher, Entry entry) {
         String progId = C4AtomApi.foreignElementLookup(entry).get(DC_PROGRAMME_ID);
         checkNotNull(progId, "No programmeId in entry: %s", entry.getId());
-        return Optional.of(String.format("http://%s/pmlsd/%s", publisherHost(publisher), progId));
+        return Optional.of(C4UriAndAliases.create(
+                String.format("http://%s/pmlsd/%s", publisherHost(publisher), progId),
+                new Alias(C4AtomApi.ALIAS, progId),
+                new Alias(C4AtomApi.ALIAS_FOR_BARB, progId)
+        ));
     }
 
-    @SuppressWarnings("Guava")
-    @Nullable
     @Override
-    public Optional<String> uriForClip(Publisher publisher, Entry entry) {
+    public Optional<C4UriAndAliases> uriForClip(Publisher publisher, Entry entry) {
 
-        List links = (List<Link>) Stream.concat(
-                entry.getOtherLinks().stream(),
-                entry.getAlternateLinks().stream())
-                .collect(Collectors.toList());
-
-        java.util.Optional<String> odLink = ((List<Link>) links).stream()
+        Optional<String> odLink = Stream.concat(
+                        ((List<?>) entry.getOtherLinks()).stream().map(Link.class::cast),
+                        ((List<?>) entry.getAlternateLinks()).stream().map(Link.class::cast)
+                )
                 .map(Link::getHref)
                 .filter(Objects::nonNull)
                 .filter(this::is4OdLink)
                 .findFirst();
 
         if (odLink.isPresent()) {
-            return Optional.of(odLink.get());
+            return Optional.of(C4UriAndAliases.create(odLink.get()));
         }
 
         Element mediaGroup = C4AtomApi.mediaGroup(entry);
         if (mediaGroup == null) {
-            return null;
+            return Optional.empty();
         }
 
         Element player = mediaGroup.getChild("player", C4AtomApi.NS_MEDIA_RSS);
         if (player == null) {
-            return null;
+            return Optional.empty();
         }
 
-        return Optional.of(player.getAttributeValue("url"));
+        return Optional.of(C4UriAndAliases.create(player.getAttributeValue("url")));
     }
 
     private boolean is4OdLink(String href) {

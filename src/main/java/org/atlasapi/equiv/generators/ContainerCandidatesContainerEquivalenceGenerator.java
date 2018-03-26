@@ -82,6 +82,7 @@ public class ContainerCandidatesContainerEquivalenceGenerator
                             && !Objects.equals(candidateSeries.getId(), subject.getId())) {
 
                             result.addEquivalent(candidateSeries, Score.NULL_SCORE);
+
                             generatorComponent.addComponentResult(candidateSeries.getId(), "");
                         }
                     }

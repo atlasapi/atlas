@@ -1,12 +1,10 @@
 package org.atlasapi.input;
 
+import com.metabroadcast.common.media.MimeType;
 import org.atlasapi.media.entity.Image;
 import org.atlasapi.media.entity.ImageAspectRatio;
 import org.atlasapi.media.entity.ImageColor;
 import org.atlasapi.media.entity.ImageTheme;
-
-import com.metabroadcast.common.media.MimeType;
-
 import org.joda.time.DateTime;
 
 public class ImageModelTranslator implements ModelTransformer<org.atlasapi.media.entity.simple.Image, Image> {

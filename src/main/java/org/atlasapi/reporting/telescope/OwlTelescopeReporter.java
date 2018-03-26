@@ -16,9 +16,7 @@ import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.columbus.telescope.client.TelescopeClientImpl;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporter;
 import com.metabroadcast.columbus.telescope.client.TelescopeReporterName;
-//import com.metabroadcast.columbus.telescope.client.http.TelescopeReporterHelperMethods;
 import com.metabroadcast.common.media.MimeType;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

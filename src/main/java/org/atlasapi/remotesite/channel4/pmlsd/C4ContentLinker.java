@@ -2,6 +2,7 @@ package org.atlasapi.remotesite.channel4.pmlsd;
 
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.regex.Pattern;
 
 import org.atlasapi.media.entity.Brand;
@@ -14,7 +15,6 @@ import org.atlasapi.media.entity.Series;
 import org.atlasapi.media.entity.Version;
 
 import com.google.common.base.Function;
-import com.google.common.base.Optional;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Multimap;
@@ -152,24 +152,18 @@ class C4ContentLinker {
     
     public Optional<String> createKeyForSeries(Integer seriesNumber) {
         if (seriesNumber == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(String.format("s%d", seriesNumber));
     }
     
     public Optional<String> createKeyForEpisode(Integer seriesNumber, Integer episodeNumber) {
         if (seriesNumber == null || episodeNumber == null) {
-            return Optional.absent();
+            return Optional.empty();
         }
         return Optional.of(String.format("s%d-e%d", seriesNumber, episodeNumber));
     }
     
-    private static Function<Episode, String> TO_TAG_URI = new Function<Episode, String>() {
-
-        @Override
-        public String apply(Episode episode) {
-            return episode.getCanonicalUri().replace(PMLSC_URI_PREFIX, TAG_URI_PREFIX);
-        }
-        
-    };
+    private static Function<Episode, String> TO_TAG_URI = episode ->
+            episode.getCanonicalUri().replace(PMLSC_URI_PREFIX, TAG_URI_PREFIX);
 }

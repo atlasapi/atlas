@@ -1,15 +1,13 @@
 package org.atlasapi.system;
 
-import java.util.Map;
-import java.util.Map.Entry;
-
-import javax.servlet.ServletContext;
-
+import com.metabroadcast.common.health.HealthProbe;
+import com.metabroadcast.common.health.ProbeResult;
 import org.atlasapi.AtlasMain;
 import org.springframework.web.context.ServletContextAware;
 
-import com.metabroadcast.common.health.HealthProbe;
-import com.metabroadcast.common.health.ProbeResult;
+import javax.servlet.ServletContext;
+import java.util.Map;
+import java.util.Map.Entry;
 
 
 public class JettyHealthProbe implements HealthProbe, ServletContextAware {

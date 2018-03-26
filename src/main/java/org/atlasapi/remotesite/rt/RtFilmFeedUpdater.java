@@ -17,6 +17,10 @@ import org.atlasapi.persistence.logging.AdapterLog;
 import org.atlasapi.persistence.logging.AdapterLogEntry;
 import org.atlasapi.persistence.logging.AdapterLogEntry.Severity;
 import org.atlasapi.remotesite.HttpClients;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporter;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporterFactory;
+import org.atlasapi.reporting.telescope.OwlTelescopeReporters;
+
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeConstants;
 import org.joda.time.DateTimeZone;
@@ -24,6 +28,9 @@ import org.joda.time.format.DateTimeFormat;
 import org.joda.time.format.DateTimeFormatter;
 
 import com.google.common.base.Throwables;
+
+import com.metabroadcast.columbus.telescope.api.Event;
+import com.metabroadcast.columbus.telescope.client.EntityType;
 import com.metabroadcast.common.http.HttpResponseTransformer;
 import com.metabroadcast.common.http.SimpleHttpClient;
 import com.metabroadcast.common.http.SimpleHttpClientBuilder;
@@ -50,7 +57,7 @@ public class RtFilmFeedUpdater extends ScheduledTask {
                 FilmProcessingNodeFactory filmProcessingNodeFactory = new FilmProcessingNodeFactory();
                 Builder builder = new Builder(filmProcessingNodeFactory);
                 builder.build(bodyReader);
-                reportStatus(String.format("Finished. Proessed %s. %s failed", filmProcessingNodeFactory.getProcessed(), filmProcessingNodeFactory.getFailed()));
+                reportStatus(String.format("Finished. Processed %s. %s failed", filmProcessingNodeFactory.getProcessed(), filmProcessingNodeFactory.getFailed()));
             } catch (Exception e) {
                 log.record(AdapterLogEntry.errorEntry().withCause(e).withSource(getClass()).withDescription("Exception in RT Film updater"));
             }
@@ -63,7 +70,8 @@ public class RtFilmFeedUpdater extends ScheduledTask {
     private final AdapterLog log;
     private final RtFilmProcessor processor;
     private final boolean doCompleteUpdate;
-    
+    private OwlTelescopeReporter telescopeReporter;
+
     public RtFilmFeedUpdater(String feedUrl, AdapterLog log, ContentResolver contentResolver, ContentWriter contentWriter, RtFilmProcessor processor) {
         this(feedUrl, log, contentResolver, contentWriter, processor, false);
     }
@@ -81,6 +89,12 @@ public class RtFilmFeedUpdater extends ScheduledTask {
     
     @Override
     protected void runTask() {
+        telescopeReporter = OwlTelescopeReporterFactory.getInstance()
+                .getTelescopeReporter(
+                        OwlTelescopeReporters.RADIO_TIMES_INGESTER,
+                        Event.Type.INGEST);
+        telescopeReporter.startReporting();
+
         String requestUri = feedUrl;
         
         if (doCompleteUpdate) {
@@ -96,8 +110,12 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             AdapterLogEntry errorRecord = errorEntry().withCause(e).withSource(getClass()).withUri(requestUri).withDescription("Exception while fetching film feed");
             log.record(errorRecord);
             reportStatus("Failed: " + errorRecord.id());
+            telescopeReporter.reportFailedEvent("Failed with exception. Ingest stopped abruptly. " + e.getMessage(),
+                    EntityType.FILM, requestUri, errorRecord);
             Throwables.propagate(e);
-        } 
+        } finally {
+            telescopeReporter.endReporting();
+        }
     }
 
     private class FilmProcessingNodeFactory extends NodeFactory {
@@ -109,11 +127,13 @@ public class RtFilmFeedUpdater extends ScheduledTask {
             if (element.getLocalName().equalsIgnoreCase("film") && shouldContinue()) {
                 
                 try {
-                    processor.process(element);
+                    processor.process(element, telescopeReporter);
                 }
                 catch (Exception e) {
                     log.record(new AdapterLogEntry(Severity.ERROR).withSource(RtFilmFeedUpdater.class).withCause(e).withDescription("Exception when processing film"));
                     failures++;
+                    telescopeReporter.reportFailedEvent("Failed with exception. " + e.getMessage(),
+                            EntityType.FILM, element);
                 }
                 
                 reportStatus(String.format("Processing film number %s. %s failures ", ++currentFilmNumber, failures));

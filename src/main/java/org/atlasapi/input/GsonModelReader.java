@@ -1,12 +1,12 @@
 package org.atlasapi.input;
 
-import java.io.IOException;
-import java.io.Reader;
-
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.JsonIOException;
 import com.google.gson.JsonSyntaxException;
+
+import java.io.IOException;
+import java.io.Reader;
 
 public class GsonModelReader implements ModelReader {
 

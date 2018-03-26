@@ -49,6 +49,7 @@ import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterTyp
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.RT_UPCOMING_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STANDARD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.STRICT_ITEM;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.TXLOGS_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.VOD_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType
         .VOD_WITH_SERIES_SEQUENCE_ITEM;
@@ -64,6 +65,7 @@ import static org.atlasapi.media.entity.Publisher.BETTY;
 import static org.atlasapi.media.entity.Publisher.BT_SPORT_EBS;
 import static org.atlasapi.media.entity.Publisher.BT_TVE_VOD;
 import static org.atlasapi.media.entity.Publisher.BT_VOD;
+import static org.atlasapi.media.entity.Publisher.C4_PMLSD;
 import static org.atlasapi.media.entity.Publisher.C4_PRESS;
 import static org.atlasapi.media.entity.Publisher.FACEBOOK;
 import static org.atlasapi.media.entity.Publisher.FIVE;
@@ -127,7 +129,9 @@ public class UpdaterConfigurationRegistry {
                 makeBarbMasterConfiguration(),
                 makeBarbTransmissionConfiguration(),
                 makeItvCpsConfiguration(),
-                makeNitroConfiguration()
+                makeNitroConfiguration(),
+                makeC4PmlsdConfiguration(),
+                makeUktvConfiguration()
         );
 
         configurations.add(
@@ -703,8 +707,8 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(FIVE)
                 .withItemEquivalenceUpdater(
-                        STRICT_ITEM,
-                        TARGET_SOURCES
+                        BARB_ITEM,
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD)
                 )
                 .withTopLevelContainerEquivalenceUpdater(
                         STANDARD_TOP_LEVEL_CONTAINER,
@@ -722,15 +726,21 @@ public class UpdaterConfigurationRegistry {
                 .withSource(BARB_MASTER)
                 .withItemEquivalenceUpdater(
                         BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV)
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                        )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                        )
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_SERIES,
+                        ImmutableSet.of(
+                                BBC_NITRO, ITV_CPS, BARB_TRANSMISSIONS, UKTV, C4_PMLSD, FIVE
+                        )
                 )
                 .build();
     }
@@ -739,16 +749,24 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(BARB_TRANSMISSIONS)
                 .withItemEquivalenceUpdater(
-                        BARB_ITEM,
-                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV)
+                        TXLOGS_ITEM,
+                        ImmutableSet.of(
+                                BBC_NITRO,
+                                ITV_CPS,
+                                BARB_MASTER,
+                                UKTV,
+                                C4_PMLSD,
+                                FIVE,
+                                BARB_TRANSMISSIONS
+                        )
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        NOP_CONTAINER,
-                        ImmutableSet.of()
+                        STANDARD_SERIES,
+                        ImmutableSet.of(BBC_NITRO, ITV_CPS, BARB_MASTER, UKTV, C4_PMLSD, FIVE)
                 )
                 .build();
     }
@@ -785,6 +803,42 @@ public class UpdaterConfigurationRegistry {
                 .withNonTopLevelContainerEquivalenceUpdater(
                         STANDARD_SERIES,
                         ImmutableSet.of(PA)
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeC4PmlsdConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(C4_PMLSD)
+                .withItemEquivalenceUpdater(
+                        BARB_ITEM,
+                        ImmutableSet.of(BARB_TRANSMISSIONS, BARB_MASTER, PA, RADIO_TIMES)
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        TARGET_SOURCES
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        TARGET_SOURCES
+                )
+                .build();
+    }
+
+    private static UpdaterConfiguration makeUktvConfiguration() {
+        return UpdaterConfiguration.builder()
+                .withSource(UKTV)
+                .withItemEquivalenceUpdater(
+                        BARB_ITEM,
+                        ImmutableSet.of(BARB_TRANSMISSIONS, BARB_MASTER, PA, RADIO_TIMES)
+                )
+                .withTopLevelContainerEquivalenceUpdater(
+                        STANDARD_TOP_LEVEL_CONTAINER,
+                        TARGET_SOURCES
+                )
+                .withNonTopLevelContainerEquivalenceUpdater(
+                        STANDARD_SERIES,
+                        TARGET_SOURCES
                 )
                 .build();
     }

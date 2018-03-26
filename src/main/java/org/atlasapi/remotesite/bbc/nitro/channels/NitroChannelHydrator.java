@@ -1,10 +1,14 @@
 package org.atlasapi.remotesite.bbc.nitro.channels;
 
-import java.io.File;
-import java.util.Collection;
-import java.util.List;
-import java.util.Optional;
-
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.google.api.client.repackaged.com.google.common.base.Strings;
+import com.google.common.base.Throwables;
+import com.google.common.collect.ImmutableList;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.ImmutableTable;
+import com.google.common.collect.Multimap;
+import com.google.common.collect.Table;
 import org.atlasapi.media.channel.Channel;
 import org.atlasapi.media.channel.TemporalField;
 import org.atlasapi.media.entity.Alias;
@@ -16,18 +20,13 @@ import org.atlasapi.remotesite.bbc.nitro.channels.hax.LocatorWithRegions;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewMasterbrand;
 import org.atlasapi.remotesite.bbc.nitro.channels.hax.YouviewService;
 import org.atlasapi.remotesite.bbc.nitro.extract.NitroImageExtractor;
-
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.google.api.client.repackaged.com.google.common.base.Strings;
-import com.google.common.base.Throwables;
-import com.google.common.collect.ImmutableList;
-import com.google.common.collect.ImmutableMultimap;
-import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.ImmutableTable;
-import com.google.common.collect.Multimap;
-import com.google.common.collect.Table;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.io.File;
+import java.util.Collection;
+import java.util.List;
+import java.util.Optional;
 
 public class NitroChannelHydrator {
 

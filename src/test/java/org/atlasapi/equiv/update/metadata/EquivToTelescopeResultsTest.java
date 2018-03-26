@@ -38,12 +38,6 @@ public class EquivToTelescopeResultsTest {
 
         assertEquals(equivToTelescopeResults.getGenerators().get(0), generator);
         assertEquals(equivToTelescopeResults.getScorers().size(), 2);
-
-
-        // print json at the end to be checked visually
-        Gson gson = new Gson();
-        JsonElement equivResultsJson = gson.toJsonTree(equivToTelescopeResults);
-        System.out.println(equivResultsJson);
     }
 
 }

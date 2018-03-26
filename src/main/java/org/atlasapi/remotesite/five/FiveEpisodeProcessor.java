@@ -10,6 +10,7 @@ import org.atlasapi.genres.GenreMap;
 import org.atlasapi.media.TransportSubType;
 import org.atlasapi.media.TransportType;
 import org.atlasapi.media.channel.Channel;
+import org.atlasapi.media.entity.Alias;
 import org.atlasapi.media.entity.Brand;
 import org.atlasapi.media.entity.Broadcast;
 import org.atlasapi.media.entity.Encoding;
@@ -132,6 +133,8 @@ public class FiveEpisodeProcessor {
 
         item.setTitle(childValue(element, "title"));
         item.addVersion(getVersion(element));
+
+        item.addAlias(new Alias("gb:c5:bcid", id));
         
         return item;
     }

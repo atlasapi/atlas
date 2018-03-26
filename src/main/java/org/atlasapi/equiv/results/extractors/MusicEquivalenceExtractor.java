@@ -31,9 +31,9 @@ public class MusicEquivalenceExtractor implements EquivalenceExtractor<Item> {
         if (candidates.isEmpty()) {
             return ImmutableSet.of();
         }
-        
+
         desc.startStage(toString());
-        
+
         List<ScoredCandidate<Item>> positiveScores = removeNonPositiveScores(candidates, desc);
         
         Optional<ScoredCandidate<Item>> result = Optional.empty();

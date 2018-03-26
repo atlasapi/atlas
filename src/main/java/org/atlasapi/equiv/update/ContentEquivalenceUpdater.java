@@ -125,14 +125,11 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
             messenger.sendMessage(result);
         }
 
-        Gson gson = new Gson();
-        JsonElement equivResultsJson = gson.toJsonTree(resultsForTelescope);
-
         telescope.reportSuccessfulEvent(
                 content.getId(),
                 content.getAliases(),
                 content,
-                equivResultsJson
+                resultsForTelescope
         );
 
         return !result.combinedEquivalences().candidates().isEmpty();

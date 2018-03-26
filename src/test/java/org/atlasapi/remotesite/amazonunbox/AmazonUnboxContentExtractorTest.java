@@ -117,7 +117,7 @@ public class AmazonUnboxContentExtractorTest {
             }
         }
         assertFalse("An SD encoding was created, but it shouldn't", foundSd);
-        assertFalse("The HD encoding was created, but it shouldn't have.", foundHd);
+        assertTrue("The HD encoding was not created, but it should have.", foundHd);
         assertTrue("The UHD encoding was not created, but it should have.", foundUhd);
     }
 
@@ -153,7 +153,7 @@ public class AmazonUnboxContentExtractorTest {
         }
         assertTrue("An SD encoding was not created, but it should.", foundSd);
         assertFalse("The HD encoding was created, but it should not have.", foundHd);
-        assertFalse("The UHD encoding was created, but it shouldn't have because the content is SD.", foundUhd);
+        assertTrue("The UHD encoding was not created, but it should.", foundUhd);
     }
 
     //the test is meaningless since there is nothing on the feed and thus we (now) do nothing, and

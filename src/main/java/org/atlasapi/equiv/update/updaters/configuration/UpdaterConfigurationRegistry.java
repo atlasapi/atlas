@@ -17,6 +17,8 @@ import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfigurat
         .NON_STANDARD_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.TARGET_SOURCES;
 import static org.atlasapi.equiv.update.updaters.configuration.DefaultConfiguration.VF_SOURCES;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType.AMAZON_SERIES;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
         .BROADCAST_ITEM_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
@@ -35,6 +37,7 @@ import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdat
         .STANDARD_TOP_LEVEL_CONTAINER;
 import static org.atlasapi.equiv.update.updaters.types.ContainerEquivalenceUpdaterType
         .VOD_CONTAINER;
+import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.AMAZON_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BARB_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BETTY_ITEM;
 import static org.atlasapi.equiv.update.updaters.types.ItemEquivalenceUpdaterType.BROADCAST_ITEM;
@@ -590,15 +593,15 @@ public class UpdaterConfigurationRegistry {
         return UpdaterConfiguration.builder()
                 .withSource(AMAZON_UNBOX)
                 .withItemEquivalenceUpdater(
-                        VOD_ITEM,
+                        AMAZON_ITEM,
                         targetSources
                 )
                 .withTopLevelContainerEquivalenceUpdater(
-                        VOD_CONTAINER,
+                        AMAZON_CONTAINER,
                         targetSources
                 )
                 .withNonTopLevelContainerEquivalenceUpdater(
-                        STANDARD_SERIES,
+                        AMAZON_SERIES,
                         targetSources
                 )
                 .build();

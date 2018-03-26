@@ -1,9 +1,5 @@
 package org.atlasapi.query.v2;
 
-import static com.google.common.base.Preconditions.checkNotNull;
-import static com.metabroadcast.common.time.DateTimeZones.UTC;
-import static org.joda.time.DateTimeConstants.JANUARY;
-
 import java.io.IOException;
 import java.util.Collection;
 import java.util.Map;
@@ -12,13 +8,13 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import javax.xml.bind.JAXBElement;
 
-import com.metabroadcast.applications.client.model.internal.Application;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.query.InvalidApiKeyException;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.feeds.tasks.Destination.DestinationType;
 import org.atlasapi.feeds.tvanytime.TvAnytimeGenerator;
 import org.atlasapi.feeds.tvanytime.TvaGenerationException;
+import org.atlasapi.feeds.youview.ContentHierarchyExpanderFactory;
 import org.atlasapi.feeds.youview.FilterFactory;
 import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.hierarchy.ItemAndVersion;
@@ -36,23 +32,26 @@ import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.persistence.content.ContentResolver;
 import org.atlasapi.persistence.content.ResolvedContent;
 import org.atlasapi.persistence.logging.AdapterLog;
-import org.joda.time.DateTime;
-import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
 
-import tva.metadata._2010.TVAMainType;
+import com.metabroadcast.applications.client.model.internal.Application;
+import com.metabroadcast.common.http.HttpStatusCode;
 
 import com.google.common.base.Optional;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import org.joda.time.DateTime;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import tva.metadata._2010.TVAMainType;
 
-import com.metabroadcast.common.base.Maybe;
-import com.metabroadcast.common.http.HttpStatusCode;
+import static com.google.common.base.Preconditions.checkNotNull;
+import static com.metabroadcast.common.time.DateTimeZones.UTC;
+import static org.joda.time.DateTimeConstants.JANUARY;
 
 /**
  * Produces an output feed a certain provider, given a certain publisher's content.
@@ -94,7 +93,7 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
     private final TvAnytimeGenerator feedGenerator;
     private final ContentResolver contentResolver;
     private final ChannelResolver channelResolver;
-    private final ContentHierarchyExpander hierarchyExpander;
+    private final ContentHierarchyExpanderFactory hierarchyExpanderFactory;
 
     public ContentFeedController(
             ApplicationFetcher configFetcher,
@@ -103,13 +102,13 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
             TvAnytimeGenerator feedGenerator,
             ContentResolver contentResolver,
             ChannelResolver channelResolver,
-            ContentHierarchyExpander hierarchyExpander
+            ContentHierarchyExpanderFactory hierarchyExpanderFactory
     ) {
         super(configFetcher, log, outputter, DefaultApplication.createDefault());
         this.feedGenerator = checkNotNull(feedGenerator);
         this.contentResolver = checkNotNull(contentResolver);
         this.channelResolver = channelResolver;
-        this.hierarchyExpander = checkNotNull(hierarchyExpander);
+        this.hierarchyExpanderFactory = hierarchyExpanderFactory;
     }
 
     /**
@@ -163,8 +162,11 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 // TODO what is the default here?
                 Predicate<ItemBroadcastHierarchy> broadcastFilter = FilterFactory.broadcastFilter(START_OF_TIME);
 
+                ContentHierarchyExpander hierarchyExpander
+                        = hierarchyExpanderFactory.create(publisher);
                 Map<String, ItemAndVersion> versions = hierarchyExpander.versionHierarchiesFor(item);
-                Map<String, ItemBroadcastHierarchy> broadcasts = Maps.filterValues(hierarchyExpander.broadcastHierarchiesFor(item), broadcastFilter);
+                Map<String, ItemBroadcastHierarchy> broadcasts = Maps.filterValues(
+                        hierarchyExpander.broadcastHierarchiesFor(item), broadcastFilter);
                 Map<String, ItemOnDemandHierarchy> onDemands = hierarchyExpander.onDemandHierarchiesFor(item);
 
                 JAXBElement<TVAMainType> tva = feedGenerator.generateContentTVAFrom(content.get(), versions, broadcasts, onDemands);
@@ -338,6 +340,9 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 errorViewFor(request, response, CONTENT_NOT_AN_ITEM);
                 return;
             }
+
+            ContentHierarchyExpander hierarchyExpander
+                    = hierarchyExpanderFactory.create(publisher);
             Map<String, ItemAndVersion> hierarchies = hierarchyExpander.versionHierarchiesFor((Item) content.get());
 
             if (versionCrid != null) {
@@ -402,6 +407,8 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
 
+            ContentHierarchyExpander hierarchyExpander
+                    = hierarchyExpanderFactory.create(publisher);
             Map<String, ItemBroadcastHierarchy> hierarchies = hierarchyExpander.broadcastHierarchiesFor((Item) content.get());
 
             if (broadcastImi != null) {
@@ -467,6 +474,8 @@ public class ContentFeedController extends BaseController<JAXBElement<TVAMainTyp
                 return;
             }
 
+            ContentHierarchyExpander hierarchyExpander
+                    = hierarchyExpanderFactory.create(publisher);
             Map<String, ItemOnDemandHierarchy> hierarchies = hierarchyExpander.onDemandHierarchiesFor((Item) content.get());
 
             if (onDemandImi != null) {

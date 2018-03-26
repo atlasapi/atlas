@@ -32,6 +32,7 @@ import org.atlasapi.media.entity.Content;
 import org.atlasapi.media.entity.Identified;
 import org.atlasapi.media.entity.Publisher;
 import org.atlasapi.media.entity.simple.response.WriteResponse;
+import org.atlasapi.output.Annotation;
 import org.atlasapi.output.AtlasErrorSummary;
 import org.atlasapi.output.AtlasModelWriter;
 import org.atlasapi.output.QueryResult;
@@ -64,12 +65,19 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             .withStatusCode(HttpStatusCode.FORBIDDEN)
             .withMessage("Your API key is not permitted to view content from this publisher");
 
-	private final KnownTypeQueryExecutor executor;
+    private final KnownTypeQueryExecutor restrictiveExecutor;
+    /**
+     * This executor will allow multiple items from the same publisher in the equiv set.
+     * We gave it this unexplanatory name because no reasonably sized name could explain that.
+     */
+    private final KnownTypeQueryExecutor liberalExecutor;
 
     private final ContentWriteController contentWriteController;
     private final EventContentLister contentLister;
-	
-    public QueryController(KnownTypeQueryExecutor executor,
+
+    public QueryController(
+            KnownTypeQueryExecutor restrictiveExecutor,
+            KnownTypeQueryExecutor liberalExecutor,
             ApplicationFetcher configFetcher,
             AdapterLog log,
             AtlasModelWriter<QueryResult<Identified, ? extends Identified>> outputter,
@@ -77,7 +85,8 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             EventContentLister contentLister) {
 	    super(configFetcher, log, outputter, SubstitutionTableNumberCodec.lowerCaseOnly(),
                 DefaultApplication.createDefault());
-        this.executor = executor;
+        this.restrictiveExecutor = restrictiveExecutor;
+        this.liberalExecutor = liberalExecutor;
         this.contentWriteController = contentWriteController;
         this.contentLister = contentLister;
 	}
@@ -115,6 +124,15 @@ public class QueryController extends BaseController<QueryResult<Identified, ? ex
             } catch (InvalidApiKeyException ex) {
                 errorViewFor(request, response, AtlasErrorSummary.forException(ex));
                 return;
+            }
+
+            //decide which executor to use. Restrictive is normal, liberal allows multiple stuff
+            //from the same publisher in the equiv set.
+            KnownTypeQueryExecutor executor;
+            if(filter.getAnnotations().contains(Annotation.ALLOW_MULTIPLE_FROM_SAME_PUBLISHER_IN_EQUIV_LIST)){
+                executor = liberalExecutor;
+            } else {
+                executor = restrictiveExecutor;
             }
 			
 			List<String> uris = getUriList(request);

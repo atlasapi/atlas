@@ -20,6 +20,11 @@ public class DummyContainerFilter<T extends Content> extends AbstractEquivalence
         filterComponent.setComponentName("Dummy Container Filter");
 
         if (!(input.candidate() instanceof Container && subject instanceof Container)) {
+            filterComponent.addComponentResult(
+                    input.candidate().getId(),
+                    "Went through, not a container."
+            );
+            equivToTelescopeResults.addFilterResult(filterComponent);
             return true;
         }
 
@@ -41,6 +46,11 @@ public class DummyContainerFilter<T extends Content> extends AbstractEquivalence
                         "Removed as dummy (empty) container"
                 );
             }
+        } else{
+            filterComponent.addComponentResult(
+                    candidateContainer.getId(),
+                    "Went through."
+            );
         }
 
         equivToTelescopeResults.addFilterResult(filterComponent);

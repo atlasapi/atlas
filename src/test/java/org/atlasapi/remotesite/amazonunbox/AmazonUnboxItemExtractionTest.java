@@ -47,7 +47,7 @@ public class AmazonUnboxItemExtractionTest {
         assertThat(item.getAmazonRatingsCount(), is(equalTo(7)));
         assertEquals("B007FUIBHM", item.getAsin());
         assertEquals(ContentType.MOVIE, item.getContentType());
-        assertEquals("Liz Adams", item.getDirector());
+        assertEquals(ImmutableSet.of("Liz Adams","Superman"), item.getDirectors());
         assertEquals(ImmutableSet.of(ACTION, ADVENTURE, THRILLER), item.getGenres());
         assertEquals("http://ecx.images-amazon.com/images/I/51LG6PC6P1L._SX320_SY240_.jpg", item.getLargeImageUrl());
         assertEquals(Quality.SD, item.getQuality());
@@ -55,12 +55,14 @@ public class AmazonUnboxItemExtractionTest {
         assertEquals(Boolean.FALSE, item.isRental());
         assertEquals(Boolean.FALSE, item.isSeasonPass());
         assertEquals(Boolean.TRUE, item.isStreamable());
+        assertEquals(null, item.getUnboxHdPurchaseUrl());
+        assertEquals("http://www.amazon.com/gp/product/B0091VSK3S/INSERT_TAG_HERE/ref=atv_feed_catalog/", item.getUnboxSdPurchaseUrl());
         assertEquals(
                 "When a solar storm wipes out the air traffic control system, Air Force One and a passenger jet liner "
                 + "are locked on a collision course in the skies.",
                 item.getSynopsis()
         );
-        assertEquals("NR", item.getRating());
+        assertEquals("bbfc_rating|ages_12_and_over", item.getRating());
         assertEquals("9.99", item.getPrice());
         assertEquals(new DateTime(2011, 12, 31, 0, 0, 0).withZone(DateTimeZone.forID("Europe/London")), item.getReleaseDate());
         assertEquals(Duration.standardMinutes(93), item.getDuration());

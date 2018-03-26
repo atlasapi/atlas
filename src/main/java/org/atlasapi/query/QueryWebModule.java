@@ -12,6 +12,7 @@ import org.atlasapi.feeds.tasks.simple.TaskQueryResult;
 import org.atlasapi.feeds.tvanytime.TvAnytimeGenerator;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
 import org.atlasapi.feeds.utils.WatermarkModule;
+import org.atlasapi.feeds.youview.ContentHierarchyExpanderFactory;
 import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
@@ -203,12 +204,13 @@ public class QueryWebModule {
     @Autowired private LastUpdatedContentFinder contentFinder;
     @Autowired private SegmentWriter segmentWriter;
     @Autowired private TaskStore taskStore;
-    @Autowired private ContentHierarchyExpander hierarchyExpander;
+    @Autowired private ContentHierarchyExpanderFactory hierarchyExpanderFactory;
     @Autowired private ChannelStore channelStore;
     @Autowired private LookupEntryStore entryStore;
     @Autowired private LookupWriter lookupWriter;
 
     @Autowired private KnownTypeQueryExecutor queryExecutor;
+    @Autowired @Qualifier("YouviewQueryExecutor")  private KnownTypeQueryExecutor allowMultipleFromSamePublisherExecutor;
     @Autowired private ApplicationFetcher applicationFetcher;
     @Autowired private AdapterLog log;
     @Autowired private EventContentLister eventContentLister;
@@ -390,6 +392,7 @@ public class QueryWebModule {
     QueryController queryController() {
         return new QueryController(
                 queryExecutor,
+                allowMultipleFromSamePublisherExecutor,
                 applicationFetcher,
                 log,
                 contentModelOutputter(),
@@ -553,7 +556,7 @@ public class QueryWebModule {
                 feedGenerator,
                 contentResolver,
                 channelResolver,
-                hierarchyExpander
+                hierarchyExpanderFactory
         );
     }
 

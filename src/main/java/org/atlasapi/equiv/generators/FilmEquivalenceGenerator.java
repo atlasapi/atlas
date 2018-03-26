@@ -77,8 +77,7 @@ public class FilmEquivalenceGenerator implements EquivalenceGenerator<Item> {
         EquivToTelescopeComponent generatorComponent = EquivToTelescopeComponent.create();
         generatorComponent.setComponentName("Film Equivalence Generator");
 
-        if (!(item instanceof Film)
-                || !item.isActivelyPublished()) {
+        if (!(item instanceof Film) || !item.isActivelyPublished()) {
             return scores.build();
         }
         

@@ -97,7 +97,7 @@ public class ContentEquivalenceUpdater<T extends Content> implements Equivalence
                 desc,
                 resultsForTelescope
         );
-        
+
         Set<T> candidates = ImmutableSet.copyOf(extractCandidates(generatedScores));
         
         List<ScoredCandidates<T>> scoredScores = scorers.score(

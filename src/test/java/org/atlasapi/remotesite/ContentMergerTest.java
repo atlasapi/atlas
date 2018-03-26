@@ -273,6 +273,8 @@ public class ContentMergerTest {
     }
     
     @Test
+    //Random observers note: The merger is supposed to retain the aliases of the first element,
+    //not merge it with those of the second?
     public void testKeepAliasesMergeStrategy() {
         ContentMerger contentMerger = new ContentMerger(MergeStrategy.MERGE, MergeStrategy.KEEP, MergeStrategy.KEEP);
         Item current = createItem("title", Publisher.METABROADCAST);

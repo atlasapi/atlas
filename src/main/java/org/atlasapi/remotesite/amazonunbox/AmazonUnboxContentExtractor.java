@@ -2,7 +2,6 @@ package org.atlasapi.remotesite.amazonunbox;
 
 import java.util.Currency;
 import java.util.List;
-import java.util.Objects;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -36,8 +35,6 @@ import org.atlasapi.media.entity.Specialization;
 import org.atlasapi.media.entity.Version;
 import org.atlasapi.remotesite.ContentExtractor;
 
-import com.metabroadcast.common.collect.ImmutableOptionalMap;
-import com.metabroadcast.common.collect.OptionalMap;
 import com.metabroadcast.common.currency.Price;
 import com.metabroadcast.common.intl.Countries;
 import com.metabroadcast.common.media.MimeType;
@@ -45,7 +42,6 @@ import com.metabroadcast.common.media.MimeType;
 import com.google.common.base.Strings;
 import com.google.common.collect.ImmutableList;
 import com.google.common.collect.ImmutableList.Builder;
-import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import org.apache.commons.lang.StringEscapeUtils;
@@ -82,20 +78,6 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     private static final Pattern UHD_PATTERN =
             Pattern.compile("\\[Ultra HD\\]|\\[ULTRA HD\\]|\\[UHD\\]|\\[4K\\/Ultra HD\\]|\\[4K\\/UHD\\]|\\[4K\\]");
 
-    private static final OptionalMap<String, Certificate> certificateMap =
-            ImmutableOptionalMap.fromMap(
-                    ImmutableMap.<String,Certificate>builder()
-     // tba/NR temporarily set to '18' to prevent unsuitable material from being misclassified.
-                .put("NR",new Certificate("18", Countries.GB))
-                .put("to_be_announced",new Certificate("18", Countries.GB))
-                .put("universal",new Certificate("U", Countries.GB))
-                .put("parental_guidance",new Certificate("PG", Countries.GB))
-                .put("ages_12_and_over",new Certificate("12", Countries.GB))
-                .put("ages_15_and_over",new Certificate("15", Countries.GB))
-                .put("ages_18_and_over",new Certificate("18", Countries.GB))
-            .build()
-        );
-    
     public static String createBrandUri(String asin) {
         return String.format(URI_VERSION, asin);
     }
@@ -294,7 +276,6 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
                 encodings.add(createEncoding(org.atlasapi.media.entity.Quality.FOUR_K, hdLocations));
             }
             encodings.add(createEncoding(org.atlasapi.media.entity.Quality.HD, hdLocations));
-
         }
         if (!sdLocations.isEmpty()) {
             if(isUhd) { //add both a UHD and SD location.
@@ -434,7 +415,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         }
         content.setImage(source.getLargeImageUrl());
         content.setImages(generateImages(source));
-        if (source.getReleaseDate() != null) {
+        //Amazon sends some items with date 2049-12-20. This invalid, and we suppress" it.
+        if (source.getReleaseDate() != null && source.getReleaseDate().getYear() != 2049) {
             content.setYear(source.getReleaseDate().getYear());
         }
         content.setCertificates(generateCertificates(source));

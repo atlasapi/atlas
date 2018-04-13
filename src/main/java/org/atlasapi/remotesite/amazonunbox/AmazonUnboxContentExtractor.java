@@ -81,20 +81,6 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
     //to search the xml file and see if any new tags have been added.
     private static final Pattern UHD_PATTERN =
             Pattern.compile("\\[Ultra HD\\]|\\[ULTRA HD\\]|\\[UHD\\]|\\[4K\\/Ultra HD\\]|\\[4K\\/UHD\\]|\\[4K\\]");
-
-    private static final OptionalMap<String, Certificate> certificateMap =
-            ImmutableOptionalMap.fromMap(
-                    ImmutableMap.<String,Certificate>builder()
-     // tba/NR temporarily set to '18' to prevent unsuitable material from being misclassified.
-                .put("NR",new Certificate("18", Countries.GB))
-                .put("to_be_announced",new Certificate("18", Countries.GB))
-                .put("universal",new Certificate("U", Countries.GB))
-                .put("parental_guidance",new Certificate("PG", Countries.GB))
-                .put("ages_12_and_over",new Certificate("12", Countries.GB))
-                .put("ages_15_and_over",new Certificate("15", Countries.GB))
-                .put("ages_18_and_over",new Certificate("18", Countries.GB))
-            .build()
-        );
     
     public static String createBrandUri(String asin) {
         return String.format(URI_VERSION, asin);
@@ -434,7 +420,8 @@ public class AmazonUnboxContentExtractor implements ContentExtractor<AmazonUnbox
         }
         content.setImage(source.getLargeImageUrl());
         content.setImages(generateImages(source));
-        if (source.getReleaseDate() != null) {
+        //Amazon sends some items with date 2049-12-20. This invalid, and we suppress" it.
+        if (source.getReleaseDate() != null && source.getReleaseDate().getYear() != 2049) {
             content.setYear(source.getReleaseDate().getYear());
         }
         content.setCertificates(generateCertificates(source));

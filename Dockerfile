@@ -1,4 +1,4 @@
-FROM 448613307115.dkr.ecr.eu-west-1.amazonaws.com/jvm-oracle:latest
+FROM openjdk:8
 
 ENV SERVER_PORT="8080" \
     PROCESSING_CONFIG="false" \

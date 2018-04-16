@@ -225,39 +225,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                             );
                         }
 
-                        if (brandWithPayload.getModel().getGenres() == null || brandWithPayload.getModel().getGenres().isEmpty()) {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    brandWithPayload.getModel(),
-                                    getPartialStatusForContent(
-                                            brandWithPayload.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            String.format("Content %s is missing genres.",
-                                                    encode(brandWithPayload.getModel().getId())
-                                            ),
-                                            EntityRef.Type.CONTENT,
-                                            brandWithPayload.getModel().getPublisher().key(),
-                                            false
-                                    )
-                            );
-                        } else {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    brandWithPayload.getModel(),
-                                    getPartialStatusForContent(
-                                            brandWithPayload.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            null,
-                                            EntityRef.Type.CONTENT,
-                                            brandWithPayload.getModel().getPublisher().key(),
-                                            false
-                                    )
-                            );
-                        }
                     } else {
                         owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
@@ -313,39 +280,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                             );
                         }
 
-                        if (seriesWithPayload.getModel().getGenres() == null || seriesWithPayload.getModel().getGenres().isEmpty()) {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    seriesWithPayload.getModel(),
-                                    getPartialStatusForContent(
-                                            seriesWithPayload.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            String.format("Content %s is missing genres.",
-                                                    encode(seriesWithPayload.getModel().getId())
-                                            ),
-                                            EntityRef.Type.CONTENT,
-                                            seriesWithPayload.getModel().getPublisher().key(),
-                                            false
-                                    )
-                            );
-                        } else {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    seriesWithPayload.getModel(),
-                                    getPartialStatusForContent(
-                                            seriesWithPayload.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            null,
-                                            EntityRef.Type.CONTENT,
-                                            seriesWithPayload.getModel().getPublisher().key(),
-                                            true
-                                    )
-                            );
-                        }
                     } else {
                         owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
@@ -390,40 +324,6 @@ public class OffScheduleContentIngestTask extends ScheduledTask {
                                         owlReporter.getTelescopeReporter().getTaskId(),
                                         NewAlert.Key.Check.MISSING,
                                         NewAlert.Key.Field.TITLE,
-                                        null,
-                                        EntityRef.Type.CONTENT,
-                                        item.getPublisher().key(),
-                                        true
-                                )
-                        );
-                    }
-
-                    if (item.getGenres() == null || item.getGenres().isEmpty()) {
-                        owlReporter.getStatusReporter().updateStatus(
-                                EntityRef.Type.CONTENT,
-                                item,
-                                getPartialStatusForContent(
-                                        item.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId(),
-                                        NewAlert.Key.Check.MISSING,
-                                        NewAlert.Key.Field.GENRE,
-                                        String.format("Content %s is missing genres.",
-                                                encode(item.getId())
-                                        ),
-                                        EntityRef.Type.CONTENT,
-                                        item.getPublisher().key(),
-                                        false
-                                )
-                        );
-                    } else {
-                        owlReporter.getStatusReporter().updateStatus(
-                                EntityRef.Type.CONTENT,
-                                item,
-                                getPartialStatusForContent(
-                                        item.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId(),
-                                        NewAlert.Key.Check.MISSING,
-                                        NewAlert.Key.Field.GENRE,
                                         null,
                                         EntityRef.Type.CONTENT,
                                         item.getPublisher().key(),

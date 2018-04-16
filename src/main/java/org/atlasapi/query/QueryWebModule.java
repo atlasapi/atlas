@@ -1,7 +1,12 @@
 package org.atlasapi.query;
 
-import javax.xml.bind.JAXBElement;
-
+import com.google.common.base.Splitter;
+import com.metabroadcast.common.ids.NumberToShortStringCodec;
+import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
+import com.metabroadcast.common.media.MimeType;
+import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
+import com.metabroadcast.common.queue.MessageSender;
+import com.metabroadcast.common.time.SystemClock;
 import org.atlasapi.application.query.ApplicationFetcher;
 import org.atlasapi.application.v3.DefaultApplication;
 import org.atlasapi.equiv.EquivalenceBreaker;
@@ -13,7 +18,6 @@ import org.atlasapi.feeds.tvanytime.TvAnytimeGenerator;
 import org.atlasapi.feeds.utils.DescriptionWatermarker;
 import org.atlasapi.feeds.utils.WatermarkModule;
 import org.atlasapi.feeds.youview.ContentHierarchyExpanderFactory;
-import org.atlasapi.feeds.youview.hierarchy.ContentHierarchyExpander;
 import org.atlasapi.feeds.youview.statistics.FeedStatistics;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsQueryResult;
 import org.atlasapi.feeds.youview.statistics.FeedStatisticsResolver;
@@ -147,15 +151,6 @@ import org.atlasapi.query.v2.TopicController;
 import org.atlasapi.query.v2.TopicWriteController;
 import org.atlasapi.query.worker.ContentWriteMessage;
 import org.atlasapi.remotesite.util.OldContentDeactivator;
-
-import com.metabroadcast.common.ids.NumberToShortStringCodec;
-import com.metabroadcast.common.ids.SubstitutionTableNumberCodec;
-import com.metabroadcast.common.media.MimeType;
-import com.metabroadcast.common.persistence.mongo.DatabasedMongo;
-import com.metabroadcast.common.queue.MessageSender;
-import com.metabroadcast.common.time.SystemClock;
-
-import com.google.common.base.Splitter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -164,7 +159,8 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.context.annotation.Import;
 import tva.metadata._2010.TVAMainType;
 
-import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_NO_LOCK_SETTING_CONTENT_WRITER;
+import javax.xml.bind.JAXBElement;
+
 import static org.atlasapi.persistence.MongoContentPersistenceModule.NON_ID_SETTING_CONTENT_WRITER;
 
 @Configuration

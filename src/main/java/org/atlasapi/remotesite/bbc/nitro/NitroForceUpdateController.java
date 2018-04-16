@@ -408,40 +408,6 @@ public class NitroForceUpdateController {
                 );
             }
 
-            if (item.getGenres() == null || item.getGenres().isEmpty()) {
-                owlReporter.getStatusReporter().updateStatus(
-                        EntityRef.Type.CONTENT,
-                        item,
-                        getPartialStatusForContent(
-                                item.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId(),
-                                NewAlert.Key.Check.MISSING,
-                                NewAlert.Key.Field.GENRE,
-                                String.format("Content %s is missing genres.",
-                                        encode(item.getId())
-                                ),
-                                EntityRef.Type.CONTENT,
-                                item.getPublisher().key(),
-                                false
-                        )
-                );
-            } else {
-                owlReporter.getStatusReporter().updateStatus(
-                        EntityRef.Type.CONTENT,
-                        item,
-                        getPartialStatusForContent(
-                                item.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId(),
-                                NewAlert.Key.Check.MISSING,
-                                NewAlert.Key.Field.GENRE,
-                                null,
-                                EntityRef.Type.CONTENT,
-                                item.getPublisher().key(),
-                                true
-                        )
-                );
-            }
-
             if (item instanceof Episode && ((Episode) item).getEpisodeNumber() == null) {
                 owlReporter.getStatusReporter().updateStatus(
                         EntityRef.Type.CONTENT,
@@ -559,40 +525,6 @@ public class NitroForceUpdateController {
                     );
                 }
 
-                if (series.getGenres() == null || series.getGenres().isEmpty()) {
-                    owlReporter.getStatusReporter().updateStatus(
-                            EntityRef.Type.CONTENT,
-                            series,
-                            getPartialStatusForContent(
-                                    series.getId(),
-                                    owlReporter.getTelescopeReporter().getTaskId(),
-                                    NewAlert.Key.Check.MISSING,
-                                    NewAlert.Key.Field.GENRE,
-                                    String.format("Content %s is missing genres.",
-                                            encode(series.getId())
-                                    ),
-                                    EntityRef.Type.CONTENT,
-                                    series.getPublisher().key(),
-                                    false
-                            )
-                    );
-                } else {
-                    owlReporter.getStatusReporter().updateStatus(
-                            EntityRef.Type.CONTENT,
-                            series,
-                            getPartialStatusForContent(
-                                    series.getId(),
-                                    owlReporter.getTelescopeReporter().getTaskId(),
-                                    NewAlert.Key.Check.MISSING,
-                                    NewAlert.Key.Field.EPISODE_NUMBER,
-                                    null,
-                                    EntityRef.Type.CONTENT,
-                                    series.getPublisher().key(),
-                                    true
-                            )
-                    );
-                }
-
             } else {
                 owlReporter.getTelescopeReporter().reportFailedEvent(
                         "There was an error while trying to write this Series to Atlas. "
@@ -676,40 +608,6 @@ public class NitroForceUpdateController {
                                         owlReporter.getTelescopeReporter().getTaskId(),
                                         NewAlert.Key.Check.MISSING,
                                         NewAlert.Key.Field.TITLE,
-                                        null,
-                                        EntityRef.Type.CONTENT,
-                                        brand.getPublisher().key(),
-                                        true
-                                )
-                        );
-                    }
-
-                    if (brand.getGenres() == null || brand.getGenres().isEmpty()) {
-                        owlReporter.getStatusReporter().updateStatus(
-                                EntityRef.Type.CONTENT,
-                                brand,
-                                getPartialStatusForContent(
-                                        brand.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId(),
-                                        NewAlert.Key.Check.MISSING,
-                                        NewAlert.Key.Field.GENRE,
-                                        String.format("Content %s is missing genres",
-                                                encode(brand.getId())
-                                        ),
-                                        EntityRef.Type.CONTENT,
-                                        brand.getPublisher().key(),
-                                        false
-                                )
-                        );
-                    } else {
-                        owlReporter.getStatusReporter().updateStatus(
-                                EntityRef.Type.CONTENT,
-                                brand,
-                                getPartialStatusForContent(
-                                        brand.getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId(),
-                                        NewAlert.Key.Check.MISSING,
-                                        NewAlert.Key.Field.GENRE,
                                         null,
                                         EntityRef.Type.CONTENT,
                                         brand.getPublisher().key(),

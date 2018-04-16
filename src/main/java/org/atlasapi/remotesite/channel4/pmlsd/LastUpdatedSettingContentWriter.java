@@ -118,40 +118,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
             );
         }
 
-        if (item.getGenres() == null || item.getGenres().isEmpty()) {
-            owlReporter.getStatusReporter().updateStatus(
-                    EntityRef.Type.CONTENT,
-                    item,
-                    getPartialStatusForContent(
-                            item.getId(),
-                            "hhhh",
-                            NewAlert.Key.Check.MISSING,
-                            NewAlert.Key.Field.GENRE,
-                            String.format("Content %s is missing genres.",
-                                    encode(item.getId())
-                            ),
-                            EntityRef.Type.CONTENT,
-                            item.getPublisher().key(),
-                            false
-                    )
-            );
-        } else {
-            owlReporter.getStatusReporter().updateStatus(
-                    EntityRef.Type.CONTENT,
-                    item,
-                    getPartialStatusForContent(
-                            item.getId(),
-                            "hhhh",
-                            NewAlert.Key.Check.MISSING,
-                            NewAlert.Key.Field.GENRE,
-                            null,
-                            EntityRef.Type.CONTENT,
-                            item.getPublisher().key(),
-                            true
-                    )
-            );
-        }
-
         if (item instanceof Episode)
             if(((Episode) item).getEpisodeNumber() == null) {
             owlReporter.getStatusReporter().updateStatus(
@@ -323,40 +289,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                 );
             }
 
-            if (container.getGenres() == null || container.getGenres().isEmpty()) {
-                owlReporter.getStatusReporter().updateStatus(
-                        EntityRef.Type.CONTENT,
-                        container,
-                        getPartialStatusForContent(
-                                container.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId(),
-                                NewAlert.Key.Check.MISSING,
-                                NewAlert.Key.Field.GENRE,
-                                String.format(
-                                        "Content %s is missing genres.",
-                                        encode(container.getId())
-                                ),
-                                EntityRef.Type.CONTENT,
-                                container.getPublisher().key(),
-                                false
-                        )
-                );
-            } else {
-                owlReporter.getStatusReporter().updateStatus(
-                        EntityRef.Type.CONTENT,
-                        container,
-                        getPartialStatusForContent(
-                                container.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId(),
-                                NewAlert.Key.Check.MISSING,
-                                NewAlert.Key.Field.GENRE,
-                                null,
-                                EntityRef.Type.CONTENT,
-                                container.getPublisher().key(),
-                                true
-                        )
-                );
-            }
         }
         else if(container instanceof Brand){
             if (Strings.isNullOrEmpty(container.getTitle())) {
@@ -385,40 +317,6 @@ public class LastUpdatedSettingContentWriter implements ContentWriter {
                                 owlReporter.getTelescopeReporter().getTaskId(),
                                 NewAlert.Key.Check.MISSING,
                                 NewAlert.Key.Field.TITLE,
-                                null,
-                                EntityRef.Type.CONTENT,
-                                container.getPublisher().key(),
-                                true
-                        )
-                );
-            }
-
-            if (container.getGenres() == null || container.getGenres().isEmpty()) {
-                owlReporter.getStatusReporter().updateStatus(
-                        EntityRef.Type.CONTENT,
-                        container,
-                        getPartialStatusForContent(
-                                container.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId(),
-                                NewAlert.Key.Check.MISSING,
-                                NewAlert.Key.Field.GENRE,
-                                String.format("Content %s is missing genres.",
-                                        encode(container.getId())
-                                ),
-                                EntityRef.Type.CONTENT,
-                                container.getPublisher().key(),
-                                false
-                        )
-                );
-            } else {
-                owlReporter.getStatusReporter().updateStatus(
-                        EntityRef.Type.CONTENT,
-                        container,
-                        getPartialStatusForContent(
-                                container.getId(),
-                                owlReporter.getTelescopeReporter().getTaskId(),
-                                NewAlert.Key.Check.MISSING,
-                                NewAlert.Key.Field.GENRE,
                                 null,
                                 EntityRef.Type.CONTENT,
                                 container.getPublisher().key(),

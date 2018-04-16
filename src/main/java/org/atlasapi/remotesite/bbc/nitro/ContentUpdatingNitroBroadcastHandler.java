@@ -213,40 +213,6 @@ public class ContentUpdatingNitroBroadcastHandler
                             );
                         }
 
-                        if (brand.getModel().getGenres() == null || brand.getModel().getGenres().isEmpty()) {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    brand.getModel(),
-                                    getPartialStatusForContent(
-                                            brand.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            String.format("Content %s is missing genres.",
-                                                    encode(brand.getModel().getId())
-                                            ),
-                                            EntityRef.Type.CONTENT,
-                                            brand.getModel().getPublisher().key(),
-                                            false
-                                    )
-                            );
-                        } else {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    brand.getModel(),
-                                    getPartialStatusForContent(
-                                            brand.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            null,
-                                            EntityRef.Type.CONTENT,
-                                            brand.getModel().getPublisher().key(),
-                                            true
-                                    )
-                            );
-                        }
-
                     } else {
                         owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Brand",
@@ -302,40 +268,6 @@ public class ContentUpdatingNitroBroadcastHandler
                             );
                         }
 
-                        if (sery.getModel().getGenres() == null || sery.getModel().getGenres().isEmpty()) {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    sery.getModel(),
-                                    getPartialStatusForContent(
-                                            sery.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            String.format("Content %s is missing genres.",
-                                                    encode(sery.getModel().getId())
-                                            ),
-                                            EntityRef.Type.CONTENT,
-                                            sery.getModel().getPublisher().key(),
-                                            false
-                                    )
-                            );
-                        } else {
-                            owlReporter.getStatusReporter().updateStatus(
-                                    EntityRef.Type.CONTENT,
-                                    sery.getModel(),
-                                    getPartialStatusForContent(
-                                            sery.getModel().getId(),
-                                            owlReporter.getTelescopeReporter().getTaskId(),
-                                            NewAlert.Key.Check.MISSING,
-                                            NewAlert.Key.Field.GENRE,
-                                            null,
-                                            EntityRef.Type.CONTENT,
-                                            sery.getModel().getPublisher().key(),
-                                            true
-                                    )
-                            );
-                        }
-
                     } else {
                         owlReporter.getTelescopeReporter().reportFailedEvent(
                                 "Atlas did not return an id after attempting to create or update this Series",
@@ -381,40 +313,6 @@ public class ContentUpdatingNitroBroadcastHandler
                                         owlReporter.getTelescopeReporter().getTaskId(),
                                         NewAlert.Key.Check.MISSING,
                                         NewAlert.Key.Field.TITLE,
-                                        null,
-                                        EntityRef.Type.CONTENT,
-                                        item.getModel().getPublisher().key(),
-                                        true
-                                )
-                        );
-                    }
-
-                    if (item.getModel().getGenres() == null || item.getModel().getGenres().isEmpty()) {
-                        owlReporter.getStatusReporter().updateStatus(
-                                EntityRef.Type.CONTENT,
-                                item.getModel(),
-                                getPartialStatusForContent(
-                                        item.getModel().getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId(),
-                                        NewAlert.Key.Check.MISSING,
-                                        NewAlert.Key.Field.GENRE,
-                                        String.format("Content %s is missing genres.",
-                                                encode(item.getModel().getId())
-                                        ),
-                                        EntityRef.Type.CONTENT,
-                                        item.getModel().getPublisher().key(),
-                                        false
-                                )
-                        );
-                    } else {
-                        owlReporter.getStatusReporter().updateStatus(
-                                EntityRef.Type.CONTENT,
-                                item.getModel(),
-                                getPartialStatusForContent(
-                                        item.getModel().getId(),
-                                        owlReporter.getTelescopeReporter().getTaskId(),
-                                        NewAlert.Key.Check.MISSING,
-                                        NewAlert.Key.Field.GENRE,
                                         null,
                                         EntityRef.Type.CONTENT,
                                         item.getModel().getPublisher().key(),

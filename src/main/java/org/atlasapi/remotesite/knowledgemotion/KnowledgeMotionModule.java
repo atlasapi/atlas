@@ -35,7 +35,6 @@ public class KnowledgeMotionModule {
 
     private static final Logger log = LoggerFactory.getLogger(KnowledgeMotionModule.class);
 
-
     private @Autowired SimpleScheduler scheduler;
     private @Autowired ContentResolver contentResolver;
     private @Autowired ContentWriter contentWriter;

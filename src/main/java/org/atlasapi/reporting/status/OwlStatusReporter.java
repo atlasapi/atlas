@@ -44,7 +44,11 @@ public class OwlStatusReporter {
         updateStatus(type, (Identified) model, partialStatus);
     }
 
+    public static final boolean DISABLED = true;
     public void updateStatus(EntityRef.Type type, Identified model, PartialStatus partialStatus) {
+        if (DISABLED) {
+            return;
+        }
         Long id = model.getId();
         if (statusClientWithApp != null) {
             try {
